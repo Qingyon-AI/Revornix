@@ -1,0 +1,83 @@
+# 第三方接口
+
+# 当使用api key的时候，调用这边的接口组
+
+import schemas
+import crud
+from celery import group, chain
+from datetime import datetime, timezone
+from common.celery.app import update_ai_summary, update_sections, update_website_document_markdown_with_jina, add_embedding
+from common.dependencies import get_db, get_current_user_with_api_key
+from common.notification import union_send_notification
+from common.website import crawer_website
+from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends
+
+tp_router = APIRouter()
+
+@tp_router.post("/document/create", response_model=schemas.document.DocumentCreateResponse)
+async def create_document(document_create_request: schemas.document.DocumentCreateRequest, 
+                          db: Session = Depends(get_db), 
+                          user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
+    now = datetime.now(timezone.utc)
+    if document_create_request.category == 1:
+        # 获取网站标题和描述
+        website_res = await crawer_website(document_create_request.url)
+        db_document = crud.document.create_base_document(
+            db=db,
+            creator_id=user.id,
+            title=website_res.get('title'),
+            description=website_res.get('description'),
+            cover=website_res.get('cover'),
+            category=document_create_request.category,
+            from_plat=document_create_request.from_plat
+        )
+        if document_create_request.labels:
+            crud.document.bind_labels_to_document(db=db, 
+                                                  document_id=db_document.id, 
+                                                  label_ids=document_create_request.labels)
+        crud.document.bind_document_to_user(db=db, 
+                                            user_id=user.id, 
+                                            document_id=db_document.id, 
+                                            authority="owner")
+        db_website_document = crud.document.create_website_document(db=db, 
+                                                                    url=document_create_request.url, 
+                                                                    document_id=db_document.id)
+         # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
+        db_today_section = crud.section.get_section_by_user_and_date(db=db, 
+                                                                     user_id=user.id,
+                                                                     date=now.date())
+        if db_today_section is None:
+            db_today_section = crud.section.create_section(db=db, 
+                                                           creator_id=user.id,
+                                                           title=f'{now.date()}总结',
+                                                           public=False,
+                                                           description=f'这篇文档是{now.date()}的所有文档的总结')
+            crud.section.bind_section_to_user(db=db,
+                                              section_id=db_today_section.id,
+                                              user_id=user.id,
+                                              authority=0)
+            crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
+                                                                                 section_id=db_today_section.id,
+                                                                                 date=now.date())
+        document_create_request.sections.append(db_today_section.id)
+        db.commit()
+        # TODO：判断用户计划 对用户计划的能力做筛选
+        base_task = update_website_document_markdown_with_jina.s(db_document.id)
+        dependent_tasks = [update_sections.s(document_create_request.sections, db_document.id, user)]
+        if document_create_request.auto_summary:
+            dependent_tasks.append(update_ai_summary.s(db_document.id))
+            dependent_tasks.append(add_embedding.s(db_document.id))
+        task_chain = chain(base_task, group(dependent_tasks))
+        task_chain.apply_async()
+    return schemas.document.DocumentCreateResponse(document_id=db_document.id)
+
+@tp_router.post('/notification/create', response_model=schemas.common.NormalResponse)
+async def create_notification(create_notification_request: schemas.notification.CreateNotificationRequest, 
+                              user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
+    await union_send_notification(user_id=user.id,
+                                  title=create_notification_request.title,
+                                  content=create_notification_request.content,
+                                  link=create_notification_request.link,
+                                  notification_type=create_notification_request.notification_type)
+    return schemas.common.NormalResponse(message='ok')

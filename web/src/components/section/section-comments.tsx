@@ -1,0 +1,213 @@
+import { Form, FormField, FormItem, FormMessage } from '../ui/form';
+import { Textarea } from '../ui/textarea';
+import { Button } from '../ui/button';
+import { Separator } from '../ui/separator';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import { createSectionComment, searchSectionComment } from '@/service/section';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useState } from 'react';
+import { getQueryClient } from '@/lib/get-query-client';
+import { z } from 'zod';
+import { useInView } from 'react-intersection-observer';
+import { Skeleton } from '../ui/skeleton';
+import { format } from 'date-fns';
+import { useRouter } from 'nextjs-toploader/app';
+
+const commentFormSchema = z.object({
+	content: z
+		.string()
+		.min(1, '评论内容不能为空')
+		.max(1000, '评论内容不能超过1000字')
+		.trim(),
+});
+
+const SectionComments = ({ id }: { id: string }) => {
+	const queryClient = getQueryClient();
+	const router = useRouter();
+	const [keyword, setKeyword] = useState('');
+	const [commentSubmitting, setCommentSubmitting] = useState(false);
+	const form = useForm({
+		resolver: zodResolver(commentFormSchema),
+		defaultValues: {
+			content: '',
+		},
+	});
+
+	const { ref: bottomRef, inView } = useInView();
+
+	const {
+		data,
+		isFetchingNextPage,
+		isFetching,
+		isSuccess,
+		fetchNextPage,
+		isError,
+		hasNextPage,
+	} = useInfiniteQuery({
+		queryKey: ['searchSectionComment', keyword],
+		queryFn: (pageParam) => searchSectionComment({ ...pageParam.pageParam }),
+		initialPageParam: {
+			limit: 10,
+			keyword: keyword,
+			section_id: Number(id),
+		},
+		getNextPageParam: (lastPage) => {
+			return lastPage.has_more
+				? {
+						start: lastPage.next_start,
+						limit: lastPage.limit,
+						keyword: keyword,
+						section_id: Number(id),
+				  }
+				: undefined;
+		},
+	});
+
+	const mutateAddComment = useMutation({
+		mutationFn: () => {
+			return createSectionComment({
+				section_id: Number(id),
+				content: form.getValues('content'),
+			});
+		},
+		onMutate(variables) {
+			setCommentSubmitting(true);
+		},
+		onError(error, variables, context) {
+			toast.error('评论失败');
+			setCommentSubmitting(false);
+		},
+		onSuccess(data, variables, context) {
+			setCommentSubmitting(false);
+			queryClient.invalidateQueries({
+				queryKey: ['searchSectionComment', keyword],
+			});
+			toast.success('评论成功');
+			form.reset();
+		},
+	});
+
+	const handleSubmitComment = async (
+		event: React.FormEvent<HTMLFormElement>
+	) => {
+		if (event) {
+			if (typeof event.preventDefault === 'function') {
+				event.preventDefault();
+			}
+			if (typeof event.stopPropagation === 'function') {
+				event.stopPropagation();
+			}
+		}
+		return form.handleSubmit(onFormValidateSuccess, onFormValidateError)(event);
+	};
+
+	const onFormValidateSuccess = async (
+		values: z.infer<typeof commentFormSchema>
+	) => {
+		await mutateAddComment.mutateAsync();
+		form.reset();
+	};
+
+	const onFormValidateError = (errors: any) => {
+		console.log(errors);
+		toast.error('表单校验失败');
+	};
+
+	const comments = data?.pages.flatMap((page) => page.elements) || [];
+
+	useEffect(() => {
+		inView && !isFetching && hasNextPage && fetchNextPage();
+	}, [inView]);
+
+	return (
+		<div className='rounded flex flex-col bg-black/5 dark:bg-white/5  p-5 mx-5'>
+			<p className='font-bold text-lg mb-3'>评论</p>
+			<Form {...form}>
+				<form onSubmit={handleSubmitComment}>
+					<FormField
+						name='content'
+						control={form.control}
+						render={({ field }) => {
+							return (
+								<FormItem>
+									<Textarea
+										{...field}
+										className='bg-white shadow-none dark:bg-black'></Textarea>
+									<FormMessage />
+									<div className='flex flex-row items-center justify-between mb-3'>
+										<p className='text-muted-foreground text-sm'>
+											评论字数不得多于1000字
+										</p>
+										<Button
+											size={'sm'}
+											type='submit'
+											disabled={commentSubmitting}>
+											提交
+											{commentSubmitting && (
+												<Loader2 className='animate-spin' />
+											)}
+										</Button>
+									</div>
+								</FormItem>
+							);
+						}}
+					/>
+				</form>
+			</Form>
+			<Separator className='mb-3' />
+			<div className='flex flex-col gap-2'>
+				{comments &&
+					comments.map((comment) => {
+						return (
+							<div
+								key={comment.id}
+								className='text-sm rounded p-5 bg-white dark:bg-black shadow-inner'>
+								<p>{comment.content}</p>
+								<div className='flex flex-row items-center justify-between mt-2'>
+									<div
+										className='flex flex-row items-center'
+										onClick={() =>
+											router.push(`/user/detail/${comment.creator.id}`)
+										}>
+										<img
+											src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${comment.creator.avatar?.name}`}
+											className='w-5 h-5 rounded-full mr-2 object-cover'
+										/>
+										<p className='text-xs text-muted-foreground'>
+											{comment.creator.nickname}
+										</p>
+									</div>
+									<p className='text-xs text-muted-foreground'>
+										{format(comment.update_time, 'MM-dd HH:mm')}
+									</p>
+								</div>
+							</div>
+						);
+					})}
+			</div>
+			{isFetching && !data && (
+				<div className='flex flex-col gap-3'>
+					{[...Array(12)].map((number, index) => {
+						return <Skeleton className='w-full h-20' key={index} />;
+					})}
+				</div>
+			)}
+			{isFetchingNextPage && data && (
+				<div className='flex flex-col gap-3'>
+					{[...Array(12)].map((number, index) => {
+						return <Skeleton className='w-full h-20' key={index} />;
+					})}
+				</div>
+			)}
+			{!isFetching && comments && comments.length === 0 && (
+				<div className='text-muted-foreground text-sm'>暂无评论</div>
+			)}
+			<div ref={bottomRef}></div>
+		</div>
+	);
+};
+
+export default SectionComments;

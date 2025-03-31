@@ -1,0 +1,195 @@
+services:
+
+  nginx:
+      image: nginx:latest
+      ports:
+        - "80:80"
+      volumes:
+        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      depends_on:
+        - api
+        - file-backend
+        - web
+
+  neo4j:
+    container_name: neo4j
+    image: neo4j:latest
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: neo4j/12345678
+    volumes:
+      - neo4j-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7474"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  web:
+    container_name: web
+    build:
+      context: web
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+      - file-backend
+  
+  daily-hot:
+    container_name: daily-hot
+    build:
+      context: daily-hot
+      dockerfile: Dockerfile
+    env_file:
+      - ./envs/.hot.env
+
+  api:
+    container_name: api
+    build:
+      context: api
+      dockerfile: Dockerfile
+    command: ["sh", "-c", "python -m script.init_vector_base_data && python -m script.init_sql_base_data && fastapi run main.py --proxy-headers --host 0.0.0.0 --port 8001"]
+    volumes:
+      - ./api:/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+      standalone:
+        condition: service_started
+      redis:
+        condition: service_started
+      neo4j:
+        condition: service_healthy
+    env_file:
+      - ./envs/.api.env
+
+  file-backend:
+    container_name: file-backend
+    build:
+      context: file-backend
+      dockerfile: Dockerfile
+    command: ["sh", "-c", "fastapi run main.py --proxy-headers --host 0.0.0.0 --port 8001"]
+    volumes:
+      - ./volumes/files:/app/uploads
+    depends_on:
+      - standalone
+      - mysql
+      - redis
+      - neo4j
+    env_file:
+      - ./envs/.file.env
+      
+  celery-worker:
+    container_name: celery-worker
+    build:
+      context: celery-worker
+      dockerfile: Dockerfile
+    command: ["celery", "-A", "common.celery.app.celery_app", "worker", "--loglevel=info", "--pool", "threads"]
+    volumes:
+      - ./volumes/temp:/app/temp
+    depends_on:
+      - standalone
+      - mysql
+      - redis
+      - neo4j
+    env_file:
+      - ./envs/.celery.env
+    environment:
+      - HF_ENDPOINT=https://hf-mirror.com
+
+  mysql:
+    container_name: mysql
+    image: 
+      mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: revornix
+    volumes:
+       - ./volumes/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--host=localhost", "--user=root", "--password=123456"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  redis:
+    image: 
+      redis:8.0-M04-alpine
+    volumes:
+      - ./volumes/redis:/data
+        
+  etcd:
+    container_name: milvus-etcd
+    image: quay.io/coreos/etcd:v3.5.18
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - etcd:/etcd
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio:
+    container_name: milvus-minio
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    volumes:
+      - minio:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  standalone:
+    container_name: milvus-standalone
+    image: milvusdb/milvus:v2.5.6
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+    - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    volumes:
+      - standalone:/var/lib/milvus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    depends_on:
+      - "etcd"
+      - "minio"
+
+volumes:
+  standalone:
+    driver: local
+  etcd:
+    driver: local
+  minio:
+    driver: local
+  neo4j-data:
+    driver: local
+
+networks:
+  default:
+    name: revornix

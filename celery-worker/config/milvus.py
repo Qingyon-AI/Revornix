@@ -1,0 +1,4 @@
+import os
+
+MILVUS_CLUSTER_ENDPOINT = os.environ.get('MILVUS_CLUSTER_ENDPOINT')
+MILVUS_TOKEN = os.environ.get('MILVUS_TOKEN')

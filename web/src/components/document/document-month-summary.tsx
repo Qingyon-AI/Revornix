@@ -1,0 +1,92 @@
+'use client';
+
+import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
+
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
+import {
+	ChartConfig,
+	ChartContainer,
+	ChartTooltip,
+	ChartTooltipContent,
+} from '@/components/ui/chart';
+import { useQuery } from '@tanstack/react-query';
+import { summaryMonthDocumentCount } from '@/service/document';
+import { format, subDays } from 'date-fns';
+import { useMemo } from 'react';
+import { Skeleton } from '../ui/skeleton';
+
+const chartConfig = {
+	total: {
+		label: '累计',
+		color: 'var(--chart-2)',
+	},
+} satisfies ChartConfig;
+
+const DocumentMonthSummary = () => {
+	const { data, isFetching } = useQuery({
+		queryKey: ['document-month-summary'],
+		queryFn: async () => {
+			return summaryMonthDocumentCount();
+		},
+	});
+
+	// 生成过去 30 天的完整日期列表
+	const generateDateList = (): string[] => {
+		const today = new Date();
+		return Array.from({ length: 31 }, (_, i) =>
+			format(subDays(today, i), 'yyyy-MM-dd')
+		).reverse();
+	};
+
+	// 填充缺失日期
+	const fillMissingDates = useMemo(() => {
+		const fullDateList = generateDateList();
+		const dataMap = new Map(data?.data.map((item) => [item.date, item.total]));
+		const res = fullDateList.map((date) => ({
+			date,
+			total: dataMap.get(date) || 0, // 如果 dataMap 里有这个日期，就用它的 total，否则设为 0
+		}));
+		return res;
+	}, [data]);
+
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle>最近一月记录</CardTitle>
+				<CardDescription>
+					这里会以图表形式显示你最近一个月的文档阅读基本概况
+				</CardDescription>
+			</CardHeader>
+			<CardContent>
+				{isFetching && <Skeleton className='w-full h-52' />}
+				{!isFetching && data && (
+					<ChartContainer config={chartConfig} className='h-52 w-full'>
+						<BarChart accessibilityLayer data={fillMissingDates}>
+							<CartesianGrid vertical={false} />
+							<XAxis
+								dataKey='date'
+								tickLine={false}
+								tickMargin={10}
+								axisLine={false}
+								tickFormatter={(value) => format(new Date(value), 'MM/dd')}
+							/>
+							<ChartTooltip
+								cursor={false}
+								content={<ChartTooltipContent hideLabel />}
+							/>
+							<Bar dataKey='total' fill='var(--color-total)' radius={8} />
+						</BarChart>
+					</ChartContainer>
+				)}
+			</CardContent>
+		</Card>
+	);
+};
+
+export default DocumentMonthSummary;
