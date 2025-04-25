@@ -43,7 +43,7 @@ const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 									alt='cover'
 									onError={(e) =>
 										((e.target as HTMLImageElement).src =
-											`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/cover.jpg`)
+											`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`)
 									}
 								/>
 							)}

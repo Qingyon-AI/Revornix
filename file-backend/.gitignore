@@ -176,5 +176,7 @@ temp/
 logs/*.log
 logs/*.log.*
 
-.DS_Store
-/uploads
+uploads/markdown
+uploads/images/*
+!uploads/images/cover.jpg
+!uploads/images/default_avatar_1.jpg

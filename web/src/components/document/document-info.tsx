@@ -284,14 +284,14 @@ const DocumentInfo = ({ id }: { id: string }) => {
 								src={
 									data.cover
 										? data.cover
-										: `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/cover.jpg`
+										: `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`
 								}>
 								<div className='mb-5'>
 									<img
 										src={
 											data.cover
 												? data.cover
-												: `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/cover.jpg`
+												: `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`
 										}
 										alt='cover'
 										className='w-full h-64 object-cover'

@@ -30,7 +30,7 @@ if __name__ == '__main__':
         print("首次运行，初始化数据库数据...")
         try:
             db_attachment = crud.attachment.create_attachment(db=db,
-                                                              name='default_avatar_1',
+                                                              name='images/default_avatar_1',
                                                               description='default avatar 1')
             db.commit()
         except Exception as e:

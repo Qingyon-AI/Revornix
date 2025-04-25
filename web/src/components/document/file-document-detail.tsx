@@ -169,7 +169,7 @@ const FileDocumentDetail = ({
 								} else {
 									src =
 										props.src ??
-										`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/cover.jpg`;
+										`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
 								}
 								return <img {...props} src={src} />;
 							},
