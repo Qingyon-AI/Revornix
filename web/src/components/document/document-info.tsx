@@ -184,7 +184,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 						)}
 						{data.category === 0 && data.file_info && (
 							<Link
-								href={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${data.file_info?.file_name}`}
+								href={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/file/${data.file_info?.file_name}`}
 								target='_blank'>
 								<Button
 									variant={'outline'}

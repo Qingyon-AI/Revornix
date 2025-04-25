@@ -116,7 +116,7 @@ const SectionDetailPage = () => {
 									img: (props) => {
 										let src = '';
 										if (props.src?.startsWith('images/')) {
-											src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
+											src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/${props.src}`;
 										} else {
 											src =
 												props.src ??
