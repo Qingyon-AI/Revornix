@@ -40,13 +40,13 @@ const SectionInfo = ({ id }: { id: string }) => {
 			<div className='h-full overflow-auto pb-5'>
 				<PhotoProvider>
 					<PhotoView
-						src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/${
-							section?.cover?.name ?? 'cover.jpg'
+						src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${
+							section?.cover?.name ?? 'images/cover.jpg'
 						}`}>
 						<div className='mb-5'>
 							<img
-								src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/${
-									section?.cover?.name ?? 'cover.jpg'
+								src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${
+									section?.cover?.name ?? 'images/cover.jpg'
 								}`}
 								alt='cover'
 								className='w-full h-64 object-cover'

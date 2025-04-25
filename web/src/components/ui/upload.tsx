@@ -20,7 +20,7 @@ const Upload = () => {
 		setStatus('uploading');
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();
-		const fileName = `${name}.${suffix}`;
+		const fileName = `files/${name}.${suffix}`;
 		await uploadFile(fileName, file);
 		toast.success('上传成功');
 		setStatus(null);

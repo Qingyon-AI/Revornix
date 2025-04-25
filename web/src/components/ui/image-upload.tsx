@@ -31,7 +31,7 @@ const ImageUpload = ({
 		setFile(file);
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();
-		const fileName = `${name}.${suffix}`;
+		const fileName = `files/${name}.${suffix}`;
 		await utils.sleep(2000);
 		await uploadFile(fileName, file);
 		onSuccess && onSuccess(fileName);

@@ -50,7 +50,7 @@ async def handle_update_file_document_markdown_with_mineru(document_id: int,
                         output_dir=f'{str(BASE_DIR)}/temp/{file_item}')
         for item in os.listdir(f'{str(BASE_DIR)}/temp/{file_item}/images'):
             await remote_file_service.put_object(remote_file_path=f'images/{item}',
-                                                local_path=f'{str(BASE_DIR)}/temp/{file_item}/images/{item}')
+                                                 local_path=f'{str(BASE_DIR)}/temp/{file_item}/images/{item}')
         # 替换图片路径
         with open(f'{str(BASE_DIR)}/temp/{file_item}/{file_item}.md', 'r', encoding='utf-8') as f:
             md_content = f.read()  # 先读取内容

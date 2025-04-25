@@ -53,7 +53,7 @@ async def handle_update_file_document_markdown_with_mineru(document_id: int,
                         output_dir=f'{str(BASE_DIR)}/temp/{file_item}')
         for item in os.listdir(f'{str(BASE_DIR)}/temp/{file_item}/images'):
             await remote_file_service.put_object(remote_file_path=f'images/{item}',
-                                                local_path=f'{str(BASE_DIR)}/temp/{file_item}/images/{item}')
+                                                 local_path=f'{str(BASE_DIR)}/temp/{file_item}/images/{item}')
         # 替换图片路径
         with open(f'{str(BASE_DIR)}/temp/{file_item}/{file_item}.md', 'r', encoding='utf-8') as f:
             md_content = f.read()  # 先读取内容
@@ -211,7 +211,8 @@ async def handle_update_sections(sections: list[int],
                     summary = summary_section(markdown_content=markdown_content).get('summary')
                     # put the summary into the file system
                     md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-                    await remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name, raw_data=summary)
+                    await remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name, 
+                                                                       raw_data=summary)
                     # update the section content
                     crud.section.update_section_by_section_id(db=db,
                                                               section_id=db_section.id,
