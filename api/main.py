@@ -11,6 +11,7 @@ LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s - %(name)s - %(lev
 LOGGING_CONFIG["formatters"]["access"]["fmt"] = "%(asctime)s - %(name)s - %(levelprefix)s - %(client_addr)s - %(request_line)s %(status_code)s"
 
 import io
+import os
 import time
 import yaml
 import schemas
@@ -33,6 +34,11 @@ from router.task import task_router
 from router.tp import tp_router
 from common.logger import exception_logger
 
+root_path = '/api/main-service'
+
+if os.getenv('ENV') == 'dev':
+    root_path = ''
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.redis = await redis_pool()
@@ -41,7 +47,7 @@ async def lifespan(app: FastAPI):
     await app.state.redis.close()
     
 app = FastAPI(
-        root_path='/api/main-service',
+        root_path=root_path,
         title="Revornix Main Backend",
         version="0.0.1",
         contact={

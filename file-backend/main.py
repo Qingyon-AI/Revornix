@@ -22,10 +22,15 @@ import yaml
 import time
 import schemas
 import functools
+import os
 
+root_path = '/api/file-service'
+
+if os.getenv('ENV') == 'dev':
+    root_path = ''
 
 app = FastAPI(
-    root_path='/api/file-service',
+    root_path=root_path,
     title="Revornix File System Backend",
     version="0.0.1",
     contact={
