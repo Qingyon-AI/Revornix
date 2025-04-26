@@ -4,6 +4,7 @@
 
 import schemas
 import crud
+from fastapi.encoders import jsonable_encoder
 from celery import group, chain
 from datetime import datetime, timezone
 from common.celery.app import update_ai_summary, add_embedding, update_website_document_markdown_with_jina, init_website_document_info, update_sections, update_file_document_markdown_with_mineru
@@ -14,6 +15,41 @@ from fastapi import APIRouter, Depends
 
 tp_router = APIRouter()
 
+@tp_router.post('/section/label/create', response_model=schemas.section.CreateLabelResponse)
+async def add_label(label_add_request: schemas.section.LabelAddRequest,
+                    db: Session = Depends(get_db), 
+                    user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
+    db_label = crud.section.create_label(db=db, 
+                                         name=label_add_request.name, 
+                                         user_id=user.id)
+    db.commit()
+    return schemas.section.CreateLabelResponse(id=db_label.id, name=db_label.name)
+
+@tp_router.post('/section/mine/all', response_model=schemas.section.AllMySectionsResponse)
+async def get_all_mine_sections(db: Session = Depends(get_db),
+                                user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
+    db_sections = crud.section.get_all_my_sections(db=db, 
+                                                   user_id=user.id)
+    return schemas.section.AllMySectionsResponse(data=db_sections)
+
+@tp_router.post("/document/label/list", response_model=schemas.document.LabelListResponse)
+async def list_label(db: Session = Depends(get_db), 
+                     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
+    labels = crud.document.get_user_labels_by_user_id(db=db, 
+                                                      user_id=user.id)
+    labels = jsonable_encoder(labels)
+    return schemas.document.LabelListResponse(data=labels)
+
+@tp_router.post("/document/label/create", response_model=schemas.document.DocumentCreateResponse)
+async def create_document_label(label_add_request: schemas.document.LabelAddRequest,
+                                db: Session = Depends(get_db),
+                                user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
+    db_label = crud.document.create_label(db=db, 
+                                          name=label_add_request.name, 
+                                          user_id=user.id)
+    db.commit()
+    return schemas.document.CreateLabelResponse(id=db_label.id, name=db_label.name)
+                       
 @tp_router.post("/document/create", response_model=schemas.document.DocumentCreateResponse)
 async def create_document(document_create_request: schemas.document.DocumentCreateRequest, 
                           db: Session = Depends(get_db), 
@@ -191,4 +227,4 @@ async def create_notification(create_notification_request: schemas.notification.
                                   content=create_notification_request.content,
                                   link=create_notification_request.link,
                                   notification_type=create_notification_request.notification_type)
-    return schemas.common.NormalResponse(message='ok')
+    return schemas.common.SuccessResponse()
