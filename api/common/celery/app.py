@@ -256,6 +256,10 @@ async def handle_update_ai_summary(document_id: int,
             if file_document is None:
                 raise Exception("Website document not found")
             markdown_content = await remote_file_service.get_object_content(file_path=file_document.md_file_name)
+        if db_document.category == 2:
+            quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
+                                                                                       document_id=document_id)
+            markdown_content = quick_note_document.content
         ai_summary_result = summary_document(markdown_content)
         crud.document.update_document_by_document_id(db=db,
                                                      document_id=document_id,
