@@ -159,7 +159,12 @@ async def transform_markdown(request: Request,
             if transform_task.status == 2:
                 raise Exception('The transform task is already finished, please refresh the page')
             if transform_task.status == 3:
-                ...
+                transform_task.status = 1
+                db.commit()
+                db.refresh(transform_task)
+                first_task = update_file_document_markdown_with_mineru.si(db_document.id, user.id)
+                task_chain = chain(first_task)
+                task_chain.apply_async()
     db.commit()
     return schemas.common.SuccessResponse()
         
@@ -334,6 +339,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                               status=0)
         db.commit()
         first_task = [add_embedding.si(db_document.id, user.id), update_sections.si(document_create_request.sections, db_document.id, user.id)]
+        second_tasks = []
         if document_create_request.auto_summary:
             second_tasks.append(update_ai_summary.si(db_document.id, user.id))
         task_chain = chain(group(first_task))

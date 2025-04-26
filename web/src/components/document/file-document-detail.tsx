@@ -66,7 +66,8 @@ const FileDocumentDetail = ({
 		}
 		setMarkdowningTransform(false);
 		queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
-		toast.success('我们已收到你的申请，请稍后再试');
+		toast.success('重试已提交');
+		setDelay(1000);
 	};
 
 	const onGetMarkdown = async () => {

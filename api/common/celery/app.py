@@ -89,6 +89,7 @@ async def handle_update_website_document_markdown_with_jian(document_id: int,
             raise Exception("Document transform task not found")
             
         db_task.status = 1
+        db.commit()
         db_website_document = crud.document.get_website_document_by_document_id(db=db, 
                                                                                 document_id=document_id)
         jina_back_data = transform_website_to_markdown_by_jina(url=db_website_document.url)
