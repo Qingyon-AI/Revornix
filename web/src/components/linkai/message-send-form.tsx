@@ -19,14 +19,15 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAIChatContext } from '@/provider/ai-chat-provider';
 import { Button } from '../ui/button';
-
-const formSchema = z.object({
-	message: z.string().min(1, '消息内容不得为空'),
-	deepSearch: z.boolean(),
-	searchWeb: z.boolean(),
-});
+import { useTranslations } from 'next-intl';
 
 const MessageSendForm = () => {
+	const t = useTranslations();
+	const formSchema = z.object({
+		message: z.string().min(1, t('revornix_ai_message_content_needed')),
+		deepSearch: z.boolean(),
+		searchWeb: z.boolean(),
+	});
 	const {
 		aiStatus,
 		setAiStatus,
@@ -70,7 +71,8 @@ const MessageSendForm = () => {
 				messageResponse.content.length > 0 &&
 				!messageResponse.reasoning_content?.length
 			) {
-				aiStatus !== '回答中' && setAiStatus('回答中');
+				aiStatus !== t('revornix_ai_responding') &&
+					setAiStatus(t('revornix_ai_responding'));
 				messageItem.content = messageItem.content + messageResponse.content;
 			}
 			if (
@@ -78,7 +80,8 @@ const MessageSendForm = () => {
 				messageResponse.reasoning_content.length > 0 &&
 				!messageResponse.content.length
 			) {
-				aiStatus !== '深度思考中' && setAiStatus('深度思考中');
+				aiStatus !== t('revornix_ai_deep_thinking') &&
+					setAiStatus(t('revornix_ai_deep_thinking'));
 				messageItem.reasoning_content =
 					messageItem.reasoning_content + messageResponse.reasoning_content;
 			}
@@ -116,7 +119,7 @@ const MessageSendForm = () => {
 			role: 'user',
 			finish_reason: 'stop',
 		};
-		// 如果当前没有会话
+		// if there is no current session
 		if (!currentSession && !sessions.length) {
 			const newSession = {
 				id: uniqueId(),
@@ -126,7 +129,7 @@ const MessageSendForm = () => {
 			addSession(newSession);
 			setCurrentSessionId(newSession.id);
 		}
-		// 创建一个新数组来更新状态
+		// create a new array to update the state
 		setTempMessages([...tempMessages(), newMessage]);
 		mutateSendMessage.mutate({
 			messages: [newMessage],
@@ -137,8 +140,8 @@ const MessageSendForm = () => {
 	};
 
 	const onFormValidateError = (errors: any) => {
-		console.log(errors);
-		toast.error('表单校验失败');
+		console.error(errors);
+		toast.error(t('form_validate_failed'));
 	};
 
 	const fetchStream = async ({
@@ -169,22 +172,22 @@ const MessageSendForm = () => {
 		const reader = response.body?.getReader();
 		const decoder = new TextDecoder();
 		if (!reader) return;
-		let buffer = ''; // 用于存储流式数据
+		let buffer = ''; // use to store partial data
 		while (true) {
 			const { done, value } = await reader.read();
 			if (done) break;
-			buffer += decoder.decode(value, { stream: true }); // 追加数据
+			buffer += decoder.decode(value, { stream: true }); // add data to the buffer
 			try {
-				// 处理多行 JSON 解析
+				// resove multiple lines JSON
 				const lines = buffer.split('\n');
-				buffer = lines.pop() || ''; // 可能是 JSON 片段，存回 buffer
+				buffer = lines.pop() || ''; // may json fragment, save back
 				for (const line of lines) {
 					if (!line.trim()) continue;
 					try {
 						const messageItem = JSON.parse(line);
 						addOrUpdateAIMessageToMessages(messageItem);
 					} catch (error) {
-						console.error('JSON 解析失败', line, error);
+						console.error('JSON decede error', line, error);
 					}
 				}
 			} catch (error) {
@@ -197,7 +200,7 @@ const MessageSendForm = () => {
 		mutationKey: ['sendAIMessage'],
 		mutationFn: fetchStream,
 		onError(error) {
-			toast.error('发送消息失败');
+			toast.error(t('revornix_ai_message_send_failed'));
 			console.error(error);
 		},
 	});
@@ -214,7 +217,7 @@ const MessageSendForm = () => {
 								<FormControl>
 									<Textarea
 										className='shadow-none p-0 border-none outline-none ring-0 focus-visible:ring-0 resize-none'
-										placeholder='输入想要提问的问题'
+										placeholder={t('revornix_ai_message_placeholder')}
 										{...field}
 										onKeyDown={(e) => {
 											if (e.metaKey && e.key === 'Enter') {
@@ -238,7 +241,7 @@ const MessageSendForm = () => {
 								render={({ field }) => (
 									<FormItem className='flex flex-row items-center'>
 										<FormLabel className='flex flex-row gap-1 items-center'>
-											深度思考
+											{t('revornix_ai_deep_thinking_status')}
 										</FormLabel>
 										<Switch
 											checked={field.value}
@@ -255,7 +258,7 @@ const MessageSendForm = () => {
 								render={({ field }) => (
 									<FormItem className='flex flex-row items-center'>
 										<FormLabel className='flex flex-row gap-1 items-center'>
-											网络搜索
+											{t('revornix_ai_network_status')}
 										</FormLabel>
 										<Switch
 											checked={field.value}

@@ -4,7 +4,7 @@ import { AIChatProvider } from '@/provider/ai-chat-provider';
 
 const AIChatPage = () => {
 	return (
-		// 补充这一层 确保内部组件渲染能获取到水合后的数据
+		// add this layer to ensure that the internal component rendering can get the hydrated data
 		<AIChatHydratedClient>
 			<AIChatProvider>
 				<RevornixAI />

@@ -1,6 +1,7 @@
 {
     "website_title": "Revornix",
     "website_description": "An Information Management Tool for the AI Era",
+    "form_validate_failed": "Form validation failed",
     "sidebar_add_document": "Add Document",
     "sidebar_dashboard": "Dashboard",
     "sidebar_hot_search": "Hot Searches",
@@ -48,5 +49,19 @@
     "setting_color_system": "Follow System",
     "setting_language_choose": "Please select a language",
     "setting_daily_notification": "Daily Summary Notification",
-    "setting_daily_notification_time": "Daily Summary Notification Time"
+    "setting_daily_notification_time": "Daily Summary Notification Time",
+    "hot_search_last_update": "Last updated ",
+    "revornix_ai_title": "Revornix AI",
+    "revornix_ai_base_knowledge": "Answers based on your knowledge base.",
+    "revornix_ai_add_session": "Add Session",
+    "revornix_ai_current_session": "Current Session",
+    "revornix_ai_history_sessions": "Session History",
+    "revornix_ai_history_sessions_description": "Here you can view all your chat records with Revornix AI.",
+    "revornix_ai_message_content_needed": "Please enter a message",
+    "revornix_ai_responding": "Responding",
+    "revornix_ai_deep_thinking": "Deep Thinking",
+    "revornix_ai_message_send_failed": "Message sending failed",
+    "revornix_ai_message_placeholder": "Enter the question you want to ask",
+    "revornix_ai_deep_thinking_status": "Deep Thinking",
+    "revornix_ai_network_status": "Network Search"
 }

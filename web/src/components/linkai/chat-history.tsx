@@ -16,8 +16,10 @@ import { SessionItem, useAiChatStore } from '@/store/ai-chat';
 import { cloneDeep } from 'lodash-es';
 import { format } from 'date-fns';
 import { useAIChatContext } from '@/provider/ai-chat-provider';
+import { useTranslations } from 'next-intl';
 
 const ChatHistory = () => {
+	const t = useTranslations();
 	const { setTempMessages } = useAIChatContext();
 	const sessions = useAiChatStore((state) => state.sessions);
 	const deleteSession = useAiChatStore((state) => state.deleteSession);
@@ -67,15 +69,15 @@ const ChatHistory = () => {
 		<Sheet open={showHistory} onOpenChange={setShowHistory}>
 			<SheetTrigger asChild>
 				<Button variant='outline'>
-					历史聊天
+					{t('revornix_ai_history_sessions')}
 					<Clock5 />
 				</Button>
 			</SheetTrigger>
 			<SheetContent>
 				<SheetHeader>
-					<SheetTitle>历史聊天</SheetTitle>
+					<SheetTitle>{t('revornix_ai_history_sessions')}</SheetTitle>
 					<SheetDescription>
-						这里可以查看你所有和 Revornix AI 的聊天记录。
+						{t('revornix_ai_history_sessions_description')}
 					</SheetDescription>
 				</SheetHeader>
 				<div className='px-3 flex flex-col gap-2 overflow-auto'>
@@ -93,7 +95,7 @@ const ChatHistory = () => {
 										<div className='flex flex-row gap-2 items-center'>
 											<p className='line-clamp-1'>{session.title}</p>
 											{session.id === currentSessionId && (
-												<Badge>当前会话</Badge>
+												<Badge>{t('revornix_ai_current_session')}</Badge>
 											)}
 										</div>
 										<Button

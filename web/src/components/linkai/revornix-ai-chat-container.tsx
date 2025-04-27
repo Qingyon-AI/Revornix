@@ -1,14 +1,15 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Separator } from '@/components/ui/separator';
 import ChatHistory from './chat-history';
 import { useAIChatContext } from '@/provider/ai-chat-provider';
 import MessageCard from './message-card';
 import MessageSendForm from './message-send-form';
 import CreateSessionButton from './create-session-button';
+import { useTranslations } from 'next-intl';
 
 const RevornixAI = () => {
+	const t = useTranslations();
 	const {
 		tempMessages,
 		currentSessionId,
@@ -35,10 +36,10 @@ const RevornixAI = () => {
 				<div className='flex flex-row justify-between items-center'>
 					<div className='flex flex-col gap-1'>
 						<div className='flex flex-row gap-2 items-center'>
-							<span className='font-bold text-xl'>Link AI</span>
+							<span className='font-bold text-xl'>{t('revornix_ai_title')}</span>
 						</div>
 						<div className='text-xs text-muted-foreground'>
-							基于你的知识库来回答。
+							{t('revornix_ai_base_knowledge')}
 						</div>
 					</div>
 					<div className='flex items-center gap-5'>

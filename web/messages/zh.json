@@ -1,6 +1,7 @@
 {
     "website_title": "Revornix",
     "website_description": "AI时代的资讯管理工具",
+    "form_validate_failed": "表单校验失败",
     "sidebar_add_document": "增加文稿",
     "sidebar_dashboard": "仪表盘",
     "sidebar_hot_search": "热搜集合",
@@ -48,5 +49,19 @@
     "setting_color_system": "跟随系统",
     "setting_language_choose": "请选择语言",
     "setting_daily_notification": "每日总结通知",
-    "setting_daily_notification_time": "每日总结通知时间"
+    "setting_daily_notification_time": "每日总结通知时间",
+    "hot_search_last_update": "最后更新时间",
+    "revornix_ai_title": "Revornix AI",
+    "revornix_ai_base_knowledge": "基于你的知识库来回答。",
+    "revornix_ai_add_session": "添加会话",
+    "revornix_ai_current_session": "当前会话",
+    "revornix_ai_history_sessions": "历史会话",
+    "revornix_ai_history_sessions_description": "这里可以查看你所有和 Revornix AI 的聊天记录。",
+    "revornix_ai_message_content_needed": "请输入消息内容",
+    "revornix_ai_responding": "回答中",
+    "revornix_ai_deep_thinking": "深度思考中",
+    "revornix_ai_message_send_failed": "消息发送失败",
+    "revornix_ai_message_placeholder": "输入想要提问的问题",
+    "revornix_ai_deep_thinking_status": "深度思考",
+    "revornix_ai_network_status": "网络搜索"
 }

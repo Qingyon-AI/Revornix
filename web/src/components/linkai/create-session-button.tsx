@@ -2,8 +2,10 @@ import { useAIChatContext } from '@/provider/ai-chat-provider';
 import { Button } from '../ui/button';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
+import { useTranslations } from 'next-intl';
 
 const CreateSessionButton = () => {
+	const t = useTranslations();
 	const { setTempMessages, addSession, setCurrentSessionId } =
 		useAIChatContext();
 	const handleCreateNewSession = () => {
@@ -16,7 +18,11 @@ const CreateSessionButton = () => {
 		setCurrentSessionId(newSession.id);
 		setTempMessages([]);
 	};
-	return <Button onClick={handleCreateNewSession}>新建会话</Button>;
+	return (
+		<Button onClick={handleCreateNewSession}>
+			{t('revornix_ai_add_session')}
+		</Button>
+	);
 };
 
 export default CreateSessionButton;

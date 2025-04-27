@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { formatDistance } from 'date-fns';
 import { zhCN } from 'date-fns/locale/zh-CN';
+import { enUS } from 'date-fns/locale/en-US';
 import { Website } from '@/app/(public)/hot-search/page';
 import {
 	Dialog,
@@ -20,8 +21,12 @@ import {
 	DialogFooter,
 } from '../ui/dialog';
 import { memo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 
 const HotSearchCard = ({ website }: { website: Website }) => {
+	const locale = useLocale();
+	const t = useTranslations();
+
 	const [showDialog, setShowDialog] = useState(false);
 
 	const handleShowMore = () => {
@@ -61,10 +66,10 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 					</div>
 					<DialogFooter>
 						<div className='text-xs text-muted-foreground'>
-							最近更新于：
+							{t('hot_search_last_update')}
 							{formatDistance(new Date(website.updateTime), new Date(), {
 								addSuffix: true,
-								locale: zhCN,
+								locale: locale === 'zh' ? zhCN : enUS,
 							})}
 						</div>
 					</DialogFooter>
@@ -107,7 +112,7 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 					<div className='text-xs text-muted-foreground'>
 						{formatDistance(new Date(website.updateTime), new Date(), {
 							addSuffix: true,
-							locale: zhCN,
+							locale: locale === 'zh' ? zhCN : enUS,
 						})}
 					</div>
 				</CardFooter>
