@@ -11,12 +11,13 @@ import {
 } from '@/service/notification';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { BadgeCheck, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useGetSet } from 'react-use';
 import { toast } from 'sonner';
 
 const NotificationsPage = () => {
+	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
@@ -50,7 +51,7 @@ const NotificationsPage = () => {
 	const mutate = useMutation({
 		mutationFn: readAllNotifications,
 		onSuccess: () => {
-			toast.success('已全部标记为已读');
+			toast.success(t('notification_all_marked_read_done'));
 			queryClient.invalidateQueries({
 				queryKey: ['searchMyNotifications', keyword],
 			});
@@ -71,13 +72,15 @@ const NotificationsPage = () => {
 			<Tabs defaultValue='systemAlert' className='h-full flex flex-col'>
 				<div className='w-full justify-between items-center flex gap-4'>
 					<TabsList>
-						<TabsTrigger value='systemAlert'>系统通知</TabsTrigger>
+						<TabsTrigger value='systemAlert'>
+							{t('notification_system')}
+						</TabsTrigger>
 					</TabsList>
 					<Button
 						disabled={mutate.isPending}
 						variant={'secondary'}
 						onClick={() => mutate.mutate()}>
-						一键已读
+						{t('notification_all_marked_read')}
 						<BadgeCheck />
 						{mutate.isPending && <Loader2 className='animate-spin' />}
 					</Button>
@@ -86,14 +89,15 @@ const NotificationsPage = () => {
 					{isError && (
 						<div className='flex flex-col items-center justify-center h-full'>
 							<div className='text-sm text-muted-foregroun flex flex-col items-center justify-center gap-2'>
-								<p>哦不～</p>
-								<p>后台出问题啦，请稍后再试</p>
+								<p>{t('something_wrong')}</p>
 							</div>
 						</div>
 					)}
 					{isSuccess && notifications && notifications.length === 0 && (
 						<div className='flex flex-col items-center justify-center h-full'>
-							<p className='text-sm text-muted-foreground'>暂无内容</p>
+							<p className='text-sm text-muted-foreground'>
+								{t('notification_empty')}
+							</p>
 						</div>
 					)}
 					<div className='flex flex-col gap-3'>

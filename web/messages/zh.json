@@ -1,6 +1,7 @@
 {
     "website_title": "Revornix",
     "website_description": "AI时代的资讯管理工具",
+    "something_wrong": "出错了，请稍后再试",
     "form_validate_failed": "表单校验失败",
     "sidebar_add_document": "增加文稿",
     "sidebar_dashboard": "仪表盘",
@@ -63,5 +64,22 @@
     "revornix_ai_message_send_failed": "消息发送失败",
     "revornix_ai_message_placeholder": "输入想要提问的问题",
     "revornix_ai_deep_thinking_status": "深度思考",
-    "revornix_ai_network_status": "网络搜索"
+    "revornix_ai_network_status": "网络搜索",
+    "search_global": "全文搜索",
+    "search_placeholder": "请输入想搜索的关键词",
+    "search_empty": "找不到相关文档",
+    "search_recommend": "推荐结果",
+    "search_note": "注意：向量化搜索结果可能不准确，请根据实际需求进行筛选",
+    "notification_all_marked_read": "一键已读",
+    "notification_all_marked_read_done": "已全部标记为已读",
+    "notification_system": "系统通知",
+    "notification_link": "链接",
+    "notification_empty": "暂无通知",
+    "notification_unread": "未读",
+    "notification_read": "已读",
+    "notification_mark_as_read": "标记为已读",
+    "notification_marked_as_read": "已标记为已读",
+    "notification_mark_as_unread": "标记为未读",
+    "notification_marked_as_unread": "已标记为未读",
+    "notification_view_with_link_params": "前往{notification_link}查看"
 }

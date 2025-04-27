@@ -1,6 +1,7 @@
 {
     "website_title": "Revornix",
     "website_description": "An Information Management Tool for the AI Era",
+    "something_wrong": "Something went wrong, Please try again later",
     "form_validate_failed": "Form validation failed",
     "sidebar_add_document": "Add Document",
     "sidebar_dashboard": "Dashboard",
@@ -63,5 +64,22 @@
     "revornix_ai_message_send_failed": "Message sending failed",
     "revornix_ai_message_placeholder": "Enter the question you want to ask",
     "revornix_ai_deep_thinking_status": "Deep Thinking",
-    "revornix_ai_network_status": "Network Search"
+    "revornix_ai_network_status": "Network Search",
+    "search_global": "Full-Text Search",
+    "search_placeholder": "Please enter keywords to search",
+    "search_empty": "No related documents found",
+    "search_recommend": "Recommended Results",
+    "search_note": "Note: Vectorized search results may be inaccurate. Please filter according to your actual needs.",
+    "notification_all_marked_read": "Mark All as Read",
+    "notification_all_marked_read_done": "All marked as read",
+    "notification_system": "System Notification",
+    "notification_link": "Link",
+    "notification_empty": "No notifications",
+    "notification_unread": "Unread",
+    "notification_read": "Read",
+    "notification_mark_as_read": "Mark as Read",
+    "notification_marked_as_read": "Marked as Read",
+    "notification_mark_as_unread": "Mark as Unread",
+    "notification_marked_as_unread": "Marked as Unread",
+    "notification_view_with_link_params": "View at {notification_link}"
 }

@@ -14,8 +14,10 @@ import { Notification } from '@/generated';
 import { useMutation } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { CardDescription } from '../ui/card';
+import { useTranslations } from 'next-intl';
 
 const NotificationCard = ({ notification }: { notification: Notification }) => {
+	const t = useTranslations();
 	const mutate = useMutation({
 		mutationKey: ['readNotification', notification.id],
 		mutationFn: readNotifications,
@@ -30,15 +32,15 @@ const NotificationCard = ({ notification }: { notification: Notification }) => {
 		},
 		onSuccess: (data) => {
 			if (notification.read_at) {
-				toast.success('已标记为已读');
+				toast.success(t('notification_marked_as_read'));
 			} else {
-				toast.success('已标记为未读');
+				toast.success(t('notification_marked_as_unread'));
 			}
 			setShowNotification(false);
 		},
 		onError: (error, variables, context) => {
 			if (!notification || !context?.prevNotification) return;
-			notification = context?.prevNotification; // 恢复之前的值
+			notification = context?.prevNotification;
 			toast.error(error.message);
 		},
 	});
@@ -57,7 +59,9 @@ const NotificationCard = ({ notification }: { notification: Notification }) => {
 								<Button
 									className='text-xs p-0 w-fit h-fit underline text-muted-foreground'
 									variant={'link'}>
-									前往{notification.link}查看
+									{t('notification_view_with_link_params', {
+										notification_link: notification.link,
+									})}
 								</Button>
 							</Link>
 						)}
@@ -70,7 +74,7 @@ const NotificationCard = ({ notification }: { notification: Notification }) => {
 										status: false,
 									});
 								}}>
-								标为未读
+								{t('notification_mark_as_unread')}
 							</Button>
 						) : (
 							<Button
@@ -80,7 +84,7 @@ const NotificationCard = ({ notification }: { notification: Notification }) => {
 										status: true,
 									});
 								}}>
-								标为已读
+								{t('notification_mark_as_read')}
 							</Button>
 						)}
 					</DialogFooter>
@@ -101,7 +105,7 @@ const NotificationCard = ({ notification }: { notification: Notification }) => {
 							<Button
 								className='text-xs p-0 w-fit h-fit underline'
 								variant={'link'}>
-								链接：{notification.link}
+								{t('notification_link')}：{notification.link}
 							</Button>
 						</Link>
 					)}
@@ -111,9 +115,9 @@ const NotificationCard = ({ notification }: { notification: Notification }) => {
 				</div>
 				<div className='text-xs w-12 text-center'>
 					{notification.read_at ? (
-						<p className='text-muted-foreground'>已读</p>
+						<p className='text-muted-foreground'>{t('notification_read')}</p>
 					) : (
-						<p className='text-red-500 font-bold'>未读</p>
+						<p className='text-red-500 font-bold'>{t('notification_unread')}</p>
 					)}
 				</div>
 			</div>

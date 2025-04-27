@@ -7,7 +7,6 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
-	CommandSeparator,
 } from '@/components/ui/command';
 import { Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -17,8 +16,10 @@ import { searchDocumentVector } from '@/service/document';
 import { useRouter } from 'nextjs-toploader/app';
 import { Skeleton } from '../ui/skeleton';
 import { debounce } from 'lodash-es';
+import { useTranslations } from 'next-intl';
 
 const CommandPanel = () => {
+	const t = useTranslations();
 	const router = useRouter();
 	const [inputQuery, setInputQuery] = useState(''); // 绑定输入框
 	const [debouncedQuery, setDebouncedQuery] = useState(''); // 仅用于触发搜索 API
@@ -72,7 +73,7 @@ const CommandPanel = () => {
 				className='hidden md:flex text-muted-foreground'
 				variant={'outline'}
 				onClick={() => setShowCommandPanel(true)}>
-				<span className='mr-2'>全文搜索</span>
+				<span className='mr-2'>{t('search_global')}</span>
 				<kbd className='pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100'>
 					<span className='text-xs'>⌘</span>K
 				</kbd>
@@ -84,7 +85,7 @@ const CommandPanel = () => {
 					return 1;
 				}}>
 				<CommandInput
-					placeholder='请输入想搜索的关键词'
+					placeholder={t('search_placeholder')}
 					value={inputQuery}
 					onValueChange={(value) => {
 						setInputQuery(value); // 直接更新输入框，不触发请求
@@ -100,10 +101,10 @@ const CommandPanel = () => {
 						</div>
 					)}
 					{isSuccess && !isFetching && !data.documents.length && (
-						<CommandEmpty>找不到相关文档</CommandEmpty>
+						<CommandEmpty>{t('search_empty')}</CommandEmpty>
 					)}
 					{isSuccess && !isFetching && data && (
-						<CommandGroup heading='推荐结果'>
+						<CommandGroup heading={t('search_recommend')}>
 							{data?.documents.map((document) => {
 								return (
 									<CommandItem
@@ -120,7 +121,7 @@ const CommandPanel = () => {
 						</CommandGroup>
 					)}
 					<p className='text-muted-foreground text-center p-3 text-xs'>
-						注意：向量化搜索结果可能不准确，请根据实际需求进行筛选
+						{t('search_note')}
 					</p>
 				</CommandList>
 			</CommandDialog>
