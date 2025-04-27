@@ -3,6 +3,7 @@
 import { ModeToggle } from '@/components/app/mode-toggle';
 import DailyReportStatus from '@/components/setting/daily-report-status';
 import DailyReportTime from '@/components/setting/daily-report-time';
+import LanguageChange from '@/components/setting/language-change';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -21,6 +22,13 @@ const SettingPage = () => {
 						<Label className='flex flex-col gap-2 items-start'>颜色风格</Label>
 						<div className='flex flex-col gap-2'>
 							<ModeToggle />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>语言</Label>
+						<div className='flex flex-col gap-2'>
+							<LanguageChange />
 						</div>
 					</div>
 					{/* <Separator />

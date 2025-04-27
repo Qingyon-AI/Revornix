@@ -1,7 +1,6 @@
 'use client';
 
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
-
 import {
 	Card,
 	CardContent,
@@ -20,6 +19,7 @@ import { summaryMonthDocumentCount } from '@/service/document';
 import { format, subDays } from 'date-fns';
 import { useMemo } from 'react';
 import { Skeleton } from '../ui/skeleton';
+import { useTranslations } from 'next-intl';
 
 const chartConfig = {
 	total: {
@@ -29,6 +29,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const DocumentMonthSummary = () => {
+	const t = useTranslations();
 	const { data, isFetching } = useQuery({
 		queryKey: ['document-month-summary'],
 		queryFn: async () => {
@@ -58,7 +59,7 @@ const DocumentMonthSummary = () => {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>最近一月记录</CardTitle>
+				<CardTitle>{t('month_summary_title')}</CardTitle>
 				<CardDescription>
 					这里会以图表形式显示你最近一个月的文档阅读基本概况
 				</CardDescription>
