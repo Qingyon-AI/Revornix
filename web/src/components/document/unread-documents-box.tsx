@@ -12,17 +12,16 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import StackedDocuments from '@/components/dashboard/stacked-documents';
+import { useTranslations } from 'next-intl';
 
 const UnReadDocumentBox = () => {
 	const router = useRouter();
-	const {
-		data: unReadDocuments,
-		isFetching: isFetchingUnReadDocuments,
-		isSuccess: isSuccessUnReadDocuments,
-	} = useQuery({
-		queryKey: ['searchUserUnreadDocument'],
-		queryFn: () => searchUserUnreadDocument({ limit: 10, keyword: '' }),
-	});
+	const t = useTranslations();
+	const { data: unReadDocuments, isFetching: isFetchingUnReadDocuments } =
+		useQuery({
+			queryKey: ['searchUserUnreadDocument'],
+			queryFn: () => searchUserUnreadDocument({ limit: 10, keyword: '' }),
+		});
 	return (
 		<>
 			<Card
@@ -32,14 +31,14 @@ const UnReadDocumentBox = () => {
 				}}>
 				<CardHeader>
 					<CardTitle className='flex flex-row items-center'>
-						<span>未读文档</span>
+						<span>{t('unread_documents_card_title')}</span>
 						<span className='ml-2 font-bold text-sm'>
 							{isFetchingUnReadDocuments && <Skeleton className='size-4' />}
 							{!isFetchingUnReadDocuments && unReadDocuments?.total}
 						</span>
 					</CardTitle>
 					<CardDescription>
-						添加后，还未阅读的文档即会显示在这里。
+						{t('unread_documents_card_description')}
 					</CardDescription>
 				</CardHeader>
 				<CardContent className='flex-1'>
@@ -51,7 +50,7 @@ const UnReadDocumentBox = () => {
 						)}
 					{unReadDocuments?.total === 0 && !isFetchingUnReadDocuments && (
 						<span className='h-full text-xs text-muted-foreground flex justify-center items-center'>
-							暂无未读文档
+							{t('no_unread_documents')}
 						</span>
 					)}
 				</CardContent>

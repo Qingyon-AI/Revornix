@@ -4,29 +4,32 @@ import { ModeToggle } from '@/components/app/mode-toggle';
 import DailyReportStatus from '@/components/setting/daily-report-status';
 import DailyReportTime from '@/components/setting/daily-report-time';
 import LanguageChange from '@/components/setting/language-change';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
 import { useUserContext } from '@/provider/user-provider';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 const SettingPage = () => {
+	const t = useTranslations();
 	const { userInfo } = useUserContext();
 	return (
 		<div className='px-5 pb-5'>
 			<Card>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>颜色风格</Label>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_color')}
+						</Label>
 						<div className='flex flex-col gap-2'>
 							<ModeToggle />
 						</div>
 					</div>
 					<Separator />
 					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>语言</Label>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_language_choose')}
+						</Label>
 						<div className='flex flex-col gap-2'>
 							<LanguageChange />
 						</div>
@@ -45,7 +48,7 @@ const SettingPage = () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							每日总结通知
+							{t('setting_daily_notification')}
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<DailyReportStatus />
@@ -56,7 +59,7 @@ const SettingPage = () => {
 							<Separator />
 							<div className='flex justify-between items-center'>
 								<Label className='flex flex-col gap-2 items-start'>
-									每日总结通知时间
+									{t('setting_daily_notification_time')}
 								</Label>
 								<div className='flex flex-col gap-2'>
 									<DailyReportTime />

@@ -3,17 +3,16 @@ import 'react-photo-view/dist/react-photo-view.css';
 import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/provider/theme-provider';
-import { appName, appDescription } from '@/config/base';
 import { UserContextProvider } from '@/provider/user-provider';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import ReactQueryProvider from '@/provider/react-query-privider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
-import { getTranslations, getMessages } from 'next-intl/server';
+import { getMessages } from 'next-intl/server';
 
 export const metadata: Metadata = {
-	title: appName,
-	description: appDescription,
+	title: 'Revornix',
+	description: 'An Information Management Tool for the AI Era',
 };
 
 export default async function RootLayout({

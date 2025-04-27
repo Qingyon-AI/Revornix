@@ -12,17 +12,17 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import StackedDocuments from '@/components/dashboard/stacked-documents';
+import { useTranslations } from 'next-intl';
 
 const StarDocumentBox = () => {
+	const t = useTranslations();
 	const router = useRouter();
-	const {
-		data: starDocuments,
-		isFetching: isFetchingStarDocuments,
-		isSuccess: isSuccessStarDocuments,
-	} = useQuery({
-		queryKey: ['searchMyStarDocument'],
-		queryFn: () => searchUserStarDocument({ limit: 10, keyword: '' }),
-	});
+	const { data: starDocuments, isFetching: isFetchingStarDocuments } = useQuery(
+		{
+			queryKey: ['searchMyStarDocument'],
+			queryFn: () => searchUserStarDocument({ limit: 10, keyword: '' }),
+		}
+	);
 	return (
 		<Card
 			className='cursor-pointer'
@@ -31,13 +31,15 @@ const StarDocumentBox = () => {
 			}}>
 			<CardHeader>
 				<CardTitle className='flex flex-row items-center'>
-					<span>星标文档</span>
+					<span>{t('star_documents_card_title')}</span>
 					<span className='ml-2 font-bold text-sm'>
 						{isFetchingStarDocuments && <Skeleton className='size-4' />}
 						{!isFetchingStarDocuments && starDocuments?.total}
 					</span>
 				</CardTitle>
-				<CardDescription>收藏的文档</CardDescription>
+				<CardDescription>
+					{t('star_documents_card_description')}
+				</CardDescription>
 			</CardHeader>
 			<CardContent className='flex-1'>
 				{isFetchingStarDocuments && <Skeleton className='w-full h-24' />}
@@ -48,7 +50,7 @@ const StarDocumentBox = () => {
 					)}
 				{starDocuments?.total === 0 && !isFetchingStarDocuments && (
 					<span className='h-full text-xs text-muted-foreground flex justify-center items-center'>
-						暂无星标文档
+						{t('no_star_documents')}
 					</span>
 				)}
 			</CardContent>

@@ -1,13 +1,6 @@
 'use client';
 
-import {
-	BadgeCheck,
-	Bell,
-	ChevronsUpDown,
-	LogOut,
-	Sparkles,
-} from 'lucide-react';
-
+import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
 	DropdownMenu,
@@ -29,14 +22,14 @@ import { useRouter } from 'nextjs-toploader/app';
 import { toast } from 'sonner';
 import { useUserContext } from '@/provider/user-provider';
 import { useWebSocket } from 'ahooks';
-import { Badge } from '../ui/badge';
 import { NOTIFICATION_WS_API_PREFIX } from '@/config/api';
 import { getQueryClient } from '@/lib/get-query-client';
-import { useQuery } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
-export function NavUser({}) {
+export function NavUser() {
+	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const router = useRouter();
 	const { isMobile } = useSidebar();
@@ -55,17 +48,17 @@ export function NavUser({}) {
 			let action = null;
 			if (notification.link) {
 				action = {
-					label: '前往查看',
+					label: t('notification_to_view'),
 					onClick: () => router.push(notification.link),
 				};
 			}
 			if (Notification.permission === 'granted') {
-				new Notification('收到一条新通知', {
+				new Notification(t('notification_receive'), {
 					body: notification.content,
 					icon: 'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202504272029275.png',
 				});
 			}
-			toast.info('收到一条新通知', {
+			toast.info(t('notification_receive'), {
 				description: notification.content,
 				action: action,
 			});
@@ -103,7 +96,7 @@ export function NavUser({}) {
 										{userInfo.nickname}
 									</span>
 									<span className='line-clamp-1 text-xs text-muted-foreground'>
-										{userInfo.slogan ? userInfo.slogan : '暂无签名'}
+										{userInfo.slogan ? userInfo.slogan : t('user_no_slogan')}
 									</span>
 								</div>
 								<ChevronsUpDown className='ml-auto size-4' />
@@ -129,7 +122,7 @@ export function NavUser({}) {
 											{userInfo.nickname}
 										</span>
 										<span className='line-clamp-1 text-xs text-muted-foreground'>
-											{userInfo.slogan ? userInfo.slogan : '暂无签名'}
+											{userInfo.slogan ? userInfo.slogan : t('user_no_slogan')}
 										</span>
 									</div>
 								</div>
@@ -140,7 +133,7 @@ export function NavUser({}) {
 											className='shadow-none w-full'
 											size={'sm'}>
 											<span className='text-muted-foreground text-xs'>
-												粉丝
+												{t('user_fans')}
 											</span>
 											<span className='font-bold ml-1'>{userInfo.fans}</span>
 										</Button>
@@ -151,7 +144,7 @@ export function NavUser({}) {
 											className='shadow-none w-full'
 											size={'sm'}>
 											<span className='text-muted-foreground text-xs'>
-												关注
+												{t('user_follows')}
 											</span>
 											<span className='font-bold ml-1'>{userInfo.follows}</span>
 										</Button>
@@ -162,18 +155,18 @@ export function NavUser({}) {
 							<DropdownMenuGroup>
 								<DropdownMenuItem onClick={() => router.push('/account')}>
 									<BadgeCheck />
-									账户
+									{t('user_account')}
 								</DropdownMenuItem>
 								<DropdownMenuItem
 									onClick={() => router.push('/account/notifications')}>
 									<Bell />
-									通知
+									{t('user_notifications')}
 								</DropdownMenuItem>
 							</DropdownMenuGroup>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem onClick={onLogout}>
 								<LogOut />
-								退出
+								{t('user_logout')}
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>

@@ -16,7 +16,7 @@ const LanguageChange = () => {
 	return (
 		<Select value={locale} onValueChange={(value) => setUserLocale(value)}>
 			<SelectTrigger>
-				<SelectValue placeholder={t('language_choose')} />
+				<SelectValue placeholder={t('setting_language_choose')} />
 			</SelectTrigger>
 			<SelectContent>
 				<SelectGroup>

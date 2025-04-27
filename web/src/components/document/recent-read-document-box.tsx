@@ -12,13 +12,14 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import StackedDocuments from '@/components/dashboard/stacked-documents';
+import { useTranslations } from 'next-intl';
 
 const RecentReadDocumentBox = () => {
+	const t = useTranslations();
 	const router = useRouter();
 	const {
 		data: recentReadDocuments,
 		isFetching: isFetchingRecentReadDocuments,
-		isSuccess: isSuccessRecentReadDocuments,
 	} = useQuery({
 		queryKey: ['searchUserRecentReadDocument'],
 		queryFn: () => searchUserRecentReadDocument({ limit: 10, keyword: '' }),
@@ -31,13 +32,15 @@ const RecentReadDocumentBox = () => {
 			}}>
 			<CardHeader>
 				<CardTitle className='flex flex-row items-center'>
-					<span>最近阅读</span>
+					<span>{t('recent_read_documents_card_title')}</span>
 					<span className='ml-2 font-bold text-sm'>
 						{isFetchingRecentReadDocuments && <Skeleton className='size-4' />}
 						{!isFetchingRecentReadDocuments && recentReadDocuments?.total}
 					</span>
 				</CardTitle>
-				<CardDescription>这里会显示近期阅读记录</CardDescription>
+				<CardDescription>
+					{t('recent_read_documents_card_description')}
+				</CardDescription>
 			</CardHeader>
 			<CardContent className='flex-1'>
 				{isFetchingRecentReadDocuments && <Skeleton className='w-full h-24' />}
@@ -48,7 +51,7 @@ const RecentReadDocumentBox = () => {
 					)}
 				{recentReadDocuments?.total === 0 && !isFetchingRecentReadDocuments && (
 					<span className='h-full text-xs text-muted-foreground flex justify-center items-center'>
-						暂无最近阅读文档
+						{t('no_recent_read_documents')}
 					</span>
 				)}
 			</CardContent>

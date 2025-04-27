@@ -21,15 +21,15 @@ import { useMemo } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useTranslations } from 'next-intl';
 
-const chartConfig = {
-	total: {
-		label: '累计',
-		color: 'var(--chart-2)',
-	},
-} satisfies ChartConfig;
-
 const DocumentMonthSummary = () => {
 	const t = useTranslations();
+
+	const chartConfig = {
+		total: {
+			label: t('month_summary_total_label'),
+			color: 'var(--chart-2)',
+		},
+	} satisfies ChartConfig;
 	const { data, isFetching } = useQuery({
 		queryKey: ['document-month-summary'],
 		queryFn: async () => {
@@ -60,9 +60,7 @@ const DocumentMonthSummary = () => {
 		<Card>
 			<CardHeader>
 				<CardTitle>{t('month_summary_title')}</CardTitle>
-				<CardDescription>
-					这里会以图表形式显示你最近一个月的文档阅读基本概况
-				</CardDescription>
+				<CardDescription>{t('month_summary_description')}</CardDescription>
 			</CardHeader>
 			<CardContent>
 				{isFetching && <Skeleton className='w-full h-52' />}
