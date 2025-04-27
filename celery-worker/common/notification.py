@@ -1,8 +1,6 @@
 import crud
-import json
-from fastapi.encoders import jsonable_encoder
 from common.sql import SessionLocal
-from common.websocket import notificationManager
+from common.mail import send_email
 from common.logger import log_exception, exception_logger
 
 async def union_send_notification(user_id: int, 
@@ -20,13 +18,11 @@ async def union_send_notification(user_id: int,
                                                                 content=content,
                                                                 notification_type=notification_type,
                                                                 link=link)
-        user_websocket = notificationManager.get_connection(user.uuid)
-        if user_websocket:
-            # 网站端发送消息
-            await user_websocket.send_text(json.dumps({"type": "notification", "notification": jsonable_encoder(db_notification)}, ensure_ascii=False))
-        # 邮箱发送消息
-        db_email_user = crud.user.get_email_user_by_user_id(db=db,
-                                                            user_id=user_id)
+        email_user = crud.user.get_email_user_by_user_id(db=db, 
+                                                         user_id=user_id)
+        if email_user:
+            # 邮件发送消息
+            send_email(email_user.email, title, content)
         db.commit()
     except Exception as e:
         exception_logger.error(f"记载报错，错误{e}")

@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from schemas.error import CustomException
 from common.common import create_token
 from common.apscheduler.app import scheduler
-from common.celery.app import send_daily_report
+from common.apscheduler.app import send_daily_report
 from common.dependencies import get_db
 from common.hash import verify_password
 from common.dependencies import get_current_user, get_db
@@ -31,9 +31,10 @@ async def daily_report(daily_report_status_change_request: schemas.user.DailyRep
             db_report_task = crud.task.create_cron_task(db=db,
                                                         user_id=user.id,
                                                         cron_expr=cron_expr,
-                                                        title='每日报告')
+                                                        title='每日报告',
+                                                        func_id=1)
             time_obj = datetime.strptime(daily_report_status_change_request.run_time, "%H:%M:%S")
-            scheduler.add_job(func=lambda user_id: send_daily_report.apply_async(args=[user_id]), 
+            scheduler.add_job(func=lambda user_id: send_daily_report(user_id), 
                               args=[user.id],
                               trigger='cron', 
                               id=str(db_report_task.id), 
@@ -56,9 +57,9 @@ async def daily_report(daily_report_status_change_request: schemas.user.DailyRep
         if db_report_task is None:
             raise Exception('The daily report task does not exist')
         else:
-            crud.task.delete_tasks_by_task_ids(db=db,
-                                               user_id=user.id,
-                                               task_ids=[db_report_task.id])
+            crud.task.delete_regular_tasks_by_task_ids(db=db,
+                                                       user_id=user.id,
+                                                       task_ids=[db_report_task.id])
             scheduler.remove_job(job_id=str(db_report_task.id))
     db.commit()
     return schemas.common.NormalResponse()

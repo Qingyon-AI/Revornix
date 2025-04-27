@@ -351,14 +351,6 @@ def init_website_document_info(document_id: int, user_id: int):
     asyncio.run(handle_init_website_document_info(document_id=document_id))
 
 @celery_app.task
-def send_daily_report(user_id: int):
-    asyncio.run(union_send_notification(user_id=user_id,
-                                        title=f'今日总结已生成，请前往查看',
-                                        content='今日总结已生成，请前往查看',
-                                        link='/section/today',
-                                        notification_type=0))
-
-@celery_app.task
 def create_delete_temp_file_task(path: str):
     delay = 60
     delete_temp_file_with_delay(path, delay)

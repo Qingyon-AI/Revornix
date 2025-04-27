@@ -50,7 +50,6 @@ export function NavUser({}) {
 	const notificationWebsocket = useWebSocket(NOTIFICATION_WS_API_PREFIX!, {
 		manual: true,
 		onMessage: (e) => {
-			console.log(e);
 			const message = JSON.parse(e.data);
 			const notification = message.notification;
 			let action = null;
@@ -59,6 +58,12 @@ export function NavUser({}) {
 					label: '前往查看',
 					onClick: () => router.push(notification.link),
 				};
+			}
+			if (Notification.permission === 'granted') {
+				new Notification('收到一条新通知', {
+					body: notification.content,
+					icon: 'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202504272029275.png',
+				});
 			}
 			toast.info('收到一条新通知', {
 				description: notification.content,

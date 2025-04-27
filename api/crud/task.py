@@ -45,7 +45,7 @@ def create_cron_task(db: Session,
                                    user_id=user_id,
                                    description=description,
                                    cron_expr=cron_expr,
-                                   task_type=2,
+                                   task_type=1,
                                    func_id=func_id,
                                    create_time=now,
                                    update_time=now)
