@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { uploadFile } from '@/service/file';
+import { useTranslations } from 'next-intl';
 
 const FileUpload = ({
 	onSuccess,
@@ -18,6 +19,7 @@ const FileUpload = ({
 	onDelete?: () => void;
 	className?: string;
 }) => {
+	const t = useTranslations();
 	const [file, setFile] = useState<File | null>(null);
 	const upload = useRef<HTMLInputElement>(null);
 	const [uploadingStatus, setUploadingStatus] = useState<string | null>();
@@ -73,7 +75,7 @@ const FileUpload = ({
 			{!uploadingStatus && (
 				<>
 					<FileIcon />
-					上传文件
+					{t('document_create_file_upload')}
 				</>
 			)}
 			<input

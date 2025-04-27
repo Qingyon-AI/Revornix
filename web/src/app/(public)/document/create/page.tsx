@@ -9,22 +9,26 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTranslations } from 'next-intl';
 
 const CreatePage = () => {
+	const t = useTranslations();
 	return (
 		<div className='pb-5 px-5 w-full flex-1'>
 			<Tabs defaultValue='quick-note' className='h-full flex flex-col w-full'>
 				<TabsList className='grid w-full grid-cols-3'>
-					<TabsTrigger value='quick-note'>速记</TabsTrigger>
-					<TabsTrigger value='link'>链接</TabsTrigger>
-					<TabsTrigger value='file'>文件</TabsTrigger>
+					<TabsTrigger value='quick-note'>
+						{t('document_create_quick_note')}
+					</TabsTrigger>
+					<TabsTrigger value='link'>{t('document_create_link')}</TabsTrigger>
+					<TabsTrigger value='file'>{t('document_create_file')}</TabsTrigger>
 				</TabsList>
 				<TabsContent value='quick-note' className='flex-1'>
 					<Card className='h-full flex flex-col'>
 						<CardHeader>
-							<CardTitle>速记</CardTitle>
+							<CardTitle>{t('document_create_quick_note')}</CardTitle>
 							<CardDescription>
-								快速记录你的想法，并将其转为知识。
+								{t('document_create_quick_note_description')}
 							</CardDescription>
 						</CardHeader>
 						<CardContent className='flex-1'>
@@ -35,9 +39,9 @@ const CreatePage = () => {
 				<TabsContent value='link' className='flex-1'>
 					<Card className='h-full flex flex-col'>
 						<CardHeader>
-							<CardTitle>链接</CardTitle>
+							<CardTitle>{t('document_create_link')}</CardTitle>
 							<CardDescription>
-								输入链接，自动转化其对应的页面内容并且转为知识。注意当前仅支持一个链接，不支持多个链接。
+								{t('document_create_link_description')}
 							</CardDescription>
 						</CardHeader>
 						<CardContent className='flex-1'>
@@ -48,9 +52,9 @@ const CreatePage = () => {
 				<TabsContent value='file' className='flex-1'>
 					<Card className='h-full flex flex-col'>
 						<CardHeader>
-							<CardTitle>文件类型</CardTitle>
+							<CardTitle>{t('document_create_file')}</CardTitle>
 							<CardDescription>
-								<p>传入文件，自动分析文件类型并且编码进知识库。当前仅支持包括图像（.jpg及.png）、PDF、Word（.doc及.docx）、以及PowerPoint（.ppt及.pptx）。</p>
+								{t('document_create_file_description')}
 							</CardDescription>
 						</CardHeader>
 						<CardContent className='flex-1'>

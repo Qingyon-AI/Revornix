@@ -23,34 +23,27 @@ import MultipleSelector, {
 import AddLabelDialog from '@/components/document/add-document-label-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '../ui/switch';
-import { useUserContext } from '@/provider/user-provider';
 import { useRouter } from 'nextjs-toploader/app';
-import { getQueryClient } from '@/lib/get-query-client';
 import { getAllMineSections } from '@/service/section';
 import { Textarea } from '../ui/textarea';
-
-const formSchema = z.object({
-	category: z.number(),
-	content: z.string(),
-	title: z.optional(
-		z
-			.string()
-			.min(1, { message: '标题不得少于1个字' })
-			.max(50, { message: '标题不得多于50个字' })
-	),
-	description: z.optional(
-		z.string().min(1, { message: '简介不得少于1个字' }).max(50, {
-			message: '简介不得多于200个字',
-		})
-	),
-	from_plat: z.string(),
-	labels: z.optional(z.array(z.number())),
-	sections: z.array(z.number()),
-	auto_summary: z.boolean(),
-});
+import { useTranslations } from 'next-intl';
 
 const AddQuickNote = (props: {}) => {
-	const queryClient = getQueryClient();
+	const t = useTranslations();
+	const formSchema = z.object({
+		category: z.number(),
+		content: z.string(),
+		title: z.optional(
+			z.string().min(1, { message: t('document_create_title_needed') })
+		),
+		description: z.optional(
+			z.string().min(1, { message: t('document_create_description_needed') })
+		),
+		from_plat: z.string(),
+		labels: z.optional(z.array(z.number())),
+		sections: z.array(z.number()),
+		auto_summary: z.boolean(),
+	});
 	const router = useRouter();
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -63,7 +56,6 @@ const AddQuickNote = (props: {}) => {
 			sections: [],
 		},
 	});
-	const { userInfo } = useUserContext();
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
 
 	const { data: labels } = useQuery({
@@ -80,11 +72,11 @@ const AddQuickNote = (props: {}) => {
 		mutationKey: ['createDocument', 'quick-note'],
 		mutationFn: createDocument,
 		onSuccess: (data) => {
-			toast.success('添加成功');
+			toast.success(t('document_create_success'));
 			router.push(`/document/detail/${data.document_id}`);
 		},
 		onError: (error) => {
-			toast.error('添加失败');
+			toast.error(t('document_create_failed'));
 			console.error(error);
 		},
 	});
@@ -126,7 +118,7 @@ const AddQuickNote = (props: {}) => {
 	};
 
 	const onFormValidateError = (errors: any) => {
-		toast.error('表单校验失败');
+		toast.error(t('form_validate_failed'));
 		console.error(errors);
 	};
 	return (
@@ -144,7 +136,10 @@ const AddQuickNote = (props: {}) => {
 							render={({ field }) => {
 								return (
 									<FormItem className='w-full flex flex-col'>
-										<Textarea {...field} placeholder='就从这里开始吧...' />
+										<Textarea
+											{...field}
+											placeholder={t('document_create_note_placeholded')}
+										/>
 										<FormMessage />
 									</FormItem>
 								);
@@ -172,21 +167,21 @@ const AddQuickNote = (props: {}) => {
 														.map((id) => getLabelByValue(id))
 														.filter((option) => !!option)
 												}
-												placeholder='请选择文档的标签'
+												placeholder={t('document_create_label_placeholder')}
 												emptyIndicator={
 													<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-														找不到相应标签
+														{t('document_create_label_empty')}
 													</p>
 												}
 											/>
 											<div className='text-muted-foreground text-xs flex flex-row gap-0 items-center'>
-												<span>没有找到你想要的标签？</span>
+												<span>{t('document_create_label_empty_tips')}</span>
 												<Button
 													type='button'
 													className='text-xs text-muted-foreground px-0 py-0'
 													variant={'link'}
 													onClick={() => setShowAddLabelDialog(true)}>
-													增加标签
+													{t('document_create_label_add')}
 												</Button>
 											</div>
 										</FormItem>
@@ -204,7 +199,7 @@ const AddQuickNote = (props: {}) => {
 									<FormItem>
 										<div className='flex flex-row gap-1 items-center'>
 											<FormLabel className='flex flex-row gap-1 items-center'>
-												AI自动总结
+												{t('document_create_ai_summary')}
 												<Sparkles size={15} />
 											</FormLabel>
 											<Switch
@@ -215,7 +210,7 @@ const AddQuickNote = (props: {}) => {
 											/>
 										</div>
 										<FormDescription>
-											启用后，AI会自动将文件整体内容总结成一段文本并保存到文档内，并且会结合文件的内容，更加合适的给文档命名以及描述。
+											{t('document_create_ai_summary_description')}
 										</FormDescription>
 									</FormItem>
 								);
@@ -243,10 +238,10 @@ const AddQuickNote = (props: {}) => {
 														.map((id) => getSectionByValue(id))
 														.filter((option) => !!option)
 												}
-												placeholder='请选择要推送的专栏'
+												placeholder={t('document_create_section_choose')}
 												emptyIndicator={
 													<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-														找不到相应专栏
+														{t('document_create_section_empty')}
 													</p>
 												}
 											/>
@@ -262,7 +257,7 @@ const AddQuickNote = (props: {}) => {
 						type='submit'
 						className='w-full'
 						disabled={mutateCreateDocument.isPending}>
-						保存
+						{t('document_create_submit')}
 						{mutateCreateDocument.isPending && (
 							<Loader2 className='size-4 animate-spin' />
 						)}
