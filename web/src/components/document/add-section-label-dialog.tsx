@@ -17,13 +17,7 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
-
-const formSchema = z.object({
-	name: z
-		.string()
-		.min(1, '标签名称不能为空')
-		.max(20, '标签长度不得多于20个字符'),
-});
+import { useTranslations } from 'next-intl';
 
 const AddSectionLabelDialog = ({
 	open,
@@ -32,6 +26,11 @@ const AddSectionLabelDialog = ({
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }) => {
+	const t = useTranslations();
+	const formSchema = z.object({
+		name: z.string().min(1, t('section_create_label_create_title_needed')),
+	});
+
 	const queryClient = getQueryClient();
 	const form = useForm<z.infer<typeof formSchema>>({
 		defaultValues: {
@@ -69,20 +68,20 @@ const AddSectionLabelDialog = ({
 			toast.error(mutate.error.message);
 			return;
 		}
-		toast.success('添加标签成功');
+		toast.success(t('section_create_label_create_success'));
 		onOpenChange(false);
 		form.reset();
 	};
 
 	const onFormValidateError = (errors: any) => {
-		toast.error('表单校验失败');
-		console.log(errors);
+		toast.error(t('form_validate_failed'));
+		console.error(errors);
 	};
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>增加标签</DialogTitle>
+					<DialogTitle>{t('section_create_form_label_create')}</DialogTitle>
 				</DialogHeader>
 				<Form {...form}>
 					<form onSubmit={onSubmitLabelForm}>
@@ -92,7 +91,12 @@ const AddSectionLabelDialog = ({
 							render={({ field }) => {
 								return (
 									<FormItem>
-										<Input {...field} placeholder='请输入标签名称' />
+										<Input
+											{...field}
+											placeholder={t(
+												'section_create_form_label_create_placeholder'
+											)}
+										/>
 										<FormMessage />
 									</FormItem>
 								);
@@ -100,12 +104,12 @@ const AddSectionLabelDialog = ({
 						/>
 						<DialogFooter className='mt-5'>
 							<Button type='submit' disabled={mutate.isPending}>
-								确认
+								{t('section_create_form_label_create_submit')}
 								{mutate.isPending && <Loader2 />}
 							</Button>
 							<DialogClose asChild>
 								<Button type='button' variant={'outline'}>
-									取消
+									{t('section_create_form_label_create_cancel')}
 								</Button>
 							</DialogClose>
 						</DialogFooter>

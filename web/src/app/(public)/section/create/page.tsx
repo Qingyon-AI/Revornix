@@ -22,21 +22,26 @@ import { createSection, getMineLabels } from '@/service/section';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { utils } from '@kinda/utils';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-const formSchema = z.object({
-	title: z.string().min(1, { message: '专栏名称是必须的' }),
-	description: z.string().min(1, { message: '专栏描述是必须的' }),
-	cover_id: z.optional(z.number()),
-	public: z.boolean(),
-	labels: z.array(z.number()),
-});
-
 const CreatePage = () => {
+	const t = useTranslations();
+
+	const formSchema = z.object({
+		title: z.string().min(1, { message: t('section_create_title_needed') }),
+		description: z
+			.string()
+			.min(1, { message: t('section_create_description_needed') }),
+		cover_id: z.optional(z.number()),
+		public: z.boolean(),
+		labels: z.array(z.number()),
+	});
+
 	const queryClient = getQueryClient();
 	const router = useRouter();
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
@@ -88,10 +93,10 @@ const CreatePage = () => {
 			})
 		);
 		if (err || !res) {
-			toast.error('创建失败');
+			toast.error(t('section_create_failed'));
 			return;
 		}
-		toast.success('创建成功');
+		toast.success(t('section_create_success'));
 		queryClient.invalidateQueries({
 			predicate: (query) => {
 				return (
@@ -104,7 +109,7 @@ const CreatePage = () => {
 	};
 
 	const onFormValidateError = (error: any) => {
-		toast.error('表单验证错误');
+		toast.error(t('form_validate_failed'));
 		console.error(error);
 	};
 
@@ -128,7 +133,7 @@ const CreatePage = () => {
 												createAttachment({ name: fileName, description: '' })
 											);
 											if (err || !res) {
-												toast.error('上传失败');
+												toast.error(t('section_create_cover_upload_failed'));
 												return;
 											}
 											field.onChange(res.id);
@@ -148,8 +153,11 @@ const CreatePage = () => {
 						render={({ field }) => {
 							return (
 								<FormItem className='mb-5'>
-									<FormLabel>专栏名称</FormLabel>
-									<Input placeholder='请输入专栏名称' {...field} />
+									<FormLabel>{t('section_create_form_title')}</FormLabel>
+									<Input
+										placeholder={t('section_create_form_title_placeholder')}
+										{...field}
+									/>
 									<FormMessage />
 								</FormItem>
 							);
@@ -161,8 +169,13 @@ const CreatePage = () => {
 						render={({ field }) => {
 							return (
 								<FormItem className='mb-5'>
-									<FormLabel>专栏描述</FormLabel>
-									<Textarea placeholder='请输入专栏描述' {...field} />
+									<FormLabel>{t('section_create_form_description')}</FormLabel>
+									<Textarea
+										placeholder={t(
+											'section_create_form_description_placeholder'
+										)}
+										{...field}
+									/>
 									<FormMessage />
 								</FormItem>
 							);
@@ -174,7 +187,7 @@ const CreatePage = () => {
 						render={({ field }) => {
 							return (
 								<FormItem className='space-y-0 mb-5'>
-									<FormLabel>专栏标签</FormLabel>
+									<FormLabel>{t('section_create_form_labels')}</FormLabel>
 									{labels ? (
 										<MultipleSelector
 											defaultOptions={labels.data.map((label) => {
@@ -189,10 +202,10 @@ const CreatePage = () => {
 													.map((id) => getLabelByValue(id))
 													.filter((option) => !!option)
 											}
-											placeholder='请选择专栏的标签'
+											placeholder={t('section_create_form_labels_placeholder')}
 											emptyIndicator={
 												<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-													找不到相应标签
+													{t('section_create_form_labels_empty')}
 												</p>
 											}
 										/>
@@ -200,13 +213,13 @@ const CreatePage = () => {
 										<Skeleton className='h-10' />
 									)}
 									<div className='text-muted-foreground text-xs flex flex-row gap-0 items-center'>
-										<span>没有找到你想要的标签？</span>
+										<span>{t('section_create_form_labels_empty_tips')}</span>
 										<Button
 											type='button'
 											className='text-xs text-muted-foreground px-0 py-0 h-fit'
 											variant={'link'}
 											onClick={() => setShowAddLabelDialog(true)}>
-											增加标签
+											{t('section_create_form_label_create')}
 										</Button>
 									</div>
 								</FormItem>
@@ -221,7 +234,7 @@ const CreatePage = () => {
 								<FormItem className='mb-5'>
 									<div className='flex flex-row gap-1 items-center'>
 										<FormLabel className='flex flex-row gap-1 items-center'>
-											是否公开
+											{t('section_create_form_public')}
 										</FormLabel>
 										<Switch
 											checked={field.value}
@@ -231,14 +244,14 @@ const CreatePage = () => {
 										/>
 									</div>
 									<FormDescription>
-										选择公开的话所有人都可以看到这个专栏并且获取相关信息。
+										{t('section_create_form_public_description')}
 									</FormDescription>
 								</FormItem>
 							);
 						}}
 					/>
 					<Button className='w-full' type='submit'>
-						确认创建
+						{t('section_create_form_submit')}
 					</Button>
 				</form>
 			</Form>

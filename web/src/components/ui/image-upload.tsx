@@ -1,11 +1,10 @@
 import { utils } from '@kinda/utils';
 import { FileIcon, Loader2, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
-import { useQuery } from '@tanstack/react-query';
 import { uploadFile } from '@/service/file';
+import { useTranslations } from 'next-intl';
 
 const ImageUpload = ({
 	onSuccess,
@@ -16,6 +15,7 @@ const ImageUpload = ({
 	onDelete?: () => void;
 	className?: string;
 }) => {
+	const t = useTranslations();
 	const [file, setFile] = useState<File | null>(null);
 	const upload = useRef<HTMLInputElement>(null);
 	const [uploadingStatus, setUploadingStatus] = useState<string | null>();
@@ -71,7 +71,7 @@ const ImageUpload = ({
 			{!uploadingStatus && (
 				<>
 					<FileIcon />
-					上传图片
+					{t('upload_image')}
 				</>
 			)}
 			<input
