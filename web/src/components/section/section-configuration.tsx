@@ -151,7 +151,7 @@ const SectionConfiguration = ({ section_id }: { section_id: string }) => {
 						{t('section_configuration_description')}
 					</SheetDescription>
 				</SheetHeader>
-				<div className='px-5 flex flex-col gap-5 overflow-auto'>
+				<div className='px-5 flex flex-col gap-5 overflow-auto flex-1'>
 					<Form {...form}>
 						<form
 							onSubmit={onSubmitUpdateForm}
