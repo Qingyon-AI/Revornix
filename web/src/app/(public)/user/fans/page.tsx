@@ -5,10 +5,12 @@ import UserFanCard from '@/components/user/user-fan-card';
 import { useUserContext } from '@/provider/user-provider';
 import { getUserFans } from '@/service/user';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 const UserFans = () => {
+	const t = useTranslations();
 	const { userInfo } = useUserContext();
 	const [keyword, setKeyword] = useState('');
 
@@ -54,13 +56,12 @@ const UserFans = () => {
 		<div className='px-5 pb-5 w-full flex-1 overflow-auto'>
 			{isError && (
 				<div className='flex flex-col justify-center items-center w-full h-full text-muted-foreground text-xs'>
-					<p>获取粉丝失败，请刷新重试</p>
 					<p>{error.message}</p>
 				</div>
 			)}
 			{isSuccess && !users.length && (
 				<div className='flex justify-center items-center w-full h-full text-muted-foreground text-xs'>
-					你还没有粉丝哦，快去发布一些专栏增加人气吧
+					{t('fans_empty')}
 				</div>
 			)}
 			<div className='w-full grid grid-cols-4 gap-5'>

@@ -29,25 +29,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
-
-const formSchema = z
-	.object({
-		email: z.string().email('请输入正确的邮箱地址'),
-		password: z
-			.string()
-			.min(6, '密码长度不能少于6位')
-			.max(40, '密码长度不能多于40位'),
-		passwordAgain: z
-			.string()
-			.min(6, '密码长度不能少于6位')
-			.max(40, '密码长度不能多于40位'),
-	})
-	.refine((data) => data.password === data.passwordAgain, {
-		message: '两次输入的密码不一致',
-		path: ['passwordAgain'],
-	});
+import { useTranslations } from 'next-intl';
 
 export function RegisterForm() {
+	const t = useTranslations();
+
+	const formSchema = z
+		.object({
+			email: z.string().email(t('seo_register_email_format_error')),
+			password: z.string().min(8, t('seo_register_password_no_less_than')),
+			passwordAgain: z.string().min(8, t('seo_register_password_no_less_than')),
+		})
+		.refine((data) => data.password === data.passwordAgain, {
+			message: t('seo_register_password_again_different'),
+			path: ['passwordAgain'],
+		});
+
 	const router = useRouter();
 	const [submitting, setSubmitting] = useState(false);
 	const { refreshUserInfo } = useUserContext();
@@ -76,7 +73,7 @@ export function RegisterForm() {
 		const [res, err] = await utils.to(
 			createEmailUserVerify({
 				email: values.email,
-				password: values.password
+				password: values.password,
 			})
 		);
 		if (err || !res) {
@@ -84,7 +81,7 @@ export function RegisterForm() {
 			setSubmitting(false);
 			return;
 		}
-		toast.success('注册成功');
+		toast.success(t('seo_register_success'));
 		setSubmitting(false);
 		Cookies.set('access_token', res.access_token);
 		Cookies.set('refresh_token', res.refresh_token);
@@ -94,7 +91,7 @@ export function RegisterForm() {
 
 	const onError = (errors: any) => {
 		console.log(errors);
-		toast.error('表单校验失败');
+		toast.error(t('form_validate_failed'));
 	};
 
 	return (
@@ -102,8 +99,8 @@ export function RegisterForm() {
 			<Form {...form}>
 				<form onSubmit={onSubmit} className='space-y-2 min-w-80'>
 					<CardHeader className='mb-5'>
-						<CardTitle className='text-2xl'>注册</CardTitle>
-						<CardDescription>输入必要的信息以完成注册</CardDescription>
+						<CardTitle className='text-2xl'>{t('seo_register')}</CardTitle>
+						<CardDescription>{t('seo_register_description')}</CardDescription>
 					</CardHeader>
 					<CardContent>
 						<FormField
@@ -111,9 +108,12 @@ export function RegisterForm() {
 							name='email'
 							render={({ field }) => (
 								<FormItem className='mb-5'>
-									<FormLabel>邮箱</FormLabel>
+									<FormLabel>{t('seo_register_form_email')}</FormLabel>
 									<FormControl>
-										<Input placeholder='请输入邮箱地址' {...field} />
+										<Input
+											placeholder={t('seo_register_form_email_placeholder')}
+											{...field}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -125,11 +125,13 @@ export function RegisterForm() {
 								name='password'
 								render={({ field }) => (
 									<FormItem className='mb-5'>
-										<FormLabel>密码</FormLabel>
+										<FormLabel>{t('seo_register_form_password')}</FormLabel>
 										<FormControl>
 											<Input
 												type='password'
-												placeholder='请输入密码'
+												placeholder={t(
+													'seo_register_form_password_placeholder'
+												)}
 												{...field}
 											/>
 										</FormControl>
@@ -144,11 +146,15 @@ export function RegisterForm() {
 								name='passwordAgain'
 								render={({ field }) => (
 									<FormItem className='mb-5'>
-										<FormLabel>确认密码</FormLabel>
+										<FormLabel>
+											{t('seo_register_form_password_again')}
+										</FormLabel>
 										<FormControl>
 											<Input
 												type='password'
-												placeholder='请再次输入密码'
+												placeholder={t(
+													'seo_register_form_password_again_placeholder'
+												)}
 												{...field}
 											/>
 										</FormControl>
@@ -158,13 +164,13 @@ export function RegisterForm() {
 							/>
 						</div>
 						<Button className='w-full' type='submit' disabled={submitting}>
-							注册
+							{t('seo_register_submit')}
 							{submitting && <Loader2 className='mr-1 size-4 animate-spin' />}
 						</Button>
 						<div className='mt-4 text-center text-sm'>
-							已经有账号了？
+							{t('seo_register_already_have_account')}
 							<Link href='/login' className='underline'>
-								前往登陆
+								{t('seo_login_go_to_login')}
 							</Link>
 						</div>
 					</CardContent>

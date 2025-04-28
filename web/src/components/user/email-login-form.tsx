@@ -27,27 +27,25 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { loginUser } from '@/service/user';
-import { useLoginProvider } from '@/provider/login-provider';
 import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-
-const emailFormSchema = z.object({
-	email: z.string().email('请输入正确的邮箱地址'),
-	password: z
-		.string()
-		.min(6, '密码长度不能小于6位')
-		.max(50, '密码长度不得超过50位'),
-});
+import { useTranslations } from 'next-intl';
 
 const EmailLoginForm = () => {
+	const t = useTranslations();
+
+	const emailFormSchema = z.object({
+		email: z.string().email(t('seo_login_email_format_error')),
+		password: z.string().min(8, t('seo_login_password_no_less_than')),
+	});
+
 	const searchParams = useSearchParams();
-	const redirect_page = searchParams.get('redirect_to') || '/dashboard'; // 默认跳转到 dashboard
+	const redirect_page = searchParams.get('redirect_to') || '/dashboard';
 	const [submitLoading, setSubmitLoading] = useState(false);
 	const router = useRouter();
 	const { refreshUserInfo } = useUserContext();
-	const { setLoginWay } = useLoginProvider();
 	const emailForm = useForm<z.infer<typeof emailFormSchema>>({
 		resolver: zodResolver(emailFormSchema),
 		defaultValues: {
@@ -87,7 +85,7 @@ const EmailLoginForm = () => {
 		} else {
 			Cookies.set('access_token', res.access_token);
 			Cookies.set('refresh_token', res.refresh_token);
-			toast.success('登陆成功');
+			toast.success(t('seo_login_success'));
 			setSubmitLoading(false);
 			refreshUserInfo();
 			router.push(redirect_page);
@@ -95,8 +93,8 @@ const EmailLoginForm = () => {
 	};
 
 	const onEmailSubmitError = (errors: any) => {
-		console.log(errors);
-		toast.error('表单校验失败');
+		console.error(errors);
+		toast.error(t('form_validate_failed'));
 	};
 
 	return (
@@ -104,8 +102,8 @@ const EmailLoginForm = () => {
 			<Form {...emailForm}>
 				<form onSubmit={onSubmitEmailForm} className='space-y-2 min-w-80'>
 					<CardHeader className='mb-5'>
-						<CardTitle className='text-2xl'>登陆</CardTitle>
-						<CardDescription>输入邮箱密码信息来登录你的账号</CardDescription>
+						<CardTitle className='text-2xl'>{t('seo_login')}</CardTitle>
+						<CardDescription>{t('seo_login_description')}</CardDescription>
 					</CardHeader>
 					<CardContent>
 						<FormField
@@ -113,9 +111,12 @@ const EmailLoginForm = () => {
 							name='email'
 							render={({ field }) => (
 								<FormItem className='mb-5'>
-									<FormLabel>邮箱</FormLabel>
+									<FormLabel>{t('seo_login_form_email')}</FormLabel>
 									<FormControl>
-										<Input placeholder='请输入你的邮箱' {...field} />
+										<Input
+											placeholder={t('seo_login_form_email_placeholder')}
+											{...field}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -126,11 +127,11 @@ const EmailLoginForm = () => {
 							name='password'
 							render={({ field }) => (
 								<FormItem className='mb-5'>
-									<FormLabel>密码</FormLabel>
+									<FormLabel>{t('seo_login_form_password')}</FormLabel>
 									<FormControl>
 										<Input
 											type='password'
-											placeholder='请输入你的密码'
+											placeholder={t('seo_login_form_password_placeholder')}
 											{...field}
 										/>
 									</FormControl>
@@ -144,12 +145,12 @@ const EmailLoginForm = () => {
 							{submitLoading && (
 								<Loader2 className='mr-1 size-4 animate-spin' />
 							)}
-							登陆
+							{t('seo_login_submit')}
 						</Button>
 						<div className='mt-4 text-center text-sm'>
-							还没有账号？
+							{t('seo_login_no_account')}
 							<Link href='/register' className='underline'>
-								前往注册
+								{t('seo_login_go_to_register')}
 							</Link>
 						</div>
 					</CardFooter>

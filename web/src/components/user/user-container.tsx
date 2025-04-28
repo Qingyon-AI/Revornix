@@ -17,8 +17,10 @@ import { toast } from 'sonner';
 import { cloneDeep } from 'lodash-es';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useUserContext } from '@/provider/user-provider';
+import { useTranslations } from 'next-intl';
 
 const UserContainer = ({ id }: { id: number }) => {
+	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
@@ -128,14 +130,16 @@ const UserContainer = ({ id }: { id: number }) => {
 							)}
 							<p className='font-bold text-2xl mb-2'>{userInfo.nickname}</p>
 							<p className='text-muted-foreground mb-2'>
-								{userInfo.slogan ? userInfo.slogan : '该用户暂无签名'}
+								{userInfo.slogan ? userInfo.slogan : t('user_slogan_empty')}
 							</p>
 							<div className='flex flex-row gap-5 items-center mb-2'>
 								<div>
-									粉丝 <span className='font-bold'>{userInfo.fans}</span>
+									{t('user_fans')}{' '}
+									<span className='font-bold'>{userInfo.fans}</span>
 								</div>
 								<div>
-									关注 <span className='font-bold'>{userInfo.follows}</span>
+									{t('user_follows')}{' '}
+									<span className='font-bold'>{userInfo.follows}</span>
 								</div>
 							</div>
 							<div className='flex flex-row items-center justify-center gap-2'>
@@ -144,13 +148,13 @@ const UserContainer = ({ id }: { id: number }) => {
 										disabled={mutateFollow.isPending}
 										variant={'destructive'}
 										onClick={() => mutateFollow.mutate()}>
-										取消关注
+										{t('user_cancel_follow')}
 									</Button>
 								) : (
 									<Button
 										disabled={mutateFollow.isPending}
 										onClick={() => mutateFollow.mutate()}>
-										关注 TA
+										{t('user_follow')}
 									</Button>
 								)}
 							</div>
@@ -160,7 +164,9 @@ const UserContainer = ({ id }: { id: number }) => {
 				<Separator className='mb-5' />
 				{isSuccess && sections.length === 0 && (
 					<div className='flex flex-col items-center justify-center h-full'>
-						<p className='text-sm text-muted-foreground'>该用户暂无专栏</p>
+						<p className='text-sm text-muted-foreground'>
+							{t('user_sections_empty')}
+						</p>
 					</div>
 				)}
 				<div className='grid grid-cols-1 gap-4 md:grid-cols-4 pb-5'>
