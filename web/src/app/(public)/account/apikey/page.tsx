@@ -40,12 +40,14 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormField } from '@/components/ui/form';
+import { useTranslations } from 'next-intl';
 
 const addApiKeyFormSchema = z.object({
 	description: z.string().min(1).max(200),
 });
 
 const ApiKeyPage = () => {
+	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const [deleting, setDeleting] = useState(false);
 	const [copiedText, copy] = useCopyToClipboard();
@@ -86,12 +88,12 @@ const ApiKeyPage = () => {
 		},
 		{
 			accessorKey: 'description',
-			header: '描述',
+			header: t('account_api_key_table_row_description'),
 			cell: ({ row }) => <div>{row.getValue('description')}</div>,
 		},
 		{
 			id: 'actions',
-			header: () => <div>操作</div>,
+			header: () => <div>{t('account_api_key_table_row_operate')}</div>,
 			cell: ({ row }) => (
 				<div className='flex flex-row gap-2'>
 					<Button
@@ -99,24 +101,24 @@ const ApiKeyPage = () => {
 						onClick={() => {
 							copy(row.original.api_key);
 						}}>
-						复制
+						{t('copy')}
 					</Button>
 					<Dialog
 						open={showDeleteApiKeyDialog}
 						onOpenChange={setShowDeleteApiKeyDialog}>
 						<DialogTrigger asChild>
-							<Button variant={'destructive'}>删除</Button>
+							<Button variant={'destructive'}>{t('delete')}</Button>
 						</DialogTrigger>
 						<DialogContent>
 							<DialogHeader>
-								<DialogTitle>删除APIKEY</DialogTitle>
+								<DialogTitle>{t('account_api_key_delete')}</DialogTitle>
 								<DialogDescription>
-									你确定要删除这个APIKEY吗？注意一旦删除，所有原先基于该APIKEY的请求服务将会全部下线。
+									{t('account_api_key_delete_description')}
 								</DialogDescription>
 							</DialogHeader>
 							<DialogFooter>
 								<DialogClose asChild>
-									<Button variant={'secondary'}>取消</Button>
+									<Button variant={'secondary'}>{t('cancel')}</Button>
 								</DialogClose>
 								<Button
 									variant={'destructive'}
@@ -131,14 +133,14 @@ const ApiKeyPage = () => {
 											setDeleting(false);
 											return;
 										}
-										toast.success('删除成功');
+										toast.success(t('account_api_key_delete_success'));
 										setDeleting(false);
 										setShowDeleteApiKeyDialog(false);
 										queryClient.invalidateQueries({
 											queryKey: ['searchMyApiKey', keyword],
 										});
 									}}>
-									确认
+									{t('confirm')}
 									{deleting && <Loader2 className='animate-spin' />}
 								</Button>
 							</DialogFooter>
@@ -162,7 +164,7 @@ const ApiKeyPage = () => {
 			});
 		},
 		onSuccess: () => {
-			toast.success('创建成功');
+			toast.success(t('account_api_key_add_success'));
 			setShowAddApiKeyDialog(false);
 			queryClient.invalidateQueries({ queryKey: ['searchMyApiKey', keyword] });
 		},
@@ -194,23 +196,23 @@ const ApiKeyPage = () => {
 
 	const onFormValidateError = (errors: any) => {
 		console.log(errors);
-		toast.error('表单校验失败');
+		toast.error(t('form_validate_failed'));
 	};
 
 	return (
 		<div className='px-5 pb-5'>
 			<div className='w-full'>
 				<div className='w-full flex flex-row justify-between items-center mb-4'>
-					<h1 className='font-bold'>APIKey管理</h1>
+					<h1 className='font-bold'>{t('account_api_key')}</h1>
 					<Dialog
 						open={showAddApiKeyDialog}
 						onOpenChange={setShowAddApiKeyDialog}>
 						<DialogTrigger asChild>
-							<Button variant={'outline'}>增加ApiKey</Button>
+							<Button variant={'outline'}>{t('account_api_key_add')}</Button>
 						</DialogTrigger>
 						<DialogContent>
 							<DialogHeader>
-								<DialogTitle>增加APIKEY</DialogTitle>
+								<DialogTitle>{t('account_api_key_add')}</DialogTitle>
 							</DialogHeader>
 							<Form {...form}>
 								<form onSubmit={handleSubmitAddApiKey}>
@@ -221,7 +223,7 @@ const ApiKeyPage = () => {
 											return (
 												<Input
 													className='w-full'
-													placeholder='请输入APIKEY的描述'
+													placeholder={t('account_api_key_add_description')}
 													{...field}
 												/>
 											);
@@ -230,7 +232,7 @@ const ApiKeyPage = () => {
 									<DialogFooter className='mt-4'>
 										<DialogClose asChild>
 											<Button type='button' variant={'secondary'}>
-												取消
+												{t('account_api_key_add_cancel')}
 											</Button>
 										</DialogClose>
 										<Button
@@ -240,7 +242,7 @@ const ApiKeyPage = () => {
 											{mutateAdd.isPending && (
 												<Loader2 className='animate-spin' />
 											)}
-											确认增加
+											{t('account_api_key_add_confirm')}
 										</Button>
 									</DialogFooter>
 								</form>
@@ -291,7 +293,7 @@ const ApiKeyPage = () => {
 										<TableCell
 											colSpan={columns.length}
 											className='h-24 text-center'>
-											暂无数据
+											{t('account_api_key_empty')}
 										</TableCell>
 									</TableRow>
 								)}
@@ -301,20 +303,23 @@ const ApiKeyPage = () => {
 				</div>
 				<div className='flex flex-row items-center justify-between mt-4'>
 					<div className='text-xs text-muted-foreground'>
-						共计{data?.total_elements}条记录，当前第{pageNum}页
+						{t('account_api_key_summary', {
+							total: data?.total_elements,
+							pageNum: pageNum,
+						})}
 					</div>
 					<div className='flex flex-row gap-2'>
 						<Button
 							variant={'outline'}
 							onClick={() => setPageNum(pageNum - 1)}
 							disabled={pageNum === 1}>
-							上一页
+							{t('previous_page')}
 						</Button>
 						<Button
 							variant={'outline'}
 							onClick={() => setPageNum(pageNum + 1)}
 							disabled={data && pageNum >= data?.total_pages}>
-							下一页
+							{t('next_page')}
 						</Button>
 					</div>
 				</div>

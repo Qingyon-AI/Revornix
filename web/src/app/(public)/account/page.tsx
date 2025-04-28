@@ -9,17 +9,19 @@ import SloganUpdate from '@/components/user/slogan-update';
 import DeleteUserButton from '@/components/user/delete-user-button';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
 const AccountPage = async () => {
+	const t = await getTranslations();
 	return (
 		<div className='px-5 pb-5'>
 			<Card>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							头像
+							{t('account_avatar')}
 							<div className='text-[0.8rem] text-muted-foreground'>
-								这可是你的头像哦
+								{t('account_avatar_description')}
 							</div>
 						</Label>
 						<div className='flex flex-col gap-2'>
@@ -29,9 +31,9 @@ const AccountPage = async () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							昵称
+							{t('account_nickname')}
 							<div className='text-[0.8rem] text-muted-foreground'>
-								这可是你的昵称哦
+								{t('account_nickname_description')}
 							</div>
 						</Label>
 						<div className='flex flex-col gap-2'>
@@ -41,9 +43,9 @@ const AccountPage = async () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							个性签名
+							{t('account_slogan')}
 							<div className='text-[0.8rem] text-muted-foreground'>
-								将会展示在你的主页
+								{t('account_slogan_description')}
 							</div>
 						</Label>
 						<div className='flex flex-col gap-2'>
@@ -56,9 +58,9 @@ const AccountPage = async () => {
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							邮箱
+							{t('account_email')}
 							<div className='text-[0.8rem] text-muted-foreground'>
-								可作为登录方式
+								{t('account_email_description')}
 							</div>
 						</Label>
 						<div className='flex flex-col gap-2'>
@@ -68,9 +70,9 @@ const AccountPage = async () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							密码
+							{t('account_password')}
 							<div className='text-[0.8rem] text-muted-foreground'>
-								可通过邮箱+密码的方式登录账号
+								{t('account_password_description')}
 							</div>
 						</Label>
 						<div className='flex flex-col gap-2'>
@@ -83,14 +85,16 @@ const AccountPage = async () => {
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							开发APIKey
+							{t('account_api_key')}
 							<div className='text-[0.8rem] text-muted-foreground'>
-								通过APIKey来解锁平台个性化能力
+								{t('account_api_key_description')}
 							</div>
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<Link href={'/account/apikey'}>
-								<Button variant={'outline'}>前往配置</Button>
+								<Button variant={'outline'}>
+									{t('account_api_key_go_to_configure')}
+								</Button>
 							</Link>
 						</div>
 					</div>

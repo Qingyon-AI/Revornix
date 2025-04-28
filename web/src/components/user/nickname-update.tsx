@@ -26,17 +26,15 @@ import { z } from 'zod';
 import { useUserContext } from '@/provider/user-provider';
 import { useMutation } from '@tanstack/react-query';
 import { updateUserInfo } from '@/service/user';
-import { getQueryClient } from '@/lib/get-query-client';
 import { UserInfoUpdateRequest } from '@/generated';
-
-const nicknameFormSchema = z.object({
-	nickname: z
-		.string()
-		.min(1, '昵称不得少于一个字符')
-		.max(50, '昵称不得多于50个字符'),
-});
+import { useTranslations } from 'next-intl';
 
 const NicknameUpdate = () => {
+	const t = useTranslations();
+
+	const nicknameFormSchema = z.object({
+		nickname: z.string().min(1, t('account_nickname_no_less_than')),
+	});
 	const { refreshUserInfo } = useUserContext();
 	const mutation = useMutation({
 		mutationFn: async (newUserInfo: UserInfoUpdateRequest) => {
@@ -83,14 +81,14 @@ const NicknameUpdate = () => {
 			setFormSubmitStatus(false);
 			return;
 		}
-		toast.success('更新成功');
+		toast.success('');
 		setFormSubmitStatus(false);
 		setShowNicknameUpdateFormDialog(false);
 	};
 
 	const onFormValidateError = (errors: any) => {
 		console.log(errors);
-		toast.error('表单校验失败');
+		toast.error(t('form_validate_failed'));
 	};
 
 	return (
@@ -104,7 +102,7 @@ const NicknameUpdate = () => {
 					className='text-xs'
 					onClick={() => setShowNicknameUpdateFormDialog(true)}
 					type='button'>
-					修改昵称
+					{t('account_nickname_update')}
 				</Button>
 			</div>
 			<Dialog
@@ -112,7 +110,7 @@ const NicknameUpdate = () => {
 				onOpenChange={setShowNicknameUpdateFormDialog}>
 				<DialogContent className='sm:max-w-md'>
 					<DialogHeader>
-						<DialogTitle>修改昵称</DialogTitle>
+						<DialogTitle>{t('account_nickname_update')}</DialogTitle>
 					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={onSubmitNicknameUpdateForm} className='space-y-5'>
@@ -126,7 +124,9 @@ const NicknameUpdate = () => {
 												<FormControl>
 													<Input
 														type='text'
-														placeholder='请输入你想取的昵称'
+														placeholder={t(
+															'account_nickname_update_placeholder'
+														)}
 														{...field}
 													/>
 												</FormControl>
@@ -138,14 +138,14 @@ const NicknameUpdate = () => {
 							</div>
 							<DialogFooter className='sm:justify-end'>
 								<Button type='submit' disabled={formSubmitStatus}>
-									确认
+									{t('account_nickname_update_confirm')}
 									{formSubmitStatus && (
 										<Loader2 className='size-4 animate-spin' />
 									)}
 								</Button>
 								<DialogClose asChild>
 									<Button type='button' variant='secondary'>
-										取消
+										{t('account_nickname_update_cancel')}
 									</Button>
 								</DialogClose>
 							</DialogFooter>

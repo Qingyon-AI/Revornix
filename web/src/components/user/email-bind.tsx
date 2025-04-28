@@ -27,12 +27,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { bindEmailVerify } from '@/service/user';
 import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
-
-const emailFormSchema = z.object({
-	email: z.string().email('邮箱格式错误'),
-});
+import { useTranslations } from 'next-intl';
 
 const EmailBind = () => {
+	const t = useTranslations();
+	const emailFormSchema = z.object({
+		email: z.string().email(t('account_email_format_error')),
+	});
 	const [bindingEmail, startBindEmailTransition] = useTransition();
 	const { userInfo, refreshUserInfo } = useUserContext();
 	const [showBindEmailDialog, setShowBindEmailDialog] = useState(false);
@@ -65,7 +66,7 @@ const EmailBind = () => {
 				toast.error(err.message);
 				return;
 			}
-			toast.success('修改成功');
+			toast.success(t('account_email_update_success'));
 			refreshUserInfo();
 			setShowBindEmailDialog(false);
 			form.reset();
@@ -74,7 +75,7 @@ const EmailBind = () => {
 
 	const onFormValidateError = (errors: any) => {
 		console.log(errors);
-		toast.error('表单校验失败');
+		toast.error(t('form_validate_failed'));
 	};
 
 	return (
@@ -89,7 +90,7 @@ const EmailBind = () => {
 							onClick={() => {
 								setShowBindEmailDialog(true);
 							}}>
-							修改绑定邮箱
+							{t('account_email_update')}
 						</Button>
 					</div>
 				</>
@@ -98,9 +99,9 @@ const EmailBind = () => {
 			<Dialog open={showBindEmailDialog} onOpenChange={setShowBindEmailDialog}>
 				<DialogContent className='sm:max-w-md'>
 					<DialogHeader>
-						<DialogTitle>绑定邮箱</DialogTitle>
+						<DialogTitle>{t('account_email_update')}</DialogTitle>
 						<DialogDescription>
-							注意，安全起见，当你修改绑定邮箱之后，你的密码会被强制修改，请在修改完成后点击密码栏右侧的查看密码初始密码。
+							{t('account_email_update_description')}
 						</DialogDescription>
 					</DialogHeader>
 					<Form {...form}>
@@ -113,7 +114,10 @@ const EmailBind = () => {
 										render={({ field }) => (
 											<FormItem>
 												<FormControl>
-													<Input placeholder='请输入你的新邮箱' {...field} />
+													<Input
+														placeholder={t('account_email_update_placeholder')}
+														{...field}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -123,12 +127,12 @@ const EmailBind = () => {
 							</div>
 							<DialogFooter className='sm:justify-end'>
 								<Button type='submit' disabled={bindingEmail}>
-									确认
+									{t('account_email_update_confirm')}
 									{bindingEmail && <Loader2 className='size-4 animate-spin' />}
 								</Button>
 								<DialogClose asChild>
 									<Button type='button' variant='secondary'>
-										取消
+										{t('account_email_update_cancel')}
 									</Button>
 								</DialogClose>
 							</DialogFooter>

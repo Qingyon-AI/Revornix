@@ -27,16 +27,14 @@ import { useUserContext } from '@/provider/user-provider';
 import { useMutation } from '@tanstack/react-query';
 import { updateUserInfo } from '@/service/user';
 import { UserInfoUpdateRequest } from '@/generated';
-import { getQueryClient } from '@/lib/get-query-client';
-
-const sloganFormSchema = z.object({
-	slogan: z
-		.string()
-		.min(1, '请输入至少1个字符')
-		.max(200, '个性签名最多不得超过200个字符'),
-});
+import { useTranslations } from 'next-intl';
 
 const SloganUpdate = () => {
+	const t = useTranslations();
+
+	const sloganFormSchema = z.object({
+		slogan: z.string().min(1, t('account_slogan_no_less_than')),
+	});
 	const { refreshUserInfo } = useUserContext();
 	const mutation = useMutation({
 		mutationFn: async (newUserInfo: UserInfoUpdateRequest) => {
@@ -81,14 +79,14 @@ const SloganUpdate = () => {
 			setFormSubmitStatus(false);
 			return;
 		}
-		toast.success('更新成功');
+		toast.success(t('account_slogan_update_success'));
 		setFormSubmitStatus(false);
 		setShowSloganUpdateFormDialog(false);
 	};
 
 	const onFormValidateError = (errors: any) => {
 		console.log(errors);
-		toast.error('表单校验失败');
+		toast.error(t('form_validate_failed'));
 	};
 
 	return (
@@ -104,7 +102,7 @@ const SloganUpdate = () => {
 					className='text-xs'
 					onClick={() => setShowSloganUpdateFormDialog(true)}
 					type='button'>
-					修改个性签名
+					{t('account_slogan_update')}
 				</Button>
 			</div>
 			<Dialog
@@ -112,7 +110,7 @@ const SloganUpdate = () => {
 				onOpenChange={setShowSloganUpdateFormDialog}>
 				<DialogContent className='sm:max-w-md'>
 					<DialogHeader>
-						<DialogTitle>修改个性签名</DialogTitle>
+						<DialogTitle>{t('account_slogan_update')}</DialogTitle>
 					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={onSubmitSloganUpdateForm} className='space-y-5'>
@@ -126,7 +124,7 @@ const SloganUpdate = () => {
 												<FormControl>
 													<Textarea
 														className='min-h-52'
-														placeholder='请输入你喜欢的个性签名'
+														placeholder={t('account_slogan_update_placeholder')}
 														{...field}
 													/>
 												</FormControl>
@@ -138,14 +136,14 @@ const SloganUpdate = () => {
 							</div>
 							<DialogFooter className='sm:justify-end'>
 								<Button type='submit' disabled={formSubmitStatus}>
-									确认
+									{t('account_slogan_update_confirm')}
 									{formSubmitStatus && (
 										<Loader2 className='size-4 animate-spin' />
 									)}
 								</Button>
 								<DialogClose asChild>
 									<Button type='button' variant='secondary'>
-										取消
+										{t('account_slogan_update_cancel')}
 									</Button>
 								</DialogClose>
 							</DialogFooter>

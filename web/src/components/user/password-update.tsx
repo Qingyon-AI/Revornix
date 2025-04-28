@@ -14,7 +14,6 @@ import {
 	FormControl,
 	FormField,
 	FormItem,
-	FormLabel,
 	FormMessage,
 } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -31,13 +30,16 @@ import { useUserContext } from '@/provider/user-provider';
 import { useQuery } from '@tanstack/react-query';
 import { useCopyToClipboard } from 'react-use';
 import { utils } from '@kinda/utils';
-
-const passwordFormSchema = z.object({
-	origin_password: z.string().min(8, '密码至少8位').max(40, '密码最多40位'),
-	password: z.string().min(8, '密码至少8位').max(40, '密码最多40位'),
-});
+import { useTranslations } from 'next-intl';
 
 const PassWordUpdate = () => {
+	const t = useTranslations();
+	const passwordFormSchema = z.object({
+		origin_password: z.string(),
+		password: z
+			.string()
+			.min(8, t('account_password_update_form_password_no_less_than')),
+	});
 	const { userInfo, refreshUserInfo } = useUserContext();
 	const [isSubmitting, startSubmittingTransition] = useTransition();
 	const [copiedText, copy] = useCopyToClipboard();
@@ -83,7 +85,7 @@ const PassWordUpdate = () => {
 				toast.error(err.message);
 				return;
 			}
-			toast.success('更新成功');
+			toast.success(t('account_password_update_success'));
 			form.reset();
 			refreshUserInfo();
 			setShowPasswordUpdateDialog(false);
@@ -92,7 +94,7 @@ const PassWordUpdate = () => {
 
 	const onFormValidateError = (errors: any) => {
 		console.log(errors);
-		toast.error('表单校验失败');
+		toast.error(t('form_validate_failed'));
 	};
 
 	const {
@@ -119,20 +121,19 @@ const PassWordUpdate = () => {
 						}}>
 						<DialogContent>
 							<DialogHeader>
-								<DialogTitle>初始密码</DialogTitle>
+								<DialogTitle>
+									{t('account_password_initial_password')}
+								</DialogTitle>
 								<DialogDescription>
-									初次密码仅可查看一次，之后将无法查看，请注意保存。
+									{t('account_password_initial_password_description')}
 								</DialogDescription>
 							</DialogHeader>
 							<div>
 								<div className='flex items-center space-x-2'>
 									<div className='grid flex-1 gap-2'>
-										<Label htmlFor='link' className='sr-only'>
-											Link
-										</Label>
 										{!initialPassword && isInitialPasswordFetching ? (
 											<p className='text-sm text-muted-foreground'>
-												正在获取中...
+												{t('account_password_initial_password_loading')}
 											</p>
 										) : (
 											<Input id='link' value={initialPassword} readOnly />
@@ -141,7 +142,7 @@ const PassWordUpdate = () => {
 									<Button
 										onClick={() => {
 											initialPassword && copy(initialPassword);
-											toast.success('已复制');
+											toast.success(t('copied'));
 										}}
 										size='sm'
 										className='px-3'>
@@ -152,7 +153,7 @@ const PassWordUpdate = () => {
 							</div>
 							<DialogFooter>
 								<DialogClose asChild>
-									<Button>确认</Button>
+									<Button>{t('confirm')}</Button>
 								</DialogClose>
 							</DialogFooter>
 						</DialogContent>
@@ -171,7 +172,7 @@ const PassWordUpdate = () => {
 										}
 										data && setInitialPassword(data.password);
 									}}>
-									查看初始密码
+									{t('account_password_see_initial_password')}
 								</Button>
 							)}
 						<Button
@@ -179,7 +180,7 @@ const PassWordUpdate = () => {
 							onClick={() => {
 								setShowPasswordUpdateDialog(true);
 							}}>
-							更改密码
+							{t('account_password_update')}
 						</Button>
 					</div>
 					<Dialog
@@ -187,7 +188,7 @@ const PassWordUpdate = () => {
 						onOpenChange={setShowPasswordUpdateDialog}>
 						<DialogContent className='sm:max-w-md'>
 							<DialogHeader>
-								<DialogTitle>更改密码</DialogTitle>
+								<DialogTitle>{t('account_password_update')}</DialogTitle>
 							</DialogHeader>
 							<Form {...form}>
 								<form
@@ -198,20 +199,17 @@ const PassWordUpdate = () => {
 											control={form.control}
 											name='origin_password'
 											render={({ field }) => (
-												<FormItem className='flex justify-between items-center space-y-0'>
-													<FormLabel className='flex flex-col gap-2'>
-														输入原密码
-													</FormLabel>
-													<div className='flex flex-col gap-2'>
-														<FormControl>
-															<Input
-																type='password'
-																placeholder='请输入原密码'
-																{...field}
-															/>
-														</FormControl>
-														<FormMessage />
-													</div>
+												<FormItem>
+													<FormControl>
+														<Input
+															type='password'
+															placeholder={t(
+																'account_password_origin_placeholder'
+															)}
+															{...field}
+														/>
+													</FormControl>
+													<FormMessage />
 												</FormItem>
 											)}
 										/>
@@ -219,34 +217,31 @@ const PassWordUpdate = () => {
 											control={form.control}
 											name='password'
 											render={({ field }) => (
-												<FormItem className='flex justify-between items-center space-y-0'>
-													<FormLabel className='flex flex-col gap-2'>
-														输入新密码
-													</FormLabel>
-													<div className='flex flex-col gap-2'>
-														<FormControl>
-															<Input
-																type='password'
-																placeholder='请输入新密码'
-																{...field}
-															/>
-														</FormControl>
-														<FormMessage />
-													</div>
+												<FormItem>
+													<FormControl>
+														<Input
+															type='password'
+															placeholder={t(
+																'account_password_new_placeholder'
+															)}
+															{...field}
+														/>
+													</FormControl>
+													<FormMessage />
 												</FormItem>
 											)}
 										/>
 									</div>
 									<DialogFooter className='sm:justify-end'>
 										<Button type='submit' disabled={isSubmitting}>
-											确认
+											{t('account_password_update_confirm')}
 											{isSubmitting && (
 												<Loader2 className='size-4 animate-spin' />
 											)}
 										</Button>
 										<DialogClose asChild>
 											<Button type='button' variant='secondary'>
-												取消
+												{t('account_password_update_cancel')}
 											</Button>
 										</DialogClose>
 									</DialogFooter>
