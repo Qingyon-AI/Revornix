@@ -3,10 +3,14 @@ import { formatDistance } from 'date-fns';
 import { BookTextIcon } from 'lucide-react';
 import Link from 'next/link';
 import { zhCN } from 'date-fns/locale/zh-CN';
+import { enUS } from 'date-fns/locale/en-US';
 import { useRouter } from 'nextjs-toploader/app';
 import { Badge } from '../ui/badge';
+import { useLocale, useTranslations } from 'next-intl';
 
 const SectionCard = ({ section }: { section: SectionInfo }) => {
+	const locale = useLocale();
+	const t = useTranslations();
 	const router = useRouter();
 	return (
 		<Link
@@ -29,10 +33,12 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 			</div>
 			<div className='flex flex-col flex-1 gap-2 p-2'>
 				<h1 className='font-bold text-md'>
-					{section.title ? section.title : '未命名'}
+					{section.title ? section.title : t('section_title_empty')}
 				</h1>
 				<p className='line-clamp-3 text-muted-foreground text-sm'>
-					{section.description ? section.description : '暂无描述'}
+					{section.description
+						? section.description
+						: t('section_description_empty')}
 				</p>
 			</div>
 			{section.labels && section.labels.length > 0 && (
@@ -60,13 +66,21 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 					/>
 					{formatDistance(new Date(section.update_time), new Date(), {
 						addSuffix: true,
-						locale: zhCN,
+						locale: locale === 'zh' ? zhCN : enUS,
 					})}
 				</div>
 				<div className='flex flex-row gap-1'>
-					<p>{section.documents_count}篇文档</p>
+					<p>
+						{t('section_card_documents_count', {
+							section_documents_count: section.documents_count,
+						})}
+					</p>
 					<p>,</p>
-					<p>{section.subscribers_count}订阅</p>
+					<p>
+						{t('section_card_subscribers_count', {
+							section_subscribers_count: section.subscribers_count,
+						})}
+					</p>
 				</div>
 			</div>
 		</Link>

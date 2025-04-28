@@ -28,8 +28,10 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from '@/components/ui/sheet';
+import { useTranslations } from 'next-intl';
 
 const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
+	const t = useTranslations();
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
 	const [desc, setDesc] = useState(true);
@@ -83,7 +85,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 		<>
 			<div className='flex flex-row px-5 pb-5 gap-3'>
 				<Input
-					placeholder='请输入你的搜索内容'
+					placeholder={t('section_search_placeholder')}
 					value={keyword}
 					onChange={(e) => setKeyword(e.target.value)}
 				/>
@@ -99,14 +101,14 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 								variant={'ghost'}
 								className='w-fit rounded-none text-xs'
 								onClick={() => setDesc(true)}>
-								从新到旧
+								{t('section_search_order_from_new')}
 								<ArrowDownWideNarrow />
 							</Button>
 							<Button
 								variant={'ghost'}
 								className='w-fit rounded-none text-xs'
 								onClick={() => setDesc(false)}>
-								从旧到新
+								{t('section_search_order_from_old')}
 								<ArrowDownNarrowWide />
 							</Button>
 						</PopoverContent>
@@ -119,15 +121,17 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 						</SheetTrigger>
 						<SheetContent>
 							<SheetHeader>
-								<SheetTitle>筛选</SheetTitle>
+								<SheetTitle>{t('section_search_filter')}</SheetTitle>
 								<SheetDescription>
-									此处可以对文档列表做筛选，获取特定范围的文档。
+									{t('section_search_filter_description')}
 								</SheetDescription>
 							</SheetHeader>
 							<div className='px-4 overflow-auto'>
-								<h1 className='font-bold text-sm mb-3'>标签</h1>
+								<h1 className='font-bold text-sm mb-3'>
+									{t('section_search_filter_form_label')}
+								</h1>
 								<p className='text-xs text-muted-foreground mb-3'>
-									选择标签后，列表将只会显示包含该标签的专栏。注意：清空后由于标签筛选为空，所有专栏都将隐藏，只有取消标签筛选后，列表将显示所有专栏。
+									{t('section_search_filter_form_label_description')}
 								</p>
 								<div className='flex flex-row flex-wrap gap-2 items-center mb-3'>
 									{labels?.data &&
@@ -177,7 +181,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 										onClick={() => {
 											setLabelIds(labels?.data.map((label) => label.id));
 										}}>
-										全选
+										{t('select_all')}
 									</Button>
 									<Button
 										className='text-xs'
@@ -185,7 +189,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 										onClick={() => {
 											setLabelIds([]);
 										}}>
-										清空
+										{t('clear')}
 									</Button>
 									<Button
 										className='text-xs'
@@ -193,7 +197,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 										onClick={() => {
 											setLabelIds(undefined);
 										}}>
-										取消标签筛选
+										{t('section_search_filter_form_label_cancel')}
 									</Button>
 								</div>
 							</div>
@@ -203,7 +207,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 			</div>
 			{isSuccess && sections.length === 0 && (
 				<div className='flex flex-col items-center justify-center h-full'>
-					<p className='text-sm text-muted-foreground'>暂无专栏</p>
+					<p className='text-sm text-muted-foreground'>{t('sections_empty')}</p>
 				</div>
 			)}
 			<div className='grid grid-cols-1 gap-4 md:grid-cols-4 px-5 pb-5'>

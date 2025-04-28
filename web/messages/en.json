@@ -186,5 +186,18 @@
     "section_comment_submit_failed": "Failed to submit comment",
     "section_comment_submit_success": "Comment submitted successfully",
     "section_comments": "Comments",
-    "section_comments_empty": "No comments"
+    "section_comments_empty": "No comments",
+    "section_search_placeholder": "Please enter your search content",
+    "section_search_order_from_new": "From Newest to Oldest",
+    "section_search_order_from_old": "From Oldest to Newest",
+    "section_search_filter": "Filter",
+    "section_search_filter_description": "Here you can filter the document list to retrieve documents within a specific range.",
+    "section_search_filter_form_label": "Tag",
+    "section_search_filter_form_label_description": "After selecting a tag, only sections containing that tag will be displayed. Note: After clearing, because the tag filter is empty, all sections will be hidden. You must cancel tag filtering to display all sections again.",
+    "section_search_filter_form_label_cancel": "Cancel Tag Filter",
+    "sections_empty": "No Sections Available",
+    "section_card_documents_count": "{section_documents_count} documents",
+    "section_card_subscribers_count": "{section_subscribers_count} subscribers",
+    "section_not_found": "Section Not Found",
+    "section_not_found_description": "The section you searched for does not exist. Please check if the request or URL is correct."
 }
