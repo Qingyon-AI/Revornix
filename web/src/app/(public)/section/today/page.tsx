@@ -22,8 +22,10 @@ import SectionDocumentCard from '@/components/section/section-document-card';
 import Markdown from 'react-markdown';
 import { utils } from '@kinda/utils';
 import { getFile } from '@/service/file';
+import { useTranslations } from 'next-intl';
 
 const SectionDetailPage = () => {
+	const t = useTranslations();
 	const today = new Date().toISOString().split('T')[0];
 	const {
 		data: section,
@@ -63,17 +65,15 @@ const SectionDetailPage = () => {
 				<div className='flex justify-between items-center'>
 					<Sheet>
 						<SheetTrigger className='bg-muted rounded px-4 py-2 text-xs'>
-							当天累计分析
-							<span className='font-bold text-sm px-1'>
-								{section?.documents.length || 0}
-							</span>
-							篇文档
+							{t('today_section_documents_summary', {
+								today_documents_count: section?.documents.length || 0,
+							})}
 						</SheetTrigger>
 						<SheetContent>
 							<SheetHeader>
-								<SheetTitle>关联文档</SheetTitle>
+								<SheetTitle>{t('section_documents')}</SheetTitle>
 								<SheetDescription>
-									这里可以查看本文章关联的所有文档。
+									{t('section_documents_description')}
 								</SheetDescription>
 							</SheetHeader>
 							<div className='px-5 flex flex-col gap-5 overflow-auto pb-5'>
@@ -89,7 +89,7 @@ const SectionDetailPage = () => {
 					</Sheet>
 					{section && (
 						<p className='text-xs bg-muted rounded px-4 py-2'>
-							最近更新：
+							{t('section_updated_at')}
 							{format(section.update_time as Date, 'yyyy-MM-dd HH:mm:ss')}
 						</p>
 					)}
@@ -103,7 +103,6 @@ const SectionDetailPage = () => {
 						<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 							{error?.message ?? (
 								<div className='flex flex-col text-center gap-2'>
-									<p>获取markdown文件出错</p>
 									<p>{markdownGetError}</p>
 								</div>
 							)}
@@ -130,7 +129,7 @@ const SectionDetailPage = () => {
 								{markdown}
 							</Markdown>
 							<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
-								本文由AI识别网站而来，请酌情识别信息。
+								{t('section_ai_tips')}
 							</p>
 						</div>
 					)}

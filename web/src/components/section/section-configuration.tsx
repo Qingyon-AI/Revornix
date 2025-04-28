@@ -1,6 +1,5 @@
 import {
 	Form,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -21,7 +20,7 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from '../ui/sheet';
-import { useForm, useFormContext } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { getQueryClient } from '@/lib/get-query-client';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,21 +33,22 @@ import {
 } from '@/service/section';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import MultipleSelector, { Option } from '../ui/multiple-selector';
 import { Skeleton } from '../ui/skeleton';
 import AddSectionLabelDialog from '../document/add-section-label-dialog';
-
-const updateFormSchema = z.object({
-	section_id: z.number().int(),
-	cover: z.object({ id: z.number(), name: z.string() }).optional(),
-	title: z.string().min(1),
-	description: z.string().min(1),
-	public: z.boolean(),
-	labels: z.array(z.number()),
-});
+import { useTranslations } from 'next-intl';
 
 const SectionConfiguration = ({ section_id }: { section_id: string }) => {
+	const t = useTranslations();
+
+	const updateFormSchema = z.object({
+		section_id: z.number().int(),
+		cover: z.object({ id: z.number(), name: z.string() }).optional(),
+		title: z.string().min(1),
+		description: z.string().min(1),
+		public: z.boolean(),
+		labels: z.array(z.number()),
+	});
 	const id = section_id;
 
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
@@ -125,30 +125,30 @@ const SectionConfiguration = ({ section_id }: { section_id: string }) => {
 			})
 		);
 		if (err) {
-			toast.error('更新失败');
+			toast.error(t('section_update_failed'));
 			setUpdating(false);
 			return;
 		}
-		toast.success('更新成功');
+		toast.success(t('section_update_success'));
 		setUpdating(false);
 		queryClient.invalidateQueries({ queryKey: ['getSectionDetail', id] });
 	};
 
 	const onFormValidateError = (errors: any) => {
 		console.log(errors);
-		toast.error('表单校验失败');
+		toast.error(t('form_validate_failed'));
 	};
 
 	return (
 		<Sheet>
 			<SheetTrigger asChild>
-				<Button className='text-xs'>专栏配置</Button>
+				<Button className='text-xs'>{t('section_configuration_title')}</Button>
 			</SheetTrigger>
 			<SheetContent>
 				<SheetHeader>
-					<SheetTitle>专栏配置</SheetTitle>
+					<SheetTitle>{t('section_configuration_title')}</SheetTitle>
 					<SheetDescription>
-						在这里可以配置该专栏的相关信息和权限。
+						{t('section_configuration_description')}
 					</SheetDescription>
 				</SheetHeader>
 				<div className='px-5 flex flex-col gap-5 overflow-auto'>
@@ -164,8 +164,15 @@ const SectionConfiguration = ({ section_id }: { section_id: string }) => {
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>专栏标题</FormLabel>
-											<Input {...field} placeholder='请输入专栏的标题' />
+											<FormLabel>
+												{t('section_configuration_form_title')}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'section_configuration_form_title_placeholder'
+												)}
+											/>
 											<FormMessage />
 										</FormItem>
 									);
@@ -177,8 +184,15 @@ const SectionConfiguration = ({ section_id }: { section_id: string }) => {
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>专栏描述</FormLabel>
-											<Textarea {...field} placeholder='请输入专栏的描述' />
+											<FormLabel>
+												{t('section_configuration_form_description')}
+											</FormLabel>
+											<Textarea
+												{...field}
+												placeholder={t(
+													'section_configuration_form_description_placeholder'
+												)}
+											/>
 											<FormMessage />
 										</FormItem>
 									);
@@ -194,7 +208,9 @@ const SectionConfiguration = ({ section_id }: { section_id: string }) => {
 												open={showAddLabelDialog}
 												onOpenChange={setShowAddLabelDialog}
 											/>
-											<FormLabel>专栏标签</FormLabel>
+											<FormLabel>
+												{t('section_configuration_form_labels')}
+											</FormLabel>
 											{labels ? (
 												<MultipleSelector
 													defaultOptions={labels.data.map((label) => {
@@ -211,10 +227,12 @@ const SectionConfiguration = ({ section_id }: { section_id: string }) => {
 															.map((id) => getLabelByValue(id))
 															.filter((option) => !!option)
 													}
-													placeholder='请选择专栏的标签'
+													placeholder={t(
+														'section_configuration_form_labels_placeholder'
+													)}
 													emptyIndicator={
 														<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-															找不到相应标签
+															{t('section_configuration_form_labels_empty')}
 														</p>
 													}
 												/>
@@ -222,13 +240,15 @@ const SectionConfiguration = ({ section_id }: { section_id: string }) => {
 												<Skeleton className='h-10' />
 											)}
 											<div className='text-muted-foreground text-xs flex flex-row gap-0 items-center'>
-												<span>没有找到你想要的标签？</span>
+												<span>
+													{t('section_configuration_form_labels_empty_tips')}
+												</span>
 												<Button
 													type='button'
 													className='text-xs text-muted-foreground px-0 py-0 h-fit'
 													variant={'link'}
 													onClick={() => setShowAddLabelDialog(true)}>
-													增加标签
+													{t('section_configuration_form_label_create')}
 												</Button>
 											</div>
 										</FormItem>
@@ -241,7 +261,9 @@ const SectionConfiguration = ({ section_id }: { section_id: string }) => {
 								render={({ field }) => {
 									return (
 										<FormItem className='flex flex-row justify-between items-center'>
-											<FormLabel>公开专栏</FormLabel>
+											<FormLabel>
+												{t('section_configuration_form_public')}
+											</FormLabel>
 											<Switch
 												checked={field.value}
 												onCheckedChange={(e) => {
@@ -257,7 +279,7 @@ const SectionConfiguration = ({ section_id }: { section_id: string }) => {
 				</div>
 				<SheetFooter>
 					<Button type='submit' form='update-form' disabled={updating}>
-						保存
+						{t('section_configuration_form_submit')}
 						{updating && <Loader2 className='animate-spin' />}
 					</Button>
 				</SheetFooter>

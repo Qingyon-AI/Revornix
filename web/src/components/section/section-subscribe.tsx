@@ -6,9 +6,10 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { useState } from 'react';
 import { utils } from '@kinda/utils';
 import { Loader2 } from 'lucide-react';
-import { useUserContext } from '@/provider/user-provider';
+import { useTranslations } from 'next-intl';
 
 const SectionSubscribe = ({ section_id }: { section_id: string }) => {
+	const t = useTranslations();
 	const id = section_id;
 	const [subscribing, setSubscribing] = useState(false);
 
@@ -36,9 +37,9 @@ const SectionSubscribe = ({ section_id }: { section_id: string }) => {
 			return;
 		}
 		if (section.is_subscribed) {
-			toast.success('取消订阅成功。');
+			toast.success(t('section_unsubscribe_success'));
 		} else {
-			toast.success('订阅成功，该专栏更新时你将会收到提醒。');
+			toast.success(t('section_subscribe_success'));
 		}
 		section.is_subscribed = !section.is_subscribed;
 		setSubscribing(false);
@@ -52,7 +53,9 @@ const SectionSubscribe = ({ section_id }: { section_id: string }) => {
 					className='shadow-none text-xs'
 					disabled={subscribing}
 					onClick={handleUpdateSubscribeStatue}>
-					{section?.is_subscribed ? '取消订阅' : '订阅专栏'}
+					{section?.is_subscribed
+						? t('section_unsubscribe')
+						: t('section_subscribe')}
 					{subscribing && <Loader2 className='animate-spin' />}
 				</Button>
 			</div>

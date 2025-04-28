@@ -6,7 +6,7 @@ import SectionInfo from './section-info';
 import SectionMarkdown from './section-markdown';
 
 const SectionContainer = ({ id }: { id: string }) => {
-	const { data: section, isFetching } = useQuery({
+	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
 			return getSectionDetail({ section_id: Number(id) });

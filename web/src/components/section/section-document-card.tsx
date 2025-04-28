@@ -1,5 +1,6 @@
 import { SectionDocumentInfo } from '@/generated';
 import { format } from 'date-fns';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
 
 const SectionDocumentCard = ({
@@ -7,6 +8,7 @@ const SectionDocumentCard = ({
 }: {
 	document: SectionDocumentInfo;
 }) => {
+	const t = useTranslations();
 	const router = useRouter();
 	return (
 		<div
@@ -14,33 +16,37 @@ const SectionDocumentCard = ({
 			className='relative bg-white dark:bg-black rounded ring-1 ring-inset dark:ring-white/10 ring-black/10 flex justify-between items-center p-5'>
 			<div className='flex flex-col gap-2'>
 				<div className='text-sm font-bold line-clamp-1'>
-					{document.title ? document.title : '无标题'}
+					{document.title
+						? document.title
+						: t('section_document_card_no_title')}
 				</div>
 				<div className='text-xs text-muted-foreground line-clamp-2'>
-					{document.description ? document.description : '无描述'}
+					{document.description
+						? document.description
+						: t('section_document_card_no_description')}
 				</div>
 				<div className='flex flex-row items-center gap-2 overflow-auto'>
 					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
-						文档类型：
+						{t('section_document_card_document_category_label') + ': '}
 						{document.category === 1
-							? '网站'
+							? t('section_document_card_document_category_link')
 							: document.category === 0
-							? '文件'
+							? t('section_document_card_document_category_file')
 							: document.category === 2
-							? '速记'
+							? t('section_document_card_document_category_quick_note')
 							: '其他'}
 					</div>
 					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
-						专栏补充状态：
+						{t('section_document_card_section_supplement') + ': '}
 						{document.status === 0
-							? '待补充'
+							? t('section_document_card_section_supplement_todo')
 							: document.status === 1
-							? '补充中'
+							? t('section_document_card_section_supplement_doing')
 							: document.status === 2
-							? '补充完成'
+							? t('section_document_card_section_supplement_done')
 							: document.status === 3
-							? '补充失败'
-							: '未知状态'}
+							? t('section_document_card_section_supplement_failed')
+							: t('section_document_card_section_supplement_unknown')}
 					</div>
 				</div>
 

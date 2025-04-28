@@ -1,4 +1,5 @@
 import { zhCN } from 'date-fns/locale/zh-CN';
+import { enUS } from 'date-fns/locale/en-US';
 import { getSectionDetail } from '@/service/section';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistance } from 'date-fns';
@@ -12,12 +13,15 @@ import SectionComments from './section-comments';
 import SectionSubscribe from './section-subscribe';
 import SectionDelete from './section-delete';
 import { Badge } from '../ui/badge';
+import { useLocale, useTranslations } from 'next-intl';
 
 const SectionInfo = ({ id }: { id: string }) => {
+	const locale = useLocale();
+	const t = useTranslations();
 	const router = useRouter();
 
 	const { userInfo } = useUserContext();
-	const { data: section, refetch } = useQuery({
+	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
 			return getSectionDetail({ section_id: Number(id) });
@@ -57,21 +61,23 @@ const SectionInfo = ({ id }: { id: string }) => {
 				{section?.update_time && (
 					<div className='px-5 mb-3'>
 						<p className='text-xs text-muted-foreground'>
-							最近更新于
+							{t('section_updated_at')}
 							{formatDistance(new Date(section.update_time), new Date(), {
 								addSuffix: true,
-								locale: zhCN,
+								locale: locale === 'zh' ? zhCN : enUS,
 							})}
 						</p>
 					</div>
 				)}
 				<div className='flex flex-row justify-between items-center px-5 mb-3'>
 					<div className='font-bold text-lg'>
-						{section?.title ? section?.title : '未命名'}
+						{section?.title ? section?.title : t('section_title_empty')}
 					</div>
 				</div>
 				<div className='text-sm text-muted-foreground mb-3 px-5'>
-					{section?.description ? section?.description : '暂无描述'}
+					{section?.description
+						? section?.description
+						: t('section_description_empty')}
 				</div>
 				{section?.labels && section.labels.length > 0 && (
 					<div className='flex flex-row gap-2 items-center px-5 mb-3 flex-wrap'>

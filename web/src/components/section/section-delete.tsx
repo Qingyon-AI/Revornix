@@ -16,8 +16,10 @@ import {
 import { Loader2 } from 'lucide-react';
 import { deleteSection } from '@/service/section';
 import { useRouter } from 'nextjs-toploader/app';
+import { useTranslations } from 'next-intl';
 
 const SectionDelete = ({ section_id }: { section_id: string }) => {
+	const t = useTranslations();
 	const router = useRouter();
 	const queryClient = getQueryClient();
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -34,7 +36,7 @@ const SectionDelete = ({ section_id }: { section_id: string }) => {
 			setDeleting(false);
 			return;
 		}
-		toast.success('删除成功');
+		toast.success(t('section_delete_success'));
 		setDeleting(false);
 		queryClient.invalidateQueries({
 			predicate(query) {
@@ -51,25 +53,27 @@ const SectionDelete = ({ section_id }: { section_id: string }) => {
 			<Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<DialogTrigger asChild>
 					<Button variant={'destructive'} className='text-xs'>
-						删除专栏
+						{t('section_delete')}
 					</Button>
 				</DialogTrigger>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>警告</DialogTitle>
+						<DialogTitle>{t('section_delete_alert_title')}</DialogTitle>
 						<DialogDescription>
-							确定要删除该专栏吗？删除专栏后所有订阅用户将自动清除！且此操作无法撤销！
+							{t('section_delete_alert_detail')}
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
 						<DialogClose asChild>
-							<Button variant={'secondary'}>取消</Button>
+							<Button variant={'secondary'}>
+								{t('section_delete_cancel')}
+							</Button>
 						</DialogClose>
 						<Button
 							variant={'destructive'}
 							onClick={handleDeleteSection}
 							disabled={deleting}>
-							确认删除
+							{t('section_delete_confirm')}
 							{deleting && <Loader2 className='animate-spin' />}
 						</Button>
 					</DialogFooter>

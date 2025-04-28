@@ -9,8 +9,10 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { getSectionDetail } from '@/service/section';
 import SectionDocumentCard from './section-document-card';
+import { useTranslations } from 'next-intl';
 
 const SectionDocument = ({ id }: { id: string }) => {
+	const t = useTranslations();
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
@@ -21,17 +23,15 @@ const SectionDocument = ({ id }: { id: string }) => {
 	return (
 		<Sheet>
 			<SheetTrigger className='text-xs underline w-fit'>
-				该专栏当前共收录并分析
-				<span className='font-bold text-sm px-1'>
-					{section?.documents?.length || 0}
-				</span>
-				篇文档
+				{t('section_documents_summary', {
+					section_documents_count: section?.documents?.length || 0,
+				})}
 			</SheetTrigger>
 			<SheetContent>
 				<SheetHeader>
-					<SheetTitle>关联文档</SheetTitle>
+					<SheetTitle>{t('section_documents')}</SheetTitle>
 					<SheetDescription>
-						这里可以查看本文章关联的所有文档。
+						{t('section_documents_description')}
 					</SheetDescription>
 				</SheetHeader>
 				<div className='px-5 flex flex-col gap-5 overflow-auto pb-5'>

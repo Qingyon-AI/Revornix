@@ -9,8 +9,10 @@ import rehypeRaw from 'rehype-raw';
 import Markdown from 'react-markdown';
 import { utils } from '@kinda/utils';
 import { getFile } from '@/service/file';
+import { useTranslations } from 'next-intl';
 
 const SectionMarkdown = ({ id }: { id: string }) => {
+	const t = useTranslations();
 	const {
 		data: section,
 		isFetching,
@@ -44,7 +46,7 @@ const SectionMarkdown = ({ id }: { id: string }) => {
 			setMarkdownGetError(e.message);
 		}
 	};
-	
+
 	useEffect(() => {
 		if (!section || !section?.md_file_name) return;
 		onGetMarkdown();
@@ -63,7 +65,7 @@ const SectionMarkdown = ({ id }: { id: string }) => {
 					section.documents.length === 0 && (
 						<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 							<div className='flex flex-col text-center gap-2'>
-								<p>该专栏暂无文档</p>
+								<p>{t('section_document_empty')}</p>
 							</div>
 						</div>
 					)}
@@ -71,7 +73,6 @@ const SectionMarkdown = ({ id }: { id: string }) => {
 					<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 						{error?.message ?? (
 							<div className='flex flex-col text-center gap-2'>
-								<p>获取markdown文件出错</p>
 								<p>{markdownGetError}</p>
 							</div>
 						)}
@@ -98,7 +99,7 @@ const SectionMarkdown = ({ id }: { id: string }) => {
 							{markdown}
 						</Markdown>
 						<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
-							本文由AI识别网站而来，请酌情识别信息。
+							{t('section_ai_tips')}
 						</p>
 					</div>
 				)}
