@@ -21,7 +21,9 @@ const DocumentContainer = ({ id }: { id: string }) => {
 				{document?.category === 2 && <QuickDocumentDetail id={id} />}
 			</div>
 
-			<Card className='flex-1 hidden py-0 md:flex overflow-hidden' style={{ flex: '1 1 0' }}>
+			<Card
+				className='flex-1 hidden py-0 md:flex overflow-hidden'
+				style={{ flex: '1 1 0' }}>
 				<DocumentInfo id={id} />
 			</Card>
 		</div>

@@ -16,6 +16,7 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { getFile } from '@/service/file';
 import { useInterval } from 'ahooks';
+import { useTranslations } from 'next-intl';
 
 const WebsiteDocumentDetail = ({
 	id,
@@ -24,6 +25,7 @@ const WebsiteDocumentDetail = ({
 	id: string;
 	className?: string;
 }) => {
+	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
@@ -58,7 +60,7 @@ const WebsiteDocumentDetail = ({
 				getFile(document?.website_info?.md_file_name)
 			);
 			if (!res || err) {
-				throw new Error('获取markdown文件出错');
+				throw new Error(err.message);
 			}
 			setMarkdown(res);
 		} catch (e: any) {
@@ -95,27 +97,23 @@ const WebsiteDocumentDetail = ({
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 					{error?.message ?? (
 						<div className='flex flex-col text-center gap-2'>
-							<p>获取markdown文件出错</p>
 							<p>{markdownGetError}</p>
 						</div>
 					)}
 				</div>
 			)}
-			{document && document.transform_task?.status === 1 && (
-				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs gap-5'>
-					网站markdown正在转化中，若要浏览markdown，请稍等，您可先浏览源站
-				</div>
-			)}
 			{document && document.transform_task?.status === 0 && (
 				<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 					<p className='flex flex-row items-center'>
-						<span className='mr-1'>文档待转化</span>
+						<span className='mr-1'>
+							{t('document_transform_to_markdown_todo')}
+						</span>
 						<Tooltip>
 							<TooltipTrigger>
 								<Info size={15} />
 							</TooltipTrigger>
 							<TooltipContent>
-								注意极个别情况下会出现转化服务中断的情况，如果你的文档很久都保持在待转化状态，此时请点击下方按钮进行重试
+								{t('document_transform_to_markdown_todo_tips')}
 							</TooltipContent>
 						</Tooltip>
 					</p>
@@ -126,7 +124,7 @@ const WebsiteDocumentDetail = ({
 						onClick={() => {
 							handleTransformToMarkdown();
 						}}>
-						重试
+						{t('retry')}
 						{markdownTransforming && (
 							<Loader2 className='size-4 animate-spin' />
 						)}
@@ -135,7 +133,7 @@ const WebsiteDocumentDetail = ({
 			)}
 			{document && document.transform_task?.status === 1 && (
 				<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
-					<p>文档转化中，请稍后再试</p>
+					<p>{t('website_document_transform_to_markdown_doing')}</p>
 					<div className='flex flex-row items-center gap-2'>
 						<Button
 							variant={'link'}
@@ -144,10 +142,10 @@ const WebsiteDocumentDetail = ({
 							onClick={() => {
 								refetch();
 							}}>
-							刷新
+							{t('refresh')}
 							{isRefetching && <Loader2 className='size-4 animate-spin' />}
 						</Button>
-						<span>或</span>
+						<span>{t('or')}</span>
 						<Button
 							variant={'link'}
 							className='h-fit p-0 text-xs'
@@ -155,7 +153,7 @@ const WebsiteDocumentDetail = ({
 							onClick={() => {
 								handleTransformToMarkdown();
 							}}>
-							重试
+							{t('retry')}
 							{markdownTransforming && (
 								<Loader2 className='size-4 animate-spin' />
 							)}
@@ -165,7 +163,7 @@ const WebsiteDocumentDetail = ({
 			)}
 			{document && document.transform_task?.status === 3 && (
 				<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
-					<p>文档markdown转化出错</p>
+					<p>{t('document_transform_to_markdown_failed')}</p>
 					<Button
 						variant={'link'}
 						className='h-fit p-0 text-xs'
@@ -173,7 +171,7 @@ const WebsiteDocumentDetail = ({
 						onClick={() => {
 							handleTransformToMarkdown();
 						}}>
-						重试
+						{t('retry')}
 						{markdownTransforming && (
 							<Loader2 className='size-4 animate-spin' />
 						)}
@@ -209,7 +207,7 @@ const WebsiteDocumentDetail = ({
 						{markdown}
 					</Markdown>
 					<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
-						本文由AI识别网站而来，请酌情识别信息。
+						{t('document_ai_tips')}
 					</p>
 				</div>
 			)}

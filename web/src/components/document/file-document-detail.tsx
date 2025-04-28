@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
 import { getFile } from '@/service/file';
 import { useInterval } from 'ahooks';
+import { useTranslations } from 'next-intl';
 
 const FileDocumentDetail = ({
 	id,
@@ -25,6 +26,7 @@ const FileDocumentDetail = ({
 	id: string;
 	className?: string;
 }) => {
+	const t = useTranslations()
 	const queryClient = getQueryClient();
 	const {
 		data: document,
@@ -66,7 +68,7 @@ const FileDocumentDetail = ({
 		}
 		setMarkdowningTransform(false);
 		queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
-		toast.success('重试已提交');
+		toast.success(t('document_transform_to_markdown_retry_submit_success'));
 		setDelay(1000);
 	};
 
@@ -77,7 +79,7 @@ const FileDocumentDetail = ({
 				getFile(document.file_info?.md_file_name)
 			);
 			if (!res || err) {
-				throw new Error('获取markdown文件出错');
+				throw new Error(err.message);
 			}
 			setMarkdown(res);
 		} catch (e: any) {
@@ -95,8 +97,7 @@ const FileDocumentDetail = ({
 			{((isError && error) || markdownGetError) && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 					{error?.message ?? (
-						<div className='flex flex-col text-center gap-2'>
-							<p>获取markdown文件出错</p>
+						<div className='flex flex-col text-center gap-2'>p>
 							<p>{markdownGetError}</p>
 						</div>
 					)}
@@ -104,19 +105,19 @@ const FileDocumentDetail = ({
 			)}
 			{document && document.transform_task?.status === 1 && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs gap-5'>
-					文件markdown正在转化中，若要浏览markdown，请稍等，您可先浏览原文件
+					{t('document_transform_to_markdown_doing')}
 				</div>
 			)}
 			{document && document.transform_task?.status === 0 && (
 				<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 					<p className='flex flex-row items-center'>
-						<span className='mr-1'>文档待转化</span>
+						<span className='mr-1'>{t('document_transform_to_markdown_todo')}</span>
 						<Tooltip>
 							<TooltipTrigger>
 								<Info size={15} />
 							</TooltipTrigger>
 							<TooltipContent>
-								注意极个别情况下会出现转化服务中断的情况，如果你的文档很久都保持在待转化状态，此时请点击下方按钮重新提交转化申请
+								{t('document_transform_to_markdown_todo_tips')}
 							</TooltipContent>
 						</Tooltip>
 					</p>
@@ -127,7 +128,7 @@ const FileDocumentDetail = ({
 						onClick={() => {
 							handleTransformToMarkdown();
 						}}>
-						重试
+							{t('retry')}
 						{markdownTransforming && (
 							<Loader2 className='size-4 animate-spin' />
 						)}
@@ -136,7 +137,7 @@ const FileDocumentDetail = ({
 			)}
 			{document && document.transform_task?.status === 3 && (
 				<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
-					<p>文档markdown转化出错</p>
+					<p>{t('document_transform_to_markdown_failed')}</p>
 					<Button
 						variant={'link'}
 						className='h-fit p-0 text-xs'
@@ -144,7 +145,7 @@ const FileDocumentDetail = ({
 						onClick={() => {
 							handleTransformToMarkdown();
 						}}>
-						重试
+						{t('retry')}
 						{markdownTransforming && (
 							<Loader2 className='size-4 animate-spin' />
 						)}
@@ -180,7 +181,7 @@ const FileDocumentDetail = ({
 						{markdown}
 					</Markdown>
 					<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
-						本文由AI识别文件而来，请酌情识别信息。
+						{t('document_ai_tips')}
 					</p>
 				</div>
 			)}

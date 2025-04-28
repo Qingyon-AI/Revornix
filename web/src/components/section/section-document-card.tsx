@@ -27,14 +27,14 @@ const SectionDocumentCard = ({
 				</div>
 				<div className='flex flex-row items-center gap-2 overflow-auto'>
 					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
-						{t('section_document_card_document_category_label') + ': '}
+						{t('document_category') + ': '}
 						{document.category === 1
-							? t('section_document_card_document_category_link')
+							? t('document_category_link')
 							: document.category === 0
-							? t('section_document_card_document_category_file')
+							? t('document_category_file')
 							: document.category === 2
-							? t('section_document_card_document_category_quick_note')
-							: '其他'}
+							? t('document_category_quick_note')
+							: t('document_category_others')}
 					</div>
 					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
 						{t('section_document_card_section_supplement') + ': '}

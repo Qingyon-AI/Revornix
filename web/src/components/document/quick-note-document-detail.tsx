@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import { getDocumentDetail, transformToMarkdown } from '@/service/document';
+import { getDocumentDetail } from '@/service/document';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -33,7 +33,6 @@ const QuickDocumentDetail = ({
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 					{error?.message ?? (
 						<div className='flex flex-col text-center gap-2'>
-							<p>获取文档数据出错</p>
 							<p>{error.message}</p>
 						</div>
 					)}

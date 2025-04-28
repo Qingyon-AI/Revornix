@@ -1,10 +1,12 @@
 import { DocumentInfo } from '@/generated';
 import { format } from 'date-fns';
 import { File, NotebookPen, Paperclip } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'nextjs-toploader/app';
 
 const DocumentCard = ({ document }: { document: DocumentInfo }) => {
+	const t = useTranslations();
 	const router = useRouter();
 	return (
 		<Link
@@ -31,10 +33,12 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 			)}
 			<div className='flex flex-col pb-2 flex-1'>
 				<h1 className='font-bold text-md mb-2 px-2 line-clamp-2'>
-					{document.title ? document.title : '未命名'}
+					{document.title ? document.title : t('document_no_title')}
 				</h1>
 				<p className='line-clamp-3 text-muted-foreground text-sm/6 px-2 mb-2 flex-1'>
-					{document.description ? document.description : '暂无描述'}
+					{document.description
+						? document.description
+						: t('document_no_description')}
 				</p>
 				{document?.labels && document.labels.length > 0 && (
 					<div className='flex flex-row gap-2 px-2 mb-2'>
@@ -56,37 +60,41 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 				)}
 				<div className='text-muted-foreground px-2 flex flex-row gap-1 items-center text-xs mt-auto mb-2'>
 					<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
-						来源：{document.from_plat === 'qingyun-web' ? '网站' : '其他'}
+						{t('document_from_plat') + ': '}
+						{document.from_plat === 'qingyun-web'
+							? t('document_from_plat_website')
+							: document.from_plat === 'api'
+							? t('document_from_plat_api')
+							: t('document_from_plat_others')}
 					</div>
 					<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
-						类型：
+						{t('document_category') + ': '}
 						{document.category === 1
-							? '网站'
+							? t('document_category_link')
 							: document.category === 0
-							? '文件'
+							? t('document_category_file')
 							: document.category === 2
-							? '速记'
-							: '其他'}
+							? t('document_category_quick_note')
+							: t('document_category_others')}
 					</div>
 					{document.transform_task && (
 						<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
-							MD状态：
+							{t('document_md_status') + ': '}
 							{document.transform_task?.status === 0
-								? '待转换'
+								? t('document_md_status_todo')
 								: document.transform_task?.status === 1
-								? '转换中'
+								? t('document_md_status_doing')
 								: document.transform_task?.status === 2
-								? '完成'
-								: '失败'}
+								? t('document_md_status_success')
+								: t('document_md_status_failed')}
 						</div>
 					)}
 				</div>
 				<div className='text-muted-foreground px-2 flex flex-row gap-1 items-center text-xs mt-auto'>
 					<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
-						最近更新：
-						{document.update_time
-							? format(new Date(document.update_time), 'MM-dd HH:mm')
-							: '未知时间'}
+						{t('document_last_update') + ': '}
+						{document.update_time &&
+							format(new Date(document.update_time), 'MM-dd HH:mm')}
 					</div>
 				</div>
 			</div>

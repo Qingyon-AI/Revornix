@@ -31,8 +31,10 @@ import Link from 'next/link';
 import { Badge } from '../ui/badge';
 import DocumentNotes from './document-notes';
 import { utils } from '@kinda/utils';
+import { useTranslations } from 'next-intl';
 
 const DocumentInfo = ({ id }: { id: string }) => {
+	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const router = useRouter();
 	const [aiSummaizing, setAiSummaizing] = useState(false);
@@ -124,7 +126,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 		mutationKey: ['deleteDocument', id],
 		mutationFn: () => deleteDocument({ document_ids: [Number(id)] }),
 		onSuccess: () => {
-			toast.success('删除成功');
+			toast.success(t('document_delete_success'));
 			queryClient.invalidateQueries({
 				predicate: (query) =>
 					query.queryKey.includes('searchUserUnreadDocument'),
@@ -132,23 +134,22 @@ const DocumentInfo = ({ id }: { id: string }) => {
 			setShowDeleteDocumentDialog(false);
 			router.back();
 		},
+		onError(error, variables, context) {
+			toast.error(t('document_delete_failed'));
+		},
 	});
 
 	const handleAiSummarize = async () => {
 		if (data?.transform_task?.status === 3) {
-			toast.error(
-				'监测到当前文档markdown格式已经转换失败，无法生成摘要，请先重新生成markdown'
-			);
+			toast.error(t('ai_summary_failed_as_markdown_transform_failed'));
 			return;
 		}
 		if (data?.transform_task?.status === 1) {
-			toast.error('当前文档正在转换markdown中，请稍后再试');
+			toast.error(t('ai_summary_failed_as_markdown_transform_doing'));
 			return;
 		}
 		if (data?.transform_task?.status === 0) {
-			toast.error(
-				'当前文档仍在转换markdown序列中，请稍后再试，若长时间未转换成功，请直接重试'
-			);
+			toast.error(t('ai_summary_failed_as_markdown_transform_waiting'));
 			return;
 		}
 		setAiSummaizing(true);
@@ -160,7 +161,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 			setAiSummaizing(false);
 			return;
 		}
-		toast.success('摘要生成成功');
+		toast.success(t('ai_summary_success'));
 		setAiSummaizing(false);
 		queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
 	};
@@ -177,7 +178,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 									variant={'outline'}
 									size={'sm'}
 									className='text-xs rounded-full'>
-									前往原站
+									{t('website_document_go_to_origin')}
 									<LinkIcon />
 								</Button>
 							</Link>
@@ -190,7 +191,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 									variant={'outline'}
 									size={'sm'}
 									className='text-xs rounded-full'>
-									查看原文件
+									{t('file_document_go_to_origin')}
 									<LinkIcon />
 								</Button>
 							</Link>
@@ -203,7 +204,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 							onClick={() => {
 								handleAiSummarize();
 							}}>
-							AI摘要
+							{t('ai_summary')}
 							{aiSummaizing && <Loader2 className='size-4 animate-spin' />}
 						</Button>
 						{data.is_star ? (
@@ -212,7 +213,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 								size={'sm'}
 								onClick={() => mutateStar.mutate()}
 								className='text-xs rounded-full'>
-								取消星标
+								{t('document_star_cancel')}
 								<StarOff />
 							</Button>
 						) : (
@@ -221,7 +222,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 								size={'sm'}
 								onClick={() => mutateStar.mutate()}
 								className='text-xs rounded-full'>
-								星标
+								{t('document_star')}
 								<Star />
 							</Button>
 						)}
@@ -231,7 +232,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 								size={'sm'}
 								onClick={() => mutateRead.mutate()}
 								className='text-xs rounded-full'>
-								标为未读
+								{t('document_read')}
 							</Button>
 						) : (
 							<Button
@@ -239,7 +240,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 								size={'sm'}
 								onClick={() => mutateRead.mutate()}
 								className='text-xs rounded-full'>
-								标为已读
+								{t('document_unread')}
 							</Button>
 						)}
 
@@ -251,25 +252,27 @@ const DocumentInfo = ({ id }: { id: string }) => {
 									size={'sm'}
 									variant={'destructive'}
 									className='text-xs rounded-full'>
-									删除文档
+									{t('document_delete')}
 								</Button>
 							</DialogTrigger>
 							<DialogContent>
 								<DialogHeader>
-									<DialogTitle>删除文档</DialogTitle>
+									<DialogTitle>{t('document_delete')}</DialogTitle>
 									<DialogDescription>
-										你确定要删除这个文档吗？
+										{t('document_delete_alert_description')}
 									</DialogDescription>
 								</DialogHeader>
 								<DialogFooter>
 									<DialogClose asChild>
-										<Button variant='outline'>取消</Button>
+										<Button variant='outline'>
+											{t('document_delete_cancel')}
+										</Button>
 									</DialogClose>
 									<Button
 										variant='destructive'
 										onClick={() => mutateDelete.mutate()}
 										disabled={mutateDelete.isPending}>
-										删除
+										{t('document_delete_confirm')}
 										{mutateDelete.isPending && (
 											<Loader2 className='size-4 animate-spin' />
 										)}
@@ -301,11 +304,13 @@ const DocumentInfo = ({ id }: { id: string }) => {
 						</PhotoProvider>
 						<div className='flex flex-row justify-between items-center px-5 mb-3'>
 							<div className='font-bold text-lg'>
-								{data.title ? data.title : '未命名'}
+								{data.title ? data.title : t('document_no_title')}
 							</div>
 						</div>
 						<div className='text-muted-foreground mb-3 px-5 text-sm/6'>
-							{data.description ? data.description : '暂无描述'}
+							{data.description
+								? data.description
+								: t('document_no_description')}
 						</div>
 						{data.creator && (
 							<div
@@ -324,17 +329,22 @@ const DocumentInfo = ({ id }: { id: string }) => {
 						)}
 						<div className='text-muted-foreground mb-3 px-5 flex flex-row gap-1 items-center text-xs'>
 							<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
-								来源：{data.from_plat === 'qingyun-web' ? '网站' : '其他'}
+								{t('document_from_plat') + ': '}
+								{data.from_plat === 'qingyun-web'
+									? t('document_from_plat_website')
+									: data.from_plat === 'api'
+									? t('document_from_plat_api')
+									: t('document_from_plat_others')}
 							</div>
 							<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
-								文档类型：
+								{t('document_category') + ': '}
 								{data.category === 1
-									? '网站'
+									? t('document_category_link')
 									: data.category === 0
-									? '文件'
+									? t('document_category_file')
 									: data.category === 2
-									? '速记'
-									: '其他'}
+									? t('document_category_quick_note')
+									: t('document_category_others')}
 							</div>
 						</div>
 						<div className='text-muted-foreground mb-3 px-5 flex flex-row gap-1 items-center text-xs'>
@@ -344,7 +354,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 										key={section.id}
 										className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'
 										href={`/section/detail/${section.id}`}>
-										{`相关专栏：${section.title}`}
+										{`${t('document_related_sections')}: ${section.title}`}
 									</Link>
 								);
 							})}
@@ -361,9 +371,9 @@ const DocumentInfo = ({ id }: { id: string }) => {
 							</div>
 						)}
 						<div className='text-sm rounded bg-black/5 dark:bg-white/5 p-5 mx-5 mb-3'>
-							<h1 className='text-lg font-bold mb-3'>AI 总结</h1>
+							<h1 className='text-lg font-bold mb-3'>{t('ai_summary')}</h1>
 							<p className='text-muted-foreground text-sm/6'>
-								{data.ai_summary ? data.ai_summary : '暂无总结'}
+								{data.ai_summary ? data.ai_summary : t('ai_summary_empty')}
 							</p>
 						</div>
 						<DocumentNotes id={id} />
