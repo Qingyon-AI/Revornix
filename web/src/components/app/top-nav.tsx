@@ -7,12 +7,14 @@ import {
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import routers, { findRouteByPath, RouteItem } from '@/config/router';
+import { useLocale } from 'next-intl';
 import Link from 'next/link';
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const TopNav = () => {
+	const locale = useLocale();
 	const pathname = usePathname();
 	const [crumbs, setCrumbs] = useState<RouteItem[]>([]);
 
@@ -21,10 +23,18 @@ const TopNav = () => {
 			.split('/')
 			.filter((path) => path !== '')
 			.map((path, index, array) => {
-				return {
-					title:
+				let title = '';
+				if (locale === 'zh') {
+					title =
 						findRouteByPath(routers, `/${array.slice(0, index + 1).join('/')}`)
-							?.title ?? '未命名路径',
+							?.title ?? '未命名路径';
+				} else if (locale === 'en') {
+					title =
+						findRouteByPath(routers, `/${array.slice(0, index + 1).join('/')}`)
+							?.title_en ?? 'Unnamed Path';
+				}
+				return {
+					title,
 					path: `/${array.slice(0, index + 1).join('/')}`,
 					unclickable: findRouteByPath(
 						routers,
