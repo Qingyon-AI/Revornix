@@ -250,7 +250,7 @@
     "document_notes": "Additional Notes",
     "document_notes_tips": "Currently, only the document creator can edit additional notes",
     "document_notes_empty": "No Notes Available",
-    "document_transform_to_markdown_doing": "Markdown conversion is in progress. Please wait to view the Markdown. You can browse the original site first.",
+    "document_transform_to_markdown_doing": "Markdown conversion is in progress. Please wait to view the Markdown. You can browse the original document first.",
     "document_transform_to_markdown_failed": "Error occurred during Markdown conversion",
     "document_transform_to_markdown_todo": "Document pending conversion",
     "document_transform_to_markdown_todo_tips": "Note: In rare cases, the conversion service may be interrupted. If your document remains pending for a long time, please click the button below to retry.",

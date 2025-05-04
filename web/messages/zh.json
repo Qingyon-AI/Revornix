@@ -250,7 +250,7 @@
     "document_notes": "追加笔记",
     "document_notes_tips": "暂时只支持文档创建者编辑追加笔记",
     "document_notes_empty": "暂无笔记",
-    "document_transform_to_markdown_doing": "Markdown正在转化中，若要浏览markdown，请稍等，您可先浏览源站",
+    "document_transform_to_markdown_doing": "Markdown正在转化中，若要浏览markdown，请稍等，您可先浏览原文档",
     "document_transform_to_markdown_failed": "文档markdown转化出错",
     "document_transform_to_markdown_todo": "文档待转化",
     "document_transform_to_markdown_todo_tips": "注意极个别情况下会出现转化服务中断的情况，如果你的文档很久都保持在待转化状态，此时请点击下方按钮进行重试",
