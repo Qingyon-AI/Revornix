@@ -1,8 +1,16 @@
 import json
-import os
+import crud
 from openai import OpenAI
+from common.sql import SessionLocal
 
-def summary_section(markdown_content: str):
+def summary_section(model_id: int, markdown_content: str):
+    db = SessionLocal()
+    db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    if db_model is None:
+        raise Exception("Model not found")
+    db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
+    if db_model_provider is None:
+        raise Exception("Model provider not found")
     system_prompt = f"""
     This is the entire content of the document, {markdown_content}. Please summarize it in markdown format and provide me with a markdown summary report. The word count should be no less than 800 words, but if the original content is short, the word count can be a bit lower. Also, please ensure that the response is in the following JSON format:
     {{
@@ -10,11 +18,11 @@ def summary_section(markdown_content: str):
     }}
     """
     client = OpenAI(
-        api_key=os.environ.get("MOONSHOT_API_KEY"),
-        base_url="https://api.moonshot.cn/v1",
+        api_key=db_model_provider.api_key,
+        base_url=db_model_provider.api_url,
     )
     completion = client.chat.completions.create(
-        model="kimi-latest",
+        model=db_model.name,
         messages=[
             {"role": "system", "content": "You are an expert in summarizing document content."},
             {"role": "user", "content": system_prompt}
@@ -29,7 +37,14 @@ def summary_section(markdown_content: str):
         "summary": summary
     }
 
-def summary_section_with_origin(origin_section_markdown_content: str, new_document_markdown_content: str):
+def summary_section_with_origin(model_id, origin_section_markdown_content: str, new_document_markdown_content: str):
+    db = SessionLocal()
+    db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    if db_model is None:
+        raise Exception("Model not found")
+    db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
+    if db_model_provider is None:
+        raise Exception("Model provider not found")
     system_prompt = f"""
     This is a summary document that consolidates several foundational documents, {origin_section_markdown_content}. This is the latest document, {new_document_markdown_content}. I hope you can use the original summary document and the new document to create a new, more complete markdown format summary report for me. The report should be in a format that allows for easy overall review, with a word count of at least 800 words. If the original content is short, the word count can be slightly lower. Please make sure to output your response in the following JSON format:
     {{
@@ -37,11 +52,11 @@ def summary_section_with_origin(origin_section_markdown_content: str, new_docume
     }}
     """
     client = OpenAI(
-        api_key=os.environ.get("MOONSHOT_API_KEY"),
-        base_url="https://api.moonshot.cn/v1",
+        api_key=db_model_provider.api_key,
+        base_url=db_model_provider.api_url,
     )
     completion = client.chat.completions.create(
-        model="kimi-latest",
+        model=db_model.name,
         messages=[
             {"role": "system", "content": "You are an expert in summarizing document content."},
             {"role": "user", "content": system_prompt}
@@ -56,9 +71,16 @@ def summary_section_with_origin(origin_section_markdown_content: str, new_docume
         "summary": summary
     }
     
-def summary_document(markdown_content: str):
+def summary_document(model_id: int, markdown_content: str):
+    db = SessionLocal()
+    db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    if db_model is None:
+        raise Exception("Model not found")
+    db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
+    if db_model_provider is None:
+        raise Exception("Model provider not found")
     system_prompt = f"""
-    This is the entire content of the document, {markdown_content}. Please summarize it in Chinese by providing a title, a brief description, and an overview of the content. The title should be around 10 characters, the description should be no less than 100 characters, and the summary should be between 300 and 600 characters. Please ensure to output your response in the following JSON format:
+    This is the entire content of the document, {markdown_content}. Please summarize it using the document's language by providing a title, a brief description, and an overview of the content. The title should be around 10 characters, the description should be no less than 100 characters, and the summary should be between 300 and 600 characters. Please ensure to output your response in the following JSON format:
     {{
     "title": "Title",
     "description": "Description",
@@ -66,11 +88,11 @@ def summary_document(markdown_content: str):
     }}
     """
     client = OpenAI(
-        api_key=os.environ.get("MOONSHOT_API_KEY"),
-        base_url="https://api.moonshot.cn/v1",
+        api_key=db_model_provider.api_key,
+        base_url=db_model_provider.api_url,
     )
     completion = client.chat.completions.create(
-        model="kimi-latest",
+        model=db_model.name,
         messages=[
             {"role": "system", "content": "You are an expert in summarizing document content."},
             {"role": "user", "content": system_prompt}

@@ -260,7 +260,8 @@ async def handle_update_ai_summary(document_id: int,
             quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
                                                                                        document_id=document_id)
             markdown_content = quick_note_document.content
-        ai_summary_result = summary_document(markdown_content)
+        model_id = crud.user.get_user_by_id(db=db, user_id=user_id).default_document_reader_model_id
+        ai_summary_result = summary_document(model_id=model_id, markdown_content=markdown_content)
         crud.document.update_document_by_document_id(db=db,
                                                      document_id=document_id,
                                                      title=ai_summary_result.get('title'),
