@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -9,7 +9,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,50 +21,131 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Card } from '@/components/ui/card';
-
-interface ModelConfig {
-	api_key: string;
-	provider: string;
-	description: string;
-	is_active: boolean;
-	api_base: string;
-}
+import {
+	Card,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
+import {
+	getAiModelProvider,
+	searchAiModelProvider,
+	updateAiModelProvider,
+} from '@/service/ai';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
+import { utils } from '@kinda/utils';
+import { Loader2 } from 'lucide-react';
+import { getQueryClient } from '@/lib/get-query-client';
 
 const formSchema = z.object({
 	api_key: z.string().min(1, 'API Key is required'),
-	provider: z.string().min(1, 'Provider is required'),
-	description: z.string().min(1, 'Description is required'),
-	is_active: z.boolean(),
-	api_base: z.string().optional(),
+	api_url: z.string().optional(),
 });
 
 const ModelSettingPage = () => {
+	const t = useTranslations();
+	const queryClient = getQueryClient();
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			api_key: '',
-			provider: '',
-			description: '',
-			is_active: false,
-			api_base: '',
+			api_url: '',
 		},
 	});
-	const [showModelConfigDialog, setShowModelConfigDialog] = useState(false);
-	const [currentConfig, setCurrentConfig] = useState<ModelConfig | null>(null);
+	const [showModelProviderConfigDialog, setShowModelProviderConfigDialog] =
+		useState(false);
+	const [chosedProviderId, setChosedProviderId] = useState<number | null>(null);
+
+	const [submitUpdating, startSubmitUpdating] = useTransition();
+
+	const {
+		data: modelProviders,
+		isFetching,
+		error,
+	} = useQuery({
+		queryKey: ['getModelProviders'],
+		queryFn: () =>
+			searchAiModelProvider({
+				keyword: '',
+			}),
+	});
+
+	const { data: modelProvider } = useQuery({
+		queryKey: ['getModelProvider', chosedProviderId],
+		queryFn: () => {
+			if (!chosedProviderId) {
+				return null;
+			}
+			return getAiModelProvider({
+				provider_id: chosedProviderId,
+			});
+		},
+		enabled: !!chosedProviderId,
+	});
+
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+		if (event) {
+			if (typeof event.preventDefault === 'function') {
+				event.preventDefault();
+			}
+			if (typeof event.stopPropagation === 'function') {
+				event.stopPropagation();
+			}
+		}
+		return form.handleSubmit(onFormValidateSuccess, onFormValidateError)(event);
+	};
+
+	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
+		if (!chosedProviderId) return;
+		startSubmitUpdating(async () => {
+			const [res, err] = await utils.to(
+				updateAiModelProvider({
+					id: chosedProviderId,
+					...values,
+				})
+			);
+			if (err) {
+				toast.error(err.message);
+				return;
+			}
+			toast.success('更新成功');
+			setShowModelProviderConfigDialog(false);
+			queryClient.invalidateQueries({
+				queryKey: ['getModelProvider', chosedProviderId],
+			});
+		});
+	};
+
+	const onFormValidateError = (errors: any) => {
+		console.log(errors);
+		toast.error(t('form_validate_failed'));
+	};
+
+	useEffect(() => {
+		if (modelProvider) {
+			form.reset({
+				api_key: modelProvider.api_key,
+				api_url: modelProvider.api_url,
+			});
+		}
+	}, [modelProvider]);
 	return (
 		<>
 			<Dialog
-				open={showModelConfigDialog}
-				onOpenChange={setShowModelConfigDialog}>
-				<DialogContent>
+				open={showModelProviderConfigDialog}
+				onOpenChange={setShowModelProviderConfigDialog}>
+				<DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
 					<DialogHeader>
-						<DialogTitle>{currentConfig?.provider}</DialogTitle>
-						<DialogDescription>{currentConfig?.description}</DialogDescription>
+						<DialogTitle>{modelProvider?.name}</DialogTitle>
+						<DialogDescription>{modelProvider?.description}</DialogDescription>
 					</DialogHeader>
 					<div>
 						<Form {...form}>
-							<form className='flex flex-col gap-5'>
+							<form className='flex flex-col gap-5' onSubmit={handleSubmit}>
 								<FormField
 									control={form.control}
 									name='api_key'
@@ -86,7 +166,7 @@ const ModelSettingPage = () => {
 								/>
 								<FormField
 									control={form.control}
-									name='api_base'
+									name='api_url'
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
@@ -101,65 +181,42 @@ const ModelSettingPage = () => {
 										</FormItem>
 									)}
 								/>
-								<FormField
-									control={form.control}
-									name='is_active'
-									render={({ field }) => (
-										<FormItem>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-2'>是否激活</FormLabel>
-												<div className='col-span-10 flex justify-end space-x-2'>
-													<Switch
-														className='mr-0'
-														checked={field.value}
-														onCheckedChange={field.onChange}
-													/>
-												</div>
-											</div>
-											<FormMessage />
-										</FormItem>
+								<Button type='submit' disabled={submitUpdating}>
+									保存
+									{submitUpdating && (
+										<Loader2 className='h-4 w-4 animate-spin' />
 									)}
-								/>
-								<Button type='submit'>保存</Button>
+								</Button>
 							</form>
 						</Form>
 					</div>
 				</DialogContent>
 			</Dialog>
-			<div className='px-5 pb-5'>
-				<Card className='flex gap-5 flex-col px-5'>
-					<div className='flex justify-between items-center'>
-						<h2 className='font-bold'>Open AI</h2>
-						<Button
-							onClick={() => {
-								setCurrentConfig({
-									api_key: '',
-									provider: 'Open AI',
-									description: 'Open AI',
-									is_active: true,
-									api_base: '',
-								});
-								setShowModelConfigDialog(true);
-							}}>
-							APIKEY配置
-						</Button>
+			<div className='px-5 pb-5 w-full h-full'>
+				{isFetching && <Skeleton className='w-full h-full' />}
+				{!isFetching && modelProviders && modelProviders.data && (
+					<div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+						{modelProviders.data.map((modelProvider, index) => (
+							<Card key={modelProvider.id}>
+								<CardHeader>
+									<CardTitle>{modelProvider.name}</CardTitle>
+									<CardDescription>{modelProvider.description}</CardDescription>
+								</CardHeader>
+								<CardFooter className='flex justify-end'>
+									<Button
+										variant={'outline'}
+										className='text-xs shadow-none'
+										onClick={() => {
+											setChosedProviderId(modelProvider.id);
+											setShowModelProviderConfigDialog(true);
+										}}>
+										配置该模型供应
+									</Button>
+								</CardFooter>
+							</Card>
+						))}
 					</div>
-					<Separator />
-					<div className='flex justify-between items-center'>
-						<h2 className='font-bold'>Moonshot</h2>
-						<Button>APIKEY配置</Button>
-					</div>
-					<Separator />
-					<div className='flex justify-between items-center'>
-						<h2 className='font-bold'>Ollama</h2>
-						<Button>APIKEY配置</Button>
-					</div>
-					<Separator />
-					<div className='flex justify-between items-center'>
-						<h2 className='font-bold'>DeepSeek</h2>
-						<Button>APIKEY配置</Button>
-					</div>
-				</Card>
+				)}
 			</div>
 		</>
 	);

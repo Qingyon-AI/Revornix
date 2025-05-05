@@ -32,6 +32,12 @@ class ModelProviderCreateRequest(BaseModel):
     api_key: str
     api_url: str
     
+class ModelRequest(BaseModel):
+    model_id: int
+    
+class ModelProviderRequest(BaseModel):
+    provider_id: int
+    
 class DeleteModelRequest(BaseModel):
     model_ids: list[int] | None = None
     

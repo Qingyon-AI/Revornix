@@ -27,6 +27,26 @@ async def create_model(model_create_request: schemas.ai.ModelCreateRequest,
                                 api_url=model_create_request.api_url)
      db.commit()
      return schemas.common.SuccessResponse()
+
+@ai_router.post("/model/detail", response_model=schemas.ai.Model)
+async def get_ai_model(model_request: schemas.ai.ModelRequest,
+                       db: Session = Depends(get_db),
+                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    data = crud.model.get_ai_model_by_id(db=db,
+                                         model_id=model_request.model_id)
+    if data is None:
+        raise schemas.error.CustomException("The model is not exist", code=404)
+    return data
+
+@ai_router.post("/model-provider/detail", response_model=schemas.ai.ModelProvider)
+async def get_ai_model(model_provider_request: schemas.ai.ModelProviderRequest,
+                       db: Session = Depends(get_db),
+                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    data = crud.model.get_ai_model_provider_by_id(db=db,
+                                                  provider_id=model_provider_request.provider_id)
+    if data is None:
+        raise schemas.error.CustomException("The model provider is not exist", code=404)
+    return data
  
 @ai_router.post("/model-provider/create", response_model=schemas.common.NormalResponse)
 async def create_model_provider(model_provider_request: schemas.ai.ModelProviderCreateRequest,

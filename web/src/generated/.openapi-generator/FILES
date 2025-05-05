@@ -26,6 +26,7 @@ models/CreateNotificationRequest.ts
 models/DailyReportStatusChangeRequest.ts
 models/DaySectionRequest.ts
 models/DaySectionResponse.ts
+models/DeleteModelRequest.ts
 models/DeleteNotificationRequest.ts
 models/Document.ts
 models/DocumentAiSummaryRequest.ts
@@ -57,6 +58,18 @@ models/Label.ts
 models/LabelAddRequest.ts
 models/LabelListResponse.ts
 models/Message.ts
+models/Model.ts
+models/ModelCreateRequest.ts
+models/ModelProvider.ts
+models/ModelProviderCreateRequest.ts
+models/ModelProviderRequest.ts
+models/ModelProviderSearchRequest.ts
+models/ModelProviderSearchResponse.ts
+models/ModelProviderUpdateRequest.ts
+models/ModelRequest.ts
+models/ModelSearchRequest.ts
+models/ModelSearchResponse.ts
+models/ModelUpdateRequest.ts
 models/NormalResponse.ts
 models/Notification.ts
 models/NotificationDetailRequest.ts
