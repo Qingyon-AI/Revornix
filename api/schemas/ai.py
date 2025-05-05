@@ -1,5 +1,72 @@
 from pydantic import BaseModel
     
+class ModelCreateRequest(BaseModel):
+    name: str
+    description: str
+    provider_id: int
+    api_key: str
+    api_url: str
+    
+class ModelProvider(BaseModel):
+    id: int
+    name: str
+    description: str
+    api_key: str
+    api_url: str
+    class Config:
+        from_attributes = True
+        
+class Model(BaseModel):
+    id: int
+    name: str
+    description: str
+    api_key: str
+    api_url: str
+    provider: ModelProvider | None = None
+    class Config:
+        from_attributes = True
+
+class ModelProviderCreateRequest(BaseModel):
+    name: str
+    description: str | None = None
+    api_key: str
+    api_url: str
+    
+class DeleteModelRequest(BaseModel):
+    model_ids: list[int] | None = None
+    
+class ModelSearchRequest(BaseModel):
+    keyword: str | None = None
+    provider_id: int | None = None
+    
+class ModelSearchResponse(BaseModel):
+    data: list[Model] | None = None
+    class Config:
+        from_attributes = True
+        
+class ModelProviderSearchRequest(BaseModel):
+    keyword: str | None = None
+    provider_id: int | None = None
+        
+class ModelProviderSearchResponse(BaseModel):
+    data: list[ModelProvider] | None = None
+    class Config:
+        from_attributes = True
+        
+class ModelUpdateRequest(BaseModel):
+    id: int
+    name: str | None = None
+    description: str | None = None
+    api_key: str | None = None
+    api_url: str | None = None
+    
+class ModelProviderUpdateRequest(BaseModel):
+    id: int
+    name: str | None = None
+    description: str | None = None
+    api_key: str | None = None
+    api_url: str | None = None
+    
 class Document(BaseModel):
     id: int
     title: str

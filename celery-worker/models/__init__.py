@@ -4,3 +4,4 @@ from . import user
 from . import notification
 from . import attachment
 from . import task
+from . import model
