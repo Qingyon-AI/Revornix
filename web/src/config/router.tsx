@@ -19,7 +19,13 @@ const routers: RouteItem[] = [
 		children: [
 			{
 				title: '面板设计',
+				title_en: 'Panel Design',
 				path: '/dashboard',
+			},
+			{
+				title: '模型配置',
+				title_en: 'Model Config',
+				path: '/model',
 			},
 		],
 	},

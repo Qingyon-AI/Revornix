@@ -1,5 +1,5 @@
-import AIChatHydratedClient from '@/components/linkai/ai-chat-hydrated-client';
-import RevornixAI from '@/components/linkai/revornix-ai-chat-container';
+import AIChatHydratedClient from '@/components/revornixai/ai-chat-hydrated-client';
+import RevornixAI from '@/components/revornixai/revornix-ai-chat-container';
 import { AIChatProvider } from '@/provider/ai-chat-provider';
 
 const AIChatPage = () => {
