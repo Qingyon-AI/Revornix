@@ -3,8 +3,10 @@
 import { ModeToggle } from '@/components/app/mode-toggle';
 import DailyReportStatus from '@/components/setting/daily-report-status';
 import DailyReportTime from '@/components/setting/daily-report-time';
+import DocumentSummaryModel from '@/components/setting/document-summary-model';
 import LanguageChange from '@/components/setting/language-change';
 import ModelCollection from '@/components/setting/model-collection';
+import RevornixAIModel from '@/components/setting/revornix-ai-model';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -79,7 +81,7 @@ const SettingPage = () => {
 							Revornix AI应答模型
 						</Label>
 						<div className='flex flex-col gap-2'>
-							DeepSeek
+							<RevornixAIModel />
 						</div>
 					</div>
 					<Separator />
@@ -88,7 +90,7 @@ const SettingPage = () => {
 							文章内容总结模型
 						</Label>
 						<div className='flex flex-col gap-2'>
-							Kimi
+							<DocumentSummaryModel />
 						</div>
 					</div>
 					<Separator />
@@ -96,9 +98,7 @@ const SettingPage = () => {
 						<Label className='flex flex-col gap-2 items-start'>
 							网站爬取引擎
 						</Label>
-						<div className='flex flex-col gap-2'>
-							Jina
-						</div>
+						<div className='flex flex-col gap-2'>Jina</div>
 					</div>
 					<Separator />
 					<div className='flex justify-between items-center'>

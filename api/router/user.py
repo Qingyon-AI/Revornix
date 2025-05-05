@@ -18,6 +18,17 @@ from common.cron import time_to_cron, cron_to_time
 
 user_router = APIRouter()
 
+@user_router.post('/default-model/update', response_model=schemas.common.NormalResponse)
+async def update_default_model(default_model_update_request: schemas.user.DefaultModelUpdateRequest,
+                                user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                                db: Session = Depends(get_db)):
+    crud.user.update_user_default_model(db=db, 
+                                        user_id=user.id, 
+                                        default_document_reader_model_id=default_model_update_request.default_document_reader_model_id, 
+                                        default_revornix_model_id=default_model_update_request.default_revornix_model_id)
+    db.commit()
+    return schemas.common.SuccessResponse(message="The default model is updated successfully.")
+
 @user_router.post('/daily-report', response_model=schemas.common.NormalResponse)
 async def daily_report(daily_report_status_change_request: schemas.user.DailyReportStatusChangeRequest,
                        user: schemas.user.PrivateUserInfo = Depends(get_current_user),
@@ -274,7 +285,9 @@ async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user)
     res = schemas.user.PrivateUserInfo(id=user.id,
                                        nickname=user.nickname,
                                        slogan=user.slogan,
-                                       avatar=user.avatar)
+                                       avatar=user.avatar,
+                                       default_document_reader_model_id=user.default_document_reader_model_id,
+                                       default_revornix_model_id=user.default_revornix_model_id)
     email_user = crud.user.get_email_user_by_user_id(db=db, 
                                                      user_id=user.id)
     if email_user is not None:

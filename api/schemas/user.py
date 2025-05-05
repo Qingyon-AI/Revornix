@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 from .attachment import AttachmentInfo
 
+class DefaultModelUpdateRequest(BaseModel):
+    default_document_reader_model_id: int | None = None
+    default_revornix_model_id: int | None = None
+
 class DailyReportStatusChangeRequest(BaseModel):
     status: bool
     run_time: str | None = None # "00:00:00" 格式
@@ -70,6 +74,8 @@ class PrivateUserInfo(BaseModel):
     nickname: str | None = None
     slogan: str | None = None
     email_info: EmailInfo | None = None
+    default_document_reader_model_id: int | None = None
+    default_revornix_model_id: int | None = None
 
     class Config:
         from_attributes = True

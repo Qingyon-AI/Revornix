@@ -18,6 +18,7 @@ export * from './CreateNotificationRequest';
 export * from './DailyReportStatusChangeRequest';
 export * from './DaySectionRequest';
 export * from './DaySectionResponse';
+export * from './DefaultModelUpdateRequest';
 export * from './DeleteModelRequest';
 export * from './DeleteNotificationRequest';
 export * from './Document';

@@ -88,6 +88,18 @@ export interface PrivateUserInfo {
      * @memberof PrivateUserInfo
      */
     email_info?: EmailInfo | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof PrivateUserInfo
+     */
+    default_document_reader_model_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof PrivateUserInfo
+     */
+    default_revornix_model_id?: number | null;
 }
 
 /**
@@ -117,6 +129,8 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'nickname': json['nickname'] == null ? undefined : json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'email_info': json['email_info'] == null ? undefined : EmailInfoFromJSON(json['email_info']),
+        'default_document_reader_model_id': json['default_document_reader_model_id'] == null ? undefined : json['default_document_reader_model_id'],
+        'default_revornix_model_id': json['default_revornix_model_id'] == null ? undefined : json['default_revornix_model_id'],
     };
 }
 
@@ -140,6 +154,8 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'nickname': value['nickname'],
         'slogan': value['slogan'],
         'email_info': EmailInfoToJSON(value['email_info']),
+        'default_document_reader_model_id': value['default_document_reader_model_id'],
+        'default_revornix_model_id': value['default_revornix_model_id'],
     };
 }
 

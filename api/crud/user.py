@@ -255,6 +255,24 @@ def update_user_follow_by_to_user_id_and_from_user_id(db: Session,
     db.flush()
     return db_user_follow
     
+def update_user_default_model(db: Session,
+                              user_id: int,
+                              default_document_reader_model_id: int | None = None,
+                              default_revornix_model_id: int | None = None):
+    now = datetime.now(timezone.utc)
+    db_user_query = db.query(models.user.User)
+    db_user_query = db_user_query.filter(models.user.User.id == user_id,
+                                        models.user.User.delete_at == None)
+    db_user = db_user_query.first()
+    if db_user is None:
+        raise Exception("Can't find the user info based on the user_id you provided.")
+    if default_document_reader_model_id is not None:
+        db_user.default_document_reader_model_id = default_document_reader_model_id
+    if default_revornix_model_id is not None:
+        db_user.default_revornix_model_id = default_revornix_model_id
+    db_user.update_time = now
+    db.flush()
+    return db_user
 
 def update_user_info(db: Session,
                      user_id: int,

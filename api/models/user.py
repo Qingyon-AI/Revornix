@@ -40,6 +40,8 @@ class User(Base):
     gender = Column(Integer, comment='0: unk, 1: male, 2: female')
     age = Column(Integer)
     is_forbidden = Column(Boolean, default=False)
+    default_document_reader_model_id = Column(Integer, ForeignKey("ai_model.id"), index=True)
+    default_revornix_model_id = Column(Integer, ForeignKey("ai_model.id"), index=True)
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True))

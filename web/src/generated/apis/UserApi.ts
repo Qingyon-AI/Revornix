@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   BindEmailVerifyRequest,
   DailyReportStatusChangeRequest,
+  DefaultModelUpdateRequest,
   EmailUserCreateVerifyRequest,
   FollowUserRequest,
   HTTPValidationError,
@@ -39,6 +40,8 @@ import {
     BindEmailVerifyRequestToJSON,
     DailyReportStatusChangeRequestFromJSON,
     DailyReportStatusChangeRequestToJSON,
+    DefaultModelUpdateRequestFromJSON,
+    DefaultModelUpdateRequestToJSON,
     EmailUserCreateVerifyRequestFromJSON,
     EmailUserCreateVerifyRequestToJSON,
     FollowUserRequestFromJSON,
@@ -122,6 +125,12 @@ export interface SearchUserFansUserFansPostRequest {
 
 export interface SearchUserFollowsUserFollowsPostRequest {
     searchUserFollowsRequest: SearchUserFollowsRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UpdateDefaultModelUserDefaultModelUpdatePostRequest {
+    defaultModelUpdateRequest: DefaultModelUpdateRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -544,6 +553,50 @@ export class UserApi extends runtime.BaseAPI {
      */
     async searchUserFollowsUserFollowsPost(requestParameters: SearchUserFollowsUserFollowsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionUserPublicInfo> {
         const response = await this.searchUserFollowsUserFollowsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update Default Model
+     */
+    async updateDefaultModelUserDefaultModelUpdatePostRaw(requestParameters: UpdateDefaultModelUserDefaultModelUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['defaultModelUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'defaultModelUpdateRequest',
+                'Required parameter "defaultModelUpdateRequest" was null or undefined when calling updateDefaultModelUserDefaultModelUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+        const response = await this.request({
+            path: `/user/default-model/update`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DefaultModelUpdateRequestToJSON(requestParameters['defaultModelUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update Default Model
+     */
+    async updateDefaultModelUserDefaultModelUpdatePost(requestParameters: UpdateDefaultModelUserDefaultModelUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.updateDefaultModelUserDefaultModelUpdatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
