@@ -62,7 +62,7 @@ export interface Model {
      * @type {ModelProvider}
      * @memberof Model
      */
-    provider?: ModelProvider | null;
+    provider: ModelProvider;
 }
 
 /**
@@ -74,6 +74,7 @@ export function instanceOfModel(value: object): value is Model {
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('api_key' in value) || value['api_key'] === undefined) return false;
     if (!('api_url' in value) || value['api_url'] === undefined) return false;
+    if (!('provider' in value) || value['provider'] === undefined) return false;
     return true;
 }
 
@@ -92,7 +93,7 @@ export function ModelFromJSONTyped(json: any, ignoreDiscriminator: boolean): Mod
         'description': json['description'],
         'api_key': json['api_key'],
         'api_url': json['api_url'],
-        'provider': json['provider'] == null ? undefined : ModelProviderFromJSON(json['provider']),
+        'provider': ModelProviderFromJSON(json['provider']),
     };
 }
 

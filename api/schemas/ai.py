@@ -22,7 +22,7 @@ class Model(BaseModel):
     description: str
     api_key: str
     api_url: str
-    provider: ModelProvider | None = None
+    provider: ModelProvider
     class Config:
         from_attributes = True
 

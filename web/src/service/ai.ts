@@ -20,7 +20,7 @@ export const createAiModelProvider = async (data: ModelProviderCreateRequest) =>
     })
 }
 
-export const searchAiModel = async (data: ModelSearchRequest) => {
+export const searchAiModel = async (data: ModelSearchRequest): Promise<ModelSearchResponse> => {
     return await request(aiApi.searchAiModel, {
         data: data
     })

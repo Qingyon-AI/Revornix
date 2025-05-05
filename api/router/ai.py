@@ -2,6 +2,7 @@ import json
 import crud
 import schemas
 import os
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from openai import OpenAI
 from fastapi import APIRouter, Depends
@@ -36,6 +37,10 @@ async def get_ai_model(model_request: schemas.ai.ModelRequest,
                                          model_id=model_request.model_id)
     if data is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
+    
+    provider = crud.model.get_ai_model_provider_by_id(db=db,
+                                                      provider_id=data.provider_id)
+    data.provider = provider
     return data
 
 @ai_router.post("/model-provider/detail", response_model=schemas.ai.ModelProvider)
@@ -67,6 +72,7 @@ async def delete_ai_model(delete_model_request: schemas.ai.DeleteModelRequest,
      crud.model.delete_ai_models(db=db, 
                                  model_ids=delete_model_request.model_ids)
      db.commit()
+     return schemas.common.SuccessResponse()
      
 @ai_router.post("/model/search", response_model=schemas.ai.ModelSearchResponse)
 async def list_ai_model(model_search_request: schemas.ai.ModelSearchRequest,
@@ -93,6 +99,7 @@ async def list_ai_model_provider(model_provider_search_request: schemas.ai.Model
 async def update_ai_model(model_update_request: schemas.ai.ModelUpdateRequest,
                           db: Session = Depends(get_db),
                           user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    now = datetime.now(timezone.utc)
     db_ai_model = crud.model.get_ai_model_by_id(db=db,
                                                 model_id=model_update_request.id)
     if db_ai_model is None:
@@ -105,6 +112,7 @@ async def update_ai_model(model_update_request: schemas.ai.ModelUpdateRequest,
         db_ai_model.api_key = model_update_request.api_key
     if model_update_request.api_url is not None:
         db_ai_model.api_url = model_update_request.api_url
+    db_ai_model.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()
 
@@ -112,20 +120,22 @@ async def update_ai_model(model_update_request: schemas.ai.ModelUpdateRequest,
 async def update_ai_model_provider(model_provider_update_request: schemas.ai.ModelProviderUpdateRequest,
                                    db: Session = Depends(get_db),
                                    user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-     db_ai_model_provider = crud.model.get_ai_model_provider_by_id(db=db,
-                                                                   provider_id=model_provider_update_request.id)
-     if db_ai_model_provider is None:
-          raise schemas.error.CustomException("The model provider is not exist", code=404)
-     if model_provider_update_request.name is not None:
-          db_ai_model_provider.name = model_provider_update_request.name
-     if model_provider_update_request.description is not None:
-          db_ai_model_provider.description = model_provider_update_request.description
-     if model_provider_update_request.api_key is not None:
-          db_ai_model_provider.api_key = model_provider_update_request.api_key
-     if model_provider_update_request.api_url is not None:
-          db_ai_model_provider.api_url = model_provider_update_request.api_url
-     db.commit()
-     return schemas.common.SuccessResponse()
+    now = datetime.now(timezone.utc)
+    db_ai_model_provider = crud.model.get_ai_model_provider_by_id(db=db,
+                                                                  provider_id=model_provider_update_request.id)
+    if db_ai_model_provider is None:
+        raise schemas.error.CustomException("The model provider is not exist", code=404)
+    if model_provider_update_request.name is not None:
+        db_ai_model_provider.name = model_provider_update_request.name
+    if model_provider_update_request.description is not None:
+        db_ai_model_provider.description = model_provider_update_request.description
+    if model_provider_update_request.api_key is not None:
+        db_ai_model_provider.api_key = model_provider_update_request.api_key
+    if model_provider_update_request.api_url is not None:
+        db_ai_model_provider.api_url = model_provider_update_request.api_url
+    db_ai_model_provider.update_time = now
+    db.commit()
+    return schemas.common.SuccessResponse()
 
 @ai_router.post("/ask")
 async def ask_ai(chat_messages: schemas.ai.ChatMessages, 
