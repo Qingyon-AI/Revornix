@@ -151,30 +151,31 @@ async def ask_ai(chat_messages: schemas.ai.ChatMessages,
     )
     base_docs = [doc.get('entity').get('text') for doc in hybrid_results]
     temp_messages = [{"role": message.role, "content": message.content} for message in chat_messages.messages[:-1]]
-    final_messages = [{"role": "system", "content": "你是Link AI，将会基于文档帮助用户回答问题。"}, 
+    final_messages = [{"role": "system", "content": "You are Revornix AI，an ai assistant。"}, 
                       *temp_messages, 
-                      {"role": "user", "content": f"请基于这些知识：{json.dumps(base_docs, ensure_ascii=False)}，回答如下问题：{query}"}]
+                      {"role": "user", "content": f"Using the following info as context: {json.dumps(base_docs, ensure_ascii=False)}, could you help answer this question: {query}?"}]
+    model_id = user.default_revornix_model_id
+    db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    if db_model is None:
+        raise schemas.error.CustomException("The model is not exist", code=404)
+    db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
+    if db_model_provider is None:
+        raise schemas.error.CustomException("The model provider is not exist", code=404)
     client = OpenAI(
-        api_key=os.environ.get("ARK_API_KEY"),
-        base_url="https://ark.cn-beijing.volces.com/api/v3/bots",
+        api_key=db_model_provider.api_key,
+        base_url=db_model_provider.api_url,
         timeout=1800,
     )
-    # TODO: 根据搜索结果和用户指令选择不同的模型
-    if chat_messages.search_web and chat_messages.deep_search:
-        model = 'bot-20250326172427-g588d'
-    if chat_messages.search_web and not chat_messages.deep_search:
-        model = 'bot-20250327101204-s6sh7'
-    if not chat_messages.search_web and chat_messages.deep_search:
-        model = 'bot-20250327100020-g6899'
-    if not chat_messages.search_web and not chat_messages.deep_search:
-        model = 'bot-20250327100732-qwcp4'
-    stream = client.chat.completions.create(
-            model=model,
-            messages=final_messages,
-            temperature=0.3,
-            stream=True,
-            stream_options={"include_usage": True}
-        )
+    try:
+        stream = client.chat.completions.create(
+                model=db_model.name,
+                messages=final_messages,
+                temperature=0.3,
+                stream=True,
+                stream_options={"include_usage": True}
+            )
+    except Exception as e:
+        raise schemas.error.CustomException(str(e), code=500)
     def generate_stream_response():
         for chunk in stream:
             if chunk is None or chunk.choices is None or len(chunk.choices) == 0:
