@@ -12,7 +12,10 @@ def summary_section(model_id: int, markdown_content: str):
     if db_model_provider is None:
         raise Exception("Model provider not found")
     system_prompt = f"""
-    This is the entire content of the document, {markdown_content}. Please summarize it in markdown format and provide me with a markdown summary report. The word count should be no less than 800 words, but if the original content is short, the word count can be a bit lower. Also, please ensure that the response is in the following JSON format:
+    This is the entire content of the document, {markdown_content}. 
+    Please summarize it in markdown format and provide me with a markdown summary report. 
+    The word count should be no less than 800 words, but if the original content is short, the word count can be a bit lower. 
+    Please ensure that the response is in the following JSON format:
     {{
     "summary": "Summary"
     }}
@@ -46,7 +49,12 @@ def summary_section_with_origin(model_id, origin_section_markdown_content: str, 
     if db_model_provider is None:
         raise Exception("Model provider not found")
     system_prompt = f"""
-    This is a summary document that consolidates several foundational documents, {origin_section_markdown_content}. This is the latest document, {new_document_markdown_content}. I hope you can use the original summary document and the new document to create a new, more complete markdown format summary report for me. The report should be in a format that allows for easy overall review, with a word count of at least 800 words. If the original content is short, the word count can be slightly lower. Please make sure to output your response in the following JSON format:
+    This is a summary document that consolidates several foundational documents, {origin_section_markdown_content}. 
+    And this is the latest document, {new_document_markdown_content}. 
+    Please use the original summary document and the new document to create a new, more complete markdown format summary report for me. 
+    The report should be in a format that allows for easy overall review, with a word count of at least 800 words. 
+    If the original content is short, the word count can be slightly lower. 
+    Please make sure to output your response in the following JSON format:
     {{
     "summary": "Summary Document"
     }}

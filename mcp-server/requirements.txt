@@ -1,0 +1,11 @@
+pydantic==2.11.2
+pydantic_core==2.33.1
+python-dotenv==1.1.0
+redis==5.2.1
+SQLAlchemy==2.0.40
+PyMySQL==1.1.1
+python-jose==3.4.0
+mcp[cli]==1.7.1
+openai==1.68.2
+mcp-use==1.2.8
+langchain_openai==0.3.16
