@@ -97,7 +97,7 @@ const FileDocumentDetail = ({
 			{((isError && error) || markdownGetError) && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 					{error?.message ?? (
-						<div className='flex flex-col text-center gap-2'>p>
+						<div className='flex flex-col text-center gap-2'>
 							<p>{markdownGetError}</p>
 						</div>
 					)}
