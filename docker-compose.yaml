@@ -21,11 +21,6 @@ services:
       NEO4J_AUTH: neo4j/12345678
     volumes:
       - neo4j-data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7474"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
 
   web:
     container_name: web
@@ -60,7 +55,7 @@ services:
       redis:
         condition: service_started
       neo4j:
-        condition: service_healthy
+        condition: service_started
     env_file:
       - ./envs/.api.env
 
