@@ -169,7 +169,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-alembic/versions/*
+alembic/versions/*.py
 
 temp/
 
