@@ -33,13 +33,13 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-from models.api_key import *
-from models.attachment import *
-from models.document import *
-from models.model import *
-from models.notification import *
-from models.section import *
-from models.task import *
+# from models.api_key import *
+# from models.attachment import *
+# from models.document import *
+# from models.notification import *
+# from models.section import *
+# from models.task import *
+# from models.model import *
 from models.user import *
 from common.sql import Base
 target_metadata = Base.metadata # 设置创建模型的元类
