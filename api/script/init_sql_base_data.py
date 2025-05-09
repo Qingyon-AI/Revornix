@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
+from datetime import datetime
 import crud
 import models
 from alembic import command
@@ -19,7 +20,7 @@ def is_data_initialized(db):
 
 if __name__ == '__main__':
     command.revision(config=alembic_cfg, 
-                     message='Initialize the sql database',
+                     message=f'Initialize the sql database, {datetime.now()}',
                      autogenerate=True,
                      head='head')
     command.upgrade(config=alembic_cfg, 
