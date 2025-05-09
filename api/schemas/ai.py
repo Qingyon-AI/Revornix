@@ -110,5 +110,4 @@ class ChatItem(BaseModel):
     
 class ChatMessages(BaseModel):
     search_web: bool
-    deep_search: bool
     messages: list[ChatItem]

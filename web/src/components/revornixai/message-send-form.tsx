@@ -25,7 +25,6 @@ const MessageSendForm = () => {
 	const t = useTranslations();
 	const formSchema = z.object({
 		message: z.string().min(1, t('revornix_ai_message_content_needed')),
-		deepSearch: z.boolean(),
 		searchWeb: z.boolean(),
 	});
 	const {
@@ -42,7 +41,6 @@ const MessageSendForm = () => {
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			message: '',
-			deepSearch: true,
 			searchWeb: true,
 		},
 	});
@@ -133,7 +131,6 @@ const MessageSendForm = () => {
 		setTempMessages([...tempMessages(), newMessage]);
 		mutateSendMessage.mutate({
 			messages: [newMessage],
-			deep_search: values.deepSearch,
 			search_web: values.searchWeb,
 		});
 		form.resetField('message');
@@ -147,11 +144,9 @@ const MessageSendForm = () => {
 	const fetchStream = async ({
 		messages,
 		search_web,
-		deep_search,
 	}: {
 		messages: Message[];
 		search_web: boolean;
-		deep_search: boolean;
 	}) => {
 		const headers = new Headers();
 		headers.append('Content-Type', 'application/json');
@@ -166,7 +161,6 @@ const MessageSendForm = () => {
 			body: JSON.stringify({
 				messages,
 				search_web,
-				deep_search,
 			}),
 		});
 		const reader = response.body?.getReader();
@@ -235,23 +229,6 @@ const MessageSendForm = () => {
 					/>
 					<div className='flex flex-row justify-between items-end gap-5'>
 						<div className='flex flex-row items-center gap-5'>
-							<FormField
-								control={form.control}
-								name='deepSearch'
-								render={({ field }) => (
-									<FormItem className='flex flex-row items-center'>
-										<FormLabel className='flex flex-row gap-1 items-center'>
-											{t('revornix_ai_deep_thinking_status')}
-										</FormLabel>
-										<Switch
-											checked={field.value}
-											onCheckedChange={(e) => {
-												field.onChange(e);
-											}}
-										/>
-									</FormItem>
-								)}
-							/>
 							<FormField
 								control={form.control}
 								name='searchWeb'

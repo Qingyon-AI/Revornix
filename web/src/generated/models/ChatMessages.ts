@@ -35,12 +35,6 @@ export interface ChatMessages {
     search_web: boolean;
     /**
      * 
-     * @type {boolean}
-     * @memberof ChatMessages
-     */
-    deep_search: boolean;
-    /**
-     * 
      * @type {Array<ChatItem>}
      * @memberof ChatMessages
      */
@@ -52,7 +46,6 @@ export interface ChatMessages {
  */
 export function instanceOfChatMessages(value: object): value is ChatMessages {
     if (!('search_web' in value) || value['search_web'] === undefined) return false;
-    if (!('deep_search' in value) || value['deep_search'] === undefined) return false;
     if (!('messages' in value) || value['messages'] === undefined) return false;
     return true;
 }
@@ -68,7 +61,6 @@ export function ChatMessagesFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'search_web': json['search_web'],
-        'deep_search': json['deep_search'],
         'messages': ((json['messages'] as Array<any>).map(ChatItemFromJSON)),
     };
 }
@@ -83,9 +75,7 @@ export function ChatMessagesToJSONTyped(value?: ChatMessages | null, ignoreDiscr
     }
 
     return {
-        
         'search_web': value['search_web'],
-        'deep_search': value['deep_search'],
         'messages': ((value['messages'] as Array<any>).map(ChatItemToJSON)),
     };
 }
