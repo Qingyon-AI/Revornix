@@ -74,14 +74,19 @@ async def create_model_provider(model_provider_request: schemas.ai.ModelProvider
 async def delete_ai_model(delete_model_request: schemas.ai.DeleteModelRequest,
                           db: Session = Depends(get_db),
                           user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_ai_model = crud.model.get_ai_model_by_id(db=db,
-                                              model_id=delete_model_request.model_id)
-    if db_ai_model is None:
-        raise schemas.error.CustomException("The model is not exist", code=404)
-    if db_ai_model.user_id != user.id:
-        raise schemas.error.CustomException("The model is not belong to you", code=403)
     crud.model.delete_ai_models(db=db, 
+                                user_id=user.id,
                                 model_ids=delete_model_request.model_ids)
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+@ai_router.post("/model-provider/delete", response_model=schemas.common.NormalResponse)
+async def delete_ai_model(delete_model_request: schemas.ai.DeleteModelProviderRequest,
+                          db: Session = Depends(get_db),
+                          user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    crud.model.delete_ai_model_providers(db=db, 
+                                         user_id=user.id,
+                                         provider_ids=delete_model_request.provider_ids)
     db.commit()
     return schemas.common.SuccessResponse()
      

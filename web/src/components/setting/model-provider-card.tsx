@@ -4,7 +4,11 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { searchAiModel, updateAiModelProvider } from '@/service/ai';
+import {
+	deleteAiModelProvider,
+	searchAiModel,
+	updateAiModelProvider,
+} from '@/service/ai';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { utils } from '@kinda/utils';
@@ -28,10 +32,13 @@ import {
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
+	DialogClose,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	DialogTrigger,
 } from '@/components/ui/dialog';
 import { Loader2, PlusCircle } from 'lucide-react';
 import { ModelProvider } from '@/generated';
@@ -59,11 +66,15 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 			api_url: '',
 		},
 	});
+	const [showDeleteModelProviderDialog, setShowDeleteModelProviderDialog] =
+		useState(false);
 	const [showModelConfigDialog, setShowModelConfigDialog] = useState(false);
 	const [showAddModel, setShowAddModel] = useState(false);
 	const [showModelProviderConfigDialog, setShowModelProviderConfigDialog] =
 		useState(false);
 	const [submitUpdating, startSubmitUpdating] = useTransition();
+	const [deleteModelProviderLoading, startDeleteModelProvider] =
+		useTransition();
 
 	const { data: models } = useQuery({
 		queryKey: ['getModels', modelProvider.id],
@@ -85,6 +96,25 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 			}
 		}
 		return form.handleSubmit(onFormValidateSuccess, onFormValidateError)(event);
+	};
+
+	const handleDeleteModelProvider = async () => {
+		startDeleteModelProvider(async () => {
+			const [res, err] = await utils.to(
+				deleteAiModelProvider({
+					provider_ids: [modelProvider.id],
+				})
+			);
+			if (err) {
+				toast.error(err.message);
+				return;
+			}
+			toast.success('删除成功');
+			setShowDeleteModelProviderDialog(false);
+			queryClient.invalidateQueries({
+				queryKey: ['getModelProviders'],
+			});
+		});
 	};
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
@@ -226,7 +256,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 					</div>
 				</DialogContent>
 			</Dialog>
-			<Card key={modelProvider.id}>
+			<Card>
 				<CardHeader>
 					<div className='flex flex-row items-center justify-between'>
 						<div>
@@ -252,33 +282,64 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 						{t('setting_model_models_configure')}
 					</div>
 				</CardContent>
-				<CardFooter className='flex flex-row items-center justify-end gap-2'>
-					{modelProvider.api_key ? (
-						<Badge
-							variant={'outline'}
-							className='text-xs text-muted-foreground'>
-							KEY
-						</Badge>
-					) : (
-						<Badge
-							variant={'destructive'}
-							className='text-xs text-muted-foreground'>
-							KEY
-						</Badge>
-					)}
-					{modelProvider.api_url ? (
-						<Badge
-							variant={'outline'}
-							className='text-xs text-muted-foreground'>
-							URL
-						</Badge>
-					) : (
-						<Badge
-							variant={'destructive'}
-							className='text-xs text-muted-foreground'>
-							URL
-						</Badge>
-					)}
+				<CardFooter className='flex flex-row items-center justify-between'>
+					<div className='flex flex-row gap-2'>
+						{modelProvider.api_key ? (
+							<Badge
+								variant={'outline'}
+								className='text-xs text-muted-foreground'>
+								KEY
+							</Badge>
+						) : (
+							<Badge
+								variant={'destructive'}
+								className='text-xs text-muted-foreground'>
+								KEY
+							</Badge>
+						)}
+						{modelProvider.api_url ? (
+							<Badge
+								variant={'outline'}
+								className='text-xs text-muted-foreground'>
+								URL
+							</Badge>
+						) : (
+							<Badge
+								variant={'destructive'}
+								className='text-xs text-muted-foreground'>
+								URL
+							</Badge>
+						)}
+					</div>
+					<Dialog>
+						<DialogTrigger asChild>
+							<Button type='button' variant={'outline'}>
+								{t('delete')}
+							</Button>
+						</DialogTrigger>
+						<DialogContent>
+							<DialogHeader>
+								<DialogTitle>{t('warning')}</DialogTitle>
+								<DialogDescription>
+									{t('setting_model_provider_delete_warning_description')}
+								</DialogDescription>
+							</DialogHeader>
+							<DialogFooter>
+								<Button
+									variant='destructive'
+									type='button'
+									onClick={handleDeleteModelProvider}>
+									{t('confirm')}
+									{deleteModelProviderLoading && (
+										<Loader2 className='h-4 w-4 animate-spin' />
+									)}
+								</Button>
+								<DialogClose asChild>
+									<Button variant='default'>{t('cancel')}</Button>
+								</DialogClose>
+							</DialogFooter>
+						</DialogContent>
+					</Dialog>
 				</CardFooter>
 			</Card>
 		</>

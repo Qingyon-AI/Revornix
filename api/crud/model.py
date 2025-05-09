@@ -74,12 +74,14 @@ def search_ai_model_providers(db: Session, user_id: int, keyword: str = None):
     
     return query.all()
 
-def delete_ai_models(db: Session, model_ids: list[int]):
+def delete_ai_models(db: Session, user_id: int, model_ids: list[int]):
     """
     Delete AI models by their IDs.
     """
     now = datetime.now(timezone.utc)
-    db.query(models.model.AIModel).filter(models.model.AIModel.id.in_(model_ids)).update({
+    db_models = db.query(models.model.AIModel).filter(models.model.AIModel.id.in_(model_ids),
+                                                      models.model.AIModel.user_id == user_id)
+    db_models.update({
         models.model.AIModel.delete_at: now
     })
     db.flush()

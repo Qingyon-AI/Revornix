@@ -75,6 +75,7 @@ export function ChatMessagesToJSONTyped(value?: ChatMessages | null, ignoreDiscr
     }
 
     return {
+        
         'search_web': value['search_web'],
         'messages': ((value['messages'] as Array<any>).map(ChatItemToJSON)),
     };

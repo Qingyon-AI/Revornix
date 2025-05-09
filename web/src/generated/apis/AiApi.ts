@@ -16,6 +16,7 @@
 import * as runtime from '../runtime';
 import type {
   ChatMessages,
+  DeleteModelProviderRequest,
   DeleteModelRequest,
   HTTPValidationError,
   Model,
@@ -35,6 +36,8 @@ import type {
 import {
     ChatMessagesFromJSON,
     ChatMessagesToJSON,
+    DeleteModelProviderRequestFromJSON,
+    DeleteModelProviderRequestToJSON,
     DeleteModelRequestFromJSON,
     DeleteModelRequestToJSON,
     HTTPValidationErrorFromJSON,
@@ -87,6 +90,12 @@ export interface CreateModelProviderAiModelProviderCreatePostRequest {
 
 export interface DeleteAiModelAiModelDeletePostRequest {
     deleteModelRequest: DeleteModelRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface DeleteAiModelAiModelProvibderDeletePostRequest {
+    deleteModelProviderRequest: DeleteModelProviderRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -309,6 +318,50 @@ export class AiApi extends runtime.BaseAPI {
      */
     async deleteAiModelAiModelDeletePost(requestParameters: DeleteAiModelAiModelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.deleteAiModelAiModelDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Delete Ai Model
+     */
+    async deleteAiModelAiModelProvibderDeletePostRaw(requestParameters: DeleteAiModelAiModelProvibderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['deleteModelProviderRequest'] == null) {
+            throw new runtime.RequiredError(
+                'deleteModelProviderRequest',
+                'Required parameter "deleteModelProviderRequest" was null or undefined when calling deleteAiModelAiModelProvibderDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+        const response = await this.request({
+            path: `/ai/model-provibder/delete`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DeleteModelProviderRequestToJSON(requestParameters['deleteModelProviderRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete Ai Model
+     */
+    async deleteAiModelAiModelProvibderDeletePost(requestParameters: DeleteAiModelAiModelProvibderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteAiModelAiModelProvibderDeletePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -27,6 +27,7 @@ models/DailyReportStatusChangeRequest.ts
 models/DaySectionRequest.ts
 models/DaySectionResponse.ts
 models/DefaultModelUpdateRequest.ts
+models/DeleteModelProviderRequest.ts
 models/DeleteModelRequest.ts
 models/DeleteNotificationRequest.ts
 models/Document.ts

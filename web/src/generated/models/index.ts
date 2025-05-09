@@ -19,6 +19,7 @@ export * from './DailyReportStatusChangeRequest';
 export * from './DaySectionRequest';
 export * from './DaySectionResponse';
 export * from './DefaultModelUpdateRequest';
+export * from './DeleteModelProviderRequest';
 export * from './DeleteModelRequest';
 export * from './DeleteNotificationRequest';
 export * from './Document';

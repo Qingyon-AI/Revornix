@@ -1,5 +1,6 @@
 'use client';
 
+import ModelProviderAddCard from '@/components/setting/model-provider-add-card';
 import ModelProviderCard from '@/components/setting/model-provider-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { searchAiModelProvider } from '@/service/ai';
@@ -28,6 +29,7 @@ const ModelSettingPage = () => {
 						{modelProviders.data.map((modelProvider, index) => (
 							<ModelProviderCard key={index} modelProvider={modelProvider} />
 						))}
+						<ModelProviderAddCard />
 					</div>
 				)}
 			</div>

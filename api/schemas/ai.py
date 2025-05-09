@@ -41,6 +41,9 @@ class ModelProviderRequest(BaseModel):
 class DeleteModelRequest(BaseModel):
     model_ids: list[int] | None = None
     
+class DeleteModelProviderRequest(BaseModel):
+    provider_ids: list[int] | None = None
+    
 class ModelSearchRequest(BaseModel):
     keyword: str | None = None
     provider_id: int | None = None
