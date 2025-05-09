@@ -15,6 +15,7 @@ import { searchAiModel } from '@/service/ai';
 import { updateUserDefaultModel } from '@/service/user';
 import { utils } from '@kinda/utils';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
 
@@ -28,6 +29,7 @@ interface ProviderMapProps {
 }
 
 const RevornixAIModel = () => {
+	const t = useTranslations();
 	const { userInfo, refreshUserInfo } = useUserContext();
 	const { data } = useQuery({
 		queryKey: ['getModels'],
@@ -79,7 +81,7 @@ const RevornixAIModel = () => {
 			return;
 		}
 		refreshUserInfo();
-		toast.success('默认RevornixAI模型更新成功');
+		toast.success(t('setting_revornix_model_update_successful'));
 	};
 
 	return (
@@ -94,7 +96,7 @@ const RevornixAIModel = () => {
 					handleUpdateDefaultRevornixAIModel(Number(e));
 				}}>
 				<SelectTrigger className='w-[180px]'>
-					<SelectValue placeholder='选择模型' />
+					<SelectValue placeholder={t('setting_model_select')} />
 				</SelectTrigger>
 				<SelectContent>
 					<SelectGroup>

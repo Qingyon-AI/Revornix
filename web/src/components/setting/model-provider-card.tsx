@@ -44,13 +44,12 @@ interface ModelCardProps {
 	modelProvider: ModelProvider;
 }
 
-const formSchema = z.object({
-	api_key: z.string().min(1, 'API Key is required'),
-	api_url: z.string().optional(),
-});
-
 const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 	const t = useTranslations();
+	const formSchema = z.object({
+		api_key: z.string().min(1, 'API Key is required'),
+		api_url: z.string().optional(),
+	});
 	const queryClient = getQueryClient();
 
 	const form = useForm({
@@ -100,7 +99,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 				toast.error(err.message);
 				return;
 			}
-			toast.success('更新成功');
+			toast.success(t('setting_model_provider_update_successful'));
 			setShowModelProviderConfigDialog(false);
 			queryClient.invalidateQueries({
 				queryKey: ['getModelProviders'],
@@ -129,15 +128,15 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 				onOpenChange={setShowModelConfigDialog}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>供应商模型配置</DialogTitle>
+						<DialogTitle>{t('setting_model_models_configure')}</DialogTitle>
 						<DialogDescription>
-							这里可以配置对应供应商可提供的所有模型
+							{t('setting_model_models_configure_description')}
 						</DialogDescription>
 					</DialogHeader>
 					<div className='max-h-[80vh] flex flex-col gap-2'>
 						{models?.data?.length === 0 && (
 							<div className='rounded p-3 text-xs bg-muted text-center text-muted-foreground'>
-								暂无模型
+								{t('setting_model_empty')}
 							</div>
 						)}
 						<div className='flex-1 overflow-auto flex flex-col gap-2'>
@@ -164,7 +163,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 							onClick={() => {
 								setShowAddModel(true);
 							}}>
-							增加模型
+							{t('setting_model_add')}
 							<PlusCircle className='h-4 w-4 ml-1' />
 						</div>
 					</div>
@@ -217,7 +216,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 									)}
 								/>
 								<Button type='submit' disabled={submitUpdating}>
-									保存
+									{t('save')}
 									{submitUpdating && (
 										<Loader2 className='h-4 w-4 animate-spin' />
 									)}
@@ -240,7 +239,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 							onClick={() => {
 								setShowModelProviderConfigDialog(true);
 							}}>
-							配置供应
+							{t('setting_model_provider_configure')}
 						</Button>
 					</div>
 				</CardHeader>
@@ -250,7 +249,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 						onClick={() => {
 							setShowModelConfigDialog(true);
 						}}>
-						配置模型组
+						{t('setting_model_models_configure')}
 					</div>
 				</CardContent>
 				<CardFooter className='flex flex-row items-center justify-end gap-2'>

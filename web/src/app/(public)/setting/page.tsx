@@ -18,7 +18,9 @@ const SettingPage = () => {
 	const { userInfo } = useUserContext();
 	return (
 		<div className='px-5 pb-5'>
-			<h2 className='text-xs text-muted-foreground p-3'>基础配置</h2>
+			<h2 className='text-xs text-muted-foreground p-3'>
+				{t('setting_base_config')}
+			</h2>
 			<Card>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
@@ -40,7 +42,9 @@ const SettingPage = () => {
 					</div>
 				</CardContent>
 			</Card>
-			<h2 className='text-xs text-muted-foreground p-3'>通知配置</h2>
+			<h2 className='text-xs text-muted-foreground p-3'>
+				{t('setting_notification')}
+			</h2>
 			<Card>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
@@ -66,11 +70,15 @@ const SettingPage = () => {
 					)}
 				</CardContent>
 			</Card>
-			<h2 className='text-xs text-muted-foreground p-3'>模型配置</h2>
+			<h2 className='text-xs text-muted-foreground p-3'>
+				{t('setting_model')}
+			</h2>
 			<Card>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>模型集成</Label>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_model_collection')}
+						</Label>
 						<div className='flex flex-col gap-2'>
 							<ModelCollection />
 						</div>
@@ -78,7 +86,7 @@ const SettingPage = () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							Revornix AI应答模型
+							{t('setting_revornix_model')}
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<RevornixAIModel />
@@ -87,7 +95,7 @@ const SettingPage = () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							文章内容总结模型
+							{t('setting_document_summary_model')}
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<DocumentSummaryModel />
@@ -96,14 +104,14 @@ const SettingPage = () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							网站爬取引擎
+							{t('setting_website_craw_model')}
 						</Label>
 						<div className='flex flex-col gap-2'>Jina</div>
 					</div>
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							文档内容解析引擎
+							{t('setting_file_extract_model')}
 						</Label>
 						<div className='flex flex-col gap-2'>MinerU</div>
 					</div>

@@ -15,6 +15,7 @@ import { searchAiModel } from '@/service/ai';
 import { updateUserDefaultModel } from '@/service/user';
 import { utils } from '@kinda/utils';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
 
@@ -28,6 +29,7 @@ interface ProviderMapProps {
 }
 
 const DocumentSummaryModel = () => {
+	const t = useTranslations();
 	const { userInfo, refreshUserInfo } = useUserContext();
 	const { data } = useQuery({
 		queryKey: ['getModels'],
@@ -94,7 +96,7 @@ const DocumentSummaryModel = () => {
 					handleUpdateDefaultDocumentReaderModel(Number(e));
 				}}>
 				<SelectTrigger className='w-[180px]'>
-					<SelectValue placeholder='选择模型' />
+					<SelectValue placeholder={t('setting_model_select')} />
 				</SelectTrigger>
 				<SelectContent>
 					<SelectGroup>

@@ -103,12 +103,12 @@ const ModelAddCard = ({
 								return (
 									<>
 										<Input
-											placeholder='请输入模型名称'
-											className='mr-2 mb-2 font-mono'
+											placeholder={t('setting_model_placeholder')}
+											className='mr-2 font-mono'
 											autoFocus
 											{...field}
 										/>
-										<FormMessage />
+										<FormMessage className='mt-2' />
 									</>
 								);
 							}}
