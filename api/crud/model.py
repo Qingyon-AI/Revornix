@@ -2,13 +2,14 @@ import models
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
-def create_ai_model_provider(db: Session, name: str, description: str, api_key: str, api_url: str):
+def create_ai_model_provider(db: Session, user_id: int, name: str, description: str, api_key: str, api_url: str):
     """
     Create a new AI model provider.
     """
     now = datetime.now(timezone.utc)
     new_provider = models.model.AIModelPorvider(
         name=name,
+        user_id=user_id,
         description=description,
         create_time=now,
         update_time=now,
@@ -64,8 +65,9 @@ def search_ai_models(db: Session, user_id: int, keyword: str = None, provider_id
     
     return query.all()
 
-def search_ai_model_providers(db: Session, keyword: str = None):
-    query = db.query(models.model.AIModelPorvider).filter(models.model.AIModelPorvider.delete_at == None)
+def search_ai_model_providers(db: Session, user_id: int, keyword: str = None):
+    query = db.query(models.model.AIModelPorvider).filter(models.model.AIModelPorvider.delete_at == None,
+                                                          models.model.AIModelPorvider.user_id == user_id)
     
     if keyword and len(keyword.strip()) > 0:
         query = query.filter(models.model.AIModelPorvider.name.ilike(f"%{keyword}%"))
@@ -82,12 +84,15 @@ def delete_ai_models(db: Session, model_ids: list[int]):
     })
     db.flush()
     
-def delete_ai_model_providers(db: Session, provider_ids: list[int]):
+def delete_ai_model_providers(db: Session, user_id: int, provider_ids: list[int]):
     """
     Delete AI model providers by their IDs.
     """
+    # TODO
     now = datetime.now(timezone.utc)
-    db.query(models.model.AIModelPorvider).filter(models.model.AIModelPorvider.id.in_(provider_ids)).update({
+    db_providers = db.query(models.model.AIModelPorvider).filter(models.model.AIModelPorvider.id.in_(provider_ids),
+                                                                 models.model.AIModelPorvider.user_id == user_id)
+    db_providers.update({
         models.model.AIModelPorvider.delete_at: now
     })
     db.flush()

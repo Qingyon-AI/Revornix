@@ -37,6 +37,8 @@ async def get_ai_model(model_request: schemas.ai.ModelRequest,
                                          model_id=model_request.model_id)
     if data is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
+    if data.user_id != user.id:
+        raise schemas.error.CustomException("The model is not belong to you", code=403)
     
     provider = crud.model.get_ai_model_provider_by_id(db=db,
                                                       provider_id=data.provider_id)
@@ -51,6 +53,8 @@ async def get_ai_model(model_provider_request: schemas.ai.ModelProviderRequest,
                                                   provider_id=model_provider_request.provider_id)
     if data is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
+    if data.user_id != user.id:
+        raise schemas.error.CustomException("The model provider is not belong to you", code=403)
     return data
  
 @ai_router.post("/model-provider/create", response_model=schemas.common.NormalResponse)
@@ -58,6 +62,7 @@ async def create_model_provider(model_provider_request: schemas.ai.ModelProvider
                                 db: Session = Depends(get_db),
                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
      crud.model.create_ai_model_provider(db=db, 
+                                         user_id=user.id,
                                          name=model_provider_request.name, 
                                          description=model_provider_request.description,
                                          api_key=model_provider_request.api_key,
@@ -69,10 +74,16 @@ async def create_model_provider(model_provider_request: schemas.ai.ModelProvider
 async def delete_ai_model(delete_model_request: schemas.ai.DeleteModelRequest,
                           db: Session = Depends(get_db),
                           user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-     crud.model.delete_ai_models(db=db, 
-                                 model_ids=delete_model_request.model_ids)
-     db.commit()
-     return schemas.common.SuccessResponse()
+    db_ai_model = crud.model.get_ai_model_by_id(db=db,
+                                              model_id=delete_model_request.model_id)
+    if db_ai_model is None:
+        raise schemas.error.CustomException("The model is not exist", code=404)
+    if db_ai_model.user_id != user.id:
+        raise schemas.error.CustomException("The model is not belong to you", code=403)
+    crud.model.delete_ai_models(db=db, 
+                                model_ids=delete_model_request.model_ids)
+    db.commit()
+    return schemas.common.SuccessResponse()
      
 @ai_router.post("/model/search", response_model=schemas.ai.ModelSearchResponse)
 async def list_ai_model(model_search_request: schemas.ai.ModelSearchRequest,
@@ -92,6 +103,7 @@ async def list_ai_model_provider(model_provider_search_request: schemas.ai.Model
                                  db: Session = Depends(get_db),
                                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     data = crud.model.search_ai_model_providers(db=db, 
+                                                user_id=user.id,
                                                 keyword=model_provider_search_request.keyword)
     return schemas.ai.ModelProviderSearchResponse(data=data)
 
@@ -104,6 +116,8 @@ async def update_ai_model(model_update_request: schemas.ai.ModelUpdateRequest,
                                                 model_id=model_update_request.id)
     if db_ai_model is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
+    if db_ai_model.user_id != user.id:
+        raise schemas.error.CustomException("The model is not belong to you", code=403)
     if model_update_request.name is not None:
         db_ai_model.name = model_update_request.name
     if model_update_request.description is not None:
@@ -125,6 +139,8 @@ async def update_ai_model_provider(model_provider_update_request: schemas.ai.Mod
                                                                   provider_id=model_provider_update_request.id)
     if db_ai_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
+    if db_ai_model_provider.user_id != user.id:
+        raise schemas.error.CustomException("The model provider is not belong to you", code=403)
     if model_provider_update_request.name is not None:
         db_ai_model_provider.name = model_provider_update_request.name
     if model_provider_update_request.description is not None:
