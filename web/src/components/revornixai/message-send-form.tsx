@@ -1,7 +1,7 @@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { uniqueId } from 'lodash-es';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import aiApi from '@/api/ai';
 import Cookies from 'js-cookie';
 import { Send } from 'lucide-react';
@@ -20,6 +20,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useAIChatContext } from '@/provider/ai-chat-provider';
 import { Button } from '../ui/button';
 import { useTranslations } from 'next-intl';
+import { useUserContext } from '@/provider/user-provider';
+import { getAiModel } from '@/service/ai';
+import Link from 'next/link';
 
 const MessageSendForm = () => {
 	const t = useTranslations();
@@ -27,6 +30,19 @@ const MessageSendForm = () => {
 		message: z.string().min(1, t('revornix_ai_message_content_needed')),
 		searchWeb: z.boolean(),
 	});
+	const { userInfo } = useUserContext();
+
+	const { data: default_llm_model } = useQuery({
+		queryKey: ['getRevornixDefaultModel', userInfo?.default_revornix_model_id],
+		queryFn: () => {
+			if (!userInfo?.default_revornix_model_id) {
+				return;
+			}
+			return getAiModel({ model_id: userInfo?.default_revornix_model_id });
+		},
+		enabled: !!userInfo?.default_revornix_model_id,
+	});
+
 	const {
 		aiStatus,
 		setAiStatus,
@@ -252,9 +268,22 @@ const MessageSendForm = () => {
 						</Button>
 					</div>
 				</div>
-				<div className='w-full flex flex-row items-center justify-end mt-2'>
+				<div className='w-full flex flex-row items-center justify-between mt-2'>
+					<p className='text-xs text-muted-foreground'>
+						{t('revornix_ai_default_model')}:
+						<span className='text-[10px] ml-2 rounded bg-muted/50 px-1.5 py-1 font-mono text-muted-foreground'>
+							{default_llm_model?.name}
+						</span>
+						<Link
+							href={'/setting'}
+							className='ml-2 underline underline-offset-4'>
+							{t('revornix_ai_default_model_goto')}
+						</Link>
+					</p>
 					<kbd className='pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100'>
-						<span className='text-xs'>⌘</span>Enter
+						<span className='text-xs font-bold'>⌘</span>{' '}
+						<span className='text-xs font-bold mr-1'>Enter</span>
+						<span>{t('revornix_ai_quickly_send')}</span>
 					</kbd>
 				</div>
 			</form>
