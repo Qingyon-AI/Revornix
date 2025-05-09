@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,10 +9,16 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
 export function ModeToggle() {
 	const t = useTranslations();
 	const { setTheme, theme } = useTheme();
+
+	// 关键点：延迟渲染，直到客户端 mounted
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => setMounted(true), []);
 
 	const getTheme = (theme: string) => {
 		if (theme === 'dark') {
@@ -24,6 +29,8 @@ export function ModeToggle() {
 		}
 		return t('setting_color_system');
 	};
+
+	if (!mounted) return null; // SSR 时不渲染
 
 	return (
 		<>
