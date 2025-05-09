@@ -73,7 +73,7 @@ const ModelProviderAddCard = () => {
 				toast.error(err.message);
 				return;
 			}
-			toast.success(t('setting_model_provider_add_success_ful'));
+			toast.success(t('setting_model_provider_add_successful'));
 			setShowModelProviderConfigDialog(false);
 			queryClient.invalidateQueries({
 				queryKey: ['getModelProviders'],

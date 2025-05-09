@@ -46,6 +46,7 @@ import { Separator } from '../ui/separator';
 import ModelCard from './model-card';
 import ModelAddCard from './model-add-card';
 import { Badge } from '../ui/badge';
+import { useUserContext } from '@/provider/user-provider';
 
 interface ModelCardProps {
 	modelProvider: ModelProvider;
@@ -53,6 +54,7 @@ interface ModelCardProps {
 
 const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 	const t = useTranslations();
+	const { refreshUserInfo } = useUserContext();
 	const formSchema = z.object({
 		api_key: z.string().min(1, 'API Key is required'),
 		api_url: z.string().optional(),
@@ -109,11 +111,15 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 				toast.error(err.message);
 				return;
 			}
-			toast.success('删除成功');
+			toast.success(t('setting_model_provider_delete_successful'));
 			setShowDeleteModelProviderDialog(false);
 			queryClient.invalidateQueries({
 				queryKey: ['getModelProviders'],
 			});
+			queryClient.invalidateQueries({
+				queryKey: ['getModels'],
+			});
+			refreshUserInfo();
 		});
 	};
 
