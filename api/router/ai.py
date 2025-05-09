@@ -87,6 +87,14 @@ async def delete_ai_model(delete_model_request: schemas.ai.DeleteModelProviderRe
     crud.model.delete_ai_model_providers(db=db, 
                                          user_id=user.id,
                                          provider_ids=delete_model_request.provider_ids)
+    for provider_id in delete_model_request.provider_ids:
+        db_models = crud.model.search_ai_models(db=db, user_id=user.id, provider_id=provider_id)
+        db_model_ids = [model.id for model in db_models]
+        crud.model.delete_ai_models(db=db, user_id=user.id, model_ids=[db_model_ids])
+    if user.default_revornix_model_id in db_model_ids:
+        user.default_revornix_model_id = None
+    if user.default_document_reader_model_id in db_model_ids:
+        user.default_document_reader_model_id = None
     db.commit()
     return schemas.common.SuccessResponse()
      
