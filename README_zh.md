@@ -40,6 +40,7 @@ cp ./envs/.hot.env.example ./envs/.hot.env
 NEXT_PUBLIC_API_PREFIX='http://localhost/api/main-service'
 NEXT_PUBLIC_NOTIFICATION_WS_API_PREFIX='ws://localhost/api/main-service/notification/'
 NEXT_PUBLIC_FILE_API_PREFIX='http://localhost/api/file-service'
+NEXT_PUBLIC_DAILY_HOT_API_PREFIX='http://localhost/api/daily-hot-service'
 ```
 
 ### 修改ai应答模型
@@ -104,6 +105,7 @@ ENV=dev
 NEXT_PUBLIC_API_PREFIX='http://localhost/api/main-service'
 NEXT_PUBLIC_NOTIFICATION_WS_API_PREFIX='ws://localhost/api/main-service/notification/'
 NEXT_PUBLIC_FILE_API_PREFIX='http://localhost/api/file-service'
+NEXT_PUBLIC_DAILY_HOT_API_PREFIX='http://localhost/api/daily-hot-service'
 ```
 
 前往对应的环境变量文件配置，详情见[环境变量配置篇章](https://revornix.com/docs/environment)

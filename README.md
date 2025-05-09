@@ -42,6 +42,7 @@ In the web subdirectory, add the following file to configure the front-end envir
 NEXT_PUBLIC_API_PREFIX='http://localhost/api/main-service'
 NEXT_PUBLIC_NOTIFICATION_WS_API_PREFIX='ws://localhost/api/main-service/notification/'
 NEXT_PUBLIC_FILE_API_PREFIX='http://localhost/api/file-service'
+NEXT_PUBLIC_DAILY_HOT_API_PREFIX='http://localhost/api/daily-hot-service'
 ```
 
 ### Modify AI Response Model
@@ -105,6 +106,7 @@ In the web subdirectory, add the following file to configure the front-end envir
 NEXT_PUBLIC_API_PREFIX='http://localhost/api/main-service'
 NEXT_PUBLIC_NOTIFICATION_WS_API_PREFIX='ws://localhost/api/main-service/notification/'
 NEXT_PUBLIC_FILE_API_PREFIX='http://localhost/api/file-service'
+NEXT_PUBLIC_DAILY_HOT_API_PREFIX='http://localhost/api/daily-hot-service'
 ```
 
 Go to the corresponding environment variable files for configuration. For details, refer to the Environment Variables Configuration.
