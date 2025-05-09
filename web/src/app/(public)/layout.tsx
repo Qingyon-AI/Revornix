@@ -12,6 +12,7 @@ import CommandPanel from '@/components/app/command-panel';
 import { Button } from '@/components/ui/button';
 import { Inbox, Settings } from 'lucide-react';
 import Link from 'next/link';
+import GithubIcon from '@/components/icons/github-icon';
 
 export default function Page({
 	children,
@@ -39,6 +40,12 @@ export default function Page({
 							<Link href='/setting'>
 								<Button variant='outline' size='icon' type='button'>
 									<Settings />
+								</Button>
+							</Link>
+							<Link href='https://github.com/Qingyon-AI/Revornix' target='_blank'>
+								<Button variant='outline' size='icon' type='button' >
+									<GithubIcon />
+									<span className='sr-only'>Github</span>
 								</Button>
 							</Link>
 						</div>
