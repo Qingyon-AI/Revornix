@@ -67,6 +67,8 @@
     "setting_daily_notification": "Daily Summary Notification",
     "setting_daily_notification_time": "Daily Summary Notification Time",
     "hot_search_last_update": "Last updated ",
+    "hot_search_error_title": "Error",
+    "hot_search_error_description": "Failed to load the hot search data, please try again later",
     "revornix_ai_title": "Revornix AI",
     "revornix_ai_base_knowledge": "Answers based on your knowledge base.",
     "revornix_ai_add_session": "Add Session",

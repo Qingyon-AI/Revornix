@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import HotSearchCard from '@/components/hot-search/hot-search-card';
-import { Input } from '@/components/ui/input';
+import HotSearchErrorCard from '@/components/hot-search/hot-search-error-card';
 
 export interface Website {
 	code: number;
@@ -67,7 +67,23 @@ const HotSearch = () => {
 		const promises = websites_to_craw.map(async (website) => {
 			const response = await fetch(baseUrl + `/${website}`, {
 				cache: 'no-cache',
-			}).then((res) => res.json());
+			}).then((res) => {
+				if (res.status === 200) {
+					return res.json();
+				} else {
+					return {
+						code: res.status,
+						name: website,
+						title: '',
+						type: '',
+						link: '',
+						total: 0,
+						fromCache: false,
+						updateTime: '',
+						data: [],
+					};
+				}
+			});
 			return response as Website;
 		});
 
@@ -94,8 +110,13 @@ const HotSearch = () => {
 			{websites && websites.length > 0 && (
 				<>
 					<div className='grid grid-cols-1 md:grid-cols-4 gap-5'>
-						{websites.map((website) => {
-							return <HotSearchCard key={website.title} website={website} />;
+						{websites.map((website, index) => {
+							console.log(website.code)
+							if (website.code === 200) {
+								return <HotSearchCard key={index} website={website} />;
+							} else {
+								return <HotSearchErrorCard key={index} />;
+							}
 						})}
 					</div>
 				</>

@@ -67,6 +67,8 @@
     "setting_daily_notification": "每日总结通知",
     "setting_daily_notification_time": "每日总结通知时间",
     "hot_search_last_update": "最后更新时间",
+    "hot_search_error_title": "出错啦",
+    "hot_search_error_description": "加载热搜数据失败，请稍后再试",
     "revornix_ai_title": "Revornix AI",
     "revornix_ai_base_knowledge": "基于你的知识库来回答。",
     "revornix_ai_add_session": "添加会话",
