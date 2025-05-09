@@ -16,6 +16,3 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
-
-# 为了alembic能够正确生成表数据
-from models.user import *
