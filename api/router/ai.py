@@ -19,15 +19,17 @@ ai_router = APIRouter()
 async def create_model(model_create_request: schemas.ai.ModelCreateRequest,
                        db: Session = Depends(get_db),
                        user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-     crud.model.create_ai_model(db=db, 
-                                user_id=user.id, 
-                                name=model_create_request.name, 
-                                description=model_create_request.description,
-                                provider_id=model_create_request.provider_id, 
-                                api_key=model_create_request.api_key, 
-                                api_url=model_create_request.api_url)
-     db.commit()
-     return schemas.common.SuccessResponse()
+    db_ai_model = crud.model.create_ai_model(db=db, 
+                                             name=model_create_request.name, 
+                                             description=model_create_request.description,
+                                             provider_id=model_create_request.provider_id)
+    db_user_ai_model = crud.model.create_user_ai_model(db=db,
+                                                       user_id=user.id,
+                                                       ai_model_id=db_ai_model.id,
+                                                       api_key=model_create_request.api_key,
+                                                       api_url=model_create_request.api_url)
+    db.commit()
+    return schemas.common.SuccessResponse()
 
 @ai_router.post("/model/detail", response_model=schemas.ai.Model)
 async def get_ai_model(model_request: schemas.ai.ModelRequest,
@@ -42,8 +44,22 @@ async def get_ai_model(model_request: schemas.ai.ModelRequest,
     
     provider = crud.model.get_ai_model_provider_by_id(db=db,
                                                       provider_id=data.provider_id)
-    data.provider = provider
-    return data
+    db_user_provider = crud.model.get_user_ai_model_provider_by_id(db=db,
+                                                                   user_id=user.id,
+                                                                   provider_id=data.provider_id)
+    db_user_model = crud.model.get_user_ai_model_by_id(db=db,
+                                                       user_id=user.id,
+                                                       model_id=model_request.model_id)
+    return schemas.ai.Model(id=data.id,
+                            name=data.name,
+                            description=data.description,
+                            provider=schemas.ai.ModelProvider(id=provider.id,
+                                                              name=provider.name,
+                                                              description=provider.description,
+                                                              api_key=db_user_provider.api_key,
+                                                              api_url=db_user_provider.api_url),
+                            api_key=db_user_model.api_key,
+                            api_url=db_user_model.api_url)
 
 @ai_router.post("/model-provider/detail", response_model=schemas.ai.ModelProvider)
 async def get_ai_model(model_provider_request: schemas.ai.ModelProviderRequest,
@@ -55,20 +71,29 @@ async def get_ai_model(model_provider_request: schemas.ai.ModelProviderRequest,
         raise schemas.error.CustomException("The model provider is not exist", code=404)
     if data.user_id != user.id:
         raise schemas.error.CustomException("The model provider is not belong to you", code=403)
-    return data
+    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id(db=db,
+                                                                         user_id=user.id,
+                                                                         provider_id=model_provider_request.provider_id)
+    return schemas.ai.ModelProvider(id=data.id,
+                                    name=data.name,
+                                    description=data.description,
+                                    api_key=db_user_model_provider.api_key,
+                                    api_url=db_user_model_provider.api_url)
  
 @ai_router.post("/model-provider/create", response_model=schemas.common.NormalResponse)
 async def create_model_provider(model_provider_request: schemas.ai.ModelProviderCreateRequest,
                                 db: Session = Depends(get_db),
                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-     crud.model.create_ai_model_provider(db=db, 
-                                         user_id=user.id,
-                                         name=model_provider_request.name, 
-                                         description=model_provider_request.description,
-                                         api_key=model_provider_request.api_key,
-                                         api_url=model_provider_request.api_url)
-     db.commit()
-     return schemas.common.SuccessResponse()
+    db_ai_model_provider = crud.model.create_ai_model_provider(db=db, 
+                                                               name=model_provider_request.name, 
+                                                               description=model_provider_request.description)
+    db_user_ai_model_provider = crud.model.create_user_ai_model_provider(db=db,
+                                                                         user_id=user.id,
+                                                                         ai_model_provider_id=db_ai_model_provider.id,
+                                                                         api_key=model_provider_request.api_key,
+                                                                         api_url=model_provider_request.api_url)
+    db.commit()
+    return schemas.common.SuccessResponse()
  
 @ai_router.post("/model/delete", response_model=schemas.common.NormalResponse)
 async def delete_ai_model(delete_model_request: schemas.ai.DeleteModelRequest,
@@ -94,7 +119,7 @@ async def delete_ai_model(delete_model_request: schemas.ai.DeleteModelProviderRe
     for provider_id in delete_model_request.provider_ids:
         db_models = crud.model.search_ai_models(db=db, user_id=user.id, provider_id=provider_id)
         db_model_ids = [model.id for model in db_models]
-        crud.model.delete_ai_models(db=db, user_id=user.id, model_ids=[db_model_ids])
+        crud.model.delete_ai_models(db=db, user_id=user.id, model_ids=db_model_ids)
     if user.default_revornix_model_id in db_model_ids:
         user.default_revornix_model_id = None
     if user.default_document_reader_model_id in db_model_ids:
@@ -106,22 +131,53 @@ async def delete_ai_model(delete_model_request: schemas.ai.DeleteModelProviderRe
 async def list_ai_model(model_search_request: schemas.ai.ModelSearchRequest,
                         db: Session = Depends(get_db),
                         user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    data = crud.model.search_ai_models(db=db, 
-                                       user_id=user.id, 
-                                       keyword=model_search_request.keyword,
-                                       provider_id=model_search_request.provider_id)
-    for item in data:
-        item.provider = crud.model.get_ai_model_provider_by_id(db=db, 
-                                                               provider_id=item.provider_id)
+    data = []
+    db_ai_models = crud.model.search_ai_models(db=db, 
+                                               user_id=user.id, 
+                                               keyword=model_search_request.keyword,
+                                               provider_id=model_search_request.provider_id)
+    for item in db_ai_models:
+        db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, 
+                                                                   provider_id=item.provider_id)
+        db_user_model_provider = crud.model.get_user_ai_model_provider_by_id(db=db,
+                                                                             user_id=user.id,
+                                                                             provider_id=db_model_provider.id)
+        db_user_ai_model = crud.model.get_user_ai_model_by_id(db=db,
+                                                              user_id=user.id,
+                                                              model_id=item.id)
+        data.append(
+            schemas.ai.Model(id=item.id,
+                             name=item.name,
+                             description=item.description,
+                             api_key=db_user_ai_model.api_key,
+                             api_url=db_user_ai_model.api_url,
+                             provider=schemas.ai.ModelProvider(id=db_model_provider.id,
+                                                               name=db_model_provider.name,
+                                                               description=db_model_provider.description,
+                                                               api_key=db_user_model_provider.api_key,
+                                                               api_url=db_user_model_provider.api_url))
+        )
     return schemas.ai.ModelSearchResponse(data=data)
 
 @ai_router.post("/model-provider/search", response_model=schemas.ai.ModelProviderSearchResponse)
 async def list_ai_model_provider(model_provider_search_request: schemas.ai.ModelProviderSearchRequest,
                                  db: Session = Depends(get_db),
                                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    data = crud.model.search_ai_model_providers(db=db, 
-                                                user_id=user.id,
-                                                keyword=model_provider_search_request.keyword)
+    data = []
+    db_ai_model_providers = crud.model.search_ai_model_providers(db=db, 
+                                                                 user_id=user.id,
+                                                                 keyword=model_provider_search_request.keyword)
+    for item in db_ai_model_providers:
+        db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_id(db=db,
+                                                                                user_id=user.id,
+                                                                                provider_id=item.id)
+        data.append(
+            schemas.ai.ModelProvider(id=item.id,
+                                     name=item.name,
+                                     description=item.description,
+                                     api_key=db_user_ai_model_provider.api_key,
+                                     api_url=db_user_ai_model_provider.api_url)
+        )
     return schemas.ai.ModelProviderSearchResponse(data=data)
 
 @ai_router.post("/model/update", response_model=schemas.common.NormalResponse)
