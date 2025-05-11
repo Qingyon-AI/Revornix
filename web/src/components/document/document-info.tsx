@@ -232,7 +232,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 								size={'sm'}
 								onClick={() => mutateRead.mutate()}
 								className='text-xs rounded-full'>
-								{t('document_read')}
+								{t('document_unread')}
 							</Button>
 						) : (
 							<Button
@@ -240,7 +240,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 								size={'sm'}
 								onClick={() => mutateRead.mutate()}
 								className='text-xs rounded-full'>
-								{t('document_unread')}
+								{t('document_read')}
 							</Button>
 						)}
 
