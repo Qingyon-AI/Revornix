@@ -45,24 +45,6 @@ NEXT_PUBLIC_FILE_API_PREFIX='http://localhost/api/file-service'
 NEXT_PUBLIC_DAILY_HOT_API_PREFIX='http://localhost/api/daily-hot-service'
 ```
 
-### Modify AI Response Model
-
-Go to the router/ai.py file in the api service, find the ask_ai function, and modify the code below. Choose the appropriate model based on your actual situation.
-
-> [!NOTE]
-> Currently, only models from Volcengine are supported. Please visit the Volcengine official site to create a model.
-
-```python
-if chat_messages.search_web and chat_messages.deep_search:
-    model = 'bot-20250326172427-g588d'
-if chat_messages.search_web and not chat_messages.deep_search:
-    model = 'bot-20250327101204-s6sh7'
-if not chat_messages.search_web and chat_messages.deep_search:
-    model = 'bot-20250327100020-g6899'
-if not chat_messages.search_web and not chat_messages.deep_search:
-    model = 'bot-20250327100732-qwcp4'
-```
-
 ### Pull Necessary Repositories and Start with Docker
 
 ```shell
@@ -130,24 +112,6 @@ To simplify this, I have provided a docker-compose-local.yaml file, which you ca
 > If you already have some of these services installed locally, make sure to disable the corresponding service configurations in the docker-compose-local.yaml file to avoid conflicts.
 
 docker compose -f ./docker-compose-local.yaml up -d 
-
-### Modify AI Response Model
-
-Go to the router/ai.py file in the api service, find the ask_ai function, and modify the code below. Choose the appropriate model based on your actual situation.
-
-[!NOTE]
-Currently, only models from Volcengine are supported. Please visit the Volcengine official site to create a model.
-
-```
-if chat_messages.search_web and chat_messages.deep_search:
-    model = 'bot-20250326172427-g588d'
-if chat_messages.search_web and not chat_messages.deep_search:
-    model = 'bot-20250327101204-s6sh7'
-if not chat_messages.search_web and chat_messages.deep_search:
-    model = 'bot-20250327100020-g6899'
-if not chat_messages.search_web and not chat_messages.deep_search:
-    model = 'bot-20250327100732-qwcp4'
-```
 
 ### Start Core Back-End Services
 

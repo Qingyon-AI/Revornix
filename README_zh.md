@@ -43,24 +43,6 @@ NEXT_PUBLIC_FILE_API_PREFIX='http://localhost/api/file-service'
 NEXT_PUBLIC_DAILY_HOT_API_PREFIX='http://localhost/api/daily-hot-service'
 ```
 
-### 修改ai应答模型
-
-请前往api服务的`router/ai.py`文件夹中找到`ask_ai`函数，修改其中的这段代码，根据你的实际情况选择合适的模型。
-
-> [!NOTE]
-> 当前仅支持火山引擎中的模型，请前往[火山引擎官网](https://www.volcengine.com)创建。
-
-```python
-if chat_messages.search_web and chat_messages.deep_search:
-	model = 'bot-20250326172427-g588d'
-if chat_messages.search_web and not chat_messages.deep_search:
-	model = 'bot-20250327101204-s6sh7'
-if not chat_messages.search_web and chat_messages.deep_search:
-	model = 'bot-20250327100020-g6899'
-if not chat_messages.search_web and not chat_messages.deep_search:
-	model = 'bot-20250327100732-qwcp4'
-```
-
 ### docker 拉取必要仓库并启动
 
 ```shell
@@ -130,25 +112,6 @@ python -m script.init_sql_base_data
 
 ```shell
 docker compose -f ./docker-compose-local.yaml up -d 
-```
-
-
-### 修改ai应答模型
-
-请前往api服务的`router/ai.py`文件夹中找到`ask_ai`函数，修改其中的这段代码，根据你的实际情况选择合适的模型。
-
-> [!NOTE]
-> 当前仅支持火山引擎中的模型，请前往[火山引擎官网](https://www.volcengine.com)创建。
-
-```python
-if chat_messages.search_web and chat_messages.deep_search:
-	model = 'bot-20250326172427-g588d'
-if chat_messages.search_web and not chat_messages.deep_search:
-	model = 'bot-20250327101204-s6sh7'
-if not chat_messages.search_web and chat_messages.deep_search:
-	model = 'bot-20250327100020-g6899'
-if not chat_messages.search_web and not chat_messages.deep_search:
-	model = 'bot-20250327100732-qwcp4'
 ```
 
 ### 启动核心后端服务
