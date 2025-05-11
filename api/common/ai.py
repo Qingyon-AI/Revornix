@@ -6,11 +6,17 @@ from common.sql import SessionLocal
 def summary_section(model_id: int, markdown_content: str):
     db = SessionLocal()
     db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    db_user_model = crud.model.get_user_ai_model_by_id(db=db, model_id=model_id)
     if db_model is None:
         raise Exception("Model not found")
+    if db_user_model is None:
+        raise Exception("User model not found")
     db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
+    db_user_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_user_model.provider_id)
     if db_model_provider is None:
         raise Exception("Model provider not found")
+    if db_user_model_provider is None:
+        raise Exception("User model provider not found")
     system_prompt = f"""
     This is the entire content of the document, {markdown_content}. 
     Please summarize it in markdown format and provide me with a markdown summary report. 
@@ -21,8 +27,8 @@ def summary_section(model_id: int, markdown_content: str):
     }}
     """
     client = OpenAI(
-        api_key=db_model_provider.api_key,
-        base_url=db_model_provider.api_url,
+        api_key=db_user_model_provider.api_key,
+        base_url=db_user_model_provider.api_url,
     )
     completion = client.chat.completions.create(
         model=db_model.name,
@@ -43,11 +49,17 @@ def summary_section(model_id: int, markdown_content: str):
 def summary_section_with_origin(model_id, origin_section_markdown_content: str, new_document_markdown_content: str):
     db = SessionLocal()
     db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    db_user_model = crud.model.get_user_ai_model_by_id(db=db, model_id=model_id)
     if db_model is None:
         raise Exception("Model not found")
+    if db_user_model is None:
+        raise Exception("User model not found")
     db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
+    db_user_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_user_model.provider_id)
     if db_model_provider is None:
         raise Exception("Model provider not found")
+    if db_user_model_provider is None:
+        raise Exception("User model provider not found")
     system_prompt = f"""
     This is a summary document that consolidates several foundational documents, {origin_section_markdown_content}. 
     And this is the latest document, {new_document_markdown_content}. 
@@ -60,8 +72,8 @@ def summary_section_with_origin(model_id, origin_section_markdown_content: str, 
     }}
     """
     client = OpenAI(
-        api_key=db_model_provider.api_key,
-        base_url=db_model_provider.api_url,
+        api_key=db_user_model_provider.api_key,
+        base_url=db_user_model_provider.api_url,
     )
     completion = client.chat.completions.create(
         model=db_model.name,
@@ -82,11 +94,17 @@ def summary_section_with_origin(model_id, origin_section_markdown_content: str, 
 def summary_document(model_id: int, markdown_content: str):
     db = SessionLocal()
     db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    db_user_model = crud.model.get_user_ai_model_by_id(db=db, model_id=model_id)
     if db_model is None:
         raise Exception("Model not found")
+    if db_user_model is None:
+        raise Exception("User model not found")
     db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
+    db_user_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_user_model.provider_id)
     if db_model_provider is None:
         raise Exception("Model provider not found")
+    if db_user_model_provider is None:
+        raise Exception("User model provider not found")
     system_prompt = f"""
     This is the entire content of the document, {markdown_content}. Please summarize it using the document's language by providing a title, a brief description, and an overview of the content. The title should be around 10 characters, the description should be no less than 100 characters, and the summary should be between 300 and 600 characters. Please ensure to output your response in the following JSON format:
     {{
@@ -96,8 +114,8 @@ def summary_document(model_id: int, markdown_content: str):
     }}
     """
     client = OpenAI(
-        api_key=db_model_provider.api_key,
-        base_url=db_model_provider.api_url,
+        api_key=db_user_model_provider.api_key,
+        base_url=db_user_model_provider.api_url,
     )
     completion = client.chat.completions.create(
         model=db_model.name,
