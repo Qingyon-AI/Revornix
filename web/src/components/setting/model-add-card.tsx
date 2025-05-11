@@ -1,14 +1,8 @@
-import {
-	BanIcon,
-	Loader2,
-	PencilIcon,
-	SaveIcon,
-	TrashIcon,
-} from 'lucide-react';
+import { BanIcon, Loader2, SaveIcon } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useTranslations } from 'next-intl';
 import { utils } from '@kinda/utils';
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
 import { Input } from '../ui/input';
@@ -18,10 +12,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormField, FormMessage } from '../ui/form';
 import { createAiModel } from '@/service/ai';
 import { ModelProvider } from '@/generated';
-
-const addFormSchema = z.object({
-	name: z.string().min(1, '模型名称不能为空'),
-});
 
 interface ModelAddCardProps {
 	modelProvider: ModelProvider;
@@ -35,13 +25,17 @@ const ModelAddCard = ({
 	onSuccess,
 }: ModelAddCardProps) => {
 	const t = useTranslations();
+
+	const addFormSchema = z.object({
+		name: z.string().min(1, 'name needed'),
+	});
+
 	const updateForm = useForm({
 		resolver: zodResolver(addFormSchema),
 		defaultValues: {
 			name: '',
 		},
 	});
-	const queryClient = getQueryClient();
 	const [submitPending, startSubmit] = useTransition();
 
 	const handleSubmitAddForm = async (
@@ -75,10 +69,10 @@ const ModelAddCard = ({
 				})
 			);
 			if (err) {
-				toast.error('创建模型失败，请稍后再试');
+				toast.error(t('setting_model_add_failed'));
 				return;
 			}
-			toast.success('创建模型成功');
+			toast.success(t('setting_model_add_success'));
 			onSuccess();
 		});
 	};

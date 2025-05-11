@@ -41,11 +41,11 @@ const ModelCard = ({ model }: ModelCardProps) => {
 				})
 			);
 			if (err) {
-				toast.error('删除模型失败，请稍后再试');
+				toast.error(t('setting_model_add_failed'));
 				return;
 			}
 			if (res) {
-				toast.success('删除模型成功');
+				toast.success(t('setting_model_delete_success'));
 				// Refetch the models
 				await queryClient.invalidateQueries({
 					queryKey: ['getModels', model.provider.id],
@@ -63,13 +63,16 @@ const ModelCard = ({ model }: ModelCardProps) => {
 				})
 			);
 			if (err) {
-				toast.error('更新模型失败，请稍后再试');
+				toast.error(t('setting_model_update_failed'));
 				return;
 			}
-			toast.success('更新模型成功');
+			toast.success(t('setting_model_update_success'));
 			// Refetch the models
 			await queryClient.invalidateQueries({
 				queryKey: ['getModels', model.provider.id],
+			});
+			await queryClient.invalidateQueries({
+				queryKey: ['getModels'],
 			});
 			setEditing(false);
 		});
@@ -118,7 +121,7 @@ const ModelCard = ({ model }: ModelCardProps) => {
 								render={({ field }) => {
 									return (
 										<Input
-											placeholder='模型名称'
+											placeholder={t('setting_model_placeholder')}
 											className='mr-2 font-mono'
 											{...field}
 										/>

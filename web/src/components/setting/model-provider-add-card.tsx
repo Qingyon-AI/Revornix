@@ -78,11 +78,14 @@ const ModelProviderAddCard = () => {
 			queryClient.invalidateQueries({
 				queryKey: ['getModelProviders'],
 			});
+			queryClient.invalidateQueries({
+				queryKey: ['getModels'],
+			});
 		});
 	};
 
 	const onFormValidateError = (errors: any) => {
-		console.log(errors);
+		console.error(errors);
 		toast.error(t('form_validate_failed'));
 	};
 

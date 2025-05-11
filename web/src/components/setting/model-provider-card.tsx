@@ -140,11 +140,14 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 			queryClient.invalidateQueries({
 				queryKey: ['getModelProviders'],
 			});
+			queryClient.invalidateQueries({
+				queryKey: ['getModels'],
+			});
 		});
 	};
 
 	const onFormValidateError = (errors: any) => {
-		console.log(errors);
+		console.error(errors);
 		toast.error(t('form_validate_failed'));
 	};
 
@@ -187,6 +190,9 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 									onSuccess={() => {
 										queryClient.invalidateQueries({
 											queryKey: ['getModels', modelProvider.id],
+										});
+										queryClient.invalidateQueries({
+											queryKey: ['getModels'],
 										});
 										setShowAddModel(false);
 									}}

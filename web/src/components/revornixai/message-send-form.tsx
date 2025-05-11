@@ -272,7 +272,7 @@ const MessageSendForm = () => {
 					<p className='text-xs text-muted-foreground'>
 						{t('revornix_ai_default_model')}:
 						<span className='text-[10px] ml-2 rounded bg-muted/50 px-1.5 py-1 font-mono text-muted-foreground'>
-							{default_llm_model?.name}
+							{default_llm_model?.name ? default_llm_model.name : t('setting_revornix_model_empty')}
 						</span>
 						<Link
 							href={'/setting'}
