@@ -39,7 +39,12 @@ async def get_ai_model(model_request: schemas.ai.ModelRequest,
                                          model_id=model_request.model_id)
     if data is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
-    if data.user_id != user.id:
+    
+    db_user_model = crud.model.get_user_ai_model_by_id(db=db,
+                                                       user_id=user.id,
+                                                       model_id=model_request.model_id)
+    
+    if db_user_model is None or db_user_model.user_id != user.id:
         raise schemas.error.CustomException("The model is not belong to you", code=403)
     
     provider = crud.model.get_ai_model_provider_by_id(db=db,
