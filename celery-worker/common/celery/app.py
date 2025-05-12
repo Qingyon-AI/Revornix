@@ -116,30 +116,11 @@ async def handle_add_embedding(document_id: int, user_id: int):
     db = SessionLocal()
     user = crud.user.get_user_by_id(db=db, user_id=user_id)
     access_token = create_upload_token(user=user)
-    remote_file_service = RemoteFileService(authorization=access_token)
+    db_document = crud.document.get_document_by_document_id(db=db,
+                                                            document_id=document_id)
     try:
-        db_document = crud.document.get_document_by_document_id(db=db, 
-                                                                document_id=document_id)
-        if db_document is None:
-            raise Exception("Document not found")
-        if db_document.category == 1:
-            website_document = crud.document.get_website_document_by_document_id(db=db,
-                                                                                 document_id=document_id)
-            if website_document is None:
-                raise Exception("Website document not found")
-            markdown_content = await remote_file_service.get_object_content(file_path=website_document.md_file_name)
-        if db_document.category == 0:
-            file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                           document_id=document_id)
-            if file_document is None:
-                raise Exception("File document not found")
-            markdown_content = await remote_file_service.get_object_content(file_path=file_document.md_file_name)
-        if db_document.category == 2:
-            quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
-                                                                                       document_id=document_id)
-            if quick_note_document is None:
-                raise Exception("Quick note document not found")
-            markdown_content = quick_note_document.content
+        markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
+                                                                     user_id=user_id)
         data = process_document(document_id=document_id, 
                                 document_category=db_document.category, 
                                 document_content=markdown_content)
@@ -162,24 +143,8 @@ async def handle_update_sections(sections: list[int],
                                                             document_id=document_id)
     if db_document is None:
         raise Exception("Document does not exist")
-    if db_document.category == 1:
-        db_website_document = crud.document.get_website_document_by_document_id(db=db,
-                                                                                document_id=document_id)
-        if db_website_document is None:
-            raise Exception("Website Document does not exist")
-        markdown_content = await remote_file_service.get_object_content(file_path=db_website_document.md_file_name)
-    if db_document.category == 0:
-        db_file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                          document_id=document_id)
-        if db_file_document is None:
-            raise Exception("File document does not exist")
-        markdown_content = await remote_file_service.get_object_content(file_path=db_file_document.md_file_name)
-    if db_document.category == 2:
-        db_quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
-                                                                                      document_id=document_id)
-        if db_quick_note_document is None:
-            raise Exception("Quick note document does not exist")
-        markdown_content = db_quick_note_document.content
+    markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
+                                                                 user_id=user_id)
     try:
         for section_id in sections:
             db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
@@ -237,33 +202,45 @@ async def handle_update_sections(sections: list[int],
         log_exception()
         db.rollback()
         
+async def get_markdown_content_by_document_id(document_id: int, user_id: int):
+    db = SessionLocal()
+    db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+    if db_user is None:
+        raise Exception("User does not exist")
+    access_token = create_upload_token(user=db_user)
+    remote_file_service = RemoteFileService(authorization=access_token)
+    db_document = crud.document.get_document_by_document_id(db=db,
+                                                            document_id=document_id)
+    if db_document is None:
+        raise Exception("Document not found")
+    if db_document.category == 1:
+        website_document = crud.document.get_website_document_by_document_id(db=db,
+                                                                                document_id=document_id)
+        if website_document is None:
+            raise Exception("Website document not found")
+        markdown_content = await remote_file_service.get_object_content(file_path=website_document.md_file_name)
+    if db_document.category == 0:
+        file_document = crud.document.get_file_document_by_document_id(db=db,
+                                                                            document_id=document_id)
+        if file_document is None:
+            raise Exception("Website document not found")
+        markdown_content = await remote_file_service.get_object_content(file_path=file_document.md_file_name)
+    if db_document.category == 2:
+        quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
+                                                                                    document_id=document_id)
+        markdown_content = quick_note_document.content
+    return markdown_content
+        
 async def handle_update_ai_summary(document_id: int, 
                                    user_id: int):
     db = SessionLocal()
-    user = crud.user.get_user_by_id(db=db, user_id=user_id)
-    access_token = create_upload_token(user=user)
-    remote_file_service = RemoteFileService(authorization=access_token)
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
         if db_document is None:
             raise Exception("Document not found")
-        if db_document.category == 1:
-            website_document = crud.document.get_website_document_by_document_id(db=db,
-                                                                                 document_id=document_id)
-            if website_document is None:
-                raise Exception("Website document not found")
-            markdown_content = await remote_file_service.get_object_content(file_path=website_document.md_file_name)
-        if db_document.category == 0:
-            file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                              document_id=document_id)
-            if file_document is None:
-                raise Exception("Website document not found")
-            markdown_content = await remote_file_service.get_object_content(file_path=file_document.md_file_name)
-        if db_document.category == 2:
-            quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
-                                                                                       document_id=document_id)
-            markdown_content = quick_note_document.content
+        markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
+                                                                     user_id=user_id)
         model_id = crud.user.get_user_by_id(db=db, user_id=user_id).default_document_reader_model_id
         ai_summary_result = summary_document(model_id=model_id, markdown_content=markdown_content)
         crud.document.update_document_by_document_id(db=db,
@@ -302,7 +279,10 @@ async def handle_update_section_use_document(section_id: int,
     user = crud.user.get_user_by_id(db=db, user_id=user_id)
     access_token = create_upload_token(user=user)
     remote_file_service = RemoteFileService(authorization=access_token)
+    
     try:
+        markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
+                                                                     user_id=user_id)
         db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                                   section_id=section_id,
                                                                                   user_id=user.id)
@@ -318,7 +298,7 @@ async def handle_update_section_use_document(section_id: int,
                 origin_section_summary = await remote_file_service.get_object_content(file_path=db_section.md_file_name)
                 # generate the new summary using the document
                 new_summary = summary_section_with_origin(origin_section_markdown_content=origin_section_summary,
-                                                          new_document_markdown_content='markdown_content').get('summary')
+                                                          new_document_markdown_content=markdown_content).get('summary')
                 # put the new summary into the file system
                 md_file_name = f"markdown/{uuid.uuid4().hex}.md"
                 remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name, 
@@ -329,7 +309,7 @@ async def handle_update_section_use_document(section_id: int,
                                                           md_file_name=md_file_name)
         else:
             # summary the section of the document
-            summary = summary_section(markdown_content='markdown_content').get('summary')
+            summary = summary_section(markdown_content=markdown_content).get('summary')
             # put the summary into the file system
             md_file_name = f"markdown/{uuid.uuid4().hex}.md"
             remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name, 
