@@ -173,7 +173,9 @@ const DocumentInfo = ({ id }: { id: string }) => {
 				<div className='relative h-full'>
 					<div className='absolute top-0 right-0 w-full flex flex-row gap-2 justify-end p-5 rounded-t'>
 						{data.category === 1 && data.website_info && (
-							<Link href={data.website_info?.url} target='_blank'>
+							<Link
+								href={data.website_info?.url ? data.website_info.url : ''}
+								target='_blank'>
 								<Button
 									variant={'outline'}
 									size={'sm'}

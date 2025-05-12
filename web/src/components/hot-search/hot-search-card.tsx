@@ -44,7 +44,7 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 						{website.data.map((item, index) => {
 							return (
 								<div key={index}>
-									<Link href={item.url} target='_blank'>
+									<Link href={item.url ?? ''} target='_blank'>
 										<div className='flex flex-row gap-2 items-center'>
 											<div
 												className={cn(
@@ -87,7 +87,7 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 						{website.data.map((item, index) => {
 							return (
 								<div key={index}>
-									<Link href={item.url} target='_blank'>
+									<Link href={item.url ?? ''} target='_blank'>
 										<div className='flex flex-row gap-2 items-center'>
 											<div
 												className={cn(

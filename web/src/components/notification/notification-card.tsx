@@ -55,7 +55,7 @@ const NotificationCard = ({ notification }: { notification: Notification }) => {
 					</DialogHeader>
 					<DialogFooter className='flex flex-row items-center !justify-between w-full'>
 						{notification.link && (
-							<Link className='w-fit h-fit' href={notification.link}>
+							<Link className='w-fit h-fit' href={notification.link ?? ''}>
 								<Button
 									className='text-xs p-0 w-fit h-fit underline text-muted-foreground'
 									variant={'link'}>

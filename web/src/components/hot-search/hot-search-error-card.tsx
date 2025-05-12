@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -23,4 +22,4 @@ const HotSearchErrorCard = () => {
 	);
 };
 
-export default memo(HotSearchErrorCard);
+export default HotSearchErrorCard;
