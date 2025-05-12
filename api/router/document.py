@@ -94,7 +94,7 @@ async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSumma
                                                                                       document_id=ai_summary_request.document_id)
         markdown_content = db_quick_note_document.content
     model_id = crud.user.get_user_by_id(db=db, user_id=user.id).default_document_reader_model_id
-    ai_summary_result = summary_document(model_id=model_id, markdown_content=markdown_content)
+    ai_summary_result = summary_document(user_id=user.id, model_id=model_id, markdown_content=markdown_content)
     crud.document.update_document_by_document_id(db=db,
                                                  document_id=ai_summary_request.document_id,
                                                  title=ai_summary_result.get('title'),

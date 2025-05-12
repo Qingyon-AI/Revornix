@@ -162,7 +162,8 @@ async def handle_update_sections(sections: list[int],
                         # get the original section summary
                         origin_section_summary = await remote_file_service.get_object_content(file_path=db_section.md_file_name)
                         # generate the new summary using the document
-                        new_summary = summary_section_with_origin(origin_section_markdown_content=origin_section_summary,
+                        new_summary = summary_section_with_origin(model_id=db_user.default_document_reader_model_id,
+                                                                  origin_section_markdown_content=origin_section_summary,
                                                                   new_document_markdown_content=markdown_content).get('summary')
                         # put the new summary into the file system
                         md_file_name = f"markdown/{uuid.uuid4().hex}.md"
@@ -174,7 +175,9 @@ async def handle_update_sections(sections: list[int],
                                                                   md_file_name=md_file_name)
                 else:
                     # summary the section of the document
-                    summary = summary_section(markdown_content=markdown_content).get('summary')
+                    summary = summary_section(user_id=user_id, 
+                                              model_id=db_user.default_document_reader_model_id, 
+                                              markdown_content=markdown_content).get('summary')
                     # put the summary into the file system
                     md_file_name = f"markdown/{uuid.uuid4().hex}.md"
                     await remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name, 
@@ -242,7 +245,7 @@ async def handle_update_ai_summary(document_id: int,
         markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
                                                                      user_id=user_id)
         model_id = crud.user.get_user_by_id(db=db, user_id=user_id).default_document_reader_model_id
-        ai_summary_result = summary_document(model_id=model_id, markdown_content=markdown_content)
+        ai_summary_result = summary_document(user_id=user_id, model_id=model_id, markdown_content=markdown_content)
         crud.document.update_document_by_document_id(db=db,
                                                      document_id=document_id,
                                                      title=ai_summary_result.get('title'),
@@ -297,7 +300,8 @@ async def handle_update_section_use_document(section_id: int,
                 # get the original section summary
                 origin_section_summary = await remote_file_service.get_object_content(file_path=db_section.md_file_name)
                 # generate the new summary using the document
-                new_summary = summary_section_with_origin(origin_section_markdown_content=origin_section_summary,
+                new_summary = summary_section_with_origin(model_id=user.default_document_reader_model_id,
+                                                          origin_section_markdown_content=origin_section_summary,
                                                           new_document_markdown_content=markdown_content).get('summary')
                 # put the new summary into the file system
                 md_file_name = f"markdown/{uuid.uuid4().hex}.md"
@@ -309,7 +313,9 @@ async def handle_update_section_use_document(section_id: int,
                                                           md_file_name=md_file_name)
         else:
             # summary the section of the document
-            summary = summary_section(markdown_content=markdown_content).get('summary')
+            summary = summary_section(user_id=user_id, 
+                                      model_id=user.default_document_reader_model_id, 
+                                      markdown_content=markdown_content).get('summary')
             # put the summary into the file system
             md_file_name = f"markdown/{uuid.uuid4().hex}.md"
             remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name, 

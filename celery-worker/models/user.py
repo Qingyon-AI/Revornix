@@ -15,6 +15,7 @@ class EmailUser(Base):
     has_seen_initial_password = Column(Boolean, default=False, nullable=False, comment='Whether the initial password has been viewed')
     delete_at = Column(DateTime(timezone=True))
 
+
 class User(Base):
     __tablename__ = "user"
 
@@ -28,6 +29,8 @@ class User(Base):
     gender = Column(Integer, comment='0: unk, 1: male, 2: female')
     age = Column(Integer)
     is_forbidden = Column(Boolean, default=False)
+    default_document_reader_model_id = Column(Integer, ForeignKey("ai_model.id"))
+    default_revornix_model_id = Column(Integer, ForeignKey("ai_model.id"))
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True))
