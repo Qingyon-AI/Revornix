@@ -162,7 +162,8 @@ async def handle_update_sections(sections: list[int],
                         # get the original section summary
                         origin_section_summary = await remote_file_service.get_object_content(file_path=db_section.md_file_name)
                         # generate the new summary using the document
-                        new_summary = summary_section_with_origin(model_id=db_user.default_document_reader_model_id,
+                        new_summary = summary_section_with_origin(user_id=user_id,
+                                                                  model_id=db_user.default_document_reader_model_id,
                                                                   origin_section_markdown_content=origin_section_summary,
                                                                   new_document_markdown_content=markdown_content).get('summary')
                         # put the new summary into the file system
@@ -300,7 +301,8 @@ async def handle_update_section_use_document(section_id: int,
                 # get the original section summary
                 origin_section_summary = await remote_file_service.get_object_content(file_path=db_section.md_file_name)
                 # generate the new summary using the document
-                new_summary = summary_section_with_origin(model_id=user.default_document_reader_model_id,
+                new_summary = summary_section_with_origin(user_id=user_id,
+                                                          model_id=user.default_document_reader_model_id,
                                                           origin_section_markdown_content=origin_section_summary,
                                                           new_document_markdown_content=markdown_content).get('summary')
                 # put the new summary into the file system
