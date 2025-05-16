@@ -4,7 +4,7 @@ import datetime
 
 # Initialize the MCP server with your tools
 common_mcp_router = FastMCP(
-    name="Revornix-MCP-Server"
+    name="Common-MCP-Server"
 )
 
 @common_mcp_router.tool()
