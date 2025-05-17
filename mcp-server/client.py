@@ -1,14 +1,18 @@
-import asyncio
 import traceback
+import asyncio
 import json
+from pydantic import BaseModel
+from fastapi.responses import StreamingResponse
 from typing import List
 from openai import OpenAI
 from loguru import logger
 from dotenv import load_dotenv
 from common.mcp_client_wrapper import MCPClientWrapper
 from prompts.mcp import get_prompt_to_identify_tool_and_arguments, get_prompt_to_process_tool_response
-
+from fastapi import FastAPI
 from contextlib import AsyncExitStack
+
+app = FastAPI()
 
 load_dotenv()
 
@@ -25,7 +29,8 @@ def llm_client(message: str) -> str:
         messages=[
             {"role": "system", "content": "You are an intelligent Assistant. You will execute tasks as instructed"},
             {"role": "user", "content": message},
-        ]
+        ],
+        # stream=True
     )
     return completion.choices[0].message.content
 
@@ -64,12 +69,12 @@ async def stream_ops(query: str, memory: List[str]) -> dict:
 
         tool_call = json.loads(response)
         tool_name = tool_call["tool"]
-        arguments = tool_call["arguments"]
 
         if tool_name not in tool_mapping:
             tool_response = f"Tool {tool_name} is not available."
         else:
             client = tool_mapping[tool_name]
+            arguments = tool_call["arguments"]
             tool_result = await client.call_tool(tool_name, arguments)
             tool_response = tool_result.content[0].text
         
@@ -79,6 +84,34 @@ async def stream_ops(query: str, memory: List[str]) -> dict:
         final_response = llm_client(response_prompt)
         parsed = json.loads(final_response)
         return parsed
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+    
+class AskRequest(BaseModel):
+    messages: List[ChatMessage]
+    
+@app.post("/test")
+async def test(ask_request: AskRequest):
+    depth = 0
+    while True:
+        if depth > max_depth:
+            logger.error("Max depth reached. Exiting.")
+            break
+        try:
+            response = await stream_ops(message, ask_request.messages)
+            depth += 1
+            if response.get("action") == "respond_to_user":
+                logger.info(f"Agent: {response['response']}")
+                return response["response"]
+            else:
+                message = response["response"]
+        except Exception as e:
+            logger.error(f"Fatal error: {type(e).__name__} - {e}")
+            traceback.print_exception(type(e), e, e.__traceback__)
+            
+    return StreamingResponse()
 
 async def main():
     memory = []
