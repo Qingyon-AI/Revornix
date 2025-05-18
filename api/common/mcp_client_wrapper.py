@@ -4,6 +4,7 @@ from loguru import logger
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 
+
 class MCPClientWrapper:
     def __init__(self, base_url: str):
         self.base_url = base_url

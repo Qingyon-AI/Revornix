@@ -2,18 +2,46 @@ import json
 import crud
 import schemas
 import os
+from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from openai import OpenAI
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from fastapi.encoders import jsonable_encoder
 from common.dependencies import get_db, get_current_user
-from common.vector import milvus_client, process_query, hybrid_search
+from schemas.ai import ChatItem, ResponseItem
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 os.environ["TOKENIZERS_PARALLELISM"] = 'false'
 
 ai_router = APIRouter()
+
+from openai import OpenAI
+from openai.types.chat.chat_completion import ChatCompletion
+
+def call_llm_stream(ai_client: OpenAI, message: str):
+    stream = ai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are an intelligent Assistant. You will execute tasks as instructed"},
+            {"role": "user", "content": message},
+        ],
+        stream=True,
+    )
+    return stream
+
+def call_llm(ai_client: OpenAI, message: str) -> ChatCompletion:
+    completion = ai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are an intelligent Assistant. You will execute tasks as instructed"},
+            {"role": "user", "content": message},
+        ]
+    )
+    return completion
+    
 
 @ai_router.post("/model/create", response_model=schemas.common.NormalResponse)
 async def create_model(model_create_request: schemas.ai.ModelCreateRequest,
@@ -234,73 +262,136 @@ async def update_ai_model_provider(model_provider_update_request: schemas.ai.Mod
     db.commit()
     return schemas.common.SuccessResponse()
 
+import json
+from fastapi.responses import StreamingResponse
+from typing import List
+from loguru import logger
+from common.logger import log_exception
+from common.mcp_client_wrapper import MCPClientWrapper
+from common.prompts.mcp import get_prompt_to_identify_tool_and_arguments, get_prompt_to_process_tool_response, get_if_down_prompt
+from contextlib import AsyncExitStack
+
+max_depth = 5
+
+MCP_SERVERS = [
+    "http://localhost:8000/document/mcp",
+    "http://localhost:8000/common/mcp"
+]
+
+async def stream_ops_stream(ai_client: OpenAI, query: str, memory: List[str]):
+    tool_mapping = {}
+    all_tools = []
+
+    async with AsyncExitStack() as stack:
+        clients = []
+        for url in MCP_SERVERS:
+            try:
+                client = MCPClientWrapper(url)
+                client = await stack.enter_async_context(client)
+                clients.append(client)
+                tools = await client.list_tools()
+                for t in tools:
+                    tool_mapping[t.name] = client
+                    all_tools.append({
+                        "name": t.name,
+                        "description": t.description,
+                        "inputSchema": t.inputSchema
+                    })
+            except Exception as e:
+                logger.warning(f"Failed to connect to {url}: {e}")
+
+        # 1. 选择工具
+        prompt = get_prompt_to_identify_tool_and_arguments(query=query, tools=all_tools, context=memory)
+        yield ResponseItem(status="Selecting tool...").model_dump_json()
+        selection_result = call_llm(ai_client, prompt).choices[0].message.content
+        yield ResponseItem(status="Tool Selected", content=selection_result).model_dump_json()
+        tool_call = json.loads(selection_result)
+        tool_name = tool_call["tool"]
+
+        if tool_name == "none":
+            tool_response = "No tool selected"
+            yield ResponseItem(status="No tool selected").model_dump_json()
+        elif tool_name not in tool_mapping:
+            tool_response = "Tool not found"
+            yield ResponseItem(status=f"Tool {tool_name} not found.").model_dump_json()
+        else:
+            # 2. 调用工具
+            arguments = tool_call["arguments"]
+            client = tool_mapping[tool_name]
+            tool_result = await client.call_tool(tool_name, arguments)
+            tool_response = tool_result.content[0].text
+            yield ResponseItem(status="Tool Result", content=f"{tool_response}").model_dump_json()
+
+        # 3. 再由 LLM 对结果进行总结
+        checking_prompt = get_if_down_prompt(query, tool_response, context=memory)
+        status = call_llm(ai_client, checking_prompt).choices[0].message.content
+        yield ResponseItem(status="Checking continue", content=status).model_dump_json()
+        response_prompt = get_prompt_to_process_tool_response(query, tool_response, context=memory)
+        yield ResponseItem(status="Generating final response").model_dump_json()
+
+        for chunk in call_llm_stream(ai_client, response_prompt):
+            chunk = ChatItem(
+                chat_id=chunk.id,
+                content=chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta, 'content') else None,
+                role='assistant',
+                finish_reason=chunk.choices[0].finish_reason
+            )
+            yield ResponseItem(status="AI Answering", content=chunk.model_dump_json()).model_dump_json()
+
 @ai_router.post("/ask")
 async def ask_ai(chat_messages: schemas.ai.ChatMessages, 
                  db: Session = Depends(get_db),
                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    memory = [m.content for m in chat_messages.messages[:-1]]
     query = chat_messages.messages[-1].content
-    query_dense_embedding, query_sparse_embedding = process_query(query)
-    hybrid_results = hybrid_search(
-        milvus_client=milvus_client,
-        collection_name='document',
-        query_dense_embedding=query_dense_embedding,
-        query_sparse_embedding=query_sparse_embedding,
-    )
-    base_docs = [doc.get('entity').get('text') for doc in hybrid_results]
-    temp_messages = [{"role": message.role, "content": message.content} for message in chat_messages.messages[:-1]]
-    final_messages = [{"role": "system", "content": "You are Revornix AI，an ai assistant。"}, 
-                      *temp_messages, 
-                      {"role": "user", "content": f"Using the following info as context: {json.dumps(base_docs, ensure_ascii=False)}, could you help answer this question: {query}?"}]
+    depth = 0
+    
     model_id = user.default_revornix_model_id
     db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
     if db_model is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
+    db_user_model = crud.model.get_user_ai_model_by_id(db=db, user_id=user.id, model_id=model_id)
     db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
     if db_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
-    client = OpenAI(
-        api_key=db_model_provider.api_key,
-        base_url=db_model_provider.api_url,
+    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id(db=db, 
+                                                                         user_id=user.id, 
+                                                                         provider_id=db_model.provider_id)
+    ai_client = OpenAI(
+        api_key=db_user_model.api_key if db_user_model.api_key else db_user_model_provider.api_key,
+        base_url=db_user_model.api_url if db_user_model.api_url else db_user_model_provider.api_url,
         timeout=1800,
     )
-    try:
-        stream = client.chat.completions.create(
-                model=db_model.name,
-                messages=final_messages,
-                temperature=0.3,
-                stream=True,
-                stream_options={"include_usage": True}
-            )
-    except Exception as e:
-        raise schemas.error.CustomException(str(e), code=500)
-    def generate_stream_response():
-        for chunk in stream:
-            if chunk is None or chunk.choices is None or len(chunk.choices) == 0:
-                continue
-            choice = chunk.choices[0]
-            content = choice.delta.content if hasattr(choice.delta, 'content') else None
-            references = chunk.references if hasattr(chunk, 'references') else None
-            reasoning_content = choice.delta.reasoning_content if hasattr(choice.delta, 'reasoning_content') else None
-            finish_reason = choice.finish_reason
-            # 构建响应对象
-            res = schemas.ai.ChatItem(
-                chat_id=chunk.id,
-                reasoning_content=reasoning_content or "",
-                content=content or "",  # 处理空内容
-                role='assistant',
-                finish_reason=finish_reason,
-                references=references
-            )
-            # 添加引用文档信息（仅在首个块处理）
-            if choice.finish_reason == 'stop' and len(hybrid_results) > 0:
-                document_ids = [doc.get('entity').get('document_id') for doc in hybrid_results]
-                documents = [doc for doc in crud.document.get_documents_by_document_ids(db=db,
-                                                                                        document_ids=document_ids)]
-                if len(documents) > 0:
-                    res.quote = [schemas.ai.Document(id=document.id,
-                                                     title=document.title if document.title is not None else "无标题",
-                                                     description=document.description if document.description is not None else "无描述",
-                                                     ai_summary=document.ai_summary if document.ai_summary is not None else "无AI摘要",) for document in documents]
-            # 将响应对象转换为 JSON 字符串并编码为字节流
+
+    async def event_generator():
+        nonlocal query, depth
+
+        should_stop = False
+        
+        while depth <= max_depth:
+            try:
+                async for chunk in stream_ops_stream(ai_client, query, memory):
+                    chunk = json.loads(chunk)
+                    status = chunk.get('status')
+                    content = chunk.get('content')
+                    res = ResponseItem(status=status, content=content).model_dump_json()
+                    yield (json.dumps(jsonable_encoder(res), ensure_ascii=False) + "\n").encode("utf-8")
+                    if status == "Checking continue" and content is not None and "finish" in content:
+                        should_stop = True
+                    else:
+                        query = content
+                        memory.append(query)
+                if should_stop:
+                    break  # 退出 outer while-loop
+                depth += 1
+            except Exception as e:
+                res = ResponseItem(status=f"Something went wrong", content=str(e)).model_dump_json()
+                yield (json.dumps(jsonable_encoder(res), ensure_ascii=False) + "\n").encode("utf-8")
+                log_exception()
+                break
+
+        if depth > max_depth:
+            res = ResponseItem(status="Max depth reached. Terminating.").model_dump_json()
             yield (json.dumps(jsonable_encoder(res), ensure_ascii=False) + "\n").encode("utf-8")
-    return StreamingResponse(generate_stream_response(), media_type="text/event-stream")
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

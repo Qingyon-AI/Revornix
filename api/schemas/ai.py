@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-    
+from typing import Any
+
 class ModelCreateRequest(BaseModel):
     name: str
     description: str
@@ -112,5 +113,8 @@ class ChatItem(BaseModel):
     references: list[ReferenceItem] | None = None
     
 class ChatMessages(BaseModel):
-    search_web: bool
     messages: list[ChatItem]
+    
+class ResponseItem(BaseModel):
+    status: str
+    content: Any | None = None
