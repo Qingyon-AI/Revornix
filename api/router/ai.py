@@ -2,6 +2,7 @@ import json
 import crud
 import schemas
 import os
+import uuid
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
@@ -268,7 +269,7 @@ from typing import List
 from loguru import logger
 from common.logger import log_exception
 from common.mcp_client_wrapper import MCPClientWrapper
-from common.prompts.mcp import get_prompt_to_identify_tool_and_arguments, get_prompt_to_process_tool_response, get_if_down_prompt
+from common.prompts.mcp import get_prompt_to_identify_tool_and_arguments, get_prompt_to_process_tool_response, get_if_down_prompt, get_prompt_to_continue_next_tool
 from contextlib import AsyncExitStack
 
 max_depth = 5
@@ -278,14 +279,14 @@ MCP_SERVERS = [
     "http://localhost:8000/common/mcp"
 ]
 
-async def stream_ops_stream(ai_client: OpenAI, query: str, memory: List[str]):
+async def stream_ops_stream(ai_client: OpenAI, query: str, memory: List):
     tool_mapping = {}
     all_tools = []
 
-    async with AsyncExitStack() as stack:
-        clients = []
-        for url in MCP_SERVERS:
-            try:
+    try:
+        async with AsyncExitStack() as stack:
+            clients = []
+            for url in MCP_SERVERS:
                 client = MCPClientWrapper(url)
                 client = await stack.enter_async_context(client)
                 clients.append(client)
@@ -297,54 +298,63 @@ async def stream_ops_stream(ai_client: OpenAI, query: str, memory: List[str]):
                         "description": t.description,
                         "inputSchema": t.inputSchema
                     })
-            except Exception as e:
-                logger.warning(f"Failed to connect to {url}: {e}")
 
-        # 1. 选择工具
-        prompt = get_prompt_to_identify_tool_and_arguments(query=query, tools=all_tools, context=memory)
-        yield ResponseItem(status="Selecting tool...").model_dump_json()
-        selection_result = call_llm(ai_client, prompt).choices[0].message.content
-        yield ResponseItem(status="Tool Selected", content=selection_result).model_dump_json()
-        tool_call = json.loads(selection_result)
-        tool_name = tool_call["tool"]
+            # 1. 选择工具
+            prompt = get_prompt_to_identify_tool_and_arguments(query=query, tools=all_tools, context=memory)
+            yield ResponseItem(status="Selecting tool...").model_dump_json()
+            selection_result = call_llm(ai_client, prompt).choices[0].message.content
+            yield ResponseItem(status="Tool Selected", content=selection_result).model_dump_json()
+            tool_call = json.loads(selection_result)
+            tool_name = tool_call["tool"]
 
-        if tool_name == "none":
-            tool_response = "No tool selected"
-            yield ResponseItem(status="No tool selected").model_dump_json()
-        elif tool_name not in tool_mapping:
-            tool_response = "Tool not found"
-            yield ResponseItem(status=f"Tool {tool_name} not found.").model_dump_json()
-        else:
-            # 2. 调用工具
-            arguments = tool_call["arguments"]
-            client = tool_mapping[tool_name]
-            tool_result = await client.call_tool(tool_name, arguments)
-            tool_response = tool_result.content[0].text
-            yield ResponseItem(status="Tool Result", content=f"{tool_response}").model_dump_json()
+            if tool_name == "none":
+                tool_response = "No tool selected"
+                yield ResponseItem(status="No tool selected").model_dump_json()
+            elif tool_name not in tool_mapping:
+                tool_response = "Tool not found"
+                yield ResponseItem(status=f"Tool {tool_name} not found.").model_dump_json()
+            else:
+                # 2. 调用工具
+                arguments = tool_call["arguments"]
+                client = tool_mapping[tool_name]
+                tool_result = await client.call_tool(tool_name, arguments)
+                tool_response = tool_result.content[0].text
+                yield ResponseItem(status="Tool Result", content=f"{tool_response}").model_dump_json()
 
-        # 3. 再由 LLM 对结果进行总结
-        checking_prompt = get_if_down_prompt(query, tool_response, context=memory)
-        status = call_llm(ai_client, checking_prompt).choices[0].message.content
-        yield ResponseItem(status="Checking continue", content=status).model_dump_json()
-        response_prompt = get_prompt_to_process_tool_response(query, tool_response, context=memory)
-        yield ResponseItem(status="Generating final response").model_dump_json()
-
-        for chunk in call_llm_stream(ai_client, response_prompt):
-            chunk = ChatItem(
-                chat_id=chunk.id,
-                content=chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta, 'content') else None,
-                role='assistant',
-                finish_reason=chunk.choices[0].finish_reason
-            )
-            yield ResponseItem(status="AI Answering", content=chunk.model_dump_json()).model_dump_json()
+            # 3. 再由 LLM 对结果进行总结
+            checking_prompt = get_if_down_prompt(query, tool_response, context=memory)
+            status = call_llm(ai_client, checking_prompt).choices[0].message.content
+            yield ResponseItem(status="Checking continue", content=status).model_dump_json()
+            if "continue" in status:
+                continue_prompt = get_prompt_to_continue_next_tool(query, tool_response, context=memory)
+                continue_response = call_llm(ai_client=ai_client, message=continue_prompt).choices[0].message.content
+                yield ResponseItem(status="Continue Response", content=continue_response).model_dump_json()
+            else:
+                response_prompt = get_prompt_to_process_tool_response(query, tool_response, context=memory)
+                yield ResponseItem(status="Generating final response").model_dump_json()
+                # 可以回复，那么返回
+                for chunk in call_llm_stream(ai_client, response_prompt):
+                    chunk = ChatItem(
+                        chat_id=chunk.id,
+                        content=chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta, 'content') else None,
+                        role='assistant',
+                        finish_reason=chunk.choices[0].finish_reason
+                    )
+                    yield ResponseItem(status="AI Answering", content=chunk.model_dump_json()).model_dump_json()
+    except GeneratorExit:
+        # 客户端主动断开连接时，GeneratorExit 会被抛出
+        logger.info("Client disconnected during stream.")
+    except Exception as e:
+        logger.exception(f"Unexpected error in stream_ops_stream: {e}")
+        yield ResponseItem(status="Error", content=str(e)).model_dump_json()
 
 @ai_router.post("/ask")
 async def ask_ai(chat_messages: schemas.ai.ChatMessages, 
                  db: Session = Depends(get_db),
                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     enable_mcp = chat_messages.enable_mcp
+    messages = chat_messages.messages
     
-    memory = [m.content for m in chat_messages.messages[:-1]]
     query = chat_messages.messages[-1].content
     depth = 0
     
@@ -372,17 +382,18 @@ async def ask_ai(chat_messages: schemas.ai.ChatMessages,
             
             while depth <= max_depth:
                 try:
-                    async for chunk in stream_ops_stream(ai_client, query, memory):
+                    async for chunk in stream_ops_stream(ai_client, query, messages):
                         chunk = json.loads(chunk)
                         status = chunk.get('status')
                         content = chunk.get('content')
                         res = ResponseItem(status=status, content=content).model_dump_json()
                         yield (res + "\n").encode("utf-8")
+                        if status == "Continue Response":
+                            messages.append(ChatItem(chat_id=uuid.uuid4().hex,
+                                                     role="assistant", 
+                                                     content=content))
                         if status == "Checking continue" and content is not None and "finish" in content:
                             should_stop = True
-                        else:
-                            query = content
-                            memory.append(query)
                     if should_stop:
                         break  # 退出 outer while-loop
                     depth += 1

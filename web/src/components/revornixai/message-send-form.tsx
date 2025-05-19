@@ -161,7 +161,7 @@ const MessageSendForm = () => {
 		// create a new array to update the state
 		setTempMessages([...tempMessages(), newMessage]);
 		mutateSendMessage.mutate({
-			messages: [newMessage],
+			messages: [...tempMessages()],
 			enable_mcp: values.enable_mcp,
 		});
 		form.resetField('message');
