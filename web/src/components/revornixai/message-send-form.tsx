@@ -4,7 +4,7 @@ import { uniqueId } from 'lodash-es';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import aiApi from '@/api/ai';
 import Cookies from 'js-cookie';
-import { Send } from 'lucide-react';
+import { Info, Send } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Message, ResponseItem } from '@/store/ai-chat';
 import {
@@ -23,12 +23,18 @@ import { useTranslations } from 'next-intl';
 import { useUserContext } from '@/provider/user-provider';
 import { getAiModel } from '@/service/ai';
 import Link from 'next/link';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '../ui/hybrid-tooltip';
 
 const MessageSendForm = () => {
 	const t = useTranslations();
 	const formSchema = z.object({
 		message: z.string().min(1, t('revornix_ai_message_content_needed')),
-		searchWeb: z.boolean(),
+		enable_mcp: z.boolean(),
 	});
 	const { userInfo } = useUserContext();
 
@@ -57,7 +63,7 @@ const MessageSendForm = () => {
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			message: '',
-			searchWeb: true,
+			enable_mcp: false,
 		},
 	});
 
@@ -156,7 +162,7 @@ const MessageSendForm = () => {
 		setTempMessages([...tempMessages(), newMessage]);
 		mutateSendMessage.mutate({
 			messages: [newMessage],
-			search_web: values.searchWeb,
+			enable_mcp: values.enable_mcp,
 		});
 		form.resetField('message');
 	};
@@ -168,10 +174,10 @@ const MessageSendForm = () => {
 
 	const fetchStream = async ({
 		messages,
-		search_web,
+		enable_mcp,
 	}: {
 		messages: Message[];
-		search_web: boolean;
+		enable_mcp: boolean;
 	}) => {
 		const headers = new Headers();
 		headers.append('Content-Type', 'application/json');
@@ -185,7 +191,7 @@ const MessageSendForm = () => {
 			referrerPolicy: 'no-referrer',
 			body: JSON.stringify({
 				messages,
-				search_web,
+				enable_mcp,
 			}),
 		});
 		const reader = response.body?.getReader();
@@ -256,11 +262,23 @@ const MessageSendForm = () => {
 						<div className='flex flex-row items-center gap-5'>
 							<FormField
 								control={form.control}
-								name='searchWeb'
+								name='enable_mcp'
 								render={({ field }) => (
 									<FormItem className='flex flex-row items-center'>
 										<FormLabel className='flex flex-row gap-1 items-center'>
-											{t('revornix_ai_network_status')}
+											{t('revornix_ai_mcp_status')}
+											<TooltipProvider>
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<Info className='size-4 text-muted-foreground' />
+													</TooltipTrigger>
+													<TooltipContent>
+														<p>
+															{t('revornix_ai_mcp_description')}
+														</p>
+													</TooltipContent>
+												</Tooltip>
+											</TooltipProvider>
 										</FormLabel>
 										<Switch
 											checked={field.value}
