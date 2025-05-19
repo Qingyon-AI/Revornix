@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 const CreateSessionButton = () => {
 	const t = useTranslations();
-	const { setTempMessages, addSession, setCurrentSessionId } =
+	const { setTempMessages, addSession, setCurrentSessionId, setAiStatus } =
 		useAIChatContext();
 	const handleCreateNewSession = () => {
 		const newSession = {
@@ -17,6 +17,7 @@ const CreateSessionButton = () => {
 		addSession(newSession);
 		setCurrentSessionId(newSession.id);
 		setTempMessages([]);
+		setAiStatus('');
 	};
 	return (
 		<Button onClick={handleCreateNewSession}>

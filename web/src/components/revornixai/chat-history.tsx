@@ -20,7 +20,7 @@ import { useTranslations } from 'next-intl';
 
 const ChatHistory = () => {
 	const t = useTranslations();
-	const { setTempMessages } = useAIChatContext();
+	const { setTempMessages, setAiStatus } = useAIChatContext();
 	const sessions = useAiChatStore((state) => state.sessions);
 	const deleteSession = useAiChatStore((state) => state.deleteSession);
 	const setCurrentSessionId = useAiChatStore(
@@ -45,6 +45,7 @@ const ChatHistory = () => {
 		setCurrentSessionId(session.id);
 		setTempMessages(session.messages);
 		setShowHistory(false);
+		setAiStatus('');
 	};
 
 	const handleDeleteSession = (session: SessionItem) => {
