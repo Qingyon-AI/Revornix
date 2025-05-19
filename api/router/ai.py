@@ -22,9 +22,9 @@ ai_router = APIRouter()
 from openai import OpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 
-def call_llm_stream(ai_client: OpenAI, message: str):
+def call_llm_stream(ai_client: OpenAI, model: str, message: str):
     stream = ai_client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=model,
         messages=[
             {"role": "system", "content": "You are an intelligent Assistant. You will execute tasks as instructed"},
             {"role": "user", "content": message},
@@ -33,9 +33,9 @@ def call_llm_stream(ai_client: OpenAI, message: str):
     )
     return stream
 
-def call_llm(ai_client: OpenAI, message: str) -> ChatCompletion:
+def call_llm(ai_client: OpenAI, model: str, message: str) -> ChatCompletion:
     completion = ai_client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=model,
         messages=[
             {"role": "system", "content": "You are an intelligent Assistant. You will execute tasks as instructed"},
             {"role": "user", "content": message},
@@ -249,17 +249,21 @@ async def update_ai_model_provider(model_provider_update_request: schemas.ai.Mod
                                                                   provider_id=model_provider_update_request.id)
     if db_ai_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
-    if db_ai_model_provider.user_id != user.id:
+    db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_id(db=db,
+                                                                            user_id=user.id,
+                                                                            provider_id=model_provider_update_request.id)
+    if db_user_ai_model_provider.user_id != user.id:
         raise schemas.error.CustomException("The model provider is not belong to you", code=403)
     if model_provider_update_request.name is not None:
         db_ai_model_provider.name = model_provider_update_request.name
     if model_provider_update_request.description is not None:
         db_ai_model_provider.description = model_provider_update_request.description
     if model_provider_update_request.api_key is not None:
-        db_ai_model_provider.api_key = model_provider_update_request.api_key
+        db_user_ai_model_provider.api_key = model_provider_update_request.api_key
     if model_provider_update_request.api_url is not None:
-        db_ai_model_provider.api_url = model_provider_update_request.api_url
+        db_user_ai_model_provider.api_url = model_provider_update_request.api_url
     db_ai_model_provider.update_time = now
+    db_user_ai_model_provider.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()
 
@@ -279,7 +283,7 @@ MCP_SERVERS = [
     "http://localhost:8000/common/mcp"
 ]
 
-async def stream_ops_stream(ai_client: OpenAI, query: str, memory: List):
+async def stream_ops_stream(ai_client: OpenAI, model: str, query: str, memory: List):
     tool_mapping = {}
     all_tools = []
 
@@ -302,7 +306,7 @@ async def stream_ops_stream(ai_client: OpenAI, query: str, memory: List):
             # 1. 选择工具
             prompt = get_prompt_to_identify_tool_and_arguments(query=query, tools=all_tools, context=memory)
             yield ResponseItem(status="Selecting tool...").model_dump_json()
-            selection_result = call_llm(ai_client, prompt).choices[0].message.content
+            selection_result = call_llm(ai_client, model, prompt).choices[0].message.content
             yield ResponseItem(status="Tool Selected", content=selection_result).model_dump_json()
             tool_call = json.loads(selection_result)
             tool_name = tool_call["tool"]
@@ -323,17 +327,17 @@ async def stream_ops_stream(ai_client: OpenAI, query: str, memory: List):
 
             # 3. 再由 LLM 对结果进行总结
             checking_prompt = get_if_down_prompt(query, tool_response, context=memory)
-            status = call_llm(ai_client, checking_prompt).choices[0].message.content
+            status = call_llm(ai_client, model, checking_prompt).choices[0].message.content
             yield ResponseItem(status="Checking continue", content=status).model_dump_json()
             if "continue" in status:
                 continue_prompt = get_prompt_to_continue_next_tool(query, tool_response, context=memory)
-                continue_response = call_llm(ai_client=ai_client, message=continue_prompt).choices[0].message.content
+                continue_response = call_llm(ai_client=ai_client, model=model, message=continue_prompt).choices[0].message.content
                 yield ResponseItem(status="Continue Response", content=continue_response).model_dump_json()
             else:
                 response_prompt = get_prompt_to_process_tool_response(query, tool_response, context=memory)
                 yield ResponseItem(status="Generating final response").model_dump_json()
                 # 可以回复，那么返回
-                for chunk in call_llm_stream(ai_client, response_prompt):
+                for chunk in call_llm_stream(ai_client, model, response_prompt):
                     chunk = ChatItem(
                         chat_id=chunk.id,
                         content=chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta, 'content') else None,
@@ -382,7 +386,7 @@ async def ask_ai(chat_messages: schemas.ai.ChatMessages,
             
             while depth <= max_depth:
                 try:
-                    async for chunk in stream_ops_stream(ai_client, query, messages):
+                    async for chunk in stream_ops_stream(ai_client=ai_client, model=db_model.name, query=query, memory=messages):
                         chunk = json.loads(chunk)
                         status = chunk.get('status')
                         content = chunk.get('content')
