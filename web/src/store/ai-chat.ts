@@ -9,6 +9,11 @@ export type DocumentItem = {
     ai_summary: string;
 };
 
+export type ResponseItem = {
+    status: string;
+    content: string;
+}
+
 export type Message = {
     content: string;
     role: string;

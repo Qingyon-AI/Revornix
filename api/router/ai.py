@@ -342,6 +342,8 @@ async def stream_ops_stream(ai_client: OpenAI, query: str, memory: List[str]):
 async def ask_ai(chat_messages: schemas.ai.ChatMessages, 
                  db: Session = Depends(get_db),
                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    enable_mcp = chat_messages.enable_mcp
+    
     memory = [m.content for m in chat_messages.messages[:-1]]
     query = chat_messages.messages[-1].content
     depth = 0
@@ -362,36 +364,75 @@ async def ask_ai(chat_messages: schemas.ai.ChatMessages,
         base_url=db_user_model.api_url if db_user_model.api_url else db_user_model_provider.api_url,
         timeout=1800,
     )
+    if enable_mcp:
+        async def event_generator():
+            nonlocal query, depth
 
-    async def event_generator():
-        nonlocal query, depth
+            should_stop = False
+            
+            while depth <= max_depth:
+                try:
+                    async for chunk in stream_ops_stream(ai_client, query, memory):
+                        chunk = json.loads(chunk)
+                        status = chunk.get('status')
+                        content = chunk.get('content')
+                        res = ResponseItem(status=status, content=content).model_dump_json()
+                        yield (res + "\n").encode("utf-8")
+                        if status == "Checking continue" and content is not None and "finish" in content:
+                            should_stop = True
+                        else:
+                            query = content
+                            memory.append(query)
+                    if should_stop:
+                        break  # 退出 outer while-loop
+                    depth += 1
+                except Exception as e:
+                    res = ResponseItem(status=f"Something went wrong", content=str(e)).model_dump_json()
+                    yield (res + "\n").encode("utf-8")
+                    log_exception()
+                    break
 
-        should_stop = False
-        
-        while depth <= max_depth:
-            try:
-                async for chunk in stream_ops_stream(ai_client, query, memory):
-                    chunk = json.loads(chunk)
-                    status = chunk.get('status')
-                    content = chunk.get('content')
-                    res = ResponseItem(status=status, content=content).model_dump_json()
-                    yield (json.dumps(jsonable_encoder(res), ensure_ascii=False) + "\n").encode("utf-8")
-                    if status == "Checking continue" and content is not None and "finish" in content:
-                        should_stop = True
-                    else:
-                        query = content
-                        memory.append(query)
-                if should_stop:
-                    break  # 退出 outer while-loop
-                depth += 1
-            except Exception as e:
-                res = ResponseItem(status=f"Something went wrong", content=str(e)).model_dump_json()
-                yield (json.dumps(jsonable_encoder(res), ensure_ascii=False) + "\n").encode("utf-8")
-                log_exception()
-                break
+            if depth > max_depth:
+                res = ResponseItem(status="Max depth reached. Terminating.").model_dump_json()
+                yield (res + "\n").encode("utf-8")
 
-        if depth > max_depth:
-            res = ResponseItem(status="Max depth reached. Terminating.").model_dump_json()
-            yield (json.dumps(jsonable_encoder(res), ensure_ascii=False) + "\n").encode("utf-8")
-
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+        return StreamingResponse(event_generator(), media_type="text/event-stream")
+    else:
+        try:
+            final_messages = [
+                {"role": "system", "content": "You are Revornix AI，an ai assistant。"}, 
+                *[{"role": message.role, "content": message.content} for message in chat_messages.messages]
+            ]
+            stream = ai_client.chat.completions.create(
+                    model=db_model.name,
+                    messages=final_messages,
+                    temperature=0.3,
+                    stream=True,
+                    stream_options={"include_usage": True}
+                )
+        except Exception as e:
+            raise schemas.error.CustomException(str(e), code=500)
+        def generate_stream_response():
+            for chunk in stream:
+                if chunk is None or chunk.choices is None or len(chunk.choices) == 0:
+                    continue
+                choice = chunk.choices[0]
+                content = choice.delta.content if hasattr(choice.delta, 'content') else None
+                references = chunk.references if hasattr(chunk, 'references') else None
+                reasoning_content = choice.delta.reasoning_content if hasattr(choice.delta, 'reasoning_content') else None
+                finish_reason = choice.finish_reason
+                # 构建响应对象
+                res = ResponseItem(
+                    status="AI Answering",
+                    content=schemas.ai.ChatItem(
+                        chat_id=chunk.id,
+                        reasoning_content=reasoning_content or "",
+                        content=content or "",  # 处理空内容
+                        role='assistant',
+                        finish_reason=finish_reason,
+                        references=references
+                    ).model_dump_json()
+                ).model_dump_json()
+                # 将响应对象转换为 JSON 字符串并编码为字节流
+                yield (res + "\n").encode("utf-8")
+        return StreamingResponse(generate_stream_response(), media_type="text/event-stream")

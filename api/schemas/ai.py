@@ -114,6 +114,7 @@ class ChatItem(BaseModel):
     
 class ChatMessages(BaseModel):
     messages: list[ChatItem]
+    enable_mcp: bool = False
     
 class ResponseItem(BaseModel):
     status: str

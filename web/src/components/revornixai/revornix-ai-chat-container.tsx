@@ -7,10 +7,12 @@ import MessageCard from './message-card';
 import MessageSendForm from './message-send-form';
 import CreateSessionButton from './create-session-button';
 import { useTranslations } from 'next-intl';
+import { Badge } from '../ui/badge';
 
 const RevornixAI = () => {
 	const t = useTranslations();
 	const {
+		aiStatus,
 		tempMessages,
 		currentSessionId,
 		_hasHydrated,
@@ -36,7 +38,10 @@ const RevornixAI = () => {
 				<div className='flex flex-row justify-between items-center'>
 					<div className='flex flex-col gap-1'>
 						<div className='flex flex-row gap-2 items-center'>
-							<span className='font-bold text-xl'>{t('revornix_ai_title')}</span>
+							<span className='font-bold text-xl'>
+								{t('revornix_ai_title')}
+							</span>
+							{aiStatus && <Badge variant={'secondary'}>{aiStatus}</Badge>}
 						</div>
 						<div className='text-xs text-muted-foreground'>
 							{t('revornix_ai_base_knowledge')}

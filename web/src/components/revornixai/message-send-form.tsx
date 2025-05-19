@@ -6,7 +6,7 @@ import aiApi from '@/api/ai';
 import Cookies from 'js-cookie';
 import { Send } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { Message } from '@/store/ai-chat';
+import { Message, ResponseItem } from '@/store/ai-chat';
 import {
 	Form,
 	FormControl,
@@ -61,54 +61,63 @@ const MessageSendForm = () => {
 		},
 	});
 
-	const addOrUpdateAIMessageToMessages = (messageResponse: Message) => {
+	const addOrUpdateAIMessageToMessages = (responseItem: ResponseItem) => {
 		if (!currentSession) {
 			return;
 		}
-		const messageItem = tempMessages().find(
-			(item) => item.chat_id === messageResponse.chat_id
-		);
-		if (!messageItem) {
-			const newMessageItem = {
-				chat_id: messageResponse.chat_id,
-				content: messageResponse.content,
-				role: messageResponse.role,
-				quote: messageResponse.quote,
-				reasoning_content: messageResponse.reasoning_content,
-				finish_reason: messageResponse.finish_reason,
-				references: messageResponse.references,
-			};
-			setTempMessages([...tempMessages(), newMessageItem]);
-		} else {
-			if (
-				messageResponse.content &&
-				messageResponse.content.length > 0 &&
-				!messageResponse.reasoning_content?.length
-			) {
-				aiStatus !== t('revornix_ai_responding') &&
-					setAiStatus(t('revornix_ai_responding'));
-				messageItem.content = messageItem.content + messageResponse.content;
-			}
-			if (
-				messageResponse.reasoning_content &&
-				messageResponse.reasoning_content.length > 0 &&
-				!messageResponse.content.length
-			) {
-				aiStatus !== t('revornix_ai_deep_thinking') &&
-					setAiStatus(t('revornix_ai_deep_thinking'));
-				messageItem.reasoning_content =
-					messageItem.reasoning_content + messageResponse.reasoning_content;
-			}
-			if (messageResponse.finish_reason === 'stop') {
-				setAiStatus('');
-				messageItem.quote = messageResponse.quote;
-			}
-			messageItem.finish_reason = messageResponse.finish_reason;
-			setTempMessages(
-				tempMessages().map((item) =>
-					item.chat_id === messageItem.chat_id ? messageItem : item
-				)
+
+		const content = responseItem.content || '';
+		const status = responseItem.status;
+
+		setAiStatus(status);
+
+		if (status === 'AI Answering') {
+			const messageResponse = JSON.parse(content) as Message;
+			const messageItem = tempMessages().find(
+				(item) => item.chat_id === messageResponse.chat_id
 			);
+			if (!messageItem) {
+				const newMessageItem = {
+					chat_id: messageResponse.chat_id,
+					content: messageResponse.content,
+					role: messageResponse.role,
+					quote: messageResponse.quote,
+					reasoning_content: messageResponse.reasoning_content,
+					finish_reason: messageResponse.finish_reason,
+					references: messageResponse.references,
+				};
+				setTempMessages([...tempMessages(), newMessageItem]);
+			} else {
+				if (
+					messageResponse.content &&
+					messageResponse.content.length > 0 &&
+					!messageResponse.reasoning_content?.length
+				) {
+					aiStatus !== t('revornix_ai_responding') &&
+						setAiStatus(t('revornix_ai_responding'));
+					messageItem.content = messageItem.content + messageResponse.content;
+				}
+				if (
+					messageResponse.reasoning_content &&
+					messageResponse.reasoning_content.length > 0 &&
+					!messageResponse.content.length
+				) {
+					aiStatus !== t('revornix_ai_deep_thinking') &&
+						setAiStatus(t('revornix_ai_deep_thinking'));
+					messageItem.reasoning_content =
+						messageItem.reasoning_content + messageResponse.reasoning_content;
+				}
+				if (messageResponse.finish_reason === 'stop') {
+					setAiStatus('');
+					messageItem.quote = messageResponse.quote;
+				}
+				messageItem.finish_reason = messageResponse.finish_reason;
+				setTempMessages(
+					tempMessages().map((item) =>
+						item.chat_id === messageItem.chat_id ? messageItem : item
+					)
+				);
+			}
 		}
 	};
 
@@ -272,7 +281,9 @@ const MessageSendForm = () => {
 					<p className='text-xs text-muted-foreground'>
 						{t('revornix_ai_default_model')}:
 						<span className='text-[10px] ml-2 rounded bg-muted/50 px-1.5 py-1 font-mono text-muted-foreground'>
-							{default_llm_model?.name ? default_llm_model.name : t('setting_revornix_model_empty')}
+							{default_llm_model?.name
+								? default_llm_model.name
+								: t('setting_revornix_model_empty')}
 						</span>
 						<Link
 							href={'/setting'}

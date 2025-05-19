@@ -7,11 +7,8 @@ import remarkMath from 'remark-math';
 import rehypeRaw from 'rehype-raw';
 import KnowledgeRef from './knowledge-ref';
 import SearchResultsRef from './search-results-ref';
-import { Loader2 } from 'lucide-react';
-import { useAIChatContext } from '@/provider/ai-chat-provider';
 
 const MessageCard = ({ message }: { message: Message }) => {
-	const { aiStatus } = useAIChatContext();
 	return (
 		<div
 			className={cn('flex flex-row gap-5', {
@@ -19,14 +16,6 @@ const MessageCard = ({ message }: { message: Message }) => {
 			})}>
 			<div className='flex flex-col gap-2'>
 				<div className='rounded-lg p-3 w-fit bg-muted prose dark:prose-invert'>
-					{aiStatus &&
-						message.finish_reason !== 'stop' &&
-						message.role === 'assistant' && (
-							<div className='flex flex-row items-center gap-2 mb-2'>
-								<span className='font-bold'>{aiStatus}</span>
-								<Loader2 className='animate-spin size-4' />
-							</div>
-						)}
 					{message.reasoning_content && (
 						<div className='text-muted-foreground text-sm pl-3 border-l-2 border-muted-foreground/50'>
 							<p className='text-sm/6 mt-0'>{message.reasoning_content}</p>
