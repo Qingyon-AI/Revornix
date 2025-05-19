@@ -30,6 +30,7 @@ cp ./envs/.api.env.example ./envs/.api.env
 cp ./envs/.file.env.example ./envs/.file.env
 cp ./envs/.celery.env.example ./envs/.celery.env
 cp ./envs/.hot.env.example ./envs/.hot.env
+cp ./envs/.mcp.env.example ./envs/.mcp.env
 ```
 
 前往对应的环境变量文件配置，详情见[环境变量配置篇章](environment)
@@ -73,6 +74,7 @@ cp ./envs/.api.env.example ./api/.env
 cp ./envs/.file.env.example ./file-backend/.env
 cp ./envs/.celery.env.example ./celery-worker/.env
 cp ./envs/.hot.env.example ./daily-hot/.env
+cp ./envs/.mcp.env.example ./mcp-server/.env
 ```
 
 请在`./api/.env`和`./file-backend/.env`文件中补充如下内容：
@@ -112,6 +114,14 @@ python -m script.init_sql_base_data
 
 ```shell
 docker compose -f ./docker-compose-local.yaml up -d 
+```
+
+### 启动mcp服务端
+
+```shell
+cd mcp-server
+pip install -r ./requirements.txt
+fastapi run --port 8003
 ```
 
 ### 启动核心后端服务

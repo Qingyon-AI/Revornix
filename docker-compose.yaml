@@ -58,6 +58,23 @@ services:
         condition: service_started
     env_file:
       - ./envs/.api.env
+  
+  mcp-server:
+    container_name: mcp-server
+    build:
+      context: mcp-server
+      dockerfile: Dockerfile
+    env_file:
+      - ./envs/.mcp.env
+    depends_on:
+      mysql:
+        condition: service_healthy
+      standalone:
+        condition: service_started
+      redis:
+        condition: service_started
+      neo4j:
+        condition: service_started
 
   file-backend:
     container_name: file-backend

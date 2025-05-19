@@ -32,6 +32,7 @@ cp ./envs/.api.env.example ./envs/.api.env
 cp ./envs/.file.env.example ./envs/.file.env
 cp ./envs/.celery.env.example ./envs/.celery.env
 cp ./envs/.hot.env.example ./envs/.hot.env
+cp ./envs/.mcp.env.example ./envs/.mcp.env
 ```
 
 Go to the corresponding environment variable files and configure them. For details, refer to Environment Variables Configuration.
@@ -74,6 +75,7 @@ cp ./envs/.api.env.example ./api/.env
 cp ./envs/.file.env.example ./file-backend/.env
 cp ./envs/.celery.env.example ./celery-worker/.env
 cp ./envs/.hot.env.example ./daily-hot/.env
+cp ./envs/.mcp.env.example ./mcp-server/.env
 ```
 
 In the ./api/.env and ./file-backend/.env files, add the following content:
@@ -112,6 +114,14 @@ To simplify this, I have provided a docker-compose-local.yaml file, which you ca
 > If you already have some of these services installed locally, make sure to disable the corresponding service configurations in the docker-compose-local.yaml file to avoid conflicts.
 
 docker compose -f ./docker-compose-local.yaml up -d 
+
+### Start mcp Server
+
+```shell
+cd mcp-server
+pip install -r ./requirements.txt
+fastapi run --port 8003
+```
 
 ### Start Core Back-End Services
 

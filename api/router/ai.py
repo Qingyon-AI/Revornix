@@ -279,8 +279,9 @@ from contextlib import AsyncExitStack
 max_depth = 5
 
 MCP_SERVERS = [
-    "http://localhost:8000/document/mcp",
-    "http://localhost:8000/common/mcp"
+    # TODO: add your custom mcp server url here
+    # for example: if your stream server url is http://localhost:8003/document, then add "https://localhost:8003/document/mcp"
+    
 ]
 
 async def stream_ops_stream(ai_client: OpenAI, model: str, query: str, memory: List):
