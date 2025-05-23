@@ -1,9 +1,9 @@
 import json
+import json
 import crud
 import schemas
 import os
 import uuid
-from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from openai import OpenAI
@@ -11,9 +11,25 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from common.dependencies import get_db, get_current_user
 from schemas.ai import ChatItem, ResponseItem
-from dotenv import load_dotenv
+from fastapi.responses import StreamingResponse
+from typing import List
+from loguru import logger
+from common.logger import log_exception
+from common.sql import SessionLocal
+from common.mcp_client_wrapper import MCPClientWrapper
+from common.prompts.mcp import get_prompt_to_identify_tool_and_arguments, get_prompt_to_process_tool_response, get_if_down_prompt, get_prompt_to_continue_next_tool
+from contextlib import AsyncExitStack
 
+from dotenv import load_dotenv
 load_dotenv(override=True)
+
+max_depth = 5
+
+MCP_SERVERS = [
+    # TODO: add your custom mcp server url here
+    # for example: if your stream server url is http://localhost:8003/document, then add "https://localhost:8003/document/mcp"
+    
+]
 
 os.environ["TOKENIZERS_PARALLELISM"] = 'false'
 
@@ -267,24 +283,8 @@ async def update_ai_model_provider(model_provider_update_request: schemas.ai.Mod
     db.commit()
     return schemas.common.SuccessResponse()
 
-import json
-from fastapi.responses import StreamingResponse
-from typing import List
-from loguru import logger
-from common.logger import log_exception
-from common.mcp_client_wrapper import MCPClientWrapper
-from common.prompts.mcp import get_prompt_to_identify_tool_and_arguments, get_prompt_to_process_tool_response, get_if_down_prompt, get_prompt_to_continue_next_tool
-from contextlib import AsyncExitStack
-
-max_depth = 5
-
-MCP_SERVERS = [
-    # TODO: add your custom mcp server url here
-    # for example: if your stream server url is http://localhost:8003/document, then add "https://localhost:8003/document/mcp"
-    
-]
-
 async def stream_ops_stream(ai_client: OpenAI, model: str, query: str, memory: List):
+    db = SessionLocal()
     tool_mapping = {}
     all_tools = []
 
@@ -292,7 +292,7 @@ async def stream_ops_stream(ai_client: OpenAI, model: str, query: str, memory: L
         async with AsyncExitStack() as stack:
             clients = []
             for url in MCP_SERVERS:
-                client = MCPClientWrapper(url)
+                client = MCPClientWrapper(mcp_type='stream', base_url=url)
                 client = await stack.enter_async_context(client)
                 clients.append(client)
                 tools = await client.list_tools()
