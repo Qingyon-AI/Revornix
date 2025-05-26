@@ -9,3 +9,4 @@ from . import notification
 from . import pagination
 from . import section
 from . import user
+from . import mcp

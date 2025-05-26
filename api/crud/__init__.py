@@ -6,3 +6,4 @@ from . import section
 from . import notification
 from . import task
 from . import model
+from . import mcp

@@ -24,6 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from fastapi import status
 from router.user import user_router
+from router.mcp import mcp_router
 from router.document import document_router
 from router.attachment import attachment_router
 from router.ai import ai_router
@@ -85,6 +86,7 @@ app.include_router(section_router, prefix="/section", tags=["section"])
 app.include_router(api_key_router, prefix="/api_key", tags=["api_key"])
 app.include_router(tp_router, prefix="/tp", tags=["tp"])
 app.include_router(task_router, prefix="/task", tags=["task"])
+app.include_router(mcp_router, prefix="/mcp", tags=["mcp"])
 
 @app.get('/openapi.yaml', include_in_schema=False)
 @functools.lru_cache()
