@@ -6,6 +6,36 @@ from common.dependencies import get_current_user, get_db
 
 mcp_router = APIRouter()
 
+@mcp_router.post("/server/search", response_model=schemas.mcp.MCPServerSearchResponse)
+async def get_mcp_server_list(mcp_server_search_request: schemas.mcp.MCPServerSearchRequest,
+                              db: Session = Depends(get_db),
+                              user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    mcp_servers = crud.mcp.search_mcp_servers(db=db, 
+                                              user_id=user.id,
+                                              keyword=mcp_server_search_request.keyword)
+    res = []
+    for mcp_server in mcp_servers:
+        if mcp_server.category == 0:
+            db_std_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, 
+                                                                       base_id=mcp_server.id)
+            res.append(schemas.mcp.MCPServerInfo(
+                id=mcp_server.id,
+                name=mcp_server.name,
+                category=mcp_server.category,
+                cmd=db_std_mcp_server.cmd,
+                args=db_std_mcp_server.args
+            ))
+        elif mcp_server.category == 1:
+            db_stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db,
+                                                                             base_id=mcp_server.id)
+            res.append(schemas.mcp.MCPServerInfo(
+                id=mcp_server.id,
+                name=mcp_server.name,
+                category=mcp_server.category,
+                address=db_stream_mcp_server.address
+            ))
+    return schemas.mcp.MCPServerSearchResponse(data=res)
+
 @mcp_router.post('/server/create', response_model=schemas.common.NormalResponse)
 async def create_server(mcp_server_create_request: schemas.mcp.MCPServerCreateRequest,
                         db: Session = Depends(get_db),
@@ -96,5 +126,7 @@ async def delete_server(mcp_server_delete_request: schemas.mcp.MCPServerDeleteRe
                                                 code=404)
         crud.mcp.delete_stream_mcp_server_by_base_id(db=db, 
                                                      base_id=mcp_server_delete_request.id)
+    crud.mcp.delete_base_mcp_server_by_id(db=db,
+                                          id=mcp_server_delete_request.id)
     db.commit()
     return schemas.common.SuccessResponse()

@@ -15,3 +15,17 @@ class MCPServerUpdateRequest(BaseModel):
     
 class MCPServerDeleteRequest(BaseModel):
     id: int
+    
+class MCPServerInfo(BaseModel):
+    id: int
+    name: str
+    category: int
+    address: str | None = None
+    cmd: str | None = None
+    args: str | None = None
+    
+class MCPServerSearchRequest(BaseModel):
+    keyword: str | None = None
+    
+class MCPServerSearchResponse(BaseModel):
+    data: list[MCPServerInfo]
