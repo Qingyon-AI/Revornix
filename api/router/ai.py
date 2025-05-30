@@ -25,12 +25,6 @@ load_dotenv(override=True)
 
 max_depth = 5
 
-MCP_SERVERS = [
-    # TODO: add your custom mcp server url here
-    # for example: if your stream server url is http://localhost:8003/document, then add "https://localhost:8003/document/mcp"
-    
-]
-
 os.environ["TOKENIZERS_PARALLELISM"] = 'false'
 
 ai_router = APIRouter()
@@ -283,18 +277,26 @@ async def update_ai_model_provider(model_provider_update_request: schemas.ai.Mod
     db.commit()
     return schemas.common.SuccessResponse()
 
-async def stream_ops_stream(ai_client: OpenAI, model: str, query: str, memory: List):
+async def stream_ops_stream(user_id: int, ai_client: OpenAI, model: str, query: str, memory: List):
     db = SessionLocal()
     tool_mapping = {}
     all_tools = []
+    mcp_servers = crud.mcp.search_mcp_servers(db=db, user_id=user_id, keyword='')
 
     try:
         async with AsyncExitStack() as stack:
             clients = []
-            for url in MCP_SERVERS:
-                client = MCPClientWrapper(mcp_type='stream', base_url=url)
-                client = await stack.enter_async_context(client)
-                clients.append(client)
+            for mcp_server in mcp_servers:
+                if mcp_server.category == 0:
+                    stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
+                    client = MCPClientWrapper(mcp_type='stream', base_url=stream_mcp_server.address)
+                    client = await stack.enter_async_context(client)
+                    clients.append(client)
+                if mcp_server.category == 1:
+                    stdio_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
+                    client = MCPClientWrapper(mcp_type='std', command=stdio_mcp_server.cmd, args=stdio_mcp_server.args)
+                    client = await stack.enter_async_context(client)
+                    clients.append(client)
                 tools = await client.list_tools()
                 for t in tools:
                     tool_mapping[t.name] = client
@@ -387,7 +389,7 @@ async def ask_ai(chat_messages: schemas.ai.ChatMessages,
             
             while depth <= max_depth:
                 try:
-                    async for chunk in stream_ops_stream(ai_client=ai_client, model=db_model.name, query=query, memory=messages):
+                    async for chunk in stream_ops_stream(user_id=user.id, ai_client=ai_client, model=db_model.name, query=query, memory=messages):
                         chunk = json.loads(chunk)
                         status = chunk.get('status')
                         content = chunk.get('content')

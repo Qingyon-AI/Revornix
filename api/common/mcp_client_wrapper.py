@@ -5,7 +5,6 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
 
-
 class MCPClientWrapper:
     def __init__(self, mcp_type: str = "stream", base_url: str | None = None, command: str | None = None, args: str | None = None):
         self.stack = AsyncExitStack()
