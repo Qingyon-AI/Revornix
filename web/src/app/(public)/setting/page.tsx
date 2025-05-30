@@ -5,6 +5,7 @@ import DailyReportStatus from '@/components/setting/daily-report-status';
 import DailyReportTime from '@/components/setting/daily-report-time';
 import DocumentSummaryModel from '@/components/setting/document-summary-model';
 import LanguageChange from '@/components/setting/language-change';
+import MCPServerManage from '@/components/setting/mcp-server-manage';
 import ModelCollection from '@/components/setting/model-collection';
 import RevornixAIModel from '@/components/setting/revornix-ai-model';
 import { Card, CardContent } from '@/components/ui/card';
@@ -86,15 +87,6 @@ const SettingPage = () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							{t('setting_revornix_model')}
-						</Label>
-						<div className='flex flex-col gap-2'>
-							<RevornixAIModel />
-						</div>
-					</div>
-					<Separator />
-					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_document_summary_model')}
 						</Label>
 						<div className='flex flex-col gap-2'>
@@ -114,6 +106,28 @@ const SettingPage = () => {
 							{t('setting_file_extract_model')}
 						</Label>
 						<div className='flex flex-col gap-2'>MinerU</div>
+					</div>
+				</CardContent>
+			</Card>
+			<h2 className='text-xs text-muted-foreground p-3'>Revornix AI配置</h2>
+			<Card>
+				<CardContent className='space-y-5'>
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_revornix_model')}
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<RevornixAIModel />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							MCP Server管理
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<MCPServerManage />
+						</div>
 					</div>
 				</CardContent>
 			</Card>

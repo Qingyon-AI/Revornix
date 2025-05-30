@@ -2,6 +2,7 @@ apis/AiApi.ts
 apis/ApiKeyApi.ts
 apis/AttachmentApi.ts
 apis/DocumentApi.ts
+apis/McpApi.ts
 apis/NotificationApi.ts
 apis/SectionApi.ts
 apis/TpApi.ts
@@ -59,6 +60,12 @@ models/InitialPasswordResponse.ts
 models/Label.ts
 models/LabelAddRequest.ts
 models/LabelListResponse.ts
+models/MCPServerCreateRequest.ts
+models/MCPServerDeleteRequest.ts
+models/MCPServerInfo.ts
+models/MCPServerSearchRequest.ts
+models/MCPServerSearchResponse.ts
+models/MCPServerUpdateRequest.ts
 models/Message.ts
 models/Model.ts
 models/ModelCreateRequest.ts

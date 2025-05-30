@@ -94,7 +94,7 @@ export interface DeleteAiModelAiModelDeletePostRequest {
     xForwardedFor?: string | null;
 }
 
-export interface DeleteAiModelAiModelProvibderDeletePostRequest {
+export interface DeleteAiModelAiModelProviderDeletePostRequest {
     deleteModelProviderRequest: DeleteModelProviderRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
@@ -324,11 +324,11 @@ export class AiApi extends runtime.BaseAPI {
     /**
      * Delete Ai Model
      */
-    async deleteAiModelAiModelProvibderDeletePostRaw(requestParameters: DeleteAiModelAiModelProvibderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteAiModelAiModelProviderDeletePostRaw(requestParameters: DeleteAiModelAiModelProviderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
         if (requestParameters['deleteModelProviderRequest'] == null) {
             throw new runtime.RequiredError(
                 'deleteModelProviderRequest',
-                'Required parameter "deleteModelProviderRequest" was null or undefined when calling deleteAiModelAiModelProvibderDeletePost().'
+                'Required parameter "deleteModelProviderRequest" was null or undefined when calling deleteAiModelAiModelProviderDeletePost().'
             );
         }
 
@@ -347,7 +347,7 @@ export class AiApi extends runtime.BaseAPI {
         }
 
         const response = await this.request({
-            path: `/ai/model-provibder/delete`,
+            path: `/ai/model-provider/delete`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -360,8 +360,8 @@ export class AiApi extends runtime.BaseAPI {
     /**
      * Delete Ai Model
      */
-    async deleteAiModelAiModelProvibderDeletePost(requestParameters: DeleteAiModelAiModelProvibderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
-        const response = await this.deleteAiModelAiModelProvibderDeletePostRaw(requestParameters, initOverrides);
+    async deleteAiModelAiModelProviderDeletePost(requestParameters: DeleteAiModelAiModelProviderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteAiModelAiModelProviderDeletePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

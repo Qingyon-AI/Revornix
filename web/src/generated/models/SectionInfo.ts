@@ -77,7 +77,7 @@ export interface SectionInfo {
      * @type {boolean}
      * @memberof SectionInfo
      */
-    public: boolean;
+    publi: boolean;
     /**
      * 
      * @type {number}
@@ -142,7 +142,7 @@ export function instanceOfSectionInfo(value: object): value is SectionInfo {
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('creator' in value) || value['creator'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('public' in value) || value['public'] === undefined) return false;
+    if (!('publi' in value) || value['publi'] === undefined) return false;
     if (!('documents_count' in value) || value['documents_count'] === undefined) return false;
     if (!('subscribers_count' in value) || value['subscribers_count'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
@@ -164,7 +164,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'title': json['title'],
         'creator': UserPublicInfoFromJSON(json['creator']),
         'description': json['description'],
-        'public': json['public'],
+        'publi': json['public'],
         'documents_count': json['documents_count'],
         'subscribers_count': json['subscribers_count'],
         'create_time': (new Date(json['create_time'])),
@@ -192,7 +192,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'title': value['title'],
         'creator': UserPublicInfoToJSON(value['creator']),
         'description': value['description'],
-        'public': value['public'],
+        'public': value['publi'],
         'documents_count': value['documents_count'],
         'subscribers_count': value['subscribers_count'],
         'create_time': ((value['create_time']).toISOString()),

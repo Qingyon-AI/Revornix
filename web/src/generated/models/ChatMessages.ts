@@ -29,23 +29,22 @@ import {
 export interface ChatMessages {
     /**
      * 
-     * @type {boolean}
-     * @memberof ChatMessages
-     */
-    search_web: boolean;
-    /**
-     * 
      * @type {Array<ChatItem>}
      * @memberof ChatMessages
      */
     messages: Array<ChatItem>;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ChatMessages
+     */
+    enable_mcp?: boolean;
 }
 
 /**
  * Check if a given object implements the ChatMessages interface.
  */
 export function instanceOfChatMessages(value: object): value is ChatMessages {
-    if (!('search_web' in value) || value['search_web'] === undefined) return false;
     if (!('messages' in value) || value['messages'] === undefined) return false;
     return true;
 }
@@ -60,8 +59,8 @@ export function ChatMessagesFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'search_web': json['search_web'],
         'messages': ((json['messages'] as Array<any>).map(ChatItemFromJSON)),
+        'enable_mcp': json['enable_mcp'] == null ? undefined : json['enable_mcp'],
     };
 }
 
@@ -76,8 +75,8 @@ export function ChatMessagesToJSONTyped(value?: ChatMessages | null, ignoreDiscr
 
     return {
         
-        'search_web': value['search_web'],
         'messages': ((value['messages'] as Array<any>).map(ChatItemToJSON)),
+        'enable_mcp': value['enable_mcp'],
     };
 }
 
