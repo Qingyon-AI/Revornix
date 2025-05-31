@@ -10,6 +10,7 @@ class MCPServer(Base):
     create_time = Column(DateTime(timezone=True))
     update_time = Column(DateTime(timezone=True))
     delete_at = Column(DateTime(timezone=True))
+    enable = Column(Boolean, nullable=False, index=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     
 class StdMCP(Base):

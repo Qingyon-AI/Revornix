@@ -11,6 +11,7 @@ def create_mcp_server_base(db: Session,
         name=name,
         category=category,
         user_id=user_id,
+        enable=True,
         create_time=now,
         update_time=now,
     )
