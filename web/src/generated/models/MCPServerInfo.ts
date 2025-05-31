@@ -33,6 +33,12 @@ export interface MCPServerInfo {
     name: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof MCPServerInfo
+     */
+    enable: boolean;
+    /**
+     * 
      * @type {number}
      * @memberof MCPServerInfo
      */
@@ -63,6 +69,7 @@ export interface MCPServerInfo {
 export function instanceOfMCPServerInfo(value: object): value is MCPServerInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('enable' in value) || value['enable'] === undefined) return false;
     if (!('category' in value) || value['category'] === undefined) return false;
     return true;
 }
@@ -79,6 +86,7 @@ export function MCPServerInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         
         'id': json['id'],
         'name': json['name'],
+        'enable': json['enable'],
         'category': json['category'],
         'address': json['address'] == null ? undefined : json['address'],
         'cmd': json['cmd'] == null ? undefined : json['cmd'],
@@ -99,6 +107,7 @@ export function MCPServerInfoToJSONTyped(value?: MCPServerInfo | null, ignoreDis
         
         'id': value['id'],
         'name': value['name'],
+        'enable': value['enable'],
         'category': value['category'],
         'address': value['address'],
         'cmd': value['cmd'],

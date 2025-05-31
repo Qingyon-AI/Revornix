@@ -21,10 +21,22 @@ import { mapValues } from '../runtime';
 export interface MCPServerUpdateRequest {
     /**
      * 
+     * @type {number}
+     * @memberof MCPServerUpdateRequest
+     */
+    id: number;
+    /**
+     * 
      * @type {string}
      * @memberof MCPServerUpdateRequest
      */
     name?: string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof MCPServerUpdateRequest
+     */
+    enable?: boolean | null;
     /**
      * 
      * @type {string}
@@ -49,6 +61,7 @@ export interface MCPServerUpdateRequest {
  * Check if a given object implements the MCPServerUpdateRequest interface.
  */
 export function instanceOfMCPServerUpdateRequest(value: object): value is MCPServerUpdateRequest {
+    if (!('id' in value) || value['id'] === undefined) return false;
     return true;
 }
 
@@ -62,7 +75,9 @@ export function MCPServerUpdateRequestFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
+        'id': json['id'],
         'name': json['name'] == null ? undefined : json['name'],
+        'enable': json['enable'] == null ? undefined : json['enable'],
         'address': json['address'] == null ? undefined : json['address'],
         'cmd': json['cmd'] == null ? undefined : json['cmd'],
         'args': json['args'] == null ? undefined : json['args'],
@@ -80,7 +95,9 @@ export function MCPServerUpdateRequestToJSONTyped(value?: MCPServerUpdateRequest
 
     return {
         
+        'id': value['id'],
         'name': value['name'],
+        'enable': value['enable'],
         'address': value['address'],
         'cmd': value['cmd'],
         'args': value['args'],

@@ -8,7 +8,9 @@ class MCPServerCreateRequest(BaseModel):
     args: str | None = None
     
 class MCPServerUpdateRequest(BaseModel):
+    id: int
     name: str | None = None
+    enable: bool | None = None
     address: str | None = None
     cmd: str | None = None
     args: str | None = None
@@ -19,6 +21,7 @@ class MCPServerDeleteRequest(BaseModel):
 class MCPServerInfo(BaseModel):
     id: int
     name: str
+    enable: bool
     category: int
     address: str | None = None
     cmd: str | None = None

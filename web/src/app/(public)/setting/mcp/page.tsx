@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/select';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
+import { MCPServerUpdateRequest } from '@/generated';
 
 const mcpCreateFormSchema = z.object({
 	name: z.string(),
@@ -142,14 +143,7 @@ const MCPPage = () => {
 	});
 
 	const mutateUpdateMCPServer = useMutation({
-		mutationFn: async (values: {
-			id: number;
-			name: string;
-			args: string;
-			cmd: string;
-			address: string;
-			category: number;
-		}) => {
+		mutationFn: async (values: MCPServerUpdateRequest) => {
 			return await updateMCPServer(values);
 		},
 		onSuccess: () => {
@@ -503,7 +497,15 @@ const MCPPage = () => {
 												{mcp_server.category === 0 ? mcp_server.args : '-'}
 											</TableCell>
 											<TableCell>
-												<Switch />
+												<Switch
+													checked={mcp_server.enable}
+													onCheckedChange={(value) => {
+														mutateUpdateMCPServer.mutateAsync({
+															id: mcp_server.id,
+															enable: value,
+														});
+													}}
+												/>
 											</TableCell>
 											<TableCell className='flex flex-row gap-2'>
 												<Button

@@ -36,7 +36,7 @@ export interface SectionCreateRequest {
      * @type {boolean}
      * @memberof SectionCreateRequest
      */
-    publi: boolean;
+    public: boolean;
     /**
      * 
      * @type {number}
@@ -57,7 +57,7 @@ export interface SectionCreateRequest {
 export function instanceOfSectionCreateRequest(value: object): value is SectionCreateRequest {
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('publi' in value) || value['publi'] === undefined) return false;
+    if (!('public' in value) || value['public'] === undefined) return false;
     if (!('labels' in value) || value['labels'] === undefined) return false;
     return true;
 }
@@ -74,7 +74,7 @@ export function SectionCreateRequestFromJSONTyped(json: any, ignoreDiscriminator
         
         'title': json['title'],
         'description': json['description'],
-        'publi': json['public'],
+        'public': json['public'],
         'cover_id': json['cover_id'] == null ? undefined : json['cover_id'],
         'labels': json['labels'],
     };
@@ -93,7 +93,7 @@ export function SectionCreateRequestToJSONTyped(value?: SectionCreateRequest | n
         
         'title': value['title'],
         'description': value['description'],
-        'public': value['publi'],
+        'public': value['public'],
         'cover_id': value['cover_id'],
         'labels': value['labels'],
     };

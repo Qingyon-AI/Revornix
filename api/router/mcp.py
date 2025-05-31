@@ -20,6 +20,7 @@ async def get_mcp_server_list(mcp_server_search_request: schemas.mcp.MCPServerSe
                                                                        base_id=mcp_server.id)
             res.append(schemas.mcp.MCPServerInfo(
                 id=mcp_server.id,
+                enable=mcp_server.enable,
                 name=mcp_server.name,
                 category=mcp_server.category,
                 cmd=db_std_mcp_server.cmd,
@@ -30,6 +31,7 @@ async def get_mcp_server_list(mcp_server_search_request: schemas.mcp.MCPServerSe
                                                                              base_id=mcp_server.id)
             res.append(schemas.mcp.MCPServerInfo(
                 id=mcp_server.id,
+                enable=mcp_server.enable,
                 name=mcp_server.name,
                 category=mcp_server.category,
                 address=db_stream_mcp_server.address
@@ -76,6 +78,8 @@ async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRe
                                             code=400)
     if mcp_server_update_request.name is not None:
         db_base_mcp_server.name = mcp_server_update_request.name
+    if mcp_server_update_request.enable is not None:
+        db_base_mcp_server.enable = mcp_server_update_request.enable
     if db_base_mcp_server.category == 0:
         db_std_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, 
                                                                    base_id=mcp_server_update_request.id)
