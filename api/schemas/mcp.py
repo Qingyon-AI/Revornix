@@ -9,6 +9,7 @@ class MCPServerCreateRequest(BaseModel):
     
 class MCPServerUpdateRequest(BaseModel):
     id: int
+    category: int | None = None
     name: str | None = None
     enable: bool | None = None
     address: str | None = None

@@ -80,24 +80,41 @@ async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRe
         db_base_mcp_server.name = mcp_server_update_request.name
     if mcp_server_update_request.enable is not None:
         db_base_mcp_server.enable = mcp_server_update_request.enable
-    if db_base_mcp_server.category == 0:
-        db_std_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, 
-                                                                   base_id=mcp_server_update_request.id)
-        if db_std_mcp_server is None:
-            raise schemas.error.CustomException(message="mcp server not found", 
-                                                code=404)
-        if mcp_server_update_request.cmd is not None: 
-            db_std_mcp_server.cmd = mcp_server_update_request.cmd
-        if mcp_server_update_request.args is not None:
-            db_std_mcp_server.args = mcp_server_update_request.args
-    if db_base_mcp_server.category == 1:
-        db_stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db, 
-                                                                         base_id=mcp_server_update_request.id)
-        if db_stream_mcp_server is None:
-            raise schemas.error.CustomException(message="mcp server not found", 
-                                                code=404)
-        if mcp_server_update_request.address is not None:
-            db_stream_mcp_server.address = mcp_server_update_request.address
+    if db_base_mcp_server.category == mcp_server_update_request.category:
+        if db_base_mcp_server.category == 0:
+            db_std_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, 
+                                                                    base_id=mcp_server_update_request.id)
+            if db_std_mcp_server is None:
+                raise schemas.error.CustomException(message="mcp server not found", 
+                                                    code=404)
+            if mcp_server_update_request.cmd is not None: 
+                db_std_mcp_server.cmd = mcp_server_update_request.cmd
+            if mcp_server_update_request.args is not None:
+                db_std_mcp_server.args = mcp_server_update_request.args
+        if db_base_mcp_server.category == 1:
+            db_stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db, 
+                                                                            base_id=mcp_server_update_request.id)
+            if db_stream_mcp_server is None:
+                raise schemas.error.CustomException(message="mcp server not found", 
+                                                    code=404)
+            if mcp_server_update_request.address is not None:
+                db_stream_mcp_server.address = mcp_server_update_request.address
+    else:
+        if db_base_mcp_server.category == 0 and mcp_server_update_request.category == 1:
+            crud.mcp.delete_std_mcp_server_by_base_id(db=db, base_id=db_base_mcp_server.id)
+            db_new_stream_mcp_server = crud.mcp.create_stream_mcp(
+                db=db,
+                address=mcp_server_update_request.address,
+                server_id=db_base_mcp_server.id
+            )
+        elif db_base_mcp_server.category == 1 and mcp_server_update_request.category == 0:
+            crud.mcp.delete_stream_mcp_server_by_base_id(db=db, base_id=db_base_mcp_server.id)
+            db_new_std_mcp_server = crud.mcp.create_std_mcp(
+                db=db,
+                cmd=mcp_server_update_request.cmd,
+                args=mcp_server_update_request.args,
+                server_id=db_base_mcp_server.id
+            )
     db.commit()
     return schemas.common.SuccessResponse()
 
