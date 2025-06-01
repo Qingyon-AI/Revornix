@@ -109,7 +109,9 @@ const SettingPage = () => {
 					</div>
 				</CardContent>
 			</Card>
-			<h2 className='text-xs text-muted-foreground p-3'>Revornix AI配置</h2>
+			<h2 className='text-xs text-muted-foreground p-3'>
+				{t('setting_revornix_ai')}
+			</h2>
 			<Card>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
@@ -123,7 +125,7 @@ const SettingPage = () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							MCP Server管理
+							{t('mcp_server_manage')}
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<MCPServerManage />

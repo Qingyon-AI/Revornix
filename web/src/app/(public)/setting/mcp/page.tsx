@@ -53,99 +53,100 @@ import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
 import { MCPServerSearchRequest, MCPServerUpdateRequest } from '@/generated';
 
-const mcpCreateFormSchema = z
-	.object({
-		name: z.string().min(1).max(20),
-		category: z.number().min(0).max(1),
-		args: z.string().optional(),
-		cmd: z.string().optional(),
-		address: z.string().optional(),
-	})
-	.refine(
-		(data) => {
-			if (data.category === 0) {
-				return data.cmd && data.cmd.trim() !== '';
-			}
-			return true;
-		},
-		{
-			message: '终端 MCP 模式下 cmd 为必填',
-			path: ['cmd'],
-		}
-	)
-	.refine(
-		(data) => {
-			if (data.category === 0) {
-				return data.args && data.args.trim() !== '';
-			}
-			return true;
-		},
-		{
-			message: '终端 MCP 模式下 args 为必填',
-			path: ['args'],
-		}
-	)
-	.refine(
-		(data) => {
-			if (data.category === 1) {
-				return data.address && data.address.trim() !== '';
-			}
-			return true;
-		},
-		{
-			message: '流式 MCP 模式下 address 为必填',
-			path: ['address'],
-		}
-	);
-
-const mcpUpdateFormSchema = z
-	.object({
-		id: z.number(),
-		name: z.string().min(1).max(20).optional().nullable(),
-		category: z.number().min(0).max(1).optional().nullable(),
-		args: z.string().optional().nullable(),
-		cmd: z.string().optional().nullable(),
-		address: z.string().optional().nullable(),
-	})
-	.refine(
-		(data) => {
-			if (data.category === 0) {
-				return data.cmd && data.cmd.trim() !== '';
-			}
-			return true;
-		},
-		{
-			message: '终端 MCP 模式下 cmd 为必填',
-			path: ['cmd'],
-		}
-	)
-	.refine(
-		(data) => {
-			if (data.category === 0) {
-				return data.args && data.args.trim() !== '';
-			}
-			return true;
-		},
-		{
-			message: '终端 MCP 模式下 args 为必填',
-			path: ['args'],
-		}
-	)
-	.refine(
-		(data) => {
-			if (data.category === 1) {
-				return data.address && data.address.trim() !== '';
-			}
-			return true;
-		},
-		{
-			message: '流式 MCP 模式下 address 为必填',
-			path: ['address'],
-		}
-	);
-
 const MCPPage = () => {
 	const t = useTranslations();
+
+	const mcpCreateFormSchema = z
+		.object({
+			name: z.string().min(1).max(20),
+			category: z.number().min(0).max(1),
+			args: z.string().optional(),
+			cmd: z.string().optional(),
+			address: z.string().optional(),
+		})
+		.refine(
+			(data) => {
+				if (data.category === 0) {
+					return data.cmd && data.cmd.trim() !== '';
+				}
+				return true;
+			},
+			{
+				message: t('mcp_server_cmd_needed'),
+				path: ['cmd'],
+			}
+		)
+		.refine(
+			(data) => {
+				if (data.category === 0) {
+					return data.args && data.args.trim() !== '';
+				}
+				return true;
+			},
+			{
+				message: t('mcp_server_args_needed'),
+				path: ['args'],
+			}
+		)
+		.refine(
+			(data) => {
+				if (data.category === 1) {
+					return data.address && data.address.trim() !== '';
+				}
+				return true;
+			},
+			{
+				message: t('mcp_server_address_needed'),
+				path: ['address'],
+			}
+		);
+
+	const mcpUpdateFormSchema = z
+		.object({
+			id: z.number(),
+			name: z.string().min(1).max(20).optional().nullable(),
+			category: z.number().min(0).max(1).optional().nullable(),
+			args: z.string().optional().nullable(),
+			cmd: z.string().optional().nullable(),
+			address: z.string().optional().nullable(),
+		})
+		.refine(
+			(data) => {
+				if (data.category === 0) {
+					return data.cmd && data.cmd.trim() !== '';
+				}
+				return true;
+			},
+			{
+				message: t('mcp_server_cmd_needed'),
+				path: ['cmd'],
+			}
+		)
+		.refine(
+			(data) => {
+				if (data.category === 0) {
+					return data.args && data.args.trim() !== '';
+				}
+				return true;
+			},
+			{
+				message: t('mcp_server_args_needed'),
+				path: ['args'],
+			}
+		)
+		.refine(
+			(data) => {
+				if (data.category === 1) {
+					return data.address && data.address.trim() !== '';
+				}
+				return true;
+			},
+			{
+				message: t('mcp_server_address_needed'),
+				path: ['address'],
+			}
+		);
+
 	const queryClient = getQueryClient();
 	const mcpCreateForm = useForm({
 		resolver: zodResolver(mcpCreateFormSchema),
@@ -183,7 +184,7 @@ const MCPPage = () => {
 			return createMCPServer(values);
 		},
 		onSuccess: () => {
-			toast.success('创建成功');
+			toast.success(t('mcp_server_create_success'));
 			setShowCreateDialog(false);
 			queryClient.invalidateQueries({ queryKey: ['mcp-server-search'] });
 		},
@@ -199,7 +200,7 @@ const MCPPage = () => {
 			});
 		},
 		onSuccess: () => {
-			toast.success('删除成功');
+			toast.success(t('mcp_server_delete_success'));
 			queryClient.invalidateQueries({
 				queryKey: ['mcp-server-search'],
 			});
@@ -239,7 +240,7 @@ const MCPPage = () => {
 			return await updateMCPServer(values);
 		},
 		onSuccess: () => {
-			toast.success('更新成功');
+			toast.success(t('mcp_server_update_success'));
 			setShowUpdateDialog(false);
 			queryClient.invalidateQueries({
 				queryKey: ['mcp-server-search'],
@@ -314,7 +315,7 @@ const MCPPage = () => {
 			<Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>更新MCPServer</DialogTitle>
+						<DialogTitle>{t('mcp_server_update_form_title')}</DialogTitle>
 					</DialogHeader>
 					<div>
 						<Form {...mcpUpdateForm}>
@@ -325,8 +326,15 @@ const MCPPage = () => {
 									render={({ field }) => {
 										return (
 											<FormItem>
-												<FormLabel>MCP名称</FormLabel>
-												<Input {...field} placeholder='请输入MCP名称' />
+												<FormLabel>
+													{t('mcp_server_update_form_name_label')}
+												</FormLabel>
+												<Input
+													{...field}
+													placeholder={t(
+														'mcp_server_update_form_name_placeholder'
+													)}
+												/>
 												<FormMessage />
 											</FormItem>
 										);
@@ -338,19 +346,29 @@ const MCPPage = () => {
 									render={({ field }) => {
 										return (
 											<FormItem>
-												<FormLabel>MCP类型</FormLabel>
+												<FormLabel>
+													{t('mcp_server_update_form_category_label')}
+												</FormLabel>
 												<Select
 													onValueChange={(value) =>
 														field.onChange(Number(value))
 													}
 													defaultValue={String(field.value)}>
 													<SelectTrigger className='w-full'>
-														<SelectValue placeholder='Select a fruit' />
+														<SelectValue
+															placeholder={t(
+																'mcp_server_update_form_category_placeholder'
+															)}
+														/>
 													</SelectTrigger>
 													<SelectContent className='w-full'>
 														<SelectGroup>
-															<SelectItem value='0'>终端 (std)</SelectItem>
-															<SelectItem value='1'>流式 (stream)</SelectItem>
+															<SelectItem value='0'>
+																{t('mcp_server_update_form_category_std')}
+															</SelectItem>
+															<SelectItem value='1'>
+																{t('mcp_server_update_form_category_stream')}
+															</SelectItem>
 														</SelectGroup>
 													</SelectContent>
 												</Select>
@@ -366,8 +384,15 @@ const MCPPage = () => {
 										render={({ field }) => {
 											return (
 												<FormItem>
-													<FormLabel>MCP服务地址</FormLabel>
-													<Input {...field} placeholder='请输入MCP服务地址' />
+													<FormLabel>
+														{t('mcp_server_update_form_address')}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'mcp_server_update_form_address_placeholder'
+														)}
+													/>
 													<FormMessage />
 												</FormItem>
 											);
@@ -382,8 +407,15 @@ const MCPPage = () => {
 											render={({ field }) => {
 												return (
 													<FormItem>
-														<FormLabel>MCP脚本</FormLabel>
-														<Input {...field} placeholder='请输入MCP脚本' />
+														<FormLabel>
+															{t('mcp_server_update_form_script')}
+														</FormLabel>
+														<Input
+															{...field}
+															placeholder={t(
+																'mcp_server_update_form_script_placeholder'
+															)}
+														/>
 														<FormMessage />
 													</FormItem>
 												);
@@ -395,8 +427,15 @@ const MCPPage = () => {
 											render={({ field }) => {
 												return (
 													<FormItem>
-														<FormLabel>MCP脚本参数</FormLabel>
-														<Input {...field} placeholder='请输入MCP脚本参数' />
+														<FormLabel>
+															{t('mcp_server_update_form_args')}
+														</FormLabel>
+														<Input
+															{...field}
+															placeholder={t(
+																'mcp_server_update_form_args_placeholder'
+															)}
+														/>
 														<FormMessage />
 													</FormItem>
 												);
@@ -407,13 +446,13 @@ const MCPPage = () => {
 								<DialogFooter>
 									<DialogClose asChild>
 										<Button type='button' variant={'secondary'}>
-											取消
+											{t('mcp_server_update_form_cancel')}
 										</Button>
 									</DialogClose>
 									<Button
 										type='submit'
 										disabled={mutateUpdateMCPServer.isPending}>
-										确认更新
+										{t('mcp_server_update_form_submit')}
 										{mutateUpdateMCPServer.isPending && (
 											<Loader2 className='h-4 w-4 animate-spin' />
 										)}
@@ -428,7 +467,7 @@ const MCPPage = () => {
 			<Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>创建MCPServer</DialogTitle>
+						<DialogTitle>{t('mcp_server_create_form_title')}</DialogTitle>
 					</DialogHeader>
 					<div>
 						<Form {...mcpCreateForm}>
@@ -439,8 +478,15 @@ const MCPPage = () => {
 									render={({ field }) => {
 										return (
 											<FormItem>
-												<FormLabel>MCP名称</FormLabel>
-												<Input {...field} placeholder='请输入MCP名称' />
+												<FormLabel>
+													{t('mcp_server_create_form_name_label')}
+												</FormLabel>
+												<Input
+													{...field}
+													placeholder={t(
+														'mcp_server_create_form_name_placeholder'
+													)}
+												/>
 												<FormMessage />
 											</FormItem>
 										);
@@ -452,19 +498,29 @@ const MCPPage = () => {
 									render={({ field }) => {
 										return (
 											<FormItem>
-												<FormLabel>MCP类型</FormLabel>
+												<FormLabel>
+													{t('mcp_server_create_form_category_label')}
+												</FormLabel>
 												<Select
 													onValueChange={(value) =>
 														field.onChange(Number(value))
 													}
 													defaultValue={String(field.value)}>
 													<SelectTrigger className='w-full'>
-														<SelectValue placeholder='Select a fruit' />
+														<SelectValue
+															placeholder={t(
+																'mcp_server_create_form_category_placeholder'
+															)}
+														/>
 													</SelectTrigger>
 													<SelectContent className='w-full'>
 														<SelectGroup>
-															<SelectItem value='0'>终端 (std)</SelectItem>
-															<SelectItem value='1'>流式 (stream)</SelectItem>
+															<SelectItem value='0'>
+																{t('mcp_server_create_form_category_std')}
+															</SelectItem>
+															<SelectItem value='1'>
+																{t('mcp_server_create_form_category_stream')}
+															</SelectItem>
 														</SelectGroup>
 													</SelectContent>
 												</Select>
@@ -480,8 +536,15 @@ const MCPPage = () => {
 										render={({ field }) => {
 											return (
 												<FormItem>
-													<FormLabel>MCP服务地址</FormLabel>
-													<Input {...field} placeholder='请输入MCP服务地址' />
+													<FormLabel>
+														{t('mcp_server_create_form_address')}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'mcp_server_create_form_address_placeholder'
+														)}
+													/>
 													<FormMessage />
 												</FormItem>
 											);
@@ -496,8 +559,15 @@ const MCPPage = () => {
 											render={({ field }) => {
 												return (
 													<FormItem>
-														<FormLabel>MCP脚本</FormLabel>
-														<Input {...field} placeholder='请输入MCP脚本' />
+														<FormLabel>
+															{t('mcp_server_create_form_script')}
+														</FormLabel>
+														<Input
+															{...field}
+															placeholder={t(
+																'mcp_server_create_form_script_placeholder'
+															)}
+														/>
 														<FormMessage />
 													</FormItem>
 												);
@@ -509,8 +579,15 @@ const MCPPage = () => {
 											render={({ field }) => {
 												return (
 													<FormItem>
-														<FormLabel>MCP脚本参数</FormLabel>
-														<Input {...field} placeholder='请输入MCP脚本参数' />
+														<FormLabel>
+															{t('mcp_server_create_form_args')}
+														</FormLabel>
+														<Input
+															{...field}
+															placeholder={t(
+																'mcp_server_create_form_args_placeholder'
+															)}
+														/>
 														<FormMessage />
 													</FormItem>
 												);
@@ -521,13 +598,13 @@ const MCPPage = () => {
 								<DialogFooter>
 									<DialogClose asChild>
 										<Button type='button' variant={'secondary'}>
-											取消
+											{t('mcp_server_create_form_cancel')}
 										</Button>
 									</DialogClose>
 									<Button
 										type='submit'
 										disabled={mutateCreateMCPServer.isPending}>
-										提交
+										{t('mcp_server_create_form_submit')}
 										{mutateCreateMCPServer.isPending && (
 											<Loader2 className='h-4 w-4 animate-spin' />
 										)}
@@ -541,15 +618,13 @@ const MCPPage = () => {
 			<div className='px-5'>
 				<Alert className='mb-4'>
 					<Info className='h-4 w-4' />
-					<AlertDescription>
-						在这里你可以配置MCP服务端，配置完成并且启用之后，RevornixAI将具备MCP工具链调用能力。
-					</AlertDescription>
+					<AlertDescription>{t('mcp_server_description')}</AlertDescription>
 				</Alert>
 				<div className='flex flex-row w-full justify-end mb-4'>
 					<Button
 						className='shadow-none'
 						onClick={() => setShowCreateDialog(true)}>
-						增加MCP服务
+						{t('mcp_server_create')}
 						<PlusCircle />
 					</Button>
 				</div>
@@ -557,13 +632,13 @@ const MCPPage = () => {
 					<Table className='mb-4'>
 						<TableHeader>
 							<TableRow>
-								<TableHead>MCP名称</TableHead>
-								<TableHead>MCP类型</TableHead>
-								<TableHead>MCP服务器地址</TableHead>
-								<TableHead>MCP脚本</TableHead>
-								<TableHead>MCP脚本参数</TableHead>
-								<TableHead>状态</TableHead>
-								<TableHead>操作</TableHead>
+								<TableHead>{t('mcp_server_name')}</TableHead>
+								<TableHead>{t('mcp_server_category')}</TableHead>
+								<TableHead>{t('mcp_server_address')}</TableHead>
+								<TableHead>{t('mcp_server_script')}</TableHead>
+								<TableHead>{t('mcp_server_args')}</TableHead>
+								<TableHead>{t('mcp_server_enable')}</TableHead>
+								<TableHead>{t('mcp_server_action')}</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -637,7 +712,7 @@ const MCPPage = () => {
 					{isFetching && !isRefetching && <Skeleton className='w-full h-52' />}
 					{data && data.data && data.data.length === 0 && (
 						<div className='text-center p-5 text-xs text-muted-foreground rounded bg-muted'>
-							暂无MCP服务
+							{t('mcp_server_empty')}
 						</div>
 					)}
 				</div>
