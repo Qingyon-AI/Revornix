@@ -75,7 +75,7 @@ const AddDocumentLabelDialog = ({
 
 	const onFormValidateError = (errors: any) => {
 		toast.error(t('form_validate_failed'));
-		console.log(errors);
+		console.error(errors);
 	};
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>

@@ -94,7 +94,7 @@ const SectionAddDialog = ({
 	// };
 
 	// const onFormValidateError = (errors: any) => {
-	// 	console.log(errors);
+	// 	console.error(errors);
 	// 	toast.error('表单校验失败');
 	// };
 

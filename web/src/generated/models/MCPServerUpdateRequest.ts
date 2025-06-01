@@ -27,6 +27,12 @@ export interface MCPServerUpdateRequest {
     id: number;
     /**
      * 
+     * @type {number}
+     * @memberof MCPServerUpdateRequest
+     */
+    category?: number | null;
+    /**
+     * 
      * @type {string}
      * @memberof MCPServerUpdateRequest
      */
@@ -76,6 +82,7 @@ export function MCPServerUpdateRequestFromJSONTyped(json: any, ignoreDiscriminat
     return {
         
         'id': json['id'],
+        'category': json['category'] == null ? undefined : json['category'],
         'name': json['name'] == null ? undefined : json['name'],
         'enable': json['enable'] == null ? undefined : json['enable'],
         'address': json['address'] == null ? undefined : json['address'],
@@ -96,6 +103,7 @@ export function MCPServerUpdateRequestToJSONTyped(value?: MCPServerUpdateRequest
     return {
         
         'id': value['id'],
+        'category': value['category'],
         'name': value['name'],
         'enable': value['enable'],
         'address': value['address'],

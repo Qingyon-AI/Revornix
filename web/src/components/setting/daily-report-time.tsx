@@ -67,7 +67,7 @@ const DailyReportTime = () => {
 
 	const onFormValidateError = (errors: any) => {
 		toast.error('表单校验失败');
-		console.log(errors);
+		console.error(errors);
 	};
 
 	useEffect(() => {

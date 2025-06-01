@@ -34,10 +34,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	Form,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
+	FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -51,47 +51,114 @@ import {
 } from '@/components/ui/select';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
-import { MCPServerUpdateRequest } from '@/generated';
+import { MCPServerSearchRequest, MCPServerUpdateRequest } from '@/generated';
 
-const mcpCreateFormSchema = z.object({
-	name: z.string(),
-	args: z.string(),
-	cmd: z.string(),
-	address: z.string(),
-	category: z.number().min(0).max(1),
-});
+const mcpCreateFormSchema = z
+	.object({
+		name: z.string().min(1).max(20),
+		category: z.number().min(0).max(1),
+		args: z.string().optional(),
+		cmd: z.string().optional(),
+		address: z.string().optional(),
+	})
+	.refine(
+		(data) => {
+			if (data.category === 0) {
+				return data.cmd && data.cmd.trim() !== '';
+			}
+			return true;
+		},
+		{
+			message: '终端 MCP 模式下 cmd 为必填',
+			path: ['cmd'],
+		}
+	)
+	.refine(
+		(data) => {
+			if (data.category === 0) {
+				return data.args && data.args.trim() !== '';
+			}
+			return true;
+		},
+		{
+			message: '终端 MCP 模式下 args 为必填',
+			path: ['args'],
+		}
+	)
+	.refine(
+		(data) => {
+			if (data.category === 1) {
+				return data.address && data.address.trim() !== '';
+			}
+			return true;
+		},
+		{
+			message: '流式 MCP 模式下 address 为必填',
+			path: ['address'],
+		}
+	);
 
-const mcpUpdateFormSchema = z.object({
-	name: z.string(),
-	args: z.string(),
-	cmd: z.string(),
-	address: z.string(),
-	category: z.number().min(0).max(1),
-});
+const mcpUpdateFormSchema = z
+	.object({
+		id: z.number(),
+		name: z.string().min(1).max(20).optional().nullable(),
+		category: z.number().min(0).max(1).optional().nullable(),
+		args: z.string().optional().nullable(),
+		cmd: z.string().optional().nullable(),
+		address: z.string().optional().nullable(),
+	})
+	.refine(
+		(data) => {
+			if (data.category === 0) {
+				return data.cmd && data.cmd.trim() !== '';
+			}
+			return true;
+		},
+		{
+			message: '终端 MCP 模式下 cmd 为必填',
+			path: ['cmd'],
+		}
+	)
+	.refine(
+		(data) => {
+			if (data.category === 0) {
+				return data.args && data.args.trim() !== '';
+			}
+			return true;
+		},
+		{
+			message: '终端 MCP 模式下 args 为必填',
+			path: ['args'],
+		}
+	)
+	.refine(
+		(data) => {
+			if (data.category === 1) {
+				return data.address && data.address.trim() !== '';
+			}
+			return true;
+		},
+		{
+			message: '流式 MCP 模式下 address 为必填',
+			path: ['address'],
+		}
+	);
 
 const MCPPage = () => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const [currentUpdatingMCPServer, setCurrentUpdatingMCPServer] =
-		useState<number>();
 	const mcpCreateForm = useForm({
 		resolver: zodResolver(mcpCreateFormSchema),
 		defaultValues: {
 			name: '',
-			args: '',
-			cmd: '',
-			address: '',
 			category: 0,
+			address: '',
+			cmd: '',
+			args: '',
 		},
 	});
 	const mcpUpdateForm = useForm({
 		resolver: zodResolver(mcpUpdateFormSchema),
-		defaultValues: {
-			name: '',
-			args: '',
-			cmd: '',
-			address: '',
-		},
 	});
 	const [showCreateDialog, setShowCreateDialog] = useState(false);
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
@@ -108,10 +175,10 @@ const MCPPage = () => {
 	const mutateCreateMCPServer = useMutation({
 		mutationFn: (values: {
 			name: string;
-			args: string;
-			cmd: string;
-			address: string;
 			category: number;
+			args?: string;
+			cmd?: string;
+			address?: string;
 		}) => {
 			return createMCPServer(values);
 		},
@@ -139,6 +206,31 @@ const MCPPage = () => {
 		},
 		onError: (error) => {
 			toast.error(error.message);
+		},
+	});
+
+	const activeMutateUpdateMCPServer = useMutation({
+		mutationFn: async (values: MCPServerUpdateRequest) =>
+			updateMCPServer(values),
+		onMutate(variables) {
+			queryClient.cancelQueries({
+				queryKey: ['mcp-server-search'],
+			});
+			const previousData = queryClient.getQueryData<MCPServerSearchRequest>([
+				'mcp-server-search',
+			]);
+			return { previousData };
+		},
+		onSettled: () => {
+			setShowUpdateDialog(false);
+			queryClient.invalidateQueries({
+				queryKey: ['mcp-server-search'],
+			});
+		},
+		onError(error, variables, context) {
+			toast.error(error.message);
+			context &&
+				queryClient.setQueryData(['mcp-server-search'], context.previousData);
 		},
 	});
 
@@ -183,7 +275,7 @@ const MCPPage = () => {
 	};
 
 	const onCreateFormValidateError = (errors: any) => {
-		console.log(errors);
+		console.error(errors);
 		toast.error(t('form_validate_failed'));
 	};
 
@@ -198,7 +290,8 @@ const MCPPage = () => {
 				event.stopPropagation();
 			}
 		}
-		return mcpCreateForm.handleSubmit(
+		return mcpUpdateForm.handleSubmit(
+			// @ts-expect-error
 			onUpdateFormValidateSuccess,
 			onUpdateFormValidateError
 		)(event);
@@ -207,11 +300,12 @@ const MCPPage = () => {
 	const onUpdateFormValidateSuccess = async (
 		values: z.infer<typeof mcpUpdateFormSchema>
 	) => {
+		await mutateUpdateMCPServer.mutateAsync(values);
 		mcpUpdateForm.reset();
 	};
 
 	const onUpdateFormValidateError = (errors: any) => {
-		console.log(errors);
+		console.error(errors);
 		toast.error(t('form_validate_failed'));
 	};
 
@@ -224,7 +318,7 @@ const MCPPage = () => {
 					</DialogHeader>
 					<div>
 						<Form {...mcpUpdateForm}>
-							<form onSubmit={handleMCPUpdateFormSubmit}>
+							<form onSubmit={handleMCPUpdateFormSubmit} className='space-y-4'>
 								<FormField
 									name='name'
 									control={mcpUpdateForm.control}
@@ -233,7 +327,7 @@ const MCPPage = () => {
 											<FormItem>
 												<FormLabel>MCP名称</FormLabel>
 												<Input {...field} placeholder='请输入MCP名称' />
-												<FormDescription />
+												<FormMessage />
 											</FormItem>
 										);
 									}}
@@ -260,12 +354,12 @@ const MCPPage = () => {
 														</SelectGroup>
 													</SelectContent>
 												</Select>
-												<FormDescription />
+												<FormMessage />
 											</FormItem>
 										);
 									}}
 								/>
-								{mcpUpdateForm.watch('category') === 1 && (
+								{Number(mcpUpdateForm.watch('category')) === 1 && (
 									<FormField
 										name='address'
 										control={mcpUpdateForm.control}
@@ -274,13 +368,13 @@ const MCPPage = () => {
 												<FormItem>
 													<FormLabel>MCP服务地址</FormLabel>
 													<Input {...field} placeholder='请输入MCP服务地址' />
-													<FormDescription />
+													<FormMessage />
 												</FormItem>
 											);
 										}}
 									/>
 								)}
-								{mcpUpdateForm.watch('category') === 0 && (
+								{Number(mcpUpdateForm.watch('category')) === 0 && (
 									<>
 										<FormField
 											name='cmd'
@@ -290,7 +384,7 @@ const MCPPage = () => {
 													<FormItem>
 														<FormLabel>MCP脚本</FormLabel>
 														<Input {...field} placeholder='请输入MCP脚本' />
-														<FormDescription />
+														<FormMessage />
 													</FormItem>
 												);
 											}}
@@ -303,7 +397,7 @@ const MCPPage = () => {
 													<FormItem>
 														<FormLabel>MCP脚本参数</FormLabel>
 														<Input {...field} placeholder='请输入MCP脚本参数' />
-														<FormDescription />
+														<FormMessage />
 													</FormItem>
 												);
 											}}
@@ -338,7 +432,7 @@ const MCPPage = () => {
 					</DialogHeader>
 					<div>
 						<Form {...mcpCreateForm}>
-							<form onSubmit={handleMCPCreateFormSubmit}>
+							<form onSubmit={handleMCPCreateFormSubmit} className='space-y-4'>
 								<FormField
 									name='name'
 									control={mcpCreateForm.control}
@@ -347,7 +441,7 @@ const MCPPage = () => {
 											<FormItem>
 												<FormLabel>MCP名称</FormLabel>
 												<Input {...field} placeholder='请输入MCP名称' />
-												<FormDescription />
+												<FormMessage />
 											</FormItem>
 										);
 									}}
@@ -374,7 +468,7 @@ const MCPPage = () => {
 														</SelectGroup>
 													</SelectContent>
 												</Select>
-												<FormDescription />
+												<FormMessage />
 											</FormItem>
 										);
 									}}
@@ -388,7 +482,7 @@ const MCPPage = () => {
 												<FormItem>
 													<FormLabel>MCP服务地址</FormLabel>
 													<Input {...field} placeholder='请输入MCP服务地址' />
-													<FormDescription />
+													<FormMessage />
 												</FormItem>
 											);
 										}}
@@ -404,7 +498,7 @@ const MCPPage = () => {
 													<FormItem>
 														<FormLabel>MCP脚本</FormLabel>
 														<Input {...field} placeholder='请输入MCP脚本' />
-														<FormDescription />
+														<FormMessage />
 													</FormItem>
 												);
 											}}
@@ -417,7 +511,7 @@ const MCPPage = () => {
 													<FormItem>
 														<FormLabel>MCP脚本参数</FormLabel>
 														<Input {...field} placeholder='请输入MCP脚本参数' />
-														<FormDescription />
+														<FormMessage />
 													</FormItem>
 												);
 											}}
@@ -500,7 +594,7 @@ const MCPPage = () => {
 												<Switch
 													checked={mcp_server.enable}
 													onCheckedChange={(value) => {
-														mutateUpdateMCPServer.mutateAsync({
+														activeMutateUpdateMCPServer.mutate({
 															id: mcp_server.id,
 															enable: value,
 														});
@@ -521,7 +615,15 @@ const MCPPage = () => {
 												<Button
 													size={'icon'}
 													onClick={() => {
-														setCurrentUpdatingMCPServer(mcp_server.id);
+														mcpUpdateForm.reset({
+															id: mcp_server.id,
+															name: mcp_server.name,
+															category: mcp_server.category,
+															address: mcp_server.address,
+															cmd: mcp_server.cmd,
+															args: mcp_server.args,
+															enable: mcp_server.enable,
+														});
 														setShowUpdateDialog(true);
 													}}>
 													<Pencil />

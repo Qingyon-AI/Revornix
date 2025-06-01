@@ -115,6 +115,8 @@ async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRe
                 args=mcp_server_update_request.args,
                 server_id=db_base_mcp_server.id
             )
+        if mcp_server_update_request.category is not None:
+            db_base_mcp_server.category = mcp_server_update_request.category
     db.commit()
     return schemas.common.SuccessResponse()
 
