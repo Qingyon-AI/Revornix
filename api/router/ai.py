@@ -287,14 +287,16 @@ async def stream_ops_stream(user_id: int, ai_client: OpenAI, model: str, query: 
         async with AsyncExitStack() as stack:
             clients = []
             for mcp_server in mcp_servers:
+                if not mcp_server.enable:
+                    continue
                 if mcp_server.category == 0:
-                    stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
-                    client = MCPClientWrapper(mcp_type='stream', base_url=stream_mcp_server.address)
+                    stdio_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
+                    client = MCPClientWrapper(mcp_type='std', command=stdio_mcp_server.cmd, args=stdio_mcp_server.args)
                     client = await stack.enter_async_context(client)
                     clients.append(client)
                 if mcp_server.category == 1:
-                    stdio_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
-                    client = MCPClientWrapper(mcp_type='std', command=stdio_mcp_server.cmd, args=stdio_mcp_server.args)
+                    stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
+                    client = MCPClientWrapper(mcp_type='stream', base_url=stream_mcp_server.address)
                     client = await stack.enter_async_context(client)
                     clients.append(client)
                 tools = await client.list_tools()
