@@ -52,6 +52,16 @@ import {
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
 import { MCPServerSearchRequest, MCPServerUpdateRequest } from '@/generated';
+import {
+	AlertDialog,
+	AlertDialogCancel,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+	AlertDialogContent,
+} from '@/components/ui/alert-dialog';
 
 const MCPPage = () => {
 	const t = useTranslations();
@@ -677,16 +687,41 @@ const MCPPage = () => {
 												/>
 											</TableCell>
 											<TableCell className='flex flex-row gap-2'>
-												<Button
-													onClick={() => {
-														mutateDeleteMCPServer.mutateAsync(mcp_server.id);
-													}}
-													disabled={mutateDeleteMCPServer.isPending}>
-													<Trash2 />
-													{mutateDeleteMCPServer.isPending && (
-														<Loader2 className='h-4 w-4 animate-spin' />
-													)}
-												</Button>
+												<AlertDialog>
+													<AlertDialogTrigger asChild>
+														<Button>
+															<Trash2 />
+														</Button>
+													</AlertDialogTrigger>
+													<AlertDialogContent>
+														<AlertDialogHeader>
+															<AlertDialogTitle>
+																{t('mcp_server_delete_alert_title')}
+															</AlertDialogTitle>
+															<AlertDialogDescription>
+																{t('mcp_server_delete_alert_description')}
+															</AlertDialogDescription>
+														</AlertDialogHeader>
+														<AlertDialogFooter>
+															<Button
+																variant={'destructive'}
+																onClick={() => {
+																	mutateDeleteMCPServer.mutateAsync(
+																		mcp_server.id
+																	);
+																}}
+																disabled={mutateDeleteMCPServer.isPending}>
+																{t('confirm')}
+																{mutateDeleteMCPServer.isPending && (
+																	<Loader2 className='h-4 w-4 animate-spin' />
+																)}
+															</Button>
+															<AlertDialogCancel>
+																{t('cancel')}
+															</AlertDialogCancel>
+														</AlertDialogFooter>
+													</AlertDialogContent>
+												</AlertDialog>
 												<Button
 													size={'icon'}
 													onClick={() => {

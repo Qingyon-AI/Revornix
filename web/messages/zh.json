@@ -167,6 +167,8 @@
     "mcp_server_enable": "状态",
     "mcp_server_action": "操作",
     "mcp_server_empty": "暂无MCP Server",
+    "mcp_server_delete_alert_title": "重要操作提醒",
+    "mcp_server_delete_alert_description": "一旦删除MCP服务端，Revornix AI将无法调用该服务端所提供的所有工具链，会影响后续所有请求，确认继续这一操作吗？",
     "search_global": "全文搜索",
     "search_placeholder": "请输入想搜索的关键词",
     "search_empty": "找不到相关文档",

@@ -165,6 +165,8 @@
     "mcp_server_enable": "Status",
     "mcp_server_action": "Actions",
     "mcp_server_empty": "No MCP Servers Available",
+    "mcp_server_delete_alert_title": "Important Operation Notice",
+    "mcp_server_delete_alert_description": "Once the MCP server is deleted, Revornix AI will no longer be able to access any toolchains provided by it, which will affect all subsequent requests. Are you sure you want to proceed with this operation?",
     "search_global": "Full-Text Search",
     "search_placeholder": "Please enter keywords to search",
     "search_empty": "No related documents found",
