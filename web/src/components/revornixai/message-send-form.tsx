@@ -273,9 +273,7 @@ const MessageSendForm = () => {
 														<Info className='size-4 text-muted-foreground' />
 													</TooltipTrigger>
 													<TooltipContent>
-														<p>
-															{t('revornix_ai_mcp_description')}
-														</p>
+														<p>{t('revornix_ai_mcp_description')}</p>
 													</TooltipContent>
 												</Tooltip>
 											</TooltipProvider>
@@ -286,6 +284,7 @@ const MessageSendForm = () => {
 												field.onChange(e);
 											}}
 										/>
+										<Link href={'/setting/mcp'} className='text-xs text-muted-foreground underline underline-offset-4'>{t('revornix_ai_go_to_configure_mcp')}</Link>
 									</FormItem>
 								)}
 							/>

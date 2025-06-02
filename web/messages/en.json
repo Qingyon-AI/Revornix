@@ -114,6 +114,7 @@
     "revornix_ai_message_send_failed": "Message sending failed",
     "revornix_ai_message_placeholder": "Enter the question you want to ask",
     "revornix_ai_mcp_status": "Enable MCP",
+    "revornix_ai_go_to_configure_mcp": "Go to configure mcp",
     "revornix_ai_mcp_description": "Once MCP is enabled, RevornixAI will gain the ability to use tools, but it will consume more tokens. Please use it according to your specific needs.",
     "mcp_server_manage": "MCP Server Management",
     "show_mcp_server_manage": "Open MCP Configuration",

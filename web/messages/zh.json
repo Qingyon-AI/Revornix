@@ -116,6 +116,7 @@
     "revornix_ai_message_send_failed": "消息发送失败",
     "revornix_ai_message_placeholder": "输入想要提问的问题",
     "revornix_ai_mcp_status": "启用MCP",
+    "revornix_ai_go_to_configure_mcp": "前往配置MCP",
     "revornix_ai_mcp_description": "开启MCP后，RevornixAI将具备使用工具的能力，但会消耗更多的Token数量，请视具体情况使用。",
     "mcp_server_manage": "MCP Server管理",
     "show_mcp_server_manage": "打开MCP配置",
