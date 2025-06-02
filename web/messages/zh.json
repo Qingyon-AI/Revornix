@@ -37,6 +37,8 @@
     "sidebar_mine_document": "我的文档",
     "sidebar_help": "帮助",
     "sidebar_user_guide": "使用文档",
+    "sidebar_discord": "Discord",
+    "sidebar_github": "GitHub",
     "month_summary_title": "最近一月记录",
     "month_summary_description": "这里会以图表形式显示你最近一个月的文档阅读基本概况",
     "month_summary_total_label": "累计",

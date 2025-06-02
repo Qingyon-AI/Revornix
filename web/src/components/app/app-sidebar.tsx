@@ -201,6 +201,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 									</Link>
 								</SidebarMenuButton>
 							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<SidebarMenuButton asChild>
+									<Link href={'https://github.com/Qingyon-AI/Revornix'} target='_blank'>
+										{t('sidebar_github')}
+									</Link>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<SidebarMenuButton asChild>
+									<Link href={'https://discord.gg/3XZfz84aPN'} target='_blank'>
+										{t('sidebar_discord')}
+									</Link>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>

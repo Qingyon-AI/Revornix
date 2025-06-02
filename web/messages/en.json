@@ -37,6 +37,8 @@
     "sidebar_mine_document": "My Documents",
     "sidebar_help": "Help",
     "sidebar_user_guide": "User Guide",
+    "sidebar_discord": "Discord",
+    "sidebar_github": "GitHub",
     "month_summary_title": "Records of the Last Month",
     "month_summary_description": "A chart will display your document reading summary over the past month.",
     "month_summary_total_label": "Total",
