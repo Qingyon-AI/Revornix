@@ -115,7 +115,7 @@ To simplify this, I have provided a docker-compose-local.yaml file, which you ca
 
 docker compose -f ./docker-compose-local.yaml up -d 
 
-### Start mcp Server
+### Start MCP Server
 
 ```shell
 cd mcp-server
