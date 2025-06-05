@@ -171,7 +171,7 @@ const DocumentInfo = ({ id }: { id: string }) => {
 			{isPending && <Skeleton className='w-full h-full' />}
 			{data && (
 				<div className='relative h-full'>
-					<div className='absolute top-0 right-0 w-full flex flex-row gap-2 justify-end p-5 rounded-t'>
+					<div className='absolute top-0 right-0 w-full flex flex-row flex-wrap gap-2 justify-end p-5 rounded-t'>
 						{data.category === 1 && data.website_info && (
 							<Link
 								href={data.website_info?.url ? data.website_info.url : ''}
