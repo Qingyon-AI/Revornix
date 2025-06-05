@@ -77,7 +77,7 @@ async def handle_update_file_document_markdown_with_mineru(document_id: int,
         db_task.status = 3
         db.commit()
 
-async def handle_update_website_document_markdown_with_jian(document_id: int,
+async def handle_update_website_document_markdown_with_jina(document_id: int,
                                                             user_id: int):
     db = SessionLocal()
     user = crud.user.get_user_by_id(db=db, user_id=user_id)
@@ -357,7 +357,7 @@ def update_file_document_markdown_with_mineru(document_id: int,
 @celery_app.task
 def update_website_document_markdown_with_jina(document_id: int, 
                                                user_id: int):
-    asyncio.run(handle_update_website_document_markdown_with_jian(document_id=document_id,
+    asyncio.run(handle_update_website_document_markdown_with_jina(document_id=document_id,
                                                                   user_id=user_id))
 
 @celery_app.task

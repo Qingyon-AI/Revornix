@@ -64,18 +64,22 @@ def get_document_parsing_engine_by_id(db: Session, document_parsing_engine_id: i
                          models.engine.DocumentParsingEngine.delete_at == False)
     return query.first()
 
-def get_website_crawling_engine_by_user_id(db: Session, user_id: int):
+def get_website_crawling_engine_by_user_id(db: Session, user_id: int, keyword: str | None = None):
     query = db.query(models.engine.WebsiteCarwingEngine)
     query = query.join(models.engine.UserWebsiteCarwingEngine)
     query = query.filter(models.engine.UserWebsiteCarwingEngine.user_id == user_id,
                          models.engine.UserWebsiteCarwingEngine.delete_at == False)
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.engine.WebsiteCarwingEngine.name.like(f'%{keyword}%'))
     return query.all()
 
-def get_document_parsing_engine_by_user_id(db: Session, user_id: int):
+def get_document_parsing_engine_by_user_id(db: Session, user_id: int, keyword: str | None = None):
     query = db.query(models.engine.DocumentParsingEngine)
     query = query.join(models.engine.UserDocumentParsingEngine)
     query = query.filter(models.engine.UserDocumentParsingEngine.user_id == user_id,
                          models.engine.UserDocumentParsingEngine.delete_at == False)
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.engine.DocumentParsingEngine.name.like(f'%{keyword}%'))
     return query.all()
 
 def delete_website_crawling_engine(db: Session, website_crawling_engine_id: int):

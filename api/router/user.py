@@ -18,10 +18,21 @@ from common.cron import time_to_cron, cron_to_time
 
 user_router = APIRouter()
 
+@user_router.post('/default-engine/update', response_model=schemas.common.NormalResponse)
+async def update_default_document_parse_engine(default_engine_update_request: schemas.user.DefaultEngineUpdateRequest,
+                                               user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                                               db: Session = Depends(get_db)):
+    crud.user.update_user_default_engine(db=db, 
+                                         user_id=user.id, 
+                                         default_document_parse_engine_id=default_engine_update_request.default_document_parse_engine_id,
+                                         default_website_crawling_engine_id=default_engine_update_request.default_website_crawling_engine_id)
+    db.commit()
+    return schemas.common.SuccessResponse(message="The default document parse engine is updated successfully.")
+
 @user_router.post('/default-model/update', response_model=schemas.common.NormalResponse)
 async def update_default_model(default_model_update_request: schemas.user.DefaultModelUpdateRequest,
-                                user: schemas.user.PrivateUserInfo = Depends(get_current_user),
-                                db: Session = Depends(get_db)):
+                               user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                               db: Session = Depends(get_db)):
     crud.user.update_user_default_model(db=db, 
                                         user_id=user.id, 
                                         default_document_reader_model_id=default_model_update_request.default_document_reader_model_id, 

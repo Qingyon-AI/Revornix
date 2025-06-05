@@ -1,5 +1,4 @@
-from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 
 from common.sql import Base
 
@@ -30,6 +29,7 @@ class DocumentParsingEngine(Base):
     create_time = Column(DateTime(timezone=True))
     update_time = Column(DateTime(timezone=True))
     delete_at = Column(DateTime(timezone=True))
+    enable = Column(Boolean, default=True)
     
 class WebsiteCarwingEngine(Base):
     __tablename__ = "website_crawling_engine"
@@ -40,3 +40,4 @@ class WebsiteCarwingEngine(Base):
     create_time = Column(DateTime(timezone=True))
     update_time = Column(DateTime(timezone=True))
     delete_at = Column(DateTime(timezone=True))
+    enable = Column(Boolean, default=True)

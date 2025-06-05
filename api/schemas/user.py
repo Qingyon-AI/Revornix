@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 from .attachment import AttachmentInfo
 
+class DefaultEngineUpdateRequest(BaseModel):
+    default_document_parse_engine_id: int | None = None
+    default_website_crawling_engine_id: int | None = None
+
 class DefaultModelUpdateRequest(BaseModel):
     default_document_reader_model_id: int | None = None
     default_revornix_model_id: int | None = None
@@ -76,6 +80,8 @@ class PrivateUserInfo(BaseModel):
     email_info: EmailInfo | None = None
     default_document_reader_model_id: int | None = None
     default_revornix_model_id: int | None = None
+    default_document_parse_engine_id: int | None = None
+    default_website_crawl_engine_id: int | None = None
 
     class Config:
         from_attributes = True
