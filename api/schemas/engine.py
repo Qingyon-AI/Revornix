@@ -1,13 +1,18 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
 
+class EngineInstallRequest(BaseModel):
+    engine_id: int
+    status: bool
+
 class EngineInfo(BaseModel):
     id: int
     name: str
     description: str | None = None
     create_time: datetime
     update_time: datetime
-    enable: bool
+    enable: bool | None = None
+    config_json: str | None = None
 
     @field_validator("create_time", mode="before")
     def ensure_create_timezone(cls, v: datetime) -> datetime:

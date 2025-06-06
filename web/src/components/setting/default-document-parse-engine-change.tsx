@@ -58,11 +58,15 @@ const DefaultDocumentParseEngineChange = () => {
 				<SelectContent>
 					<SelectGroup>
 						{data?.data &&
-							data.data.map((engine, index) => (
-								<SelectItem key={engine.id} value={String(engine.id)}>
-									{engine.name}
-								</SelectItem>
-							))}
+							data.data
+								.filter((engine) => {
+									return engine.enable;
+								})
+								.map((engine, index) => (
+									<SelectItem key={engine.id} value={String(engine.id)}>
+										{engine.name}
+									</SelectItem>
+								))}
 					</SelectGroup>
 				</SelectContent>
 			</Select>

@@ -50,6 +50,7 @@ models/DocumentTransformTask.ts
 models/EmailInfo.ts
 models/EmailUserCreateVerifyRequest.ts
 models/EngineInfo.ts
+models/EngineInstallRequest.ts
 models/EngineSearchRequest.ts
 models/EngineSearchResponse.ts
 models/FileDocumentInfo.ts

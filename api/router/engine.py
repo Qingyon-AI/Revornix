@@ -2,34 +2,52 @@ import schemas
 import crud
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from datetime import timezone, datetime
 from common.dependencies import get_current_user, get_db
 
 engine_router = APIRouter()
 
-@engine_router.post("/document-parse/search", response_model=schemas.engine.EngineSearchResponse)
+@engine_router.post("/mine", response_model=schemas.engine.EngineSearchResponse)
 async def search_document_parse_engine(engine_search_request: schemas.engine.EngineSearchRequest, 
                                        db: Session = Depends(get_db), 
                                        current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    engines = crud.engine.get_document_parsing_engine_by_user_id(db=db,
-                                                                 user_id=current_user.id,
-                                                                 keyword=engine_search_request.keyword)
+    engines = crud.engine.get_engine_by_user_id(db=db,
+                                                user_id=current_user.id,
+                                                keyword=engine_search_request.keyword)
     for engine in engines:
-        db_user_engine = crud.engine.get_user_document_parsing_engine_by_user_id_and_engine_id(db=db,
-                                                                                               user_id=current_user.id,
-                                                                                               document_parsing_engine_id=engine.id)
+        db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db,
+                                                                              user_id=current_user.id,
+                                                                              engine_id=engine.id)
         engine.enable = db_user_engine.enable
     return schemas.engine.EngineSearchResponse(data=engines)
 
-@engine_router.post("/website-crawl/search", response_model=schemas.engine.EngineSearchResponse)
-async def search_website_crawel_engine(engine_search_request: schemas.engine.EngineSearchRequest, 
-                                       db: Session = Depends(get_db), 
-                                       current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    engines = crud.engine.get_website_crawling_engine_by_user_id(db=db,
-                                                                 user_id=current_user.id,
-                                                                 keyword=engine_search_request.keyword)
-    for engine in engines:
-        db_user_engine = crud.engine.get_user_website_crawling_engine_by_user_id_and_engine_id(db=db,
-                                                                                               user_id=current_user.id,
-                                                                                               website_crawling_engine_id=engine.id)
-        engine.enable = db_user_engine.enable
+@engine_router.post("/provide", response_model=schemas.engine.EngineSearchResponse)
+async def provide_document_parse_engine(engine_search_request: schemas.engine.EngineSearchRequest, 
+                                        db: Session = Depends(get_db), 
+                                        current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    engines = crud.engine.get_all_engines(db=db, keyword=engine_search_request.keyword)
     return schemas.engine.EngineSearchResponse(data=engines)
+
+@engine_router.post("/install", response_model=schemas.common.NormalResponse)
+async def install_engine(engine_install_request: schemas.engine.EngineInstallRequest, 
+                         db: Session = Depends(get_db), 
+                         current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db,
+                                                                       user_id=current_user.id,
+                                                                       engine_id=engine_install_request.engine_id)
+    if user_engine is None:
+        if engine_install_request.status:
+            crud.engine.create_user_engine(db=db,
+                                        user_id=current_user.id,
+                                        engine_id=engine_install_request.engine_id)
+        else:
+            raise schemas.error.CustomException(code=400, message="Operation failed")
+    else:
+        if engine_install_request.status:
+            raise schemas.error.CustomException(code=400, message="Operation failed")
+        else:
+            user_engine.delete_at = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=timezone.utc)
+        user_engine.delete_at = now
+    db.commit()
+    return schemas.common.SuccessResponse()

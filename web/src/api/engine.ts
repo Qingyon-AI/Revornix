@@ -1,6 +1,7 @@
 import { API_PREFIX } from "@/config/api"
 
 export default {
-    getWebsiteCrawlEngines: API_PREFIX + '/engine/website-crawl/search',
-    getDocumentParseEngines: API_PREFIX + '/engine/document-parse/search',
+    getMineEngines: API_PREFIX + '/engine/mine',
+    getProvideEngines: API_PREFIX + '/engine/provide',
+    installEngine: API_PREFIX + '/engine/install',
 }

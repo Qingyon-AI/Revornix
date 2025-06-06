@@ -15,26 +15,38 @@
 
 import * as runtime from '../runtime';
 import type {
+  EngineInstallRequest,
   EngineSearchRequest,
   EngineSearchResponse,
   HTTPValidationError,
+  NormalResponse,
 } from '../models/index';
 import {
+    EngineInstallRequestFromJSON,
+    EngineInstallRequestToJSON,
     EngineSearchRequestFromJSON,
     EngineSearchRequestToJSON,
     EngineSearchResponseFromJSON,
     EngineSearchResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    NormalResponseFromJSON,
+    NormalResponseToJSON,
 } from '../models/index';
 
-export interface SearchDocumentParseEngineEngineDocumentParseSearchPostRequest {
+export interface InstallEngineEngineInstallPostRequest {
+    engineInstallRequest: EngineInstallRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface ProvideDocumentParseEngineEngineProvidePostRequest {
     engineSearchRequest: EngineSearchRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
 
-export interface SearchWebsiteCrawelEngineEngineWebsiteCrawlSearchPostRequest {
+export interface SearchDocumentParseEngineEngineMinePostRequest {
     engineSearchRequest: EngineSearchRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
@@ -46,13 +58,13 @@ export interface SearchWebsiteCrawelEngineEngineWebsiteCrawlSearchPostRequest {
 export class EngineApi extends runtime.BaseAPI {
 
     /**
-     * Search Document Parse Engine
+     * Install Engine
      */
-    async searchDocumentParseEngineEngineDocumentParseSearchPostRaw(requestParameters: SearchDocumentParseEngineEngineDocumentParseSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineSearchResponse>> {
-        if (requestParameters['engineSearchRequest'] == null) {
+    async installEngineEngineInstallPostRaw(requestParameters: InstallEngineEngineInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['engineInstallRequest'] == null) {
             throw new runtime.RequiredError(
-                'engineSearchRequest',
-                'Required parameter "engineSearchRequest" was null or undefined when calling searchDocumentParseEngineEngineDocumentParseSearchPost().'
+                'engineInstallRequest',
+                'Required parameter "engineInstallRequest" was null or undefined when calling installEngineEngineInstallPost().'
             );
         }
 
@@ -71,32 +83,32 @@ export class EngineApi extends runtime.BaseAPI {
         }
 
         const response = await this.request({
-            path: `/engine/document-parse/search`,
+            path: `/engine/install`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: EngineSearchRequestToJSON(requestParameters['engineSearchRequest']),
+            body: EngineInstallRequestToJSON(requestParameters['engineInstallRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => EngineSearchResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
 
     /**
-     * Search Document Parse Engine
+     * Install Engine
      */
-    async searchDocumentParseEngineEngineDocumentParseSearchPost(requestParameters: SearchDocumentParseEngineEngineDocumentParseSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EngineSearchResponse> {
-        const response = await this.searchDocumentParseEngineEngineDocumentParseSearchPostRaw(requestParameters, initOverrides);
+    async installEngineEngineInstallPost(requestParameters: InstallEngineEngineInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.installEngineEngineInstallPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
-     * Search Website Crawel Engine
+     * Provide Document Parse Engine
      */
-    async searchWebsiteCrawelEngineEngineWebsiteCrawlSearchPostRaw(requestParameters: SearchWebsiteCrawelEngineEngineWebsiteCrawlSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineSearchResponse>> {
+    async provideDocumentParseEngineEngineProvidePostRaw(requestParameters: ProvideDocumentParseEngineEngineProvidePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineSearchResponse>> {
         if (requestParameters['engineSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'engineSearchRequest',
-                'Required parameter "engineSearchRequest" was null or undefined when calling searchWebsiteCrawelEngineEngineWebsiteCrawlSearchPost().'
+                'Required parameter "engineSearchRequest" was null or undefined when calling provideDocumentParseEngineEngineProvidePost().'
             );
         }
 
@@ -115,7 +127,7 @@ export class EngineApi extends runtime.BaseAPI {
         }
 
         const response = await this.request({
-            path: `/engine/website-crawl/search`,
+            path: `/engine/provide`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -126,10 +138,54 @@ export class EngineApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search Website Crawel Engine
+     * Provide Document Parse Engine
      */
-    async searchWebsiteCrawelEngineEngineWebsiteCrawlSearchPost(requestParameters: SearchWebsiteCrawelEngineEngineWebsiteCrawlSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EngineSearchResponse> {
-        const response = await this.searchWebsiteCrawelEngineEngineWebsiteCrawlSearchPostRaw(requestParameters, initOverrides);
+    async provideDocumentParseEngineEngineProvidePost(requestParameters: ProvideDocumentParseEngineEngineProvidePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EngineSearchResponse> {
+        const response = await this.provideDocumentParseEngineEngineProvidePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search Document Parse Engine
+     */
+    async searchDocumentParseEngineEngineMinePostRaw(requestParameters: SearchDocumentParseEngineEngineMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineSearchResponse>> {
+        if (requestParameters['engineSearchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'engineSearchRequest',
+                'Required parameter "engineSearchRequest" was null or undefined when calling searchDocumentParseEngineEngineMinePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+        const response = await this.request({
+            path: `/engine/mine`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: EngineSearchRequestToJSON(requestParameters['engineSearchRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => EngineSearchResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Document Parse Engine
+     */
+    async searchDocumentParseEngineEngineMinePost(requestParameters: SearchDocumentParseEngineEngineMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EngineSearchResponse> {
+        const response = await this.searchDocumentParseEngineEngineMinePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

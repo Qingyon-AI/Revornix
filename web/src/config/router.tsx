@@ -32,6 +32,11 @@ const routers: RouteItem[] = [
 				title_en: 'MCP Config',
 				path: '/mcp',
 			},
+			{
+				title: '引擎配置',
+				title_en: 'Engince Config',
+				path: '/engine',
+			},
 		],
 	},
 	{

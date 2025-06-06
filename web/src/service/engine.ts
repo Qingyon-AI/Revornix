@@ -1,15 +1,21 @@
 import engineApi from '@/api/engine'
-import { EngineSearchRequest, EngineSearchResponse } from '@/generated'
+import { EngineInstallRequest, EngineSearchRequest, EngineSearchResponse, NormalResponse } from '@/generated'
 import { request } from '@/lib/request'
 
-export const getDocumentParseEngines = async (data: EngineSearchRequest): Promise<EngineSearchResponse> => {
-    return await request(engineApi.getDocumentParseEngines, {
+export const getMineEngines = async (data: EngineSearchRequest): Promise<EngineSearchResponse> => {
+    return await request(engineApi.getMineEngines, {
         data
     })
 }
 
-export const getWebsiteCrawlEngines = async (data: EngineSearchRequest): Promise<EngineSearchResponse> => {
-    return await request(engineApi.getWebsiteCrawlEngines, {
+export const getProvideEngines = async (data: EngineSearchRequest): Promise<EngineSearchResponse> => {
+    return await request(engineApi.getProvideEngines, {
+        data
+    })
+}
+
+export const installEngine = async (data: EngineInstallRequest): Promise<NormalResponse> => {
+    return await request(engineApi.installEngine, {
         data
     })
 }

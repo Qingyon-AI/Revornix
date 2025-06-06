@@ -36,7 +36,7 @@ export interface EngineInfo {
      * @type {string}
      * @memberof EngineInfo
      */
-    description: string;
+    description?: string | null;
     /**
      * 
      * @type {Date}
@@ -54,7 +54,13 @@ export interface EngineInfo {
      * @type {boolean}
      * @memberof EngineInfo
      */
-    enable: boolean;
+    enable?: boolean | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof EngineInfo
+     */
+    config_json?: string | null;
 }
 
 /**
@@ -63,10 +69,8 @@ export interface EngineInfo {
 export function instanceOfEngineInfo(value: object): value is EngineInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('description' in value) || value['description'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
-    if (!('enable' in value) || value['enable'] === undefined) return false;
     return true;
 }
 
@@ -82,10 +86,11 @@ export function EngineInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         
         'id': json['id'],
         'name': json['name'],
-        'description': json['description'],
+        'description': json['description'] == null ? undefined : json['description'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (new Date(json['update_time'])),
-        'enable': json['enable'],
+        'enable': json['enable'] == null ? undefined : json['enable'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
 }
 
@@ -106,6 +111,7 @@ export function EngineInfoToJSONTyped(value?: EngineInfo | null, ignoreDiscrimin
         'create_time': ((value['create_time']).toISOString()),
         'update_time': ((value['update_time']).toISOString()),
         'enable': value['enable'],
+        'config_json': value['config_json'],
     };
 }
 

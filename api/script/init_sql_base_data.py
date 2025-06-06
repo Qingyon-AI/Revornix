@@ -36,4 +36,5 @@ if __name__ == '__main__':
             db.commit()
         except Exception as e:
             print(f"数据库初始化失败: {e}")
+            command.downgrade(config=alembic_cfg, revision='head')
             db.rollback()

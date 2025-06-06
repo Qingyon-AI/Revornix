@@ -40,6 +40,7 @@ export * from './DocumentTransformTask';
 export * from './EmailInfo';
 export * from './EmailUserCreateVerifyRequest';
 export * from './EngineInfo';
+export * from './EngineInstallRequest';
 export * from './EngineSearchRequest';
 export * from './EngineSearchResponse';
 export * from './FileDocumentInfo';

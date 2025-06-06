@@ -9,7 +9,7 @@ import {
 } from '../ui/select';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
-import { getWebsiteCrawlEngines } from '@/service/engine';
+import { getMineEngines } from '@/service/engine';
 import { utils } from '@kinda/utils';
 import { updateUserDefaultEngine } from '@/service/user';
 import { toast } from 'sonner';
@@ -60,11 +60,15 @@ const DefaultWebsiteCrawlEngineChange = () => {
 				<SelectContent>
 					<SelectGroup>
 						{data?.data &&
-							data.data.map((engine, index) => (
-								<SelectItem key={engine.id} value={String(engine.id)}>
-									{engine.name}
-								</SelectItem>
-							))}
+							data.data
+								.filter((engine) => {
+									return engine.enable;
+								})
+								.map((engine, index) => (
+									<SelectItem key={engine.id} value={String(engine.id)}>
+										{engine.name}
+									</SelectItem>
+								))}
 					</SelectGroup>
 				</SelectContent>
 			</Select>

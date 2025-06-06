@@ -6,6 +6,7 @@ import DailyReportTime from '@/components/setting/daily-report-time';
 import DefaultDocumentParseEngineChange from '@/components/setting/default-document-parse-engine-change';
 import DefaultWebsiteCrawlEngineChange from '@/components/setting/default-website-crawl-engine-change';
 import DocumentSummaryModel from '@/components/setting/document-summary-model';
+import EngineManager from '@/components/setting/engine-manager';
 import LanguageChange from '@/components/setting/language-change';
 import MCPServerManage from '@/components/setting/mcp-server-manage';
 import ModelCollection from '@/components/setting/model-collection';
@@ -93,6 +94,17 @@ const SettingPage = () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<DocumentSummaryModel />
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+			<h2 className='text-xs text-muted-foreground p-3'>引擎相关设置</h2>
+			<Card>
+				<CardContent className='space-y-5'>
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>引擎管理</Label>
+						<div className='flex flex-col gap-2'>
+							<EngineManager />
 						</div>
 					</div>
 					<Separator />
