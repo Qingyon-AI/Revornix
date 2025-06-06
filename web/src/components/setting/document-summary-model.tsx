@@ -81,7 +81,7 @@ const DocumentSummaryModel = () => {
 			return;
 		}
 		refreshUserInfo();
-		toast.success('默认文章阅读模型更新成功');
+		toast.success(t('setting_default_document_read_model_update_successful'));
 	};
 
 	return (

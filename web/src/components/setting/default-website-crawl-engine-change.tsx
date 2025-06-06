@@ -13,6 +13,8 @@ import { getWebsiteCrawlEngines } from '@/service/engine';
 import { utils } from '@kinda/utils';
 import { updateUserDefaultEngine } from '@/service/user';
 import { toast } from 'sonner';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
+import { Info } from 'lucide-react';
 
 const DefaultWebsiteCrawlEngineChange = () => {
 	const t = useTranslations();
@@ -36,7 +38,7 @@ const DefaultWebsiteCrawlEngineChange = () => {
 			return;
 		}
 		refreshUserInfo();
-		toast.success('默认网站爬取引擎更新成功');
+		toast.success(t('setting_default_website_crawl_engine_update_successful'));
 	};
 
 	return (
@@ -51,7 +53,9 @@ const DefaultWebsiteCrawlEngineChange = () => {
 					handleUpdateDefaultWebsiteCrawlEngine(Number(e));
 				}}>
 				<SelectTrigger className='w-[180px]'>
-					<SelectValue placeholder='选择默认网站爬取引擎' />
+					<SelectValue
+						placeholder={t('setting_default_website_crawl_engine_choose')}
+					/>
 				</SelectTrigger>
 				<SelectContent>
 					<SelectGroup>

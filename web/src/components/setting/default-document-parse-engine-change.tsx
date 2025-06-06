@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 const DefaultDocumentParseEngineChange = () => {
 	const t = useTranslations();
 	const { userInfo, refreshUserInfo } = useUserContext();
-	const { data, isFetching } = useQuery({
+	const { data } = useQuery({
 		queryKey: ['document-parse-engine'],
 		queryFn: async () => {
 			const res = await getDocumentParseEngines({ keyword: '' });
@@ -36,7 +36,7 @@ const DefaultDocumentParseEngineChange = () => {
 			return;
 		}
 		refreshUserInfo();
-		toast.success('默认markdown转化引擎更新成功');
+		toast.success(t('setting_default_document_parse_engine_update_successful'));
 	};
 
 	return (
@@ -51,7 +51,9 @@ const DefaultDocumentParseEngineChange = () => {
 					handleUpdateDefaultDocumentPraseEngine(Number(e));
 				}}>
 				<SelectTrigger className='w-[180px]'>
-					<SelectValue placeholder='选择默认markdown转化引擎' />
+					<SelectValue
+						placeholder={t('setting_default_document_parse_engine_choose')}
+					/>
 				</SelectTrigger>
 				<SelectContent>
 					<SelectGroup>
