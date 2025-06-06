@@ -3,6 +3,8 @@
 import { ModeToggle } from '@/components/app/mode-toggle';
 import DailyReportStatus from '@/components/setting/daily-report-status';
 import DailyReportTime from '@/components/setting/daily-report-time';
+import DefaultDocumentParseEngineChange from '@/components/setting/default-document-parse-engine-change';
+import DefaultWebsiteCrawlEngineChange from '@/components/setting/default-website-crawl-engine-change';
 import DocumentSummaryModel from '@/components/setting/document-summary-model';
 import LanguageChange from '@/components/setting/language-change';
 import MCPServerManage from '@/components/setting/mcp-server-manage';
@@ -98,14 +100,18 @@ const SettingPage = () => {
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_website_craw_model')}
 						</Label>
-						<div className='flex flex-col gap-2'>Jina</div>
+						<div className='flex flex-col gap-2'>
+							<DefaultWebsiteCrawlEngineChange />
+						</div>
 					</div>
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_file_extract_model')}
 						</Label>
-						<div className='flex flex-col gap-2'>MinerU</div>
+						<div className='flex flex-col gap-2'>
+							<DefaultDocumentParseEngineChange />
+						</div>
 					</div>
 				</CardContent>
 			</Card>

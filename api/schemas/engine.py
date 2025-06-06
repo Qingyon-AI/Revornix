@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 class EngineInfo(BaseModel):
     id: int
     name: str
-    description: str
+    description: str | None = None
     create_time: datetime
     update_time: datetime
     enable: bool
@@ -24,3 +24,6 @@ class EngineInfo(BaseModel):
         
 class EngineSearchRequest(BaseModel):
     keyword: str
+    
+class EngineSearchResponse(BaseModel):
+    data: list[EngineInfo]

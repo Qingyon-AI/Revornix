@@ -55,20 +55,35 @@ def create_user_document_parsing_engine(db: Session,
 def get_website_crawling_engine_by_id(db: Session, website_crawling_engine_id: int):
     query = db.query(models.engine.WebsiteCarwingEngine)
     query = query.filter(models.engine.WebsiteCarwingEngine.id == website_crawling_engine_id,
-                         models.engine.WebsiteCarwingEngine.delete_at == False)
+                         models.engine.WebsiteCarwingEngine.delete_at == None)
     return query.first()
 
 def get_document_parsing_engine_by_id(db: Session, document_parsing_engine_id: int):
     query = db.query(models.engine.DocumentParsingEngine)
     query = query.filter(models.engine.DocumentParsingEngine.id == document_parsing_engine_id,
-                         models.engine.DocumentParsingEngine.delete_at == False)
+                         models.engine.DocumentParsingEngine.delete_at == None)
+    return query.first()
+
+def get_user_website_crawling_engine_by_user_id_and_engine_id(db: Session, user_id: int, website_crawling_engine_id: int):
+    query = db.query(models.engine.UserWebsiteCarwingEngine)
+    query = query.filter(models.engine.UserWebsiteCarwingEngine.user_id == user_id,
+                         models.engine.UserWebsiteCarwingEngine.website_crawling_engine_id == website_crawling_engine_id,
+                         models.engine.UserWebsiteCarwingEngine.delete_at == None)
+    return query.first()
+
+def get_user_document_parsing_engine_by_user_id_and_engine_id(db: Session, user_id: int, document_parsing_engine_id: int):
+    query = db.query(models.engine.UserDocumentParsingEngine)
+    query = query.filter(models.engine.UserDocumentParsingEngine.user_id == user_id,
+                         models.engine.UserDocumentParsingEngine.document_parsing_engine_id == document_parsing_engine_id,
+                         models.engine.UserDocumentParsingEngine.delete_at == None)
     return query.first()
 
 def get_website_crawling_engine_by_user_id(db: Session, user_id: int, keyword: str | None = None):
+    from fastapi.encoders import jsonable_encoder
     query = db.query(models.engine.WebsiteCarwingEngine)
     query = query.join(models.engine.UserWebsiteCarwingEngine)
     query = query.filter(models.engine.UserWebsiteCarwingEngine.user_id == user_id,
-                         models.engine.UserWebsiteCarwingEngine.delete_at == False)
+                         models.engine.UserWebsiteCarwingEngine.delete_at == None)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.engine.WebsiteCarwingEngine.name.like(f'%{keyword}%'))
     return query.all()
@@ -77,7 +92,7 @@ def get_document_parsing_engine_by_user_id(db: Session, user_id: int, keyword: s
     query = db.query(models.engine.DocumentParsingEngine)
     query = query.join(models.engine.UserDocumentParsingEngine)
     query = query.filter(models.engine.UserDocumentParsingEngine.user_id == user_id,
-                         models.engine.UserDocumentParsingEngine.delete_at == False)
+                         models.engine.UserDocumentParsingEngine.delete_at == None)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.engine.DocumentParsingEngine.name.like(f'%{keyword}%'))
     return query.all()
@@ -86,7 +101,7 @@ def delete_website_crawling_engine(db: Session, website_crawling_engine_id: int)
     now = datetime.now(timezone.utc)
     db.query(models.engine.WebsiteCarwingEngine)\
         .filter(models.engine.WebsiteCarwingEngine.id == website_crawling_engine_id,
-                models.engine.WebsiteCarwingEngine.delete_at == False)\
+                models.engine.WebsiteCarwingEngine.delete_at == None)\
             .update({models.engine.WebsiteCarwingEngine.delete_at: now})
     db.commit()
     
@@ -94,7 +109,7 @@ def delete_document_parsing_engine(db: Session, document_parsing_engine_id: int)
     now = datetime.now(timezone.utc)
     db.query(models.engine.DocumentParsingEngine)\
         .filter(models.engine.DocumentParsingEngine.id == document_parsing_engine_id,
-                models.engine.DocumentParsingEngine.delete_at == False)\
+                models.engine.DocumentParsingEngine.delete_at == None)\
             .update({models.engine.DocumentParsingEngine.delete_at: now})
     db.commit()
     
@@ -103,7 +118,7 @@ def delete_user_website_crawling_engine(db: Session, user_id: int, website_crawl
     db.query(models.engine.UserWebsiteCarwingEngine)\
         .filter(models.engine.UserWebsiteCarwingEngine.user_id == user_id,
                 models.engine.UserWebsiteCarwingEngine.website_crawling_engine_id == website_crawling_engine_id,
-                models.engine.UserWebsiteCarwingEngine.delete_at == False)\
+                models.engine.UserWebsiteCarwingEngine.delete_at == None)\
             .update({models.engine.UserWebsiteCarwingEngine.delete_at: now})
     db.commit()
     
@@ -112,6 +127,6 @@ def delete_user_document_parsing_engine(db: Session, user_id: int, document_pars
     db.query(models.engine.UserDocumentParsingEngine)\
         .filter(models.engine.UserDocumentParsingEngine.user_id == user_id,
                 models.engine.UserDocumentParsingEngine.document_parsing_engine_id == document_parsing_engine_id,
-                models.engine.UserDocumentParsingEngine.delete_at == False)\
+                models.engine.UserDocumentParsingEngine.delete_at == None)\
             .update({models.engine.UserDocumentParsingEngine.delete_at: now})
     db.commit()

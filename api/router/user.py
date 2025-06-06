@@ -24,7 +24,7 @@ async def update_default_document_parse_engine(default_engine_update_request: sc
                                                db: Session = Depends(get_db)):
     crud.user.update_user_default_engine(db=db, 
                                          user_id=user.id, 
-                                         default_document_parse_engine_id=default_engine_update_request.default_document_parse_engine_id,
+                                         default_document_parsing_engine_id=default_engine_update_request.default_document_parse_engine_id,
                                          default_website_crawling_engine_id=default_engine_update_request.default_website_crawling_engine_id)
     db.commit()
     return schemas.common.SuccessResponse(message="The default document parse engine is updated successfully.")
@@ -298,7 +298,9 @@ async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user)
                                        slogan=user.slogan,
                                        avatar=user.avatar,
                                        default_document_reader_model_id=user.default_document_reader_model_id,
-                                       default_revornix_model_id=user.default_revornix_model_id)
+                                       default_revornix_model_id=user.default_revornix_model_id,
+                                       default_website_crawling_engine_id=user.default_website_crawling_engine_id,
+                                       default_document_parsing_engine_id=user.default_document_parsing_engine_id)
     email_user = crud.user.get_email_user_by_user_id(db=db, 
                                                      user_id=user.id)
     if email_user is not None:

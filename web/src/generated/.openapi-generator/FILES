@@ -2,6 +2,7 @@ apis/AiApi.ts
 apis/ApiKeyApi.ts
 apis/AttachmentApi.ts
 apis/DocumentApi.ts
+apis/EngineApi.ts
 apis/McpApi.ts
 apis/NotificationApi.ts
 apis/SectionApi.ts
@@ -27,6 +28,7 @@ models/CreateNotificationRequest.ts
 models/DailyReportStatusChangeRequest.ts
 models/DaySectionRequest.ts
 models/DaySectionResponse.ts
+models/DefaultEngineUpdateRequest.ts
 models/DefaultModelUpdateRequest.ts
 models/DeleteModelProviderRequest.ts
 models/DeleteModelRequest.ts
@@ -47,6 +49,9 @@ models/DocumentNoteInfo.ts
 models/DocumentTransformTask.ts
 models/EmailInfo.ts
 models/EmailUserCreateVerifyRequest.ts
+models/EngineInfo.ts
+models/EngineSearchRequest.ts
+models/EngineSearchResponse.ts
 models/FileDocumentInfo.ts
 models/FollowUserRequest.ts
 models/HTTPValidationError.ts

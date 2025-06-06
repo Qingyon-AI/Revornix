@@ -20,4 +20,5 @@ export default {
     initialPassword: API_PREFIX + '/user/password/initial-see',
     updateDailyReport: API_PREFIX + '/user/daily-report',
     updateDefaultModel: API_PREFIX + '/user/default-model/update',
+    updateDefaultEngine: API_PREFIX + '/user/default-engine/update',
 } 

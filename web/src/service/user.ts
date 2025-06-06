@@ -1,5 +1,5 @@
 import userApi from '@/api/user'
-import { BindEmailVerifyRequest, DailyReportStatusChangeRequest, DefaultModelUpdateRequest, EmailUserCreateVerifyRequest, FollowUserRequest, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo } from '@/generated';
+import { BindEmailVerifyRequest, DailyReportStatusChangeRequest, DefaultEngineUpdateRequest, DefaultModelUpdateRequest, EmailUserCreateVerifyRequest, FollowUserRequest, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo } from '@/generated';
 import { request } from '@/lib/request';
 
 export const getUserFans = async (data: SearchUserFansRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
@@ -68,6 +68,10 @@ export const updateUserInfo = async (newUserInfo: UserInfoUpdateRequest): Promis
 
 export const updateUserDefaultModel = async (data: DefaultModelUpdateRequest): Promise<NormalResponse> => {
     return await request(userApi.updateDefaultModel, { data })
+}
+
+export const updateUserDefaultEngine = async (data: DefaultEngineUpdateRequest): Promise<NormalResponse> => {
+    return await request(userApi.updateDefaultEngine, { data })
 }
 
 export const updatePasswordEmailCode = async (): Promise<NormalResponse> => {

@@ -10,6 +10,7 @@ class UserDocumentParsingEngine(Base):
     create_time = Column(DateTime(timezone=True))
     update_time = Column(DateTime(timezone=True))
     delete_at = Column(DateTime(timezone=True))
+    enable = Column(Boolean, default=True)
     
 class UserWebsiteCarwingEngine(Base):
     __tablename__ = "user_website_crawling_engine"
@@ -19,6 +20,7 @@ class UserWebsiteCarwingEngine(Base):
     create_time = Column(DateTime(timezone=True))
     update_time = Column(DateTime(timezone=True))
     delete_at = Column(DateTime(timezone=True))
+    enable = Column(Boolean, default=True)
 
 class DocumentParsingEngine(Base):
     __tablename__ = "document_parsing_engine"
@@ -29,7 +31,6 @@ class DocumentParsingEngine(Base):
     create_time = Column(DateTime(timezone=True))
     update_time = Column(DateTime(timezone=True))
     delete_at = Column(DateTime(timezone=True))
-    enable = Column(Boolean, default=True)
     
 class WebsiteCarwingEngine(Base):
     __tablename__ = "website_crawling_engine"
@@ -40,4 +41,3 @@ class WebsiteCarwingEngine(Base):
     create_time = Column(DateTime(timezone=True))
     update_time = Column(DateTime(timezone=True))
     delete_at = Column(DateTime(timezone=True))
-    enable = Column(Boolean, default=True)

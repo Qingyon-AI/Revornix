@@ -100,6 +100,18 @@ export interface PrivateUserInfo {
      * @memberof PrivateUserInfo
      */
     default_revornix_model_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof PrivateUserInfo
+     */
+    default_document_parsing_engine_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof PrivateUserInfo
+     */
+    default_website_crawling_engine_id?: number | null;
 }
 
 /**
@@ -131,6 +143,8 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'email_info': json['email_info'] == null ? undefined : EmailInfoFromJSON(json['email_info']),
         'default_document_reader_model_id': json['default_document_reader_model_id'] == null ? undefined : json['default_document_reader_model_id'],
         'default_revornix_model_id': json['default_revornix_model_id'] == null ? undefined : json['default_revornix_model_id'],
+        'default_document_parsing_engine_id': json['default_document_parsing_engine_id'] == null ? undefined : json['default_document_parsing_engine_id'],
+        'default_website_crawling_engine_id': json['default_website_crawling_engine_id'] == null ? undefined : json['default_website_crawling_engine_id'],
     };
 }
 
@@ -156,6 +170,8 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'email_info': EmailInfoToJSON(value['email_info']),
         'default_document_reader_model_id': value['default_document_reader_model_id'],
         'default_revornix_model_id': value['default_revornix_model_id'],
+        'default_document_parsing_engine_id': value['default_document_parsing_engine_id'],
+        'default_website_crawling_engine_id': value['default_website_crawling_engine_id'],
     };
 }
 

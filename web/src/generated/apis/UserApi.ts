@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   BindEmailVerifyRequest,
   DailyReportStatusChangeRequest,
+  DefaultEngineUpdateRequest,
   DefaultModelUpdateRequest,
   EmailUserCreateVerifyRequest,
   FollowUserRequest,
@@ -40,6 +41,8 @@ import {
     BindEmailVerifyRequestToJSON,
     DailyReportStatusChangeRequestFromJSON,
     DailyReportStatusChangeRequestToJSON,
+    DefaultEngineUpdateRequestFromJSON,
+    DefaultEngineUpdateRequestToJSON,
     DefaultModelUpdateRequestFromJSON,
     DefaultModelUpdateRequestToJSON,
     EmailUserCreateVerifyRequestFromJSON,
@@ -125,6 +128,12 @@ export interface SearchUserFansUserFansPostRequest {
 
 export interface SearchUserFollowsUserFollowsPostRequest {
     searchUserFollowsRequest: SearchUserFollowsRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UpdateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRequest {
+    defaultEngineUpdateRequest: DefaultEngineUpdateRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -553,6 +562,50 @@ export class UserApi extends runtime.BaseAPI {
      */
     async searchUserFollowsUserFollowsPost(requestParameters: SearchUserFollowsUserFollowsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionUserPublicInfo> {
         const response = await this.searchUserFollowsUserFollowsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update Default Document Parse Engine
+     */
+    async updateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRaw(requestParameters: UpdateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['defaultEngineUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'defaultEngineUpdateRequest',
+                'Required parameter "defaultEngineUpdateRequest" was null or undefined when calling updateDefaultDocumentParseEngineUserDefaultEngineUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+        const response = await this.request({
+            path: `/user/default-engine/update`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DefaultEngineUpdateRequestToJSON(requestParameters['defaultEngineUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update Default Document Parse Engine
+     */
+    async updateDefaultDocumentParseEngineUserDefaultEngineUpdatePost(requestParameters: UpdateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.updateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
