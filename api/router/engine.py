@@ -19,6 +19,7 @@ async def search_document_parse_engine(engine_search_request: schemas.engine.Eng
                                                                               user_id=current_user.id,
                                                                               engine_id=engine.id)
         engine.enable = db_user_engine.enable
+        engine.config_json = db_user_engine.config_json
     return schemas.engine.EngineSearchResponse(data=engines)
 
 @engine_router.post("/provide", response_model=schemas.engine.EngineSearchResponse)
@@ -49,5 +50,21 @@ async def install_engine(engine_install_request: schemas.engine.EngineInstallReq
             user_engine.delete_at = datetime.now(tz=timezone.utc)
         now = datetime.now(tz=timezone.utc)
         user_engine.delete_at = now
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+@engine_router.post("/update", response_model=schemas.common.NormalResponse)
+async def enable_engine(engine_update_request: schemas.engine.EngineUpdateRequest, 
+                        db: Session = Depends(get_db),
+                        current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    now = datetime.now(tz=timezone.utc)
+    user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db,
+                                                                       user_id=current_user.id,
+                                                                       engine_id=engine_update_request.engine_id)
+    if user_engine is None:
+        raise schemas.error.CustomException(code=404, message="User Engine not found")
+    else:
+        user_engine.config_json = engine_update_request.config_json
+        user_engine.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()

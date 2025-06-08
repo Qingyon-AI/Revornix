@@ -4,6 +4,10 @@ from datetime import datetime, timezone
 class EngineInstallRequest(BaseModel):
     engine_id: int
     status: bool
+    
+class EngineUpdateRequest(BaseModel):
+    engine_id: int
+    config_json: str
 
 class EngineInfo(BaseModel):
     id: int

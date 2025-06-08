@@ -43,6 +43,7 @@ export * from './EngineInfo';
 export * from './EngineInstallRequest';
 export * from './EngineSearchRequest';
 export * from './EngineSearchResponse';
+export * from './EngineUpdateRequest';
 export * from './FileDocumentInfo';
 export * from './FollowUserRequest';
 export * from './HTTPValidationError';

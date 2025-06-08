@@ -18,6 +18,7 @@ import type {
   EngineInstallRequest,
   EngineSearchRequest,
   EngineSearchResponse,
+  EngineUpdateRequest,
   HTTPValidationError,
   NormalResponse,
 } from '../models/index';
@@ -28,11 +29,19 @@ import {
     EngineSearchRequestToJSON,
     EngineSearchResponseFromJSON,
     EngineSearchResponseToJSON,
+    EngineUpdateRequestFromJSON,
+    EngineUpdateRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
 } from '../models/index';
+
+export interface EnableEngineEngineUpdatePostRequest {
+    engineUpdateRequest: EngineUpdateRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
 
 export interface InstallEngineEngineInstallPostRequest {
     engineInstallRequest: EngineInstallRequest;
@@ -56,6 +65,50 @@ export interface SearchDocumentParseEngineEngineMinePostRequest {
  * 
  */
 export class EngineApi extends runtime.BaseAPI {
+
+    /**
+     * Enable Engine
+     */
+    async enableEngineEngineUpdatePostRaw(requestParameters: EnableEngineEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['engineUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'engineUpdateRequest',
+                'Required parameter "engineUpdateRequest" was null or undefined when calling enableEngineEngineUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+        const response = await this.request({
+            path: `/engine/update`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: EngineUpdateRequestToJSON(requestParameters['engineUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Enable Engine
+     */
+    async enableEngineEngineUpdatePost(requestParameters: EnableEngineEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.enableEngineEngineUpdatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Install Engine

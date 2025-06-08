@@ -53,6 +53,7 @@ models/EngineInfo.ts
 models/EngineInstallRequest.ts
 models/EngineSearchRequest.ts
 models/EngineSearchResponse.ts
+models/EngineUpdateRequest.ts
 models/FileDocumentInfo.ts
 models/FollowUserRequest.ts
 models/HTTPValidationError.ts

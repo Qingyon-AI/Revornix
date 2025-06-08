@@ -110,16 +110,10 @@ const SettingPage = () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							{t('setting_website_craw_model')}
-						</Label>
-						<div className='flex flex-col gap-2'>
-							<DefaultWebsiteCrawlEngineChange />
-						</div>
-					</div>
-					<Separator />
-					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>
-							{t('setting_file_extract_model')}
+							{t('setting_default_markdown_parse_engine')}
+							<p className='text-muted-foreground text-xs'>
+								不同的解析目标有不同的解析引擎，请根据实际情况选择，如果配置了不支持该目标的引擎，解析将会失败。
+							</p>
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<DefaultDocumentParseEngineChange />
