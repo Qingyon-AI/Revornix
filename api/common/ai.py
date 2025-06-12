@@ -55,7 +55,7 @@ def summary_section_with_origin(user_id: int, model_id: int, origin_section_mark
     if db_user_model is None:
         raise Exception("User model not found")
     db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
-    db_user_model_provider = crud.model.get_ai_model_provider_by_id(db=db, user_id=user_id, provider_id=db_user_model.provider_id)
+    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id(db=db, user_id=user_id, provider_id=db_model.provider_id)
     if db_model_provider is None:
         raise Exception("Model provider not found")
     if db_user_model_provider is None:

@@ -368,6 +368,8 @@ async def ask_ai(chat_messages: schemas.ai.ChatMessages,
     depth = 0
     
     model_id = user.default_revornix_model_id
+    if model_id is None:
+        raise schemas.error.CustomException("The user has not set a default model", code=400)
     db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
     if db_model is None:
         raise schemas.error.CustomException("The model is not exist", code=404)

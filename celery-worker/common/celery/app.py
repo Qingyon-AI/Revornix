@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 import os
+import json
 import uuid
 import crud
 import asyncio
@@ -11,13 +12,17 @@ from config.base import BASE_DIR
 from common.common import create_upload_token
 from common.logger import log_exception, exception_logger
 from common.ai import summary_section_with_origin, summary_document, summary_section
-from common.jina import transform_website_to_markdown_by_jina
 from common.vector import milvus_client, process_document
 from common.file import delete_temp_file_with_delay, RemoteFileService
-from common.notification import union_send_notification
 from common.sql import SessionLocal
-from common.website import crawer_website
+from common.website import crawer_website_by_playwright, crawer_website_by_jina, get_website_cover_by_playwright
 from common.mineru import transform_bytes
+
+import tracemalloc
+import warnings
+
+tracemalloc.start()
+warnings.simplefilter("default")
 
 celery_app = Celery('worker', 
                     broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0',
@@ -77,41 +82,6 @@ async def handle_update_file_document_markdown_with_mineru(document_id: int,
         db_task.status = 3
         db.commit()
 
-async def handle_update_website_document_markdown_with_jina(document_id: int,
-                                                            user_id: int):
-    db = SessionLocal()
-    user = crud.user.get_user_by_id(db=db, user_id=user_id)
-    access_token = create_upload_token(user=user)
-    remote_file_service = RemoteFileService(authorization=access_token)
-    db_document = crud.document.get_document_by_document_id(db=db,
-                                                            document_id=document_id)
-    try:
-        db_task = crud.task.get_document_transform_task_by_document_id(db=db,
-                                                                       document_id=document_id)
-        if db_task is None:
-            raise Exception("Document transform task not found")
-            
-        db_task.status = 1
-        db.commit()
-        db_website_document = crud.document.get_website_document_by_document_id(db=db, 
-                                                                                document_id=document_id)
-        jina_back_data = transform_website_to_markdown_by_jina(url=db_website_document.url)
-        markdown_content = jina_back_data.get('data').get('content')
-        md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-        await remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name, raw_data=markdown_content)
-        crud.document.update_website_document_by_website_document_id(db=db,
-                                                                     website_document_id=db_website_document.id,
-                                                                     md_file_name=md_file_name)
-        db_task.status = 2
-        db.commit()
-        return markdown_content
-    except Exception as e:
-        exception_logger.error(f"Something is error while updating the website document markdown: {e}")
-        log_exception()
-        db.rollback()
-        db_task.status = 3
-        db.commit()
-        
 async def handle_add_embedding(document_id: int, user_id: int):
     db = SessionLocal()
     user = crud.user.get_user_by_id(db=db, user_id=user_id)
@@ -258,8 +228,10 @@ async def handle_update_ai_summary(document_id: int,
         log_exception()
         db.rollback()
 
-async def handle_init_website_document_info(document_id: int):
+async def handle_init_website_document_info(document_id: int, user_id: int):
     db = SessionLocal()
+    db_user = crud.user.get_user_by_id(db=db, 
+                                       user_id=user_id)
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=document_id)
     if db_document is None:
@@ -270,10 +242,46 @@ async def handle_init_website_document_info(document_id: int):
                                                                             document_id=document_id)
     if db_website_document is None:
         raise Exception("Website document not found")
-    web_info = await crawer_website(url=db_website_document.url)
+    default_website_crawling_engine_id = db_user.default_website_crawling_engine_id
+    if default_website_crawling_engine_id is None:
+        raise Exception("User does not have default website crawling engine")
+    website_extractor = crud.engine.get_engine_by_id(db=db, 
+                                                     id=default_website_crawling_engine_id)
+    if website_extractor.name.lower() == "markitdown":
+        web_info = await crawer_website_by_playwright(url=db_website_document.url)
+    if website_extractor.name.lower() == "jina":
+        db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db, 
+                                                                              user_id=user_id,
+                                                                              engine_id=default_website_crawling_engine_id)
+        jina_config_str = db_user_engine.config_json
+        if jina_config_str is None or len(jina_config_str) == 0:
+            raise Exception("User haven't set the jina config")
+        jina_config = json.loads(jina_config_str)
+        jina_api_key = jina_config.get('api_key')
+        if jina_api_key is None or len(jina_api_key) == 0:
+            raise Exception("User haven't set the jina api key")
+        web_info = await crawer_website_by_jina(url=db_website_document.url, apikey=jina_api_key)
     db_document.title = web_info.get('title')
     db_document.description = web_info.get('description')
-    db_document.cover = web_info.get('cover')
+    cover = await get_website_cover_by_playwright(url=db_website_document.url)
+    db_document.cover = cover
+    
+    access_token = create_upload_token(user=db_user)
+    remote_file_service = RemoteFileService(authorization=access_token)
+    db_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                   document_id=document_id)
+    if db_task is None:
+        raise Exception("Document transform task not found")
+    db_task.status = 1
+    db.commit()
+    db_website_document = crud.document.get_website_document_by_document_id(db=db, 
+                                                                            document_id=document_id)
+    md_file_name = f"markdown/{uuid.uuid4().hex}.md"
+    await remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name, raw_data=web_info.get('content'))
+    crud.document.update_website_document_by_website_document_id(db=db,
+                                                                    website_document_id=db_website_document.id,
+                                                                    md_file_name=md_file_name)
+    db_task.status = 2
     db.commit()
 
 async def handle_update_section_use_document(section_id: int,
@@ -341,7 +349,7 @@ async def handle_update_section_use_document(section_id: int,
 
 @celery_app.task
 def init_website_document_info(document_id: int, user_id: int):
-    asyncio.run(handle_init_website_document_info(document_id=document_id))
+    asyncio.run(handle_init_website_document_info(document_id=document_id, user_id=user_id))
 
 @celery_app.task
 def create_delete_temp_file_task(path: str):
@@ -353,12 +361,6 @@ def update_file_document_markdown_with_mineru(document_id: int,
                                               user_id: int):
     asyncio.run(handle_update_file_document_markdown_with_mineru(document_id=document_id,
                                                                  user_id=user_id))
-    
-@celery_app.task
-def update_website_document_markdown_with_jina(document_id: int, 
-                                               user_id: int):
-    asyncio.run(handle_update_website_document_markdown_with_jina(document_id=document_id,
-                                                                  user_id=user_id))
 
 @celery_app.task
 def update_ai_summary(document_id: int, 
