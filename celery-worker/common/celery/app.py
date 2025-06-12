@@ -74,13 +74,16 @@ async def handle_update_file_document_markdown_with_mineru(document_id: int,
                                              local_path=f'{str(BASE_DIR)}/temp/{file_item}/{file_item}.md')
         db_file_document.md_file_name=md_file_name
         db_task.status = 2
+        
         db.commit()
+        await remote_file_service.close_client()
     except Exception as e:
         exception_logger.error(f"Something is error while updating the file document markdown: {e}")
         log_exception()
         db.rollback()
         db_task.status = 3
         db.commit()
+        await remote_file_service.close_client()
 
 async def handle_add_embedding(document_id: int, user_id: int):
     db = SessionLocal()
@@ -171,10 +174,12 @@ async def handle_update_sections(sections: list[int],
                                                                                        section_id=db_section.id,
                                                                                        status=3)
         db.commit()
+        await remote_file_service.close_client()
     except Exception as e:
         exception_logger.error(f"Something is error while getting the section: {e}")
         log_exception()
         db.rollback()
+        await remote_file_service.close_client()
         
 async def get_markdown_content_by_document_id(document_id: int, user_id: int):
     db = SessionLocal()
@@ -203,6 +208,7 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
         quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
                                                                                     document_id=document_id)
         markdown_content = quick_note_document.content
+    await remote_file_service.close_client()
     return markdown_content
         
 async def handle_update_ai_summary(document_id: int, 
@@ -283,6 +289,7 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
                                                                     md_file_name=md_file_name)
     db_task.status = 2
     db.commit()
+    await remote_file_service.close_client()
 
 async def handle_update_section_use_document(section_id: int,
                                              document_id: int,
@@ -338,6 +345,7 @@ async def handle_update_section_use_document(section_id: int,
                                                                            document_id=document_id,
                                                                            section_id=db_section.id,
                                                                            status=2)
+        await remote_file_service.close_client()
     except Exception as e:
             log_exception()
             exception_logger.error(f"Something is error while updating the section: {e}")
@@ -346,6 +354,7 @@ async def handle_update_section_use_document(section_id: int,
                                                                                document_id=document_id,
                                                                                section_id=db_section.id,
                                                                                status=3)
+            await remote_file_service.close_client()
 
 @celery_app.task
 def init_website_document_info(document_id: int, user_id: int):

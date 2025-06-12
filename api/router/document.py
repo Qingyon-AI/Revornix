@@ -101,6 +101,7 @@ async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSumma
                                                  description=ai_summary_result.get('description'),
                                                  ai_summary=ai_summary_result.get('summary'))
     db.commit()
+    await remote_file_service.close_client()
     return schemas.common.SuccessResponse()
 
 @document_router.post('/markdown/transform', response_model=schemas.common.NormalResponse)
@@ -169,6 +170,7 @@ async def transform_markdown(request: Request,
                 task_chain = chain(first_task)
                 task_chain.apply_async()
     db.commit()
+    await remote_file_service.close_client()
     return schemas.common.SuccessResponse()
         
 @document_router.post('/month/summary', response_model=schemas.document.DocumentMonthSummaryResponse)

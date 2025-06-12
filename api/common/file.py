@@ -26,6 +26,9 @@ class RemoteFileService():
         self.client = httpx.AsyncClient(headers=self.headers)
         self.base_url = base_url
     
+    async def close_client(self):
+        await self.client.aclose()
+    
     async def get_object_content(self, file_path: str):
         res = await self.client.post(url=f'{self.base_url}/file/read', 
                                      json={
