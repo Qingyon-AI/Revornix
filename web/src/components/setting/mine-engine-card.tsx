@@ -12,7 +12,7 @@ import { useMutation } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
 import { installEngine, updateEngine } from '@/service/engine';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Eye, Loader2 } from 'lucide-react';
 import {
 	Dialog,
 	DialogClose,
@@ -26,7 +26,7 @@ import {
 import { Textarea } from '../ui/textarea';
 import { EngineInfo } from '@/generated';
 import { Separator } from '../ui/separator';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -44,6 +44,7 @@ import {
 
 const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 	const t = useTranslations();
+	const locale = useLocale();
 	const formSchema = z.object({
 		config_json: z.string(),
 	});
@@ -107,12 +108,20 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 		<>
 			<Card className='bg-muted/50'>
 				<CardHeader>
-					<CardTitle>{engine.name}</CardTitle>
-					<CardDescription>{engine.description}</CardDescription>
+					<CardTitle>
+						{locale === 'en' ? engine.name : engine.name_zh}
+					</CardTitle>
+					<CardDescription>
+						{locale === 'en' ? engine.description : engine.description_zh}
+					</CardDescription>
 				</CardHeader>
 				<CardContent className='flex-1'>
 					{engine.config_json && (
-						<p className='bg-muted font-mono p-5 rounded text-xs'>
+						<p className='bg-muted font-mono p-5 rounded text-xs break-all relative overflow-auto'>
+							<div className='group absolute top-0 left-0 w-full h-full backdrop-blur rounded flex flex-col justify-center items-center hover:backdrop-blur-none transition-all'>
+								<Eye className='text-muted-foreground opacity-50 group-hover:hidden' />
+								<p className='text-muted-foreground opacity-50 group-hover:hidden'>配置查看</p>
+							</div>
 							{engine.config_json}
 						</p>
 					)}
@@ -177,7 +186,9 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 									<DialogHeader>
 										<DialogTitle>配置</DialogTitle>
 										<DialogDescription>
-											此处配置该引擎({engine.name})的相关参数
+											此处配置该引擎(
+											{locale === 'en' ? engine.name : engine.name_zh}
+											)的相关参数
 										</DialogDescription>
 									</DialogHeader>
 									<Form {...form}>
@@ -200,11 +211,15 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 											/>
 										</form>
 									</Form>
-									<Separator />
-									<h3 className='text-xs text-muted-foreground'>范例</h3>
-									<p className='rounded bg-muted p-5 font-mono text-sm'>
-										{'{ "openai_api_key": "your_api_key"} '}
-									</p>
+									{engine.demo_config && (
+										<>
+											<Separator />
+											<h3 className='text-xs text-muted-foreground'>范例</h3>
+											<p className='rounded bg-muted p-5 font-mono text-sm'>
+												{engine.demo_config}
+											</p>
+										</>
+									)}
 									<DialogFooter>
 										<DialogClose asChild>
 											<Button type='button' variant={'secondary'}>

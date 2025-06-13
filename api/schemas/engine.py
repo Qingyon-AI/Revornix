@@ -12,7 +12,10 @@ class EngineUpdateRequest(BaseModel):
 class EngineInfo(BaseModel):
     id: int
     name: str
+    name_zh: str
     description: str | None = None
+    description_zh: str | None = None
+    demo_config: str | None = None
     create_time: datetime
     update_time: datetime
     enable: bool | None = None

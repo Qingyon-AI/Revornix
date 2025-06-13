@@ -14,8 +14,10 @@ import { installEngine } from '@/service/engine';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { EngineInfo } from '@/generated';
+import { useTranslations } from 'next-intl';
 
 const ProvideEngineCard = ({ engine }: { engine: EngineInfo }) => {
+	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const mutateInstallEngine = useMutation({
 		mutationFn: installEngine,

@@ -19,7 +19,10 @@ class Engine(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False, index=True)
+    name_zh = Column(String(100), nullable=False, index=True)
     description = Column(String(500))
+    description_zh = Column(String(500))
+    demo_config = Column(String(2000))
     create_time = Column(DateTime(timezone=True))
     update_time = Column(DateTime(timezone=True))
     delete_at = Column(DateTime(timezone=True))

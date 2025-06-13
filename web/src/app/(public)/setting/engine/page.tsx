@@ -8,8 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getMineEngines, getProvideEngines } from '@/service/engine';
 import { useQuery } from '@tanstack/react-query';
 import { Info, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 const EnginePage = () => {
+	const t = useTranslations();
 	const {
 		data: mineEngines,
 		isFetching: isFetchingMineEngines,

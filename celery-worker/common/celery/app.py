@@ -15,7 +15,8 @@ from common.ai import summary_section_with_origin, summary_document, summary_sec
 from common.vector import milvus_client, process_document
 from common.file import delete_temp_file_with_delay, RemoteFileService
 from common.sql import SessionLocal
-from common.website import crawer_website_by_playwright, crawer_website_by_jina, get_website_cover_by_playwright
+from engine import markitdown as markitdown_engine
+from engine import jina as jina_engine
 from common.mineru import transform_bytes
 
 import tracemalloc
@@ -254,7 +255,8 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
     website_extractor = crud.engine.get_engine_by_id(db=db, 
                                                      id=default_website_crawling_engine_id)
     if website_extractor.name.lower() == "markitdown":
-        web_info = await crawer_website_by_playwright(url=db_website_document.url)
+        engine = markitdown_engine.MarkitdownEngine()
+        web_info = await engine.analyse_website(url=db_website_document.url)
     if website_extractor.name.lower() == "jina":
         db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db, 
                                                                               user_id=user_id,
@@ -262,15 +264,11 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
         jina_config_str = db_user_engine.config_json
         if jina_config_str is None or len(jina_config_str) == 0:
             raise Exception("User haven't set the jina config")
-        jina_config = json.loads(jina_config_str)
-        jina_api_key = jina_config.get('api_key')
-        if jina_api_key is None or len(jina_api_key) == 0:
-            raise Exception("User haven't set the jina api key")
-        web_info = await crawer_website_by_jina(url=db_website_document.url, apikey=jina_api_key)
-    db_document.title = web_info.get('title')
-    db_document.description = web_info.get('description')
-    cover = await get_website_cover_by_playwright(url=db_website_document.url)
-    db_document.cover = cover
+        engine = jina_engine.JinaEngine(engin_config=jina_config_str)
+        web_info = await engine.analyse_website(url=db_website_document.url)
+    db_document.title = web_info.title
+    db_document.description = web_info.description
+    db_document.cover = web_info.cover
     
     access_token = create_upload_token(user=db_user)
     remote_file_service = RemoteFileService(authorization=access_token)
@@ -283,7 +281,7 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
     db_website_document = crud.document.get_website_document_by_document_id(db=db, 
                                                                             document_id=document_id)
     md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-    await remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name, raw_data=web_info.get('content'))
+    await remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name, raw_data=web_info.content)
     crud.document.update_website_document_by_website_document_id(db=db,
                                                                     website_document_id=db_website_document.id,
                                                                     md_file_name=md_file_name)

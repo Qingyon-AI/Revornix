@@ -36,7 +36,25 @@ export interface EngineInfo {
      * @type {string}
      * @memberof EngineInfo
      */
+    name_zh: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EngineInfo
+     */
     description?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof EngineInfo
+     */
+    description_zh?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof EngineInfo
+     */
+    demo_config?: string | null;
     /**
      * 
      * @type {Date}
@@ -69,6 +87,7 @@ export interface EngineInfo {
 export function instanceOfEngineInfo(value: object): value is EngineInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
@@ -86,7 +105,10 @@ export function EngineInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         
         'id': json['id'],
         'name': json['name'],
+        'name_zh': json['name_zh'],
         'description': json['description'] == null ? undefined : json['description'],
+        'description_zh': json['description_zh'] == null ? undefined : json['description_zh'],
+        'demo_config': json['demo_config'] == null ? undefined : json['demo_config'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (new Date(json['update_time'])),
         'enable': json['enable'] == null ? undefined : json['enable'],
@@ -107,7 +129,10 @@ export function EngineInfoToJSONTyped(value?: EngineInfo | null, ignoreDiscrimin
         
         'id': value['id'],
         'name': value['name'],
+        'name_zh': value['name_zh'],
         'description': value['description'],
+        'description_zh': value['description_zh'],
+        'demo_config': value['demo_config'],
         'create_time': ((value['create_time']).toISOString()),
         'update_time': ((value['update_time']).toISOString()),
         'enable': value['enable'],
