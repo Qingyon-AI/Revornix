@@ -14,7 +14,9 @@ from common.vector import milvus_client, process_query, hybrid_search
 from common.dependencies import get_db, get_current_user
 from common.logger import log_exception, exception_logger
 from common.file import RemoteFileService
-from common.celery.app import update_ai_summary, add_embedding, update_website_document_markdown_with_jina, init_website_document_info, update_sections, update_file_document_markdown_with_mineru
+from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, update_file_document_markdown_with_mineru
+from engine import markitdown as markitdown_engine
+from engine import jina as jina_engine
 
 document_router = APIRouter()
     
@@ -109,67 +111,83 @@ async def transform_markdown(request: Request,
                              user: models.user.User = Depends(get_current_user),
                              db: Session = Depends(get_db),
                              authorization: str = Depends(get_authorization_header)):
-    # remote_file_service =  RemoteFileService(authorization=authorization)
-    # db_user = crud.user.get_user_by_id(db=db, 
-    #                                    user_id=user.id)
-    # db_document = crud.document.get_document_by_document_id(db=db,
-    #                                                         document_id=transform_markdown_request.document_id)
-    # db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
-    #                                                                          document_id=transform_markdown_request.document_id)
-    # if db_document is None:
-    #     raise Exception('The document you want to transform is not found')
-    # if db_transform_task.status == 1:
-    #     raise Exception('The document is being transformed, please wait')
-    # if db_document.category == 1:
-    #     db_website_document = crud.document.get_website_document_by_document_id(db=db,
-    #                                                                             document_id=transform_markdown_request.document_id)
-    #     if db_website_document is None:
-    #         raise Exception('The website info of the document you want to transform is not found, please connect the administrator')
-    #     try:
-    #         db_transform_task.status = 1
-    #         db.commit()
-    #         db.refresh(db_document)
-    #         jina_back_data = crawer_website_by_jina(url=db_website_document.url, apikey="")
-    #         markdown_content = jina_back_data.get('data').get('content')
-    #         md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-    #         await remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name,
-    #                                                            raw_data=markdown_content)
-    #         crud.document.update_website_document_by_website_document_id(db=db,
-    #                                                                      website_document_id=db_website_document.id,
-    #                                                                      md_file_name=md_file_name)
-    #         db_transform_task.status = 2
-    #     except Exception as e:
-    #         exception_logger.error(f"记载报错，涉及请求{request}，错误{e}")
-    #         log_exception()
-    #         db.rollback()
-    #         db_transform_task.status = 3
-    # if db_document.category == 0:
-    #     db_file_document = crud.document.get_file_document_by_document_id(db=db,
-    #                                                                       document_id=transform_markdown_request.document_id)
-    #     if db_file_document is None:
-    #         raise Exception('The file info of the document you want to transform is not found, please connect the administrator')
-    #     transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
-    #                                                                           document_id=transform_markdown_request.document_id)
-    #     if transform_task is None:
-    #         crud.task.create_document_transform_task(db=db,
-    #                                                  user_id=user.id,
-    #                                                  document_id=transform_markdown_request.document_id)
-    #     else:
-    #         if transform_task.status == 0:
-    #             raise Exception('The transform task is already in pending, please wait for a while')
-    #         if transform_task.status == 1:
-    #             raise Exception('The transform task is already running, please wait for a while')
-    #         if transform_task.status == 2:
-    #             raise Exception('The transform task is already finished, please refresh the page')
-    #         if transform_task.status == 3:
-    #             transform_task.status = 1
-    #             db.commit()
-    #             db.refresh(transform_task)
-    #             first_task = update_file_document_markdown_with_mineru.si(db_document.id, user.id)
-    #             task_chain = chain(first_task)
-    #             task_chain.apply_async()
-    # db.commit()
-    # await remote_file_service.close_client()
+    remote_file_service =  RemoteFileService(authorization=authorization)
+    db_user = crud.user.get_user_by_id(db=db, 
+                                       user_id=user.id)
+    db_document = crud.document.get_document_by_document_id(db=db,
+                                                            document_id=transform_markdown_request.document_id)
+    db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                             document_id=transform_markdown_request.document_id)
+    if db_document is None:
+        raise Exception('The document you want to transform is not found')
+    if db_transform_task.status == 1:
+        raise Exception('The document is being transformed, please wait')
+    if db_document.category == 1:
+        db_website_document = crud.document.get_website_document_by_document_id(db=db,
+                                                                                document_id=transform_markdown_request.document_id)
+        if db_website_document is None:
+            raise Exception('The website info of the document you want to transform is not found, please connect the administrator')
+        try:
+            db_transform_task.status = 1
+            db.commit()
+            db.refresh(db_document)
+            default_website_crawling_engine_id = db_user.default_website_crawling_engine_id
+            if default_website_crawling_engine_id is None:
+                raise Exception("User does not have default website crawling engine")
+            website_extractor = crud.engine.get_engine_by_id(db=db, 
+                                                             id=default_website_crawling_engine_id)
+            if website_extractor.name.lower() == "markitdown":
+                engine = markitdown_engine.MarkitdownEngine()
+                web_info = await engine.analyse_website(url=db_website_document.url)
+            if website_extractor.name.lower() == "jina":
+                db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db, 
+                                                                                      user_id=user.id,
+                                                                                      engine_id=default_website_crawling_engine_id)
+                jina_config_str = db_user_engine.config_json
+                if jina_config_str is None or len(jina_config_str) == 0:
+                    raise Exception("User haven't set the jina config")
+                engine = jina_engine.JinaEngine(engin_config=jina_config_str)
+                web_info = await engine.analyse_website(url=db_website_document.url)
+            markdown_content = web_info.content
+            md_file_name = f"markdown/{uuid.uuid4().hex}.md"
+            await remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name,
+                                                               raw_data=markdown_content)
+            crud.document.update_website_document_by_website_document_id(db=db,
+                                                                         website_document_id=db_website_document.id,
+                                                                         md_file_name=md_file_name)
+            db_transform_task.status = 2
+        except Exception as e:
+            exception_logger.error(f"记载报错，涉及请求{request}，错误{e}")
+            log_exception()
+            db.rollback()
+            db_transform_task.status = 3
+    if db_document.category == 0:
+        db_file_document = crud.document.get_file_document_by_document_id(db=db,
+                                                                          document_id=transform_markdown_request.document_id)
+        if db_file_document is None:
+            raise Exception('The file info of the document you want to transform is not found, please connect the administrator')
+        transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                              document_id=transform_markdown_request.document_id)
+        if transform_task is None:
+            crud.task.create_document_transform_task(db=db,
+                                                     user_id=user.id,
+                                                     document_id=transform_markdown_request.document_id)
+        else:
+            if transform_task.status == 0:
+                raise Exception('The transform task is already in pending, please wait for a while')
+            if transform_task.status == 1:
+                raise Exception('The transform task is already running, please wait for a while')
+            if transform_task.status == 2:
+                raise Exception('The transform task is already finished, please refresh the page')
+            if transform_task.status == 3:
+                transform_task.status = 1
+                db.commit()
+                db.refresh(transform_task)
+                first_task = update_file_document_markdown_with_mineru.si(db_document.id, user.id)
+                task_chain = chain(first_task)
+                task_chain.apply_async()
+    db.commit()
+    await remote_file_service.close_client()
     return schemas.common.SuccessResponse()
         
 @document_router.post('/month/summary', response_model=schemas.document.DocumentMonthSummaryResponse)
