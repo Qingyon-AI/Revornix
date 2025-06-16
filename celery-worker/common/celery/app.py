@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 import os
-import json
 import uuid
 import crud
 import asyncio
@@ -17,7 +16,7 @@ from common.file import delete_temp_file_with_delay, RemoteFileService
 from common.sql import SessionLocal
 from engine import markitdown as markitdown_engine
 from engine import jina as jina_engine
-from common.mineru import transform_bytes
+from engine import mineru as mineru_engine
 
 import tracemalloc
 import warnings
@@ -39,7 +38,7 @@ async def handle_update_file_document_markdown_with_mineru(document_id: int,
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
         db_task = crud.task.get_document_transform_task_by_document_id(db=db,
-                                                                    document_id=document_id)
+                                                                       document_id=document_id)
         if db_document is None:
             raise Exception("Document not found")
         if db_document.category != 0:
@@ -55,8 +54,8 @@ async def handle_update_file_document_markdown_with_mineru(document_id: int,
         file_content = await remote_file_service.get_object_bytes(file_path=db_file_document.file_name)
         file_item = uuid.uuid4().hex
         md_file_name = f"markdown/{file_item}.md"
-        transform_bytes(data=file_content,
-                        output_dir=f'{str(BASE_DIR)}/temp/{file_item}')
+        # transform_bytes(data=file_content,
+        #                 output_dir=f'{str(BASE_DIR)}/temp/{file_item}')
         for item in os.listdir(f'{str(BASE_DIR)}/temp/{file_item}/images'):
             await remote_file_service.put_object(remote_file_path=f'images/{item}',
                                                  local_path=f'{str(BASE_DIR)}/temp/{file_item}/images/{item}')
@@ -266,10 +265,14 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
             raise Exception("User haven't set the jina config")
         engine = jina_engine.JinaEngine(engin_config=jina_config_str)
         web_info = await engine.analyse_website(url=db_website_document.url)
+    if website_extractor.name.lower() == "mineru":
+        engine = mineru_engine.MineruEngine(user_id=user_id)
+        web_info = await engine.analyse_website(url=db_website_document.url)
+
     db_document.title = web_info.title
     db_document.description = web_info.description
     db_document.cover = web_info.cover
-    
+
     access_token = create_upload_token(user=db_user)
     remote_file_service = RemoteFileService(authorization=access_token)
     db_task = crud.task.get_document_transform_task_by_document_id(db=db,

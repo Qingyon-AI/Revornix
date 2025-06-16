@@ -21,10 +21,13 @@ class MarkitdownEngine(EngineProtocol):
         description = og_description_meta.attrs['content'] if og_description_meta is not None else normal_description['content'] if normal_description is not None else None
         og_cover_meta = soup.find('meta', property='og:image')
         cover = og_cover_meta.attrs['content'] if og_cover_meta is not None else None
+        keywords_meta = soup.find('meta', attrs={'name': 'keywords'})
+        keywords = keywords_meta['content'] if keywords_meta else None
         return WebsiteInfo(
             url=url,
             title=title,
             description=description,
             content=content,
-            cover=cover
+            cover=cover,
+            keywords=keywords
         )

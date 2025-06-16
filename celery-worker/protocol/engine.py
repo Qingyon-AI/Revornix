@@ -8,7 +8,7 @@ class WebsiteInfo(BaseModel):
     url: str | None = None
     title: str | None = None
     description: str | None = None
-    keywords: list | None = None
+    keywords: str | None = None
     content: str | None = None
     cover: str | None = None
 

@@ -1,6 +1,7 @@
 import jwt
 import crud
 import models
+from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from common.hash import verify_password
 from config.oauth2 import SECRET_KEY, ALGORITHM
@@ -39,3 +40,6 @@ def authenticate_user(db,
     if not verify_password(user.hashed_password, password):
         return False
     return user
+
+def is_dir_empty(path: str):
+    return not any(Path(path).iterdir())

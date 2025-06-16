@@ -117,13 +117,13 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 				</CardHeader>
 				<CardContent className='flex-1'>
 					{engine.config_json && (
-						<p className='bg-muted font-mono p-5 rounded text-xs break-all relative overflow-auto'>
+						<div className='bg-muted font-mono p-5 rounded text-xs break-all relative overflow-auto'>
 							<div className='group absolute top-0 left-0 w-full h-full backdrop-blur rounded flex flex-col justify-center items-center hover:backdrop-blur-none transition-all'>
 								<Eye className='text-muted-foreground opacity-50 group-hover:hidden' />
 								<p className='text-muted-foreground opacity-50 group-hover:hidden'>配置查看</p>
 							</div>
 							{engine.config_json}
-						</p>
+						</div>
 					)}
 					{!engine.config_json && (
 						<p className='bg-muted font-mono p-5 rounded text-xs flex justify-center items-center h-full'>
