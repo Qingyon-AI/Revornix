@@ -33,6 +33,21 @@ if __name__ == '__main__':
             db_attachment = crud.attachment.create_attachment(db=db,
                                                               name='images/default_avatar_1',
                                                               description='default avatar 1')
+            db_engine_mineru = crud.engine.create_engine(db=db,
+                                                         name='MinerU',
+                                                         name_zh='MinerU',
+                                                         description='Convert the website/file to markdown',
+                                                         description_zh='转化网站/文件到markdown')
+            db_engine_jina = crud.engine.create_engine(db=db,
+                                                       name='Jina',
+                                                       name_zh='Jina',
+                                                       description='Convert the website to markdown',
+                                                       description_zh='转化网站到markdown')
+            db_engine_markitdown = crud.engine.create_engine(db=db,
+                                                             name='MarkItDown',
+                                                             name_zh='MarkItDown',
+                                                             description='Convert the website/file to markdown',
+                                                             description_zh='转化网站/文件到markdown')
             db.commit()
         except Exception as e:
             print(f"数据库初始化失败: {e}")

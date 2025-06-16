@@ -4,10 +4,16 @@ from sqlalchemy.orm import Session
 
 def create_engine(db: Session, 
                   name: str,
-                  description: str):
+                  name_zh: str | None = None,
+                  description: str | None = None,
+                  description_zh: str | None = None,
+                  demo_config: str | None = None):
     now = datetime.now(timezone.utc)
     db_engine = models.engine.Engine(name=name, 
+                                     name_zh=name_zh,
                                      description=description,
+                                     description_zh=description_zh,
+                                     demo_config=demo_config,
                                      create_time=now,
                                      update_time=now)
     db.add(db_engine)
