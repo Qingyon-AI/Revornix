@@ -1,6 +1,8 @@
+import re
 import jwt
 import crud
 import models
+from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from common.hash import verify_password
 from config.oauth2 import SECRET_KEY, ALGORITHM
@@ -39,3 +41,20 @@ def authenticate_user(db,
     if not verify_password(user.hashed_password, password):
         return False
     return user
+
+def is_dir_empty(path: str):
+    return not any(Path(path).iterdir())
+
+def extract_title_and_summary(content: str):
+    # 提取第一个 Markdown 标题（# 开头）
+    title_match = re.search(r'^#\s+(.+)', content, re.MULTILINE)
+    title = title_match.group(1).strip() if title_match else "Untitled"
+
+    # 去掉 Markdown 语法，提取正文前 200 个字符
+    text = re.sub(r'\!\[.*?\]\(.*?\)', '', content)  # 去掉图片
+    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)  # 去掉链接保留文字
+    text = re.sub(r'[#>*`~\-]+', '', text)  # 去掉标题符号、引用等
+    text = re.sub(r'\n+', ' ', text)  # 合并换行
+    summary = text.strip()[:200]
+
+    return title, summary

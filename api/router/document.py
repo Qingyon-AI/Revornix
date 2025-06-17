@@ -16,6 +16,7 @@ from common.logger import log_exception, exception_logger
 from common.file import RemoteFileService
 from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, update_file_document_markdown_with_mineru
 from engine import markitdown as markitdown_engine
+from engine import mineru as mineru_engine
 from engine import jina as jina_engine
 
 document_router = APIRouter()
@@ -147,6 +148,9 @@ async def transform_markdown(request: Request,
                 if jina_config_str is None or len(jina_config_str) == 0:
                     raise Exception("User haven't set the jina config")
                 engine = jina_engine.JinaEngine(engin_config=jina_config_str)
+                web_info = await engine.analyse_website(url=db_website_document.url)
+            if website_extractor.name.lower() == "mineru":
+                engine = mineru_engine.MineruEngine()
                 web_info = await engine.analyse_website(url=db_website_document.url)
             markdown_content = web_info.content
             md_file_name = f"markdown/{uuid.uuid4().hex}.md"
