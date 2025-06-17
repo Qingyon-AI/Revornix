@@ -9,14 +9,19 @@ class MarkitdownEngine(EngineProtocol):
     
     def __init__(self, engine_name = None, engine_version = None, engine_description = None, engin_config = None):
         super().__init__(engine_name, engine_version, engine_description, engin_config)
-        llm_client = OpenAI(api_key=self.get_engine_config().get("openai_apikey"))
-        self.llm_client = llm_client
+        config_json = self.get_engine_config()
+        if config_json is not None:
+            llm_client = OpenAI(api_key=config_json.get("openai_apikey"))
+            self.llm_client = llm_client
     
     async def analyse_website(self, url: str):  
         loader_headless = AsyncChromiumLoader([url], user_agent="MyAppUserAgent")
         docs = await loader_headless.aload()
         html_content = docs[0].page_content
-        md = MarkItDown(llm_client=self.llm_client, llm_model="gpt-4o-mini")
+        if hasattr(self, 'llm_client') and self.llm_client is not None:
+            md = MarkItDown(llm_client=self.llm_client, llm_model="gpt-4o-mini")
+        else:
+            md = MarkItDown()
         stream = io.BytesIO(html_content.encode('utf-8'))
         content = md.convert_stream(stream).text_content
         soup = BeautifulSoup(html_content, 'html.parser')
@@ -40,7 +45,11 @@ class MarkitdownEngine(EngineProtocol):
         )
         
     async def analyse_file(self, file_path: str) -> FileInfo:
-        md = MarkItDown(llm_client=self.llm_client, llm_model="gpt-4o-mini")
+        if hasattr(self, 'llm_client') and self.llm_client is not None:
+            md = MarkItDown(llm_client=self.llm_client, llm_model="gpt-4o-mini")
+        else:
+            md = MarkItDown()
+            
         result = md.convert(file_path)
         
         title, description = extract_title_and_summary(result.text_content)
@@ -52,7 +61,7 @@ class MarkitdownEngine(EngineProtocol):
 
 if __name__ == '__main__':
     import asyncio
-    engine = MarkitdownEngine(engin_config='{"openai_apikey":"sk-***"}')
+    engine = MarkitdownEngine(engin_config='{"openai_apikey": "sk-***"}')
     # result = asyncio.run(
     #     engine.analyse_website('https://kinda.info/post/bd43b6d9-e9dc-45ef-bc0e-c21fc6ce8b7d')
     # )

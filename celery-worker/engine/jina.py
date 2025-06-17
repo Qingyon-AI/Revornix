@@ -6,7 +6,7 @@ class JinaEngine(EngineProtocol):
     async def analyse_website(self, url: str):  
         headers = {
             'Accept': 'application/json',
-            'Authorization': f'Bearer {self.get_engine_config().get("apikey")}'
+            'Authorization': f'Bearer {self.get_engine_config().get("api_key")}'
         }
         timeout = httpx.Timeout(10.0, connect=10.0)
         async with httpx.AsyncClient(timeout=timeout, verify=False) as client:
@@ -21,3 +21,9 @@ class JinaEngine(EngineProtocol):
                 content=content,
                 cover=cover
             )
+            
+if __name__ == '__main__':
+    import asyncio
+    engine = JinaEngine(engin_config='{"api_key": "jina_f428ddadb6c4486592a0fd271591b861H6Kn42fdh8gU1PLX_9aXCKcP7L2f"}')
+    result = asyncio.run(engine.analyse_website('https://www.baidu.com'))
+    print(result)

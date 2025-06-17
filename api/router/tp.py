@@ -7,7 +7,7 @@ import crud
 from fastapi.encoders import jsonable_encoder
 from celery import group, chain
 from datetime import datetime, timezone
-from common.celery.app import update_ai_summary, add_embedding, update_website_document_markdown_with_jina, init_website_document_info, update_sections, update_file_document_markdown_with_mineru
+from common.celery.app import update_ai_summary, add_embedding, update_website_document_markdown_with_jina, init_website_document_info, update_sections, init_file_document_info
 from common.dependencies import get_db, get_current_user_with_api_key
 from common.notification import union_send_notification
 from sqlalchemy.orm import Session
@@ -158,7 +158,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                               document_id=db_document.id,
                                               status=0)
         db.commit()
-        first_task = update_file_document_markdown_with_mineru.si(db_document.id, user.id)
+        first_task = init_file_document_info.si(db_document.id, user.id)
         second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(document_create_request.sections, db_document.id, user.id)]
         if document_create_request.auto_summary:
             second_tasks.append(update_ai_summary.si(db_document.id, user.id))

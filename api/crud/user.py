@@ -257,8 +257,8 @@ def update_user_follow_by_to_user_id_and_from_user_id(db: Session,
 
 def update_user_default_engine(db: Session,
                                user_id: int,
-                               default_document_parsing_engine_id: int | None = None,
-                               default_website_crawling_engine_id: int | None = None):
+                               default_file_document_parse_engine_id: int | None = None,
+                               default_website_document_parse_engine_id: int | None = None):
     now = datetime.now(timezone.utc)
     db_user_query = db.query(models.user.User)
     db_user_query = db_user_query.filter(models.user.User.id == user_id,
@@ -266,10 +266,10 @@ def update_user_default_engine(db: Session,
     db_user = db_user_query.first()
     if db_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
-    if default_document_parsing_engine_id is not None:
-        db_user.default_document_parsing_engine_id = default_document_parsing_engine_id
-    if default_website_crawling_engine_id is not None:
-        db_user.default_website_crawling_engine_id = default_website_crawling_engine_id
+    if default_file_document_parse_engine_id is not None:
+        db_user.default_file_document_parse_engine_id = default_file_document_parse_engine_id
+    if default_website_document_parse_engine_id is not None:
+        db_user.default_website_document_parse_engine_id = default_website_document_parse_engine_id
     db_user.update_time = now
     db.flush()
     return db_user

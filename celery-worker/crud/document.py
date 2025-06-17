@@ -37,6 +37,19 @@ def get_website_document_by_document_id(db: Session,
                          models.document.Document.delete_at == None)
     return query.first()
 
+def update_file_document_by_file_document_id(db: Session,
+                                             file_document_id: int,
+                                             md_file_name: str):
+    query = db.query(models.document.FileDocument)
+    query = query.filter(models.document.FileDocument.id == file_document_id,
+                         models.document.FileDocument.delete_at == None)
+    db_file_document = query.first()
+    if db_file_document is None:
+        raise Exception("The file document which is about to update is not found")
+    db_file_document.md_file_name = md_file_name
+    db.flush()
+    return db_file_document
+
 def update_website_document_by_website_document_id(db: Session,
                                                    website_document_id: int,
                                                    md_file_name: str):

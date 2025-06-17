@@ -14,7 +14,7 @@ from common.vector import milvus_client, process_query, hybrid_search
 from common.dependencies import get_db, get_current_user
 from common.logger import log_exception, exception_logger
 from common.file import RemoteFileService
-from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, update_file_document_markdown_with_mineru
+from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, init_file_document_info
 from engine import markitdown as markitdown_engine
 from engine import mineru as mineru_engine
 from engine import jina as jina_engine
@@ -132,18 +132,18 @@ async def transform_markdown(request: Request,
             db_transform_task.status = 1
             db.commit()
             db.refresh(db_document)
-            default_website_crawling_engine_id = db_user.default_website_crawling_engine_id
-            if default_website_crawling_engine_id is None:
-                raise Exception("User does not have default website crawling engine")
+            default_website_document_parse_engine_id = db_user.default_website_document_parse_engine_id
+            if default_website_document_parse_engine_id is None:
+                raise Exception("User does not have default website document parse engine")
             website_extractor = crud.engine.get_engine_by_id(db=db, 
-                                                             id=default_website_crawling_engine_id)
+                                                             id=default_website_document_parse_engine_id)
             if website_extractor.name.lower() == "markitdown":
                 engine = markitdown_engine.MarkitdownEngine()
                 web_info = await engine.analyse_website(url=db_website_document.url)
             if website_extractor.name.lower() == "jina":
                 db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db, 
                                                                                       user_id=user.id,
-                                                                                      engine_id=default_website_crawling_engine_id)
+                                                                                      engine_id=default_website_document_parse_engine_id)
                 jina_config_str = db_user_engine.config_json
                 if jina_config_str is None or len(jina_config_str) == 0:
                     raise Exception("User haven't set the jina config")
@@ -187,7 +187,7 @@ async def transform_markdown(request: Request,
                 transform_task.status = 1
                 db.commit()
                 db.refresh(transform_task)
-                first_task = update_file_document_markdown_with_mineru.si(db_document.id, user.id)
+                first_task = init_file_document_info.si(db_document.id, user.id)
                 task_chain = chain(first_task)
                 task_chain.apply_async()
     db.commit()
@@ -235,9 +235,9 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
-                                                           title=f'{now.date()}总结',
+                                                           title=f'{now.date()} Summary',
                                                            public=False,
-                                                           description=f'这篇文档是{now.date()}的所有文档的总结')
+                                                           description=f"This document is the summary of all documents on {now.date()}.")
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,
                                               user_id=user.id,
@@ -260,115 +260,115 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             second_tasks.append(update_ai_summary.si(db_document.id, user.id))
         task_chain = chain(first_task, group(second_tasks))
         task_chain.apply_async()
-    # elif document_create_request.category == 0:
-    #     db_document = crud.document.create_base_document(
-    #         db=db,
-    #         creator_id=user.id,
-    #         category=document_create_request.category,
-    #         from_plat=document_create_request.from_plat,
-    #         title=f'文件文档{now}',
-    #         description=f'文件文档{now}'
-    #     )
-    #     db_file_document = crud.document.create_file_document(db=db,
-    #                                                           document_id=db_document.id,
-    #                                                           file_name=document_create_request.file_name)
-    #     crud.task.create_document_transform_task(db=db,
-    #                                              user_id=user.id,
-    #                                              document_id=db_document.id)
-    #     if document_create_request.labels:
-    #         crud.document.bind_labels_to_document(db=db, 
-    #                                               document_id=db_document.id, 
-    #                                               label_ids=document_create_request.labels)
-    #     crud.document.bind_document_to_user(db=db, 
-    #                                         user_id=user.id, 
-    #                                         document_id=db_document.id, 
-    #                                         authority="owner")
-    #     # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
-    #     db_today_section = crud.section.get_section_by_user_and_date(db=db, 
-    #                                                                  user_id=user.id,
-    #                                                                  date=now.date())
-    #     if db_today_section is None:
-    #         db_today_section = crud.section.create_section(db=db, 
-    #                                                        creator_id=user.id,
-    #                                                        title=f'{now.date()}总结',
-    #                                                        public=False,
-    #                                                        description=f'这篇文档是{now.date()}的所有文档的总结')
-    #         crud.section.bind_section_to_user(db=db,
-    #                                           section_id=db_today_section.id,
-    #                                           user_id=user.id,
-    #                                           authority=0)
-    #         crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
-    #                                                                              section_id=db_today_section.id,
-    #                                                                              date=now.date())
-    #     document_create_request.sections.append(db_today_section.id)
-    #     for section_id in document_create_request.sections:
-    #         db_section_documents = crud.section.bind_document_to_section(db=db,
-    #                                                                      document_id=db_document.id,
-    #                                                                      section_id=section_id)
-    #     crud.section.bind_document_to_section(db=db,
-    #                                           section_id=db_today_section.id,
-    #                                           document_id=db_document.id,
-    #                                           status=0)
-    #     db.commit()
-    #     first_task = update_file_document_markdown_with_mineru.si(db_document.id, user.id)
-    #     second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(document_create_request.sections, db_document.id, user.id)]
-    #     if document_create_request.auto_summary:
-    #         second_tasks.append(update_ai_summary.si(db_document.id, user.id))
-    #     task_chain = chain(first_task, group(second_tasks))
-    #     task_chain.apply_async()
-    # elif document_create_request.category == 2:
-    #     db_document = crud.document.create_base_document(
-    #         db=db,
-    #         creator_id=user.id,
-    #         category=document_create_request.category,
-    #         from_plat=document_create_request.from_plat,
-    #         title=f'速记文档{now}',
-    #         description=f'速记文档{now}'
-    #     )
-    #     db_quick_note_document = crud.document.create_quick_note_document(db=db,
-    #                                                                       document_id=db_document.id,
-    #                                                                       content=document_create_request.content)
-    #     if document_create_request.labels:
-    #         crud.document.bind_labels_to_document(db=db, 
-    #                                               document_id=db_document.id, 
-    #                                               label_ids=document_create_request.labels)
-    #     crud.document.bind_document_to_user(db=db, 
-    #                                         user_id=user.id, 
-    #                                         document_id=db_document.id, 
-    #                                         authority="owner")
-    #     # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
-    #     db_today_section = crud.section.get_section_by_user_and_date(db=db, 
-    #                                                                  user_id=user.id,
-    #                                                                  date=now.date())
-    #     if db_today_section is None:
-    #         db_today_section = crud.section.create_section(db=db, 
-    #                                                        creator_id=user.id,
-    #                                                        title=f'{now.date()}总结',
-    #                                                        public=False,
-    #                                                        description=f'这篇文档是{now.date()}的所有文档的总结')
-    #         crud.section.bind_section_to_user(db=db,
-    #                                           section_id=db_today_section.id,
-    #                                           user_id=user.id,
-    #                                           authority=0)
-    #         crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
-    #                                                                              section_id=db_today_section.id,
-    #                                                                              date=now.date())
-    #     document_create_request.sections.append(db_today_section.id)
-    #     for section_id in document_create_request.sections:
-    #         db_section_documents = crud.section.bind_document_to_section(db=db,
-    #                                                                      document_id=db_document.id,
-    #                                                                      section_id=section_id)
-    #     crud.section.bind_document_to_section(db=db,
-    #                                           section_id=db_today_section.id,
-    #                                           document_id=db_document.id,
-    #                                           status=0)
-    #     db.commit()
-    #     first_task = [add_embedding.si(db_document.id, user.id), update_sections.si(document_create_request.sections, db_document.id, user.id)]
-    #     second_tasks = []
-    #     if document_create_request.auto_summary:
-    #         second_tasks.append(update_ai_summary.si(db_document.id, user.id))
-    #     task_chain = chain(group(first_task), group(second_tasks))
-    #     task_chain.apply_async()
+    elif document_create_request.category == 0:
+        db_document = crud.document.create_base_document(
+            db=db,
+            creator_id=user.id,
+            category=document_create_request.category,
+            from_plat=document_create_request.from_plat,
+            title=f'File document analysing...',
+            description=f'File document analysing...'
+        )
+        db_file_document = crud.document.create_file_document(db=db,
+                                                              document_id=db_document.id,
+                                                              file_name=document_create_request.file_name)
+        crud.task.create_document_transform_task(db=db,
+                                                 user_id=user.id,
+                                                 document_id=db_document.id)
+        if document_create_request.labels:
+            crud.document.bind_labels_to_document(db=db, 
+                                                  document_id=db_document.id, 
+                                                  label_ids=document_create_request.labels)
+        crud.document.bind_document_to_user(db=db, 
+                                            user_id=user.id, 
+                                            document_id=db_document.id, 
+                                            authority="owner")
+        # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
+        db_today_section = crud.section.get_section_by_user_and_date(db=db, 
+                                                                     user_id=user.id,
+                                                                     date=now.date())
+        if db_today_section is None:
+            db_today_section = crud.section.create_section(db=db, 
+                                                           creator_id=user.id,
+                                                           title=f'{now.date()} Summary',
+                                                           public=False,
+                                                           description=f'This document is the summary of all documents on {now.date()}.')
+            crud.section.bind_section_to_user(db=db,
+                                              section_id=db_today_section.id,
+                                              user_id=user.id,
+                                              authority=0)
+            crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
+                                                                                 section_id=db_today_section.id,
+                                                                                 date=now.date())
+        document_create_request.sections.append(db_today_section.id)
+        for section_id in document_create_request.sections:
+            db_section_documents = crud.section.bind_document_to_section(db=db,
+                                                                         document_id=db_document.id,
+                                                                         section_id=section_id)
+        crud.section.bind_document_to_section(db=db,
+                                              section_id=db_today_section.id,
+                                              document_id=db_document.id,
+                                              status=0)
+        db.commit()
+        first_task = init_file_document_info.si(db_document.id, user.id)
+        second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(document_create_request.sections, db_document.id, user.id)]
+        if document_create_request.auto_summary:
+            second_tasks.append(update_ai_summary.si(db_document.id, user.id))
+        task_chain = chain(first_task, group(second_tasks))
+        task_chain.apply_async()
+    elif document_create_request.category == 2:
+        db_document = crud.document.create_base_document(
+            db=db,
+            creator_id=user.id,
+            category=document_create_request.category,
+            from_plat=document_create_request.from_plat,
+            title=f'Quick Note saved at {now}',
+            description=f'Quick Note saved at {now}'
+        )
+        db_quick_note_document = crud.document.create_quick_note_document(db=db,
+                                                                          document_id=db_document.id,
+                                                                          content=document_create_request.content)
+        if document_create_request.labels:
+            crud.document.bind_labels_to_document(db=db, 
+                                                  document_id=db_document.id, 
+                                                  label_ids=document_create_request.labels)
+        crud.document.bind_document_to_user(db=db, 
+                                            user_id=user.id, 
+                                            document_id=db_document.id, 
+                                            authority="owner")
+        # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
+        db_today_section = crud.section.get_section_by_user_and_date(db=db, 
+                                                                     user_id=user.id,
+                                                                     date=now.date())
+        if db_today_section is None:
+            db_today_section = crud.section.create_section(db=db, 
+                                                           creator_id=user.id,
+                                                           title=f'{now.date()} Summary',
+                                                           public=False,
+                                                           description=f'This document is the summary of all documents on {now.date()}.')
+            crud.section.bind_section_to_user(db=db,
+                                              section_id=db_today_section.id,
+                                              user_id=user.id,
+                                              authority=0)
+            crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
+                                                                                 section_id=db_today_section.id,
+                                                                                 date=now.date())
+        document_create_request.sections.append(db_today_section.id)
+        for section_id in document_create_request.sections:
+            db_section_documents = crud.section.bind_document_to_section(db=db,
+                                                                         document_id=db_document.id,
+                                                                         section_id=section_id)
+        crud.section.bind_document_to_section(db=db,
+                                              section_id=db_today_section.id,
+                                              document_id=db_document.id,
+                                              status=0)
+        db.commit()
+        first_task = [add_embedding.si(db_document.id, user.id), update_sections.si(document_create_request.sections, db_document.id, user.id)]
+        second_tasks = []
+        if document_create_request.auto_summary:
+            second_tasks.append(update_ai_summary.si(db_document.id, user.id))
+        task_chain = chain(group(first_task), group(second_tasks))
+        task_chain.apply_async()
     return schemas.document.DocumentCreateResponse(document_id=db_document.id)
 
 @document_router.post("/label/list", response_model=schemas.document.LabelListResponse)

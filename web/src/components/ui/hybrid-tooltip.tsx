@@ -73,7 +73,7 @@ export const TooltipContent = (props: TooltipContentProps & PopoverContentProps)
 
   return isTouch ? (
     <PopoverContent
-      className="z-50 w-fit overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs !text-black text-primary animate-in fade-in-0 zoom-in-95"
+      className="z-50 w-fit overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary animate-in fade-in-0 zoom-in-95"
       {...props}
     />
   ) : (

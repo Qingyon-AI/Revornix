@@ -25,10 +25,10 @@ const DefaultDocumentParseEngineChange = () => {
 		},
 	});
 
-	const handleUpdateDefaultDocumentPraseEngine = async (id: number) => {
+	const handleUpdateDefaultFileDocumentParseEngine = async (id: number) => {
 		const [res, err] = await utils.to(
 			updateUserDefaultEngine({
-				default_document_parse_engine_id: id,
+				default_file_document_parse_engine_id: id,
 			})
 		);
 		if (err) {
@@ -39,10 +39,10 @@ const DefaultDocumentParseEngineChange = () => {
 		toast.success(t('setting_default_document_parse_engine_update_successful'));
 	};
 
-	const handleUpdateDefaultWebsiteCrawlEngine = async (id: number) => {
+	const handleUpdateDefaultWebsiteDocumentParseEngine = async (id: number) => {
 		const [res, err] = await utils.to(
 			updateUserDefaultEngine({
-				default_website_crawling_engine_id: id,
+				default_website_document_parse_engine_id: id,
 			})
 		);
 		if (err) {
@@ -61,12 +61,12 @@ const DefaultDocumentParseEngineChange = () => {
 				</p>
 				<Select
 					value={
-						userInfo?.default_website_crawling_engine_id
-							? String(userInfo?.default_website_crawling_engine_id)
+						userInfo?.default_website_document_parse_engine_id
+							? String(userInfo?.default_website_document_parse_engine_id)
 							: undefined
 					}
 					onValueChange={(e) => {
-						handleUpdateDefaultWebsiteCrawlEngine(Number(e));
+						handleUpdateDefaultWebsiteDocumentParseEngine(Number(e));
 					}}>
 					<SelectTrigger className='border-none focus:border-none focus-visible:border-none ring-0 focus:ring-0 focus-visible:ring-0 shadow-none text-xs py-0 h-fit'>
 						<SelectValue
@@ -95,12 +95,12 @@ const DefaultDocumentParseEngineChange = () => {
 				</p>
 				<Select
 					value={
-						userInfo?.default_document_parsing_engine_id
-							? String(userInfo?.default_document_parsing_engine_id)
+						userInfo?.default_file_document_parse_engine_id
+							? String(userInfo?.default_file_document_parse_engine_id)
 							: undefined
 					}
 					onValueChange={(e) => {
-						handleUpdateDefaultDocumentPraseEngine(Number(e));
+						handleUpdateDefaultFileDocumentParseEngine(Number(e));
 					}}>
 					<SelectTrigger className='border-none focus:border-none focus-visible:border-none ring-0 focus:ring-0 focus-visible:ring-0 shadow-none text-xs py-0 h-fit'>
 						<SelectValue

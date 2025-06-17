@@ -9,16 +9,17 @@ celery_app = Celery('worker',
                     backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
 @celery_app.task
-def init_website_document_info(document_id: int, user_id: int):
+def init_website_document_info(document_id: int, 
+                               user_id: int):
+    ...
+
+@celery_app.task
+def init_file_document_info(document_id: int, 
+                            user_id: int):
     ...
 
 @celery_app.task
 def create_delete_temp_file_task(path: str):
-    ...
-    
-@celery_app.task
-def update_file_document_markdown_with_mineru(document_id: int, 
-                                              user_id: int):
     ...
     
 @celery_app.task

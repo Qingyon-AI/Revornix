@@ -180,4 +180,4 @@ uploads/markdown/*
 uploads/files/*
 uploads/images/*
 !uploads/images/cover.jpg
-!uploads/images/default_avatar_1.jpg
+!uploads/images/default_avatar_1
