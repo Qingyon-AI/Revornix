@@ -67,7 +67,7 @@ class MineruEngine(EngineProtocol):
             keywords=keywords
         )
 
-    async def analyse_file(self, file_path: str):
+    async def analyse_file(self, file_path: str) -> FileInfo:
         # 1. copy the file and paste it to the temp dir with a random name
         temp_dir_name = f'{uuid.uuid4()}'
         
