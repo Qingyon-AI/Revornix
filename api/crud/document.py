@@ -130,6 +130,8 @@ def get_document_summary_by_user_id(db: Session,
     query = query.join(models.document.UserDocument)  # 连接用户文档表
     query = query.filter(models.document.Document.create_time >= start_date)  # 仅查询最近30天
     query = query.filter(models.document.UserDocument.user_id == user_id)  # 仅查询指定用户的文档
+    query = query.filter(models.document.UserDocument.delete_at == None)
+    query = query.filter(models.document.Document.delete_at == None)
     query = query.group_by(cast(models.document.Document.create_time, Date))  # 按天分组
     query = query.order_by(cast(models.document.Document.create_time, Date))  # 按日期升序
     return query.all()
