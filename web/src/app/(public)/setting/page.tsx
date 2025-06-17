@@ -98,11 +98,15 @@ const SettingPage = () => {
 					</div>
 				</CardContent>
 			</Card>
-			<h2 className='text-xs text-muted-foreground p-3'>引擎相关设置</h2>
+			<h2 className='text-xs text-muted-foreground p-3'>
+				{t('setting_engine_label')}
+			</h2>
 			<Card>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>引擎管理</Label>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_engine_manage')}
+						</Label>
 						<div className='flex flex-col gap-2'>
 							<EngineManager />
 						</div>
@@ -112,7 +116,7 @@ const SettingPage = () => {
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_default_markdown_parse_engine')}
 							<p className='text-muted-foreground text-xs'>
-								不同的解析目标有不同的解析引擎，请根据实际情况选择，如果配置了不支持该目标的引擎，解析将会失败。
+								{t('setting_engine_tip')}
 							</p>
 						</Label>
 						<div className='flex flex-col gap-2'>

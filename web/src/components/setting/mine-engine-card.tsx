@@ -41,9 +41,12 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '../ui/alert-dialog';
+import { useState } from 'react';
 
 const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 	const t = useTranslations();
+	const [configDialogOpen, setConfigDialogOpen] = useState(false);
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const locale = useLocale();
 	const formSchema = z.object({
 		config_json: z.string(),
@@ -58,7 +61,7 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 	const mutateInstallEngine = useMutation({
 		mutationFn: installEngine,
 		onSuccess: () => {
-			toast.success('删除成功');
+			toast.success(t('setting_engine_page_mine_engine_delete_success'));
 			queryClient.invalidateQueries({
 				queryKey: ['mine-engine'],
 			});
@@ -92,11 +95,11 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 	};
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		console.log(values);
-		mutateUpdateEngine.mutate({
+		await mutateUpdateEngine.mutateAsync({
 			engine_id: engine.id,
 			config_json: values.config_json,
 		});
+		setConfigDialogOpen(false);
 	};
 
 	const onFormValidateError = (errors: any) => {
@@ -120,14 +123,16 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 						<div className='bg-muted font-mono p-5 rounded text-xs break-all relative overflow-auto'>
 							<div className='group absolute top-0 left-0 w-full h-full backdrop-blur rounded flex flex-col justify-center items-center hover:backdrop-blur-none transition-all'>
 								<Eye className='text-muted-foreground opacity-50 group-hover:hidden' />
-								<p className='text-muted-foreground opacity-50 group-hover:hidden'>配置查看</p>
+								<p className='text-muted-foreground opacity-50 group-hover:hidden'>
+									{t('setting_engine_page_mine_engine_config_see')}
+								</p>
 							</div>
 							{engine.config_json}
 						</div>
 					)}
 					{!engine.config_json && (
 						<p className='bg-muted font-mono p-5 rounded text-xs flex justify-center items-center h-full'>
-							暂无配置
+							{t('setting_engine_page_mine_engine_config_empty')}
 						</p>
 					)}
 				</CardContent>
@@ -142,27 +147,32 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 							</p>
 						</div>
 						<div className='flex flex-row gap-1 items-center'>
-							<AlertDialog>
+							<AlertDialog
+								open={deleteDialogOpen}
+								onOpenChange={setDeleteDialogOpen}>
 								<AlertDialogTrigger asChild>
 									<Button variant={'outline'} className='text-xs shadow-none'>
-										删除
+										{t('delete')}
 									</Button>
 								</AlertDialogTrigger>
 								<AlertDialogContent>
 									<AlertDialogHeader>
-										<AlertDialogTitle>提醒</AlertDialogTitle>
+										<AlertDialogTitle>{t('tip')}</AlertDialogTitle>
 										<AlertDialogDescription>
-											确认删除吗？一旦删除将导致无法解析部分内容
+											{t('setting_engine_page_mine_engine_delete_alert')}
 										</AlertDialogDescription>
 									</AlertDialogHeader>
 									<AlertDialogFooter>
 										<Button
 											variant={'destructive'}
-											onClick={() => {
-												mutateInstallEngine.mutate({
+											onClick={async () => {
+												const res = await mutateInstallEngine.mutateAsync({
 													engine_id: engine.id,
 													status: false,
 												});
+												if (res.success) {
+													setDeleteDialogOpen(false);
+												}
 											}}
 											disabled={mutateInstallEngine.isPending}>
 											{t('confirm')}
@@ -175,20 +185,22 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 								</AlertDialogContent>
 							</AlertDialog>
 
-							<Dialog>
+							<Dialog
+								open={configDialogOpen}
+								onOpenChange={setConfigDialogOpen}>
 								<DialogTrigger asChild>
 									<Button variant={'outline'} className='text-xs shadow-none'>
-										配置
+										{t('config')}
 									</Button>
 								</DialogTrigger>
 
 								<DialogContent>
 									<DialogHeader>
-										<DialogTitle>配置</DialogTitle>
+										<DialogTitle>{t('config')}</DialogTitle>
 										<DialogDescription>
-											此处配置该引擎(
-											{locale === 'en' ? engine.name : engine.name_zh}
-											)的相关参数
+											{t('setting_engine_page_mine_engine_config_description', {
+												engine: locale === 'en' ? engine.name : engine.name_zh,
+											})}
 										</DialogDescription>
 									</DialogHeader>
 									<Form {...form}>
@@ -200,7 +212,9 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 													return (
 														<FormItem>
 															<Textarea
-																placeholder='请输入参数'
+																placeholder={t(
+																	'setting_engine_page_mine_engine_config_placeholder'
+																)}
 																className='font-mono'
 																{...field}
 															/>
@@ -214,7 +228,9 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 									{engine.demo_config && (
 										<>
 											<Separator />
-											<h3 className='text-xs text-muted-foreground'>范例</h3>
+											<h3 className='text-xs text-muted-foreground'>
+												{t('setting_engine_page_mine_engine_config_demo')}
+											</h3>
 											<p className='rounded bg-muted p-5 font-mono text-sm'>
 												{engine.demo_config}
 											</p>
@@ -223,14 +239,14 @@ const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
 									<DialogFooter>
 										<DialogClose asChild>
 											<Button type='button' variant={'secondary'}>
-												取消
+												{t('cancel')}
 											</Button>
 										</DialogClose>
 										<Button
 											type='submit'
 											form='update_form'
 											disabled={mutateUpdateEngine.isPending}>
-											确认
+											{t('confirm')}
 											{mutateUpdateEngine.isPending && (
 												<Loader2 className='animate-spin' />
 											)}

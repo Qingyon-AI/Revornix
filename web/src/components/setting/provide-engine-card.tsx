@@ -60,7 +60,7 @@ const ProvideEngineCard = ({ engine }: { engine: EngineInfo }) => {
 								status: true,
 							});
 						}}>
-						安装
+						{t('install')}
 						{mutateInstallEngine.isPending && (
 							<Loader2 className='animate-spin' />
 						)}

@@ -37,13 +37,11 @@ const EnginePage = () => {
 		<div className='px-5 pb-5'>
 			<Alert>
 				<Info />
-				<AlertTitle>提示</AlertTitle>
-				<AlertDescription>
-					引擎只是一个称呼，在本项目中其本质就是解析目标产品并且最终生成markdown的插件。
-				</AlertDescription>
+				<AlertTitle>{t('tip')}</AlertTitle>
+				<AlertDescription>{t('setting_engine_page_tip')}</AlertDescription>
 			</Alert>
 			<h2 className='text-xs text-muted-foreground p-3 flex flex-row items-center'>
-				官方引擎集
+				{t('setting_engine_page_official_engine')}
 				{isRefetchingProvideEngines && (
 					<Loader2 className='animate-spin size-4 ml-2' />
 				)}
@@ -55,7 +53,7 @@ const EnginePage = () => {
 				provideEngines?.data &&
 				provideEngines?.data.length === 0 && (
 					<p className='text-xs text-muted-foreground text-center bg-muted p-5 rounded'>
-						暂无官方引擎
+						{t('setting_engine_page_official_engine_empty')}
 					</p>
 				)}
 			{provideEngines?.data && provideEngines.data.length > 0 && (
@@ -68,7 +66,7 @@ const EnginePage = () => {
 				</Card>
 			)}
 			<h2 className='text-xs text-muted-foreground p-3 flex flex-row items-center'>
-				已安装引擎
+				{t('setting_engine_page_mine_engine')}
 				{isRefetchingMineEngines && (
 					<Loader2 className='animate-spin size-4 ml-2' />
 				)}
@@ -80,7 +78,7 @@ const EnginePage = () => {
 				mineEngines?.data &&
 				mineEngines?.data.length === 0 && (
 					<p className='text-xs text-muted-foreground text-center bg-muted p-5 rounded'>
-						暂无已安装引擎
+						{t('setting_engine_page_mine_engine_empty')}
 					</p>
 				)}
 			{mineEngines?.data && mineEngines.data.length > 0 && (

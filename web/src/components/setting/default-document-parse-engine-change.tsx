@@ -56,7 +56,9 @@ const DefaultDocumentParseEngineChange = () => {
 	return (
 		<div>
 			<div className='flex flex-row gap-2 items-center mb-2'>
-				<p className='text-xs text-muted-foreground'>网站</p>
+				<p className='text-xs text-muted-foreground'>
+					{t('setting_engine_website')}
+				</p>
 				<Select
 					value={
 						userInfo?.default_website_crawling_engine_id
@@ -88,7 +90,9 @@ const DefaultDocumentParseEngineChange = () => {
 				</Select>
 			</div>
 			<div className='flex flex-row gap-2 items-center mb-2'>
-				<p className='text-xs text-muted-foreground'>文件</p>
+				<p className='text-xs text-muted-foreground'>
+					{t('setting_engine_file')}
+				</p>
 				<Select
 					value={
 						userInfo?.default_document_parsing_engine_id
@@ -120,8 +124,12 @@ const DefaultDocumentParseEngineChange = () => {
 				</Select>
 			</div>
 			<div className='flex flex-row gap-2 items-center'>
-				<p className='text-xs text-muted-foreground'>速记</p>
-				<p className='text-xs text-muted-foreground pl-3'>无需转化</p>
+				<p className='text-xs text-muted-foreground'>
+					{t('setting_engine_quick_note')}
+				</p>
+				<p className='text-xs text-muted-foreground pl-3'>
+					{t('setting_engine_no_need')}
+				</p>
 			</div>
 		</div>
 	);
