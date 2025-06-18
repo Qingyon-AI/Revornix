@@ -160,7 +160,12 @@ def search_user_sections(db: Session,
                          desc: bool = True):
     query = db.query(models.section.Section)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.Section.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.section.Section.title.like(f'%{keyword}%'),
+                models.section.Section.description.like(f'%{keyword}%')
+            )
+        )
     if only_public:
         query = query.filter(models.section.Section.public == True)
     if label_ids is not None:
@@ -189,7 +194,12 @@ def count_user_sections(db: Session,
                         only_public: bool = False):
     query = db.query(models.section.Section)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.Section.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.section.Section.title.like(f'%{keyword}%'),
+                models.section.Section.description.like(f'%{keyword}%')
+            )
+        )
     if only_public:
         query = query.filter(models.section.Section.public == True)
     if label_ids is not None:
@@ -212,7 +222,12 @@ def search_next_user_section(db: Session,
     query = query.filter(models.section.Section.delete_at == None,
                          models.section.Section.creator_id == user_id)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.Section.title.like(f"%{keyword}%"))
+        query = query.filter(
+            or_(
+                models.section.Section.title.like(f'%{keyword}%'),
+                models.section.Section.description.like(f'%{keyword}%')
+            )
+        )
     if only_public:
         query = query.filter(models.section.Section.public == True)
     if label_ids is not None:
@@ -238,7 +253,12 @@ def search_user_subscribed_sections(db: Session,
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionUser)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.Section.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.section.Section.title.like(f'%{keyword}%'),
+                models.section.Section.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
@@ -270,7 +290,12 @@ def count_user_subscribed_sections(db: Session,
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionUser)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.Section.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.section.Section.title.like(f'%{keyword}%'),
+                models.section.Section.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
@@ -300,7 +325,12 @@ def search_next_user_subscribed_section(db: Session,
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
                              models.section.SectionUser.expire_time == None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.Section.title.like(f"%{keyword}%"))
+        query = query.filter(
+            or_(
+                models.section.Section.title.like(f'%{keyword}%'),
+                models.section.Section.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
@@ -364,7 +394,12 @@ def search_public_sections(db: Session,
                            desc: bool | None = True):
     query = db.query(models.section.Section)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.Section.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.section.Section.title.like(f'%{keyword}%'),
+                models.section.Section.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
@@ -389,7 +424,12 @@ def count_public_sections(db: Session,
                           label_ids: list[int] | None = None):
     query = db.query(models.section.Section)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.Section.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.section.Section.title.like(f'%{keyword}%'),
+                models.section.Section.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
@@ -408,7 +448,12 @@ def search_next_public_section(db: Session,
     query = query.filter(models.section.Section.delete_at == None,
                          models.section.Section.public == True)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.Section.title.like(f"%{keyword}%"))
+        query = query.filter(
+            or_(
+                models.section.Section.title.like(f'%{keyword}%'),
+                models.section.Section.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),

@@ -420,7 +420,12 @@ def search_user_unread_documents(db: Session,
     query = query.filter(or_(models.document.ReadDocument.delete_at != None, 
                              models.document.ReadDocument.id == None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -452,7 +457,12 @@ def search_next_user_unread_document(db: Session,
     query = query.filter(or_(models.document.ReadDocument.delete_at != None, 
                              models.document.ReadDocument.id == None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -476,7 +486,12 @@ def count_user_unread_documents(db: Session,
     query = query.filter(or_(models.document.ReadDocument.delete_at != None, 
                              models.document.ReadDocument.id == None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -496,7 +511,12 @@ def search_user_recent_read_documents(db: Session,
                          models.document.ReadDocument.user_id == user_id,
                          models.document.Document.delete_at == None)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -526,7 +546,12 @@ def search_next_user_recent_read_document(db: Session,
                          models.document.ReadDocument.user_id == user_id,
                          models.document.Document.delete_at == None)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -548,7 +573,12 @@ def count_user_recent_read_documents(db: Session,
                          models.document.ReadDocument.user_id == user_id,
                          models.document.Document.delete_at == None)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -568,7 +598,12 @@ def search_user_stared_documents(db: Session,
                          models.document.StarDocument.user_id == user_id,
                          models.document.Document.delete_at == None)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))   
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -598,7 +633,12 @@ def search_next_user_star_document(db: Session,
                          models.document.StarDocument.user_id == user_id,
                          models.document.Document.delete_at == None)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))   
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -623,7 +663,12 @@ def count_user_stared_documents(db: Session,
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%')) 
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
     query = query.distinct(models.document.Document.id)
     return query.count()
 
