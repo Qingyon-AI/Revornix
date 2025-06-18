@@ -51,7 +51,7 @@ async def handle_init_file_document_info(document_id: int,
     remote_file_service = RemoteFileService(authorization=access_token)
     # download the file to the temp dir
     file_content = await remote_file_service.get_object_bytes(file_path=db_file_document.file_name)
-    temp_file_path = f'{str(BASE_DIR)}/temp/{db_file_document.file_name}'
+    temp_file_path = f'{str(BASE_DIR)}/temp/{db_file_document.file_name.replace("files/", "")}'
     with open(temp_file_path, 'wb') as f:
         f.write(file_content)
         
@@ -61,11 +61,11 @@ async def handle_init_file_document_info(document_id: int,
                                                                               engine_id=default_file_document_parse_engine_id)
         engine = markitdown_engine.MarkitdownEngine(engin_config=db_user_engine.config_json)
         file_info = await engine.analyse_file(temp_file_path)
-    if file_extractor.name.lower() == "jina":
-        raise Exception("Jina engine for file document parsing is not supported yet")
     if file_extractor.name.lower() == "mineru":
         engine = mineru_engine.MineruEngine(user_id=user_id)
         file_info = await engine.analyse_file(file_path=temp_file_path)
+    if file_extractor.name.lower() == "jina":
+        raise Exception("Jina engine for file document parsing is not supported yet")
 
     db_document.title = file_info.title
     db_document.description = file_info.description
