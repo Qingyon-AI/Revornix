@@ -24,6 +24,6 @@ class JinaEngine(EngineProtocol):
             
 if __name__ == '__main__':
     import asyncio
-    engine = JinaEngine(engin_config='{"api_key": "jina_f428ddadb6c4486592a0fd271591b861H6Kn42fdh8gU1PLX_9aXCKcP7L2f"}')
+    engine = JinaEngine(engin_config='{"api_key": "jina_******"}')
     result = asyncio.run(engine.analyse_website('https://www.baidu.com'))
     print(result)

@@ -42,12 +42,14 @@ if __name__ == '__main__':
                                                        name='Jina',
                                                        name_zh='Jina',
                                                        description='Convert the website to markdown',
-                                                       description_zh='转化网站到markdown')
+                                                       description_zh='转化网站到markdown',
+                                                       demo_config='{"api_key": "jina_******"}')
             db_engine_markitdown = crud.engine.create_engine(db=db,
                                                              name='MarkItDown',
                                                              name_zh='MarkItDown',
                                                              description='Convert the website/file to markdown',
-                                                             description_zh='转化网站/文件到markdown')
+                                                             description_zh='转化网站/文件到markdown',
+                                                             demo_config='{"openai_api_key": "sk-proj-******"}')
             db.commit()
         except Exception as e:
             print(f"数据库初始化失败: {e}")

@@ -11,7 +11,7 @@ class MarkitdownEngine(EngineProtocol):
         super().__init__(engine_name, engine_version, engine_description, engin_config)
         config_json = self.get_engine_config()
         if config_json is not None:
-            llm_client = OpenAI(api_key=config_json.get("openai_apikey"))
+            llm_client = OpenAI(api_key=config_json.get("openai_api_key"))
             self.llm_client = llm_client
     
     async def analyse_website(self, url: str):  
@@ -61,7 +61,7 @@ class MarkitdownEngine(EngineProtocol):
 
 if __name__ == '__main__':
     import asyncio
-    engine = MarkitdownEngine(engin_config='{"openai_apikey": "sk-***"}')
+    engine = MarkitdownEngine(engin_config='{"openai_api_key": "sk-***"}')
     # result = asyncio.run(
     #     engine.analyse_website('https://kinda.info/post/bd43b6d9-e9dc-45ef-bc0e-c21fc6ce8b7d')
     # )
