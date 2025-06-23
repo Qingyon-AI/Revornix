@@ -24,6 +24,25 @@ async def websocket_ask_ai(websocket: WebSocket,
         notificationManager.disconnect(websocket_id)
         await notificationManager.broadcast(f"Client #{websocket} left the chat")
         
+@notification_router.post("/source/email/add", response_model=schemas.common.NormalResponse)
+async def add_email_source(add_email_source_request: schemas.notification.AddEmailSourceRequest,
+                           db: Session = Depends(get_db),
+                           user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    crud.notification.create_email_source(db=db, 
+                                          user_id=user.id, 
+                                          email=add_email_source_request.email, 
+                                          password=add_email_source_request.password)
+    return schemas.common.NormalResponse(message="success")
+
+@notification_router.post("/source/email/delete", response_model=schemas.common.NormalResponse)
+async def delete_email_source(delete_email_source_request: schemas.notification.DeleteEmailSourceRequest,
+                              db: Session = Depends(get_db),
+                              user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    crud.notification.delete_email_source_by_email_source_id(db=db, 
+                                                             user_id=user.id,
+                                                             email_source_ids=delete_email_source_request.email_source_ids)
+    return schemas.common.NormalResponse(message="success")
+        
 @notification_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.Notification])
 async def search_notification(search_notification_request: schemas.notification.SearchNotificationRequest, 
                               db: Session = Depends(get_db), 

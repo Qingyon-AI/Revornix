@@ -1,6 +1,13 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
 
+class AddEmailSourceRequest(BaseModel):
+    email: str
+    password: str
+    
+class DeleteEmailSourceRequest(BaseModel):
+    email_source_ids: list[int]
+
 class NotificationDetailRequest(BaseModel):
     notification_id: int
 

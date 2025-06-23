@@ -15,3 +15,14 @@ class Notification(Base):
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True), index=True)
     
+class EmailSource(Base):
+    __tablename__ = "email_source"
+
+    id = Column(Integer, primary_key=True)
+    description = Column(String(500))
+    user_id = Column(Integer, ForeignKey("user.id"), index=True)
+    email = Column(String(100), index=True, nullable=False)
+    password = Column(String(100), nullable=False)
+    create_time = Column(DateTime(timezone=True), nullable=False)
+    update_time = Column(DateTime(timezone=True), nullable=False)
+    delete_at = Column(DateTime(timezone=True), index=True)
