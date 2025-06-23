@@ -10,6 +10,7 @@ apis/TpApi.ts
 apis/UserApi.ts
 apis/index.ts
 index.ts
+models/AddNotificationSourceRequest.ts
 models/AllMySectionsResponse.ts
 models/ApiKeyCreateRequest.ts
 models/ApiKeyCreateResponse.ts
@@ -33,6 +34,7 @@ models/DefaultModelUpdateRequest.ts
 models/DeleteModelProviderRequest.ts
 models/DeleteModelRequest.ts
 models/DeleteNotificationRequest.ts
+models/DeleteNotificationSourceRequest.ts
 models/Document.ts
 models/DocumentAiSummaryRequest.ts
 models/DocumentCreateRequest.ts
@@ -48,6 +50,7 @@ models/DocumentNoteDeleteRequest.ts
 models/DocumentNoteInfo.ts
 models/DocumentTransformTask.ts
 models/EmailInfo.ts
+models/EmailNotificationSource.ts
 models/EmailUserCreateVerifyRequest.ts
 models/EngineInfo.ts
 models/EngineInstallRequest.ts
@@ -89,6 +92,10 @@ models/ModelUpdateRequest.ts
 models/NormalResponse.ts
 models/Notification.ts
 models/NotificationDetailRequest.ts
+models/NotificationSource.ts
+models/NotificationSourceDetail.ts
+models/NotificationSourceDetailRequest.ts
+models/NotificationSourcesResponse.ts
 models/PaginationApiKeyInfo.ts
 models/PasswordUpdateRequest.ts
 models/PrivateUserInfo.ts
@@ -126,6 +133,7 @@ models/SuccessResponse.ts
 models/SummaryItem.ts
 models/TokenResponse.ts
 models/TokenUpdateRequest.ts
+models/UpdateNotificationSourceRequest.ts
 models/UserInfoRequest.ts
 models/UserInfoUpdateRequest.ts
 models/UserLoginRequest.ts

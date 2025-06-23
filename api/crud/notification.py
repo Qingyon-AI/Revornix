@@ -3,19 +3,39 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
-def create_email_source(db: Session,
-                        user_id: int,
-                        email: str,
-                        password: str):
+def create_notification_source(db: Session,
+                               user_id: int,
+                               title: str,
+                               description: str,
+                               category: str):
     now = datetime.now(timezone.utc)
-    email_source = models.notification.EmailSource(user_id=user_id, 
-                                                   email=email,
-                                                   password=password,
-                                                   create_time=now,
-                                                   update_time=now)
-    db.add(email_source)
+    notification_source = models.notification.NotificationSource(user_id=user_id, 
+                                                                 title=title,
+                                                                 description=description,
+                                                                 category=category,
+                                                                 create_time=now,
+                                                                 update_time=now)
+    db.add(notification_source)
     db.flush()
-    return email_source
+    return notification_source
+
+def bind_email_info_to_notification_source(db: Session,
+                                           notification_source_id: int,
+                                           email: str,
+                                           password: str,
+                                           address: str,
+                                           port: int):
+    now = datetime.now(timezone.utc)
+    email_notification_source = models.notification.EmailNotificationSource(notification_source_id=notification_source_id,
+                                                                            email=email,
+                                                                            password=password,
+                                                                            create_time=now,
+                                                                            update_time=now,
+                                                                            address=address,
+                                                                            port=port)
+    db.add(email_notification_source)
+    db.flush()
+    return email_notification_source
 
 def create_notification(db: Session, 
                         user_id: int, 
@@ -35,16 +55,24 @@ def create_notification(db: Session,
     db.flush()
     return notification
 
-def get_email_source_by_email_source_id(db: Session, email_source_id: int):
-    query = db.query(models.notification.EmailSource)
-    query = query.filter(models.notification.EmailSource.id == email_source_id,
-                         models.notification.EmailSource.delete_at == None)
+def get_email_notification_source_by_notification_source_id(db: Session, notification_source_id: int):
+    query = db.query(models.notification.EmailNotificationSource)
+    query = query.join(models.notification.NotificationSource)
+    query = query.filter(models.notification.EmailNotificationSource.notification_source_id == notification_source_id,
+                         models.notification.EmailNotificationSource.delete_at == None,
+                         models.notification.NotificationSource.delete_at == None)
     return query.first()
 
-def get_email_source_by_user_id(db: Session, user_id: int):
-    query = db.query(models.notification.EmailSource)
-    query = query.filter(models.notification.EmailSource.user_id == user_id,
-                         models.notification.EmailSource.delete_at == None)
+def get_notification_source_by_notification_id(db: Session, notification_id: int):
+    query = db.query(models.notification.NotificationSource)
+    query = query.filter(models.notification.NotificationSource.id == notification_id,
+                         models.notification.NotificationSource.delete_at == None)
+    return query.first()
+
+def get_notification_source_by_user_id(db: Session, user_id: int):
+    query = db.query(models.notification.NotificationSource)
+    query = query.filter(models.notification.NotificationSource.user_id == user_id,
+                         models.notification.NotificationSource.delete_at == None)
     return query.all()
 
 def get_user_notification_by_notification_id(db: Session, 
@@ -139,13 +167,36 @@ def unread_notification_by_notification_id(db: Session,
     notification.read_at = None
     db.flush()
     
-def delete_email_source_by_email_source_id(db: Session,
-                                           user_id: int,
-                                           email_source_ids: list[int]):
+def delete_notification_source_by_notification_source_id(db: Session,
+                                                         user_id: int,
+                                                         notification_source_ids: list[int]):
     now = datetime.now(timezone.utc)
-    query = db.query(models.notification.EmailSource)
-    query = query.filter(models.notification.EmailSource.id.in_(email_source_ids),
-                         models.notification.EmailSource.user_id == user_id)
+    query = db.query(models.notification.NotificationSource)
+    query = query.filter(models.notification.NotificationSource.id.in_(notification_source_ids),
+                         models.notification.NotificationSource.user_id == user_id)
+    for notification_source in query.all():
+        notification_source.delete_at = now
+    db.flush()
+    
+def delete_email_notification_source_by_notification_source_id(db: Session,
+                                                               user_id: int,
+                                                               notification_source_ids: list[int]):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.notification.EmailNotificationSource)
+    query = query.filter(models.notification.EmailNotificationSource.notification_source_id.in_(notification_source_ids),
+                         models.notification.EmailNotificationSource.user_id == user_id,
+                         models.notification.EmailNotificationSource.delete_at == None)
+    for email_source in query.all():
+        email_source.delete_at = now
+    db.flush()
+    
+def delete_email_notification_source_by_email_notification_source_id(db: Session,
+                                                                     user_id: int,
+                                                                     email_notification_source_ids: list[int]):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.notification.EmailNotificationSource)
+    query = query.filter(models.notification.EmailNotificationSource.id.in_(email_notification_source_ids),
+                         models.notification.EmailNotificationSource.user_id == user_id)
     for email_source in query.all():
         email_source.delete_at = now
     db.flush()

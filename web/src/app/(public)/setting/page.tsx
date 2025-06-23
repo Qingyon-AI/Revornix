@@ -1,10 +1,10 @@
 'use client';
 
 import { ModeToggle } from '@/components/app/mode-toggle';
+import NotificationSourceManage from '@/components/notification/notification-source-manage';
 import DailyReportStatus from '@/components/setting/daily-report-status';
 import DailyReportTime from '@/components/setting/daily-report-time';
 import DefaultDocumentParseEngineChange from '@/components/setting/default-document-parse-engine-change';
-import DefaultWebsiteCrawlEngineChange from '@/components/setting/default-website-crawl-engine-change';
 import DocumentSummaryModel from '@/components/setting/document-summary-model';
 import EngineManager from '@/components/setting/engine-manager';
 import LanguageChange from '@/components/setting/language-change';
@@ -57,6 +57,15 @@ const SettingPage = () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<DailyReportStatus />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							通知源管理
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<NotificationSourceManage />
 						</div>
 					</div>
 					{userInfo?.daily_report_status && (
