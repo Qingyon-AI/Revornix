@@ -30,31 +30,43 @@ export interface UpdateNotificationSourceRequest {
      * @type {number}
      * @memberof UpdateNotificationSourceRequest
      */
-    category: number;
+    category?: number | null;
     /**
      * 
      * @type {string}
      * @memberof UpdateNotificationSourceRequest
      */
-    title: string;
+    title?: string | null;
     /**
      * 
      * @type {string}
      * @memberof UpdateNotificationSourceRequest
      */
-    description: string;
+    description?: string | null;
     /**
      * 
      * @type {string}
      * @memberof UpdateNotificationSourceRequest
      */
-    email: string;
+    email?: string | null;
     /**
      * 
      * @type {string}
      * @memberof UpdateNotificationSourceRequest
      */
-    password: string;
+    password?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateNotificationSourceRequest
+     */
+    address?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof UpdateNotificationSourceRequest
+     */
+    port?: number | null;
 }
 
 /**
@@ -62,11 +74,6 @@ export interface UpdateNotificationSourceRequest {
  */
 export function instanceOfUpdateNotificationSourceRequest(value: object): value is UpdateNotificationSourceRequest {
     if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
-    if (!('category' in value) || value['category'] === undefined) return false;
-    if (!('title' in value) || value['title'] === undefined) return false;
-    if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('email' in value) || value['email'] === undefined) return false;
-    if (!('password' in value) || value['password'] === undefined) return false;
     return true;
 }
 
@@ -81,11 +88,13 @@ export function UpdateNotificationSourceRequestFromJSONTyped(json: any, ignoreDi
     return {
         
         'notification_source_id': json['notification_source_id'],
-        'category': json['category'],
-        'title': json['title'],
-        'description': json['description'],
-        'email': json['email'],
-        'password': json['password'],
+        'category': json['category'] == null ? undefined : json['category'],
+        'title': json['title'] == null ? undefined : json['title'],
+        'description': json['description'] == null ? undefined : json['description'],
+        'email': json['email'] == null ? undefined : json['email'],
+        'password': json['password'] == null ? undefined : json['password'],
+        'address': json['address'] == null ? undefined : json['address'],
+        'port': json['port'] == null ? undefined : json['port'],
     };
 }
 
@@ -106,6 +115,8 @@ export function UpdateNotificationSourceRequestToJSONTyped(value?: UpdateNotific
         'description': value['description'],
         'email': value['email'],
         'password': value['password'],
+        'address': value['address'],
+        'port': value['port'],
     };
 }
 

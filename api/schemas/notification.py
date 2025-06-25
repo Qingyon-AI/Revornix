@@ -3,11 +3,13 @@ from datetime import datetime, timezone
 
 class UpdateNotificationSourceRequest(BaseModel):
     notification_source_id: int
-    category: int
-    title: str
-    description: str
-    email: str
-    password: str
+    category: int | None = None
+    title: str | None = None
+    description: str | None = None
+    email: str | None = None
+    password: str | None = None
+    address: str | None = None
+    port: int | None = None
 
 class AddNotificationSourceRequest(BaseModel):
     title: str

@@ -7,8 +7,9 @@ export default {
     unReadNotification: API_PREFIX + '/notification/unread',
     readAllNotifications: API_PREFIX + '/notification/read-all',
     getNotificationDetail: API_PREFIX + '/notification/detail',
-    getMineNotificationEmailSource: API_PREFIX + '/notification/source/email/mine',
-    addNotificationEmailSource: API_PREFIX + '/notification/source/email/add',
-    updateNotificationEmailSource: API_PREFIX + '/notification/source/email/update',
-    deleteNotificationEmailSource: API_PREFIX + '/notification/source/email/delete',
+    getNotificationSourceDetail: API_PREFIX + '/notification/source/detail',
+    getMineNotificationSources: API_PREFIX + '/notification/source/mine',
+    addNotificationSource: API_PREFIX + '/notification/source/add',
+    updateNotificationSource: API_PREFIX + '/notification/source/update',
+    deleteNotificationSource: API_PREFIX + '/notification/source/delete',
 } 

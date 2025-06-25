@@ -100,14 +100,14 @@ async def get_notification_detail(notification_source_detail_request: schemas.no
 async def add_email_source(add_notification_source_request: schemas.notification.AddNotificationSourceRequest,
                            db: Session = Depends(get_db),
                            user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    crud.notification.create_notification_source(db=db, 
-                                                 user_id=user.id, 
-                                                 title=add_notification_source_request.title,
-                                                 description=add_notification_source_request.description,
-                                                 category=add_notification_source_request.category)
+    db_notification_source = crud.notification.create_notification_source(db=db, 
+                                                                          user_id=user.id, 
+                                                                          title=add_notification_source_request.title,
+                                                                          description=add_notification_source_request.description,
+                                                                          category=add_notification_source_request.category)
     if add_notification_source_request.category == 0:
         crud.notification.bind_email_info_to_notification_source(db=db,
-                                                                 notification_source_id=add_notification_source_request.notification_source_id,
+                                                                 notification_source_id=db_notification_source.id,
                                                                  email=add_notification_source_request.email,
                                                                  password=add_notification_source_request.password,
                                                                  address=add_notification_source_request.address,

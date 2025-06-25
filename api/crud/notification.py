@@ -183,9 +183,10 @@ def delete_email_notification_source_by_notification_source_id(db: Session,
                                                                notification_source_ids: list[int]):
     now = datetime.now(timezone.utc)
     query = db.query(models.notification.EmailNotificationSource)
+    query = query.join(models.notification.NotificationSource)
     query = query.filter(models.notification.EmailNotificationSource.notification_source_id.in_(notification_source_ids),
-                         models.notification.EmailNotificationSource.user_id == user_id,
-                         models.notification.EmailNotificationSource.delete_at == None)
+                         models.notification.EmailNotificationSource.delete_at == None,
+                         models.notification.NotificationSource.user_id == user_id)
     for email_source in query.all():
         email_source.delete_at = now
     db.flush()
