@@ -1,26 +1,26 @@
 import notificationApi from '@/api/notification'
-import { NormalResponse, DeleteNotificationRequest, InifiniteScrollPagnitionNotification, Notification, NotificationDetailRequest, ReadNotificationRequest, SearchNotificationRequest, AddNotificationSourceRequest, DeleteNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, NotificationSourceDetail, NotificationSourceDetailRequest } from '@/generated';
+import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, DeleteNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, NotificationSourceDetail, NotificationSourceDetailRequest } from '@/generated';
 import { request } from '@/lib/request';
 
-export const deleteNotifications = async (data: DeleteNotificationRequest): Promise<NormalResponse> => {
+export const deleteNotifications = async (data: DeleteNotificationRecordRequest): Promise<NormalResponse> => {
     return await request(notificationApi.deleteNotifications, {
         data
     })
 }
 
-export const searchNotifications = async (data: SearchNotificationRequest): Promise<InifiniteScrollPagnitionNotification> => {
+export const searchNotifications = async (data: SearchNotificationRecordRequest): Promise<InifiniteScrollPagnitionNotificationRecord> => {
     return await request(notificationApi.searchNotifications, {
         data
     })
 }
 
-export const readNotifications = async (data: ReadNotificationRequest): Promise<NormalResponse> => {
+export const readNotifications = async (data: ReadNotificationRecordRequest): Promise<NormalResponse> => {
     return await request(notificationApi.readNotification, {
         data
     })
 }
 
-export const getNotificationDetail = async (data: NotificationDetailRequest): Promise<Notification> => {
+export const getNotificationDetail = async (data: NotificationRecordDetailRequest): Promise<Notification> => {
     return await request(notificationApi.getNotificationDetail, {
         data
     })

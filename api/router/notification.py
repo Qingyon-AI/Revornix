@@ -128,77 +128,77 @@ async def delete_email_source(delete_email_source_request: schemas.notification.
     db.commit()
     return schemas.common.NormalResponse(message="success")
         
-@notification_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.Notification])
-async def search_notification(search_notification_request: schemas.notification.SearchNotificationRequest, 
-                              db: Session = Depends(get_db), 
-                              user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+@notification_router.post('/record/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationRecord])
+async def search_notification_record(search_notification_record_request: schemas.notification.SearchNotificationRecordRequest, 
+                                     db: Session = Depends(get_db), 
+                                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     has_more = True
     next_start = None
-    notifications = crud.notification.search_user_notifications(db=db, 
-                                                                user_id=user.id, 
-                                                                start=search_notification_request.start, 
-                                                                limit=search_notification_request.limit, 
-                                                                keyword=search_notification_request.keyword)
-    if len(notifications) == search_notification_request.limit:
-        next_notification = crud.notification.search_next_notification(db=db, 
-                                                                       user_id=user.id, 
-                                                                       notification=notifications[-1])
-        has_more = next_notification is not None
-        next_start = next_notification.id if has_more else None
-    if len(notifications) < search_notification_request.limit or len(notifications) == 0:
+    notification_records = crud.notification.search_user_notification_records(db=db, 
+                                                                              user_id=user.id, 
+                                                                              start=search_notification_record_request.start, 
+                                                                              limit=search_notification_record_request.limit, 
+                                                                              keyword=search_notification_record_request.keyword)
+    if len(notification_records) == search_notification_record_request.limit:
+        next_notification_record = crud.notification.search_next_notification_record(db=db, 
+                                                                                     user_id=user.id, 
+                                                                                     notification_record=notification_records[-1])
+        has_more = next_notification_record is not None
+        next_start = next_notification_record.id if has_more else None
+    if len(notification_records) < search_notification_record_request.limit or len(notification_records) == 0:
         has_more = False
-    total = crud.notification.count_user_notifications(db=db, 
-                                                       user_id=user.id, 
-                                                       keyword=search_notification_request.keyword)
-    res = schemas.pagination.InifiniteScrollPagnition[schemas.notification.Notification](start=search_notification_request.start, 
-                                                                                         limit=search_notification_request.limit, 
-                                                                                         has_more=has_more, 
-                                                                                         elements=notifications, 
-                                                                                         next_start=next_start,
-                                                                                         total=total)
+    total = crud.notification.count_user_notification_records(db=db, 
+                                                              user_id=user.id, 
+                                                              keyword=search_notification_record_request.keyword)
+    res = schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationRecord](start=search_notification_record_request.start, 
+                                                                                               limit=search_notification_record_request.limit, 
+                                                                                               has_more=has_more, 
+                                                                                               elements=notification_records, 
+                                                                                               next_start=next_start,
+                                                                                               total=total)
     return res
 
 @notification_router.post('/delete', response_model=schemas.common.NormalResponse)
-async def delete_notification(delete_notification_request: schemas.notification.DeleteNotificationRequest, 
-                              db: Session = Depends(get_db), 
-                              user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    crud.notification.delete_notifications_by_notification_ids(db=db, 
-                                                               user_id=user.id, 
-                                                               notification_ids=delete_notification_request.notification_ids)
+async def delete_notification_record(delete_notification_request: schemas.notification.DeleteNotificationRecordRequest, 
+                                     db: Session = Depends(get_db), 
+                                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    crud.notification.delete_notification_records_by_notification_record_ids(db=db, 
+                                                                             user_id=user.id, 
+                                                                             notification_record_ids=delete_notification_request.notification_record_ids)
     db.commit()
     return schemas.common.SuccessResponse(message="success")
     
-@notification_router.post('/detail', response_model=schemas.notification.Notification)
-async def get_notification_detail(notification_detail_request: schemas.notification.NotificationDetailRequest, 
-                                  db: Session = Depends(get_db), 
-                                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    notification = crud.notification.get_user_notification_by_notification_id(db=db, 
-                                                                              user_id=user.id, 
-                                                                              notification_id=notification_detail_request.notification_id)
-    return schemas.notification.Notification(id=notification.id,
-                                             content=notification.content,
-                                             link=notification.link,
-                                             read_at=notification.read_at)
+@notification_router.post('/detail', response_model=schemas.notification.NotificationRecord)
+async def get_notification_record_detail(notification_detail_request: schemas.notification.NotificationRecordDetailRequest, 
+                                         db: Session = Depends(get_db), 
+                                         user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_notification_record = crud.notification.get_user_notification_record_by_notification_record_id(db=db, 
+                                                                                                      user_id=user.id, 
+                                                                                                      notification_record_id=notification_detail_request.notification_record_id)
+    return schemas.notification.NotificationRecord(id=db_notification_record.id,
+                                                   content=db_notification_record.content,
+                                                   link=db_notification_record.link,
+                                                   read_at=db_notification_record.read_at)
 
 @notification_router.post('/read-all', response_model=schemas.common.NormalResponse)
-async def read_all_notification(db: Session = Depends(get_db), 
-                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    crud.notification.read_user_notifications(db=db, 
-                                              user_id=user.id)
+async def read_all_notification_record(db: Session = Depends(get_db), 
+                                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    crud.notification.read_user_notification_records(db=db, 
+                                                     user_id=user.id)
     db.commit()
     return schemas.common.SuccessResponse(message="success")
 
 @notification_router.post('/read', response_model=schemas.common.NormalResponse)
-async def read_notification(read_notification_request: schemas.notification.ReadNotificationRequest, 
-                            db: Session = Depends(get_db), 
-                            user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def read_notification_record(read_notification_request: schemas.notification.ReadNotificationRecordRequest, 
+                                   db: Session = Depends(get_db), 
+                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     if read_notification_request.status:
-        crud.notification.read_notifications_by_notification_ids(db=db, 
-                                                                user_id=user.id, 
-                                                                notification_ids=read_notification_request.notification_ids)
+        crud.notification.read_notification_records_by_notification_record_ids(db=db, 
+                                                                               user_id=user.id, 
+                                                                               notification_record_ids=read_notification_request.notification_record_ids)
     else:
-        crud.notification.unread_notification_by_notification_id(db=db, 
-                                                                 user_id=user.id, 
-                                                                 notification_ids=read_notification_request.notification_ids)    
+        crud.notification.unread_notification_records_by_notification_record_ids(db=db, 
+                                                                                 user_id=user.id, 
+                                                                                 notification_record_ids=read_notification_request.notification_record_ids)
     db.commit()
     return schemas.common.NormalResponse(message="success")

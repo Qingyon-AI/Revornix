@@ -220,7 +220,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
     return schemas.document.DocumentCreateResponse(document_id=db_document.id)
 
 @tp_router.post('/notification/create', response_model=schemas.common.NormalResponse)
-async def create_notification(create_notification_request: schemas.notification.CreateNotificationRequest, 
+async def create_notification(create_notification_request: schemas.notification.CreateNotificationRecordRequest, 
                               user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
     await union_send_notification(user_id=user.id,
                                   title=create_notification_request.title,

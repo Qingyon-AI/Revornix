@@ -25,7 +25,7 @@ models/ChatItem.ts
 models/ChatMessages.ts
 models/CoverImage.ts
 models/CreateLabelResponse.ts
-models/CreateNotificationRequest.ts
+models/CreateNotificationRecordRequest.ts
 models/DailyReportStatusChangeRequest.ts
 models/DaySectionRequest.ts
 models/DaySectionResponse.ts
@@ -33,7 +33,7 @@ models/DefaultEngineUpdateRequest.ts
 models/DefaultModelUpdateRequest.ts
 models/DeleteModelProviderRequest.ts
 models/DeleteModelRequest.ts
-models/DeleteNotificationRequest.ts
+models/DeleteNotificationRecordRequest.ts
 models/DeleteNotificationSourceRequest.ts
 models/Document.ts
 models/DocumentAiSummaryRequest.ts
@@ -62,7 +62,7 @@ models/FollowUserRequest.ts
 models/HTTPValidationError.ts
 models/InifiniteScrollPagnitionDocumentInfo.ts
 models/InifiniteScrollPagnitionDocumentNoteInfo.ts
-models/InifiniteScrollPagnitionNotification.ts
+models/InifiniteScrollPagnitionNotificationRecord.ts
 models/InifiniteScrollPagnitionSectionCommentInfo.ts
 models/InifiniteScrollPagnitionSectionInfo.ts
 models/InifiniteScrollPagnitionUserPublicInfo.ts
@@ -90,8 +90,8 @@ models/ModelSearchRequest.ts
 models/ModelSearchResponse.ts
 models/ModelUpdateRequest.ts
 models/NormalResponse.ts
-models/Notification.ts
-models/NotificationDetailRequest.ts
+models/NotificationRecord.ts
+models/NotificationRecordDetailRequest.ts
 models/NotificationSource.ts
 models/NotificationSourceDetail.ts
 models/NotificationSourceDetailRequest.ts
@@ -100,7 +100,7 @@ models/PaginationApiKeyInfo.ts
 models/PasswordUpdateRequest.ts
 models/PrivateUserInfo.ts
 models/QuickNoteDocumentInfo.ts
-models/ReadNotificationRequest.ts
+models/ReadNotificationRecordRequest.ts
 models/ReadRequest.ts
 models/ReferenceItem.ts
 models/SearchAllMyDocumentsRequest.ts
@@ -108,7 +108,7 @@ models/SearchApiKeysRequest.ts
 models/SearchDocumentNoteRequest.ts
 models/SearchMineSectionsRequest.ts
 models/SearchMyStarDocumentsRequest.ts
-models/SearchNotificationRequest.ts
+models/SearchNotificationRecordRequest.ts
 models/SearchPublicSectionsRequest.ts
 models/SearchRecentReadRequest.ts
 models/SearchSubscribedSectionRequest.ts

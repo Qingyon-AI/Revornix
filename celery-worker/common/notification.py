@@ -12,12 +12,12 @@ async def union_send_notification(user_id: int,
         db = SessionLocal()
         user = crud.user.get_user_by_id(db=db, 
                                         user_id=user_id)
-        db_notification = crud.notification.create_notification(db=db, 
-                                                                user_id=user_id,
-                                                                title=title,
-                                                                content=content,
-                                                                notification_type=notification_type,
-                                                                link=link)
+        db_notification_record = crud.notification.create_notification_record(db=db, 
+                                                                              user_id=user_id,
+                                                                              title=title,
+                                                                              content=content,
+                                                                              notification_type=notification_type,
+                                                                              link=link)
         email_user = crud.user.get_email_user_by_user_id(db=db, 
                                                          user_id=user_id)
         if email_user:

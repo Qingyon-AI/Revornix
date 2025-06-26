@@ -30,22 +30,22 @@ class EmailNotificationSource(BaseModel):
 class DeleteNotificationSourceRequest(BaseModel):
     notification_source_ids: list[int]
 
-class NotificationDetailRequest(BaseModel):
-    notification_id: int
+class NotificationRecordDetailRequest(BaseModel):
+    notification_record_id: int
 
-class SearchNotificationRequest(BaseModel):
+class SearchNotificationRecordRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
     limit: int = 10
     
-class ReadNotificationRequest(BaseModel):
-    notification_ids: list[int]
+class ReadNotificationRecordRequest(BaseModel):
+    notification_record_ids: list[int]
     status: bool
     
-class UnreadNotificationRequest(BaseModel):
-    notification_ids: list[int]
+class UnreadNotificationRecordRequest(BaseModel):
+    notification_record_ids: list[int]
     
-class Notification(BaseModel):
+class NotificationRecord(BaseModel):
     id: int
     title: str
     content: str
@@ -72,10 +72,10 @@ class Notification(BaseModel):
     class Config:
         from_attributes = True
     
-class DeleteNotificationRequest(BaseModel):
-    notification_ids: list[int]
+class DeleteNotificationRecordRequest(BaseModel):
+    notification_record_ids: list[int]
     
-class CreateNotificationRequest(BaseModel):
+class CreateNotificationRecordRequest(BaseModel):
     title: str
     content: str
     link: str | None = None

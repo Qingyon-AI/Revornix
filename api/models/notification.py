@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from common.sql import Base
 
-class Notification(Base):
-    __tablename__ = "notifications"
+class NotificationRecord(Base):
+    __tablename__ = "notification_record"
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"), index=True)

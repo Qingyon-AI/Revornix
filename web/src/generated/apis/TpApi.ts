@@ -17,7 +17,7 @@ import * as runtime from '../runtime';
 import type {
   AllMySectionsResponse,
   CreateLabelResponse,
-  CreateNotificationRequest,
+  CreateNotificationRecordRequest,
   DocumentCreateRequest,
   DocumentCreateResponse,
   HTTPValidationError,
@@ -30,8 +30,8 @@ import {
     AllMySectionsResponseToJSON,
     CreateLabelResponseFromJSON,
     CreateLabelResponseToJSON,
-    CreateNotificationRequestFromJSON,
-    CreateNotificationRequestToJSON,
+    CreateNotificationRecordRequestFromJSON,
+    CreateNotificationRecordRequestToJSON,
     DocumentCreateRequestFromJSON,
     DocumentCreateRequestToJSON,
     DocumentCreateResponseFromJSON,
@@ -62,7 +62,7 @@ export interface CreateDocumentTpDocumentCreatePostRequest {
 }
 
 export interface CreateNotificationTpNotificationCreatePostRequest {
-    createNotificationRequest: CreateNotificationRequest;
+    createNotificationRecordRequest: CreateNotificationRecordRequest;
     apiKey?: string | null;
 }
 
@@ -203,10 +203,10 @@ export class TpApi extends runtime.BaseAPI {
      * Create Notification
      */
     async createNotificationTpNotificationCreatePostRaw(requestParameters: CreateNotificationTpNotificationCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        if (requestParameters['createNotificationRequest'] == null) {
+        if (requestParameters['createNotificationRecordRequest'] == null) {
             throw new runtime.RequiredError(
-                'createNotificationRequest',
-                'Required parameter "createNotificationRequest" was null or undefined when calling createNotificationTpNotificationCreatePost().'
+                'createNotificationRecordRequest',
+                'Required parameter "createNotificationRecordRequest" was null or undefined when calling createNotificationTpNotificationCreatePost().'
             );
         }
 
@@ -225,7 +225,7 @@ export class TpApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: CreateNotificationRequestToJSON(requestParameters['createNotificationRequest']),
+            body: CreateNotificationRecordRequestToJSON(requestParameters['createNotificationRecordRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
