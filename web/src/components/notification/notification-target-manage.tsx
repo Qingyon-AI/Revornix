@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import { Button } from '../ui/button';
 
-const NotificationSourceManage = () => {
+const NotificationTargetManage = () => {
 	return (
-		<Link href={'/setting/notification/source-manage'}>
+		<Link href={'/setting/notification/target-manage'}>
 			<Button variant={'outline'}>前往管理</Button>
 		</Link>
 	);
 };
 
-export default NotificationSourceManage;
+export default NotificationTargetManage;

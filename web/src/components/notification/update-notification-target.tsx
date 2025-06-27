@@ -18,8 +18,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { getQueryClient } from '@/lib/get-query-client';
 import {
-	getMineNotificationSourceDetail,
-	updateNotificationSource,
+	getMineNotificationTargetDetail,
+	updateNotificationTarget,
 } from '@/service/notification';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { utils } from '@kinda/utils';
@@ -28,21 +28,18 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { Tooltip, TooltipTrigger } from '../ui/hybrid-tooltip';
-import { Info } from 'lucide-react';
-import { TooltipContent } from '../ui/tooltip';
 import { useQuery } from '@tanstack/react-query';
 
-const UpdateNotificationSource = ({
-	notification_source_id,
+const UpdateNotificationTarget = ({
+	notification_target_id,
 }: {
-	notification_source_id: number;
+	notification_target_id: number;
 }) => {
 	const { data, isFetching } = useQuery({
-		queryKey: ['notification-source-detail', notification_source_id],
+		queryKey: ['notification-target-detail', notification_target_id],
 		queryFn: async () => {
-			return await getMineNotificationSourceDetail({
-				notification_source_id: notification_source_id,
+			return await getMineNotificationTargetDetail({
+				notification_target_id: notification_target_id,
 			});
 		},
 	});
@@ -50,26 +47,20 @@ const UpdateNotificationSource = ({
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const formSchema = z.object({
-		notification_source_id: z.number(),
+		notification_target_id: z.number(),
 		title: z.string(),
 		description: z.string(),
 		email: z.string().email().optional(),
-		password: z.string().optional(),
-		address: z.string().optional(),
-		port: z.number().optional(),
 	});
 
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			notification_source_id,
+			notification_target_id,
 			title: '',
 			description: '',
 			email: '',
-			password: '',
-			address: '',
-			port: undefined,
 		},
 	});
 
@@ -87,14 +78,11 @@ const UpdateNotificationSource = ({
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		const [res, err] = await utils.to(
-			updateNotificationSource({
-				notification_source_id: values.notification_source_id,
+			updateNotificationTarget({
+				notification_target_id: values.notification_target_id,
 				title: values.title,
 				description: values.description,
 				email: values.email,
-				password: values.password,
-				address: values.address,
-				port: values.port,
 			})
 		);
 		if (err || !res) {
@@ -103,10 +91,10 @@ const UpdateNotificationSource = ({
 		}
 		toast.success('更新成功');
 		queryClient.invalidateQueries({
-			queryKey: ['notification-source'],
+			queryKey: ['notification-target'],
 		});
 		queryClient.invalidateQueries({
-			queryKey: ['notification-source-detail', notification_source_id],
+			queryKey: ['notification-target-detail', notification_target_id],
 		});
 		setShowUpdateDialog(false);
 	};
@@ -120,18 +108,14 @@ const UpdateNotificationSource = ({
 	useEffect(() => {
 		if (data) {
 			const defaultValues: z.infer<typeof formSchema> = {
-				notification_source_id,
+				notification_target_id,
 				title: data.title,
 				description: data.description,
-				email: data.email_notification_source?.email ?? '',
-				password: data.email_notification_source?.password ?? '',
-				address: data.email_notification_source?.address ?? '',
-				port: data.email_notification_source?.port ?? undefined,
+				email: data.email_notification_target?.email ?? '',
 			};
-			// @ts-expect-error
 			form.reset(defaultValues);
 		}
-	}, [data, form, notification_source_id]);
+	}, [data, form, notification_target_id]);
 
 	return (
 		<>
@@ -140,7 +124,7 @@ const UpdateNotificationSource = ({
 			</Button>
 			<Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
 				<DialogContent>
-					<DialogTitle>编辑源</DialogTitle>
+					<DialogTitle>编辑通知目标</DialogTitle>
 					<Form {...form}>
 						<form
 							onSubmit={onSubmitForm}
@@ -153,7 +137,7 @@ const UpdateNotificationSource = ({
 									return (
 										<FormItem>
 											<FormLabel>名称</FormLabel>
-											<Input {...field} placeholder='请输入源的名字' />
+											<Input {...field} placeholder='请输入通知目标的名字' />
 											<FormMessage />
 										</FormItem>
 									);
@@ -166,7 +150,7 @@ const UpdateNotificationSource = ({
 									return (
 										<FormItem>
 											<FormLabel>描述</FormLabel>
-											<Input {...field} placeholder='请输入源的描述' />
+											<Input {...field} placeholder='请输入通知目标的描述' />
 											<FormMessage />
 										</FormItem>
 									);
@@ -181,73 +165,7 @@ const UpdateNotificationSource = ({
 											return (
 												<FormItem>
 													<FormLabel>邮箱地址</FormLabel>
-													<Input
-														{...field}
-														placeholder='请选择邮件源邮箱地址'
-													/>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-									<FormField
-										name='password'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<FormLabel>
-														邮箱密码
-														<Tooltip>
-															<TooltipTrigger>
-																<Info size={15} />
-															</TooltipTrigger>
-															<TooltipContent>
-																注意这里的密码不是真实邮箱密码，而是smtp服务的密码。
-															</TooltipContent>
-														</Tooltip>
-													</FormLabel>
-													<Input
-														type='password'
-														{...field}
-														placeholder='请选择邮件源邮箱密码'
-													/>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-									<FormField
-										name='address'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<FormLabel>邮箱服务器地址</FormLabel>
-													<Input
-														{...field}
-														placeholder='请选择邮件源服务器地址'
-													/>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-									<FormField
-										name='port'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<FormLabel>邮箱服务器端口</FormLabel>
-													<Input
-														type={'number'}
-														{...field}
-														onChange={(e) =>
-															field.onChange(e.target.valueAsNumber)
-														}
-														placeholder='请选择邮件源服务器端口'
-													/>
+													<Input {...field} placeholder='请选择目标邮箱地址' />
 													<FormMessage />
 												</FormItem>
 											);
@@ -271,4 +189,4 @@ const UpdateNotificationSource = ({
 	);
 };
 
-export default UpdateNotificationSource;
+export default UpdateNotificationTarget;

@@ -27,6 +27,11 @@ const routers: RouteItem[] = [
 						title_en: 'Source Manage',
 						path: '/source-manage',
 					},
+					{
+						title: '通知目标管理',
+						title_en: 'Target Manage',
+						path: '/target-manage',
+					},
 				],
 			},
 			{

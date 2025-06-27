@@ -313,11 +313,6 @@ async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user)
                                            user_id=user.id)
     res.fans = fans
     res.follows = follows
-    db_report_task = crud.task.get_user_daily_report_task(db=db, 
-                                                          user_id=user.id)
-    if db_report_task is not None:
-        res.daily_report_status = True
-        res.daily_report_run_time = cron_to_time(db_report_task.cron_expr) 
     return res
 
 # 邮箱密码登陆

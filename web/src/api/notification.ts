@@ -12,4 +12,9 @@ export default {
     addNotificationSource: API_PREFIX + '/notification/source/add',
     updateNotificationSource: API_PREFIX + '/notification/source/update',
     deleteNotificationSource: API_PREFIX + '/notification/source/delete',
+    getNotificationTargetDetail: API_PREFIX + '/notification/target/detail',
+    getMineNotificationTargets: API_PREFIX + '/notification/target/mine',
+    addNotificationTarget: API_PREFIX + '/notification/target/add',
+    updateNotificationTarget: API_PREFIX + '/notification/target/update',
+    deleteNotificationTarget: API_PREFIX + '/notification/target/delete',
 } 

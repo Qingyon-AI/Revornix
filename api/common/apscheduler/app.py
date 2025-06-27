@@ -27,18 +27,19 @@ def job_listener(event):
 def restart_all_tasks():
     info_logger.info("Restarting all tasks...")
     db = SessionLocal()
-    tasks = crud.task.get_all_regular_tasks(db)
-    for task in tasks:
-        if task.task_type == 1 and task.func_id == 1:
-            time_obj = datetime.strptime(cron_to_time(task.cron_expr), "%H:%M:%S")
-            scheduler.add_job(func=lambda user_id: send_daily_report(user_id), 
-                              args=[task.user_id],
-                              trigger='cron', 
-                              id=str(task.id), 
-                              hour=time_obj.hour,
-                              minute=time_obj.minute,
-                              second=time_obj.second)
-    info_logger.info("All tasks restarted")
+    # TODO: 恢复所有任务
+    # tasks = crud.task.get_all_regular_tasks(db)
+    # for task in tasks:
+    #     if task.task_type == 1 and task.func_id == 1:
+    #         time_obj = datetime.strptime(cron_to_time(task.cron_expr), "%H:%M:%S")
+    #         scheduler.add_job(func=lambda user_id: send_daily_report(user_id), 
+    #                           args=[task.user_id],
+    #                           trigger='cron', 
+    #                           id=str(task.id), 
+    #                           hour=time_obj.hour,
+    #                           minute=time_obj.minute,
+    #                           second=time_obj.second)
+    # info_logger.info("All tasks restarted")
 
 scheduler.add_listener(job_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 

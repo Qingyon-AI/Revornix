@@ -1,9 +1,60 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
 
+class NotificationTargetDetailRequest(BaseModel):
+    notification_target_id: int
+
+class NotificationTarget(BaseModel):
+    id: int
+    title: str
+    description: str
+    category: int
+    create_time: datetime | None = None
+    update_time: datetime | None = None
+    @field_validator("create_time", mode="before")
+    def ensure_create_time_timezone(cls, v: datetime) -> datetime:
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    @field_validator("update_time", mode="before")
+    def ensure_update_time_timezone(cls, v: datetime) -> datetime:
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    class Config:
+        from_attributes = True
+    
+class NotificationTargetsResponse(BaseModel):
+    data: list[NotificationTarget]
+
+class AddNotificationTargetRequest(BaseModel):
+    category: int
+    title: str
+    description: str | None = None
+    email: str | None = None
+    
+class UpdateNotificationTargetRequest(BaseModel):
+    notification_target_id: int
+    title: str | None = None
+    description: str | None = None
+    email: str | None = None
+    
+class DeleteNotificationTargetRequest(BaseModel):
+    notification_target_ids: list[int]
+    
+class EmailNotificationTarget(BaseModel):
+    id: int
+    email: str
+    
+class NotificationTargetDetail(BaseModel):
+    id: int
+    title: str
+    description: str
+    category: int
+    email_notification_target: EmailNotificationTarget | None = None
+
 class UpdateNotificationSourceRequest(BaseModel):
     notification_source_id: int
-    category: int | None = None
     title: str | None = None
     description: str | None = None
     email: str | None = None
@@ -68,7 +119,6 @@ class NotificationRecord(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    
     class Config:
         from_attributes = True
     

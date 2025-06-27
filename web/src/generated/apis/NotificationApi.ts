@@ -16,8 +16,10 @@
 import * as runtime from '../runtime';
 import type {
   AddNotificationSourceRequest,
+  AddNotificationTargetRequest,
   DeleteNotificationRecordRequest,
   DeleteNotificationSourceRequest,
+  DeleteNotificationTargetRequest,
   HTTPValidationError,
   InifiniteScrollPagnitionNotificationRecord,
   NormalResponse,
@@ -26,17 +28,25 @@ import type {
   NotificationSourceDetail,
   NotificationSourceDetailRequest,
   NotificationSourcesResponse,
+  NotificationTargetDetail,
+  NotificationTargetDetailRequest,
+  NotificationTargetsResponse,
   ReadNotificationRecordRequest,
   SearchNotificationRecordRequest,
   UpdateNotificationSourceRequest,
+  UpdateNotificationTargetRequest,
 } from '../models/index';
 import {
     AddNotificationSourceRequestFromJSON,
     AddNotificationSourceRequestToJSON,
+    AddNotificationTargetRequestFromJSON,
+    AddNotificationTargetRequestToJSON,
     DeleteNotificationRecordRequestFromJSON,
     DeleteNotificationRecordRequestToJSON,
     DeleteNotificationSourceRequestFromJSON,
     DeleteNotificationSourceRequestToJSON,
+    DeleteNotificationTargetRequestFromJSON,
+    DeleteNotificationTargetRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     InifiniteScrollPagnitionNotificationRecordFromJSON,
@@ -53,16 +63,30 @@ import {
     NotificationSourceDetailRequestToJSON,
     NotificationSourcesResponseFromJSON,
     NotificationSourcesResponseToJSON,
+    NotificationTargetDetailFromJSON,
+    NotificationTargetDetailToJSON,
+    NotificationTargetDetailRequestFromJSON,
+    NotificationTargetDetailRequestToJSON,
+    NotificationTargetsResponseFromJSON,
+    NotificationTargetsResponseToJSON,
     ReadNotificationRecordRequestFromJSON,
     ReadNotificationRecordRequestToJSON,
     SearchNotificationRecordRequestFromJSON,
     SearchNotificationRecordRequestToJSON,
     UpdateNotificationSourceRequestFromJSON,
     UpdateNotificationSourceRequestToJSON,
+    UpdateNotificationTargetRequestFromJSON,
+    UpdateNotificationTargetRequestToJSON,
 } from '../models/index';
 
 export interface AddEmailSourceNotificationSourceAddPostRequest {
     addNotificationSourceRequest: AddNotificationSourceRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface AddNotificationTargetNotificationTargetAddPostRequest {
+    addNotificationTargetRequest: AddNotificationTargetRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -79,7 +103,18 @@ export interface DeleteNotificationRecordNotificationDeletePostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface DeleteNotificationTargetNotificationTargetDeletePostRequest {
+    deleteNotificationTargetRequest: DeleteNotificationTargetRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface GetEmailSourceNotificationSourceMinePostRequest {
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GetMineNotificationTargetNotificationTargetMinePostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -94,6 +129,10 @@ export interface GetNotificationRecordDetailNotificationDetailPostRequest {
     notificationRecordDetailRequest: NotificationRecordDetailRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
+}
+
+export interface GetNotificationTargetDetailNotificationTargetDetailPostRequest {
+    notificationTargetDetailRequest: NotificationTargetDetailRequest;
 }
 
 export interface ReadAllNotificationRecordNotificationReadAllPostRequest {
@@ -115,6 +154,12 @@ export interface SearchNotificationRecordNotificationRecordSearchPostRequest {
 
 export interface UpdateEmailSourceNotificationSourceUpdatePostRequest {
     updateNotificationSourceRequest: UpdateNotificationSourceRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UpdateNotificationTargetNotificationTargetUpdatePostRequest {
+    updateNotificationTargetRequest: UpdateNotificationTargetRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -165,6 +210,50 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async addEmailSourceNotificationSourceAddPost(requestParameters: AddEmailSourceNotificationSourceAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.addEmailSourceNotificationSourceAddPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Add Notification Target
+     */
+    async addNotificationTargetNotificationTargetAddPostRaw(requestParameters: AddNotificationTargetNotificationTargetAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['addNotificationTargetRequest'] == null) {
+            throw new runtime.RequiredError(
+                'addNotificationTargetRequest',
+                'Required parameter "addNotificationTargetRequest" was null or undefined when calling addNotificationTargetNotificationTargetAddPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+        const response = await this.request({
+            path: `/notification/target/add`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AddNotificationTargetRequestToJSON(requestParameters['addNotificationTargetRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Add Notification Target
+     */
+    async addNotificationTargetNotificationTargetAddPost(requestParameters: AddNotificationTargetNotificationTargetAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.addNotificationTargetNotificationTargetAddPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -257,6 +346,50 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
+     * Delete Notification Target
+     */
+    async deleteNotificationTargetNotificationTargetDeletePostRaw(requestParameters: DeleteNotificationTargetNotificationTargetDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['deleteNotificationTargetRequest'] == null) {
+            throw new runtime.RequiredError(
+                'deleteNotificationTargetRequest',
+                'Required parameter "deleteNotificationTargetRequest" was null or undefined when calling deleteNotificationTargetNotificationTargetDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+        const response = await this.request({
+            path: `/notification/target/delete`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DeleteNotificationTargetRequestToJSON(requestParameters['deleteNotificationTargetRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete Notification Target
+     */
+    async deleteNotificationTargetNotificationTargetDeletePost(requestParameters: DeleteNotificationTargetNotificationTargetDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteNotificationTargetNotificationTargetDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get Email Source
      */
     async getEmailSourceNotificationSourceMinePostRaw(requestParameters: GetEmailSourceNotificationSourceMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourcesResponse>> {
@@ -287,6 +420,40 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async getEmailSourceNotificationSourceMinePost(requestParameters: GetEmailSourceNotificationSourceMinePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationSourcesResponse> {
         const response = await this.getEmailSourceNotificationSourceMinePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Mine Notification Target
+     */
+    async getMineNotificationTargetNotificationTargetMinePostRaw(requestParameters: GetMineNotificationTargetNotificationTargetMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+        const response = await this.request({
+            path: `/notification/target/mine`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTargetsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Mine Notification Target
+     */
+    async getMineNotificationTargetNotificationTargetMinePost(requestParameters: GetMineNotificationTargetNotificationTargetMinePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTargetsResponse> {
+        const response = await this.getMineNotificationTargetNotificationTargetMinePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -375,6 +542,42 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async getNotificationRecordDetailNotificationDetailPost(requestParameters: GetNotificationRecordDetailNotificationDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationRecord> {
         const response = await this.getNotificationRecordDetailNotificationDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Notification Target Detail
+     */
+    async getNotificationTargetDetailNotificationTargetDetailPostRaw(requestParameters: GetNotificationTargetDetailNotificationTargetDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetDetail>> {
+        if (requestParameters['notificationTargetDetailRequest'] == null) {
+            throw new runtime.RequiredError(
+                'notificationTargetDetailRequest',
+                'Required parameter "notificationTargetDetailRequest" was null or undefined when calling getNotificationTargetDetailNotificationTargetDetailPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/notification/target/detail`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: NotificationTargetDetailRequestToJSON(requestParameters['notificationTargetDetailRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTargetDetailFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Notification Target Detail
+     */
+    async getNotificationTargetDetailNotificationTargetDetailPost(requestParameters: GetNotificationTargetDetailNotificationTargetDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTargetDetail> {
+        const response = await this.getNotificationTargetDetailNotificationTargetDetailPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -541,6 +744,50 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async updateEmailSourceNotificationSourceUpdatePost(requestParameters: UpdateEmailSourceNotificationSourceUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.updateEmailSourceNotificationSourceUpdatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update Notification Target
+     */
+    async updateNotificationTargetNotificationTargetUpdatePostRaw(requestParameters: UpdateNotificationTargetNotificationTargetUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['updateNotificationTargetRequest'] == null) {
+            throw new runtime.RequiredError(
+                'updateNotificationTargetRequest',
+                'Required parameter "updateNotificationTargetRequest" was null or undefined when calling updateNotificationTargetNotificationTargetUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+        const response = await this.request({
+            path: `/notification/target/update`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateNotificationTargetRequestToJSON(requestParameters['updateNotificationTargetRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update Notification Target
+     */
+    async updateNotificationTargetNotificationTargetUpdatePost(requestParameters: UpdateNotificationTargetNotificationTargetUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.updateNotificationTargetNotificationTargetUpdatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

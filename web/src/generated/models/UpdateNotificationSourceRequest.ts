@@ -27,12 +27,6 @@ export interface UpdateNotificationSourceRequest {
     notification_source_id: number;
     /**
      * 
-     * @type {number}
-     * @memberof UpdateNotificationSourceRequest
-     */
-    category?: number | null;
-    /**
-     * 
      * @type {string}
      * @memberof UpdateNotificationSourceRequest
      */
@@ -88,7 +82,6 @@ export function UpdateNotificationSourceRequestFromJSONTyped(json: any, ignoreDi
     return {
         
         'notification_source_id': json['notification_source_id'],
-        'category': json['category'] == null ? undefined : json['category'],
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
         'email': json['email'] == null ? undefined : json['email'],
@@ -110,7 +103,6 @@ export function UpdateNotificationSourceRequestToJSONTyped(value?: UpdateNotific
     return {
         
         'notification_source_id': value['notification_source_id'],
-        'category': value['category'],
         'title': value['title'],
         'description': value['description'],
         'email': value['email'],
