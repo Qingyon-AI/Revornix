@@ -1,12 +1,12 @@
 import { API_PREFIX } from "@/config/api"
 
 export default {
-    searchNotifications: API_PREFIX + '/notification/search',
-    readNotification: API_PREFIX + '/notification/read',
-    deleteNotifications: API_PREFIX + '/notification/delete',
-    unReadNotification: API_PREFIX + '/notification/unread',
-    readAllNotifications: API_PREFIX + '/notification/read-all',
-    getNotificationDetail: API_PREFIX + '/notification/detail',
+    searchNotificationRecords: API_PREFIX + '/notification/record/search',
+    readNotificationRecord: API_PREFIX + '/notification/record/read',
+    deleteNotificationRecords: API_PREFIX + '/notification/record/delete',
+    unReadNotificationRecord: API_PREFIX + '/notification/record/unread',
+    readAllNotificationRecords: API_PREFIX + '/notification/record/read-all',
+    getNotificationRecordDetail: API_PREFIX + '/notification/record/detail',
     getNotificationSourceDetail: API_PREFIX + '/notification/source/detail',
     getMineNotificationSources: API_PREFIX + '/notification/source/mine',
     addNotificationSource: API_PREFIX + '/notification/source/add',

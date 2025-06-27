@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getQueryClient } from '@/lib/get-query-client';
 import {
-	readAllNotifications,
-	searchNotifications,
+	readAllNotificationRecords,
+	searchNotificationRecords,
 } from '@/service/notification';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { BadgeCheck, Loader2 } from 'lucide-react';
@@ -32,7 +32,8 @@ const NotificationsPage = () => {
 		hasNextPage,
 	} = useInfiniteQuery({
 		queryKey: ['searchMyNotifications', keyword],
-		queryFn: (pageParam) => searchNotifications({ ...pageParam.pageParam }),
+		queryFn: (pageParam) =>
+			searchNotificationRecords({ ...pageParam.pageParam }),
 		initialPageParam: {
 			limit: 10,
 			keyword: keyword,
@@ -49,7 +50,7 @@ const NotificationsPage = () => {
 	});
 
 	const mutate = useMutation({
-		mutationFn: readAllNotifications,
+		mutationFn: readAllNotificationRecords,
 		onSuccess: () => {
 			toast.success(t('notification_all_marked_read_done'));
 			queryClient.invalidateQueries({

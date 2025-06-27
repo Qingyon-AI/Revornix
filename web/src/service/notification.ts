@@ -2,32 +2,32 @@ import notificationApi from '@/api/notification'
 import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, DeleteNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, NotificationSourceDetail, NotificationSourceDetailRequest, AddNotificationTargetRequest, DeleteNotificationTargetRequest, NotificationTargetDetailRequest, UpdateNotificationTargetRequest, NotificationTargetDetail } from '@/generated';
 import { request } from '@/lib/request';
 
-export const deleteNotifications = async (data: DeleteNotificationRecordRequest): Promise<NormalResponse> => {
-    return await request(notificationApi.deleteNotifications, {
+export const deleteNotificationRecords = async (data: DeleteNotificationRecordRequest): Promise<NormalResponse> => {
+    return await request(notificationApi.deleteNotificationRecords, {
         data
     })
 }
 
-export const searchNotifications = async (data: SearchNotificationRecordRequest): Promise<InifiniteScrollPagnitionNotificationRecord> => {
-    return await request(notificationApi.searchNotifications, {
+export const searchNotificationRecords = async (data: SearchNotificationRecordRequest): Promise<InifiniteScrollPagnitionNotificationRecord> => {
+    return await request(notificationApi.searchNotificationRecords, {
         data
     })
 }
 
-export const readNotifications = async (data: ReadNotificationRecordRequest): Promise<NormalResponse> => {
-    return await request(notificationApi.readNotification, {
+export const readNotificationRecords = async (data: ReadNotificationRecordRequest): Promise<NormalResponse> => {
+    return await request(notificationApi.readNotificationRecord, {
         data
     })
 }
 
-export const getNotificationDetail = async (data: NotificationRecordDetailRequest): Promise<Notification> => {
-    return await request(notificationApi.getNotificationDetail, {
+export const getNotificationRecordDetail = async (data: NotificationRecordDetailRequest): Promise<Notification> => {
+    return await request(notificationApi.getNotificationRecordDetail, {
         data
     })
 }
 
-export const readAllNotifications = async (): Promise<NormalResponse> => {
-    return await request(notificationApi.readAllNotifications)
+export const readAllNotificationRecords = async (): Promise<NormalResponse> => {
+    return await request(notificationApi.readAllNotificationRecords)
 }
 
 export const addNotificationSource = async (data: AddNotificationSourceRequest): Promise<NormalResponse> => {

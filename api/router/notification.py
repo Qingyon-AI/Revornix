@@ -237,7 +237,7 @@ async def search_notification_record(search_notification_record_request: schemas
                                                                                                total=total)
     return res
 
-@notification_router.post('/delete', response_model=schemas.common.NormalResponse)
+@notification_router.post('/record/delete', response_model=schemas.common.NormalResponse)
 async def delete_notification_record(delete_notification_request: schemas.notification.DeleteNotificationRecordRequest, 
                                      db: Session = Depends(get_db), 
                                      user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
@@ -247,7 +247,7 @@ async def delete_notification_record(delete_notification_request: schemas.notifi
     db.commit()
     return schemas.common.SuccessResponse(message="success")
     
-@notification_router.post('/detail', response_model=schemas.notification.NotificationRecord)
+@notification_router.post('/record/detail', response_model=schemas.notification.NotificationRecord)
 async def get_notification_record_detail(notification_detail_request: schemas.notification.NotificationRecordDetailRequest, 
                                          db: Session = Depends(get_db), 
                                          user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
@@ -259,7 +259,7 @@ async def get_notification_record_detail(notification_detail_request: schemas.no
                                                    link=db_notification_record.link,
                                                    read_at=db_notification_record.read_at)
 
-@notification_router.post('/read-all', response_model=schemas.common.NormalResponse)
+@notification_router.post('/record/read-all', response_model=schemas.common.NormalResponse)
 async def read_all_notification_record(db: Session = Depends(get_db), 
                                        user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     crud.notification.read_user_notification_records(db=db, 
@@ -267,7 +267,7 @@ async def read_all_notification_record(db: Session = Depends(get_db),
     db.commit()
     return schemas.common.SuccessResponse(message="success")
 
-@notification_router.post('/read', response_model=schemas.common.NormalResponse)
+@notification_router.post('/record/read', response_model=schemas.common.NormalResponse)
 async def read_notification_record(read_notification_request: schemas.notification.ReadNotificationRecordRequest, 
                                    db: Session = Depends(get_db), 
                                    user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
