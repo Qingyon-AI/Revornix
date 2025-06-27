@@ -24,6 +24,69 @@ async def websocket_ask_ai(websocket: WebSocket,
         notificationManager.disconnect(websocket_id)
         await notificationManager.broadcast(f"Client #{websocket} left the chat")
         
+@notification_router.post('/task/add', response_model=schemas.common.NormalResponse)
+async def add_notification_task(add_notification_task_request: schemas.notification.AddNotificationTaskRequest,
+                                db: Session = Depends(get_db),
+                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    crud.notification.create_notification_task(db=db,
+                                               user_id=user.id,
+                                               title=add_notification_task_request.title,
+                                               content=add_notification_task_request.content,
+                                               notification_target_id=add_notification_task_request.notification_target_id,
+                                               notification_source_id=add_notification_task_request.notification_source_id,
+                                               cron_expr=add_notification_task_request.cron_expr)
+    db.commit()
+    return schemas.common.NormalResponse(message="success")
+
+@notification_router.post('/task/delete', response_model=schemas.common.NormalResponse)
+async def delete_notification_task(delete_notification_task_request: schemas.notification.DeleteNotificationTaskRequest,
+                                   db: Session = Depends(get_db),
+                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    crud.notification.delete_notification_tasks(db=db,
+                                                user_id=user.id,
+                                                notification_task_ids=delete_notification_task_request.notification_task_ids)
+    db.commit()
+    return schemas.common.NormalResponse(message="success")
+
+@notification_router.post('/task/update', response_model=schemas.common.NormalResponse)
+async def update_notification_task(update_notification_task_request: schemas.notification.UpdateNotificationTaskRequest,
+                                   db: Session = Depends(get_db),
+                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_notification_task = crud.notification.get_notification_task_by_notification_task_id(db=db,
+                                                                                           notification_task_id=update_notification_task_request.notification_task_id)
+    if db_notification_task is None:
+        return schemas.common.NormalResponse(message="notification task not found")
+    if db_notification_task.user_id != user.id:
+        return schemas.common.NormalResponse(message="permission denied")
+    
+    if update_notification_task_request.title is not None:
+        db_notification_task.title = update_notification_task_request.title
+    if update_notification_task_request.content is not None:
+        db_notification_task.content = update_notification_task_request.content
+    if update_notification_task_request.notification_target_id is not None:
+        db_notification_task.notification_target_id = update_notification_task_request.notification_target_id
+    if update_notification_task_request.notification_source_id is not None:
+        db_notification_task.notification_source_id = update_notification_task_request.notification_source_id
+    if update_notification_task_request.cron_expr is not None:
+        db_notification_task.cron_expr = update_notification_task_request.cron_expr
+    if update_notification_task_request.enable is not None:
+        db_notification_task.enable = update_notification_task_request.enable
+    db.commit()
+    return schemas.common.NormalResponse(message="success")
+
+@notification_router.post('/task/mine', response_model=schemas.notification.NotificationTaskResponse)
+async def get_mine_notification_task(db: Session = Depends(get_db),
+                                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_notification_tasks = crud.notification.get_notification_tasks_by_user_id(db=db,
+                                                                                user_id=user.id)
+    res = schemas.notification.NotificationTaskResponse(data=db_notification_tasks)
+    for db_notification_task in res.data:
+        db_notification_task.notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
+                                                                                                                       notification_source_id=db_notification_task.notification_source_id)
+        db_notification_task.notification_target = crud.notification.get_notification_target_by_notification_target_id(db=db,
+                                                                                                                       notification_target_id=db_notification_task.notification_target_id)
+    return res
+        
 @notification_router.post('/target/add', response_model=schemas.common.NormalResponse)
 async def add_notification_target(add_notification_target_request: schemas.notification.AddNotificationTargetRequest,
                                   db: Session = Depends(get_db),
@@ -107,8 +170,8 @@ async def get_notification_target_detail(notification_target_detail_request: sch
 async def update_email_source(update_notification_source_request: schemas.notification.UpdateNotificationSourceRequest,
                               db: Session = Depends(get_db),
                               user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_notification_source = crud.notification.get_notification_source_by_notification_id(db=db,
-                                                                                          notification_id=update_notification_source_request.notification_source_id)
+    db_notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
+                                                                                                 notification_source_id=update_notification_source_request.notification_source_id)
     if db_notification_source is None:
         raise schemas.error.CustomException(message="notification source not found", code=404)
     
@@ -148,8 +211,8 @@ async def get_email_source(db: Session = Depends(get_db),
 async def get_notification_detail(notification_source_detail_request: schemas.notification.NotificationSourceDetailRequest,
                                   db: Session = Depends(get_db),
                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    notification_source = crud.notification.get_notification_source_by_notification_id(db=db,
-                                                                                       notification_id=notification_source_detail_request.notification_source_id)
+    notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
+                                                                                              notification_source_id=notification_source_detail_request.notification_source_id)
     if notification_source is None:
         raise schemas.error.CustomException(message="notification source not found", code=404)
     if notification_source.user_id != user.id:

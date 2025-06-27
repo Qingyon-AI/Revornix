@@ -162,3 +162,49 @@ class NotificationSourceDetail(BaseModel):
     description: str
     category: int
     email_notification_source: EmailNotificationSource | None = None
+
+class NotificationTask(BaseModel):
+    id: int
+    title: str
+    content: str
+    cron_expr: str
+    enable: bool
+    notification_source: NotificationSource | None = None
+    notification_target_id: NotificationTarget | None = None
+    create_time: datetime | None = None
+    update_time: datetime | None = None
+    @field_validator("create_time", mode="before")
+    def ensure_create_time_timezone(cls, v: datetime) -> datetime:
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    @field_validator("update_time", mode="before")
+    def ensure_update_time_timezone(cls, v: datetime) -> datetime:
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    class Config:
+        from_attributes = True
+
+class DeleteNotificationTaskRequest(BaseModel):
+    notification_task_ids: list[int]
+    
+class UpdateNotificationTaskRequest(BaseModel):
+    notification_task_id: int
+    enable: bool | None = None
+    cron_expr: str | None = None
+    title: str | None = None
+    content: str | None = None
+    notification_source_id: int | None = None
+    notification_target_id: int | None = None
+    
+class AddNotificationTaskRequest(BaseModel):
+    title: str
+    content: str
+    cron_expr: str
+    enable: bool
+    notification_source_id: int
+    notification_target_id: int
+    
+class NotificationTaskResponse(BaseModel):
+    data: list[NotificationTask]
