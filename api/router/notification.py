@@ -38,6 +38,49 @@ async def add_notification_task(add_notification_task_request: schemas.notificat
     db.commit()
     return schemas.common.NormalResponse(message="success")
 
+@notification_router.post('/task/detail', response_model=schemas.notification.NotificationTask)
+async def get_notification_task(get_notification_task_request: schemas.notification.NotificationTaskDetailRequest,
+                                db: Session = Depends(get_db),
+                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_notification_task = crud.notification.get_notification_task_by_notification_task_id(db=db,
+                                                                                           notification_task_id=get_notification_task_request.notification_task_id)
+    if db_notification_task is None:
+        raise schemas.error.CustomException(message="notification task not found", code=404)
+    if db_notification_task.user_id != user.id:
+        raise schemas.error.CustomException(message="permission denied", code=403)
+    
+    res = schemas.notification.NotificationTask(
+        id=db_notification_task.id,
+        title=db_notification_task.title,
+        content=db_notification_task.content,
+        notification_target_id=db_notification_task.notification_target_id,
+        notification_source_id=db_notification_task.notification_source_id,
+        cron_expr=db_notification_task.cron_expr,
+        create_time=db_notification_task.create_time,
+        update_time=db_notification_task.update_time,
+        enable=db_notification_task.enable
+    )
+    db_notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
+                                                                                                 notification_source_id=db_notification_task.notification_source_id)
+    db_notification_target = crud.notification.get_notification_target_by_notification_target_id(db=db,
+                                                                                                 notification_target_id=db_notification_task.notification_target_id)
+    res.notification_source = schemas.notification.NotificationSource(
+        id=db_notification_source.id,
+        title=db_notification_source.title,
+        description=db_notification_source.description,
+        create_time=db_notification_source.create_time,
+        update_time=db_notification_source.update_time
+    )
+    res.notification_target = schemas.notification.NotificationTarget(
+        id=db_notification_target.id,
+        title=db_notification_target.title,
+        description=db_notification_target.description,
+        category=db_notification_target.category,
+        create_time=db_notification_target.create_time,
+        update_time=db_notification_target.update_time
+    )
+    return res
+
 @notification_router.post('/task/delete', response_model=schemas.common.NormalResponse)
 async def delete_notification_task(delete_notification_task_request: schemas.notification.DeleteNotificationTaskRequest,
                                    db: Session = Depends(get_db),

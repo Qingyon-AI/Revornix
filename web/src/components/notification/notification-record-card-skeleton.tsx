@@ -1,7 +1,7 @@
 import { Skeleton } from '../ui/skeleton';
 
-const NotificationCardSkeleton = () => {
+const NotificationRecordCardSkeleton = () => {
 	return <Skeleton className='h-12 w-full' />;
 };
 
-export default NotificationCardSkeleton;
+export default NotificationRecordCardSkeleton;

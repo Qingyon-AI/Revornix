@@ -1,7 +1,7 @@
 'use client';
 
-import NotificationCard from '@/components/notification/notification-card';
-import NotificationCardSkeleton from '@/components/notification/notification-card-skeleton';
+import NotificationRecordCard from '@/components/notification/notification-record-card';
+import NotificationRecordCardSkeleton from '@/components/notification/notification-record-card-skeleton';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -105,21 +105,21 @@ const NotificationsPage = () => {
 						{isFetching && !data && (
 							<>
 								{[...Array(20)].map((number, index) => {
-									return <NotificationCardSkeleton key={index} />;
+									return <NotificationRecordCardSkeleton key={index} />;
 								})}
 							</>
 						)}
 						{isFetchingNextPage && data && (
 							<>
 								{[...Array(20)].map((number, index) => {
-									return <NotificationCardSkeleton key={index} />;
+									return <NotificationRecordCardSkeleton key={index} />;
 								})}
 							</>
 						)}
 						{notifications &&
 							notifications.map((notification, index) => {
 								return (
-									<NotificationCard key={index} notification={notification} />
+									<NotificationRecordCard key={index} notification={notification} />
 								);
 							})}
 						<div ref={bottomRef}></div>

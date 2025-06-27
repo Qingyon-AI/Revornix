@@ -21,6 +21,12 @@ import { mapValues } from '../runtime';
 export interface NotificationTarget {
     /**
      * 
+     * @type {number}
+     * @memberof NotificationTarget
+     */
+    id: number;
+    /**
+     * 
      * @type {string}
      * @memberof NotificationTarget
      */
@@ -55,6 +61,7 @@ export interface NotificationTarget {
  * Check if a given object implements the NotificationTarget interface.
  */
 export function instanceOfNotificationTarget(value: object): value is NotificationTarget {
+    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('category' in value) || value['category'] === undefined) return false;
@@ -71,6 +78,7 @@ export function NotificationTargetFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
+        'id': json['id'],
         'title': json['title'],
         'description': json['description'],
         'category': json['category'],
@@ -90,6 +98,7 @@ export function NotificationTargetToJSONTyped(value?: NotificationTarget | null,
 
     return {
         
+        'id': value['id'],
         'title': value['title'],
         'description': value['description'],
         'category': value['category'],

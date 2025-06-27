@@ -169,8 +169,10 @@ class NotificationTask(BaseModel):
     content: str
     cron_expr: str
     enable: bool
+    notification_source_id: int
+    notification_target_id: int
     notification_source: NotificationSource | None = None
-    notification_target_id: NotificationTarget | None = None
+    notification_target: NotificationTarget | None = None
     create_time: datetime | None = None
     update_time: datetime | None = None
     @field_validator("create_time", mode="before")
@@ -208,3 +210,6 @@ class AddNotificationTaskRequest(BaseModel):
     
 class NotificationTaskResponse(BaseModel):
     data: list[NotificationTask]
+    
+class NotificationTaskDetailRequest(BaseModel):
+    notification_task_id: int

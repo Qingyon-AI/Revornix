@@ -12,6 +12,7 @@ apis/index.ts
 index.ts
 models/AddNotificationSourceRequest.ts
 models/AddNotificationTargetRequest.ts
+models/AddNotificationTaskRequest.ts
 models/AllMySectionsResponse.ts
 models/ApiKeyCreateRequest.ts
 models/ApiKeyCreateResponse.ts
@@ -27,7 +28,6 @@ models/ChatMessages.ts
 models/CoverImage.ts
 models/CreateLabelResponse.ts
 models/CreateNotificationRecordRequest.ts
-models/DailyReportStatusChangeRequest.ts
 models/DaySectionRequest.ts
 models/DaySectionResponse.ts
 models/DefaultEngineUpdateRequest.ts
@@ -37,6 +37,7 @@ models/DeleteModelRequest.ts
 models/DeleteNotificationRecordRequest.ts
 models/DeleteNotificationSourceRequest.ts
 models/DeleteNotificationTargetRequest.ts
+models/DeleteNotificationTaskRequest.ts
 models/Document.ts
 models/DocumentAiSummaryRequest.ts
 models/DocumentCreateRequest.ts
@@ -103,6 +104,9 @@ models/NotificationTarget.ts
 models/NotificationTargetDetail.ts
 models/NotificationTargetDetailRequest.ts
 models/NotificationTargetsResponse.ts
+models/NotificationTask.ts
+models/NotificationTaskDetailRequest.ts
+models/NotificationTaskResponse.ts
 models/PaginationApiKeyInfo.ts
 models/PasswordUpdateRequest.ts
 models/PrivateUserInfo.ts
@@ -142,6 +146,7 @@ models/TokenResponse.ts
 models/TokenUpdateRequest.ts
 models/UpdateNotificationSourceRequest.ts
 models/UpdateNotificationTargetRequest.ts
+models/UpdateNotificationTaskRequest.ts
 models/UserInfoRequest.ts
 models/UserInfoUpdateRequest.ts
 models/UserLoginRequest.ts

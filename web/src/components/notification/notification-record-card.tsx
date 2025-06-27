@@ -1,4 +1,4 @@
-import { readNotifications } from '@/service/notification';
+import { readNotificationRecords } from '@/service/notification';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -10,17 +10,17 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import Link from 'next/link';
-import { Notification } from '@/generated';
 import { useMutation } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { CardDescription } from '../ui/card';
 import { useTranslations } from 'next-intl';
+import { NotificationRecord } from '@/generated';
 
-const NotificationCard = ({ notification }: { notification: Notification }) => {
+const NotificationRecordCard = ({ notification }: { notification: NotificationRecord }) => {
 	const t = useTranslations();
 	const mutate = useMutation({
 		mutationKey: ['readNotification', notification.id],
-		mutationFn: readNotifications,
+		mutationFn: readNotificationRecords,
 		onMutate: async (variables) => {
 			if (variables.status) {
 				notification.read_at = new Date();
@@ -70,7 +70,7 @@ const NotificationCard = ({ notification }: { notification: Notification }) => {
 								variant={'destructive'}
 								onClick={() => {
 									mutate.mutate({
-										notification_ids: [notification.id],
+										notification_record_ids: [notification.id],
 										status: false,
 									});
 								}}>
@@ -80,7 +80,7 @@ const NotificationCard = ({ notification }: { notification: Notification }) => {
 							<Button
 								onClick={() => {
 									mutate.mutate({
-										notification_ids: [notification.id],
+										notification_record_ids: [notification.id],
 										status: true,
 									});
 								}}>
@@ -125,4 +125,4 @@ const NotificationCard = ({ notification }: { notification: Notification }) => {
 	);
 };
 
-export default NotificationCard;
+export default NotificationRecordCard;

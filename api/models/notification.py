@@ -29,7 +29,7 @@ class NotificationRecord(Base):
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True), index=True)
-    
+
 class NotificationTarget(Base):
     __tablename__ = "notification_target"
 
@@ -41,7 +41,7 @@ class NotificationTarget(Base):
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True), index=True)
-    
+
 class EmailNotificationTarget(Base):
     __tablename__ = "email_notification_target"
 
@@ -63,7 +63,7 @@ class NotificationSource(Base):
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True), index=True)
-    
+
 class EmailNotificationSource(Base):
     __tablename__ = "email_notification_source"
 

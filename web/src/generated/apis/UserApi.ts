@@ -16,7 +16,6 @@
 import * as runtime from '../runtime';
 import type {
   BindEmailVerifyRequest,
-  DailyReportStatusChangeRequest,
   DefaultEngineUpdateRequest,
   DefaultModelUpdateRequest,
   EmailUserCreateVerifyRequest,
@@ -39,8 +38,6 @@ import type {
 import {
     BindEmailVerifyRequestFromJSON,
     BindEmailVerifyRequestToJSON,
-    DailyReportStatusChangeRequestFromJSON,
-    DailyReportStatusChangeRequestToJSON,
     DefaultEngineUpdateRequestFromJSON,
     DefaultEngineUpdateRequestToJSON,
     DefaultModelUpdateRequestFromJSON,
@@ -87,12 +84,6 @@ export interface BindEmailVerifyUserBindEmailVerifyPostRequest {
 
 export interface CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest {
     emailUserCreateVerifyRequest: EmailUserCreateVerifyRequest;
-}
-
-export interface DailyReportUserDailyReportPostRequest {
-    dailyReportStatusChangeRequest: DailyReportStatusChangeRequest;
-    authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteUserUserDeletePostRequest {
