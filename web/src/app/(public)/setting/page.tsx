@@ -1,10 +1,9 @@
 'use client';
 
 import { ModeToggle } from '@/components/app/mode-toggle';
+import NotificationTaskManage from '@/components/notification/notification-task-manage';
 import NotificationSourceManage from '@/components/notification/notification-source-manage';
 import NotificationTargetManage from '@/components/notification/notification-target-manage';
-import DailyReportStatus from '@/components/setting/daily-report-status';
-import DailyReportTime from '@/components/setting/daily-report-time';
 import DefaultDocumentParseEngineChange from '@/components/setting/default-document-parse-engine-change';
 import DocumentSummaryModel from '@/components/setting/document-summary-model';
 import EngineManager from '@/components/setting/engine-manager';
@@ -53,11 +52,9 @@ const SettingPage = () => {
 			<Card>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>
-							{t('setting_daily_notification')}
-						</Label>
+						<Label className='flex flex-col gap-2 items-start'>通知任务管理</Label>
 						<div className='flex flex-col gap-2'>
-							<DailyReportStatus />
+							<NotificationTaskManage />
 						</div>
 					</div>
 					<Separator />
@@ -78,19 +75,6 @@ const SettingPage = () => {
 							<NotificationTargetManage />
 						</div>
 					</div>
-					{userInfo?.daily_report_status && (
-						<>
-							<Separator />
-							<div className='flex justify-between items-center'>
-								<Label className='flex flex-col gap-2 items-start'>
-									{t('setting_daily_notification_time')}
-								</Label>
-								<div className='flex flex-col gap-2'>
-									<DailyReportTime />
-								</div>
-							</div>
-						</>
-					)}
 				</CardContent>
 			</Card>
 			<h2 className='text-xs text-muted-foreground p-3'>

@@ -3,18 +3,14 @@ import schemas
 import jwt
 from jwt.exceptions import ExpiredSignatureError
 from jose import jwt
-from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Depends
 from sqlalchemy.orm import Session
 from schemas.error import CustomException
 from common.common import create_token
-from common.apscheduler.app import scheduler
-from common.apscheduler.app import send_daily_report
 from common.dependencies import get_db
 from common.hash import verify_password
 from common.dependencies import get_current_user, get_db
 from config.oauth2 import SECRET_KEY, ALGORITHM
-from common.cron import time_to_cron, cron_to_time
 
 user_router = APIRouter()
 
@@ -39,52 +35,6 @@ async def update_default_model(default_model_update_request: schemas.user.Defaul
                                         default_revornix_model_id=default_model_update_request.default_revornix_model_id)
     db.commit()
     return schemas.common.SuccessResponse(message="The default model is updated successfully.")
-
-@user_router.post('/daily-report', response_model=schemas.common.NormalResponse)
-async def daily_report(daily_report_status_change_request: schemas.user.DailyReportStatusChangeRequest,
-                       user: schemas.user.PrivateUserInfo = Depends(get_current_user),
-                       db: Session = Depends(get_db)):
-    now = datetime.now(timezone.utc)
-    db_report_task = crud.task.get_user_daily_report_task(db=db, 
-                                                          user_id=user.id)
-    if daily_report_status_change_request.status == True:
-        cron_expr = time_to_cron(daily_report_status_change_request.run_time)
-        if db_report_task is None:
-            db_report_task = crud.task.create_cron_task(db=db,
-                                                        user_id=user.id,
-                                                        cron_expr=cron_expr,
-                                                        title='每日报告',
-                                                        func_id=1)
-            time_obj = datetime.strptime(daily_report_status_change_request.run_time, "%H:%M:%S")
-            scheduler.add_job(func=lambda user_id: send_daily_report(user_id), 
-                              args=[user.id],
-                              trigger='cron', 
-                              id=str(db_report_task.id), 
-                              hour=time_obj.hour,
-                              minute=time_obj.minute,
-                              second=time_obj.second)
-        else:
-            if db_report_task.cron_expr != cron_expr:
-                time_obj = datetime.strptime(daily_report_status_change_request.run_time, "%H:%M:%S")
-                scheduler.reschedule_job(job_id=str(db_report_task.id), 
-                                         trigger='cron', 
-                                         hour=time_obj.hour,
-                                         minute=time_obj.minute,
-                                         second=time_obj.second)
-                db_report_task.cron_expr = cron_expr
-                db_report_task.update_time = now
-            else:
-                raise Exception('The same daily report task already exists')
-    else:
-        if db_report_task is None:
-            raise Exception('The daily report task does not exist')
-        else:
-            crud.task.delete_regular_tasks_by_task_ids(db=db,
-                                                       user_id=user.id,
-                                                       task_ids=[db_report_task.id])
-            scheduler.remove_job(job_id=str(db_report_task.id))
-    db.commit()
-    return schemas.common.NormalResponse()
 
 @user_router.post('/fans', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
 async def search_user_fans(search_user_fans_request: schemas.user.SearchUserFansRequest,

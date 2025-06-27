@@ -42,18 +42,6 @@ export interface PrivateUserInfo {
     id: number;
     /**
      * 
-     * @type {boolean}
-     * @memberof PrivateUserInfo
-     */
-    daily_report_status?: boolean | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof PrivateUserInfo
-     */
-    daily_report_run_time?: string | null;
-    /**
-     * 
      * @type {number}
      * @memberof PrivateUserInfo
      */
@@ -133,8 +121,6 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
         
         'id': json['id'],
-        'daily_report_status': json['daily_report_status'] == null ? undefined : json['daily_report_status'],
-        'daily_report_run_time': json['daily_report_run_time'] == null ? undefined : json['daily_report_run_time'],
         'fans': json['fans'] == null ? undefined : json['fans'],
         'follows': json['follows'] == null ? undefined : json['follows'],
         'avatar': json['avatar'] == null ? undefined : AttachmentInfoFromJSON(json['avatar']),
@@ -160,8 +146,6 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
     return {
         
         'id': value['id'],
-        'daily_report_status': value['daily_report_status'],
-        'daily_report_run_time': value['daily_report_run_time'],
         'fans': value['fans'],
         'follows': value['follows'],
         'avatar': AttachmentInfoToJSON(value['avatar']),

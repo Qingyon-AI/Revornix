@@ -32,6 +32,11 @@ const routers: RouteItem[] = [
 						title_en: 'Target Manage',
 						path: '/target-manage',
 					},
+					{
+						title: '通知任务管理',
+						title_en: 'Task Manage',
+						path: '/task-manage',
+					},
 				],
 			},
 			{

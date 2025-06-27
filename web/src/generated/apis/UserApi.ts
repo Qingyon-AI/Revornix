@@ -252,50 +252,6 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Daily Report
-     */
-    async dailyReportUserDailyReportPostRaw(requestParameters: DailyReportUserDailyReportPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        if (requestParameters['dailyReportStatusChangeRequest'] == null) {
-            throw new runtime.RequiredError(
-                'dailyReportStatusChangeRequest',
-                'Required parameter "dailyReportStatusChangeRequest" was null or undefined when calling dailyReportUserDailyReportPost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
-        const response = await this.request({
-            path: `/user/daily-report`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DailyReportStatusChangeRequestToJSON(requestParameters['dailyReportStatusChangeRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Daily Report
-     */
-    async dailyReportUserDailyReportPost(requestParameters: DailyReportUserDailyReportPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
-        const response = await this.dailyReportUserDailyReportPostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Delete User
      */
     async deleteUserUserDeletePostRaw(requestParameters: DeleteUserUserDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {

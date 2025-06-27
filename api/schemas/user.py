@@ -70,8 +70,6 @@ class EmailInfo(BaseModel):
     
 class PrivateUserInfo(BaseModel):
     id: int
-    daily_report_status: bool | None = None
-    daily_report_run_time: str | None = None
     fans: int | None = None
     follows: int | None = None
     avatar: AttachmentInfo | None = None

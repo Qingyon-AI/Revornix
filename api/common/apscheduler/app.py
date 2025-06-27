@@ -10,13 +10,6 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 
 scheduler = AsyncIOScheduler()
 
-def send_daily_report(user_id: int):
-    asyncio.run(union_send_notification(user_id=user_id,
-                                        title=f'今日总结已生成，请前往查看',
-                                        content='今日总结已生成，请前往查看',
-                                        link='/section/today',
-                                        notification_type=0))
-
 def job_listener(event):
     if event.exception:
         exception_logger.error(f'Job {event.job_id} failed')
