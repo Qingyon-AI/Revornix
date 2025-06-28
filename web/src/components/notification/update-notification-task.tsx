@@ -154,7 +154,14 @@ const UpdateNotificationTask = ({
 	return (
 		<>
 			<Button onClick={() => setShowUpdateDialog(true)}>编辑</Button>
-			<Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
+			<Dialog
+				open={showUpdateDialog}
+				onOpenChange={(e) => {
+					if (!e) {
+						form.reset();
+					}
+					setShowUpdateDialog(e);
+				}}>
 				<DialogContent>
 					<DialogTitle>编辑通知任务</DialogTitle>
 					<Form {...form}>
