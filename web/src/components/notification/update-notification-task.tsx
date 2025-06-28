@@ -80,7 +80,7 @@ const UpdateNotificationTask = ({
 	});
 
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
-	const form = useForm({
+	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			notification_task_id: notification_task_id,
@@ -88,8 +88,6 @@ const UpdateNotificationTask = ({
 			content: '',
 			cron_expr: '',
 			enable: true,
-			notification_source_id: undefined,
-			notification_target_id: undefined,
 		},
 	});
 

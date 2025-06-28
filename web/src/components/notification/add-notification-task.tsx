@@ -51,8 +51,10 @@ const AddNotificationTask = () => {
 		content: z.string(),
 		cron_expr: z.string(),
 		enable: z.boolean(),
-		notification_source_id: z.number(),
-		notification_target_id: z.number(),
+		notification_source_id: z.coerce.number({ required_error: '请选择通知源' }),
+		notification_target_id: z.coerce.number({
+			required_error: '请选择通知目标',
+		}),
 	});
 
 	const { data: mineNotificationSources } = useQuery({
@@ -66,15 +68,13 @@ const AddNotificationTask = () => {
 	});
 
 	const [showAddDialog, setShowAddDialog] = useState(false);
-	const form = useForm({
+	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			title: '',
 			content: '',
 			cron_expr: '',
 			enable: true,
-			notification_source_id: undefined,
-			notification_target_id: undefined,
 		},
 	});
 
