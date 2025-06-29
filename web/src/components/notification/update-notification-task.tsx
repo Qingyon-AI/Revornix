@@ -43,6 +43,10 @@ import {
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { useQuery } from '@tanstack/react-query';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
+import Link from 'next/link';
 
 const UpdateNotificationTask = ({
 	notification_task_id,
@@ -162,12 +166,18 @@ const UpdateNotificationTask = ({
 					}
 					setShowUpdateDialog(e);
 				}}>
-				<DialogContent>
+				<DialogContent className='flex flex-col max-h-full'>
 					<DialogTitle>编辑通知任务</DialogTitle>
+					<Alert>
+						<Info />
+						<AlertDescription>
+							更新任务后会立即执行一次，你可以通过第一次执行来判断是否成功。注意有时候会有一定延迟，请稍等一会儿再确认。
+						</AlertDescription>
+					</Alert>
 					<Form {...form}>
 						<form
 							onSubmit={onSubmitForm}
-							className='space-y-3'
+							className='space-y-3 flex-1 overflow-auto'
 							id='update-notification-task-form'>
 							<FormField
 								name='title'
@@ -201,8 +211,27 @@ const UpdateNotificationTask = ({
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>cron表达式</FormLabel>
-											<Input {...field} placeholder='请输入表达式' />
+											<FormLabel>
+												cron表达式
+												<Tooltip>
+													<TooltipTrigger>
+														<Info size={15} />
+													</TooltipTrigger>
+													<TooltipContent>
+														此处表达式指的是类Unix的cron表达式，详情查看
+														<Link
+															className='ml-1 underline underline-offset-2'
+															href={'https://en.wikipedia.org/wiki/Cron'}>
+															Cron wiki
+														</Link>
+													</TooltipContent>
+												</Tooltip>
+											</FormLabel>
+											<Input
+												className='font-mono'
+												{...field}
+												placeholder='请输入表达式'
+											/>
 											<FormMessage />
 										</FormItem>
 									);

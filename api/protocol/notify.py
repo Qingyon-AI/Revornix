@@ -1,6 +1,5 @@
 import schemas
 from typing import Protocol
-from pydantic import BaseModel
 
 class NotifyProtocol(Protocol):
     

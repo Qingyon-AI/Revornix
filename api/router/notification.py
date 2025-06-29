@@ -5,42 +5,23 @@ from sqlalchemy.orm import Session
 from fastapi import WebSocket, APIRouter, WebSocketDisconnect, Depends
 from common.apscheduler.app import scheduler
 from common.websocket import notificationManager
+from apscheduler.triggers.cron import CronTrigger
 from common.dependencies import get_current_user, get_current_user_with_websocket, get_db
 from notify.email import EmailNotify
+from common.sql import SessionLocal
+from datetime import datetime
 
 notification_router = APIRouter()
 
-# 仅仅是前端用来接收消息的
-@notification_router.websocket("/")
-async def websocket_ask_ai(websocket: WebSocket, 
-                           current_user: models.user.User = Depends(get_current_user_with_websocket)):
-    websocket_id = current_user.uuid
-    # 显式接受 WebSocket 连接
-    await notificationManager.connect(id=websocket_id, 
-                                      websocket=websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            print(f'接收到来自{websocket_id}的消息：', data)
-    except WebSocketDisconnect:
-        notificationManager.disconnect(websocket_id)
-        await notificationManager.broadcast(f"Client #{websocket} left the chat")
-        
-@notification_router.post('/task/add', response_model=schemas.common.NormalResponse)
-async def add_notification_task(add_notification_task_request: schemas.notification.AddNotificationTaskRequest,
-                                db: Session = Depends(get_db),
-                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    crud.notification.create_notification_task(db=db,
-                                               user_id=user.id,
-                                               title=add_notification_task_request.title,
-                                               content=add_notification_task_request.content,
-                                               notification_target_id=add_notification_task_request.notification_target_id,
-                                               notification_source_id=add_notification_task_request.notification_source_id,
-                                               cron_expr=add_notification_task_request.cron_expr)
+async def send_notification(notification_source_id: int, 
+                            notification_target_id: int, 
+                            title: str, 
+                            content: str):
+    db = SessionLocal()
     db_notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
-                                                                                                 notification_source_id=add_notification_task_request.notification_source_id)
+                                                                                                 notification_source_id=notification_source_id)
     db_notification_target = crud.notification.get_notification_target_by_notification_target_id(db=db,
-                                                                                                 notification_target_id=add_notification_task_request.notification_target_id)
+                                                                                                 notification_target_id=notification_target_id)
     if db_notification_source is None or db_notification_target is None:
         raise schemas.error.CustomException(message="notification source or target not found", code=404)
     if db_notification_source.category == 0:
@@ -74,16 +55,48 @@ async def add_notification_task(add_notification_task_request: schemas.notificat
             )
         )
     )
-    send_res = email_notify.send_notification(message=schemas.notification.Message(title=add_notification_task_request.title,
-                                                                                   content=add_notification_task_request.content))
+    send_res = email_notify.send_notification(message=schemas.notification.Message(title=title,
+                                                                                   content=content))
     if not send_res:
         raise schemas.error.CustomException(message="send notification failed", code=500)
-    # TODO 启动task
-    # if add_notification_task_request.enable:
-    #     scheduler.add_job(
-            
-    #     )
-    #     pass
+    
+# 仅仅是前端用来接收消息的
+@notification_router.websocket("/")
+async def websocket_ask_ai(websocket: WebSocket, 
+                           current_user: models.user.User = Depends(get_current_user_with_websocket)):
+    websocket_id = current_user.uuid
+    # 显式接受 WebSocket 连接
+    await notificationManager.connect(id=websocket_id, 
+                                      websocket=websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            print(f'接收到来自{websocket_id}的消息：', data)
+    except WebSocketDisconnect:
+        notificationManager.disconnect(websocket_id)
+        await notificationManager.broadcast(f"Client #{websocket} left the chat")
+        
+@notification_router.post('/task/add', response_model=schemas.common.NormalResponse)
+async def add_notification_task(add_notification_task_request: schemas.notification.AddNotificationTaskRequest,
+                                db: Session = Depends(get_db),
+                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_notification_task = crud.notification.create_notification_task(db=db,
+                                                                      user_id=user.id,
+                                                                      content=add_notification_task_request.content,
+                                                                      notification_target_id=add_notification_task_request.notification_target_id,
+                                                                      notification_source_id=add_notification_task_request.notification_source_id,
+                                                                      cron_expr=add_notification_task_request.cron_expr)
+    if add_notification_task_request.enable:
+        scheduler.add_job(
+            func=send_notification,
+            trigger=CronTrigger.from_crontab(add_notification_task_request.cron_expr),
+            args=[add_notification_task_request.notification_source_id,
+                  add_notification_task_request.notification_target_id,
+                  add_notification_task_request.title,
+                  add_notification_task_request.content],
+            id=str(db_notification_task.id),
+            next_run_time=datetime.now()
+        )
     db.commit()
     return schemas.common.NormalResponse(message="success")
 
@@ -137,6 +150,10 @@ async def delete_notification_task(delete_notification_task_request: schemas.not
     crud.notification.delete_notification_tasks(db=db,
                                                 user_id=user.id,
                                                 notification_task_ids=delete_notification_task_request.notification_task_ids)
+    for notification_task_id in delete_notification_task_request.notification_task_ids:
+        job_exist = scheduler.get_job(str(notification_task_id))
+        if job_exist is not None:
+            scheduler.remove_job(str(notification_task_id))
     db.commit()
     return schemas.common.NormalResponse(message="success")
 
@@ -163,6 +180,22 @@ async def update_notification_task(update_notification_task_request: schemas.not
         db_notification_task.cron_expr = update_notification_task_request.cron_expr
     if update_notification_task_request.enable is not None:
         db_notification_task.enable = update_notification_task_request.enable
+    
+    exist_job = scheduler.get_job(db_notification_task.id)
+    if exist_job is not None:
+        scheduler.remove_job(str(db_notification_task.id))
+    if db_notification_task.enable:
+        scheduler.add_job(
+            func=send_notification,
+            trigger=CronTrigger.from_crontab(db_notification_task.cron_expr),
+            args=[db_notification_task.notification_source_id,
+                  db_notification_task.notification_target_id,
+                  db_notification_task.title,
+                  db_notification_task.content],
+            id=str(db_notification_task.id),
+            next_run_time=datetime.now()
+        )
+    
     db.commit()
     return schemas.common.NormalResponse(message="success")
 
