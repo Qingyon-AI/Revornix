@@ -7,58 +7,10 @@ from common.apscheduler.app import scheduler
 from common.websocket import notificationManager
 from apscheduler.triggers.cron import CronTrigger
 from common.dependencies import get_current_user, get_current_user_with_websocket, get_db
-from notify.email import EmailNotify
-from common.sql import SessionLocal
 from datetime import datetime
+from common.apscheduler.app import send_notification
 
 notification_router = APIRouter()
-
-async def send_notification(notification_source_id: int, 
-                            notification_target_id: int, 
-                            title: str, 
-                            content: str):
-    db = SessionLocal()
-    db_notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
-                                                                                                 notification_source_id=notification_source_id)
-    db_notification_target = crud.notification.get_notification_target_by_notification_target_id(db=db,
-                                                                                                 notification_target_id=notification_target_id)
-    if db_notification_source is None or db_notification_target is None:
-        raise schemas.error.CustomException(message="notification source or target not found", code=404)
-    if db_notification_source.category == 0:
-        db_notification_email_source = crud.notification.get_email_notification_source_by_notification_source_id(db=db,
-                                                                                                                 notification_source_id=db_notification_source.id)
-    if db_notification_target.category == 0:
-        db_notification_email_target = crud.notification.get_email_notification_target_by_notification_target_id(db=db,
-                                                                                                                 notification_target_id=db_notification_target.id)
-    email_notify = EmailNotify(
-        source=schemas.notification.NotificationSourceDetail(
-            id=db_notification_source.id,
-            title=db_notification_source.title,
-            description=db_notification_source.description,
-            category=db_notification_source.category,
-            email_notification_source=schemas.notification.EmailNotificationSource(
-                id=db_notification_email_source.id,
-                email=db_notification_email_source.email,
-                password=db_notification_email_source.password,
-                port=db_notification_email_source.port,
-                server=db_notification_email_source.server,
-            )
-        ),
-        target=schemas.notification.NotificationTargetDetail(
-            id=db_notification_target.id,
-            title=db_notification_target.title,
-            description=db_notification_target.description,
-            category=db_notification_target.category,
-            email_notification_target=schemas.notification.EmailNotificationTarget(
-                id=db_notification_email_target.id,
-                email=db_notification_email_target.email,
-            )
-        )
-    )
-    send_res = email_notify.send_notification(message=schemas.notification.Message(title=title,
-                                                                                   content=content))
-    if not send_res:
-        raise schemas.error.CustomException(message="send notification failed", code=500)
     
 # 仅仅是前端用来接收消息的
 @notification_router.websocket("/")
@@ -181,7 +133,7 @@ async def update_notification_task(update_notification_task_request: schemas.not
     if update_notification_task_request.enable is not None:
         db_notification_task.enable = update_notification_task_request.enable
     
-    exist_job = scheduler.get_job(db_notification_task.id)
+    exist_job = scheduler.get_job(str(db_notification_task.id))
     if exist_job is not None:
         scheduler.remove_job(str(db_notification_task.id))
     if db_notification_task.enable:

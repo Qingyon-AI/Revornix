@@ -4,6 +4,8 @@ from protocol.notify import NotifyProtocol
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
+from email.utils import formataddr
+from common.logger import exception_logger
 
 class EmailNotify(NotifyProtocol):
     def __init__(self, 
@@ -20,7 +22,7 @@ class EmailNotify(NotifyProtocol):
 
         # 构建 MIME 邮件
         msg = MIMEMultipart()
-        msg["From"] = Header("Revornix", 'utf-8')
+        msg["From"] = formataddr(("Revornix", username))  # 正确设置发件人
         msg["To"] = recipient
         msg["Subject"] = Header(message.title, 'utf-8')
         msg.attach(MIMEText(message.content, "html", "utf-8"))
@@ -32,9 +34,9 @@ class EmailNotify(NotifyProtocol):
             return True
 
         except smtplib.SMTPException as e:
-            print(f"[EmailNotify] 邮件发送失败: {e}")
+            exception_logger.error(f"[EmailNotify] 邮件发送失败: {e}")
             return False
 
         except Exception as e:
-            print(f"[EmailNotify] 未知错误: {e}")
+            exception_logger.error(f"[EmailNotify] 未知错误: {e}")
             return False

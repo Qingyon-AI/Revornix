@@ -104,6 +104,11 @@ def create_notification_record(db: Session,
     db.flush()
     return notification
 
+def get_all_notification_tasks(db: Session):
+    query = db.query(models.notification.NotificationTask)
+    query = query.filter(models.notification.NotificationTask.delete_at == None)
+    return query.all()
+
 def get_notification_task_by_notification_task_id(db: Session,
                                                   notification_task_id: int):
     query = db.query(models.notification.NotificationTask)

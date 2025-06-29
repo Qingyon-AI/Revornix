@@ -1,6 +1,5 @@
 import crud
 from common.sql import SessionLocal
-from common.mail import send_email
 from common.logger import log_exception, exception_logger
 
 async def union_send_notification(user_id: int, 
@@ -21,8 +20,8 @@ async def union_send_notification(user_id: int,
         email_user = crud.user.get_email_user_by_user_id(db=db, 
                                                          user_id=user_id)
         if email_user:
-            # 邮件发送消息
-            send_email(email_user.email, title, content)
+            # TODO 邮件发送消息
+            ...
         db.commit()
     except Exception as e:
         exception_logger.error(f"记载报错，错误{e}")
