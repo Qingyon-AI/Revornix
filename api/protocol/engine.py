@@ -88,9 +88,9 @@ class EngineProtocol(Protocol):
         return json.loads(self.engin_config) if self.engin_config else None
     
     async def analyse_website(self, url: str) -> WebsiteInfo:
-        pass
+        raise NotImplementedError("Method not implemented")
     
     async def analyse_file(self, file_path: str) -> FileInfo:
-        pass
+        raise NotImplementedError("Method not implemented")
     
     

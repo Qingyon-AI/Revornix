@@ -3,8 +3,10 @@ import schemas
 import models
 from sqlalchemy.orm import Session
 from fastapi import WebSocket, APIRouter, WebSocketDisconnect, Depends
+from common.apscheduler.app import scheduler
 from common.websocket import notificationManager
 from common.dependencies import get_current_user, get_current_user_with_websocket, get_db
+from notify.email import EmailNotify
 
 notification_router = APIRouter()
 
@@ -35,6 +37,53 @@ async def add_notification_task(add_notification_task_request: schemas.notificat
                                                notification_target_id=add_notification_task_request.notification_target_id,
                                                notification_source_id=add_notification_task_request.notification_source_id,
                                                cron_expr=add_notification_task_request.cron_expr)
+    db_notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
+                                                                                                 notification_source_id=add_notification_task_request.notification_source_id)
+    db_notification_target = crud.notification.get_notification_target_by_notification_target_id(db=db,
+                                                                                                 notification_target_id=add_notification_task_request.notification_target_id)
+    if db_notification_source is None or db_notification_target is None:
+        raise schemas.error.CustomException(message="notification source or target not found", code=404)
+    if db_notification_source.category == 0:
+        db_notification_email_source = crud.notification.get_email_notification_source_by_notification_source_id(db=db,
+                                                                                                                 notification_source_id=db_notification_source.id)
+    if db_notification_target.category == 0:
+        db_notification_email_target = crud.notification.get_email_notification_target_by_notification_target_id(db=db,
+                                                                                                                 notification_target_id=db_notification_target.id)
+    email_notify = EmailNotify(
+        source=schemas.notification.NotificationSourceDetail(
+            id=db_notification_source.id,
+            title=db_notification_source.title,
+            description=db_notification_source.description,
+            category=db_notification_source.category,
+            email_notification_source=schemas.notification.EmailNotificationSource(
+                id=db_notification_email_source.id,
+                email=db_notification_email_source.email,
+                password=db_notification_email_source.password,
+                port=db_notification_email_source.port,
+                server=db_notification_email_source.server,
+            )
+        ),
+        target=schemas.notification.NotificationTargetDetail(
+            id=db_notification_target.id,
+            title=db_notification_target.title,
+            description=db_notification_target.description,
+            category=db_notification_target.category,
+            email_notification_target=schemas.notification.EmailNotificationTarget(
+                id=db_notification_email_target.id,
+                email=db_notification_email_target.email,
+            )
+        )
+    )
+    send_res = email_notify.send_notification(message=schemas.notification.Message(title=add_notification_task_request.title,
+                                                                                   content=add_notification_task_request.content))
+    if not send_res:
+        raise schemas.error.CustomException(message="send notification failed", code=500)
+    # TODO 启动task
+    # if add_notification_task_request.enable:
+    #     scheduler.add_job(
+            
+    #     )
+    #     pass
     db.commit()
     return schemas.common.NormalResponse(message="success")
 
@@ -235,8 +284,8 @@ async def update_email_source(update_notification_source_request: schemas.notifi
             db_email_notification_source.email = update_notification_source_request.email
         if update_notification_source_request.password is not None:
             db_email_notification_source.password = update_notification_source_request.password
-        if update_notification_source_request.address is not None:
-            db_email_notification_source.address = update_notification_source_request.address
+        if update_notification_source_request.server is not None:
+            db_email_notification_source.server = update_notification_source_request.server
         if update_notification_source_request.port is not None:
             db_email_notification_source.port = update_notification_source_request.port
         
@@ -276,7 +325,7 @@ async def get_notification_detail(notification_source_detail_request: schemas.no
         res.email_notification_source = schemas.notification.EmailNotificationSource(id=email_notification_source.id,
                                                                                      email=email_notification_source.email,
                                                                                      password=email_notification_source.password,
-                                                                                     address=email_notification_source.address,
+                                                                                     server=email_notification_source.server,
                                                                                      port=email_notification_source.port)
         
     return res
@@ -295,7 +344,7 @@ async def add_email_source(add_notification_source_request: schemas.notification
                                                                  notification_source_id=db_notification_source.id,
                                                                  email=add_notification_source_request.email,
                                                                  password=add_notification_source_request.password,
-                                                                 address=add_notification_source_request.address,
+                                                                 server=add_notification_source_request.server,
                                                                  port=add_notification_source_request.port)
     db.commit()
     return schemas.common.NormalResponse(message="success")

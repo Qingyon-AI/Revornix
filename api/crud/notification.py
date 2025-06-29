@@ -72,7 +72,7 @@ def bind_email_info_to_notification_source(db: Session,
                                            notification_source_id: int,
                                            email: str,
                                            password: str,
-                                           address: str,
+                                           server: str,
                                            port: int):
     now = datetime.now(timezone.utc)
     email_notification_source = models.notification.EmailNotificationSource(notification_source_id=notification_source_id,
@@ -80,7 +80,7 @@ def bind_email_info_to_notification_source(db: Session,
                                                                             password=password,
                                                                             create_time=now,
                                                                             update_time=now,
-                                                                            address=address,
+                                                                            server=server,
                                                                             port=port)
     db.add(email_notification_source)
     db.flush()

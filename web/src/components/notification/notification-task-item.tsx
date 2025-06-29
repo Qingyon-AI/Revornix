@@ -43,7 +43,7 @@ const NotificationTaskItem = ({ task }: { task: NotificationTask }) => {
 			</TableCell>
 			<TableCell>{task.title}</TableCell>
 			<TableCell>{task.content}</TableCell>
-			<TableCell>{task.cron_expr}</TableCell>
+			<TableCell className='font-mono'>{task.cron_expr}</TableCell>
 			<TableCell>
 				<Switch
 					checked={task.enable}

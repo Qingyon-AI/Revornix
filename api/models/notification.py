@@ -69,7 +69,7 @@ class EmailNotificationSource(Base):
 
     id = Column(Integer, primary_key=True)
     notification_source_id = Column(Integer, ForeignKey("notification_source.id"), index=True)
-    address = Column(String(100), nullable=False)
+    server = Column(String(100), nullable=False)
     port = Column(Integer, nullable=False)
     email = Column(String(100), index=True, nullable=False)
     password = Column(String(100), nullable=False)

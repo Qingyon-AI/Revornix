@@ -55,7 +55,7 @@ const UpdateNotificationSource = ({
 		description: z.string(),
 		email: z.string().email().optional(),
 		password: z.string().optional(),
-		address: z.string().optional(),
+		server: z.string().optional(),
 		port: z.number().optional(),
 	});
 
@@ -68,7 +68,7 @@ const UpdateNotificationSource = ({
 			description: '',
 			email: '',
 			password: '',
-			address: '',
+			server: '',
 			port: undefined,
 		},
 	});
@@ -93,7 +93,7 @@ const UpdateNotificationSource = ({
 				description: values.description,
 				email: values.email,
 				password: values.password,
-				address: values.address,
+				server: values.server,
 				port: values.port,
 			})
 		);
@@ -125,7 +125,7 @@ const UpdateNotificationSource = ({
 				description: data.description,
 				email: data.email_notification_source?.email ?? '',
 				password: data.email_notification_source?.password ?? '',
-				address: data.email_notification_source?.address ?? '',
+				server: data.email_notification_source?.server ?? '',
 				port: data.email_notification_source?.port ?? undefined,
 			};
 			// @ts-expect-error
@@ -218,7 +218,7 @@ const UpdateNotificationSource = ({
 										}}
 									/>
 									<FormField
-										name='address'
+										name='server'
 										control={form.control}
 										render={({ field }) => {
 											return (

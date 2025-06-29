@@ -1,6 +1,10 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
 
+class Message(BaseModel):
+    title: str
+    content: str
+
 class NotificationTargetDetailRequest(BaseModel):
     notification_target_id: int
 
@@ -59,7 +63,7 @@ class UpdateNotificationSourceRequest(BaseModel):
     description: str | None = None
     email: str | None = None
     password: str | None = None
-    address: str | None = None
+    server: str | None = None
     port: int | None = None
 
 class AddNotificationSourceRequest(BaseModel):
@@ -68,14 +72,14 @@ class AddNotificationSourceRequest(BaseModel):
     category: int
     email: str | None = None
     password: str | None = None
-    address: str | None = None
+    server: str | None = None
     port: int | None = None
     
 class EmailNotificationSource(BaseModel):
     id: int
     email: str
     password: str
-    address: str
+    server: str
     port: int
     
 class DeleteNotificationSourceRequest(BaseModel):

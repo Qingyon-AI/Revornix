@@ -47,7 +47,7 @@ const AddNotificationSource = () => {
 		category: z.number(),
 		email: z.string().email().optional(),
 		password: z.string().optional(),
-		address: z.string().optional(),
+		server: z.string().optional(),
 		port: z.number().optional(),
 	});
 
@@ -60,7 +60,7 @@ const AddNotificationSource = () => {
 			category: 0,
 			email: '',
 			password: '',
-			address: '',
+			server: '',
 			port: 465,
 		},
 	});
@@ -85,7 +85,7 @@ const AddNotificationSource = () => {
 				category: values.category,
 				email: values.email,
 				password: values.password,
-				address: values.address,
+				server: values.server,
 				port: values.port,
 			})
 		);
@@ -215,7 +215,7 @@ const AddNotificationSource = () => {
 										}}
 									/>
 									<FormField
-										name='address'
+										name='server'
 										control={form.control}
 										render={({ field }) => {
 											return (

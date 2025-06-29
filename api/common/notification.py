@@ -3,8 +3,7 @@ import json
 from fastapi.encoders import jsonable_encoder
 from common.sql import SessionLocal
 from common.websocket import notificationManager
-from common.mail import send_email
-from common.logger import log_exception, exception_logger, info_logger
+from common.logger import log_exception, exception_logger
 
 async def union_send_notification(user_id: int, 
                                   title: str, 
@@ -29,7 +28,8 @@ async def union_send_notification(user_id: int,
                                                          user_id=user_id)
         if email_user:
             # 邮件发送消息
-            send_email(email_user.email, title, content)
+            # send_email(email_user.email, title, content)
+            ...
         db.commit()
     except Exception as e:
         exception_logger.error(f"记载报错，错误{e}")

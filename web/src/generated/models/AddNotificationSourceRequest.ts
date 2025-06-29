@@ -54,7 +54,7 @@ export interface AddNotificationSourceRequest {
      * @type {string}
      * @memberof AddNotificationSourceRequest
      */
-    address?: string | null;
+    server?: string | null;
     /**
      * 
      * @type {number}
@@ -88,7 +88,7 @@ export function AddNotificationSourceRequestFromJSONTyped(json: any, ignoreDiscr
         'category': json['category'],
         'email': json['email'] == null ? undefined : json['email'],
         'password': json['password'] == null ? undefined : json['password'],
-        'address': json['address'] == null ? undefined : json['address'],
+        'server': json['server'] == null ? undefined : json['server'],
         'port': json['port'] == null ? undefined : json['port'],
     };
 }
@@ -109,7 +109,7 @@ export function AddNotificationSourceRequestToJSONTyped(value?: AddNotificationS
         'category': value['category'],
         'email': value['email'],
         'password': value['password'],
-        'address': value['address'],
+        'server': value['server'],
         'port': value['port'],
     };
 }

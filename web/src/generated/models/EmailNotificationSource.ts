@@ -42,7 +42,7 @@ export interface EmailNotificationSource {
      * @type {string}
      * @memberof EmailNotificationSource
      */
-    address: string;
+    server: string;
     /**
      * 
      * @type {number}
@@ -58,7 +58,7 @@ export function instanceOfEmailNotificationSource(value: object): value is Email
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('email' in value) || value['email'] === undefined) return false;
     if (!('password' in value) || value['password'] === undefined) return false;
-    if (!('address' in value) || value['address'] === undefined) return false;
+    if (!('server' in value) || value['server'] === undefined) return false;
     if (!('port' in value) || value['port'] === undefined) return false;
     return true;
 }
@@ -76,7 +76,7 @@ export function EmailNotificationSourceFromJSONTyped(json: any, ignoreDiscrimina
         'id': json['id'],
         'email': json['email'],
         'password': json['password'],
-        'address': json['address'],
+        'server': json['server'],
         'port': json['port'],
     };
 }
@@ -95,7 +95,7 @@ export function EmailNotificationSourceToJSONTyped(value?: EmailNotificationSour
         'id': value['id'],
         'email': value['email'],
         'password': value['password'],
-        'address': value['address'],
+        'server': value['server'],
         'port': value['port'],
     };
 }

@@ -54,7 +54,7 @@ export interface UpdateNotificationSourceRequest {
      * @type {string}
      * @memberof UpdateNotificationSourceRequest
      */
-    address?: string | null;
+    server?: string | null;
     /**
      * 
      * @type {number}
@@ -86,7 +86,7 @@ export function UpdateNotificationSourceRequestFromJSONTyped(json: any, ignoreDi
         'description': json['description'] == null ? undefined : json['description'],
         'email': json['email'] == null ? undefined : json['email'],
         'password': json['password'] == null ? undefined : json['password'],
-        'address': json['address'] == null ? undefined : json['address'],
+        'server': json['server'] == null ? undefined : json['server'],
         'port': json['port'] == null ? undefined : json['port'],
     };
 }
@@ -107,7 +107,7 @@ export function UpdateNotificationSourceRequestToJSONTyped(value?: UpdateNotific
         'description': value['description'],
         'email': value['email'],
         'password': value['password'],
-        'address': value['address'],
+        'server': value['server'],
         'port': value['port'],
     };
 }

@@ -107,9 +107,7 @@ const AddNotificationTask = () => {
 		}
 		toast.success('创建成功');
 		queryClient.invalidateQueries({
-			predicate: (query) => {
-				return query.queryKey.includes('notification-source');
-			},
+			queryKey: ['notification-task'],
 		});
 		form.reset();
 		setShowAddDialog(false);
