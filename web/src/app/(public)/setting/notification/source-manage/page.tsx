@@ -49,7 +49,7 @@ const NotificationSourceManagePage = () => {
 			toast.error(error.message);
 		},
 		onSuccess(data, variables, context) {
-			toast.success('删除成功');
+			toast.success(t('setting_notification_source_manage_delete_success'));
 			queryClient.invalidateQueries({
 				queryKey: ['notification-source'],
 			});
@@ -61,20 +61,19 @@ const NotificationSourceManagePage = () => {
 			<div className='px-5 pb-5'>
 				<Alert className='mb-5'>
 					<Info />
-					<AlertTitle>注意</AlertTitle>
+					<AlertTitle>{t('note')}</AlertTitle>
 					<AlertDescription>
-						这里可以配置通知源，配置完成后你就可以开启通知了。
+						{t('setting_notification_source_manage_alert')}
 					</AlertDescription>
 				</Alert>
-				<div className='flex flex-row justify-between px-5 mb-5 items-center'>
-					<p className='font-bold text-md'>通知源管理</p>
+				<div className='flex flex-row justify-end mb-5 items-center'>
 					<AddNotificationSource />
 				</div>
 				<div>
 					{isFetching && <Skeleton className='w-full h-64' />}
 					{isSuccess && !isFetching && data?.data.length === 0 && (
 						<div className='bg-muted text-muted-foreground rounded text-xs h-64 flex items-center justify-center'>
-							暂无相关内容
+							{t('setting_notification_source_empty')}
 						</div>
 					)}
 					{isSuccess && !isFetching && data?.data?.length !== 0 && (
@@ -93,13 +92,17 @@ const NotificationSourceManagePage = () => {
 												/>
 												<AlertDialog>
 													<AlertDialogTrigger asChild>
-														<Button variant='destructive'>删除</Button>
+														<Button variant='destructive'>{t('delete')}</Button>
 													</AlertDialogTrigger>
 													<AlertDialogContent>
 														<AlertDialogHeader>
-															<AlertDialogTitle>警告</AlertDialogTitle>
+															<AlertDialogTitle>
+																{t('warning')}
+															</AlertDialogTitle>
 															<AlertDialogDescription>
-																确认删除吗？一旦删除后所有相关通知将会无法发送。
+																{t(
+																	'setting_notification_source_manage_delete_alert'
+																)}
 															</AlertDialogDescription>
 														</AlertDialogHeader>
 														<AlertDialogFooter>

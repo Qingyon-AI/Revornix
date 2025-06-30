@@ -20,7 +20,6 @@ import { Input } from '@/components/ui/input';
 import { getQueryClient } from '@/lib/get-query-client';
 import { addNotificationSource } from '@/service/notification';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -35,8 +34,9 @@ import {
 	SelectValue,
 } from '../ui/select';
 import { Tooltip, TooltipTrigger } from '../ui/hybrid-tooltip';
-import { Info } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
 import { TooltipContent } from '../ui/tooltip';
+import { useMutation } from '@tanstack/react-query';
 
 const AddNotificationSource = () => {
 	const t = useTranslations();
@@ -77,30 +77,24 @@ const AddNotificationSource = () => {
 		return form.handleSubmit(onFormValidateSuccess, onFormValidateError)(event);
 	};
 
+	const mutateAddNotificationSource = useMutation({
+		mutationFn: addNotificationSource,
+		onSuccess(data, variables, context) {
+			queryClient.invalidateQueries({
+				predicate: (query) => {
+					return query.queryKey.includes('notification-source');
+				},
+			});
+			form.reset();
+			setShowAddDialog(false);
+		},
+		onError(error, variables, context) {
+			toast.error(error.message);
+		},
+	});
+
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		const [res, err] = await utils.to(
-			addNotificationSource({
-				title: values.title,
-				description: values.description,
-				category: values.category,
-				email: values.email,
-				password: values.password,
-				server: values.server,
-				port: values.port,
-			})
-		);
-		if (err || !res) {
-			toast.error(err.message || '创建失败');
-			return;
-		}
-		toast.success('创建成功');
-		queryClient.invalidateQueries({
-			predicate: (query) => {
-				return query.queryKey.includes('notification-source');
-			},
-		});
-		form.reset();
-		setShowAddDialog(false);
+		mutateAddNotificationSource.mutate(values);
 	};
 
 	const onFormValidateError = (error: any) => {
@@ -110,23 +104,37 @@ const AddNotificationSource = () => {
 
 	return (
 		<>
-			<Button onClick={() => setShowAddDialog(true)}>增加源</Button>
+			<Button onClick={() => setShowAddDialog(true)}>
+				{t('setting_notification_source_manage_add_form_label')}
+			</Button>
 			<Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
 				<DialogContent>
-					<DialogTitle>增加源</DialogTitle>
+					<DialogTitle>
+						{t('setting_notification_source_manage_add_form_label')}
+					</DialogTitle>
 					<DialogDescription>
-						增加源可以便利的通过各种方式通知到各终端，当前仅支持email方式。
+						{t('setting_notification_source_manage_form_alert')}
 					</DialogDescription>
 					<Form {...form}>
-						<form onSubmit={onSubmitForm} className='space-y-3' id='add-form'>
+						<form
+							onSubmit={onSubmitForm}
+							className='space-y-3'
+							id='add-notification-source-form'>
 							<FormField
 								name='title'
 								control={form.control}
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>名称</FormLabel>
-											<Input {...field} placeholder='请输入源的名字' />
+											<FormLabel>
+												{t('setting_notification_source_manage_form_title')}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_notification_source_manage_form_title_placeholder'
+												)}
+											/>
 											<FormMessage />
 										</FormItem>
 									);
@@ -138,8 +146,17 @@ const AddNotificationSource = () => {
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>描述</FormLabel>
-											<Input {...field} placeholder='请输入源的描述' />
+											<FormLabel>
+												{t(
+													'setting_notification_source_manage_form_description'
+												)}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_notification_source_manage_form_description_placeholder'
+												)}
+											/>
 											<FormMessage />
 										</FormItem>
 									);
@@ -151,12 +168,18 @@ const AddNotificationSource = () => {
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>源类型</FormLabel>
+											<FormLabel>
+												{t('setting_notification_source_manage_form_category')}
+											</FormLabel>
 											<Select
 												onValueChange={(value) => field.onChange(Number(value))}
 												defaultValue={String(field.value)}>
 												<SelectTrigger className='w-full'>
-													<SelectValue placeholder='请选择邮件源类型' />
+													<SelectValue
+														placeholder={t(
+															'setting_notification_source_manage_form_category_placeholder'
+														)}
+													/>
 												</SelectTrigger>
 												<SelectContent className='w-full'>
 													<SelectGroup>
@@ -177,10 +200,14 @@ const AddNotificationSource = () => {
 										render={({ field }) => {
 											return (
 												<FormItem>
-													<FormLabel>邮箱地址</FormLabel>
+													<FormLabel>
+														{t('setting_notification_source_manage_form_email')}
+													</FormLabel>
 													<Input
 														{...field}
-														placeholder='请选择邮件源邮箱地址'
+														placeholder={t(
+															'setting_notification_source_manage_form_email_placeholder'
+														)}
 													/>
 													<FormMessage />
 												</FormItem>
@@ -194,20 +221,26 @@ const AddNotificationSource = () => {
 											return (
 												<FormItem>
 													<FormLabel>
-														邮箱密码
+														{t(
+															'setting_notification_source_manage_form_password'
+														)}
 														<Tooltip>
 															<TooltipTrigger>
 																<Info size={15} />
 															</TooltipTrigger>
 															<TooltipContent>
-																注意这里的密码不是真实邮箱密码，而是smtp服务的密码。
+																{t(
+																	'setting_notification_source_manage_form_password_alert'
+																)}
 															</TooltipContent>
 														</Tooltip>
 													</FormLabel>
 													<Input
 														type='password'
 														{...field}
-														placeholder='请选择邮件源邮箱密码'
+														placeholder={t(
+															'setting_notification_source_manage_form_password_placeholder'
+														)}
 													/>
 													<FormMessage />
 												</FormItem>
@@ -220,10 +253,16 @@ const AddNotificationSource = () => {
 										render={({ field }) => {
 											return (
 												<FormItem>
-													<FormLabel>邮箱服务器地址</FormLabel>
+													<FormLabel>
+														{t(
+															'setting_notification_source_manage_form_server'
+														)}
+													</FormLabel>
 													<Input
 														{...field}
-														placeholder='请选择邮件源服务器地址'
+														placeholder={t(
+															'setting_notification_source_manage_form_server_placeholder'
+														)}
 													/>
 													<FormMessage />
 												</FormItem>
@@ -236,14 +275,18 @@ const AddNotificationSource = () => {
 										render={({ field }) => {
 											return (
 												<FormItem>
-													<FormLabel>邮箱服务器端口</FormLabel>
+													<FormLabel>
+														{t('setting_notification_source_manage_form_port')}
+													</FormLabel>
 													<Input
 														type={'number'}
 														{...field}
 														onChange={(e) =>
 															field.onChange(e.target.valueAsNumber)
 														}
-														placeholder='请选择邮件源服务器端口'
+														placeholder={t(
+															'setting_notification_source_manage_form_port_placeholder'
+														)}
 													/>
 													<FormMessage />
 												</FormItem>
@@ -255,11 +298,17 @@ const AddNotificationSource = () => {
 						</form>
 					</Form>
 					<DialogFooter>
-						<Button type='submit' form='add-form'>
-							确认提交
+						<Button
+							type='submit'
+							form='add-notification-source-form'
+							disabled={mutateAddNotificationSource.isPending}>
+							{t('submit')}
+							{mutateAddNotificationSource.isPending && (
+								<Loader2 className='animate-spin' />
+							)}
 						</Button>
 						<DialogClose asChild>
-							<Button variant='outline'>取消</Button>
+							<Button variant='outline'>{t('cancel')}</Button>
 						</DialogClose>
 					</DialogFooter>
 				</DialogContent>

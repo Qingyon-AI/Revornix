@@ -14,12 +14,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Loader2 } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
+import { useTranslations } from 'next-intl';
 
 const DeleteNotificationTask = ({
 	notification_task_id,
 }: {
 	notification_task_id: number;
 }) => {
+	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const mutateDelete = useMutation({
 		mutationFn: () => {
@@ -28,26 +30,25 @@ const DeleteNotificationTask = ({
 			});
 		},
 		onSuccess(data, variables, context) {
-			toast.success('删除成功');
 			queryClient.invalidateQueries({
 				queryKey: ['notification-task'],
 			});
 		},
 		onError(error, variables, context) {
-			toast.error('删除失败');
+			toast.error(error.message);
 		},
 	});
 	return (
 		<>
 			<AlertDialog>
 				<AlertDialogTrigger asChild>
-					<Button variant={'outline'}>删除</Button>
+					<Button variant={'outline'}>{t('delete')}</Button>
 				</AlertDialogTrigger>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>提醒</AlertDialogTitle>
+						<AlertDialogTitle>{t('warning')}</AlertDialogTitle>
 						<AlertDialogDescription>
-							确认删除吗？删除通知后将无法撤销。
+							{t('setting_notification_task_manage_delete_alert')}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -57,12 +58,12 @@ const DeleteNotificationTask = ({
 								mutateDelete.mutateAsync();
 							}}
 							disabled={mutateDelete.isPending}>
-							确认
+							{t('confirm')}
 							{mutateDelete.isPending && (
 								<Loader2 className='h-4 w-4 animate-spin' />
 							)}
 						</Button>
-						<AlertDialogCancel>取消</AlertDialogCancel>
+						<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>

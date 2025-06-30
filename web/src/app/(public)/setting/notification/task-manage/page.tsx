@@ -12,8 +12,10 @@ import {
 } from '@/components/ui/table';
 import AddNotificationTask from '@/components/notification/add-notification-task';
 import NotificationTaskItem from '@/components/notification/notification-task-item';
+import { useTranslations } from 'next-intl';
 
 const NotificationTaskManagePage = () => {
+	const t = useTranslations();
 	const { data, isFetching, isSuccess } = useQuery({
 		queryKey: ['notification-task'],
 		queryFn: getMineNotificationTask,
@@ -26,7 +28,7 @@ const NotificationTaskManagePage = () => {
 			{isFetching && <Skeleton className='w-full h-64' />}
 			{isSuccess && !isFetching && data?.data.length === 0 && (
 				<div className='bg-muted text-muted-foreground rounded text-xs h-64 flex items-center justify-center'>
-					暂无相关内容
+					{t('setting_notification_task_empty')}
 				</div>
 			)}
 			{isSuccess && !isFetching && data?.data.length > 0 && (
@@ -34,13 +36,13 @@ const NotificationTaskManagePage = () => {
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>通知源</TableHead>
-								<TableHead>通知目标</TableHead>
-								<TableHead>通知标题</TableHead>
-								<TableHead>通知内容</TableHead>
-								<TableHead>cron表达式</TableHead>
-								<TableHead>启用状态</TableHead>
-								<TableHead>操作</TableHead>
+								<TableHead>{t('setting_notification_task_source')}</TableHead>
+								<TableHead>{t('setting_notification_task_target')}</TableHead>
+								<TableHead>{t('setting_notification_task_title')}</TableHead>
+								<TableHead>{t('setting_notification_task_content')}</TableHead>
+								<TableHead>{t('setting_notification_task_cron_expr')}</TableHead>
+								<TableHead>{t('setting_notification_task_enable_status')}</TableHead>
+								<TableHead>{t('setting_notification_task_enable_action')}</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>

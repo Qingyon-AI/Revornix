@@ -52,7 +52,9 @@ const SettingPage = () => {
 			<Card>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>通知任务管理</Label>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_notification_task_manage')}
+						</Label>
 						<div className='flex flex-col gap-2'>
 							<NotificationTaskManage />
 						</div>
@@ -60,7 +62,7 @@ const SettingPage = () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							通知源管理
+							{t('setting_notification_source_manage')}
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<NotificationSourceManage />
@@ -69,7 +71,7 @@ const SettingPage = () => {
 					<Separator />
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
-							通知目标管理
+							{t('setting_notification_target_manage')}
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<NotificationTargetManage />

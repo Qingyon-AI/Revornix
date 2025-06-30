@@ -22,13 +22,13 @@ import {
 	updateNotificationTarget,
 } from '@/service/notification';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
 
 const UpdateNotificationTarget = ({
 	notification_target_id,
@@ -76,27 +76,24 @@ const UpdateNotificationTarget = ({
 		return form.handleSubmit(onFormValidateSuccess, onFormValidateError)(event);
 	};
 
+	const mutateUpdateNotificationTarget = useMutation({
+		mutationFn: updateNotificationTarget,
+		onSuccess(data, variables, context) {
+			queryClient.invalidateQueries({
+				queryKey: ['notification-target'],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['notification-target-detail', notification_target_id],
+			});
+			setShowUpdateDialog(false);
+		},
+		onError(error, variables, context) {
+			toast.error(error.message);
+		},
+	});
+
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		const [res, err] = await utils.to(
-			updateNotificationTarget({
-				notification_target_id: values.notification_target_id,
-				title: values.title,
-				description: values.description,
-				email: values.email,
-			})
-		);
-		if (err || !res) {
-			toast.error(err.message || '更新失败');
-			return;
-		}
-		toast.success('更新成功');
-		queryClient.invalidateQueries({
-			queryKey: ['notification-target'],
-		});
-		queryClient.invalidateQueries({
-			queryKey: ['notification-target-detail', notification_target_id],
-		});
-		setShowUpdateDialog(false);
+		mutateUpdateNotificationTarget.mutate(values);
 	};
 
 	const onFormValidateError = (error: any) => {
@@ -104,7 +101,6 @@ const UpdateNotificationTarget = ({
 		console.error(error);
 	};
 
-	// ✅ 数据加载后同步到表单
 	useEffect(() => {
 		if (data) {
 			const defaultValues: z.infer<typeof formSchema> = {
@@ -120,11 +116,13 @@ const UpdateNotificationTarget = ({
 	return (
 		<>
 			<Button variant={'outline'} onClick={() => setShowUpdateDialog(true)}>
-				编辑
+				{t('edit')}
 			</Button>
 			<Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
 				<DialogContent>
-					<DialogTitle>编辑通知目标</DialogTitle>
+					<DialogTitle>
+						{t('setting_notification_target_manage_update_form_label')}
+					</DialogTitle>
 					<Form {...form}>
 						<form
 							onSubmit={onSubmitForm}
@@ -136,8 +134,15 @@ const UpdateNotificationTarget = ({
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>名称</FormLabel>
-											<Input {...field} placeholder='请输入通知目标的名字' />
+											<FormLabel>
+												{t('setting_notification_target_manage_form_title')}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_notification_target_manage_form_title_placeholder'
+												)}
+											/>
 											<FormMessage />
 										</FormItem>
 									);
@@ -149,8 +154,17 @@ const UpdateNotificationTarget = ({
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>描述</FormLabel>
-											<Input {...field} placeholder='请输入通知目标的描述' />
+											<FormLabel>
+												{t(
+													'setting_notification_target_manage_form_description'
+												)}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_notification_target_manage_form_description_placeholder'
+												)}
+											/>
 											<FormMessage />
 										</FormItem>
 									);
@@ -164,8 +178,15 @@ const UpdateNotificationTarget = ({
 										render={({ field }) => {
 											return (
 												<FormItem>
-													<FormLabel>邮箱地址</FormLabel>
-													<Input {...field} placeholder='请选择目标邮箱地址' />
+													<FormLabel>
+														{t('setting_notification_target_manage_form_email')}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'setting_notification_target_manage_form_email_placeholder'
+														)}
+													/>
 													<FormMessage />
 												</FormItem>
 											);
@@ -176,11 +197,17 @@ const UpdateNotificationTarget = ({
 						</form>
 					</Form>
 					<DialogFooter>
-						<Button type='submit' form='update-form'>
-							确认更新
+						<Button
+							type='submit'
+							form='update-form'
+							disabled={mutateUpdateNotificationTarget.isPending}>
+							{t('submit')}
+							{mutateUpdateNotificationTarget.isPending && (
+								<Loader2 className='animate-spin' />
+							)}
 						</Button>
 						<DialogClose asChild>
-							<Button variant='outline'>取消</Button>
+							<Button variant='outline'>{t('cancel')}</Button>
 						</DialogClose>
 					</DialogFooter>
 				</DialogContent>

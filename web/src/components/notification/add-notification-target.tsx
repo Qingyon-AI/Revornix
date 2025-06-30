@@ -20,7 +20,6 @@ import { Input } from '@/components/ui/input';
 import { getQueryClient } from '@/lib/get-query-client';
 import { addNotificationTarget } from '@/service/notification';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -34,6 +33,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
+import { useMutation } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
 
 const AddNotificationTarget = () => {
 	const t = useTranslations();
@@ -68,27 +69,24 @@ const AddNotificationTarget = () => {
 		return form.handleSubmit(onFormValidateSuccess, onFormValidateError)(event);
 	};
 
-	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		const [res, err] = await utils.to(
-			addNotificationTarget({
-				title: values.title,
-				description: values.description,
-				category: values.category,
-				email: values.email,
-			})
-		);
-		if (err || !res) {
-			toast.error(err.message || '创建失败');
-			return;
-		}
-		toast.success('创建成功');
-		queryClient.invalidateQueries({
-			predicate: (query) => {
-				return query.queryKey.includes('notification-target');
-			},
-		});
-		form.reset();
-		setShowAddDialog(false);
+	const mutateAddNotificationTarget = useMutation({
+		mutationFn: addNotificationTarget,
+		onSuccess(data, variables, context) {
+			queryClient.invalidateQueries({
+				predicate: (query) => {
+					return query.queryKey.includes('notification-target');
+				},
+			});
+			form.reset();
+			setShowAddDialog(false);
+		},
+		onError(error, variables, context) {
+			toast.error(error.message);
+		},
+	});
+
+	const onFormValidateSuccess = async (data: z.infer<typeof formSchema>) => {
+		mutateAddNotificationTarget.mutate(data);
 	};
 
 	const onFormValidateError = (error: any) => {
@@ -98,23 +96,37 @@ const AddNotificationTarget = () => {
 
 	return (
 		<>
-			<Button onClick={() => setShowAddDialog(true)}>增加目标</Button>
+			<Button onClick={() => setShowAddDialog(true)}>
+				{t('setting_notification_target_manage_add_form_label')}
+			</Button>
 			<Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
 				<DialogContent>
-					<DialogTitle>增加目标</DialogTitle>
+					<DialogTitle>
+						{t('setting_notification_target_manage_add_form_label')}
+					</DialogTitle>
 					<DialogDescription>
-						增加目标可以便利的通过各种方式接收通知。
+						{t('setting_notification_target_manage_form_desc')}
 					</DialogDescription>
 					<Form {...form}>
-						<form onSubmit={onSubmitForm} className='space-y-3' id='add-form'>
+						<form
+							onSubmit={onSubmitForm}
+							className='space-y-3'
+							id='add-notification-target-form'>
 							<FormField
 								name='title'
 								control={form.control}
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>名称</FormLabel>
-											<Input {...field} placeholder='请输入目标的名字' />
+											<FormLabel>
+												{t('setting_notification_target_manage_form_title')}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_notification_target_manage_form_title_placeholder'
+												)}
+											/>
 											<FormMessage />
 										</FormItem>
 									);
@@ -126,8 +138,8 @@ const AddNotificationTarget = () => {
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>描述</FormLabel>
-											<Input {...field} placeholder='请输入目标的描述' />
+											<FormLabel>{t('setting_notification_target_manage_form_description')}</FormLabel>
+											<Input {...field} placeholder={t('setting_notification_target_manage_form_description_placeholder')} />
 											<FormMessage />
 										</FormItem>
 									);
@@ -139,12 +151,12 @@ const AddNotificationTarget = () => {
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>目标类型</FormLabel>
+											<FormLabel>{t('setting_notification_target_manage_form_category')}</FormLabel>
 											<Select
 												onValueChange={(value) => field.onChange(Number(value))}
 												defaultValue={String(field.value)}>
 												<SelectTrigger className='w-full'>
-													<SelectValue placeholder='请选择目标类型' />
+													<SelectValue placeholder={t('setting_notification_target_manage_form_category_placeholder')} />
 												</SelectTrigger>
 												<SelectContent className='w-full'>
 													<SelectGroup>
@@ -165,11 +177,8 @@ const AddNotificationTarget = () => {
 										render={({ field }) => {
 											return (
 												<FormItem>
-													<FormLabel>邮箱地址</FormLabel>
-													<Input
-														{...field}
-														placeholder='请选择目标邮箱地址'
-													/>
+													<FormLabel>{t('setting_notification_target_manage_form_email')}</FormLabel>
+													<Input {...field} placeholder={t('setting_notification_target_manage_form_email_placeholder')} />
 													<FormMessage />
 												</FormItem>
 											);
@@ -180,11 +189,17 @@ const AddNotificationTarget = () => {
 						</form>
 					</Form>
 					<DialogFooter>
-						<Button type='submit' form='add-form'>
-							确认提交
+						<Button
+							type='submit'
+							form='add-notification-target-form'
+							disabled={mutateAddNotificationTarget.isPending}>
+							{t('submit')}
+							{mutateAddNotificationTarget.isPending && (
+								<Loader2 className='animate-spin' />
+							)}
 						</Button>
 						<DialogClose asChild>
-							<Button variant='outline'>取消</Button>
+							<Button variant='outline'>{t('cancel')}</Button>
 						</DialogClose>
 					</DialogFooter>
 				</DialogContent>

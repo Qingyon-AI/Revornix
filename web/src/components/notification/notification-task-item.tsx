@@ -31,7 +31,7 @@ const NotificationTaskItem = ({ task }: { task: NotificationTask }) => {
 			});
 		},
 		onError(error, variables, context) {
-			toast.error('更新失败');
+			toast.error(error.message);
 			if (context) {
 				task = context.prev;
 			}
@@ -49,7 +49,9 @@ const NotificationTaskItem = ({ task }: { task: NotificationTask }) => {
 			<TableCell>
 				<HoverCard>
 					<HoverCardTrigger asChild>
-						<div className='line-clamp-1 whitespace-normal break-all'>{task.title}</div>
+						<div className='line-clamp-1 whitespace-normal break-all'>
+							{task.title}
+						</div>
 					</HoverCardTrigger>
 					<HoverCardContent className='max-w-80 text-xs break-all'>
 						{task.title}
@@ -59,7 +61,9 @@ const NotificationTaskItem = ({ task }: { task: NotificationTask }) => {
 			<TableCell>
 				<HoverCard>
 					<HoverCardTrigger asChild>
-						<div className='line-clamp-1 whitespace-normal break-all'>{task.content}</div>
+						<div className='line-clamp-1 whitespace-normal break-all'>
+							{task.content}
+						</div>
 					</HoverCardTrigger>
 					<HoverCardContent className='max-w-80 text-xs break-all'>
 						{task.content}

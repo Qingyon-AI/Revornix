@@ -26,7 +26,6 @@ import {
 	updateNotificationTask,
 } from '@/service/notification';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -110,7 +109,6 @@ const UpdateNotificationTask = ({
 	const mutateUpdateNotificationTask = useMutation({
 		mutationFn: updateNotificationTask,
 		onSuccess(data, variables, context) {
-			toast.success('更新成功');
 			queryClient.invalidateQueries({
 				queryKey: ['notification-task'],
 			});
@@ -121,7 +119,7 @@ const UpdateNotificationTask = ({
 			setShowUpdateDialog(false);
 		},
 		onError(error, variables, context) {
-			toast.error(error.message || '更新失败');
+			toast.error(error.message);
 			return;
 		},
 	});
@@ -129,13 +127,12 @@ const UpdateNotificationTask = ({
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		mutateUpdateNotificationTask.mutate(values);
 	};
-	
+
 	const onFormValidateError = (error: any) => {
 		toast.error(t('form_validate_failed'));
 		console.error(error);
 	};
 
-	// ✅ 数据加载后同步到表单
 	useEffect(() => {
 		if (data) {
 			const defaultValues: z.infer<typeof formSchema> = {
@@ -153,7 +150,7 @@ const UpdateNotificationTask = ({
 
 	return (
 		<>
-			<Button onClick={() => setShowUpdateDialog(true)}>编辑</Button>
+			<Button onClick={() => setShowUpdateDialog(true)}>{t('edit')}</Button>
 			<Dialog
 				open={showUpdateDialog}
 				onOpenChange={(e) => {
@@ -163,11 +160,13 @@ const UpdateNotificationTask = ({
 					setShowUpdateDialog(e);
 				}}>
 				<DialogContent className='flex flex-col max-h-[80vh]'>
-					<DialogTitle>编辑通知任务</DialogTitle>
+					<DialogTitle>
+						{t('setting_notification_task_manage_update_label')}
+					</DialogTitle>
 					<Alert>
 						<Info />
 						<AlertDescription>
-							更新任务后会立即执行一次，你可以通过第一次执行来判断是否成功。注意有时候会有一定延迟，请稍等一会儿再确认。
+							{t('setting_notification_task_manage_update_alert')}
 						</AlertDescription>
 					</Alert>
 					<Form {...form}>
@@ -181,8 +180,15 @@ const UpdateNotificationTask = ({
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>通知标题</FormLabel>
-											<Input {...field} placeholder='请输入通知标题' />
+											<FormLabel>
+												{t('setting_notification_task_manage_form_title')}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_notification_task_manage_form_title_placeholder'
+												)}
+											/>
 											<FormMessage />
 										</FormItem>
 									);
@@ -194,8 +200,15 @@ const UpdateNotificationTask = ({
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>通知内容</FormLabel>
-											<Textarea {...field} placeholder='请输入通知标题' />
+											<FormLabel>
+												{t('setting_notification_task_manage_form_content')}
+											</FormLabel>
+											<Textarea
+												{...field}
+												placeholder={t(
+													'setting_notification_task_manage_form_content_placeholder'
+												)}
+											/>
 											<FormMessage />
 										</FormItem>
 									);
@@ -208,13 +221,15 @@ const UpdateNotificationTask = ({
 									return (
 										<FormItem>
 											<FormLabel>
-												cron表达式
+												{t('setting_notification_task_manage_form_cron_expr')}
 												<Tooltip>
 													<TooltipTrigger>
 														<Info size={15} />
 													</TooltipTrigger>
 													<TooltipContent>
-														此处表达式指的是类Unix的cron表达式，详情查看
+														{t(
+															'setting_notification_task_manage_form_cron_expr_alert'
+														)}
 														<Link
 															className='ml-1 underline underline-offset-2'
 															href={'https://en.wikipedia.org/wiki/Cron'}>
@@ -225,8 +240,10 @@ const UpdateNotificationTask = ({
 											</FormLabel>
 											<Input
 												className='font-mono'
+												placeholder={t(
+													'setting_notification_task_manage_form_cron_expr_placeholder'
+												)}
 												{...field}
-												placeholder='请输入表达式'
 											/>
 											<FormMessage />
 										</FormItem>
@@ -239,14 +256,20 @@ const UpdateNotificationTask = ({
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>通知源</FormLabel>
+											<FormLabel>
+												{t('setting_notification_task_manage_form_source')}
+											</FormLabel>
 											<Select
 												value={field.value ? String(field.value) : undefined}
 												onValueChange={(e) => {
 													field.onChange(Number(e));
 												}}>
 												<SelectTrigger className='w-full'>
-													<SelectValue placeholder='请选择通知源' />
+													<SelectValue
+														placeholder={t(
+															'setting_notification_task_manage_form_source_placeholder'
+														)}
+													/>
 												</SelectTrigger>
 												<SelectContent>
 													<SelectGroup>
@@ -275,14 +298,20 @@ const UpdateNotificationTask = ({
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>通知目标</FormLabel>
+											<FormLabel>
+												{t('setting_notification_task_manage_form_target')}
+											</FormLabel>
 											<Select
 												value={field.value ? String(field.value) : undefined}
 												onValueChange={(e) => {
 													field.onChange(Number(e));
 												}}>
 												<SelectTrigger className='w-full'>
-													<SelectValue placeholder='请选择通知目标' />
+													<SelectValue
+														placeholder={t(
+															'setting_notification_task_manage_form_target_placeholder'
+														)}
+													/>
 												</SelectTrigger>
 												<SelectContent>
 													<SelectGroup>
@@ -312,9 +341,13 @@ const UpdateNotificationTask = ({
 									return (
 										<FormItem className='flex flex-row items-center justify-between border rounded-xl p-3'>
 											<div className='space-y-1'>
-												<FormLabel>启用状态</FormLabel>
+												<FormLabel>
+													{t('setting_notification_task_manage_form_enable')}
+												</FormLabel>
 												<FormDescription>
-													默认启用，如需关闭请手动关闭
+													{t(
+														'setting_notification_task_manage_form_enable_alert'
+													)}
 												</FormDescription>
 											</div>
 											<FormControl>
@@ -334,13 +367,13 @@ const UpdateNotificationTask = ({
 							type='submit'
 							form='update-notification-task-form'
 							disabled={mutateUpdateNotificationTask.isPending}>
-							确认提交
+							{t('submit')}
 							{mutateUpdateNotificationTask.isPending && (
 								<Loader2 className='animate-spin' />
 							)}
 						</Button>
 						<DialogClose asChild>
-							<Button variant='outline'>取消</Button>
+							<Button variant='outline'>{t('cancel')}</Button>
 						</DialogClose>
 					</DialogFooter>
 				</DialogContent>
