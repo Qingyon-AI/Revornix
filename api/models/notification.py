@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Text
+from sqlalchemy.dialects.mysql import LONGTEXT
 from common.sql import Base
 
 class NotificationTask(Base):
@@ -8,8 +9,8 @@ class NotificationTask(Base):
     user_id = Column(Integer, ForeignKey("user.id"), index=True)
     notification_source_id = Column(Integer, ForeignKey("notification_source.id"), index=True)
     notification_target_id = Column(Integer, ForeignKey("notification_target.id"), index=True)
-    title = Column(String(200), index=True, nullable=False)
-    content = Column(String(2000), nullable=False)
+    title = Column(String(500), index=True, nullable=False)
+    content = Column(LONGTEXT(), nullable=False)
     cron_expr = Column(String(100), nullable=True)
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
@@ -21,10 +22,7 @@ class NotificationRecord(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"), index=True)
-    title = Column(String(200), index=True, nullable=False)
-    notification_type = Column(Integer, index=True, comment='0: system notification，1: user comment，2: vote and subscribe，3: follow')
-    content = Column(String(2000), nullable=False)
-    link = Column(String(500), comment='The link to the related resource')
+    task_id = Column(Integer, ForeignKey("notification_task.id"), index=True)
     read_at = Column(DateTime(timezone=True), nullable=True)
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)

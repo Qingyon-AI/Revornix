@@ -42,9 +42,9 @@ import {
 } from '../ui/select';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Alert, AlertDescription } from '../ui/alert';
-import { Info } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import Link from 'next/link';
 
@@ -107,31 +107,27 @@ const UpdateNotificationTask = ({
 		return form.handleSubmit(onFormValidateSuccess, onFormValidateError)(event);
 	};
 
-	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		const [res, err] = await utils.to(
-			updateNotificationTask({
-				notification_task_id: notification_task_id,
-				title: values.title,
-				content: values.content,
-				cron_expr: values.cron_expr,
-				enable: values.enable,
-				notification_source_id: values.notification_source_id,
-				notification_target_id: values.notification_target_id,
-			})
-		);
-		if (err || !res) {
-			toast.error(err.message || '更新失败');
+	const mutateUpdateNotificationTask = useMutation({
+		mutationFn: updateNotificationTask,
+		onSuccess(data, variables, context) {
+			toast.success('更新成功');
+			queryClient.invalidateQueries({
+				queryKey: ['notification-task'],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['notification-task-detail', notification_task_id],
+			});
+			form.reset();
+			setShowUpdateDialog(false);
+		},
+		onError(error, variables, context) {
+			toast.error(error.message || '更新失败');
 			return;
-		}
-		toast.success('更新成功');
-		queryClient.invalidateQueries({
-			queryKey: ['notification-task'],
-		});
-		queryClient.invalidateQueries({
-			queryKey: ['notification-task-detail', notification_task_id],
-		});
-		form.reset();
-		setShowUpdateDialog(false);
+		},
+	});
+
+	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
+		mutateUpdateNotificationTask.mutate(values);
 	};
 
 	const onFormValidateError = (error: any) => {
@@ -334,8 +330,14 @@ const UpdateNotificationTask = ({
 						</form>
 					</Form>
 					<DialogFooter>
-						<Button type='submit' form='update-notification-task-form'>
+						<Button
+							type='submit'
+							form='update-notification-task-form'
+							disabled={mutateUpdateNotificationTask.isPending}>
 							确认提交
+							{mutateUpdateNotificationTask.isPending && (
+								<Loader2 className='animate-spin' />
+							)}
 						</Button>
 						<DialogClose asChild>
 							<Button variant='outline'>取消</Button>

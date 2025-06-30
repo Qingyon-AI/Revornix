@@ -41,9 +41,9 @@ import {
 } from '../ui/select';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Alert, AlertDescription } from '../ui/alert';
-import { Info } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import Link from 'next/link';
 
@@ -94,27 +94,24 @@ const AddNotificationTask = () => {
 		return form.handleSubmit(onFormValidateSuccess, onFormValidateError)(event);
 	};
 
-	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		const [res, err] = await utils.to(
-			addNotificationTask({
-				title: values.title,
-				content: values.content,
-				cron_expr: values.cron_expr,
-				enable: values.enable,
-				notification_source_id: values.notification_source_id,
-				notification_target_id: values.notification_target_id,
-			})
-		);
-		if (err || !res) {
-			toast.error(err.message || '创建失败');
+	const mutateAddNotificationTask = useMutation({
+		mutationFn: addNotificationTask,
+		onSuccess: () => {
+			toast.success('创建成功');
+			queryClient.invalidateQueries({
+				queryKey: ['notification-task'],
+			});
+			form.reset();
+			setShowAddDialog(false);
+		},
+		onError(error, variables, context) {
+			toast.error(error.message || '创建失败');
 			return;
-		}
-		toast.success('创建成功');
-		queryClient.invalidateQueries({
-			queryKey: ['notification-task'],
-		});
-		form.reset();
-		setShowAddDialog(false);
+		},
+	});
+
+	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
+		mutateAddNotificationTask.mutate(values);
 	};
 
 	const onFormValidateError = (error: any) => {
@@ -134,7 +131,10 @@ const AddNotificationTask = () => {
 						</AlertDescription>
 					</Alert>
 					<Form {...form}>
-						<form onSubmit={onSubmitForm} className='space-y-3 flex-1 overflow-auto px-1' id='add-form'>
+						<form
+							onSubmit={onSubmitForm}
+							className='space-y-3 flex-1 overflow-auto px-1'
+							id='add-form'>
 							<FormField
 								name='title'
 								control={form.control}
@@ -290,8 +290,14 @@ const AddNotificationTask = () => {
 						</form>
 					</Form>
 					<DialogFooter>
-						<Button type='submit' form='add-form'>
+						<Button
+							type='submit'
+							form='add-form'
+							disabled={mutateAddNotificationTask.isPending}>
 							确认提交
+							{mutateAddNotificationTask.isPending && (
+								<Loader2 className='animate-spin' />
+							)}
 						</Button>
 						<DialogClose asChild>
 							<Button variant='outline'>取消</Button>
