@@ -9,6 +9,7 @@ from apscheduler.triggers.cron import CronTrigger
 from common.dependencies import get_current_user, get_current_user_with_websocket, get_db
 from datetime import datetime
 from common.apscheduler.app import send_notification
+from notification_template.daily_summary import DailySummaryNotificationTemplate
 
 notification_router = APIRouter()
     
@@ -27,6 +28,18 @@ async def websocket_ask_ai(websocket: WebSocket,
     except WebSocketDisconnect:
         notificationManager.disconnect(websocket_id)
         await notificationManager.broadcast(f"Client #{websocket} left the chat")
+        
+@notification_router.post('/template/all', response_model=schemas.notification.NotificationTemplatesResponse)
+async def get_notification_templates(user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    data = []
+    daily_summary_template = DailySummaryNotificationTemplate(user_id=user.id)
+    data.append(schemas.notification.NotificationTemplate(
+        name=daily_summary_template.template_name,
+        description=daily_summary_template.template_description,
+        version=daily_summary_template.template_version,
+    ))
+    res = schemas.notification.NotificationTemplatesResponse(data=data)
+    return res
         
 @notification_router.post('/task/add', response_model=schemas.common.NormalResponse)
 async def add_notification_task(add_notification_task_request: schemas.notification.AddNotificationTaskRequest,

@@ -210,3 +210,11 @@ class NotificationTaskResponse(BaseModel):
     
 class NotificationTaskDetailRequest(BaseModel):
     notification_task_id: int
+    
+class NotificationTemplate(BaseModel):
+    name: str
+    description: str | None = None
+    version: str
+    
+class NotificationTemplatesResponse(BaseModel):
+    data: list[NotificationTemplate]
