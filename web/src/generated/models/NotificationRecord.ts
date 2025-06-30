@@ -55,12 +55,6 @@ export interface NotificationRecord {
      * @memberof NotificationRecord
      */
     update_time?: Date | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof NotificationRecord
-     */
-    link?: string | null;
 }
 
 /**
@@ -89,7 +83,6 @@ export function NotificationRecordFromJSONTyped(json: any, ignoreDiscriminator: 
         'read_at': json['read_at'] == null ? undefined : (new Date(json['read_at'])),
         'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
-        'link': json['link'] == null ? undefined : json['link'],
     };
 }
 
@@ -110,7 +103,6 @@ export function NotificationRecordToJSONTyped(value?: NotificationRecord | null,
         'read_at': value['read_at'] == null ? undefined : ((value['read_at'] as any).toISOString()),
         'create_time': value['create_time'] == null ? undefined : ((value['create_time'] as any).toISOString()),
         'update_time': value['update_time'] == null ? undefined : ((value['update_time'] as any).toISOString()),
-        'link': value['link'],
     };
 }
 

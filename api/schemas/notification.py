@@ -107,7 +107,6 @@ class NotificationRecord(BaseModel):
     read_at: datetime | None = None
     create_time: datetime | None = None
     update_time: datetime | None = None
-    link: str | None = None # 点击通知后跳转的页面
     @field_validator("read_at", mode="before")
     def ensure_read_at_timezone(cls, v: datetime) -> datetime:
         if v is not None and v.tzinfo is None:
@@ -128,12 +127,6 @@ class NotificationRecord(BaseModel):
     
 class DeleteNotificationRecordRequest(BaseModel):
     notification_record_ids: list[int]
-    
-class CreateNotificationRecordRequest(BaseModel):
-    title: str
-    content: str
-    link: str | None = None
-    notification_type: int
     
 class NotificationSource(BaseModel):
     id: int

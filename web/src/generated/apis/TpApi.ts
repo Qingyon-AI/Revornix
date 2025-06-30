@@ -17,21 +17,17 @@ import * as runtime from '../runtime';
 import type {
   AllMySectionsResponse,
   CreateLabelResponse,
-  CreateNotificationRecordRequest,
   DocumentCreateRequest,
   DocumentCreateResponse,
   HTTPValidationError,
   LabelAddRequest,
   LabelListResponse,
-  NormalResponse,
 } from '../models/index';
 import {
     AllMySectionsResponseFromJSON,
     AllMySectionsResponseToJSON,
     CreateLabelResponseFromJSON,
     CreateLabelResponseToJSON,
-    CreateNotificationRecordRequestFromJSON,
-    CreateNotificationRecordRequestToJSON,
     DocumentCreateRequestFromJSON,
     DocumentCreateRequestToJSON,
     DocumentCreateResponseFromJSON,
@@ -42,8 +38,6 @@ import {
     LabelAddRequestToJSON,
     LabelListResponseFromJSON,
     LabelListResponseToJSON,
-    NormalResponseFromJSON,
-    NormalResponseToJSON,
 } from '../models/index';
 
 export interface AddLabelTpSectionLabelCreatePostRequest {
@@ -58,11 +52,6 @@ export interface CreateDocumentLabelTpDocumentLabelCreatePostRequest {
 
 export interface CreateDocumentTpDocumentCreatePostRequest {
     documentCreateRequest: DocumentCreateRequest;
-    apiKey?: string | null;
-}
-
-export interface CreateNotificationTpNotificationCreatePostRequest {
-    createNotificationRecordRequest: CreateNotificationRecordRequest;
     apiKey?: string | null;
 }
 
@@ -196,46 +185,6 @@ export class TpApi extends runtime.BaseAPI {
      */
     async createDocumentTpDocumentCreatePost(requestParameters: CreateDocumentTpDocumentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentCreateResponse> {
         const response = await this.createDocumentTpDocumentCreatePostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Create Notification
-     */
-    async createNotificationTpNotificationCreatePostRaw(requestParameters: CreateNotificationTpNotificationCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        if (requestParameters['createNotificationRecordRequest'] == null) {
-            throw new runtime.RequiredError(
-                'createNotificationRecordRequest',
-                'Required parameter "createNotificationRecordRequest" was null or undefined when calling createNotificationTpNotificationCreatePost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['apiKey'] != null) {
-            headerParameters['api-key'] = String(requestParameters['apiKey']);
-        }
-
-        const response = await this.request({
-            path: `/tp/notification/create`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: CreateNotificationRecordRequestToJSON(requestParameters['createNotificationRecordRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Create Notification
-     */
-    async createNotificationTpNotificationCreatePost(requestParameters: CreateNotificationTpNotificationCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
-        const response = await this.createNotificationTpNotificationCreatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

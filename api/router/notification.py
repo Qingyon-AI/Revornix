@@ -33,6 +33,7 @@ async def add_notification_task(add_notification_task_request: schemas.notificat
                                 db: Session = Depends(get_db),
                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     db_notification_task = crud.notification.create_notification_task(db=db,
+                                                                      title=add_notification_task_request.title,
                                                                       user_id=user.id,
                                                                       content=add_notification_task_request.content,
                                                                       notification_target_id=add_notification_task_request.notification_target_id,
@@ -42,7 +43,8 @@ async def add_notification_task(add_notification_task_request: schemas.notificat
         scheduler.add_job(
             func=send_notification,
             trigger=CronTrigger.from_crontab(add_notification_task_request.cron_expr),
-            args=[add_notification_task_request.notification_source_id,
+            args=[db_notification_task.user_id,
+                  add_notification_task_request.notification_source_id,
                   add_notification_task_request.notification_target_id,
                   add_notification_task_request.title,
                   add_notification_task_request.content],
@@ -140,7 +142,8 @@ async def update_notification_task(update_notification_task_request: schemas.not
         scheduler.add_job(
             func=send_notification,
             trigger=CronTrigger.from_crontab(db_notification_task.cron_expr),
-            args=[db_notification_task.notification_source_id,
+            args=[db_notification_task.user_id,
+                  db_notification_task.notification_source_id,
                   db_notification_task.notification_target_id,
                   db_notification_task.title,
                   db_notification_task.content],

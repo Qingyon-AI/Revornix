@@ -27,7 +27,6 @@ models/ChatItem.ts
 models/ChatMessages.ts
 models/CoverImage.ts
 models/CreateLabelResponse.ts
-models/CreateNotificationRecordRequest.ts
 models/DaySectionRequest.ts
 models/DaySectionResponse.ts
 models/DefaultEngineUpdateRequest.ts

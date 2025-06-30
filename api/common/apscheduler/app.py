@@ -16,7 +16,8 @@ def job_listener(event):
     else:
         info_logger.info(f'Job {event.job_id} executed')
 
-async def send_notification(notification_source_id: int, 
+async def send_notification(user_id:int,
+                            notification_source_id: int, 
                             notification_target_id: int, 
                             title: str, 
                             content: str):
@@ -62,6 +63,15 @@ async def send_notification(notification_source_id: int,
                                                                                    content=content))
     if not send_res:
         raise schemas.error.CustomException(message="send notification failed", code=500)
+    else:
+        crud.notification.create_notification_record(db=db,
+                                                     user_id=user_id,
+                                                     title=title,
+                                                     content=content,
+                                                     notification_source_id=notification_source_id,
+                                                     notification_target_id=notification_target_id)
+        db.commit()
+        
 
 # restart all tasks when the program starts
 def restart_all_tasks():
@@ -74,7 +84,8 @@ def restart_all_tasks():
         scheduler.add_job(
             func=send_notification,
             trigger=CronTrigger.from_crontab(db_notification_task.cron_expr),
-            args=[db_notification_task.notification_source_id,
+            args=[db_notification_task.user_id,
+                  db_notification_task.notification_source_id,
                   db_notification_task.notification_target_id,
                   db_notification_task.title,
                   db_notification_task.content],

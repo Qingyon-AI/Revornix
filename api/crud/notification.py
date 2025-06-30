@@ -89,15 +89,15 @@ def bind_email_info_to_notification_source(db: Session,
 def create_notification_record(db: Session, 
                                user_id: int, 
                                title: str,
-                               content: str, 
-                               notification_type: int, 
-                               link: str | None = None):
+                               content: str,
+                               notification_source_id: int,
+                               notification_target_id: int):
     now = datetime.now(timezone.utc)
     notification = models.notification.NotificationRecord(user_id=user_id, 
                                                           title=title,
                                                           content=content, 
-                                                          notification_type=notification_type, 
-                                                          link=link,
+                                                          notification_source_id=notification_source_id,
+                                                          notification_target_id=notification_target_id,
                                                           create_time=now,
                                                           update_time=now)
     db.add(notification)

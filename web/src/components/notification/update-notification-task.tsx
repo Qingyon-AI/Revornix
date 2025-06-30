@@ -129,7 +129,7 @@ const UpdateNotificationTask = ({
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		mutateUpdateNotificationTask.mutate(values);
 	};
-
+	
 	const onFormValidateError = (error: any) => {
 		toast.error(t('form_validate_failed'));
 		console.error(error);

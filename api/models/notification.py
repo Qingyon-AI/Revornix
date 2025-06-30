@@ -22,7 +22,10 @@ class NotificationRecord(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"), index=True)
-    task_id = Column(Integer, ForeignKey("notification_task.id"), index=True)
+    title = Column(String(500), index=True, nullable=False)
+    content = Column(LONGTEXT(), nullable=False)
+    notification_source_id = Column(Integer, ForeignKey("notification_source.id"), index=True)
+    notification_target_id = Column(Integer, ForeignKey("notification_target.id"), index=True)
     read_at = Column(DateTime(timezone=True), nullable=True)
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)

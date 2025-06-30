@@ -17,7 +17,6 @@ export * from './ChatItem';
 export * from './ChatMessages';
 export * from './CoverImage';
 export * from './CreateLabelResponse';
-export * from './CreateNotificationRecordRequest';
 export * from './DaySectionRequest';
 export * from './DaySectionResponse';
 export * from './DefaultEngineUpdateRequest';
