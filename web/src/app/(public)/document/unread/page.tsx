@@ -29,6 +29,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useTranslations } from 'next-intl';
+import { Separator } from '@/components/ui/separator';
 
 const UnReadDocumentPage = () => {
 	const t = useTranslations();
@@ -78,6 +79,7 @@ const UnReadDocumentPage = () => {
 
 	return (
 		<>
+			<Separator className='mb-5' />
 			<div className='flex flex-row px-5 pb-5 gap-3'>
 				<Input
 					placeholder={t('document_search_placeholder')}

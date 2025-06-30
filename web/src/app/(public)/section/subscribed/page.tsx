@@ -30,6 +30,7 @@ import {
 	SheetTrigger,
 } from '@/components/ui/sheet';
 import { useTranslations } from 'next-intl';
+import { Separator } from '@/components/ui/separator';
 
 const SubscribedSectionPage = () => {
 	const t = useTranslations();
@@ -91,6 +92,7 @@ const SubscribedSectionPage = () => {
 	}, [inView]);
 	return (
 		<>
+			<Separator className='mb-5' />
 			<div className='flex flex-row px-5 pb-5 gap-3'>
 				<Input
 					placeholder={t('section_search_placeholder')}

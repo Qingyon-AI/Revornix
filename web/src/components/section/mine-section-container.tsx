@@ -29,6 +29,7 @@ import {
 	SheetTrigger,
 } from '@/components/ui/sheet';
 import { useTranslations } from 'next-intl';
+import { Separator } from '../ui/separator';
 
 const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 	const t = useTranslations();
@@ -83,6 +84,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 	}, [inView]);
 	return (
 		<>
+			<Separator className='mb-5' />
 			<div className='flex flex-row px-5 pb-5 gap-3'>
 				<Input
 					placeholder={t('section_search_placeholder')}

@@ -29,6 +29,7 @@ import {
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { useTranslations } from 'next-intl';
+import { Separator } from '../ui/separator';
 
 const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 	const t = useTranslations();
@@ -83,6 +84,7 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 
 	return (
 		<>
+			<Separator className='mb-5' />
 			<div className='flex flex-row px-5 pb-5 gap-3'>
 				<Input
 					placeholder={t('document_search_placeholder')}
