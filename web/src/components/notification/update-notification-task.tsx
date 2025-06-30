@@ -166,7 +166,7 @@ const UpdateNotificationTask = ({
 					}
 					setShowUpdateDialog(e);
 				}}>
-				<DialogContent className='flex flex-col max-h-full'>
+				<DialogContent className='flex flex-col max-h-[80vh]'>
 					<DialogTitle>编辑通知任务</DialogTitle>
 					<Alert>
 						<Info />
@@ -177,7 +177,7 @@ const UpdateNotificationTask = ({
 					<Form {...form}>
 						<form
 							onSubmit={onSubmitForm}
-							className='space-y-3 flex-1 overflow-auto'
+							className='space-y-3 flex-1 overflow-auto px-1'
 							id='update-notification-task-form'>
 							<FormField
 								name='title'

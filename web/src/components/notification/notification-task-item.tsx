@@ -8,6 +8,11 @@ import { useMutation } from '@tanstack/react-query';
 import { updateNotificationTask } from '@/service/notification';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
+import {
+	HoverCard,
+	HoverCardContent,
+	HoverCardTrigger,
+} from '@/components/ui/hover-card';
 
 const NotificationTaskItem = ({ task }: { task: NotificationTask }) => {
 	const queryClient = getQueryClient();
@@ -41,8 +46,26 @@ const NotificationTaskItem = ({ task }: { task: NotificationTask }) => {
 			<TableCell>
 				<Badge>{task.notification_target?.title}</Badge>
 			</TableCell>
-			<TableCell>{task.title}</TableCell>
-			<TableCell>{task.content}</TableCell>
+			<TableCell>
+				<HoverCard>
+					<HoverCardTrigger asChild>
+						<div className='line-clamp-1 whitespace-normal break-all'>{task.title}</div>
+					</HoverCardTrigger>
+					<HoverCardContent className='max-w-80 text-xs break-all'>
+						{task.title}
+					</HoverCardContent>
+				</HoverCard>
+			</TableCell>
+			<TableCell>
+				<HoverCard>
+					<HoverCardTrigger asChild>
+						<div className='line-clamp-1 whitespace-normal break-all'>{task.content}</div>
+					</HoverCardTrigger>
+					<HoverCardContent className='max-w-80 text-xs break-all'>
+						{task.content}
+					</HoverCardContent>
+				</HoverCard>
+			</TableCell>
 			<TableCell className='font-mono'>{task.cron_expr}</TableCell>
 			<TableCell>
 				<Switch
