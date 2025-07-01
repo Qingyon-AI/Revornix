@@ -142,7 +142,7 @@
     "setting_notification_target_manage_form_category_placeholder": "Please select a target type",
     "setting_notification_target_manage_form_email": "Email Address",
     "setting_notification_target_manage_form_email_placeholder": "Please enter the email address",
-    "setting_default_document_parse_engine_choose": "Select Default Markdown Conversion Engine",
+    "setting_default_document_parse_engine_choose": "Select Engine",
     "setting_default_document_parse_engine_update_successful": "Default Markdown Conversion Engine Updated Successfully",
     "setting_default_document_read_model_update_successful": "Default Document Reading Model Updated Successfully",
     "setting_engine_label": "Engine Settings",

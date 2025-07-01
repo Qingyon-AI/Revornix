@@ -34,7 +34,7 @@ import {
 	SelectValue,
 } from '../ui/select';
 import { useMutation } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PlusCircleIcon } from 'lucide-react';
 
 const AddNotificationTarget = () => {
 	const t = useTranslations();
@@ -98,6 +98,7 @@ const AddNotificationTarget = () => {
 		<>
 			<Button onClick={() => setShowAddDialog(true)}>
 				{t('setting_notification_target_manage_add_form_label')}
+				<PlusCircleIcon />
 			</Button>
 			<Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
 				<DialogContent>
@@ -138,8 +139,17 @@ const AddNotificationTarget = () => {
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>{t('setting_notification_target_manage_form_description')}</FormLabel>
-											<Input {...field} placeholder={t('setting_notification_target_manage_form_description_placeholder')} />
+											<FormLabel>
+												{t(
+													'setting_notification_target_manage_form_description'
+												)}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_notification_target_manage_form_description_placeholder'
+												)}
+											/>
 											<FormMessage />
 										</FormItem>
 									);
@@ -151,12 +161,18 @@ const AddNotificationTarget = () => {
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>{t('setting_notification_target_manage_form_category')}</FormLabel>
+											<FormLabel>
+												{t('setting_notification_target_manage_form_category')}
+											</FormLabel>
 											<Select
 												onValueChange={(value) => field.onChange(Number(value))}
 												defaultValue={String(field.value)}>
 												<SelectTrigger className='w-full'>
-													<SelectValue placeholder={t('setting_notification_target_manage_form_category_placeholder')} />
+													<SelectValue
+														placeholder={t(
+															'setting_notification_target_manage_form_category_placeholder'
+														)}
+													/>
 												</SelectTrigger>
 												<SelectContent className='w-full'>
 													<SelectGroup>
@@ -177,8 +193,15 @@ const AddNotificationTarget = () => {
 										render={({ field }) => {
 											return (
 												<FormItem>
-													<FormLabel>{t('setting_notification_target_manage_form_email')}</FormLabel>
-													<Input {...field} placeholder={t('setting_notification_target_manage_form_email_placeholder')} />
+													<FormLabel>
+														{t('setting_notification_target_manage_form_email')}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'setting_notification_target_manage_form_email_placeholder'
+														)}
+													/>
 													<FormMessage />
 												</FormItem>
 											);

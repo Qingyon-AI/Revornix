@@ -34,7 +34,7 @@ import {
 	SelectValue,
 } from '../ui/select';
 import { Tooltip, TooltipTrigger } from '../ui/hybrid-tooltip';
-import { Info, Loader2 } from 'lucide-react';
+import { Info, Loader2, PlusCircleIcon } from 'lucide-react';
 import { TooltipContent } from '../ui/tooltip';
 import { useMutation } from '@tanstack/react-query';
 
@@ -106,6 +106,7 @@ const AddNotificationSource = () => {
 		<>
 			<Button onClick={() => setShowAddDialog(true)}>
 				{t('setting_notification_source_manage_add_form_label')}
+				<PlusCircleIcon />
 			</Button>
 			<Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
 				<DialogContent>

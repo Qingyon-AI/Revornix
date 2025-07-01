@@ -44,7 +44,7 @@ import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Alert, AlertDescription } from '../ui/alert';
-import { Info, Loader2 } from 'lucide-react';
+import { Info, Loader2, PlusCircleIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import Link from 'next/link';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
@@ -142,6 +142,7 @@ const AddNotificationTask = () => {
 		<>
 			<Button onClick={() => setShowAddDialog(true)}>
 				{t('setting_notification_task_manage_add_label')}
+				<PlusCircleIcon />
 			</Button>
 			<Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
 				<DialogContent className='flex flex-col max-h-[80vh]'>
