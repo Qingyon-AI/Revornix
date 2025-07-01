@@ -9,13 +9,29 @@ class NotificationTask(Base):
     user_id = Column(Integer, ForeignKey("user.id"), index=True)
     notification_source_id = Column(Integer, ForeignKey("notification_source.id"), index=True)
     notification_target_id = Column(Integer, ForeignKey("notification_target.id"), index=True)
-    title = Column(String(500), index=True, nullable=False)
-    content = Column(LONGTEXT(), nullable=False)
+    notification_content_type = Column(Integer, index=True, comment='0: custom, 1: template')
     cron_expr = Column(String(100), nullable=True)
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True), index=True)
     enable = Column(Boolean, default=True, nullable=False)
+    
+class NotificationTaskContentTemplate(Base):
+    __tablename__ = "notification_task_content_template"
+
+    id = Column(Integer, primary_key=True)
+    notification_task_id = Column(Integer, ForeignKey("notification_task.id"), index=True)
+    notification_template_id = Column(Integer, index=True)
+    delete_at = Column(DateTime(timezone=True), index=True)
+    
+class NotificationTaskContentCustom(Base):
+    __tablename__ = "notification_task_content_custom"
+
+    id = Column(Integer, primary_key=True)
+    notification_task_id = Column(Integer, ForeignKey("notification_task.id"), index=True)
+    title = Column(String(500), index=True, nullable=False)
+    content = Column(LONGTEXT())
+    delete_at = Column(DateTime(timezone=True), index=True)
 
 class NotificationRecord(Base):
     __tablename__ = "notification_record"

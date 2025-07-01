@@ -43,7 +43,7 @@ const TopNav = () => {
 				};
 			});
 		setCrumbs(paths);
-	}, [pathname]);
+	}, [pathname, locale]);
 
 	return (
 		<Breadcrumb>

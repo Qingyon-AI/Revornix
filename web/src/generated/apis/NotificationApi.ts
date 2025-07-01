@@ -36,6 +36,7 @@ import type {
   NotificationTask,
   NotificationTaskDetailRequest,
   NotificationTaskResponse,
+  NotificationTemplatesResponse,
   ReadNotificationRecordRequest,
   SearchNotificationRecordRequest,
   UpdateNotificationSourceRequest,
@@ -85,6 +86,8 @@ import {
     NotificationTaskDetailRequestToJSON,
     NotificationTaskResponseFromJSON,
     NotificationTaskResponseToJSON,
+    NotificationTemplatesResponseFromJSON,
+    NotificationTemplatesResponseToJSON,
     ReadNotificationRecordRequestFromJSON,
     ReadNotificationRecordRequestToJSON,
     SearchNotificationRecordRequestFromJSON,
@@ -172,6 +175,11 @@ export interface GetNotificationTargetDetailNotificationTargetDetailPostRequest 
 
 export interface GetNotificationTaskNotificationTaskDetailPostRequest {
     notificationTaskDetailRequest: NotificationTaskDetailRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GetNotificationTemplatesNotificationTemplateAllPostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -791,6 +799,40 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async getNotificationTaskNotificationTaskDetailPost(requestParameters: GetNotificationTaskNotificationTaskDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTask> {
         const response = await this.getNotificationTaskNotificationTaskDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Notification Templates
+     */
+    async getNotificationTemplatesNotificationTemplateAllPostRaw(requestParameters: GetNotificationTemplatesNotificationTemplateAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTemplatesResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+        const response = await this.request({
+            path: `/notification/template/all`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTemplatesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Notification Templates
+     */
+    async getNotificationTemplatesNotificationTemplateAllPost(requestParameters: GetNotificationTemplatesNotificationTemplateAllPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTemplatesResponse> {
+        const response = await this.getNotificationTemplatesNotificationTemplateAllPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

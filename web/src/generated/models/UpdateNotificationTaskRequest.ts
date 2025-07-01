@@ -27,10 +27,22 @@ export interface UpdateNotificationTaskRequest {
     notification_task_id: number;
     /**
      * 
+     * @type {number}
+     * @memberof UpdateNotificationTaskRequest
+     */
+    notification_content_type?: number | null;
+    /**
+     * 
      * @type {boolean}
      * @memberof UpdateNotificationTaskRequest
      */
     enable?: boolean | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof UpdateNotificationTaskRequest
+     */
+    notification_template_id?: number | null;
     /**
      * 
      * @type {string}
@@ -82,7 +94,9 @@ export function UpdateNotificationTaskRequestFromJSONTyped(json: any, ignoreDisc
     return {
         
         'notification_task_id': json['notification_task_id'],
+        'notification_content_type': json['notification_content_type'] == null ? undefined : json['notification_content_type'],
         'enable': json['enable'] == null ? undefined : json['enable'],
+        'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
         'cron_expr': json['cron_expr'] == null ? undefined : json['cron_expr'],
         'title': json['title'] == null ? undefined : json['title'],
         'content': json['content'] == null ? undefined : json['content'],
@@ -103,7 +117,9 @@ export function UpdateNotificationTaskRequestToJSONTyped(value?: UpdateNotificat
     return {
         
         'notification_task_id': value['notification_task_id'],
+        'notification_content_type': value['notification_content_type'],
         'enable': value['enable'],
+        'notification_template_id': value['notification_template_id'],
         'cron_expr': value['cron_expr'],
         'title': value['title'],
         'content': value['content'],

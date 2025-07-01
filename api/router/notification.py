@@ -34,9 +34,12 @@ async def get_notification_templates(user: schemas.user.PrivateUserInfo = Depend
     data = []
     daily_summary_template = DailySummaryNotificationTemplate(user_id=user.id)
     data.append(schemas.notification.NotificationTemplate(
+        id=daily_summary_template.template_id,
         name=daily_summary_template.template_name,
         description=daily_summary_template.template_description,
         version=daily_summary_template.template_version,
+        name_zh=daily_summary_template.template_name_zh,
+        description_zh=daily_summary_template.template_description_zh
     ))
     res = schemas.notification.NotificationTemplatesResponse(data=data)
     return res
@@ -46,21 +49,26 @@ async def add_notification_task(add_notification_task_request: schemas.notificat
                                 db: Session = Depends(get_db),
                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     db_notification_task = crud.notification.create_notification_task(db=db,
-                                                                      title=add_notification_task_request.title,
                                                                       user_id=user.id,
-                                                                      content=add_notification_task_request.content,
+                                                                      notification_content_type=add_notification_task_request.notification_content_type,
                                                                       notification_target_id=add_notification_task_request.notification_target_id,
                                                                       notification_source_id=add_notification_task_request.notification_source_id,
                                                                       cron_expr=add_notification_task_request.cron_expr)
+    if add_notification_task_request.notification_content_type == 0:
+        crud.notification.bind_notification_task_content_custom_to_notification_task(db=db,
+                                                                                     notification_task_id=db_notification_task.id,
+                                                                                     title=add_notification_task_request.title,
+                                                                                     content=add_notification_task_request.content)
+    elif add_notification_task_request.notification_content_type == 1:
+        crud.notification.bind_notification_task_content_template_to_notification_task(db=db,
+                                                                                        notification_task_id=db_notification_task.id,
+                                                                                        notification_template_id=add_notification_task_request.notification_template_id)
     if add_notification_task_request.enable:
         scheduler.add_job(
             func=send_notification,
             trigger=CronTrigger.from_crontab(add_notification_task_request.cron_expr),
             args=[db_notification_task.user_id,
-                  add_notification_task_request.notification_source_id,
-                  add_notification_task_request.notification_target_id,
-                  add_notification_task_request.title,
-                  add_notification_task_request.content],
+                  db_notification_task.id],
             id=str(db_notification_task.id),
             next_run_time=datetime.now()
         )
@@ -80,15 +88,27 @@ async def get_notification_task(get_notification_task_request: schemas.notificat
     
     res = schemas.notification.NotificationTask(
         id=db_notification_task.id,
-        title=db_notification_task.title,
-        content=db_notification_task.content,
+        notification_content_type=db_notification_task.notification_content_type,
         notification_target_id=db_notification_task.notification_target_id,
         notification_source_id=db_notification_task.notification_source_id,
         cron_expr=db_notification_task.cron_expr,
         create_time=db_notification_task.create_time,
         update_time=db_notification_task.update_time,
-        enable=db_notification_task.enable
+        enable=db_notification_task.enable,
     )
+    
+    if db_notification_task.notification_content_type == 0:
+        db_notification_task_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(db=db,
+                                                                                                                             notification_task_id=db_notification_task.id)
+        if db_notification_task_content_custom is not None:
+            res.title = db_notification_task_content_custom.title
+            res.content = db_notification_task_content_custom.content
+    elif db_notification_task.notification_content_type == 1:
+        db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(db=db,
+                                                                                                                                 notification_task_id=db_notification_task.id)
+        if db_notification_task_content_template is not None:
+            res.notification_template_id = db_notification_task_content_template.notification_template_id
+
     db_notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
                                                                                                  notification_source_id=db_notification_task.notification_source_id)
     db_notification_target = crud.notification.get_notification_target_by_notification_target_id(db=db,
@@ -118,6 +138,12 @@ async def delete_notification_task(delete_notification_task_request: schemas.not
                                                 user_id=user.id,
                                                 notification_task_ids=delete_notification_task_request.notification_task_ids)
     for notification_task_id in delete_notification_task_request.notification_task_ids:
+        crud.notification.delete_notification_task_content_custom_by_notification_task_id(db=db,
+                                                                                          user_id=user.id,
+                                                                                          notification_task_id=notification_task_id)
+        crud.notification.delete_notification_task_content_template_by_notification_task_id(db=db,
+                                                                                            user_id=user.id,
+                                                                                            notification_task_id=notification_task_id)
         job_exist = scheduler.get_job(str(notification_task_id))
         if job_exist is not None:
             scheduler.remove_job(str(notification_task_id))
@@ -135,10 +161,30 @@ async def update_notification_task(update_notification_task_request: schemas.not
     if db_notification_task.user_id != user.id:
         return schemas.common.NormalResponse(message="permission denied")
     
-    if update_notification_task_request.title is not None:
-        db_notification_task.title = update_notification_task_request.title
-    if update_notification_task_request.content is not None:
-        db_notification_task.content = update_notification_task_request.content
+    if update_notification_task_request.notification_content_type is not None:
+        db_notification_task.notification_content_type = update_notification_task_request.notification_content_type
+    
+    if update_notification_task_request.notification_content_type == 0:
+        db_notification_task_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(db=db,
+                                                                                                                             notification_task_id=update_notification_task_request.notification_task_id)
+        if db_notification_task_content_custom is None:
+            crud.notification.bind_notification_task_content_custom_to_notification_task(db=db,
+                                                                                         notification_task_id=update_notification_task_request.notification_task_id,
+                                                                                         title=update_notification_task_request.title,
+                                                                                         content=update_notification_task_request.content)
+        else:
+            db_notification_task_content_custom.title = update_notification_task_request.title
+            db_notification_task_content_custom.content = update_notification_task_request.content
+    elif update_notification_task_request.notification_content_type == 1:
+        db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(db=db,
+                                                                                                                                 notification_task_id=update_notification_task_request.notification_task_id)
+        if db_notification_task_content_template is None:
+            crud.notification.bind_notification_task_content_template_to_notification_task(db=db,
+                                                                                           notification_task_id=update_notification_task_request.notification_task_id,
+                                                                                           notification_template_id=update_notification_task_request.notification_template_id)
+        else:
+            db_notification_task_content_template.notification_template_id = update_notification_task_request.notification_template_id
+
     if update_notification_task_request.notification_target_id is not None:
         db_notification_task.notification_target_id = update_notification_task_request.notification_target_id
     if update_notification_task_request.notification_source_id is not None:
@@ -156,10 +202,7 @@ async def update_notification_task(update_notification_task_request: schemas.not
             func=send_notification,
             trigger=CronTrigger.from_crontab(db_notification_task.cron_expr),
             args=[db_notification_task.user_id,
-                  db_notification_task.notification_source_id,
-                  db_notification_task.notification_target_id,
-                  db_notification_task.title,
-                  db_notification_task.content],
+                  db_notification_task.id],
             id=str(db_notification_task.id),
             next_run_time=datetime.now()
         )
@@ -170,9 +213,32 @@ async def update_notification_task(update_notification_task_request: schemas.not
 @notification_router.post('/task/mine', response_model=schemas.notification.NotificationTaskResponse)
 async def get_mine_notification_task(db: Session = Depends(get_db),
                                      user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    data = []
     db_notification_tasks = crud.notification.get_notification_tasks_by_user_id(db=db,
                                                                                 user_id=user.id)
-    res = schemas.notification.NotificationTaskResponse(data=db_notification_tasks)
+    for db_notification_task in db_notification_tasks:
+        task_data = schemas.notification.NotificationTask(id=db_notification_task.id,
+                                                          cron_expr=db_notification_task.cron_expr,
+                                                          enable=db_notification_task.enable,
+                                                          notification_content_type=db_notification_task.notification_content_type,
+                                                          notification_source_id=db_notification_task.notification_source_id,
+                                                          notification_target_id=db_notification_task.notification_target_id,
+                                                          create_time=db_notification_task.create_time,
+                                                          update_time=db_notification_task.update_time)
+        if task_data.notification_content_type == 0:
+            db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(db=db,
+                                                                                                                            notification_task_id=task_data.id)
+            if db_notification_content_custom is not None:
+                task_data.title = db_notification_content_custom.title
+                task_data.content = db_notification_content_custom.content
+        elif task_data.notification_content_type == 1:
+            db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(db=db,
+                                                                                                                                     notification_task_id=task_data.id)
+            if db_notification_task_content_template is not None:
+                task_data.notification_template_id = db_notification_task_content_template.notification_template_id
+        data.append(task_data)
+    res = schemas.notification.NotificationTaskResponse(data=data)
+    
     for db_notification_task in res.data:
         db_notification_task.notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
                                                                                                                        notification_source_id=db_notification_task.notification_source_id)

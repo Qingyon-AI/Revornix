@@ -9,7 +9,6 @@ from celery import group, chain
 from datetime import datetime, timezone
 from common.celery.app import update_ai_summary, add_embedding, update_website_document_markdown_with_jina, init_website_document_info, update_sections, init_file_document_info
 from common.dependencies import get_db, get_current_user_with_api_key
-from common.notification import union_send_notification
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
 

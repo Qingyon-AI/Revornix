@@ -47,14 +47,21 @@ const NotificationTaskItem = ({ task }: { task: NotificationTask }) => {
 				<Badge>{task.notification_target?.title}</Badge>
 			</TableCell>
 			<TableCell>
+				{task.notification_content_type === 1 ? (
+					<Badge>{task.notification_template_id}</Badge>
+				) : (
+					'-'
+				)}
+			</TableCell>
+			<TableCell>
 				<HoverCard>
 					<HoverCardTrigger asChild>
 						<div className='line-clamp-1 whitespace-normal break-all'>
-							{task.title}
+							{task.notification_content_type === 1 ? '-' : task.title}
 						</div>
 					</HoverCardTrigger>
 					<HoverCardContent className='max-w-80 text-xs break-all'>
-						{task.title}
+						{task.notification_content_type === 1 ? '-' : task.title}
 					</HoverCardContent>
 				</HoverCard>
 			</TableCell>
@@ -62,11 +69,11 @@ const NotificationTaskItem = ({ task }: { task: NotificationTask }) => {
 				<HoverCard>
 					<HoverCardTrigger asChild>
 						<div className='line-clamp-1 whitespace-normal break-all'>
-							{task.content}
+							{task.notification_template_id ? '-' : task.content}
 						</div>
 					</HoverCardTrigger>
 					<HoverCardContent className='max-w-80 text-xs break-all'>
-						{task.content}
+						{task.notification_template_id ? '-' : task.content}
 					</HoverCardContent>
 				</HoverCard>
 			</TableCell>

@@ -96,6 +96,8 @@ export * from './NotificationTargetsResponse';
 export * from './NotificationTask';
 export * from './NotificationTaskDetailRequest';
 export * from './NotificationTaskResponse';
+export * from './NotificationTemplate';
+export * from './NotificationTemplatesResponse';
 export * from './PaginationApiKeyInfo';
 export * from './PasswordUpdateRequest';
 export * from './PrivateUserInfo';

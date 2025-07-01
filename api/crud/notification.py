@@ -3,19 +3,37 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
+def bind_notification_task_content_custom_to_notification_task(db: Session, 
+                                                               notification_task_id: int,
+                                                               title: str,
+                                                               content: str):
+    notification_task_content_custom = models.notification.NotificationTaskContentCustom(notification_task_id=notification_task_id,
+                                                                                         title=title,
+                                                                                         content=content)
+    db.add(notification_task_content_custom)
+    db.flush()
+    return notification_task_content_custom
+
+def bind_notification_task_content_template_to_notification_task(db: Session,
+                                                                 notification_task_id: int,
+                                                                 notification_template_id: int):
+    notification_task_content_tmeplate = models.notification.NotificationTaskContentTemplate(notification_task_id=notification_task_id,
+                                                                                             notification_template_id=notification_template_id)
+    db.add(notification_task_content_tmeplate)
+    db.flush()
+    return notification_task_content_tmeplate
+
 def create_notification_task(db: Session, 
                              user_id: int,
+                             cron_expr: str,
+                             notification_content_type: int,
                              notification_source_id: int,
-                             notification_target_id: int,
-                             title: str,
-                             content: str,
-                             cron_expr: str):
+                             notification_target_id: int):
     now = datetime.now(timezone.utc)
     notification_task = models.notification.NotificationTask(user_id=user_id,
+                                                             notification_content_type=notification_content_type,
                                                              notification_source_id=notification_source_id,
                                                              notification_target_id=notification_target_id,
-                                                             title=title,
-                                                             content=content,
                                                              cron_expr=cron_expr,
                                                              create_time=now,
                                                              update_time=now,
@@ -103,6 +121,20 @@ def create_notification_record(db: Session,
     db.add(notification)
     db.flush()
     return notification
+
+def get_notification_task_content_template_by_notification_task_id(db: Session,
+                                                                   notification_task_id: int):
+    query = db.query(models.notification.NotificationTaskContentTemplate)
+    query = query.filter(models.notification.NotificationTaskContentTemplate.notification_task_id == notification_task_id,
+                         models.notification.NotificationTaskContentTemplate.delete_at == None)
+    return query.first()
+
+def get_notification_task_content_custom_by_notification_task_id(db: Session,
+                                                                 notification_task_id: int):
+    query = db.query(models.notification.NotificationTaskContentCustom)
+    query = query.filter(models.notification.NotificationTaskContentCustom.notification_task_id == notification_task_id,
+                         models.notification.NotificationTaskContentCustom.delete_at == None)
+    return query.first()
 
 def get_all_notification_tasks(db: Session):
     query = db.query(models.notification.NotificationTask)
@@ -340,3 +372,54 @@ def delete_notification_tasks(db: Session,
     for notification_task in query.all():
         notification_task.delete_at = datetime.now(timezone.utc)
     db.flush()
+    
+def delete_notification_task_content_template_by_notification_task_content_template_ids(db: Session,
+                                                                                        user_id: int,
+                                                                                        notification_task_content_template_ids: list[int]):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.notification.NotificationTaskContentTemplate)
+    query = query.filter(models.notification.NotificationTaskContentTemplate.id.in_(notification_task_content_template_ids),
+                         models.notification.NotificationTaskContentTemplate.user_id == user_id,
+                         models.notification.NotificationTaskContentTemplate.delete_at == None)
+    for notification_task_content_template in query.all():
+        notification_task_content_template.delete_at = now
+    db.flush()
+    
+def delete_notification_task_content_template_by_notification_task_content_custom_ids(db: Session,
+                                                                                      user_id: int,
+                                                                                      notification_task_content_custom_ids: list[int]):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.notification.NotificationTaskContentCustom)
+    query = query.filter(models.notification.NotificationTaskContentCustom.id.in_(notification_task_content_custom_ids),
+                         models.notification.NotificationTaskContentTemplate.user_id == user_id,
+                         models.notification.NotificationTaskContentCustom.delete_at == None)
+    for notification_task_content_custom in query.all():
+        notification_task_content_custom.delete_at = now
+    db.flush()
+    
+def delete_notification_task_content_template_by_notification_task_id(db: Session,
+                                                                      user_id: int,
+                                                                      notification_task_id: int):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.notification.NotificationTaskContentTemplate)
+    query = query.join(models.notification.NotificationTask)
+    query = query.filter(models.notification.NotificationTaskContentTemplate.notification_task_id == notification_task_id,
+                         models.notification.NotificationTask.user_id == user_id,
+                         models.notification.NotificationTaskContentTemplate.delete_at == None)
+    for notification_task_content_template in query.all():
+        notification_task_content_template.delete_at = now
+    db.flush()
+    
+def delete_notification_task_content_custom_by_notification_task_id(db: Session,
+                                                                    user_id: int,
+                                                                    notification_task_id: int):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.notification.NotificationTaskContentCustom)
+    query = query.join(models.notification.NotificationTask)
+    query = query.filter(models.notification.NotificationTaskContentCustom.notification_task_id == notification_task_id,
+                         models.notification.NotificationTask.user_id == user_id,
+                         models.notification.NotificationTaskContentCustom.delete_at == None)
+    for notification_task_content_custom in query.all():
+        notification_task_content_custom.delete_at = now
+    db.flush()
+    

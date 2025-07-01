@@ -1,5 +1,6 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
+from schemas.common import BaseResponseModel
 
 class Message(BaseModel):
     title: str
@@ -160,14 +161,16 @@ class NotificationSourceDetail(BaseModel):
     category: int
     email_notification_source: EmailNotificationSource | None = None
 
-class NotificationTask(BaseModel):
+class NotificationTask(BaseResponseModel):
     id: int
-    title: str
-    content: str
     cron_expr: str
     enable: bool
     notification_source_id: int
     notification_target_id: int
+    notification_content_type: int
+    title: str | None = None
+    content: str | None = None
+    notification_template_id: int | None = None
     notification_source: NotificationSource | None = None
     notification_target: NotificationTarget | None = None
     create_time: datetime | None = None
@@ -190,7 +193,9 @@ class DeleteNotificationTaskRequest(BaseModel):
     
 class UpdateNotificationTaskRequest(BaseModel):
     notification_task_id: int
+    notification_content_type: int | None = None
     enable: bool | None = None
+    notification_template_id: int | None = None
     cron_expr: str | None = None
     title: str | None = None
     content: str | None = None
@@ -198,23 +203,28 @@ class UpdateNotificationTaskRequest(BaseModel):
     notification_target_id: int | None = None
     
 class AddNotificationTaskRequest(BaseModel):
-    title: str
-    content: str
+    title: str | None = None
+    content: str | None = None
+    notification_template_id: int | None = None
+    notification_content_type: int
     cron_expr: str
     enable: bool
     notification_source_id: int
     notification_target_id: int
     
-class NotificationTaskResponse(BaseModel):
+class NotificationTaskResponse(BaseResponseModel):
     data: list[NotificationTask]
     
 class NotificationTaskDetailRequest(BaseModel):
     notification_task_id: int
     
 class NotificationTemplate(BaseModel):
+    id: int
     name: str
+    name_zh: str
     description: str | None = None
+    description_zh: str | None = None
     version: str
     
-class NotificationTemplatesResponse(BaseModel):
+class NotificationTemplatesResponse(BaseResponseModel):
     data: list[NotificationTemplate]

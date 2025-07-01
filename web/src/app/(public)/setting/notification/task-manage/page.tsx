@@ -38,11 +38,20 @@ const NotificationTaskManagePage = () => {
 							<TableRow>
 								<TableHead>{t('setting_notification_task_source')}</TableHead>
 								<TableHead>{t('setting_notification_task_target')}</TableHead>
+								<TableHead>
+									{t('setting_notification_task_content_template')}
+								</TableHead>
 								<TableHead>{t('setting_notification_task_title')}</TableHead>
 								<TableHead>{t('setting_notification_task_content')}</TableHead>
-								<TableHead>{t('setting_notification_task_cron_expr')}</TableHead>
-								<TableHead>{t('setting_notification_task_enable_status')}</TableHead>
-								<TableHead>{t('setting_notification_task_enable_action')}</TableHead>
+								<TableHead>
+									{t('setting_notification_task_cron_expr')}
+								</TableHead>
+								<TableHead>
+									{t('setting_notification_task_enable_status')}
+								</TableHead>
+								<TableHead>
+									{t('setting_notification_task_enable_action')}
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
