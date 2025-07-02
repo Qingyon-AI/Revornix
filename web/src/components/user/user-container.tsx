@@ -77,7 +77,7 @@ const UserContainer = ({ id }: { id: number }) => {
 			return { prevUserInfo };
 		},
 		onError(error, variables, context) {
-			toast.error(`关注失败，${error.message}`);
+			toast.error(`${error.message}`);
 			// Revert to the previous value
 			if (userInfo && context?.prevUserInfo) {
 				userInfo.is_followed = context.prevUserInfo.is_followed;
