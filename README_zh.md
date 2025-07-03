@@ -5,7 +5,7 @@
 ![](https://img.shields.io/github/v/release/Qingyon-AI/Revornix)
 ![](https://img.shields.io/github/commit-activity/m/Qingyon-AI/Revornix)
 
-[English](./README.md) | 中文文档
+[English](./README.md) | 中文文档 | [日本語ドキュメント](./README_jp.md)
 
 ## 简介
 
@@ -62,7 +62,7 @@ docker compose up -d
 
 ### 手动部署方式
 
-详情见[官网文档手动部署方式]([https://](https://revornix.com/en/docs/start#manual-deployment-method))
+详情见[官网文档手动部署方式](https://revornix.com/en/docs/start#manual-deployment-method)
 
 ## 贡献者
 

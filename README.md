@@ -5,7 +5,7 @@
 ![](https://img.shields.io/github/v/release/Qingyon-AI/Revornix)
 ![](https://img.shields.io/github/commit-activity/m/Qingyon-AI/Revornix)
 
-English | [中文文档](./README_zh.md)
+English | [中文文档](./README_zh.md) | [日本語ドキュメント](./README_jp.md)
 
 ## Introduction
 
