@@ -21,8 +21,8 @@ Revornix is an information management tool for the AI era. It helps you convenie
 
 - Cross-platform availability: Currently supports web; iOS app and WeChat Mini Program support coming soon.
 - All-in-one content aggregation: Centralized content collection, including news, blogs, forums, and more.
-- Document transformation: Convert files into Markdown using a multimodal large model.
-- Vectorized storage: We use Milvus, a top-tier industry-leading vector database, to support vector search.
+- Document Transformation & Vectorized Storage: Powered by multimodal large models, files are converted to Markdown and embedded before being stored in the industry-leading Milvus.
+- Native Multi-Tenancy: Designed as a multi-tenant system, it supports concurrent usage by multiple users, each with their own independent document repository.
 - Localization & Open Source: Open-source code with all data stored locally—no concerns about data leakage.
 - Smart Assistant & Built-in MCP: An AI assistant powered by built-in MCP that can interact with your documents and tools, supporting multi-model switching.
 - Seamless LLM integration: Built-in model integration support—freely configure and choose the LLM you want (OpenAI-compatible required).
