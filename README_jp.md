@@ -50,7 +50,7 @@ cp ./envs/.mcp.env.example ./envs/.mcp.env
 cp ./envs/.web.env.example ./web/.env
 ```
 
-対応する環境変数ファイルを編集してください。詳しくは[環境変数設定セクション](environment)をご覧ください。
+対応する環境変数ファイルを編集してください。詳しくは[環境変数設定セクション](https://revornix.com/en/docs/environment)をご覧ください。
 
 #### dockerで必要なイメージを取得して起動
 

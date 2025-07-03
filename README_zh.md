@@ -50,7 +50,7 @@ cp ./envs/.mcp.env.example ./envs/.mcp.env
 cp ./envs/.web.env.example ./web/.env
 ```
 
-前往对应的环境变量文件配置，详情见[环境变量配置篇章](environment)
+前往对应的环境变量文件配置，详情见[环境变量配置篇章](https://revornix.com/en/docs/environment)
 
 #### docker 拉取必要仓库并启动
 

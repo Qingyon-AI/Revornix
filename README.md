@@ -50,7 +50,7 @@ cp ./envs/.mcp.env.example ./envs/.mcp.env
 cp ./envs/.web.env.example ./web/.env
 ```
 
-Go to the corresponding environment variable files and configure them. For details, refer to Environment Variables Configuration.
+Go to the corresponding environment variable files and configure them. For details, refer to [Environment Variables Configuration](https://revornix.com/en/docs/environment).
 
 #### Pull Necessary Repositories and Start with Docker
 
