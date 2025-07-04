@@ -180,6 +180,7 @@
     "setting_model_models_configure": "Model Group Configuration",
     "setting_model_models_configure_description": "Here you can configure all models available from the corresponding provider",
     "setting_model_add": "Add Model",
+    "setting_model_add_success": "Created Successfully",
     "setting_model_add_failed": "Failed to create model, please try again later",
     "setting_model_update_failed": "Failed to update model, please try again later",
     "setting_model_update_success": "Model updated successfully",
