@@ -133,32 +133,19 @@ const WebsiteDocumentDetail = ({
 			)}
 			{document && document.transform_task?.status === 1 && (
 				<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
-					<p>{t('website_document_transform_to_markdown_doing')}</p>
-					<div className='flex flex-row items-center gap-2'>
-						<Button
-							variant={'link'}
-							className='h-fit p-0 text-xs'
-							disabled={isRefetching}
-							onClick={() => {
-								refetch();
-							}}>
-							{t('refresh')}
-							{isRefetching && <Loader2 className='size-4 animate-spin' />}
-						</Button>
-						<span>{t('or')}</span>
-						<Button
-							variant={'link'}
-							className='h-fit p-0 text-xs'
-							disabled={markdownTransforming}
-							onClick={() => {
-								handleTransformToMarkdown();
-							}}>
-							{t('retry')}
-							{markdownTransforming && (
-								<Loader2 className='size-4 animate-spin' />
-							)}
-						</Button>
-					</div>
+					<p>{t('document_transform_to_markdown_doing')}</p>
+					<Button
+						variant={'link'}
+						className='h-fit p-0 text-xs'
+						disabled={markdownTransforming}
+						onClick={() => {
+							handleTransformToMarkdown();
+						}}>
+						{t('retry')}
+						{markdownTransforming && (
+							<Loader2 className='size-4 animate-spin' />
+						)}
+					</Button>
 				</div>
 			)}
 			{document && document.transform_task?.status === 3 && (
