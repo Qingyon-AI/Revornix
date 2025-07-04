@@ -241,7 +241,7 @@ const MessageSendForm = () => {
 							<FormItem className='flex-1'>
 								<FormControl>
 									<Textarea
-										className='shadow-none p-0 border-none outline-none ring-0 focus-visible:ring-0 resize-none'
+										className='dark:bg-transparent shadow-none p-0 border-none outline-none ring-0 focus-visible:ring-0 resize-none'
 										placeholder={t('revornix_ai_message_placeholder')}
 										{...field}
 										onKeyDown={(e) => {
