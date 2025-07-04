@@ -11,14 +11,14 @@ class WebsiteInfo(BaseModel):
     url: str | None = None
     title: str | None = None
     description: str | None = None
-    keywords: list | None = None
+    keywords: str | None = None
     content: str | None = None
     cover: str | None = None
 
 class FileInfo(BaseModel):
     title: str | None = None
     description: str | None = None
-    keywords: list | None = None
+    keywords: str | None = None
     content: str | None = None
     cover: str | None = None
     
@@ -78,22 +78,28 @@ class EngineProtocol(Protocol):
                  engine_name_zh: str | None = None, 
                  engine_description: str | None = None, 
                  engine_description_zh: str | None = None, 
-                 engine_demo_config: str | None = None):
+                 engine_demo_config: str | None = None,
+                 engine_config: str | None = None):
+        self.user_id = user_id
         self.engine_uuid = engine_uuid
         self.engine_name = engine_name
         self.engine_name_zh = engine_name_zh
         self.engine_description = engine_description
         self.engine_description_zh = engine_description_zh
         self.engine_demo_config = engine_demo_config
-        
-        if user_id is not None:
-            db = SessionLocal()
-            db_engine = crud.engine.get_engine_by_uuid(db=db, uuid=self.engine_uuid)
-            db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(user_id=user_id, engine_id=db_engine.id)
-            self.engine_config = db_user_engine.config_json if db_user_engine else None
+        self.engine_config = engine_config
     
     def get_engine_config(self) -> dict:
-        return json.loads(self.engin_config) if self.engin_config else None
+        if self.engine_config is not None:
+            return json.loads(self.engine_config)
+        else:
+            db = SessionLocal()
+            db_engine = crud.engine.get_engine_by_uuid(db=db, uuid=self.engine_uuid)
+            db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db,
+                                                                                  user_id=self.user_id,
+                                                                                  engine_id=db_engine.id)
+            self.engine_config = db_user_engine.config_json
+            return json.loads(self.engine_config)
     
     def to_engine_info(self) -> schemas.engine.EngineInfo:
         return schemas.engine.EngineInfo(

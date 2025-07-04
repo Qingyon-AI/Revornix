@@ -7,6 +7,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from openai import OpenAI
+from openai.types.chat.chat_completion import ChatCompletion
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from common.dependencies import get_db, get_current_user
@@ -28,9 +29,6 @@ max_depth = 5
 os.environ["TOKENIZERS_PARALLELISM"] = 'false'
 
 ai_router = APIRouter()
-
-from openai import OpenAI
-from openai.types.chat.chat_completion import ChatCompletion
 
 def call_llm_stream(ai_client: OpenAI, model: str, message: str):
     stream = ai_client.chat.completions.create(
