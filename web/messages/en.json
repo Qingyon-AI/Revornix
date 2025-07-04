@@ -206,6 +206,7 @@
     "hot_search_error_description": "Failed to load the hot search data, please try again later",
     "revornix_ai_title": "Revornix AI",
     "revornix_ai_default_model": "Current the default llm model is",
+    "revornix_ai_model_not_set": "You haven't set the default model yet, Please go to the settings page to set it up",
     "revornix_ai_default_model_goto": "Go to configure",
     "revornix_ai_quickly_send": "Quickly Send",
     "revornix_ai_base_knowledge": "Answers based on your knowledge base.",

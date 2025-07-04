@@ -29,8 +29,10 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '../ui/hybrid-tooltip';
+import { useRouter } from 'nextjs-toploader/app';
 
 const MessageSendForm = () => {
+	const router = useRouter();
 	const t = useTranslations();
 	const formSchema = z.object({
 		message: z.string().min(1, t('revornix_ai_message_content_needed')),
@@ -142,6 +144,17 @@ const MessageSendForm = () => {
 	};
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
+		if (!userInfo?.default_revornix_model_id) {
+			toast.error(t('revornix_ai_model_not_set'), {
+				action: {
+					label: t('revornix_ai_default_model_goto'),
+					onClick: () => {
+						router.push('/setting');
+					},
+				},
+			});
+			return;
+		}
 		const newMessage = {
 			chat_id: uniqueId(),
 			content: values.message,
@@ -284,7 +297,11 @@ const MessageSendForm = () => {
 												field.onChange(e);
 											}}
 										/>
-										<Link href={'/setting/mcp'} className='text-xs text-muted-foreground underline underline-offset-4'>{t('revornix_ai_go_to_configure_mcp')}</Link>
+										<Link
+											href={'/setting/mcp'}
+											className='text-xs text-muted-foreground underline underline-offset-4'>
+											{t('revornix_ai_go_to_configure_mcp')}
+										</Link>
 									</FormItem>
 								)}
 							/>
