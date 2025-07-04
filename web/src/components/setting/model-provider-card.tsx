@@ -56,6 +56,8 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 	const t = useTranslations();
 	const { refreshUserInfo } = useUserContext();
 	const formSchema = z.object({
+		name: z.string().min(1, 'Name is required'),
+		description: z.string().optional(),
 		api_key: z.string().min(1, 'API Key is required'),
 		api_url: z.string().optional(),
 	});
@@ -154,6 +156,8 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 	useEffect(() => {
 		if (modelProvider) {
 			form.reset({
+				name: modelProvider.name,
+				description: modelProvider.description,
 				api_key: modelProvider.api_key,
 				api_url: modelProvider.api_url,
 			});
@@ -224,14 +228,48 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 							<form className='flex flex-col gap-5' onSubmit={handleSubmit}>
 								<FormField
 									control={form.control}
+									name='name'
+									render={({ field }) => (
+										<FormItem>
+											<div className='grid grid-cols-12 gap-2'>
+												<FormLabel className='col-span-3'>{t('setting_model_provider_name')}</FormLabel>
+												<Input
+													className='col-span-9'
+													placeholder='Name'
+													{...field}
+												/>
+											</div>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name='description'
+									render={({ field }) => (
+										<FormItem>
+											<div className='grid grid-cols-12 gap-2'>
+												<FormLabel className='col-span-3'>{t('setting_model_provider_description')}</FormLabel>
+												<Input
+													className='col-span-9'
+													placeholder='Description'
+													{...field}
+												/>
+											</div>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
 									name='api_key'
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-2'>API Key</FormLabel>
+												<FormLabel className='col-span-3'>API Key</FormLabel>
 												<Input
 													type='password'
-													className='col-span-10'
+													className='col-span-9'
 													placeholder='API Key'
 													{...field}
 												/>
@@ -246,9 +284,9 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-2'>API Base</FormLabel>
+												<FormLabel className='col-span-3'>API Base</FormLabel>
 												<Input
-													className='col-span-10'
+													className='col-span-9'
 													placeholder='API Base'
 													{...field}
 												/>

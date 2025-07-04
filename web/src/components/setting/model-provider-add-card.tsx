@@ -110,12 +110,12 @@ const ModelProviderAddCard = () => {
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-2'>
+												<FormLabel className='col-span-3'>
 													{t('setting_model_provider_name')}
 												</FormLabel>
 												<Input
 													type='text'
-													className='col-span-10'
+													className='col-span-9'
 													placeholder='Name'
 													{...field}
 												/>
@@ -130,12 +130,12 @@ const ModelProviderAddCard = () => {
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-2'>
+												<FormLabel className='col-span-3'>
 													{t('setting_model_provider_description')}
 												</FormLabel>
 												<Input
 													type='text'
-													className='col-span-10'
+													className='col-span-9'
 													placeholder='Description'
 													{...field}
 												/>
@@ -150,10 +150,10 @@ const ModelProviderAddCard = () => {
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-2'>API Key</FormLabel>
+												<FormLabel className='col-span-3'>API Key</FormLabel>
 												<Input
 													type='password'
-													className='col-span-10'
+													className='col-span-9'
 													placeholder='API Key'
 													{...field}
 												/>
@@ -168,9 +168,9 @@ const ModelProviderAddCard = () => {
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-2'>API Base</FormLabel>
+												<FormLabel className='col-span-3'>API Base</FormLabel>
 												<Input
-													className='col-span-10'
+													className='col-span-9'
 													placeholder='API Base'
 													{...field}
 												/>
