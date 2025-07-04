@@ -1,13 +1,16 @@
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-from datetime import datetime
 import crud
 import models
+from datetime import datetime
 from alembic import command
 from alembic.config import Config
 from common.sql import SessionLocal
 from config.base import BASE_DIR
+from engine.jina import JinaEngine
+from engine.markitdown import MarkitdownEngine
+from engine.mineru import MineruEngine
 
 alembic_cfg_path = BASE_DIR / 'alembic.ini'
 
@@ -33,23 +36,30 @@ if __name__ == '__main__':
             db_attachment = crud.attachment.create_attachment(db=db,
                                                               name='images/default_avatar_1',
                                                               description='default avatar 1')
+            mineru_engine = MineruEngine()
+            jina_engine = JinaEngine()
+            markitdown_engine = MarkitdownEngine()
             db_engine_mineru = crud.engine.create_engine(db=db,
-                                                         name='MinerU',
-                                                         name_zh='MinerU',
-                                                         description='Convert the website/file to markdown',
-                                                         description_zh='转化网站/文件到markdown')
+                                                         uuid=mineru_engine.engine_uuid,
+                                                         name=mineru_engine.engine_name,
+                                                         name_zh=mineru_engine.engine_name_zh,
+                                                         description=mineru_engine.engine_description,
+                                                         description_zh=mineru_engine.engine_description_zh,
+                                                         demo_config=mineru_engine.engine_demo_config)
             db_engine_jina = crud.engine.create_engine(db=db,
-                                                       name='Jina',
-                                                       name_zh='Jina',
-                                                       description='Convert the website to markdown',
-                                                       description_zh='转化网站到markdown',
-                                                       demo_config='{"api_key": "jina_******"}')
+                                                       uuid=jina_engine.engine_uuid,
+                                                       name=jina_engine.engine_name,
+                                                       name_zh=jina_engine.engine_name_zh,
+                                                       description=jina_engine.engine_description,
+                                                       description_zh=jina_engine.engine_description_zh,
+                                                       demo_config=jina_engine.engine_demo_config)
             db_engine_markitdown = crud.engine.create_engine(db=db,
-                                                             name='MarkItDown',
-                                                             name_zh='MarkItDown',
-                                                             description='Convert the website/file to markdown',
-                                                             description_zh='转化网站/文件到markdown',
-                                                             demo_config='{"openai_api_key": "sk-proj-******"}')
+                                                             uuid=markitdown_engine.engine_uuid,
+                                                             name=markitdown_engine.engine_name,
+                                                             name_zh=markitdown_engine.engine_name_zh,
+                                                             description=markitdown_engine.engine_description,
+                                                             description_zh=markitdown_engine.engine_description_zh,
+                                                             demo_config=markitdown_engine.engine_demo_config)
             db.commit()
         except Exception as e:
             print(f"数据库初始化失败: {e}")

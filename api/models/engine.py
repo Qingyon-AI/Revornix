@@ -18,6 +18,7 @@ class Engine(Base):
     __tablename__ = "engine"
 
     id = Column(Integer, primary_key=True)
+    uuid = Column(String(100), nullable=False, index=True, unique=True)
     name = Column(String(100), nullable=False, index=True)
     name_zh = Column(String(100), nullable=False, index=True)
     description = Column(String(500))

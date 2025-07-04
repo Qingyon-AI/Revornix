@@ -24,30 +24,30 @@ import {
 /**
  * 
  * @export
- * @interface EngineSearchResponse
+ * @interface MineEngineSearchResponse
  */
-export interface EngineSearchResponse {
+export interface MineEngineSearchResponse {
     /**
      * 
      * @type {Array<UserEngineInfo>}
-     * @memberof EngineSearchResponse
+     * @memberof MineEngineSearchResponse
      */
     data: Array<UserEngineInfo>;
 }
 
 /**
- * Check if a given object implements the EngineSearchResponse interface.
+ * Check if a given object implements the MineEngineSearchResponse interface.
  */
-export function instanceOfEngineSearchResponse(value: object): value is EngineSearchResponse {
+export function instanceOfMineEngineSearchResponse(value: object): value is MineEngineSearchResponse {
     if (!('data' in value) || value['data'] === undefined) return false;
     return true;
 }
 
-export function EngineSearchResponseFromJSON(json: any): EngineSearchResponse {
-    return EngineSearchResponseFromJSONTyped(json, false);
+export function MineEngineSearchResponseFromJSON(json: any): MineEngineSearchResponse {
+    return MineEngineSearchResponseFromJSONTyped(json, false);
 }
 
-export function EngineSearchResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): EngineSearchResponse {
+export function MineEngineSearchResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): MineEngineSearchResponse {
     if (json == null) {
         return json;
     }
@@ -57,11 +57,11 @@ export function EngineSearchResponseFromJSONTyped(json: any, ignoreDiscriminator
     };
 }
 
-export function EngineSearchResponseToJSON(json: any): EngineSearchResponse {
-    return EngineSearchResponseToJSONTyped(json, false);
+export function MineEngineSearchResponseToJSON(json: any): MineEngineSearchResponse {
+    return MineEngineSearchResponseToJSONTyped(json, false);
 }
 
-export function EngineSearchResponseToJSONTyped(value?: EngineSearchResponse | null, ignoreDiscriminator: boolean = false): any {
+export function MineEngineSearchResponseToJSONTyped(value?: MineEngineSearchResponse | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

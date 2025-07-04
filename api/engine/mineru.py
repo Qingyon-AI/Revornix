@@ -14,11 +14,17 @@ from common.common import create_upload_token, is_dir_empty, extract_title_and_s
 
 class MineruEngine(EngineProtocol):
 
-    def __init__(self, engine_name = None, engine_version = None, engine_description = None, engine_config = None, user_id = None):
-        super().__init__(engine_name, engine_version, engine_description, engine_config)
-        self.user_id = user_id
+    def __init__(self, 
+                 user_id: int | None = None):
+        super().__init__(engine_uuid='c59151aa86784d9ab52f74c12c830b1f',
+                         engine_name='MinerU',
+                         engine_name_zh='MinerU',
+                         engine_description='MinerU is an AI-driven file parser that can parse web pages, PDFs, images, etc. into Markdown format and retain the original layout well.',
+                         engine_description_zh='MinerU 是 AI驱动的文件解析器，可以将网页、PDF、图片等文件解析为 Markdown 格式并且较好地保留原来的排版。',
+                         user_id=user_id)
 
-    async def analyse_website(self, url: str):
+    async def analyse_website(self, 
+                              url: str):
         temp_dir_name = f'{uuid.uuid4()}'
         temp_shot_img_path = BASE_DIR / 'temp' / temp_dir_name / f'scene-snap.png'
         # 1. open the website and take a screenshot
@@ -100,14 +106,3 @@ class MineruEngine(EngineProtocol):
         return FileInfo(title=title,
                         description=description,
                         content=content)
-
-if __name__ == '__main__':
-    import asyncio
-    engine = MineruEngine()
-    # result = asyncio.run(
-    #     engine.analyse_website('https://kinda.info/post/bd43b6d9-e9dc-45ef-bc0e-c21fc6ce8b7d')
-    # )
-    result = asyncio.run(
-        engine.analyse_file('/Users/kinda/Desktop/Simulator Screenshot - iPhone 16 Pro Max - 2025-05-06 at 13.43.26.png')
-    )
-    print(result)

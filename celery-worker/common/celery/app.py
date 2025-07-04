@@ -56,10 +56,7 @@ async def handle_init_file_document_info(document_id: int,
         f.write(file_content)
         
     if file_extractor.name.lower() == "markitdown":
-        db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db,
-                                                                              user_id=user_id,
-                                                                              engine_id=default_file_document_parse_engine_id)
-        engine = markitdown_engine.MarkitdownEngine(engin_config=db_user_engine.config_json)
+        engine = markitdown_engine.MarkitdownEngine(user_id=user_id)
         file_info = await engine.analyse_file(temp_file_path)
     if file_extractor.name.lower() == "mineru":
         engine = mineru_engine.MineruEngine(user_id=user_id)
@@ -108,19 +105,10 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
     website_extractor = crud.engine.get_engine_by_id(db=db, 
                                                      id=default_website_document_parse_engine_id)
     if website_extractor.name.lower() == "markitdown":
-        db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db,
-                                                                              user_id=user_id,
-                                                                              engine_id=default_website_document_parse_engine_id)
-        engine = markitdown_engine.MarkitdownEngine(engin_config=db_user_engine.config_json)
+        engine = markitdown_engine.MarkitdownEngine(user_id=user_id)
         web_info = await engine.analyse_website(url=db_website_document.url)
     if website_extractor.name.lower() == "jina":
-        db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db, 
-                                                                              user_id=user_id,
-                                                                              engine_id=default_website_document_parse_engine_id)
-        jina_config_str = db_user_engine.config_json
-        if jina_config_str is None or len(jina_config_str) == 0:
-            raise Exception("User haven't set the jina config")
-        engine = jina_engine.JinaEngine(engin_config=jina_config_str)
+        engine = jina_engine.JinaEngine(user_id=user_id)
         web_info = await engine.analyse_website(url=db_website_document.url)
     if website_extractor.name.lower() == "mineru":
         engine = mineru_engine.MineruEngine(user_id=user_id)

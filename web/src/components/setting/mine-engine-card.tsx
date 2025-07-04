@@ -24,7 +24,7 @@ import {
 	DialogTrigger,
 } from '../ui/dialog';
 import { Textarea } from '../ui/textarea';
-import { EngineInfo } from '@/generated';
+import { UserEngineInfo } from '@/generated';
 import { Separator } from '../ui/separator';
 import { useLocale, useTranslations } from 'next-intl';
 import { z } from 'zod';
@@ -43,7 +43,7 @@ import {
 } from '../ui/alert-dialog';
 import { useState } from 'react';
 
-const MineEngineCard = ({ engine }: { engine: EngineInfo }) => {
+const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 	const t = useTranslations();
 	const [configDialogOpen, setConfigDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

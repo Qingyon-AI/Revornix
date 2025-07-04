@@ -58,7 +58,6 @@ models/EmailUserCreateVerifyRequest.ts
 models/EngineInfo.ts
 models/EngineInstallRequest.ts
 models/EngineSearchRequest.ts
-models/EngineSearchResponse.ts
 models/EngineUpdateRequest.ts
 models/FileDocumentInfo.ts
 models/FollowUserRequest.ts
@@ -80,6 +79,7 @@ models/MCPServerSearchRequest.ts
 models/MCPServerSearchResponse.ts
 models/MCPServerUpdateRequest.ts
 models/Message.ts
+models/MineEngineSearchResponse.ts
 models/Model.ts
 models/ModelCreateRequest.ts
 models/ModelProvider.ts
@@ -111,6 +111,7 @@ models/NotificationTemplatesResponse.ts
 models/PaginationApiKeyInfo.ts
 models/PasswordUpdateRequest.ts
 models/PrivateUserInfo.ts
+models/ProvideEngineSearchResponse.ts
 models/QuickNoteDocumentInfo.ts
 models/ReadNotificationRecordRequest.ts
 models/ReadRequest.ts
@@ -148,6 +149,7 @@ models/TokenUpdateRequest.ts
 models/UpdateNotificationSourceRequest.ts
 models/UpdateNotificationTargetRequest.ts
 models/UpdateNotificationTaskRequest.ts
+models/UserEngineInfo.ts
 models/UserInfoRequest.ts
 models/UserInfoUpdateRequest.ts
 models/UserLoginRequest.ts

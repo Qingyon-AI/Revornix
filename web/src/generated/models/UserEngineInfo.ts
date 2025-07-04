@@ -16,62 +16,88 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface EngineInfo
+ * @interface UserEngineInfo
  */
-export interface EngineInfo {
+export interface UserEngineInfo {
     /**
      * 
      * @type {number}
-     * @memberof EngineInfo
+     * @memberof UserEngineInfo
      */
     id: number;
     /**
      * 
      * @type {string}
-     * @memberof EngineInfo
+     * @memberof UserEngineInfo
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof EngineInfo
+     * @memberof UserEngineInfo
      */
     name_zh: string;
     /**
      * 
      * @type {string}
-     * @memberof EngineInfo
+     * @memberof UserEngineInfo
      */
     description?: string | null;
     /**
      * 
      * @type {string}
-     * @memberof EngineInfo
+     * @memberof UserEngineInfo
      */
     description_zh?: string | null;
     /**
      * 
      * @type {string}
-     * @memberof EngineInfo
+     * @memberof UserEngineInfo
      */
     demo_config?: string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserEngineInfo
+     */
+    enable?: boolean | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserEngineInfo
+     */
+    config_json?: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof UserEngineInfo
+     */
+    create_time: Date;
+    /**
+     * 
+     * @type {Date}
+     * @memberof UserEngineInfo
+     */
+    update_time: Date;
 }
 
 /**
- * Check if a given object implements the EngineInfo interface.
+ * Check if a given object implements the UserEngineInfo interface.
  */
-export function instanceOfEngineInfo(value: object): value is EngineInfo {
+export function instanceOfUserEngineInfo(value: object): value is UserEngineInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
+    if (!('create_time' in value) || value['create_time'] === undefined) return false;
+    if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
 }
 
-export function EngineInfoFromJSON(json: any): EngineInfo {
-    return EngineInfoFromJSONTyped(json, false);
+export function UserEngineInfoFromJSON(json: any): UserEngineInfo {
+    return UserEngineInfoFromJSONTyped(json, false);
 }
 
-export function EngineInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): EngineInfo {
+export function UserEngineInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserEngineInfo {
     if (json == null) {
         return json;
     }
@@ -83,14 +109,18 @@ export function EngineInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'description': json['description'] == null ? undefined : json['description'],
         'description_zh': json['description_zh'] == null ? undefined : json['description_zh'],
         'demo_config': json['demo_config'] == null ? undefined : json['demo_config'],
+        'enable': json['enable'] == null ? undefined : json['enable'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
+        'create_time': (new Date(json['create_time'])),
+        'update_time': (new Date(json['update_time'])),
     };
 }
 
-export function EngineInfoToJSON(json: any): EngineInfo {
-    return EngineInfoToJSONTyped(json, false);
+export function UserEngineInfoToJSON(json: any): UserEngineInfo {
+    return UserEngineInfoToJSONTyped(json, false);
 }
 
-export function EngineInfoToJSONTyped(value?: EngineInfo | null, ignoreDiscriminator: boolean = false): any {
+export function UserEngineInfoToJSONTyped(value?: UserEngineInfo | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -103,6 +133,10 @@ export function EngineInfoToJSONTyped(value?: EngineInfo | null, ignoreDiscrimin
         'description': value['description'],
         'description_zh': value['description_zh'],
         'demo_config': value['demo_config'],
+        'enable': value['enable'],
+        'config_json': value['config_json'],
+        'create_time': ((value['create_time']).toISOString()),
+        'update_time': ((value['update_time']).toISOString()),
     };
 }
 

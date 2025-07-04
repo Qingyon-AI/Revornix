@@ -3,6 +3,16 @@ from protocol.engine import EngineProtocol, WebsiteInfo
 
 class JinaEngine(EngineProtocol):
     
+    def __init__(self,
+                 user_id: int | None = None):
+        super().__init__(engine_uuid='e31849ffa7f84a2cb4e2fa2ea00f25d2',
+                         engine_name='Jina',
+                         engine_name_zh='Jina',
+                         engine_description='Jina is an AI-powered web scraping engine that can help you quickly find the information you want.',
+                         engine_description_zh='Jina 是一个的 AI 驱动的网页抓取引擎，它可以帮助你快速地找到你想要的信息。',
+                         engine_demo_config='{"api_key": "jina_******"}',
+                         user_id=user_id)
+    
     async def analyse_website(self, url: str):  
         headers = {
             'Accept': 'application/json',

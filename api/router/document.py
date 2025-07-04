@@ -15,9 +15,9 @@ from common.dependencies import get_db, get_current_user
 from common.logger import log_exception, exception_logger
 from common.file import RemoteFileService
 from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, init_file_document_info
-from engine import markitdown as markitdown_engine
-from engine import mineru as mineru_engine
-from engine import jina as jina_engine
+from engine.markitdown import MarkitdownEngine
+from engine.jina import JinaEngine
+from engine.mineru import MineruEngine
 
 document_router = APIRouter()
     
@@ -138,19 +138,13 @@ async def transform_markdown(request: Request,
             website_extractor = crud.engine.get_engine_by_id(db=db, 
                                                              id=default_website_document_parse_engine_id)
             if website_extractor.name.lower() == "markitdown":
-                engine = markitdown_engine.MarkitdownEngine()
+                engine = MarkitdownEngine(user_id=user.id)
                 web_info = await engine.analyse_website(url=db_website_document.url)
             if website_extractor.name.lower() == "jina":
-                db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(db=db, 
-                                                                                      user_id=user.id,
-                                                                                      engine_id=default_website_document_parse_engine_id)
-                jina_config_str = db_user_engine.config_json
-                if jina_config_str is None or len(jina_config_str) == 0:
-                    raise Exception("User haven't set the jina config")
-                engine = jina_engine.JinaEngine(engin_config=jina_config_str)
+                engine = JinaEngine(user_id=user.id)
                 web_info = await engine.analyse_website(url=db_website_document.url)
             if website_extractor.name.lower() == "mineru":
-                engine = mineru_engine.MineruEngine()
+                engine = MineruEngine(user_id=user.id)
                 web_info = await engine.analyse_website(url=db_website_document.url)
             markdown_content = web_info.content
             md_file_name = f"markdown/{uuid.uuid4().hex}.md"

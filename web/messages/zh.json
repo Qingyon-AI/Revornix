@@ -156,6 +156,7 @@
     "setting_engine_page_tip": "引擎只是一个称呼，在本项目中其本质就是解析目标产品并且最终生成markdown的插件。",
     "setting_engine_page_official_engine": "官方引擎集",
     "setting_engine_page_official_engine_empty": "暂无官方引擎",
+    "setting_engine_page_install_success": "安装成功",
     "setting_engine_page_mine_engine": "已安装引擎",
     "setting_engine_page_mine_engine_empty": "暂无已安装引擎",
     "setting_engine_page_mine_engine_config_see": "配置查看",

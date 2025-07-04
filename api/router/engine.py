@@ -7,7 +7,7 @@ from common.dependencies import get_current_user, get_db
 
 engine_router = APIRouter()
 
-@engine_router.post("/mine", response_model=schemas.engine.EngineSearchResponse)
+@engine_router.post("/mine", response_model=schemas.engine.MineEngineSearchResponse)
 async def search_document_parse_engine(engine_search_request: schemas.engine.EngineSearchRequest, 
                                        db: Session = Depends(get_db), 
                                        current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
@@ -20,14 +20,14 @@ async def search_document_parse_engine(engine_search_request: schemas.engine.Eng
                                                                               engine_id=engine.id)
         engine.enable = db_user_engine.enable
         engine.config_json = db_user_engine.config_json
-    return schemas.engine.EngineSearchResponse(data=engines)
+    return schemas.engine.MineEngineSearchResponse(data=engines)
 
-@engine_router.post("/provide", response_model=schemas.engine.EngineSearchResponse)
+@engine_router.post("/provide", response_model=schemas.engine.ProvideEngineSearchResponse)
 async def provide_document_parse_engine(engine_search_request: schemas.engine.EngineSearchRequest, 
                                         db: Session = Depends(get_db), 
                                         current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     engines = crud.engine.get_all_engines(db=db, keyword=engine_search_request.keyword)
-    return schemas.engine.EngineSearchResponse(data=engines)
+    return schemas.engine.ProvideEngineSearchResponse(data=engines)
 
 @engine_router.post("/install", response_model=schemas.common.NormalResponse)
 async def install_engine(engine_install_request: schemas.engine.EngineInstallRequest, 

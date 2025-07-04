@@ -3,13 +3,15 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 def create_engine(db: Session, 
+                  uuid: str,
                   name: str,
                   name_zh: str | None = None,
                   description: str | None = None,
                   description_zh: str | None = None,
                   demo_config: str | None = None):
     now = datetime.now(timezone.utc)
-    db_engine = models.engine.Engine(name=name, 
+    db_engine = models.engine.Engine(uuid=uuid,
+                                     name=name, 
                                      name_zh=name_zh,
                                      description=description,
                                      description_zh=description_zh,
@@ -36,6 +38,12 @@ def create_user_engine(db: Session,
 def get_engine_by_id(db: Session, id: int):
     query = db.query(models.engine.Engine)
     query = query.filter(models.engine.Engine.id == id,
+                         models.engine.Engine.delete_at == None)
+    return query.first()
+
+def get_engine_by_uuid(db: Session, uuid: str):
+    query = db.query(models.engine.Engine)
+    query = query.filter(models.engine.Engine.uuid == uuid,
                          models.engine.Engine.delete_at == None)
     return query.first()
 

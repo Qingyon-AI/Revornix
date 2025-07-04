@@ -1,6 +1,9 @@
 import json
+import crud
+import schemas
 from pydantic import BaseModel
 from typing import Protocol
+from common.sql import SessionLocal
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
@@ -18,7 +21,6 @@ class FileInfo(BaseModel):
     keywords: list | None = None
     content: str | None = None
     cover: str | None = None
-    
     
 class AsyncChromiumLoader:
     def __init__(self, urls, user_agent=None):
@@ -69,28 +71,42 @@ class EngineProtocol(Protocol):
         cover = og_cover_meta.attrs['content'] if og_cover_meta is not None else None
         return cover
     
-    def __init__(self, engine_name: str | None = None, engine_version: str | None = None, engine_description: str | None = None, engin_config: str | None = None):
+    def __init__(self, 
+                 engine_uuid: int,
+                 user_id: int | None = None,
+                 engine_name: str | None = None, 
+                 engine_name_zh: str | None = None, 
+                 engine_description: str | None = None, 
+                 engine_description_zh: str | None = None, 
+                 engine_demo_config: str | None = None):
+        self.engine_uuid = engine_uuid
         self.engine_name = engine_name
-        self.engine_version = engine_version
+        self.engine_name_zh = engine_name_zh
         self.engine_description = engine_description
-        self.engin_config = engin_config
-
-    def get_engine_name(self) -> str:
-        return self.engine_name
-
-    def get_engine_version(self) -> str:
-        return self.engine_version
-
-    def get_engine_description(self) -> str:
-        return self.engine_description
+        self.engine_description_zh = engine_description_zh
+        self.engine_demo_config = engine_demo_config
+        
+        if user_id is not None:
+            db = SessionLocal()
+            db_engine = crud.engine.get_engine_by_uuid(db=db, uuid=self.engine_uuid)
+            db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(user_id=user_id, engine_id=db_engine.id)
+            self.engine_config = db_user_engine.config_json if db_user_engine else None
     
     def get_engine_config(self) -> dict:
         return json.loads(self.engin_config) if self.engin_config else None
+    
+    def to_engine_info(self) -> schemas.engine.EngineInfo:
+        return schemas.engine.EngineInfo(
+            id=self.engine_id,
+            name=self.engine_name or "",
+            name_zh=self.engine_name_zh or "",
+            description=self.engine_description,
+            description_zh=self.engine_description_zh,
+            demo_config=self.engine_demo_config,
+        )
     
     async def analyse_website(self, url: str) -> WebsiteInfo:
         raise NotImplementedError("Method not implemented")
     
     async def analyse_file(self, file_path: str) -> FileInfo:
         raise NotImplementedError("Method not implemented")
-    
-    
