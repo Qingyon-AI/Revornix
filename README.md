@@ -52,6 +52,9 @@ cp ./envs/.web.env.example ./web/.env
 
 Go to the corresponding environment variable files and configure them. For details, refer to [Environment Variables Configuration](https://revornix.com/en/docs/environment).
 
+> [!TIP]
+> In most cases, you only need to configure the `SECRET_KEY` parameter for the user authentication mechanism, and leave the other parameters as default. Note that the `SECRET_KEY` must be consistent across different services; otherwise, the user authentication systems will not be interoperable.
+
 #### Pull Necessary Repositories and Start with Docker
 
 ```shell

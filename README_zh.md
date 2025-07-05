@@ -52,6 +52,9 @@ cp ./envs/.web.env.example ./web/.env
 
 前往对应的环境变量文件配置，详情见[环境变量配置篇章](https://revornix.com/en/docs/environment)
 
+> [!TIP]
+> 一般情况下，你仅仅只需要配置用户认证机制的`SECRET_KEY`这一参数，其他参数保持默认即可。注意不同服务的`SECRET_KEY`必须保持一致，否则会导致不同服务之间的用户认证体系无法互通。
+
 #### docker 拉取必要仓库并启动
 
 ```shell
