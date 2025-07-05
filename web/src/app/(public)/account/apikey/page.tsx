@@ -304,7 +304,7 @@ const ApiKeyPage = () => {
 				<div className='flex flex-row items-center justify-between mt-4'>
 					<div className='text-xs text-muted-foreground'>
 						{t('account_api_key_summary', {
-							total: data?.total_elements,
+							total: data?.total_elements || 0,
 							pageNum: pageNum,
 						})}
 					</div>

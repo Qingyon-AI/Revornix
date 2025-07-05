@@ -119,6 +119,7 @@ const MCPPage = () => {
 			args: z.string().optional().nullable(),
 			cmd: z.string().optional().nullable(),
 			address: z.string().optional().nullable(),
+			enable: z.boolean().optional().nullable(),
 		})
 		.refine(
 			(data) => {
@@ -302,7 +303,6 @@ const MCPPage = () => {
 			}
 		}
 		return mcpUpdateForm.handleSubmit(
-			// @ts-expect-error
 			onUpdateFormValidateSuccess,
 			onUpdateFormValidateError
 		)(event);
@@ -341,10 +341,12 @@ const MCPPage = () => {
 												</FormLabel>
 												<Input
 													{...field}
+													value={field.value ?? ''}
 													placeholder={t(
 														'mcp_server_update_form_name_placeholder'
 													)}
 												/>
+
 												<FormMessage />
 											</FormItem>
 										);
@@ -399,6 +401,7 @@ const MCPPage = () => {
 													</FormLabel>
 													<Input
 														{...field}
+														value={field.value ?? ''}
 														placeholder={t(
 															'mcp_server_update_form_address_placeholder'
 														)}
@@ -422,6 +425,7 @@ const MCPPage = () => {
 														</FormLabel>
 														<Input
 															{...field}
+															value={field.value ?? ''}
 															placeholder={t(
 																'mcp_server_update_form_script_placeholder'
 															)}
@@ -442,6 +446,7 @@ const MCPPage = () => {
 														</FormLabel>
 														<Input
 															{...field}
+															value={field.value ?? ''}
 															placeholder={t(
 																'mcp_server_update_form_args_placeholder'
 															)}
