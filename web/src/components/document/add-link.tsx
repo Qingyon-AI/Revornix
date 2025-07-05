@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createDocument, getLabels } from '@/service/document';
 import { useState } from 'react';
-import { Loader2, Sparkles } from 'lucide-react';
+import { AlertCircleIcon, Loader2, Sparkles } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,9 +27,13 @@ import { useRouter } from 'nextjs-toploader/app';
 import { getAllMineSections } from '@/service/section';
 import AddDocumentLabelDialog from '@/components/document/add-document-label-dialog';
 import { useTranslations } from 'next-intl';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useUserContext } from '@/provider/user-provider';
+import Link from 'next/link';
 
 const AddLink = () => {
 	const t = useTranslations();
+	const { userInfo } = useUserContext();
 	const formSchema = z.object({
 		category: z.number(),
 		url: z.string().url(),
@@ -132,6 +136,25 @@ const AddLink = () => {
 			<Form {...form}>
 				<form onSubmit={onSubmitMessageForm} className='flex flex-col h-full'>
 					<div className='flex flex-col w-full gap-5 flex-1 mb-5'>
+						{!userInfo?.default_website_document_parse_engine_id && (
+							<Alert>
+								<AlertCircleIcon />
+								<AlertTitle>
+									{t('document_create_link_engine_unset')}
+								</AlertTitle>
+								<AlertDescription>
+									<p>
+										{t('document_create_link_engine_unset_description_1')}
+										<Link
+											href={'/setting'}
+											className='inline-block underline underline-offset-2 font-bold'>
+											{t('document_create_link_engine_unset_description_2')}
+										</Link>
+										{t('document_create_link_engine_unset_description_3')}
+									</p>
+								</AlertDescription>
+							</Alert>
+						)}
 						<FormField
 							name='url'
 							control={form.control}
@@ -259,7 +282,10 @@ const AddLink = () => {
 					<Button
 						type='submit'
 						className='w-full'
-						disabled={mutateCreateDocument.isPending}>
+						disabled={
+							mutateCreateDocument.isPending &&
+							!!userInfo?.default_website_document_parse_engine_id
+						}>
 						{t('document_create_submit')}
 						{mutateCreateDocument.isPending && (
 							<Loader2 className='size-4 animate-spin' />
