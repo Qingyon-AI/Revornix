@@ -1,0 +1,7 @@
+node_modules
+.pnpm
+.next
+.DS_Store
+npm-debug.log
+yarn-error.log
+.env

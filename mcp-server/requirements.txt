@@ -1,3 +1,4 @@
+fastapi[standard]==0.115.14
 pydantic==2.11.2
 pydantic_core==2.33.1
 python-dotenv==1.1.0
@@ -9,3 +10,6 @@ mcp[cli]==1.9.0
 openai==1.68.2
 mcp-use==1.2.8
 langchain_openai==0.3.16
+pymilvus[model]==2.5.12
+chonkie==1.1.0
+torch==2.7.0

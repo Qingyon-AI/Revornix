@@ -10,6 +10,8 @@ services:
         - api
         - file-backend
         - web
+        - daily-hot
+        - mcp-server
 
   neo4j:
     container_name: neo4j
@@ -58,6 +60,8 @@ services:
         condition: service_started
     env_file:
       - ./envs/.api.env
+    environment:
+      - HF_ENDPOINT=https://hf-mirror.com
     
   mcp-server:
     container_name: mcp-server

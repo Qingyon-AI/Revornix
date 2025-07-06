@@ -103,7 +103,6 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
-    "@7nohe/openapi-react-query-codegen": "^1.6.2",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/d3": "^7.4.3",
     "@types/jsonwebtoken": "^9.0.10",

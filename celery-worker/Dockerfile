@@ -42,11 +42,5 @@ RUN pip install playwright \
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# ---------- 模型下载 ----------
-# 设置 HuggingFace 缓存路径
-# ENV HUGGINGFACE_HUB_CACHE="/home/appuser/.cache/huggingface"
-RUN wget https://github.com/opendatalab/MinerU/raw/master/scripts/download_models_hf.py -O download_models_hf.py \
- && python download_models_hf.py
-
 # ---------- 应用代码 ----------
 COPY . .
