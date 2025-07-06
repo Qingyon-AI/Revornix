@@ -81,8 +81,10 @@ const CommandPanel = () => {
 			<CommandDialog
 				open={showCommandPanel}
 				onOpenChange={setShowCommandPanel}
-				filter={(value, search, keywords) => {
-					return 1;
+				commandProps={{
+					filter: (value, search, keywords) => {
+						return 1;
+					},
 				}}>
 				<CommandInput
 					placeholder={t('search_placeholder')}

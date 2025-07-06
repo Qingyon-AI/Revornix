@@ -24,13 +24,13 @@ const MessageCard = ({ message }: { message: Message }) => {
 					<Markdown
 						components={{
 							img: (props) => {
-								let src = '';
-								if (props.src?.startsWith('images/')) {
-									src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
-								} else {
-									src =
-										props.src ??
-										`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
+								let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
+								if (typeof props.src === 'string') {
+									if (props.src.startsWith('images/')) {
+										src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
+									} else if (props.src) {
+										src = props.src;
+									}
 								}
 								return <img {...props} src={src} />;
 							},

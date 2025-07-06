@@ -121,7 +121,6 @@ const UpdateNotificationSource = ({
 				server: data.email_notification_source?.server ?? '',
 				port: data.email_notification_source?.port ?? undefined,
 			};
-			// @ts-expect-error
 			form.reset(defaultValues);
 		}
 	}, [data, form, notification_source_id]);

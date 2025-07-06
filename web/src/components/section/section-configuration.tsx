@@ -81,9 +81,7 @@ const SectionConfiguration = ({ section_id }: { section_id: string }) => {
 		form.setValue('title', section?.title || '');
 		form.setValue('description', section?.description || '');
 		form.setValue('public', section?.public || false);
-		// @ts-expect-error
 		form.setValue('cover', section?.cover || undefined);
-		// @ts-expect-error
 		form.setValue('labels', section?.labels?.map((label) => label.id) || []);
 	}, [section]);
 

@@ -26,7 +26,7 @@ const FileDocumentDetail = ({
 	id: string;
 	className?: string;
 }) => {
-	const t = useTranslations()
+	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const {
 		data: document,
@@ -111,7 +111,9 @@ const FileDocumentDetail = ({
 			{document && document.transform_task?.status === 0 && (
 				<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 					<p className='flex flex-row items-center'>
-						<span className='mr-1'>{t('document_transform_to_markdown_todo')}</span>
+						<span className='mr-1'>
+							{t('document_transform_to_markdown_todo')}
+						</span>
 						<Tooltip>
 							<TooltipTrigger>
 								<Info size={15} />
@@ -128,7 +130,7 @@ const FileDocumentDetail = ({
 						onClick={() => {
 							handleTransformToMarkdown();
 						}}>
-							{t('retry')}
+						{t('retry')}
 						{markdownTransforming && (
 							<Loader2 className='size-4 animate-spin' />
 						)}
@@ -166,13 +168,13 @@ const FileDocumentDetail = ({
 					<Markdown
 						components={{
 							img: (props) => {
-								let src = '';
-								if (props.src?.startsWith('images/')) {
-									src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
-								} else {
-									src =
-										props.src ??
-										`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
+								let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
+								if (typeof props.src === 'string') {
+									if (props.src.startsWith('images/')) {
+										src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
+									} else if (props.src) {
+										src = props.src;
+									}
 								}
 								return <img {...props} src={src} />;
 							},

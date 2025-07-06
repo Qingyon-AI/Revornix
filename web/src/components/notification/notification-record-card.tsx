@@ -9,14 +9,17 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import Link from 'next/link';
 import { useMutation } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { CardDescription } from '../ui/card';
 import { useTranslations } from 'next-intl';
 import { NotificationRecord } from '@/generated';
 
-const NotificationRecordCard = ({ notification }: { notification: NotificationRecord }) => {
+const NotificationRecordCard = ({
+	notification,
+}: {
+	notification: NotificationRecord;
+}) => {
 	const t = useTranslations();
 	const mutate = useMutation({
 		mutationKey: ['readNotification', notification.id],
@@ -54,17 +57,6 @@ const NotificationRecordCard = ({ notification }: { notification: NotificationRe
 						<CardDescription>{notification.content}</CardDescription>
 					</DialogHeader>
 					<DialogFooter className='flex flex-row items-center !justify-between w-full'>
-						{notification.link && (
-							<Link className='w-fit h-fit' href={notification.link ?? ''}>
-								<Button
-									className='text-xs p-0 w-fit h-fit underline text-muted-foreground'
-									variant={'link'}>
-									{t('notification_view_with_link_params', {
-										notification_link: notification.link,
-									})}
-								</Button>
-							</Link>
-						)}
 						{notification.read_at ? (
 							<Button
 								variant={'destructive'}
@@ -97,18 +89,6 @@ const NotificationRecordCard = ({ notification }: { notification: NotificationRe
 				<div className='flex flex-col gap-2 w-full'>
 					<p className='font-bold'>{notification.title}</p>
 					<p className='text-sm font-semibold'>{notification.content}</p>
-					{notification.link && (
-						<Link
-							className='w-fit'
-							href={notification.link}
-							onClick={(e) => e.stopPropagation()}>
-							<Button
-								className='text-xs p-0 w-fit h-fit underline'
-								variant={'link'}>
-								{t('notification_link')}：{notification.link}
-							</Button>
-						</Link>
-					)}
 					<div className='text-muted-foreground text-xs'>
 						{format(notification.create_time as Date, 'yyyy-MM-dd HH:mm:ss')}
 					</div>

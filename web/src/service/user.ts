@@ -1,5 +1,5 @@
 import userApi from '@/api/user'
-import { BindEmailVerifyRequest, DailyReportStatusChangeRequest, DefaultEngineUpdateRequest, DefaultModelUpdateRequest, EmailUserCreateVerifyRequest, FollowUserRequest, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo } from '@/generated';
+import { BindEmailVerifyRequest, DefaultEngineUpdateRequest, DefaultModelUpdateRequest, EmailUserCreateVerifyRequest, FollowUserRequest, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo } from '@/generated';
 import { request } from '@/lib/request';
 
 export const getUserFans = async (data: SearchUserFansRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
@@ -86,12 +86,6 @@ export const updatePassword = async (data: PasswordUpdateRequest): Promise<Norma
 
 export const bindEmailVerify = async (data: BindEmailVerifyRequest): Promise<NormalResponse> => {
     return await request(userApi.bindEmailVerify, {
-        data
-    })
-}
-
-export const updateDailyReport = async (data: DailyReportStatusChangeRequest) => {
-    return await request(userApi.updateDailyReport, {
         data
     })
 }
