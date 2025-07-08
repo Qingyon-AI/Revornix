@@ -1,5 +1,8 @@
+import os
 from dotenv import load_dotenv
-load_dotenv(override=True)
+if os.environ.get('ENV') == 'dev':
+    load_dotenv(override=True)
+    
 import contextlib
 from router.common import common_mcp_router
 from router.document import document_mcp_router

@@ -1,6 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv()
-
 from pymilvus import MilvusClient, AnnSearchRequest, WeightedRanker, DataType
 from config.milvus import MILVUS_TOKEN, MILVUS_CLUSTER_ENDPOINT
 from chonkie import TokenChunker

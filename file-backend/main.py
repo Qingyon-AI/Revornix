@@ -1,5 +1,7 @@
+import os
 from dotenv import load_dotenv
-load_dotenv(override=True)
+if os.environ.get('ENV') == 'dev':
+    load_dotenv(override=True)
 
 import logging
 logging.basicConfig(
@@ -22,7 +24,6 @@ import yaml
 import time
 import schemas
 import functools
-import os
 
 root_path = '/api/file-service'
 

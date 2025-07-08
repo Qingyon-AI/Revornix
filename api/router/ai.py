@@ -21,9 +21,6 @@ from common.mcp_client_wrapper import MCPClientWrapper
 from common.prompts.mcp import get_prompt_to_identify_tool_and_arguments, get_prompt_to_process_tool_response, get_if_down_prompt, get_prompt_to_continue_next_tool
 from contextlib import AsyncExitStack
 
-from dotenv import load_dotenv
-load_dotenv(override=True)
-
 max_depth = 5
 
 os.environ["TOKENIZERS_PARALLELISM"] = 'false'

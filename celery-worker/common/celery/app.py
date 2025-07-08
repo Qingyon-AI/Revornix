@@ -1,5 +1,7 @@
+import os
 from dotenv import load_dotenv
-load_dotenv(override=True)
+if os.environ.get('ENV') == 'dev':
+    load_dotenv(override=True)
 
 import uuid
 import crud

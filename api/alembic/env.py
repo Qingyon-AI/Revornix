@@ -1,10 +1,8 @@
 import sys
 import os
 from dotenv import load_dotenv
-if os.getenv('ENV') == 'production':
+if os.getenv('ENV') == 'dev':
     load_dotenv(override=True)
-else:
-    load_dotenv(override=True, dotenv_path='.env')
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
 

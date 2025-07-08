@@ -1,5 +1,7 @@
+import os
 from dotenv import load_dotenv
-load_dotenv(override=True)
+if os.environ.get('ENV') == 'dev':
+    load_dotenv(override=True)
 
 import logging
 logging.basicConfig(
@@ -11,7 +13,6 @@ LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s - %(name)s - %(lev
 LOGGING_CONFIG["formatters"]["access"]["fmt"] = "%(asctime)s - %(name)s - %(levelprefix)s - %(client_addr)s - %(request_line)s %(status_code)s"
 
 import io
-import os
 import time
 import yaml
 import schemas
