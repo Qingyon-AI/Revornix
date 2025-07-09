@@ -82,8 +82,10 @@ models/Message.ts
 models/MineEngineSearchResponse.ts
 models/Model.ts
 models/ModelCreateRequest.ts
+models/ModelCreateResponse.ts
 models/ModelProvider.ts
 models/ModelProviderCreateRequest.ts
+models/ModelProviderCreateResponse.ts
 models/ModelProviderRequest.ts
 models/ModelProviderSearchRequest.ts
 models/ModelProviderSearchResponse.ts

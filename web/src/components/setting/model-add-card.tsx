@@ -97,7 +97,7 @@ const ModelAddCard = ({
 								return (
 									<>
 										<Input
-											placeholder={t('setting_model_placeholder')}
+											placeholder={t('setting_model_name_placeholder')}
 											className='mr-2 font-mono'
 											autoFocus
 											{...field}

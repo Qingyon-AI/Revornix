@@ -1,7 +1,6 @@
 import {
 	Card,
 	CardContent,
-	CardDescription,
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
@@ -12,11 +11,13 @@ import DocumentLabelsBox from '@/components/document/document-labels-box';
 import DocumentMonthSummary from '@/components/document/document-month-summary';
 import SectionLabelsBox from '@/components/document/section-labels-box';
 import { useTranslations } from 'next-intl';
+import InitSettingDialog from '@/components/setting/init-setting-dialog';
 
 const DashboardPage = () => {
 	const t = useTranslations();
 	return (
 		<div className='flex flex-col px-5 gap-5 pb-5 w-full'>
+			<InitSettingDialog />
 			<DocumentMonthSummary />
 			<div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
 				<UnReadDocumentBox />

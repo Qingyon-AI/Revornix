@@ -21,8 +21,10 @@ import type {
   HTTPValidationError,
   Model,
   ModelCreateRequest,
+  ModelCreateResponse,
   ModelProvider,
   ModelProviderCreateRequest,
+  ModelProviderCreateResponse,
   ModelProviderRequest,
   ModelProviderSearchRequest,
   ModelProviderSearchResponse,
@@ -46,10 +48,14 @@ import {
     ModelToJSON,
     ModelCreateRequestFromJSON,
     ModelCreateRequestToJSON,
+    ModelCreateResponseFromJSON,
+    ModelCreateResponseToJSON,
     ModelProviderFromJSON,
     ModelProviderToJSON,
     ModelProviderCreateRequestFromJSON,
     ModelProviderCreateRequestToJSON,
+    ModelProviderCreateResponseFromJSON,
+    ModelProviderCreateResponseToJSON,
     ModelProviderRequestFromJSON,
     ModelProviderRequestToJSON,
     ModelProviderSearchRequestFromJSON,
@@ -192,7 +198,7 @@ export class AiApi extends runtime.BaseAPI {
     /**
      * Create Model
      */
-    async createModelAiModelCreatePostRaw(requestParameters: CreateModelAiModelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async createModelAiModelCreatePostRaw(requestParameters: CreateModelAiModelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelCreateResponse>> {
         if (requestParameters['modelCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelCreateRequest',
@@ -222,13 +228,13 @@ export class AiApi extends runtime.BaseAPI {
             body: ModelCreateRequestToJSON(requestParameters['modelCreateRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelCreateResponseFromJSON(jsonValue));
     }
 
     /**
      * Create Model
      */
-    async createModelAiModelCreatePost(requestParameters: CreateModelAiModelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+    async createModelAiModelCreatePost(requestParameters: CreateModelAiModelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelCreateResponse> {
         const response = await this.createModelAiModelCreatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -236,7 +242,7 @@ export class AiApi extends runtime.BaseAPI {
     /**
      * Create Model Provider
      */
-    async createModelProviderAiModelProviderCreatePostRaw(requestParameters: CreateModelProviderAiModelProviderCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async createModelProviderAiModelProviderCreatePostRaw(requestParameters: CreateModelProviderAiModelProviderCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelProviderCreateResponse>> {
         if (requestParameters['modelProviderCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelProviderCreateRequest',
@@ -266,13 +272,13 @@ export class AiApi extends runtime.BaseAPI {
             body: ModelProviderCreateRequestToJSON(requestParameters['modelProviderCreateRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelProviderCreateResponseFromJSON(jsonValue));
     }
 
     /**
      * Create Model Provider
      */
-    async createModelProviderAiModelProviderCreatePost(requestParameters: CreateModelProviderAiModelProviderCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+    async createModelProviderAiModelProviderCreatePost(requestParameters: CreateModelProviderAiModelProviderCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelProviderCreateResponse> {
         const response = await this.createModelProviderAiModelProviderCreatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }

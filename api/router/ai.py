@@ -49,7 +49,7 @@ def call_llm(ai_client: OpenAI, model: str, message: str) -> ChatCompletion:
     return completion
     
 
-@ai_router.post("/model/create", response_model=schemas.common.NormalResponse)
+@ai_router.post("/model/create", response_model=schemas.ai.ModelCreateResponse)
 async def create_model(model_create_request: schemas.ai.ModelCreateRequest,
                        db: Session = Depends(get_db),
                        user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
@@ -63,7 +63,7 @@ async def create_model(model_create_request: schemas.ai.ModelCreateRequest,
                                                        api_key=model_create_request.api_key,
                                                        api_url=model_create_request.api_url)
     db.commit()
-    return schemas.common.SuccessResponse()
+    return schemas.ai.ModelCreateResponse(id=db_ai_model.id)
 
 @ai_router.post("/model/detail", response_model=schemas.ai.Model)
 async def get_ai_model(model_request: schemas.ai.ModelRequest,
@@ -119,7 +119,7 @@ async def get_ai_model(model_provider_request: schemas.ai.ModelProviderRequest,
                                     api_key=db_user_model_provider.api_key,
                                     api_url=db_user_model_provider.api_url)
  
-@ai_router.post("/model-provider/create", response_model=schemas.common.NormalResponse)
+@ai_router.post("/model-provider/create", response_model=schemas.ai.ModelProviderCreateResponse)
 async def create_model_provider(model_provider_request: schemas.ai.ModelProviderCreateRequest,
                                 db: Session = Depends(get_db),
                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
@@ -132,7 +132,7 @@ async def create_model_provider(model_provider_request: schemas.ai.ModelProvider
                                                                          api_key=model_provider_request.api_key,
                                                                          api_url=model_provider_request.api_url)
     db.commit()
-    return schemas.common.SuccessResponse()
+    return schemas.ai.ModelProviderCreateResponse(id=db_ai_model_provider.id)
  
 @ai_router.post("/model/delete", response_model=schemas.common.NormalResponse)
 async def delete_ai_model(delete_model_request: schemas.ai.DeleteModelRequest,

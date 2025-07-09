@@ -8,6 +8,9 @@ class ModelCreateRequest(BaseModel):
     api_key: str
     api_url: str
     
+class ModelCreateResponse(BaseModel):
+    id: int
+    
 class ModelProvider(BaseModel):
     id: int
     name: str
@@ -32,6 +35,9 @@ class ModelProviderCreateRequest(BaseModel):
     description: str | None = None
     api_key: str
     api_url: str
+    
+class ModelProviderCreateResponse(BaseModel):
+    id: int
     
 class ModelRequest(BaseModel):
     model_id: int
