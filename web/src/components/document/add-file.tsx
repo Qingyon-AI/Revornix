@@ -139,17 +139,17 @@ const AddFile = () => {
 							<Alert>
 								<AlertCircleIcon />
 								<AlertTitle>
-									{t('document_create_link_engine_unset')}
+									{t('document_create_file_engine_unset')}
 								</AlertTitle>
 								<AlertDescription>
 									<p>
-										{t('document_create_link_engine_unset_description_1')}
+										{t('document_create_file_engine_unset_description_1')}
 										<Link
 											href={'/setting'}
 											className='inline-block underline underline-offset-2 font-bold'>
-											{t('document_create_link_engine_unset_description_2')}
+											{t('document_create_file_engine_unset_description_2')}
 										</Link>
-										{t('document_create_link_engine_unset_description_3')}
+										{t('document_create_file_engine_unset_description_3')}
 									</p>
 								</AlertDescription>
 							</Alert>
