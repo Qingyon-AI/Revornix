@@ -31,10 +31,14 @@ celery_app = Celery('worker',
 
 async def handle_init_file_document_info(document_id: int, 
                                          user_id: int):
+    db = SessionLocal()
+    db_user = crud.user.get_user_by_id(db=db, 
+                                       user_id=user_id)
+    if db_user is None:
+        raise Exception("User not found")
+    access_token = create_upload_token(user=db_user)
+    remote_file_service = RemoteFileService(authorization=access_token)
     try:
-        db = SessionLocal()
-        db_user = crud.user.get_user_by_id(db=db, 
-                                        user_id=user_id)
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
         if db_document is None:
@@ -57,8 +61,6 @@ async def handle_init_file_document_info(document_id: int,
         
         file_extractor = crud.engine.get_engine_by_id(db=db, 
                                                     id=default_file_document_parse_engine_id)
-        access_token = create_upload_token(user=db_user)
-        remote_file_service = RemoteFileService(authorization=access_token)
         # download the file to the temp dir
         file_content = await remote_file_service.get_object_bytes(file_path=db_file_document.file_name)
         temp_file_path = f'{str(BASE_DIR)}/temp/{db_file_document.file_name.replace("files/", "")}'
@@ -88,7 +90,6 @@ async def handle_init_file_document_info(document_id: int,
                                                             md_file_name=md_file_name)
         db_task.status = 2
         db.commit()
-        await remote_file_service.close_client()
     except Exception as e:
         exception_logger.error(f"Something is error while init file document info: {e}")
         log_exception()
@@ -101,14 +102,19 @@ async def handle_init_file_document_info(document_id: int,
         db_document.title = f'Document Convert Error: {e}'
         db_document.description = f'Document Convert Error: {e}'
         db.commit()
-        await remote_file_service.close_client()
         raise e
+    finally:
+        await remote_file_service.close_client()
 
 async def handle_init_website_document_info(document_id: int, user_id: int):
+    db = SessionLocal()
+    db_user = crud.user.get_user_by_id(db=db, 
+                                       user_id=user_id)
+    if db_user is None:
+        raise Exception("User not found")
+    access_token = create_upload_token(user=db_user)
+    remote_file_service = RemoteFileService(authorization=access_token)
     try:
-        db = SessionLocal()
-        db_user = crud.user.get_user_by_id(db=db, 
-                                        user_id=user_id)
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
         if db_document is None:
@@ -146,8 +152,6 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
         db_document.cover = web_info.cover
         db.commit()
 
-        access_token = create_upload_token(user=db_user)
-        remote_file_service = RemoteFileService(authorization=access_token)
         db_website_document = crud.document.get_website_document_by_document_id(db=db, 
                                                                                 document_id=document_id)
         md_file_name = f"markdown/{uuid.uuid4().hex}.md"
@@ -157,7 +161,6 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
                                                                         md_file_name=md_file_name)
         db_task.status = 2
         db.commit()
-        await remote_file_service.close_client()
     except Exception as e:
         exception_logger.error(f"Something is error while init website document info: {e}")
         log_exception()
@@ -170,8 +173,9 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
         db_document.title = f'Document Convert Error: {e}'
         db_document.description = f'Document Convert Error: {e}'
         db.commit()
-        await remote_file_service.close_client()
         raise e
+    finally:
+        await remote_file_service.close_client()
 
 async def handle_add_embedding(document_id: int, user_id: int):
     db = SessionLocal()
@@ -260,11 +264,12 @@ async def handle_update_sections(sections: list[int],
                                                                                        section_id=db_section.id,
                                                                                        status=3)
         db.commit()
-        await remote_file_service.close_client()
     except Exception as e:
         exception_logger.error(f"Something is error while getting the section: {e}")
         log_exception()
         db.rollback()
+        raise e
+    finally:
         await remote_file_service.close_client()
         
 async def get_markdown_content_by_document_id(document_id: int, user_id: int):
@@ -274,27 +279,33 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
         raise Exception("User does not exist")
     access_token = create_upload_token(user=db_user)
     remote_file_service = RemoteFileService(authorization=access_token)
-    db_document = crud.document.get_document_by_document_id(db=db,
-                                                            document_id=document_id)
-    if db_document is None:
-        raise Exception("Document not found")
-    if db_document.category == 1:
-        website_document = crud.document.get_website_document_by_document_id(db=db,
-                                                                                document_id=document_id)
-        if website_document is None:
-            raise Exception("Website document not found")
-        markdown_content = await remote_file_service.get_object_content(file_path=website_document.md_file_name)
-    if db_document.category == 0:
-        file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                            document_id=document_id)
-        if file_document is None:
-            raise Exception("Website document not found")
-        markdown_content = await remote_file_service.get_object_content(file_path=file_document.md_file_name)
-    if db_document.category == 2:
-        quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
+    try:
+        db_document = crud.document.get_document_by_document_id(db=db,
+                                                                document_id=document_id)
+        if db_document is None:
+            raise Exception("Document not found")
+        if db_document.category == 1:
+            website_document = crud.document.get_website_document_by_document_id(db=db,
                                                                                     document_id=document_id)
-        markdown_content = quick_note_document.content
-    await remote_file_service.close_client()
+            if website_document is None:
+                raise Exception("Website document not found")
+            markdown_content = await remote_file_service.get_object_content(file_path=website_document.md_file_name)
+        if db_document.category == 0:
+            file_document = crud.document.get_file_document_by_document_id(db=db,
+                                                                                document_id=document_id)
+            if file_document is None:
+                raise Exception("Website document not found")
+            markdown_content = await remote_file_service.get_object_content(file_path=file_document.md_file_name)
+        if db_document.category == 2:
+            quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
+                                                                                        document_id=document_id)
+            markdown_content = quick_note_document.content
+    except Exception as e:
+        exception_logger.error(f"Something is error while getting the markdown content: {e}")
+        log_exception()
+        raise e
+    finally:
+        await remote_file_service.close_client()
     return markdown_content
         
 async def handle_update_ai_summary(document_id: int, 
@@ -325,6 +336,8 @@ async def handle_update_section_use_document(section_id: int,
                                              user_id: int):
     db = SessionLocal()
     user = crud.user.get_user_by_id(db=db, user_id=user_id)
+    if user is None:
+        raise Exception("User does not exist")
     access_token = create_upload_token(user=user)
     remote_file_service = RemoteFileService(authorization=access_token)
     
@@ -374,16 +387,17 @@ async def handle_update_section_use_document(section_id: int,
                                                                            document_id=document_id,
                                                                            section_id=db_section.id,
                                                                            status=2)
-        await remote_file_service.close_client()
     except Exception as e:
-            log_exception()
-            exception_logger.error(f"Something is error while updating the section: {e}")
-            db.rollback()
-            crud.section.update_section_document_by_section_id_and_document_id(db=db,
-                                                                               document_id=document_id,
-                                                                               section_id=db_section.id,
-                                                                               status=3)
-            await remote_file_service.close_client()
+        log_exception()
+        exception_logger.error(f"Something is error while updating the section: {e}")
+        db.rollback()
+        crud.section.update_section_document_by_section_id_and_document_id(db=db,
+                                                                            document_id=document_id,
+                                                                            section_id=db_section.id,
+                                                                            status=3)
+        raise e
+    finally:
+        await remote_file_service.close_client()
 
 @celery_app.task
 def init_website_document_info(document_id: int, user_id: int):
