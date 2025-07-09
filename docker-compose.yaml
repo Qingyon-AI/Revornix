@@ -32,6 +32,8 @@ services:
     depends_on:
       - api
       - file-backend
+    env_file:
+      - ./envs/.web.env
   
   daily-hot:
     container_name: daily-hot
