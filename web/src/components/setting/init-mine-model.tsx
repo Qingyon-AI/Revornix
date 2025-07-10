@@ -71,12 +71,12 @@ const InitMineModel = () => {
 				});
 				ctx.addIssue({
 					code: z.ZodIssueCode.custom,
-					message: t('init_mine_model_form_need'),
+					message: t('init_mine_model_form_needed'),
 					path: ['model_provider_api_key'],
 				});
 				ctx.addIssue({
 					code: z.ZodIssueCode.custom,
-					message: t('init_mine_model_form_need'),
+					message: t('init_mine_model_form_needed'),
 					path: ['model_provider_api_url'],
 				});
 			}

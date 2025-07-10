@@ -60,15 +60,28 @@ const InitEngine = () => {
 		},
 	});
 
-	const formSchema = z.object({
-		engine_id: z.number(),
-		engine_config: z.string(),
-	});
+	const formSchema = z
+		.object({
+			engine_id: z.number(),
+			engine_config: z.string(),
+		})
+		.superRefine((data, ctx) => {
+			const engine = provideEngines?.data.find(
+				(item) => item.id === data.engine_id
+			);
+			if (engine?.demo_config && !data.engine_config) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: t('init_engine_form_config_needed'),
+					path: ['engine_config'],
+				});
+			}
+		});
+
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			engine_config: '',
-			engine_id: undefined,
 		},
 	});
 
@@ -147,35 +160,43 @@ const InitEngine = () => {
 		<>
 			{mineEngines?.data && mineEngines.data.length === 0 && (
 				<Form {...form}>
-					<form className='flex flex-col gap-5 w-full' onSubmit={handleSubmit}>
+					<form className='space-y-2 w-full' onSubmit={handleSubmit}>
 						<FormField
 							control={form.control}
 							name='engine_id'
 							render={({ field }) => (
 								<FormItem>
-									<div className='space-y-2'>
-										<FormLabel>引擎选择</FormLabel>
-										<Select
-											onValueChange={(value) => field.onChange(Number(value))}
-											value={field.value ? String(field.value) : undefined}>
-											<SelectTrigger className='w-full'>
-												<SelectValue placeholder={'请选择引擎'} />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectGroup>
-													{provideEngines?.data.map((item) => {
-														return (
-															<SelectItem
-																key={item.id}
-																value={String(item.id)}
-																className='w-full'>
-																{item.name}
-															</SelectItem>
-														);
-													})}
-												</SelectGroup>
-											</SelectContent>
-										</Select>
+									<div className='grid grid-cols-12 gap-2'>
+										<FormLabel className='col-span-3'>
+											{t('init_engine_form_engine')}
+										</FormLabel>
+										<div className='col-span-9'>
+											<Select
+												onValueChange={(value) => field.onChange(Number(value))}
+												value={field.value ? String(field.value) : undefined}>
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'init_engine_form_engine_placeholder'
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														{provideEngines?.data.map((item) => {
+															return (
+																<SelectItem
+																	key={item.id}
+																	value={String(item.id)}
+																	className='w-full'>
+																	{item.name}
+																</SelectItem>
+															);
+														})}
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+										</div>
 									</div>
 									<FormMessage />
 								</FormItem>
@@ -185,13 +206,17 @@ const InitEngine = () => {
 							return item.id === form.watch('engine_id');
 						})?.demo_config && (
 							<FormItem className='space-y-2 gap-0'>
-								<FormLabel>配置示例</FormLabel>
-								<div className='p-5 rounded bg-muted font-mono text-sm'>
-									{
-										provideEngines?.data.find((item) => {
-											return item.id === form.watch('engine_id');
-										})?.demo_config
-									}
+								<div className='grid grid-cols-12 gap-2'>
+									<FormLabel className='col-span-3'>
+										{t('init_engine_form_config')}
+									</FormLabel>
+									<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm'>
+										{
+											provideEngines?.data.find((item) => {
+												return item.id === form.watch('engine_id');
+											})?.demo_config
+										}
+									</div>
 								</div>
 							</FormItem>
 						)}
@@ -201,22 +226,30 @@ const InitEngine = () => {
 							name='engine_config'
 							render={({ field }) => (
 								<FormItem>
-									<div className='space-y-2'>
-										<FormLabel>配置</FormLabel>
-										<Textarea placeholder='Engine Config' {...field} />
+									<div className='grid grid-cols-12 gap-2'>
+										<FormLabel className='col-span-3'>
+											{t('init_engine_form_config')}
+										</FormLabel>
+										<Textarea
+											className='col-span-9'
+											placeholder={t('init_engine_form_config_placeholder')}
+											{...field}
+										/>
 									</div>
 									<FormMessage />
 								</FormItem>
 							)}
 						/>
-						<Button type='submit'>{t('save')}</Button>
+						<Button className='w-full' type='submit'>
+							{t('save')}
+						</Button>
 					</form>
 				</Form>
 			)}
 			{mineEngines?.data && mineEngines.data.length > 0 && (
 				<div className='bg-muted rounded p-5 py-12 flex flex-col justify-center items-center gap-2'>
 					<CircleCheck className='size-28 text-muted-foreground' />
-					<p>完成</p>
+					<p>{t('done')}</p>
 				</div>
 			)}
 		</>
