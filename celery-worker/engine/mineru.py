@@ -56,9 +56,9 @@ class MineruEngine(EngineProtocol):
         soup = BeautifulSoup(html_content, 'html.parser')
         og_title_meta = soup.find('meta', property='og:title')
         og_description_meta = soup.find('meta', property='og:description')
-        normal_title = soup.title.string
+        normal_title = soup.title
         normal_description = soup.find('meta', attrs={'name': 'description'})
-        title = og_title_meta.attrs['content'] if og_title_meta is not None else normal_title if normal_title is not None else None
+        title = og_title_meta.attrs['content'] if og_title_meta is not None else normal_title.string if normal_title is not None else None
         description = og_description_meta.attrs['content'] if og_description_meta is not None else normal_description['content'] if normal_description is not None else None
         og_cover_meta = soup.find('meta', property='og:image')
         cover = og_cover_meta.attrs['content'] if og_cover_meta is not None else None
