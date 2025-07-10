@@ -158,9 +158,7 @@ const FileDocumentDetail = ({
 				!markdown &&
 				!isError &&
 				!markdownGetError &&
-				document.transform_task?.status !== 0 &&
-				document.transform_task?.status !== 1 &&
-				document.transform_task?.status !== 3 && (
+				document.transform_task?.status === 2 && (
 					<Skeleton className='h-full w-full' />
 				)}
 			{markdown && !isError && !markdownGetError && (
