@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Check, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 interface StepProps {
 	title: string;
@@ -68,6 +69,7 @@ export function Stepper({
 	onStepChange,
 	className,
 }: StepperProps) {
+	const t = useTranslations();
 	return (
 		<div className={cn('w-full max-w-3xl mx-auto', className)}>
 			<div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8'>
@@ -90,11 +92,10 @@ export function Stepper({
 					variant='outline'
 					onClick={() => onStepChange(currentStep - 1)}
 					disabled={currentStep === 0}>
-					Previous
+					{t('previous_step')}
 				</Button>
-				<Button
-					onClick={() => onStepChange(currentStep + 1)}>
-					{currentStep === steps.length - 1 ? 'Finish' : 'Next'}
+				<Button onClick={() => onStepChange(currentStep + 1)}>
+					{currentStep === steps.length - 1 ? t('finish') : t('next_step')}
 				</Button>
 			</div>
 		</div>
