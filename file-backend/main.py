@@ -41,7 +41,7 @@ app = FastAPI(
     },
     servers=[
         {
-            "url": "/api/file-service",
+            "url": root_path,
         },
     ],
     openapi_url="/openapi.json"

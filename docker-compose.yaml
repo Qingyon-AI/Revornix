@@ -29,6 +29,11 @@ services:
     build:
       context: web
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_PREFIX=${NEXT_PUBLIC_API_PREFIX} 
+        - NEXT_PUBLIC_NOTIFICATION_WS_API_PREFIX=${NEXT_PUBLIC_NOTIFICATION_WS_API_PREFIX} 
+        - NEXT_PUBLIC_FILE_API_PREFIX=${NEXT_PUBLIC_FILE_API_PREFIX} 
+        - NEXT_PUBLIC_DAILY_HOT_API_PREFIX=${NEXT_PUBLIC_DAILY_HOT_API_PREFIX} 
     depends_on:
       - api
       - file-backend
