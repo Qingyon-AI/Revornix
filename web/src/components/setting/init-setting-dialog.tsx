@@ -18,8 +18,10 @@ import {
 import InitMineModel from './init-mine-model';
 import InitEngine from './init-engine';
 import InitDone from './init-done';
+import { useTranslations } from 'next-intl';
 
 const InitSettingDialog = () => {
+	const t = useTranslations();
 	const [showDialog, setShowDialog] = useState(false);
 	const { userInfo } = useUserContext();
 	const [needInitial, setNeedInitial] = useState(false);
@@ -37,9 +39,9 @@ const InitSettingDialog = () => {
 	}, [userInfo]);
 
 	const steps = [
-		{ title: 'Step 1', description: '模型供应' },
-		{ title: 'Step 2', description: '引擎安装' },
-		{ title: 'Step 3', description: '完成配置' },
+		{ title: 'Step 1', description: t('init_setting_quick_set_step_1') },
+		{ title: 'Step 2', description: t('init_setting_quick_set_step_2') },
+		{ title: 'Step 3', description: t('init_setting_quick_set_step_3') },
 	];
 
 	const [currentStep, setCurrentStep] = useState(0);
@@ -51,27 +53,17 @@ const InitSettingDialog = () => {
 					<Info />
 					<div className='flex justify-between h-full'>
 						<div className='flex-1'>
-							<AlertTitle>提醒</AlertTitle>
+							<AlertTitle>{t('tip')}</AlertTitle>
 							<AlertDescription>
-								<p>
-									你还没有完成初始化设置哦，请完成设置才能正常使用所有功能。
-								</p>
-								<div className='flex flex-row gap-3'>
-									<Badge variant='secondary'>
-										{userInfo?.default_document_reader_model_id ? (
-											<BadgeCheckIcon />
-										) : (
-											<Info className='text-red-500' />
-										)}
-										默认文档分析模型
-									</Badge>
+								<p>{t('init_setting_alert')}</p>
+								<div className='flex flex-row gap-3 flex-wrap'>
 									<Badge variant='secondary'>
 										{userInfo?.default_file_document_parse_engine_id ? (
 											<BadgeCheckIcon />
 										) : (
 											<Info className='text-red-500' />
 										)}
-										默认文件文档转化引擎
+										{t('init_setting_file_convert_engine')}
 									</Badge>
 									<Badge variant='secondary'>
 										{userInfo?.default_website_document_parse_engine_id ? (
@@ -79,7 +71,15 @@ const InitSettingDialog = () => {
 										) : (
 											<Info className='text-red-500' />
 										)}
-										默认网站文档转化引擎
+										{t('init_setting_website_convert_engine')}
+									</Badge>
+									<Badge variant='secondary'>
+										{userInfo?.default_document_reader_model_id ? (
+											<BadgeCheckIcon />
+										) : (
+											<Info className='text-red-500' />
+										)}
+										{t('init_setting_document_summary_model')}
 									</Badge>
 									<Badge variant='secondary'>
 										{userInfo?.default_revornix_model_id ? (
@@ -87,7 +87,7 @@ const InitSettingDialog = () => {
 										) : (
 											<Info className='text-red-500' />
 										)}
-										默认RevornixAI对话模型
+										{t('init_setting_revornix_ai_model')}
 									</Badge>
 								</div>
 							</AlertDescription>
@@ -95,13 +95,13 @@ const InitSettingDialog = () => {
 						<div className='h-full flex justify-center items-center p-5'>
 							<Drawer open={showDialog} onOpenChange={setShowDialog}>
 								<DrawerTrigger asChild>
-									<Button>快速设置</Button>
+									<Button>{t('init_setting_quick_set')}</Button>
 								</DrawerTrigger>
-								<DrawerContent className='pb-5'>
+								<DrawerContent className='pb-5 min-h-[75vh]'>
 									<DrawerHeader>
-										<DrawerTitle>初始化设置</DrawerTitle>
+										<DrawerTitle>{t('init_setting_dialog_title')}</DrawerTitle>
 										<DrawerDescription>
-											通过初始化设置，你可以快速的准备好开始使用本产品的一切配置。
+											{t('init_setting_dialog_description')}
 										</DrawerDescription>
 									</DrawerHeader>
 									<Stepper
