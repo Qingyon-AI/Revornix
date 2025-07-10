@@ -20,6 +20,7 @@ import InitEngine from './init-engine';
 import InitDone from './init-done';
 
 const InitSettingDialog = () => {
+	const [showDialog, setShowDialog] = useState(false);
 	const { userInfo } = useUserContext();
 	const [needInitial, setNeedInitial] = useState(false);
 	useEffect(() => {
@@ -92,9 +93,9 @@ const InitSettingDialog = () => {
 							</AlertDescription>
 						</div>
 						<div className='h-full flex justify-center items-center p-5'>
-							<Drawer>
+							<Drawer open={showDialog} onOpenChange={setShowDialog}>
 								<DrawerTrigger asChild>
-									<Button>设置</Button>
+									<Button>快速设置</Button>
 								</DrawerTrigger>
 								<DrawerContent className='pb-5'>
 									<DrawerHeader>
@@ -106,7 +107,13 @@ const InitSettingDialog = () => {
 									<Stepper
 										steps={steps}
 										currentStep={currentStep}
-										onStepChange={setCurrentStep}
+										onStepChange={(step) => {
+											if (step === steps.length) {
+												setShowDialog(false);
+											} else {
+												setCurrentStep(step);
+											}
+										}}
 										className='mb-5'
 									/>
 									<div className='w-full max-w-3xl mx-auto'>
