@@ -73,6 +73,7 @@
     "init_engine_form_config": "配置",
     "init_engine_form_config_placeholder": "请填写配置",
     "init_engine_form_config_needed": "该引擎需要配置参数，请参照demo配置",
+    "init_done": "初始化配置已成功完成",
     "month_summary_title": "最近一月记录",
     "month_summary_description": "这里会以图表形式显示你最近一个月的文档阅读基本概况",
     "month_summary_total_label": "累计",

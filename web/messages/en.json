@@ -73,6 +73,7 @@
     "init_engine_form_config": "Configuration",
     "init_engine_form_config_placeholder": "Please enter configuration",
     "init_engine_form_config_needed": "This engine requires configuration parameters. Please refer to the demo for setup",
+    "init_done": "Initialization configuration completed successfully",
     "month_summary_title": "Records of the Last Month",
     "month_summary_description": "A chart will display your document reading summary over the past month.",
     "month_summary_total_label": "Total",

@@ -247,9 +247,9 @@ const InitEngine = () => {
 				</Form>
 			)}
 			{mineEngines?.data && mineEngines.data.length > 0 && (
-				<div className='bg-muted rounded p-5 py-12 flex flex-col justify-center items-center gap-2'>
+				<div className='bg-muted rounded p-5 py-12 flex flex-col justify-center items-center gap-5'>
 					<CircleCheck className='size-28 text-muted-foreground' />
-					<p>{t('done')}</p>
+					<p className='text-muted-foreground text-sm'>{t('init_done')}</p>
 				</div>
 			)}
 		</>
