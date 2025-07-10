@@ -285,8 +285,8 @@ const AddFile = () => {
 						type='submit'
 						className='w-full'
 						disabled={
-							mutateCreateDocument.isPending &&
-							!!userInfo?.default_file_document_parse_engine_id
+							mutateCreateDocument.isPending ||
+							!userInfo?.default_file_document_parse_engine_id
 						}>
 						{t('document_create_submit')}
 						{mutateCreateDocument.isPending && (
