@@ -157,17 +157,6 @@ const InitMineModel = () => {
 		},
 	});
 
-	const mutateUpdateDefaultModel = useMutation({
-		mutationFn: updateUserDefaultModel,
-		onSuccess(data) {
-			refreshUserInfo();
-		},
-		onError(error) {
-			console.error(error);
-			toast.error(error.message);
-		},
-	});
-
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		if (providerChooseYepOrNo === 'yep') {
 			const res = await mutateAddModel.mutateAsync({
@@ -176,10 +165,6 @@ const InitMineModel = () => {
 				api_key: '',
 				api_url: '',
 				provider_id: values.model_provider_id!,
-			});
-			await mutateUpdateDefaultModel.mutateAsync({
-				default_revornix_model_id: res.id,
-				default_document_reader_model_id: res.id,
 			});
 		} else if (providerChooseYepOrNo === 'no') {
 			const res1 = await mutateAddAiModelProvider.mutateAsync({
@@ -194,10 +179,6 @@ const InitMineModel = () => {
 				api_key: '',
 				api_url: '',
 				provider_id: res1.id,
-			});
-			await mutateUpdateDefaultModel.mutateAsync({
-				default_revornix_model_id: res2.id,
-				default_document_reader_model_id: res2.id,
 			});
 		}
 	};
@@ -246,7 +227,7 @@ const InitMineModel = () => {
 														onValueChange={(value) =>
 															field.onChange(Number(value))
 														}
-														defaultValue={
+														value={
 															field.value ? String(field.value) : undefined
 														}>
 														<div className='col-span-9'>
@@ -393,7 +374,7 @@ const InitMineModel = () => {
 				modelProviders?.data?.length > 0 && (
 					<div className='bg-muted rounded p-5 py-12 flex flex-col justify-center items-center gap-5'>
 						<CircleCheck className='size-28 text-muted-foreground' />
-						<p className='text-muted-foreground text-sm'>{t('init_done')}</p>
+						<p className='text-muted-foreground text-sm'>{t('done')}</p>
 					</div>
 				)}
 		</>

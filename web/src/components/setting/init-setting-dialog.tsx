@@ -17,14 +17,14 @@ import {
 } from '@/components/ui/drawer';
 import InitMineModel from './init-mine-model';
 import InitEngine from './init-engine';
-import InitDone from './init-done';
+import InitDefaultChoose from './init-default-choose';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 const InitSettingDialog = () => {
 	const t = useTranslations();
-	const [showDialog, setShowDialog] = useState(false);
 	const { userInfo } = useUserContext();
+	const [showDialog, setShowDialog] = useState(false);
 	const [needInitial, setNeedInitial] = useState(false);
 	useEffect(() => {
 		if (
@@ -58,29 +58,38 @@ const InitSettingDialog = () => {
 							<AlertDescription>
 								<p>{t('init_setting_alert')}</p>
 								<div className='flex flex-row gap-3 flex-wrap'>
-									<Link
-										href={'/setting#default_markdown_parse_engine_choose'}>
+									<Link href={'/setting#default_markdown_parse_engine_choose'}>
 										<Badge variant='secondary'>
 											{userInfo?.default_file_document_parse_engine_id ? (
 												<BadgeCheckIcon />
 											) : (
 												<Info className='text-red-500' />
 											)}
-											{t('init_setting_file_convert_engine')}
+											<span
+												className={
+													userInfo?.default_file_document_parse_engine_id
+														? ''
+														: 'text-red-500'
+												}>
+												{t('init_setting_file_convert_engine')}
+											</span>
 										</Badge>
 									</Link>
-									<Link
-										href={
-											'/setting#default_markdown_parse_engine_choose'
-										}>
+									<Link href={'/setting#default_markdown_parse_engine_choose'}>
 										<Badge variant='secondary'>
 											{userInfo?.default_website_document_parse_engine_id ? (
 												<BadgeCheckIcon />
 											) : (
 												<Info className='text-red-500' />
 											)}
-
-											{t('init_setting_website_convert_engine')}
+											<span
+												className={
+													userInfo?.default_website_document_parse_engine_id
+														? ''
+														: 'text-red-500'
+												}>
+												{t('init_setting_website_convert_engine')}
+											</span>
 										</Badge>
 									</Link>
 									<Link href={'/setting#default_document_summary_model_choose'}>
@@ -90,7 +99,14 @@ const InitSettingDialog = () => {
 											) : (
 												<Info className='text-red-500' />
 											)}
-											{t('init_setting_document_summary_model')}
+											<span
+												className={
+													userInfo?.default_document_reader_model_id
+														? ''
+														: 'text-red-500'
+												}>
+												{t('init_setting_document_summary_model')}
+											</span>
 										</Badge>
 									</Link>
 									<Link href={'/setting#default_revornix_ai_model_choose'}>
@@ -100,55 +116,63 @@ const InitSettingDialog = () => {
 											) : (
 												<Info className='text-red-500' />
 											)}
-											{t('init_setting_revornix_ai_model')}
+											<span
+												className={
+													userInfo?.default_revornix_model_id
+														? ''
+														: 'text-red-500'
+												}>
+												{t('init_setting_revornix_ai_model')}
+											</span>
 										</Badge>
 									</Link>
 								</div>
 							</AlertDescription>
 						</div>
 						<div className='h-full flex justify-center items-center p-5'>
-							<Drawer open={showDialog} onOpenChange={setShowDialog}>
-								<DrawerTrigger asChild>
-									<Button>{t('init_setting_quick_set')}</Button>
-								</DrawerTrigger>
-								<DrawerContent className='pb-5 min-h-[75vh]'>
-									<DrawerHeader>
-										<DrawerTitle>{t('init_setting_dialog_title')}</DrawerTitle>
-										<DrawerDescription>
-											{t('init_setting_dialog_description')}
-										</DrawerDescription>
-									</DrawerHeader>
-									<Stepper
-										steps={steps}
-										currentStep={currentStep}
-										onStepChange={(step) => {
-											if (step === steps.length) {
-												setShowDialog(false);
-											} else {
-												setCurrentStep(step);
-											}
-										}}
-										className='mb-5'
-									/>
-									<div className='w-full max-w-3xl mx-auto'>
-										{currentStep === 0 && (
-											<div>
-												<InitMineModel />
-											</div>
-										)}
-										{currentStep === 1 && (
-											<div>
-												<InitEngine />
-											</div>
-										)}
-										{currentStep === 2 && <InitDone />}
-									</div>
-								</DrawerContent>
-							</Drawer>
+							<Button onClick={() => setShowDialog(true)}>
+								{t('init_setting_quick_set')}
+							</Button>
 						</div>
 					</div>
 				</Alert>
 			)}
+			<Drawer open={showDialog} onOpenChange={setShowDialog}>
+				<DrawerTrigger asChild></DrawerTrigger>
+				<DrawerContent className='pb-5 min-h-[75vh]'>
+					<DrawerHeader>
+						<DrawerTitle>{t('init_setting_dialog_title')}</DrawerTitle>
+						<DrawerDescription>
+							{t('init_setting_dialog_description')}
+						</DrawerDescription>
+					</DrawerHeader>
+					<Stepper
+						steps={steps}
+						currentStep={currentStep}
+						onStepChange={(step) => {
+							if (step === steps.length) {
+								setShowDialog(false);
+							} else {
+								setCurrentStep(step);
+							}
+						}}
+						className='mb-5'
+					/>
+					<div className='w-full max-w-3xl mx-auto'>
+						{currentStep === 0 && (
+							<div>
+								<InitMineModel />
+							</div>
+						)}
+						{currentStep === 1 && (
+							<div>
+								<InitEngine />
+							</div>
+						)}
+						{currentStep === 2 && <InitDefaultChoose />}
+					</div>
+				</DrawerContent>
+			</Drawer>
 		</>
 	);
 };

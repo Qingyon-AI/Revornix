@@ -117,23 +117,6 @@ const InitEngine = () => {
 		},
 	});
 
-	const mutateUpdateDefaultDocumentParseEngine = useMutation({
-		mutationFn: updateUserDefaultEngine,
-		onSuccess: () => {
-			refreshUserInfo();
-			toast.success(
-				t('setting_default_document_parse_engine_update_successful')
-			);
-			toast.success(
-				t('setting_default_document_parse_engine_update_successful')
-			);
-		},
-		onError: (error) => {
-			toast.error(error.message);
-			console.error(error);
-		},
-	});
-
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		if (!mineEngines?.data.find((item) => item.id === values.engine_id)) {
 			await mutateInstallEngine.mutateAsync({
@@ -144,10 +127,6 @@ const InitEngine = () => {
 		await mutateUpdateEngineConfig.mutateAsync({
 			engine_id: values.engine_id,
 			config_json: values.engine_config,
-		});
-		await mutateUpdateDefaultDocumentParseEngine.mutateAsync({
-			default_file_document_parse_engine_id: values.engine_id,
-			default_website_document_parse_engine_id: values.engine_id,
 		});
 	};
 
@@ -249,7 +228,7 @@ const InitEngine = () => {
 			{mineEngines?.data && mineEngines.data.length > 0 && (
 				<div className='bg-muted rounded p-5 py-12 flex flex-col justify-center items-center gap-5'>
 					<CircleCheck className='size-28 text-muted-foreground' />
-					<p className='text-muted-foreground text-sm'>{t('init_done')}</p>
+					<p className='text-muted-foreground text-sm'>{t('done')}</p>
 				</div>
 			)}
 		</>
