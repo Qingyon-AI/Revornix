@@ -19,6 +19,7 @@ import InitMineModel from './init-mine-model';
 import InitEngine from './init-engine';
 import InitDone from './init-done';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
 const InitSettingDialog = () => {
 	const t = useTranslations();
@@ -57,38 +58,51 @@ const InitSettingDialog = () => {
 							<AlertDescription>
 								<p>{t('init_setting_alert')}</p>
 								<div className='flex flex-row gap-3 flex-wrap'>
-									<Badge variant='secondary'>
-										{userInfo?.default_file_document_parse_engine_id ? (
-											<BadgeCheckIcon />
-										) : (
-											<Info className='text-red-500' />
-										)}
-										{t('init_setting_file_convert_engine')}
-									</Badge>
-									<Badge variant='secondary'>
-										{userInfo?.default_website_document_parse_engine_id ? (
-											<BadgeCheckIcon />
-										) : (
-											<Info className='text-red-500' />
-										)}
-										{t('init_setting_website_convert_engine')}
-									</Badge>
-									<Badge variant='secondary'>
-										{userInfo?.default_document_reader_model_id ? (
-											<BadgeCheckIcon />
-										) : (
-											<Info className='text-red-500' />
-										)}
-										{t('init_setting_document_summary_model')}
-									</Badge>
-									<Badge variant='secondary'>
-										{userInfo?.default_revornix_model_id ? (
-											<BadgeCheckIcon />
-										) : (
-											<Info className='text-red-500' />
-										)}
-										{t('init_setting_revornix_ai_model')}
-									</Badge>
+									<Link
+										href={'/setting#default_markdown_parse_engine_choose'}>
+										<Badge variant='secondary'>
+											{userInfo?.default_file_document_parse_engine_id ? (
+												<BadgeCheckIcon />
+											) : (
+												<Info className='text-red-500' />
+											)}
+											{t('init_setting_file_convert_engine')}
+										</Badge>
+									</Link>
+									<Link
+										href={
+											'/setting#default_markdown_parse_engine_choose'
+										}>
+										<Badge variant='secondary'>
+											{userInfo?.default_website_document_parse_engine_id ? (
+												<BadgeCheckIcon />
+											) : (
+												<Info className='text-red-500' />
+											)}
+
+											{t('init_setting_website_convert_engine')}
+										</Badge>
+									</Link>
+									<Link href={'/setting#default_document_summary_model_choose'}>
+										<Badge variant='secondary'>
+											{userInfo?.default_document_reader_model_id ? (
+												<BadgeCheckIcon />
+											) : (
+												<Info className='text-red-500' />
+											)}
+											{t('init_setting_document_summary_model')}
+										</Badge>
+									</Link>
+									<Link href={'/setting#default_revornix_ai_model_choose'}>
+										<Badge variant='secondary'>
+											{userInfo?.default_revornix_model_id ? (
+												<BadgeCheckIcon />
+											) : (
+												<Info className='text-red-500' />
+											)}
+											{t('init_setting_revornix_ai_model')}
+										</Badge>
+									</Link>
 								</div>
 							</AlertDescription>
 						</div>

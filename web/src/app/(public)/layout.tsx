@@ -13,12 +13,37 @@ import { Button } from '@/components/ui/button';
 import { Inbox, Settings } from 'lucide-react';
 import Link from 'next/link';
 import GithubIcon from '@/components/icons/github-icon';
+import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function Page({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const pathname = usePathname();
+	useEffect(() => {
+		const highlightElementByHash = () => {
+			const hash = window.location.hash;
+			if (hash) {
+				const id = hash.substring(1);
+				const el = document.getElementById(id);
+				if (el) {
+					el.classList.add('global-highlight');
+					el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+					setTimeout(() => {
+						el.classList.remove('global-highlight');
+					}, 2000);
+				}
+			}
+		};
+
+		// 延迟一点确保 DOM 已挂载
+		const timer = setTimeout(highlightElementByHash, 100);
+
+		return () => clearTimeout(timer);
+	}, [pathname]); // 路径变化时重新处理
+
 	return (
 		<SidebarProvider>
 			<AppSidebar variant={'inset'} />
@@ -42,8 +67,10 @@ export default function Page({
 									<Settings />
 								</Button>
 							</Link>
-							<Link href='https://github.com/Qingyon-AI/Revornix' target='_blank'>
-								<Button variant='outline' size='icon' type='button' >
+							<Link
+								href='https://github.com/Qingyon-AI/Revornix'
+								target='_blank'>
+								<Button variant='outline' size='icon' type='button'>
 									<GithubIcon />
 									<span className='sr-only'>Github</span>
 								</Button>

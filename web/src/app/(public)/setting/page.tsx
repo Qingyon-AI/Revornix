@@ -93,7 +93,9 @@ const SettingPage = () => {
 						</div>
 					</div>
 					<Separator />
-					<div className='flex justify-between items-center'>
+					<div
+						className='flex justify-between items-center'
+						id='default_document_summary_model_choose'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_document_summary_model')}
 						</Label>
@@ -117,7 +119,7 @@ const SettingPage = () => {
 						</div>
 					</div>
 					<Separator />
-					<div className='flex justify-between items-center'>
+					<div className='flex justify-between items-center' id='default_markdown_parse_engine_choose'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_default_markdown_parse_engine')}
 							<p className='text-muted-foreground text-xs'>
@@ -135,7 +137,9 @@ const SettingPage = () => {
 			</h2>
 			<Card>
 				<CardContent className='space-y-5'>
-					<div className='flex justify-between items-center'>
+					<div
+						className='flex justify-between items-center'
+						id='default_revornix_ai_model_choose'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_revornix_model')}
 						</Label>
