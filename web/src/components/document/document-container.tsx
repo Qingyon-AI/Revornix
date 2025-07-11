@@ -15,17 +15,16 @@ const DocumentContainer = ({ id }: { id: string }) => {
 	});
 	return (
 		<div className='h-full flex flex-row gap-5 px-5 pb-5'>
-			<div className='flex-1 overflow-auto'>
-				{document?.category === 1 && <WebsiteDocumentDetail id={id} />}
-				{document?.category === 0 && <FileDocumentDetail id={id} />}
-				{document?.category === 2 && <QuickDocumentDetail id={id} />}
-			</div>
-
 			<Card
 				className='flex-1 hidden py-0 md:flex overflow-hidden'
 				style={{ flex: '1 1 0' }}>
 				<DocumentInfo id={id} />
 			</Card>
+			<div className='flex-2 overflow-auto'>
+				{document?.category === 1 && <WebsiteDocumentDetail id={id} />}
+				{document?.category === 0 && <FileDocumentDetail id={id} />}
+				{document?.category === 2 && <QuickDocumentDetail id={id} />}
+			</div>
 		</div>
 	);
 };
