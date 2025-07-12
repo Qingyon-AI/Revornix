@@ -183,6 +183,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 				<div className='w-full flex justify-between'>
 					{data.category === 1 && data.website_info && (
 						<Link
+							title={t('website_document_go_to_origin')}
 							href={data.website_info?.url ? data.website_info.url : ''}
 							className='flex-1 text-center'
 							target='_blank'>
@@ -194,11 +195,11 @@ const DocumentOperate = ({ id }: { id: number }) => {
 					)}
 					{data.category === 0 && data.file_info && (
 						<Link
+							title={t('file_document_go_to_origin')}
 							href={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${data.file_info?.file_name}`}
 							className='flex-1 text-center'
 							target='_blank'>
 							<Button variant={'ghost'} className='w-full'>
-								{/* {t('file_document_go_to_origin')} */}
 								<LinkIcon />
 							</Button>
 						</Link>
@@ -207,59 +208,63 @@ const DocumentOperate = ({ id }: { id: number }) => {
 						variant={'ghost'}
 						className='flex-1 w-full'
 						disabled={aiSummaizing}
+						title={t('ai_summary')}
 						onClick={() => {
 							handleAiSummarize();
 						}}>
-						{/* {t('ai_summary')} */}
 						AI
 						{aiSummaizing && <Loader2 className='size-4 animate-spin' />}
 					</Button>
 					{data.is_star ? (
 						<Button
+							title={t('document_star_cancel')}
 							variant={'ghost'}
 							onClick={() => mutateStar.mutate()}
 							className='flex-1'>
-							{/* {t('document_star_cancel')} */}
 							<StarOff />
 						</Button>
 					) : (
 						<Button
 							variant={'ghost'}
+							title={t('document_star')}
 							onClick={() => mutateStar.mutate()}
 							className='flex-1'>
-							{/* {t('document_star')} */}
 							<Star />
 						</Button>
 					)}
 					{data.is_read ? (
 						<Button
 							variant={'ghost'}
+							title={t('document_unread')}
 							onClick={() => mutateRead.mutate()}
 							className='flex-1'>
-							{/* {t('document_unread')} */}
 							<FolderCheck />
 						</Button>
 					) : (
 						<Button
 							variant={'ghost'}
+							title={t('document_read')}
 							onClick={() => mutateRead.mutate()}
 							className='flex-1'>
-							{/* {t('document_read')} */}
 							<FolderOutput />
 						</Button>
 					)}
 
 					<Sheet>
 						<SheetTrigger asChild>
-							<Button variant={'ghost'} className='flex-1'>
-								{/* {t('document_notes')} */}
+							<Button
+								title={t('document_notes_title')}
+								variant={'ghost'}
+								className='flex-1'>
 								<NotebookPen />
 							</Button>
 						</SheetTrigger>
 						<SheetContent>
 							<SheetHeader>
 								<SheetTitle>{t('document_notes_title')}</SheetTitle>
-								<SheetDescription>{t('document_notes_description')}</SheetDescription>
+								<SheetDescription>
+									{t('document_notes_description')}
+								</SheetDescription>
 							</SheetHeader>
 							<div className='px-5'>
 								<DocumentNotes id={id} />
@@ -271,8 +276,10 @@ const DocumentOperate = ({ id }: { id: number }) => {
 						open={showDeleteDocumentDialog}
 						onOpenChange={setShowDeleteDocumentDialog}>
 						<DialogTrigger asChild>
-							<Button variant={'ghost'} className='flex-1'>
-								{/* {t('document_delete')} */}
+							<Button
+								title={t('document_delete')}
+								variant={'ghost'}
+								className='flex-1'>
 								<Trash />
 							</Button>
 						</DialogTrigger>
