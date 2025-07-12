@@ -52,7 +52,7 @@ const QuickDocumentDetail = ({
 										src = props.src;
 									}
 								}
-								return <img {...props} src={src} />;
+								return <img {...props} src={src} className='w-full' />;
 							},
 						}}
 						remarkPlugins={[remarkMath, remarkGfm]}
