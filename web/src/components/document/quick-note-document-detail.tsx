@@ -10,13 +10,17 @@ import 'katex/dist/katex.min.css';
 import { Skeleton } from '../ui/skeleton';
 import { Separator } from '../ui/separator';
 import DocumentOperate from './document-operate';
+import { useInView } from 'react-intersection-observer';
+import { useEffect, useState } from 'react';
 
 const QuickDocumentDetail = ({
 	id,
 	className,
+	onFinishRead,
 }: {
-	id: string;
+	id: number;
 	className?: string;
+	onFinishRead?: () => void;
 }) => {
 	const {
 		isFetching,
@@ -28,6 +32,20 @@ const QuickDocumentDetail = ({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: Number(id) }),
 	});
+
+	const [markdownRendered, setMarkdownRendered] = useState(false);
+
+	const { ref: bottomRef, inView } = useInView();
+
+	useEffect(() => {
+		if (!document || !document.quick_note_info) return;
+		setMarkdownRendered(true);
+	}, [document]);
+
+	useEffect(() => {
+		if (!markdownRendered || !inView) return;
+		onFinishRead && onFinishRead();
+	}, [inView]);
 
 	return (
 		<div className={cn('h-full w-full relative', className)}>
@@ -62,6 +80,7 @@ const QuickDocumentDetail = ({
 							rehypePlugins={[rehypeKatex, rehypeRaw]}>
 							{document?.quick_note_info?.content}
 						</Markdown>
+						<div ref={bottomRef}></div>
 					</div>
 					<Separator className='my-5' />
 					<DocumentOperate id={Number(id)} />

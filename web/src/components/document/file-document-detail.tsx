@@ -20,16 +20,20 @@ import { useInterval } from 'ahooks';
 import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
 import DocumentOperate from './document-operate';
+import { useInView } from 'react-intersection-observer';
 
 const FileDocumentDetail = ({
 	id,
 	className,
+	onFinishRead,
 }: {
-	id: string;
+	id: number;
 	className?: string;
+	onFinishRead?: () => void;
 }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
+	const [markdownRendered, setMarkdownRendered] = useState(false);
 	const {
 		data: document,
 		isError,
@@ -84,6 +88,7 @@ const FileDocumentDetail = ({
 				throw new Error(err.message);
 			}
 			setMarkdown(res);
+			setMarkdownRendered(true);
 		} catch (e: any) {
 			setMarkdownGetError(e.message);
 		}
@@ -93,6 +98,13 @@ const FileDocumentDetail = ({
 		if (!document || !document.file_info?.md_file_name) return;
 		onGetMarkdown();
 	}, [document]);
+
+	const { ref: bottomRef, inView } = useInView();
+
+	useEffect(() => {
+		if (!markdownRendered || !inView) return;
+		onFinishRead && onFinishRead();
+	}, [inView]);
 
 	return (
 		<div className={cn('h-full w-full relative', className)}>
@@ -187,6 +199,7 @@ const FileDocumentDetail = ({
 						<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
 							{t('document_ai_tips')}
 						</p>
+						<div ref={bottomRef}></div>
 					</div>
 					<Separator className='my-5' />
 					<DocumentOperate id={Number(id)} />

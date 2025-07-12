@@ -19,10 +19,12 @@ def create_follow_user_record(db: Session,
 
 def create_base_user(db: Session, 
                      avatar_attachment_id: int, 
+                     default_read_mark_reason: int,
                      nickname: str) -> models.user.User:
     db_user = models.user.User(avatar_id=avatar_attachment_id, 
                                uuid=str(uuid.uuid4()),
                                nickname=nickname,
+                               default_read_mark_reason=default_read_mark_reason,
                                create_time=datetime.now(timezone.utc),
                                update_time=datetime.now(timezone.utc))
     db.add(db_user)
@@ -289,6 +291,22 @@ def update_user_default_model(db: Session,
         db_user.default_document_reader_model_id = default_document_reader_model_id
     if default_revornix_model_id is not None:
         db_user.default_revornix_model_id = default_revornix_model_id
+    db_user.update_time = now
+    db.flush()
+    return db_user
+
+def update_user_default_mark_read_reason(db: Session,
+                                         user_id: int,
+                                         default_read_mark_reason: int | None = None):
+    now = datetime.now(timezone.utc)
+    db_user_query = db.query(models.user.User)
+    db_user_query = db_user_query.filter(models.user.User.id == user_id,
+                                         models.user.User.delete_at == None)
+    db_user = db_user_query.first()
+    if db_user is None:
+        raise Exception("Can't find the user info based on the user_id you provided.")
+    if default_read_mark_reason is not None:
+        db_user.default_read_mark_reason = default_read_mark_reason
     db_user.update_time = now
     db.flush()
     return db_user

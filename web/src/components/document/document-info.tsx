@@ -10,13 +10,13 @@ import { Badge } from '../ui/badge';
 import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
 
-const DocumentInfo = ({ id }: { id: string }) => {
+const DocumentInfo = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const router = useRouter();
 
 	const { data, isPending, isError, error, isRefetching } = useQuery({
 		queryKey: ['getDocumentDetail', id],
-		queryFn: () => getDocumentDetail({ document_id: Number(id) }),
+		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
 
 	return (

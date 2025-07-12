@@ -88,8 +88,11 @@ export class ApiKeyApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/api_key/create`;
+
         const response = await this.request({
-            path: `/api_key/create`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -132,8 +135,11 @@ export class ApiKeyApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/api_key/delete`;
+
         const response = await this.request({
-            path: `/api_key/delete`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -176,8 +182,11 @@ export class ApiKeyApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/api_key/search`;
+
         const response = await this.request({
-            path: `/api_key/search`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

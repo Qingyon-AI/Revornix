@@ -13,7 +13,7 @@ const DocumentDetailPage = async (props: {
 
 	return (
 		<HydrationBoundary state={dehydrate(queryClient)}>
-			<DocumentContainer id={id} />
+			<DocumentContainer id={Number(id)} />
 		</HydrationBoundary>
 	);
 };

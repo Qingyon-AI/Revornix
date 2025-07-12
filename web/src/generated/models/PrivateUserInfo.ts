@@ -81,6 +81,12 @@ export interface PrivateUserInfo {
      * @type {number}
      * @memberof PrivateUserInfo
      */
+    default_read_mark_reason?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof PrivateUserInfo
+     */
     default_document_reader_model_id?: number | null;
     /**
      * 
@@ -127,6 +133,7 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'nickname': json['nickname'] == null ? undefined : json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'email_info': json['email_info'] == null ? undefined : EmailInfoFromJSON(json['email_info']),
+        'default_read_mark_reason': json['default_read_mark_reason'] == null ? undefined : json['default_read_mark_reason'],
         'default_document_reader_model_id': json['default_document_reader_model_id'] == null ? undefined : json['default_document_reader_model_id'],
         'default_revornix_model_id': json['default_revornix_model_id'] == null ? undefined : json['default_revornix_model_id'],
         'default_website_document_parse_engine_id': json['default_website_document_parse_engine_id'] == null ? undefined : json['default_website_document_parse_engine_id'],
@@ -152,6 +159,7 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'nickname': value['nickname'],
         'slogan': value['slogan'],
         'email_info': EmailInfoToJSON(value['email_info']),
+        'default_read_mark_reason': value['default_read_mark_reason'],
         'default_document_reader_model_id': value['default_document_reader_model_id'],
         'default_revornix_model_id': value['default_revornix_model_id'],
         'default_website_document_parse_engine_id': value['default_website_document_parse_engine_id'],

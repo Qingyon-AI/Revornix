@@ -19,16 +19,20 @@ import { Loader2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DocumentOperate from './document-operate';
 import { Separator } from '../ui/separator';
+import { useInView } from 'react-intersection-observer';
 
 const WebsiteDocumentDetail = ({
 	id,
 	className,
+	onFinishRead,
 }: {
-	id: string;
+	id: number;
 	className?: string;
+	onFinishRead?: () => void;
 }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
+	const [markdownRendered, setMarkdownRendered] = useState(false);
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
 	const {
@@ -65,6 +69,7 @@ const WebsiteDocumentDetail = ({
 				throw new Error(err.message);
 			}
 			setMarkdown(res);
+			setMarkdownRendered(true);
 		} catch (e: any) {
 			setMarkdownGetError(e.message);
 		}
@@ -92,6 +97,13 @@ const WebsiteDocumentDetail = ({
 		if (!document || !document.website_info?.md_file_name) return;
 		onGetMarkdown();
 	}, [document]);
+
+	const { ref: bottomRef, inView } = useInView();
+
+	useEffect(() => {
+		if (!markdownRendered || !inView) return;
+		onFinishRead && onFinishRead();
+	}, [inView]);
 
 	return (
 		<div className={cn('h-full w-full relative', className)}>
@@ -198,6 +210,7 @@ const WebsiteDocumentDetail = ({
 						<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
 							{t('document_ai_tips')}
 						</p>
+						<div ref={bottomRef}></div>
 					</div>
 					<Separator className='my-5' />
 					<DocumentOperate id={Number(id)} />

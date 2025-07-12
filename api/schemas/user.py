@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 from .attachment import AttachmentInfo
 
+class DefaultReadMarkReasonUpdateRequest(BaseModel):
+    default_read_mark_reason: int
+
 class DefaultEngineUpdateRequest(BaseModel):
     default_website_document_parse_engine_id: int | None = None
     default_file_document_parse_engine_id: int | None = None
@@ -76,6 +79,7 @@ class PrivateUserInfo(BaseModel):
     nickname: str | None = None
     slogan: str | None = None
     email_info: EmailInfo | None = None
+    default_read_mark_reason: int | None = None
     default_document_reader_model_id: int | None = None
     default_revornix_model_id: int | None = None
     default_website_document_parse_engine_id: int | None = None

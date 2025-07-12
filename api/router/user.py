@@ -168,6 +168,7 @@ async def create_user_by_email_verify(email_user_create_verify_request: schemas.
                                    email=email_user_create_verify_request.email):
         raise Exception("The email is already exists")
     db_user = crud.user.create_base_user(db=db, 
+                                         default_read_mark_reason=0,
                                          avatar_attachment_id=1, 
                                          nickname=email_user_create_verify_request.email)
     crud.user.create_email_user(db, 
@@ -212,6 +213,16 @@ async def bind_email_verify(bind_email_verify_request: schemas.user.BindEmailVer
     db.commit()
     return schemas.common.SuccessResponse(message="The email is binded successfully.")
 
+@user_router.post('/read-mark-reason/update', response_model=schemas.common.NormalResponse)
+async def update_my_default_read_mark_reason(default_read_mark_reason_update_request: schemas.user.DefaultReadMarkReasonUpdateRequest,
+                                             user = Depends(get_current_user),
+                                             db: Session = Depends(get_db)):
+    crud.user.update_user_default_mark_read_reason(db=db, 
+                                                   user_id=user.id, 
+                                                   default_read_mark_reason=default_read_mark_reason_update_request.default_read_mark_reason)
+    db.commit()
+    return schemas.common.SuccessResponse(message="The default read mark reason is updated successfully.")
+
 @user_router.post('/update', response_model=schemas.common.NormalResponse)
 async def update_my_info(user_info_update_request: schemas.user.UserInfoUpdateRequest, 
                          user = Depends(get_current_user), 
@@ -250,7 +261,8 @@ async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user)
                                        default_document_reader_model_id=user.default_document_reader_model_id,
                                        default_revornix_model_id=user.default_revornix_model_id,
                                        default_website_document_parse_engine_id=user.default_website_document_parse_engine_id,
-                                       default_file_document_parse_engine_id=user.default_file_document_parse_engine_id)
+                                       default_file_document_parse_engine_id=user.default_file_document_parse_engine_id,
+                                       default_read_mark_reason=user.default_read_mark_reason)
     email_user = crud.user.get_email_user_by_user_id(db=db, 
                                                      user_id=user.id)
     if email_user is not None:

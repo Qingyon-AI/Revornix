@@ -238,7 +238,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 							title={t('document_unread')}
 							onClick={() => mutateRead.mutate()}
 							className='flex-1'>
-							<FolderCheck />
+							<FolderOutput />
 						</Button>
 					) : (
 						<Button
@@ -246,7 +246,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 							title={t('document_read')}
 							onClick={() => mutateRead.mutate()}
 							className='flex-1'>
-							<FolderOutput />
+							<FolderCheck />
 						</Button>
 					)}
 
