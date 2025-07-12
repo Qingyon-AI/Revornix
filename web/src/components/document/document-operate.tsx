@@ -9,13 +9,13 @@ import {
 	DialogTrigger,
 } from '@/components/ui/dialog';
 import {
-	BookCheck,
-	BookX,
+	FolderCheck,
+	FolderOutput,
 	LinkIcon,
 	Loader2,
+	NotebookPen,
 	Star,
 	StarOff,
-	TextCursor,
 	Trash,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -35,7 +35,15 @@ import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'nextjs-toploader/app';
 import { utils } from '@kinda/utils';
-import { Skeleton } from '../ui/skeleton';
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+	SheetTrigger,
+} from '../ui/sheet';
+import DocumentNotes from './document-notes';
 
 const DocumentOperate = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -203,9 +211,8 @@ const DocumentOperate = ({ id }: { id: number }) => {
 							handleAiSummarize();
 						}}>
 						{/* {t('ai_summary')} */}
-						{/* {aiSummaizing && <Loader2 className='size-4 animate-spin' />} */}
-						{/* <TextCursor /> */}
-                        AI
+						AI
+						{aiSummaizing && <Loader2 className='size-4 animate-spin' />}
 					</Button>
 					{data.is_star ? (
 						<Button
@@ -230,7 +237,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 							onClick={() => mutateRead.mutate()}
 							className='flex-1'>
 							{/* {t('document_unread')} */}
-							<BookX />
+							<FolderCheck />
 						</Button>
 					) : (
 						<Button
@@ -238,9 +245,27 @@ const DocumentOperate = ({ id }: { id: number }) => {
 							onClick={() => mutateRead.mutate()}
 							className='flex-1'>
 							{/* {t('document_read')} */}
-							<BookCheck />
+							<FolderOutput />
 						</Button>
 					)}
+
+					<Sheet>
+						<SheetTrigger asChild>
+							<Button variant={'ghost'} className='flex-1'>
+								{/* {t('document_notes')} */}
+								<NotebookPen />
+							</Button>
+						</SheetTrigger>
+						<SheetContent>
+							<SheetHeader>
+								<SheetTitle>{t('document_notes_title')}</SheetTitle>
+								<SheetDescription>{t('document_notes_description')}</SheetDescription>
+							</SheetHeader>
+							<div className='px-5'>
+								<DocumentNotes id={id} />
+							</div>
+						</SheetContent>
+					</Sheet>
 
 					<Dialog
 						open={showDeleteDocumentDialog}

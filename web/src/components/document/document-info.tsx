@@ -7,7 +7,6 @@ import { getDocumentDetail } from '@/service/document';
 import { useRouter } from 'nextjs-toploader/app';
 import Link from 'next/link';
 import { Badge } from '../ui/badge';
-import DocumentNotes from './document-notes';
 import { useTranslations } from 'next-intl';
 
 const DocumentInfo = ({ id }: { id: string }) => {
@@ -119,7 +118,6 @@ const DocumentInfo = ({ id }: { id: string }) => {
 								{data.ai_summary ? data.ai_summary : t('ai_summary_empty')}
 							</p>
 						</div>
-						<DocumentNotes id={id} />
 					</div>
 				</div>
 			)}
