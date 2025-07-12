@@ -8,6 +8,7 @@ import { useRouter } from 'nextjs-toploader/app';
 import Link from 'next/link';
 import { Badge } from '../ui/badge';
 import { useTranslations } from 'next-intl';
+import { Separator } from '../ui/separator';
 
 const DocumentInfo = ({ id }: { id: string }) => {
 	const t = useTranslations();
@@ -112,7 +113,10 @@ const DocumentInfo = ({ id }: { id: string }) => {
 								})}
 							</div>
 						)}
-						<div className='text-sm rounded bg-black/5 dark:bg-white/5 p-5 mx-5 mb-3'>
+						<div className='px-5 my-5'>
+							<Separator />
+						</div>
+						<div className='text-sm rounded mx-5 mb-3'>
 							<h1 className='text-lg font-bold mb-3'>{t('ai_summary')}</h1>
 							<p className='text-muted-foreground text-sm/6'>
 								{data.ai_summary ? data.ai_summary : t('ai_summary_empty')}

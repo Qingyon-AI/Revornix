@@ -452,7 +452,7 @@
     "ai_summary_failed_as_markdown_transform_doing": "The document is currently converting to Markdown. Please try again later.",
     "ai_summary_failed_as_markdown_transform_waiting": "The document is still in the Markdown conversion queue. Please try again later. If it takes too long, please retry manually.",
     "ai_summary": "AI Summary",
-    "ai_summary_empty": "No Summary Available",
+    "ai_summary_empty": "No Summary Available For Now",
     "ai_summary_success": "AI Summary Generated Successfully",
     "website_document_go_to_origin": "Go to Original Site",
     "file_document_go_to_origin": "View Original File",
