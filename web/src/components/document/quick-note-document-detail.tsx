@@ -8,6 +8,8 @@ import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 import { Skeleton } from '../ui/skeleton';
+import { Separator } from '../ui/separator';
+import DocumentOperate from './document-operate';
 
 const QuickDocumentDetail = ({
 	id,
@@ -40,25 +42,29 @@ const QuickDocumentDetail = ({
 			)}
 			{isFetching && !isRefetching && <Skeleton className='w-full h-full' />}
 			{!isError && (
-				<div className='prose dark:prose-invert mx-auto'>
-					<Markdown
-						components={{
-							img: (props) => {
-								let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
-								if (typeof props.src === 'string') {
-									if (props.src.startsWith('images/')) {
-										src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
-									} else if (props.src) {
-										src = props.src;
+				<div className='flex w-full h-full flex-col'>
+					<div className='prose dark:prose-invert mx-auto w-full h-full flex-1 overflow-auto relative'>
+						<Markdown
+							components={{
+								img: (props) => {
+									let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
+									if (typeof props.src === 'string') {
+										if (props.src.startsWith('images/')) {
+											src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
+										} else if (props.src) {
+											src = props.src;
+										}
 									}
-								}
-								return <img {...props} src={src} className='w-full' />;
-							},
-						}}
-						remarkPlugins={[remarkMath, remarkGfm]}
-						rehypePlugins={[rehypeKatex, rehypeRaw]}>
-						{document?.quick_note_info?.content}
-					</Markdown>
+									return <img {...props} src={src} className='w-full' />;
+								},
+							}}
+							remarkPlugins={[remarkMath, remarkGfm]}
+							rehypePlugins={[rehypeKatex, rehypeRaw]}>
+							{document?.quick_note_info?.content}
+						</Markdown>
+					</div>
+					<Separator className='my-5' />
+					<DocumentOperate id={Number(id)} />
 				</div>
 			)}
 		</div>

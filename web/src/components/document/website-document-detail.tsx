@@ -8,15 +8,17 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
-import { Button } from '../ui/button';
 import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
-import { Info, Loader2 } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { getFile } from '@/service/file';
 import { useInterval } from 'ahooks';
 import { useTranslations } from 'next-intl';
+import { Loader2, Info } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import DocumentOperate from './document-operate';
+import { Separator } from '../ui/separator';
 
 const WebsiteDocumentDetail = ({
 	id,
@@ -170,31 +172,35 @@ const WebsiteDocumentDetail = ({
 				!isError &&
 				!markdownGetError &&
 				document.transform_task?.status === 2 && (
-					<Skeleton className='h-full w-full' />
+					<Skeleton className='h-full w-full rounded' />
 				)}
 			{markdown && !isError && !markdownGetError && (
-				<div className='prose dark:prose-invert mx-auto'>
-					<Markdown
-						components={{
-							img: (props) => {
-								let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
-								if (typeof props.src === 'string') {
-									if (props.src.startsWith('images/')) {
-										src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
-									} else if (props.src) {
-										src = props.src;
+				<div className='flex w-full h-full flex-col'>
+					<div className='prose dark:prose-invert mx-auto w-full h-full flex-1 overflow-auto relative'>
+						<Markdown
+							components={{
+								img: (props) => {
+									let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
+									if (typeof props.src === 'string') {
+										if (props.src.startsWith('images/')) {
+											src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
+										} else if (props.src) {
+											src = props.src;
+										}
 									}
-								}
-								return <img {...props} src={src} className='w-full' />;
-							},
-						}}
-						remarkPlugins={[remarkMath, remarkGfm]}
-						rehypePlugins={[rehypeKatex, rehypeRaw]}>
-						{markdown}
-					</Markdown>
-					<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
-						{t('document_ai_tips')}
-					</p>
+									return <img {...props} src={src} className='w-full' />;
+								},
+							}}
+							remarkPlugins={[remarkMath, remarkGfm]}
+							rehypePlugins={[rehypeKatex, rehypeRaw]}>
+							{markdown}
+						</Markdown>
+						<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
+							{t('document_ai_tips')}
+						</p>
+					</div>
+					<Separator className='my-5' />
+					<DocumentOperate id={Number(id)} />
 				</div>
 			)}
 		</div>

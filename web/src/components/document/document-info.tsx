@@ -1,288 +1,29 @@
 'use client';
 
 import { PhotoProvider, PhotoView } from 'react-photo-view';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-	deleteDocument,
-	getDocumentDetail,
-	readDocument,
-	starDocument,
-	summaryDocumentContentByAi,
-} from '@/service/document';
-import { getQueryClient } from '@/lib/get-query-client';
-import { LinkIcon, Loader2, Star, StarOff } from 'lucide-react';
-import { DocumentDetailResponse } from '@/generated';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '@/components/ui/dialog';
-import { toast } from 'sonner';
-import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getDocumentDetail } from '@/service/document';
 import { useRouter } from 'nextjs-toploader/app';
 import Link from 'next/link';
 import { Badge } from '../ui/badge';
 import DocumentNotes from './document-notes';
-import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
 
 const DocumentInfo = ({ id }: { id: string }) => {
 	const t = useTranslations();
-	const queryClient = getQueryClient();
 	const router = useRouter();
-	const [aiSummaizing, setAiSummaizing] = useState(false);
-	const [showDeleteDocumentDialog, setShowDeleteDocumentDialog] =
-		useState(false);
 
 	const { data, isPending, isError, error, isRefetching } = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: Number(id) }),
 	});
 
-	const mutateRead = useMutation({
-		mutationFn: () =>
-			readDocument({
-				document_id: Number(id),
-				status: !data?.is_read!,
-			}),
-		onMutate: async () => {
-			await queryClient.cancelQueries({
-				queryKey: ['getDocumentDetail', id],
-			});
-			const previousDocument = queryClient.getQueryData<DocumentDetailResponse>(
-				['getDocumentDetail', id]
-			);
-			queryClient.setQueryData(
-				['getDocumentDetail', id],
-				(old: DocumentDetailResponse) => ({
-					...old,
-					is_read: !old.is_read,
-				})
-			);
-			return { previousDocument };
-		},
-		onError: (error, variables, context) => {
-			context &&
-				queryClient.setQueryData(
-					['getDocumentDetail', id],
-					context.previousDocument
-				);
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
-			queryClient.invalidateQueries({
-				predicate: (query) =>
-					query.queryKey.includes('searchUserUnreadDocument'),
-			});
-			queryClient.invalidateQueries({
-				predicate: (query) =>
-					query.queryKey.includes('searchUserRecentReadDocument'),
-			});
-		},
-	});
-
-	const mutateStar = useMutation({
-		mutationFn: () =>
-			starDocument({ document_id: Number(id), status: !data?.is_star! }),
-		onMutate: async () => {
-			await queryClient.cancelQueries({
-				queryKey: ['getDocumentDetail', id],
-			});
-			const previousDocument = queryClient.getQueryData<DocumentDetailResponse>(
-				['getDocumentDetail', id]
-			);
-			queryClient.setQueryData(
-				['getDocumentDetail', id],
-				(old: DocumentDetailResponse) => ({
-					...old,
-					is_star: !old.is_star,
-				})
-			);
-			return { previousDocument };
-		},
-		onError: (error, variables, context) => {
-			context &&
-				queryClient.setQueryData(
-					['getDocumentDetail', id],
-					context.previousDocument
-				);
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
-			queryClient.invalidateQueries({
-				predicate: (query) => query.queryKey.includes('searchMyStarDocument'),
-			});
-		},
-	});
-
-	const mutateDelete = useMutation({
-		mutationKey: ['deleteDocument', id],
-		mutationFn: () => deleteDocument({ document_ids: [Number(id)] }),
-		onSuccess: () => {
-			toast.success(t('document_delete_success'));
-			queryClient.invalidateQueries({
-				predicate: (query) =>
-					query.queryKey.includes('searchUserUnreadDocument'),
-			});
-			setShowDeleteDocumentDialog(false);
-			router.back();
-		},
-		onError(error, variables, context) {
-			toast.error(t('document_delete_failed'));
-		},
-	});
-
-	const handleAiSummarize = async () => {
-		if (data?.transform_task?.status === 3) {
-			toast.error(t('ai_summary_failed_as_markdown_transform_failed'));
-			return;
-		}
-		if (data?.transform_task?.status === 1) {
-			toast.error(t('ai_summary_failed_as_markdown_transform_doing'));
-			return;
-		}
-		if (data?.transform_task?.status === 0) {
-			toast.error(t('ai_summary_failed_as_markdown_transform_waiting'));
-			return;
-		}
-		setAiSummaizing(true);
-		const [res, err] = await utils.to(
-			summaryDocumentContentByAi({ document_id: Number(id) })
-		);
-		if (err) {
-			toast.error(err.message);
-			setAiSummaizing(false);
-			return;
-		}
-		toast.success(t('ai_summary_success'));
-		setAiSummaizing(false);
-		queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
-	};
-
 	return (
 		<>
 			{isPending && <Skeleton className='w-full h-full' />}
 			{data && (
 				<div className='relative h-full'>
-					<div className='absolute top-0 right-0 w-full flex flex-row flex-wrap gap-2 justify-end p-5 rounded-t'>
-						{data.category === 1 && data.website_info && (
-							<Link
-								href={data.website_info?.url ? data.website_info.url : ''}
-								target='_blank'>
-								<Button
-									variant={'outline'}
-									size={'sm'}
-									className='text-xs rounded-full'>
-									{t('website_document_go_to_origin')}
-									<LinkIcon />
-								</Button>
-							</Link>
-						)}
-						{data.category === 0 && data.file_info && (
-							<Link
-								href={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${data.file_info?.file_name}`}
-								target='_blank'>
-								<Button
-									variant={'outline'}
-									size={'sm'}
-									className='text-xs rounded-full'>
-									{t('file_document_go_to_origin')}
-									<LinkIcon />
-								</Button>
-							</Link>
-						)}
-						<Button
-							variant={'outline'}
-							size={'sm'}
-							className='text-xs rounded-full'
-							disabled={aiSummaizing}
-							onClick={() => {
-								handleAiSummarize();
-							}}>
-							{t('ai_summary')}
-							{aiSummaizing && <Loader2 className='size-4 animate-spin' />}
-						</Button>
-						{data.is_star ? (
-							<Button
-								variant={'outline'}
-								size={'sm'}
-								onClick={() => mutateStar.mutate()}
-								className='text-xs rounded-full'>
-								{t('document_star_cancel')}
-								<StarOff />
-							</Button>
-						) : (
-							<Button
-								variant={'outline'}
-								size={'sm'}
-								onClick={() => mutateStar.mutate()}
-								className='text-xs rounded-full'>
-								{t('document_star')}
-								<Star />
-							</Button>
-						)}
-						{data.is_read ? (
-							<Button
-								variant={'outline'}
-								size={'sm'}
-								onClick={() => mutateRead.mutate()}
-								className='text-xs rounded-full'>
-								{t('document_unread')}
-							</Button>
-						) : (
-							<Button
-								variant={'outline'}
-								size={'sm'}
-								onClick={() => mutateRead.mutate()}
-								className='text-xs rounded-full'>
-								{t('document_read')}
-							</Button>
-						)}
-
-						<Dialog
-							open={showDeleteDocumentDialog}
-							onOpenChange={setShowDeleteDocumentDialog}>
-							<DialogTrigger asChild>
-								<Button
-									size={'sm'}
-									variant={'destructive'}
-									className='text-xs rounded-full'>
-									{t('document_delete')}
-								</Button>
-							</DialogTrigger>
-							<DialogContent>
-								<DialogHeader>
-									<DialogTitle>{t('document_delete')}</DialogTitle>
-									<DialogDescription>
-										{t('document_delete_alert_description')}
-									</DialogDescription>
-								</DialogHeader>
-								<DialogFooter>
-									<DialogClose asChild>
-										<Button variant='outline'>
-											{t('document_delete_cancel')}
-										</Button>
-									</DialogClose>
-									<Button
-										variant='destructive'
-										onClick={() => mutateDelete.mutate()}
-										disabled={mutateDelete.isPending}>
-										{t('document_delete_confirm')}
-										{mutateDelete.isPending && (
-											<Loader2 className='size-4 animate-spin' />
-										)}
-									</Button>
-								</DialogFooter>
-							</DialogContent>
-						</Dialog>
-					</div>
 					<div className='h-full overflow-auto pb-5'>
 						<PhotoProvider>
 							<PhotoView

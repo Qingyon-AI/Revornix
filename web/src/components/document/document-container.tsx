@@ -14,13 +14,11 @@ const DocumentContainer = ({ id }: { id: string }) => {
 		queryFn: () => getDocumentDetail({ document_id: Number(id) }),
 	});
 	return (
-		<div className='h-full flex flex-row gap-5 px-5 pb-5'>
-			<Card
-				className='flex-1 hidden py-0 md:flex overflow-hidden'
-				style={{ flex: '1 1 0' }}>
+		<div className='h-full grid grid-cols-12 gap-5 px-5 pb-5'>
+			<Card className='col-span-4 py-0 overflow-hidden h-full'>
 				<DocumentInfo id={id} />
 			</Card>
-			<div className='flex-2 overflow-auto'>
+			<div className='col-span-8 h-full overflow-auto'>
 				{document?.category === 1 && <WebsiteDocumentDetail id={id} />}
 				{document?.category === 0 && <FileDocumentDetail id={id} />}
 				{document?.category === 2 && <QuickDocumentDetail id={id} />}

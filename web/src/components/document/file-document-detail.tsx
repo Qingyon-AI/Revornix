@@ -18,6 +18,8 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { getFile } from '@/service/file';
 import { useInterval } from 'ahooks';
 import { useTranslations } from 'next-intl';
+import { Separator } from '../ui/separator';
+import DocumentOperate from './document-operate';
 
 const FileDocumentDetail = ({
 	id,
@@ -162,28 +164,32 @@ const FileDocumentDetail = ({
 					<Skeleton className='h-full w-full' />
 				)}
 			{markdown && !isError && !markdownGetError && (
-				<div className='prose dark:prose-invert mx-auto'>
-					<Markdown
-						components={{
-							img: (props) => {
-								let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
-								if (typeof props.src === 'string') {
-									if (props.src.startsWith('images/')) {
-										src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
-									} else if (props.src) {
-										src = props.src;
+				<div className='flex w-full h-full flex-col'>
+					<div className='prose dark:prose-invert mx-auto w-full h-full flex-1 overflow-auto relative'>
+						<Markdown
+							components={{
+								img: (props) => {
+									let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
+									if (typeof props.src === 'string') {
+										if (props.src.startsWith('images/')) {
+											src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
+										} else if (props.src) {
+											src = props.src;
+										}
 									}
-								}
-								return <img {...props} src={src} className='w-full' />;
-							},
-						}}
-						remarkPlugins={[remarkMath, remarkGfm]}
-						rehypePlugins={[rehypeKatex, rehypeRaw]}>
-						{markdown}
-					</Markdown>
-					<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
-						{t('document_ai_tips')}
-					</p>
+									return <img {...props} src={src} className='w-full' />;
+								},
+							}}
+							remarkPlugins={[remarkMath, remarkGfm]}
+							rehypePlugins={[rehypeKatex, rehypeRaw]}>
+							{markdown}
+						</Markdown>
+						<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
+							{t('document_ai_tips')}
+						</p>
+					</div>
+					<Separator className='my-5' />
+					<DocumentOperate id={Number(id)} />
 				</div>
 			)}
 		</div>
