@@ -249,8 +249,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/source/add`;
+
         const response = await this.request({
-            path: `/notification/source/add`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -293,8 +296,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/target/add`;
+
         const response = await this.request({
-            path: `/notification/target/add`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -337,8 +343,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/task/add`;
+
         const response = await this.request({
-            path: `/notification/task/add`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -381,8 +390,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/source/delete`;
+
         const response = await this.request({
-            path: `/notification/source/delete`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -425,8 +437,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/record/delete`;
+
         const response = await this.request({
-            path: `/notification/record/delete`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -469,8 +484,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/target/delete`;
+
         const response = await this.request({
-            path: `/notification/target/delete`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -513,8 +531,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/task/delete`;
+
         const response = await this.request({
-            path: `/notification/task/delete`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -548,8 +569,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/source/mine`;
+
         const response = await this.request({
-            path: `/notification/source/mine`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -582,8 +606,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/target/mine`;
+
         const response = await this.request({
-            path: `/notification/target/mine`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -616,8 +643,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/task/mine`;
+
         const response = await this.request({
-            path: `/notification/task/mine`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -659,8 +689,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/source/detail`;
+
         const response = await this.request({
-            path: `/notification/source/detail`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -703,8 +736,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/record/detail`;
+
         const response = await this.request({
-            path: `/notification/record/detail`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -739,8 +775,11 @@ export class NotificationApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/notification/target/detail`;
+
         const response = await this.request({
-            path: `/notification/target/detail`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -783,8 +822,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/task/detail`;
+
         const response = await this.request({
-            path: `/notification/task/detail`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -818,8 +860,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/template/all`;
+
         const response = await this.request({
-            path: `/notification/template/all`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -852,8 +897,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/record/read-all`;
+
         const response = await this.request({
-            path: `/notification/record/read-all`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -895,8 +943,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/record/read`;
+
         const response = await this.request({
-            path: `/notification/record/read`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -939,8 +990,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/record/search`;
+
         const response = await this.request({
-            path: `/notification/record/search`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -983,8 +1037,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/source/update`;
+
         const response = await this.request({
-            path: `/notification/source/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -1027,8 +1084,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/target/update`;
+
         const response = await this.request({
-            path: `/notification/target/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -1071,8 +1131,11 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/notification/task/update`;
+
         const response = await this.request({
-            path: `/notification/task/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

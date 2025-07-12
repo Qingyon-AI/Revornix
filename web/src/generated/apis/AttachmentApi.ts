@@ -64,8 +64,11 @@ export class AttachmentApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/attachment/create`;
+
         const response = await this.request({
-            path: `/attachment/create`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

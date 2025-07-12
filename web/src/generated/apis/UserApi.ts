@@ -18,6 +18,7 @@ import type {
   BindEmailVerifyRequest,
   DefaultEngineUpdateRequest,
   DefaultModelUpdateRequest,
+  DefaultReadMarkReasonUpdateRequest,
   EmailUserCreateVerifyRequest,
   FollowUserRequest,
   HTTPValidationError,
@@ -42,6 +43,8 @@ import {
     DefaultEngineUpdateRequestToJSON,
     DefaultModelUpdateRequestFromJSON,
     DefaultModelUpdateRequestToJSON,
+    DefaultReadMarkReasonUpdateRequestFromJSON,
+    DefaultReadMarkReasonUpdateRequestToJSON,
     EmailUserCreateVerifyRequestFromJSON,
     EmailUserCreateVerifyRequestToJSON,
     FollowUserRequestFromJSON,
@@ -135,6 +138,12 @@ export interface UpdateDefaultModelUserDefaultModelUpdatePostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface UpdateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequest {
+    defaultReadMarkReasonUpdateRequest: DefaultReadMarkReasonUpdateRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface UpdateMyInfoUserUpdatePostRequest {
     userInfoUpdateRequest: UserInfoUpdateRequest;
     authorization?: string | null;
@@ -187,8 +196,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/bind/email/verify`;
+
         const response = await this.request({
-            path: `/user/bind/email/verify`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -223,8 +235,11 @@ export class UserApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/user/create/email/verify`;
+
         const response = await this.request({
-            path: `/user/create/email/verify`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -258,8 +273,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/delete`;
+
         const response = await this.request({
-            path: `/user/delete`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -301,8 +319,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/follow`;
+
         const response = await this.request({
-            path: `/user/follow`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -336,8 +357,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/password/initial-see`;
+
         const response = await this.request({
-            path: `/user/password/initial-see`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -371,8 +395,11 @@ export class UserApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/user/login`;
+
         const response = await this.request({
-            path: `/user/login`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -406,8 +433,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/mine/info`;
+
         const response = await this.request({
-            path: `/user/mine/info`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -449,8 +479,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/fans`;
+
         const response = await this.request({
-            path: `/user/fans`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -493,8 +526,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/follows`;
+
         const response = await this.request({
-            path: `/user/follows`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -537,8 +573,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/default-engine/update`;
+
         const response = await this.request({
-            path: `/user/default-engine/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -581,8 +620,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/default-model/update`;
+
         const response = await this.request({
-            path: `/user/default-model/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -597,6 +639,53 @@ export class UserApi extends runtime.BaseAPI {
      */
     async updateDefaultModelUserDefaultModelUpdatePost(requestParameters: UpdateDefaultModelUserDefaultModelUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.updateDefaultModelUserDefaultModelUpdatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update My Default Read Mark Reason
+     */
+    async updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRaw(requestParameters: UpdateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['defaultReadMarkReasonUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'defaultReadMarkReasonUpdateRequest',
+                'Required parameter "defaultReadMarkReasonUpdateRequest" was null or undefined when calling updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/read-mark-reason/update`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DefaultReadMarkReasonUpdateRequestToJSON(requestParameters['defaultReadMarkReasonUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update My Default Read Mark Reason
+     */
+    async updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost(requestParameters: UpdateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -625,8 +714,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/update`;
+
         const response = await this.request({
-            path: `/user/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -669,8 +761,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/password/update`;
+
         const response = await this.request({
-            path: `/user/password/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -705,8 +800,11 @@ export class UserApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/user/token/update`;
+
         const response = await this.request({
-            path: `/user/token/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -749,8 +847,11 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/user/info`;
+
         const response = await this.request({
-            path: `/user/info`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

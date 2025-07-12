@@ -42,6 +42,7 @@ class User(Base):
     default_revornix_model_id = Column(Integer, ForeignKey("ai_model.id"))
     default_file_document_parse_engine_id = Column(Integer, ForeignKey("engine.id"))
     default_website_document_parse_engine_id = Column(Integer, ForeignKey("engine.id"))
+    default_read_mark_reason = Column(Integer, comment='0: Request once, 1: Scroll to the bottom of the document, 2: Manually Mark')
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True))

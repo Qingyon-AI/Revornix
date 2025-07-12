@@ -21,6 +21,7 @@ export * from './DaySectionRequest';
 export * from './DaySectionResponse';
 export * from './DefaultEngineUpdateRequest';
 export * from './DefaultModelUpdateRequest';
+export * from './DefaultReadMarkReasonUpdateRequest';
 export * from './DeleteModelProviderRequest';
 export * from './DeleteModelRequest';
 export * from './DeleteNotificationRecordRequest';

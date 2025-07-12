@@ -93,8 +93,8 @@ export function NotificationSourceToJSONTyped(value?: NotificationSource | null,
         'id': value['id'],
         'title': value['title'],
         'description': value['description'],
-        'create_time': value['create_time'] == null ? undefined : ((value['create_time'] as any).toISOString()),
-        'update_time': value['update_time'] == null ? undefined : ((value['update_time'] as any).toISOString()),
+        'create_time': value['create_time'] === null ? null : ((value['create_time'] as any)?.toISOString()),
+        'update_time': value['update_time'] === null ? null : ((value['update_time'] as any)?.toISOString()),
     };
 }
 

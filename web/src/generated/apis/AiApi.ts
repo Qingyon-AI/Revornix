@@ -172,8 +172,11 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/ai/ask`;
+
         const response = await this.request({
-            path: `/ai/ask`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -220,8 +223,11 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/ai/model/create`;
+
         const response = await this.request({
-            path: `/ai/model/create`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -264,8 +270,11 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/ai/model-provider/create`;
+
         const response = await this.request({
-            path: `/ai/model-provider/create`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -308,8 +317,11 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/ai/model/delete`;
+
         const response = await this.request({
-            path: `/ai/model/delete`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -352,8 +364,11 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/ai/model-provider/delete`;
+
         const response = await this.request({
-            path: `/ai/model-provider/delete`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -396,8 +411,11 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/ai/model/detail`;
+
         const response = await this.request({
-            path: `/ai/model/detail`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -440,8 +458,11 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/ai/model-provider/detail`;
+
         const response = await this.request({
-            path: `/ai/model-provider/detail`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -484,8 +505,11 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/ai/model/search`;
+
         const response = await this.request({
-            path: `/ai/model/search`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -528,8 +552,11 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/ai/model-provider/search`;
+
         const response = await this.request({
-            path: `/ai/model-provider/search`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -572,8 +599,11 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/ai/model/update`;
+
         const response = await this.request({
-            path: `/ai/model/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -616,8 +646,11 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/ai/model-provider/update`;
+
         const response = await this.request({
-            path: `/ai/model-provider/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

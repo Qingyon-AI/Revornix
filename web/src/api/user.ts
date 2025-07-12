@@ -20,4 +20,5 @@ export default {
     initialPassword: API_PREFIX + '/user/password/initial-see',
     updateDefaultModel: API_PREFIX + '/user/default-model/update',
     updateDefaultEngine: API_PREFIX + '/user/default-engine/update',
+    updateDefaultReadMarkReason: API_PREFIX + '/user/read-mark-reason/update',
 } 

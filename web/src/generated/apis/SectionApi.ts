@@ -215,8 +215,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/label/create`;
+
         const response = await this.request({
-            path: `/section/label/create`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -259,8 +262,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/comment/create`;
+
         const response = await this.request({
-            path: `/section/comment/create`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -303,8 +309,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/create`;
+
         const response = await this.request({
-            path: `/section/create`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -347,8 +356,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/comment/delete`;
+
         const response = await this.request({
-            path: `/section/comment/delete`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -391,8 +403,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/delete`;
+
         const response = await this.request({
-            path: `/section/delete`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -426,8 +441,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/mine/all`;
+
         const response = await this.request({
-            path: `/section/mine/all`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -469,8 +487,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/date`;
+
         const response = await this.request({
-            path: `/section/date`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -513,8 +534,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/subscribed`;
+
         const response = await this.request({
-            path: `/section/subscribed`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -557,8 +581,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/detail`;
+
         const response = await this.request({
-            path: `/section/detail`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -592,8 +619,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/label/list`;
+
         const response = await this.request({
-            path: `/section/label/list`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -635,8 +665,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/mine/search`;
+
         const response = await this.request({
-            path: `/section/mine/search`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -679,8 +712,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/public/search`;
+
         const response = await this.request({
-            path: `/section/public/search`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -723,8 +759,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/comment/search`;
+
         const response = await this.request({
-            path: `/section/comment/search`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -767,8 +806,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/user/search`;
+
         const response = await this.request({
-            path: `/section/user/search`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -811,8 +853,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/subscribe`;
+
         const response = await this.request({
-            path: `/section/subscribe`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -855,8 +900,11 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/section/update`;
+
         const response = await this.request({
-            path: `/section/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

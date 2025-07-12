@@ -94,8 +94,11 @@ export class EngineApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/engine/update`;
+
         const response = await this.request({
-            path: `/engine/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -138,8 +141,11 @@ export class EngineApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/engine/install`;
+
         const response = await this.request({
-            path: `/engine/install`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -182,8 +188,11 @@ export class EngineApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/engine/provide`;
+
         const response = await this.request({
-            path: `/engine/provide`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -226,8 +235,11 @@ export class EngineApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/engine/mine`;
+
         const response = await this.request({
-            path: `/engine/mine`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

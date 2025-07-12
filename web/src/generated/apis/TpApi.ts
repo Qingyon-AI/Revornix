@@ -89,8 +89,11 @@ export class TpApi extends runtime.BaseAPI {
             headerParameters['api-key'] = String(requestParameters['apiKey']);
         }
 
+
+        let urlPath = `/tp/section/label/create`;
+
         const response = await this.request({
-            path: `/tp/section/label/create`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -129,8 +132,11 @@ export class TpApi extends runtime.BaseAPI {
             headerParameters['api-key'] = String(requestParameters['apiKey']);
         }
 
+
+        let urlPath = `/tp/document/label/create`;
+
         const response = await this.request({
-            path: `/tp/document/label/create`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -169,8 +175,11 @@ export class TpApi extends runtime.BaseAPI {
             headerParameters['api-key'] = String(requestParameters['apiKey']);
         }
 
+
+        let urlPath = `/tp/document/create`;
+
         const response = await this.request({
-            path: `/tp/document/create`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -200,8 +209,11 @@ export class TpApi extends runtime.BaseAPI {
             headerParameters['api-key'] = String(requestParameters['apiKey']);
         }
 
+
+        let urlPath = `/tp/section/mine/all`;
+
         const response = await this.request({
-            path: `/tp/section/mine/all`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -230,8 +242,11 @@ export class TpApi extends runtime.BaseAPI {
             headerParameters['api-key'] = String(requestParameters['apiKey']);
         }
 
+
+        let urlPath = `/tp/document/label/list`;
+
         const response = await this.request({
-            path: `/tp/document/label/list`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

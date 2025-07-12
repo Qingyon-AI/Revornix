@@ -94,8 +94,11 @@ export class McpApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/mcp/server/create`;
+
         const response = await this.request({
-            path: `/mcp/server/create`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -138,8 +141,11 @@ export class McpApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/mcp/server/delete`;
+
         const response = await this.request({
-            path: `/mcp/server/delete`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -182,8 +188,11 @@ export class McpApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/mcp/server/search`;
+
         const response = await this.request({
-            path: `/mcp/server/search`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -226,8 +235,11 @@ export class McpApi extends runtime.BaseAPI {
             headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
+
+        let urlPath = `/mcp/server/update`;
+
         const response = await this.request({
-            path: `/mcp/server/update`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
