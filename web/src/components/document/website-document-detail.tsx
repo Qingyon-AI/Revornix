@@ -8,6 +8,10 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
+import remarkParse from 'remark-parse';
+import remarkHtml from 'remark-html';
+import { VFile } from 'vfile';
+import { unified } from 'unified';
 import { Button } from '../ui/button';
 import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
@@ -17,6 +21,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { getFile } from '@/service/file';
 import { useInterval } from 'ahooks';
 import { useTranslations } from 'next-intl';
+import { EditorContent, EditorContext, useEditor } from '@tiptap/react';
+import { StarterKit } from '@tiptap/starter-kit';
+import { BlockquoteButton } from '@/components/tiptap-ui/blockquote-button';
+import { Import } from '@tiptap-pro/extension-import';
+
+import '@/components/tiptap-node/paragraph-node/paragraph-node.scss';
+import '@/styles/_variables.scss';
+import '@/styles/_keyframe-animations.scss';
 
 const WebsiteDocumentDetail = ({
 	id,
@@ -86,10 +98,40 @@ const WebsiteDocumentDetail = ({
 		});
 	};
 
+	const handleInitMarkdown = async () => {
+		const html = String(
+			await unified().use(remarkParse).use(remarkHtml).process(markdown)
+		);
+		editor && editor.chain().focus().setContent(html).run();
+	};
+
+	useEffect(() => {
+		if (markdown) {
+			handleInitMarkdown();
+		}
+	}, [markdown]);
+
 	useEffect(() => {
 		if (!document || !document.website_info?.md_file_name) return;
 		onGetMarkdown();
+		// 初始化 unified processor
 	}, [document]);
+
+	const editor = useEditor({
+		immediatelyRender: false,
+		extensions: [
+			StarterKit,
+			Import.configure({
+				// Your Convert App ID from https://cloud.tiptap.dev/convert-settings
+				appId: '8mz07p19',
+				// JWT token you generated
+				token:
+					'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3NTIyOTY4NTEsIm5iZiI6MTc1MjI5Njg1MSwiZXhwIjoxNzUyMzgzMjUxLCJpc3MiOiJodHRwczovL2Nsb3VkLnRpcHRhcC5kZXYiLCJhdWQiOiJhMmUxMDM4ZC01YWI1LTQyZjItOTExNy0zNTgxNTIxNTRhOGIifQ.Wbt7Meq4Y38FPhuN-N5eqZFkmYtGbSY_d7q8LS8xIdw',
+				// If your markdown includes images, you can provide a URL for image upload
+				// imageUploadCallbackUrl: 'https://your-image-upload-url.com',
+			}),
+		],
+	});
 
 	return (
 		<div className={cn('h-full w-full relative', className)}>
@@ -172,7 +214,13 @@ const WebsiteDocumentDetail = ({
 				document.transform_task?.status === 2 && (
 					<Skeleton className='h-full w-full' />
 				)}
-			{markdown && !isError && !markdownGetError && (
+			<EditorContext.Provider value={{ editor }}>
+				<div className='tiptap-button-group' data-orientation='horizontal'>
+					<BlockquoteButton />
+				</div>
+				<EditorContent editor={editor} role='presentation' />
+			</EditorContext.Provider>
+			{/* {markdown && !isError && !markdownGetError && (
 				<div className='prose dark:prose-invert mx-auto'>
 					<Markdown
 						components={{
@@ -196,7 +244,7 @@ const WebsiteDocumentDetail = ({
 						{t('document_ai_tips')}
 					</p>
 				</div>
-			)}
+			)} */}
 		</div>
 	);
 };
