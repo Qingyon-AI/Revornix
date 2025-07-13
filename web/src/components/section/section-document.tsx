@@ -11,12 +11,12 @@ import { getSectionDetail } from '@/service/section';
 import SectionDocumentCard from './section-document-card';
 import { useTranslations } from 'next-intl';
 
-const SectionDocument = ({ id }: { id: string }) => {
+const SectionDocument = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
-			return getSectionDetail({ section_id: Number(id) });
+			return getSectionDetail({ section_id: id });
 		},
 	});
 

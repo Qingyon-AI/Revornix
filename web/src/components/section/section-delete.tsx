@@ -18,7 +18,7 @@ import { deleteSection } from '@/service/section';
 import { useRouter } from 'nextjs-toploader/app';
 import { useTranslations } from 'next-intl';
 
-const SectionDelete = ({ section_id }: { section_id: string }) => {
+const SectionDelete = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
 	const router = useRouter();
 	const queryClient = getQueryClient();
@@ -28,7 +28,7 @@ const SectionDelete = ({ section_id }: { section_id: string }) => {
 		setDeleting(true);
 		const [res, err] = await utils.to(
 			deleteSection({
-				section_id: Number(section_id),
+				section_id: section_id,
 			})
 		);
 		if (err) {

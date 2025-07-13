@@ -11,7 +11,7 @@ import { utils } from '@kinda/utils';
 import { getFile } from '@/service/file';
 import { useTranslations } from 'next-intl';
 
-const SectionMarkdown = ({ id }: { id: string }) => {
+const SectionMarkdown = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const {
 		data: section,
@@ -21,7 +21,7 @@ const SectionMarkdown = ({ id }: { id: string }) => {
 	} = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
-			return getSectionDetail({ section_id: Number(id) });
+			return getSectionDetail({ section_id: id });
 		},
 	});
 

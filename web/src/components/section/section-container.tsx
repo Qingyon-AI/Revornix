@@ -5,11 +5,11 @@ import { useQuery } from '@tanstack/react-query';
 import SectionInfo from './section-info';
 import SectionMarkdown from './section-markdown';
 
-const SectionContainer = ({ id }: { id: string }) => {
+const SectionContainer = ({ id }: { id: number }) => {
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
-			return getSectionDetail({ section_id: Number(id) });
+			return getSectionDetail({ section_id: id });
 		},
 	});
 	return (

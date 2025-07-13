@@ -15,7 +15,7 @@ import { useEffect } from 'react';
 const DocumentContainer = ({ id }: { id: number }) => {
 	const { data: document } = useQuery({
 		queryKey: ['getDocumentDetail', id],
-		queryFn: () => getDocumentDetail({ document_id: Number(id) }),
+		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
 	const queryClient = getQueryClient();
 	const { userInfo } = useUserContext();

@@ -17,7 +17,7 @@ import { format } from 'date-fns';
 import { useRouter } from 'nextjs-toploader/app';
 import { useTranslations } from 'next-intl';
 
-const SectionComments = ({ id }: { id: string }) => {
+const SectionComments = ({ id }: { id: number }) => {
 	const t = useTranslations();
 
 	const commentFormSchema = z.object({
@@ -47,7 +47,7 @@ const SectionComments = ({ id }: { id: string }) => {
 			initialPageParam: {
 				limit: 10,
 				keyword: keyword,
-				section_id: Number(id),
+				section_id: id,
 			},
 			getNextPageParam: (lastPage) => {
 				return lastPage.has_more
@@ -55,7 +55,7 @@ const SectionComments = ({ id }: { id: string }) => {
 							start: lastPage.next_start,
 							limit: lastPage.limit,
 							keyword: keyword,
-							section_id: Number(id),
+							section_id: id,
 					  }
 					: undefined;
 			},
@@ -64,7 +64,7 @@ const SectionComments = ({ id }: { id: string }) => {
 	const mutateAddComment = useMutation({
 		mutationFn: () => {
 			return createSectionComment({
-				section_id: Number(id),
+				section_id: id,
 				content: form.getValues('content'),
 			});
 		},

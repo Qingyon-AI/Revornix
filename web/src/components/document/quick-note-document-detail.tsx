@@ -30,7 +30,7 @@ const QuickDocumentDetail = ({
 		error,
 	} = useQuery({
 		queryKey: ['getDocumentDetail', id],
-		queryFn: () => getDocumentDetail({ document_id: Number(id) }),
+		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
 
 	const [markdownRendered, setMarkdownRendered] = useState(false);
@@ -83,7 +83,7 @@ const QuickDocumentDetail = ({
 						<div ref={bottomRef}></div>
 					</div>
 					<Separator className='my-5' />
-					<DocumentOperate id={Number(id)} />
+					<DocumentOperate id={id} />
 				</div>
 			)}
 		</div>

@@ -8,7 +8,7 @@ import { utils } from '@kinda/utils';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-const SectionSubscribe = ({ section_id }: { section_id: string }) => {
+const SectionSubscribe = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
 	const id = section_id;
 	const [subscribing, setSubscribing] = useState(false);
@@ -18,7 +18,7 @@ const SectionSubscribe = ({ section_id }: { section_id: string }) => {
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
-			return getSectionDetail({ section_id: Number(id) });
+			return getSectionDetail({ section_id: id });
 		},
 	});
 
@@ -27,7 +27,7 @@ const SectionSubscribe = ({ section_id }: { section_id: string }) => {
 		setSubscribing(true);
 		const [res, err] = await utils.to(
 			subscribeSection({
-				section_id: Number(id),
+				section_id: id,
 				status: section?.is_subscribed ? false : true,
 			})
 		);

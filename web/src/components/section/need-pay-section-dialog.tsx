@@ -6,12 +6,12 @@ import { useRouter } from 'nextjs-toploader/app';
 import { useQuery } from '@tanstack/react-query';
 import { getSectionDetail } from '@/service/section';
 
-const NeedPaySectionDialog = ({ id }: { id: string }) => {
+const NeedPaySectionDialog = ({ id }: { id: number }) => {
 	const router = useRouter();
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
-			return getSectionDetail({ section_id: Number(id) });
+			return getSectionDetail({ section_id: id });
 		},
 	});
 	return (
@@ -59,7 +59,7 @@ const NeedPaySectionDialog = ({ id }: { id: string }) => {
 								onClick={() => router.back()}>
 								返回上级
 							</Button>
-							<SectionSubscribe section_id={String(section.id)} />
+							<SectionSubscribe section_id={section.id} />
 						</div>
 					</Card>
 				</div>

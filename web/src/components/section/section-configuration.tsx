@@ -38,7 +38,7 @@ import { Skeleton } from '../ui/skeleton';
 import AddSectionLabelDialog from '../document/add-section-label-dialog';
 import { useTranslations } from 'next-intl';
 
-const SectionConfiguration = ({ section_id }: { section_id: string }) => {
+const SectionConfiguration = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
 
 	const updateFormSchema = z.object({
@@ -61,13 +61,13 @@ const SectionConfiguration = ({ section_id }: { section_id: string }) => {
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
-			return getSectionDetail({ section_id: Number(id) });
+			return getSectionDetail({ section_id: id });
 		},
 	});
 
 	const form = useForm({
 		defaultValues: {
-			section_id: Number(id),
+			section_id: id,
 			title: '',
 			cover: undefined,
 			description: '',

@@ -29,7 +29,7 @@ const UserContainer = ({ id }: { id: number }) => {
 	const { data: userInfo, isFetching: isFetchingUserInfo } = useQuery({
 		queryKey: ['userInfo', id],
 		queryFn: async () => {
-			return getUserInfo({ user_id: Number(id) });
+			return getUserInfo({ user_id: id });
 		},
 	});
 
@@ -44,7 +44,7 @@ const UserContainer = ({ id }: { id: number }) => {
 		queryKey: ['searchUserSection', keyword, id],
 		queryFn: (pageParam) => searchUserSection({ ...pageParam.pageParam }),
 		initialPageParam: {
-			user_id: Number(id),
+			user_id: id,
 			limit: 10,
 			keyword: keyword,
 		},
@@ -54,7 +54,7 @@ const UserContainer = ({ id }: { id: number }) => {
 						start: lastPage.next_start,
 						limit: lastPage.limit,
 						keyword: keyword,
-						user_id: Number(id),
+						user_id: id,
 				  }
 				: undefined;
 		},

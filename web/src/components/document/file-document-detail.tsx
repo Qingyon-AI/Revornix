@@ -40,7 +40,7 @@ const FileDocumentDetail = ({
 		error,
 	} = useQuery({
 		queryKey: ['getDocumentDetail', id],
-		queryFn: () => getDocumentDetail({ document_id: Number(id) }),
+		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
 	const [delay, setDelay] = useState<number | undefined>(1000);
 	useInterval(() => {
@@ -64,7 +64,7 @@ const FileDocumentDetail = ({
 		setMarkdowningTransform(true);
 		const [res, err] = await utils.to(
 			transformToMarkdown({
-				document_id: Number(id),
+				document_id: id,
 			})
 		);
 		if (err) {
@@ -202,7 +202,7 @@ const FileDocumentDetail = ({
 						<div ref={bottomRef}></div>
 					</div>
 					<Separator className='my-5' />
-					<DocumentOperate id={Number(id)} />
+					<DocumentOperate id={id} />
 				</div>
 			)}
 		</div>

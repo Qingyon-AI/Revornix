@@ -55,13 +55,13 @@ const DocumentOperate = ({ id }: { id: number }) => {
 
 	const { data, isPending, isError, error, isRefetching } = useQuery({
 		queryKey: ['getDocumentDetail', id],
-		queryFn: () => getDocumentDetail({ document_id: Number(id) }),
+		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
 
 	const mutateRead = useMutation({
 		mutationFn: () =>
 			readDocument({
-				document_id: Number(id),
+				document_id: id,
 				status: !data?.is_read!,
 			}),
 		onMutate: async () => {
@@ -102,7 +102,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 
 	const mutateStar = useMutation({
 		mutationFn: () =>
-			starDocument({ document_id: Number(id), status: !data?.is_star! }),
+			starDocument({ document_id: id, status: !data?.is_star! }),
 		onMutate: async () => {
 			await queryClient.cancelQueries({
 				queryKey: ['getDocumentDetail', id],
@@ -136,7 +136,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 
 	const mutateDelete = useMutation({
 		mutationKey: ['deleteDocument', id],
-		mutationFn: () => deleteDocument({ document_ids: [Number(id)] }),
+		mutationFn: () => deleteDocument({ document_ids: [id] }),
 		onSuccess: () => {
 			toast.success(t('document_delete_success'));
 			queryClient.invalidateQueries({
@@ -166,7 +166,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 		}
 		setAiSummaizing(true);
 		const [res, err] = await utils.to(
-			summaryDocumentContentByAi({ document_id: Number(id) })
+			summaryDocumentContentByAi({ document_id: id })
 		);
 		if (err) {
 			toast.error(err.message);

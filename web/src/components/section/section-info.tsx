@@ -15,7 +15,7 @@ import SectionDelete from './section-delete';
 import { Badge } from '../ui/badge';
 import { useLocale, useTranslations } from 'next-intl';
 
-const SectionInfo = ({ id }: { id: string }) => {
+const SectionInfo = ({ id }: { id: number }) => {
 	const locale = useLocale();
 	const t = useTranslations();
 	const router = useRouter();
@@ -24,7 +24,7 @@ const SectionInfo = ({ id }: { id: string }) => {
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
-			return getSectionDetail({ section_id: Number(id) });
+			return getSectionDetail({ section_id: id });
 		},
 	});
 
@@ -38,7 +38,7 @@ const SectionInfo = ({ id }: { id: string }) => {
 					</>
 				)}
 				{section && userInfo?.id !== section?.creator.id && (
-					<SectionSubscribe section_id={String(id)} />
+					<SectionSubscribe section_id={id} />
 				)}
 			</div>
 			<div className='h-full overflow-auto pb-5'>

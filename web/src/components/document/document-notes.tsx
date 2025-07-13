@@ -1,7 +1,4 @@
-import {
-	getDocumentDetail,
-	searchDocumentNotes,
-} from '@/service/document';
+import { getDocumentDetail, searchDocumentNotes } from '@/service/document';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -20,7 +17,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 
 	const { data: document } = useQuery({
 		queryKey: ['getDocumentDetail', id],
-		queryFn: () => getDocumentDetail({ document_id: Number(id) }),
+		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
 
 	const [keyword, setKeyword] = useState('');

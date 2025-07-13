@@ -68,7 +68,9 @@ const DefaultDocumentParseEngineChange = () => {
 					onValueChange={(e) => {
 						handleUpdateDefaultWebsiteDocumentParseEngine(Number(e));
 					}}>
-					<SelectTrigger id='default_website_document_parse_engine_choose' className='dark:bg-transparent dark:hover:bg-transparent border-none focus:border-none focus-visible:border-none ring-0 focus:ring-0 focus-visible:ring-0 shadow-none text-xs py-0 !h-fit'>
+					<SelectTrigger
+						id='default_website_document_parse_engine_choose'
+						className='dark:bg-transparent dark:hover:bg-transparent border-none focus:border-none focus-visible:border-none ring-0 focus:ring-0 focus-visible:ring-0 shadow-none text-xs py-0 !h-fit'>
 						<SelectValue
 							placeholder={t('setting_default_document_parse_engine_choose')}
 						/>
@@ -102,7 +104,9 @@ const DefaultDocumentParseEngineChange = () => {
 					onValueChange={(e) => {
 						handleUpdateDefaultFileDocumentParseEngine(Number(e));
 					}}>
-					<SelectTrigger id='default_file_document_parse_engine_choose' className='dark:bg-transparent dark:hover:bg-transparent border-none focus:border-none focus-visible:border-none ring-0 focus:ring-0 focus-visible:ring-0 shadow-none text-xs py-0 !h-fit'>
+					<SelectTrigger
+						id='default_file_document_parse_engine_choose'
+						className='dark:bg-transparent dark:hover:bg-transparent border-none focus:border-none focus-visible:border-none ring-0 focus:ring-0 focus-visible:ring-0 shadow-none text-xs py-0 !h-fit'>
 						<SelectValue
 							placeholder={t('setting_default_document_parse_engine_choose')}
 						/>

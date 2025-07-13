@@ -392,7 +392,7 @@ const UpdateNotificationTask = ({
 											<Select
 												value={field.value ? String(field.value) : undefined}
 												onValueChange={(e) => {
-													field.onChange(Number(e));
+													field.onChange(e);
 												}}>
 												<SelectTrigger className='w-full'>
 													<SelectValue
