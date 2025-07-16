@@ -2,7 +2,6 @@ import crud
 import schemas
 from protocol.notification_template import NotificationTemplate
 from common.sql import SessionLocal
-from common.common import create_upload_token
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from datetime import datetime, timezone
