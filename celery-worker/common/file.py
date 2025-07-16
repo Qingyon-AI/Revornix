@@ -1,13 +1,6 @@
 import os
-import uuid
-import time
 import httpx
-import zipfile
-import shutil
 import aiofiles
-from pydantic import BaseModel
-from config.base import BASE_DIR
-from common.logger import info_logger
 
 class RemoteFileService():
     
@@ -88,40 +81,3 @@ class RemoteFileService():
         if res.status_code != 200:
             raise Exception("Error occurred while putting file content")
         return res
-
-class DownloadRes(BaseModel):
-    file_path: str
-    file_name: str
-
-async def download_file_to_temp(url: str):
-    temp_dir = BASE_DIR / "temp"
-    file_name = uuid.uuid4().hex
-    file_path = temp_dir / f"{file_name}"
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url)
-        response.raise_for_status()  # Throw exception if the status code is not 200
-        async with aiofiles.open(str(file_path), "wb") as file:
-            await file.write(response.content)
-    return DownloadRes(file_path=str(file_path), file_name=file_name)
-        
-def extract_files_to_temp_from_zip(file_path: str):
-    temp_dir = BASE_DIR / "temp"
-    extracted_dir = temp_dir / uuid.uuid4().hex
-    # 解压文件到指定文件夹
-    with zipfile.ZipFile(file_path, 'r') as zip_ref:
-        zip_ref.extractall(str(extracted_dir))
-    return extracted_dir
-    
-# TODO: 控制权限以及判断危险性
-def delete_temp_file_with_delay(path: str, delay: int):
-    if 'temp' not in path:
-        raise ValueError("Path must be in temp directory")
-    time.sleep(delay)
-    if os.path.isdir(path):
-        shutil.rmtree(path)  # 递归删除整个文件夹及其内容
-        info_logger.warning(f"Deleted folder: {path}")
-    elif os.path.isfile(path):
-        os.remove(path)  # 删除单个文件
-        info_logger.warning(f"Deleted temp file: {path}")
-    else:
-        info_logger.error(f"Path does not exist: {path}")

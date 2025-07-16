@@ -79,6 +79,7 @@ class PrivateUserInfo(BaseModel):
     nickname: str | None = None
     slogan: str | None = None
     email_info: EmailInfo | None = None
+    default_file_system: int | None = None
     default_read_mark_reason: int | None = None
     default_document_reader_model_id: int | None = None
     default_revornix_model_id: int | None = None

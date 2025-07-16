@@ -13,7 +13,7 @@ from common.common import create_upload_token
 from common.logger import log_exception, exception_logger
 from common.ai import summary_section_with_origin, summary_document, summary_section
 from common.vector import milvus_client, process_document
-from common.file import delete_temp_file_with_delay, RemoteFileService
+from common.file import RemoteFileService
 from common.sql import SessionLocal
 from engine import markitdown as markitdown_engine
 from engine import jina as jina_engine
@@ -403,11 +403,6 @@ async def handle_update_section_use_document(section_id: int,
 def init_website_document_info(document_id: int, user_id: int):
     asyncio.run(handle_init_website_document_info(document_id=document_id, user_id=user_id))
 
-@celery_app.task
-def create_delete_temp_file_task(path: str):
-    delay = 60
-    delete_temp_file_with_delay(path, delay)
-    
 @celery_app.task
 def init_file_document_info(document_id: int, 
                             user_id: int):

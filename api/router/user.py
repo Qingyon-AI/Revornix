@@ -262,7 +262,8 @@ async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user)
                                        default_revornix_model_id=user.default_revornix_model_id,
                                        default_website_document_parse_engine_id=user.default_website_document_parse_engine_id,
                                        default_file_document_parse_engine_id=user.default_file_document_parse_engine_id,
-                                       default_read_mark_reason=user.default_read_mark_reason)
+                                       default_read_mark_reason=user.default_read_mark_reason,
+                                       default_file_system=user.default_file_system)
     email_user = crud.user.get_email_user_by_user_id(db=db, 
                                                      user_id=user.id)
     if email_user is not None:

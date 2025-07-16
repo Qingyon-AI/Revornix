@@ -43,6 +43,7 @@ class User(Base):
     default_file_document_parse_engine_id = Column(Integer, ForeignKey("engine.id"))
     default_website_document_parse_engine_id = Column(Integer, ForeignKey("engine.id"))
     default_read_mark_reason = Column(Integer, comment='0: Request once, 1: Scroll to the bottom of the document, 2: Manually Mark')
+    default_file_system = Column(Integer, ForeignKey("file_system.id"))
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True))

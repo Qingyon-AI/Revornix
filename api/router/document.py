@@ -9,11 +9,12 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, Request
 from fastapi.encoders import jsonable_encoder
 from common.ai import summary_document
-from common.dependencies import get_db, get_authorization_header
+from common.dependencies import get_db
 from common.vector import milvus_client, process_query, hybrid_search
 from common.dependencies import get_db, get_current_user
 from common.logger import log_exception, exception_logger
-from common.file import RemoteFileService
+from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
+from file.built_in_remote_file_service import BuiltInRemoteFileService
 from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, init_file_document_info
 from engine.markitdown import MarkitdownEngine
 from engine.jina import JinaEngine
@@ -76,21 +77,27 @@ async def update_note(search_note_request: schemas.document.SearchDocumentNoteRe
 @document_router.post('/ai/summary', response_model=schemas.common.NormalResponse)
 async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSummaryRequest,
                             user: models.user.User = Depends(get_current_user),
-                            db: Session = Depends(get_db),
-                            authorization: str = Depends(get_authorization_header)):
+                            db: Session = Depends(get_db)):
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=ai_summary_request.document_id)
-    remote_file_service =  RemoteFileService(authorization=authorization)
+    default_file_system = user.default_file_system
+    if default_file_system is None:
+        raise Exception('Please set the default file system for the user first.')
+    else:
+        if default_file_system == 1:
+            remote_file_service = BuiltInRemoteFileService(user_id=user.id)
+        elif default_file_system == 2:
+            remote_file_service = AliyunOSSRemoteFileService(user_id=user.id)
     if db_document is None:
         raise Exception('The document you want to transform is not found')
     if db_document.category == 1:
         db_website_document = crud.document.get_website_document_by_document_id(db=db,
                                                                                 document_id=ai_summary_request.document_id)
-        markdown_content = await remote_file_service.get_object_content(file_path=db_website_document.md_file_name)
+        markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=db_website_document.md_file_name)
     if db_document.category == 0:
         db_file_document = crud.document.get_file_document_by_document_id(db=db,
                                                                           document_id=ai_summary_request.document_id)
-        markdown_content = await remote_file_service.get_object_content(file_path=db_file_document.md_file_name)
+        markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=db_file_document.md_file_name)
     if db_document.category == 2:
         db_quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
                                                                                       document_id=ai_summary_request.document_id)
@@ -103,18 +110,21 @@ async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSumma
                                                  description=ai_summary_result.get('description'),
                                                  ai_summary=ai_summary_result.get('summary'))
     db.commit()
-    await remote_file_service.close_client()
     return schemas.common.SuccessResponse()
 
 @document_router.post('/markdown/transform', response_model=schemas.common.NormalResponse)
 async def transform_markdown(request: Request,
                              transform_markdown_request: schemas.document.DocumentMarkdownTransformRequest,
                              user: models.user.User = Depends(get_current_user),
-                             db: Session = Depends(get_db),
-                             authorization: str = Depends(get_authorization_header)):
-    remote_file_service =  RemoteFileService(authorization=authorization)
-    db_user = crud.user.get_user_by_id(db=db, 
-                                       user_id=user.id)
+                             db: Session = Depends(get_db)):
+    default_file_system = user.default_file_system
+    if default_file_system is None:
+        raise Exception('Please set the default file system for the user first.')
+    else:
+        if default_file_system == 1:
+            remote_file_service = BuiltInRemoteFileService(user_id=user.id)
+        elif default_file_system == 2:
+            remote_file_service = AliyunOSSRemoteFileService(user_id=user.id)
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=transform_markdown_request.document_id)
     db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
@@ -132,7 +142,7 @@ async def transform_markdown(request: Request,
             db_transform_task.status = 1
             db.commit()
             db.refresh(db_document)
-            default_website_document_parse_engine_id = db_user.default_website_document_parse_engine_id
+            default_website_document_parse_engine_id = user.default_website_document_parse_engine_id
             if default_website_document_parse_engine_id is None:
                 raise Exception("User does not have default website document parse engine")
             website_extractor = crud.engine.get_engine_by_id(db=db, 
@@ -148,8 +158,8 @@ async def transform_markdown(request: Request,
                 web_info = await engine.analyse_website(url=db_website_document.url)
             markdown_content = web_info.content
             md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-            await remote_file_service.put_object_with_raw_data(remote_file_path=md_file_name,
-                                                               raw_data=markdown_content)
+            await remote_file_service.upload_raw_content_to_path(file_path=md_file_name,
+                                                                 content=markdown_content)
             crud.document.update_website_document_by_website_document_id(db=db,
                                                                          website_document_id=db_website_document.id,
                                                                          md_file_name=md_file_name)
@@ -185,7 +195,6 @@ async def transform_markdown(request: Request,
                 task_chain = chain(first_task)
                 task_chain.apply_async()
     db.commit()
-    await remote_file_service.close_client()
     return schemas.common.SuccessResponse()
         
 @document_router.post('/month/summary', response_model=schemas.document.DocumentMonthSummaryResponse)

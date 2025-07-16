@@ -14,10 +14,6 @@ def init_website_document_info(document_id: int,
 def init_file_document_info(document_id: int, 
                             user_id: int):
     ...
-
-@celery_app.task
-def create_delete_temp_file_task(path: str):
-    ...
     
 @celery_app.task
 def update_website_document_markdown_with_jina(document_id: int, 
