@@ -12,12 +12,11 @@ from config.base import BASE_DIR
 from common.logger import log_exception, exception_logger
 from common.ai import summary_section_with_origin, summary_document, summary_section
 from common.vector import milvus_client, process_document
+from common.common import get_user_remote_file_system
 from common.sql import SessionLocal
 from engine import markitdown as markitdown_engine
 from engine import jina as jina_engine
 from engine import mineru as mineru_engine
-from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
-from file.built_in_remote_file_service import BuiltInRemoteFileService
 
 import tracemalloc
 import warnings
@@ -36,14 +35,7 @@ async def handle_init_file_document_info(document_id: int,
                                        user_id=user_id)
     if db_user is None:
         raise Exception("User not found")
-    default_file_system = db_user.default_file_system
-    if default_file_system is None:
-        raise Exception('Please set the default file system for the user first.')
-    else:
-        if default_file_system == 1:
-            remote_file_service = BuiltInRemoteFileService(user_id=user_id)
-        elif default_file_system == 2:
-            remote_file_service = AliyunOSSRemoteFileService(user_id=user_id)
+    remote_file_service = get_user_remote_file_system(user_id=user_id)
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
@@ -116,14 +108,7 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
                                        user_id=user_id)
     if db_user is None:
         raise Exception("User not found")
-    default_file_system = db_user.default_file_system
-    if default_file_system is None:
-        raise Exception('Please set the default file system for the user first.')
-    else:
-        if default_file_system == 1:
-            remote_file_service = BuiltInRemoteFileService(user_id=user_id)
-        elif default_file_system == 2:
-            remote_file_service = AliyunOSSRemoteFileService(user_id=user_id)
+    remote_file_service = get_user_remote_file_system(user_id=user_id)
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
@@ -208,14 +193,7 @@ async def handle_update_sections(sections: list[int],
     db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
     if db_user is None:
         raise Exception("User does not exist")
-    default_file_system = db_user.default_file_system
-    if default_file_system is None:
-        raise Exception('Please set the default file system for the user first.')
-    else:
-        if default_file_system == 1:
-            remote_file_service = BuiltInRemoteFileService(user_id=user_id)
-        elif default_file_system == 2:
-            remote_file_service = AliyunOSSRemoteFileService(user_id=user_id)
+    remote_file_service = get_user_remote_file_system(user_id=user_id)
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=document_id)
     if db_document is None:
@@ -289,14 +267,7 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
     db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
     if db_user is None:
         raise Exception("User does not exist")
-    default_file_system = db_user.default_file_system
-    if default_file_system is None:
-        raise Exception('Please set the default file system for the user first.')
-    else:
-        if default_file_system == 1:
-            remote_file_service = BuiltInRemoteFileService(user_id=user_id)
-        elif default_file_system == 2:
-            remote_file_service = AliyunOSSRemoteFileService(user_id=user_id)
+    remote_file_service = get_user_remote_file_system(user_id=user_id)
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
@@ -354,15 +325,7 @@ async def handle_update_section_use_document(section_id: int,
     db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
     if db_user is None:
         raise Exception("User does not exist")
-    default_file_system = db_user.default_file_system
-    if default_file_system is None:
-        raise Exception('Please set the default file system for the user first.')
-    else:
-        if default_file_system == 1:
-            remote_file_service = BuiltInRemoteFileService(user_id=user_id)
-        elif default_file_system == 2:
-            remote_file_service = AliyunOSSRemoteFileService(user_id=user_id)
-    
+    remote_file_service = get_user_remote_file_system(user_id=user_id)
     try:
         markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
                                                                      user_id=user_id)

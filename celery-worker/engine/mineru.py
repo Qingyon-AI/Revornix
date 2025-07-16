@@ -9,9 +9,7 @@ from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
 from playwright.async_api import async_playwright
 from common.sql import SessionLocal
 from common.mineru import parse_doc
-from common.common import is_dir_empty, extract_title_and_summary
-from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
-from file.built_in_remote_file_service import BuiltInRemoteFileService
+from common.common import is_dir_empty, extract_title_and_summary, get_user_remote_file_system
 
 class MineruEngine(EngineProtocol):
 
@@ -45,14 +43,7 @@ class MineruEngine(EngineProtocol):
         if not is_dir_empty(str(BASE_DIR / 'temp' / temp_dir_name / 'scene-snap' / 'auto' / 'images')):
             db = SessionLocal()
             db_user = get_user_by_id(db=db, user_id=self.user_id)
-            default_file_system = db_user.default_file_system
-            if default_file_system is None:
-                raise Exception('Please set the default file system for the user first.')
-            else:
-                if default_file_system == 1:
-                    remote_file_service = BuiltInRemoteFileService(user_id=self.user_id)
-                elif default_file_system == 2:
-                    remote_file_service = AliyunOSSRemoteFileService(user_id=self.user_id)
+            remote_file_service = get_user_remote_file_system(user_id=db_user.id)
             for item in os.listdir(str(BASE_DIR / 'temp' / temp_dir_name / 'scene-snap' / 'auto' / 'images')):
                 with open(str(BASE_DIR / 'temp' / temp_dir_name / 'scene-snap' / 'auto' / 'images' / item), "rb") as f:
                     await remote_file_service.upload_file_to_path(file_path=f'images/{item}', file=f)
@@ -102,14 +93,7 @@ class MineruEngine(EngineProtocol):
         if not is_dir_empty(str(BASE_DIR / 'temp' / temp_dir_name / 'auto' / 'images')):
             db = SessionLocal()
             db_user = get_user_by_id(db=db, user_id=self.user_id)
-            default_file_system = db_user.default_file_system
-            if default_file_system is None:
-                raise Exception('Please set the default file system for the user first.')
-            else:
-                if default_file_system == 1:
-                    remote_file_service = BuiltInRemoteFileService(user_id=self.user_id)
-                elif default_file_system == 2:
-                    remote_file_service = AliyunOSSRemoteFileService(user_id=self.user_id)
+            remote_file_service = get_user_remote_file_system(user_id=db_user.id)
             for item in os.listdir(str(BASE_DIR / 'temp' / temp_dir_name / 'auto' / 'images')):
                 with open(str(BASE_DIR / 'temp' / temp_dir_name / 'auto' / 'images' / item), "rb") as f:
                     await remote_file_service.upload_file_to_path(file_path=f'images/{item}', file=f)

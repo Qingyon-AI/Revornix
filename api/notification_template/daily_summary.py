@@ -2,8 +2,7 @@ import crud
 import schemas
 from protocol.notification_template import NotificationTemplate
 from common.sql import SessionLocal
-from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
-from file.built_in_remote_file_service import BuiltInRemoteFileService
+from common.common import get_user_remote_file_system
 from datetime import datetime, timezone
 
 class DailySummaryNotificationTemplate(NotificationTemplate):
@@ -32,14 +31,7 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
         md_file_name = db_section.md_file_name
         db_user = crud.user.get_user_by_id(db=db, 
                                            user_id=self.user_id)
-        default_file_system = db_user.default_file_system
-        if default_file_system is None:
-            raise Exception('Please set the default file system for the user first.')
-        else:
-            if default_file_system == 1:
-                remote_file_service = BuiltInRemoteFileService(user_id=self.user_id)
-            elif default_file_system == 2:
-                remote_file_service = AliyunOSSRemoteFileService(user_id=self.user_id)
+        remote_file_service = get_user_remote_file_system(user_id=db_user.user_id)
         markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=md_file_name)
         return schemas.notification.Message(
             title=f"Daily Summary Of {date_str}",
