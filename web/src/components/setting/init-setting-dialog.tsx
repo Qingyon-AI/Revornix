@@ -20,6 +20,7 @@ import InitEngine from './init-engine';
 import InitDefaultChoose from './init-default-choose';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import InitFileSystem from './init-file-system';
 
 const InitSettingDialog = () => {
 	const t = useTranslations();
@@ -31,7 +32,8 @@ const InitSettingDialog = () => {
 			!userInfo?.default_document_reader_model_id ||
 			!userInfo.default_file_document_parse_engine_id ||
 			!userInfo.default_website_document_parse_engine_id ||
-			!userInfo.default_revornix_model_id
+			!userInfo.default_revornix_model_id ||
+			!userInfo.default_file_system
 		) {
 			setNeedInitial(true);
 		} else {
@@ -43,6 +45,7 @@ const InitSettingDialog = () => {
 		{ title: 'Step 1', description: t('init_setting_quick_set_step_1') },
 		{ title: 'Step 2', description: t('init_setting_quick_set_step_2') },
 		{ title: 'Step 3', description: t('init_setting_quick_set_step_3') },
+		{ title: 'Step 4', description: t('init_setting_quick_set_step_4') },
 	];
 
 	const [currentStep, setCurrentStep] = useState(0);
@@ -126,6 +129,21 @@ const InitSettingDialog = () => {
 											</span>
 										</Badge>
 									</Link>
+									<Link href={'/setting#default_file_system'}>
+										<Badge variant='secondary'>
+											{userInfo?.default_file_system ? (
+												<BadgeCheckIcon />
+											) : (
+												<Info className='text-red-500' />
+											)}
+											<span
+												className={
+													userInfo?.default_file_system ? '' : 'text-red-500'
+												}>
+												{t('init_setting_default_file_system')}
+											</span>
+										</Badge>
+									</Link>
 								</div>
 							</AlertDescription>
 						</div>
@@ -169,7 +187,8 @@ const InitSettingDialog = () => {
 								<InitEngine />
 							</div>
 						)}
-						{currentStep === 2 && <InitDefaultChoose />}
+						{currentStep === 2 && <InitFileSystem />}
+						{currentStep === 3 && <InitDefaultChoose />}
 					</div>
 				</DrawerContent>
 			</Drawer>

@@ -51,7 +51,9 @@ const SettingPage = () => {
 			</h2>
 			<Card>
 				<CardContent className='space-y-5'>
-					<div className='flex justify-between items-center'>
+					<div
+						className='flex justify-between items-center'
+						id='default_file_system'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_file_system_manage')}
 						</Label>
