@@ -3,6 +3,7 @@ apis/ApiKeyApi.ts
 apis/AttachmentApi.ts
 apis/DocumentApi.ts
 apis/EngineApi.ts
+apis/FileSystemApi.ts
 apis/McpApi.ts
 apis/NotificationApi.ts
 apis/SectionApi.ts
@@ -30,6 +31,7 @@ models/CreateLabelResponse.ts
 models/DaySectionRequest.ts
 models/DaySectionResponse.ts
 models/DefaultEngineUpdateRequest.ts
+models/DefaultFileSystemUpdateRequest.ts
 models/DefaultModelUpdateRequest.ts
 models/DefaultReadMarkReasonUpdateRequest.ts
 models/DeleteModelProviderRequest.ts
@@ -61,6 +63,10 @@ models/EngineInstallRequest.ts
 models/EngineSearchRequest.ts
 models/EngineUpdateRequest.ts
 models/FileDocumentInfo.ts
+models/FileSystemInfo.ts
+models/FileSystemInstallRequest.ts
+models/FileSystemSearchRequest.ts
+models/FileSystemUpdateRequest.ts
 models/FollowUserRequest.ts
 models/HTTPValidationError.ts
 models/InifiniteScrollPagnitionDocumentInfo.ts
@@ -81,6 +87,7 @@ models/MCPServerSearchResponse.ts
 models/MCPServerUpdateRequest.ts
 models/Message.ts
 models/MineEngineSearchResponse.ts
+models/MineFileSystemSearchResponse.ts
 models/Model.ts
 models/ModelCreateRequest.ts
 models/ModelCreateResponse.ts
@@ -115,6 +122,7 @@ models/PaginationApiKeyInfo.ts
 models/PasswordUpdateRequest.ts
 models/PrivateUserInfo.ts
 models/ProvideEngineSearchResponse.ts
+models/ProvideFileSystemSearchResponse.ts
 models/QuickNoteDocumentInfo.ts
 models/ReadNotificationRecordRequest.ts
 models/ReadRequest.ts
@@ -153,6 +161,7 @@ models/UpdateNotificationSourceRequest.ts
 models/UpdateNotificationTargetRequest.ts
 models/UpdateNotificationTaskRequest.ts
 models/UserEngineInfo.ts
+models/UserFileSystemInfo.ts
 models/UserInfoRequest.ts
 models/UserInfoUpdateRequest.ts
 models/UserLoginRequest.ts

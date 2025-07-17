@@ -6,7 +6,9 @@ class FileSystem(Base):
     
     id = Column(Integer, primary_key=True)
     name = Column(String(200), index=True)
+    name_zh = Column(String(200), index=True)
     description = Column(String(500))
+    description_zh = Column(String(500))
     demo_config = Column(String(2000))
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)

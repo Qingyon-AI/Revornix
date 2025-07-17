@@ -21,4 +21,5 @@ export default {
     updateDefaultModel: API_PREFIX + '/user/default-model/update',
     updateDefaultEngine: API_PREFIX + '/user/default-engine/update',
     updateDefaultReadMarkReason: API_PREFIX + '/user/read-mark-reason/update',
+    updateDefaultFileSystem: API_PREFIX + '/user/default-file-system/update'
 } 

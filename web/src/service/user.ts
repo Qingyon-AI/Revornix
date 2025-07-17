@@ -1,5 +1,5 @@
 import userApi from '@/api/user'
-import { BindEmailVerifyRequest, DefaultEngineUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailUserCreateVerifyRequest, FollowUserRequest, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo } from '@/generated';
+import { BindEmailVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailUserCreateVerifyRequest, FollowUserRequest, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo } from '@/generated';
 import { request } from '@/lib/request';
 
 export const getUserFans = async (data: SearchUserFansRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
@@ -72,6 +72,10 @@ export const updateUserDefaultReadMarkReason = async (data: DefaultReadMarkReaso
 
 export const updateUserDefaultModel = async (data: DefaultModelUpdateRequest): Promise<NormalResponse> => {
     return await request(userApi.updateDefaultModel, { data })
+}
+
+export const updateUserDefaultFileSystem = async (data: DefaultFileSystemUpdateRequest): Promise<NormalResponse> => {
+    return await request(userApi.updateDefaultFileSystem, { data })
 }
 
 export const updateUserDefaultEngine = async (data: DefaultEngineUpdateRequest): Promise<NormalResponse> => {

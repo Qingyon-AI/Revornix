@@ -11,15 +11,16 @@ file_system_router = APIRouter()
 async def search_mine_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
                                   db: Session = Depends(get_db), 
                                   current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    file_systems = crud.file_system.get_user_file_system_by_user_id(db=db,
-                                                                    user_id=current_user.id,
+    file_systems = crud.file_system.get_file_system_by_user_id(db=db,
+                                                               user_id=current_user.id,
                                                                     keyword=file_system_search_request.keyword)
     for file_system in file_systems:
         db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
                                                                                                   user_id=current_user.id,
                                                                                                   file_system_id=file_system.id)
-        file_system.config_json = db_user_file_system.config_json
-    return schemas.file_system.MineEngineSearchResponse(data=file_systems)
+        if db_user_file_system is not None:
+            file_system.config_json = db_user_file_system.config_json
+    return schemas.file_system.MineFileSystemSearchResponse(data=file_systems)
 
 @file_system_router.post("/provide", response_model=schemas.file_system.ProvideFileSystemSearchResponse)
 async def provide_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 

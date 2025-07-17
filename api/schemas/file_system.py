@@ -8,7 +8,9 @@ class FileSystemUpdateRequest(BaseModel):
 class FileSystemInfo(BaseModel):
     id: int
     name: str
+    name_zh: str
     description: str | None = None
+    description_zh: str | None = None
     demo_config: str | None = None
     class Config:
         from_attributes = True
@@ -16,7 +18,9 @@ class FileSystemInfo(BaseModel):
 class UserFileSystemInfo(BaseModel):
     id: int
     name: str
+    name_zh: str
     description: str | None = None
+    description_zh: str | None = None
     demo_config: str | None = None
     config_json: str | None = None
     create_time: datetime
@@ -38,7 +42,7 @@ class FileSystemSearchRequest(BaseModel):
     keyword: str
     
 class ProvideFileSystemSearchResponse(BaseModel):
-    data: list[UserFileSystemInfo]
+    data: list[FileSystemInfo]
     
 class MineFileSystemSearchResponse(BaseModel):
     data: list[UserFileSystemInfo]

@@ -5,6 +5,7 @@ export * from './ApiKeyApi';
 export * from './AttachmentApi';
 export * from './DocumentApi';
 export * from './EngineApi';
+export * from './FileSystemApi';
 export * from './McpApi';
 export * from './NotificationApi';
 export * from './SectionApi';

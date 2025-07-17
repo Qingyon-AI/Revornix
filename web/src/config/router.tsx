@@ -18,6 +18,11 @@ const routers: RouteItem[] = [
 		path: '/setting',
 		children: [
 			{
+				title: '文件系统',
+				title_en: 'File System',
+				path: '/file-system',
+			},
+			{
 				title: '通知',
 				title_en: 'Notification',
 				path: '/notification',

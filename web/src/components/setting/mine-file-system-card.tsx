@@ -7,10 +7,8 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { Button } from '../ui/button';
-import { format } from 'date-fns';
 import { useMutation } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
-import { installEngine, updateEngine } from '@/service/engine';
 import { toast } from 'sonner';
 import { Eye, Loader2 } from 'lucide-react';
 import {
@@ -24,7 +22,7 @@ import {
 	DialogTrigger,
 } from '../ui/dialog';
 import { Textarea } from '../ui/textarea';
-import { UserEngineInfo } from '@/generated';
+import { UserFileSystemInfo } from '@/generated';
 import { Separator } from '../ui/separator';
 import { useLocale, useTranslations } from 'next-intl';
 import { z } from 'zod';
@@ -42,8 +40,13 @@ import {
 	AlertDialogTrigger,
 } from '../ui/alert-dialog';
 import { useState } from 'react';
+import { installFileSystem, updateFileSystem } from '@/service/file_system';
 
-const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
+const MineFileSystemCard = ({
+	file_system,
+}: {
+	file_system: UserFileSystemInfo;
+}) => {
 	const t = useTranslations();
 	const [configDialogOpen, setConfigDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -54,27 +57,27 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			config_json: engine.config_json || '',
+			config_json: file_system.config_json || '',
 		},
 	});
 	const queryClient = getQueryClient();
-	const mutateInstallEngine = useMutation({
-		mutationFn: installEngine,
+	const mutateInstallFileSystem = useMutation({
+		mutationFn: installFileSystem,
 		onSuccess: () => {
-			toast.success(t('setting_engine_page_mine_engine_delete_success'));
+			toast.success(t('setting_file_system_install_success'));
 			queryClient.invalidateQueries({
-				queryKey: ['mine-engine'],
+				queryKey: ['mine-file-system'],
 			});
 		},
 		onError: (error) => {
 			toast.error(error.message);
 		},
 	});
-	const mutateUpdateEngine = useMutation({
-		mutationFn: updateEngine,
+	const mutateUpdateFileSystem = useMutation({
+		mutationFn: updateFileSystem,
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['mine-engine'],
+				queryKey: ['mine-file-system'],
 			});
 		},
 		onError: (error) => {
@@ -95,8 +98,8 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 	};
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		await mutateUpdateEngine.mutateAsync({
-			engine_id: engine.id,
+		await mutateUpdateFileSystem.mutateAsync({
+			file_system_id: file_system.id,
 			config_json: values.config_json,
 		});
 		setConfigDialogOpen(false);
@@ -112,27 +115,29 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 			<Card className='bg-muted/50'>
 				<CardHeader>
 					<CardTitle>
-						{locale === 'en' ? engine.name : engine.name_zh}
+						{locale === 'en' ? file_system.name : file_system.name_zh}
 					</CardTitle>
 					<CardDescription>
-						{locale === 'en' ? engine.description : engine.description_zh}
+						{locale === 'en'
+							? file_system.description
+							: file_system.description_zh}
 					</CardDescription>
 				</CardHeader>
 				<CardContent className='flex-1'>
-					{engine.config_json && (
+					{file_system.config_json && (
 						<div className='bg-muted font-mono p-5 rounded text-xs break-all relative overflow-auto max-h-40'>
 							<div className='group absolute top-0 left-0 w-full h-full backdrop-blur rounded flex flex-col justify-center items-center hover:backdrop-blur-none transition-all'>
 								<Eye className='text-muted-foreground opacity-50 group-hover:hidden' />
 								<p className='text-muted-foreground opacity-50 group-hover:hidden'>
-									{t('setting_engine_page_mine_engine_config_see')}
+									{t('setting_file_system_page_mine_file_system_config_see')}
 								</p>
 							</div>
-							{engine.config_json}
+							{file_system.config_json}
 						</div>
 					)}
-					{!engine.config_json && (
+					{!file_system.config_json && (
 						<p className='bg-muted font-mono p-5 rounded text-xs flex justify-center items-center h-full'>
-							{t('setting_engine_page_mine_engine_config_empty')}
+							{t('setting_file_system_page_mine_file_system_config_empty')}
 						</p>
 					)}
 				</CardContent>
@@ -151,24 +156,24 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 									<AlertDialogHeader>
 										<AlertDialogTitle>{t('tip')}</AlertDialogTitle>
 										<AlertDialogDescription>
-											{t('setting_engine_page_mine_engine_delete_alert')}
+											{t('setting_file_system_page_mine_file_system_delete_alert')}
 										</AlertDialogDescription>
 									</AlertDialogHeader>
 									<AlertDialogFooter>
 										<Button
 											variant={'destructive'}
 											onClick={async () => {
-												const res = await mutateInstallEngine.mutateAsync({
-													engine_id: engine.id,
+												const res = await mutateInstallFileSystem.mutateAsync({
+													file_system_id: file_system.id,
 													status: false,
 												});
 												if (res.success) {
 													setDeleteDialogOpen(false);
 												}
 											}}
-											disabled={mutateInstallEngine.isPending}>
+											disabled={mutateInstallFileSystem.isPending}>
 											{t('confirm')}
-											{mutateInstallEngine.isPending && (
+											{mutateInstallFileSystem.isPending && (
 												<Loader2 className='animate-spin' />
 											)}
 										</Button>
@@ -190,9 +195,15 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 									<DialogHeader>
 										<DialogTitle>{t('config')}</DialogTitle>
 										<DialogDescription>
-											{t('setting_engine_page_mine_engine_config_description', {
-												engine: locale === 'en' ? engine.name : engine.name_zh,
-											})}
+											{t(
+												'setting_file_system_page_mine_file_system_config_description',
+												{
+													file_system:
+														locale === 'en'
+															? file_system.name
+															: file_system.name_zh,
+												}
+											)}
 										</DialogDescription>
 									</DialogHeader>
 									<Form {...form}>
@@ -205,9 +216,9 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 														<FormItem>
 															<Textarea
 																placeholder={t(
-																	'setting_engine_page_mine_engine_config_placeholder'
+																	'setting_file_system_page_mine_file_system_config_placeholder'
 																)}
-																className='font-mono'
+																className='font-mono break-all'
 																{...field}
 															/>
 															<FormMessage />
@@ -217,14 +228,16 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 											/>
 										</form>
 									</Form>
-									{engine.demo_config && (
+									{file_system.demo_config && (
 										<>
 											<Separator />
 											<h3 className='text-xs text-muted-foreground'>
-												{t('setting_engine_page_mine_engine_config_demo')}
+												{t(
+													'setting_file_system_page_mine_file_system_config_demo'
+												)}
 											</h3>
-											<p className='rounded bg-muted p-5 font-mono text-sm'>
-												{engine.demo_config}
+											<p className='rounded bg-muted p-5 font-mono text-sm break-all'>
+												{file_system.demo_config}
 											</p>
 										</>
 									)}
@@ -237,9 +250,9 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 										<Button
 											type='submit'
 											form='update_form'
-											disabled={mutateUpdateEngine.isPending}>
+											disabled={mutateUpdateFileSystem.isPending}>
 											{t('confirm')}
-											{mutateUpdateEngine.isPending && (
+											{mutateUpdateFileSystem.isPending && (
 												<Loader2 className='animate-spin' />
 											)}
 										</Button>
@@ -253,4 +266,4 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 		</>
 	);
 };
-export default MineEngineCard;
+export default MineFileSystemCard;

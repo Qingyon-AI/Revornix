@@ -40,12 +40,6 @@ import {
     ProvideEngineSearchResponseToJSON,
 } from '../models/index';
 
-export interface EnableEngineEngineUpdatePostRequest {
-    engineUpdateRequest: EngineUpdateRequest;
-    authorization?: string | null;
-    xForwardedFor?: string | null;
-}
-
 export interface InstallEngineEngineInstallPostRequest {
     engineInstallRequest: EngineInstallRequest;
     authorization?: string | null;
@@ -64,57 +58,16 @@ export interface SearchDocumentParseEngineEngineMinePostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface UpdateEngineEngineUpdatePostRequest {
+    engineUpdateRequest: EngineUpdateRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 /**
  * 
  */
 export class EngineApi extends runtime.BaseAPI {
-
-    /**
-     * Enable Engine
-     */
-    async enableEngineEngineUpdatePostRaw(requestParameters: EnableEngineEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        if (requestParameters['engineUpdateRequest'] == null) {
-            throw new runtime.RequiredError(
-                'engineUpdateRequest',
-                'Required parameter "engineUpdateRequest" was null or undefined when calling enableEngineEngineUpdatePost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
-
-        let urlPath = `/engine/update`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: EngineUpdateRequestToJSON(requestParameters['engineUpdateRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Enable Engine
-     */
-    async enableEngineEngineUpdatePost(requestParameters: EnableEngineEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
-        const response = await this.enableEngineEngineUpdatePostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
 
     /**
      * Install Engine
@@ -254,6 +207,53 @@ export class EngineApi extends runtime.BaseAPI {
      */
     async searchDocumentParseEngineEngineMinePost(requestParameters: SearchDocumentParseEngineEngineMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MineEngineSearchResponse> {
         const response = await this.searchDocumentParseEngineEngineMinePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update Engine
+     */
+    async updateEngineEngineUpdatePostRaw(requestParameters: UpdateEngineEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['engineUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'engineUpdateRequest',
+                'Required parameter "engineUpdateRequest" was null or undefined when calling updateEngineEngineUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/engine/update`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: EngineUpdateRequestToJSON(requestParameters['engineUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update Engine
+     */
+    async updateEngineEngineUpdatePost(requestParameters: UpdateEngineEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.updateEngineEngineUpdatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

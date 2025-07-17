@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   BindEmailVerifyRequest,
   DefaultEngineUpdateRequest,
+  DefaultFileSystemUpdateRequest,
   DefaultModelUpdateRequest,
   DefaultReadMarkReasonUpdateRequest,
   EmailUserCreateVerifyRequest,
@@ -41,6 +42,8 @@ import {
     BindEmailVerifyRequestToJSON,
     DefaultEngineUpdateRequestFromJSON,
     DefaultEngineUpdateRequestToJSON,
+    DefaultFileSystemUpdateRequestFromJSON,
+    DefaultFileSystemUpdateRequestToJSON,
     DefaultModelUpdateRequestFromJSON,
     DefaultModelUpdateRequestToJSON,
     DefaultReadMarkReasonUpdateRequestFromJSON,
@@ -128,6 +131,12 @@ export interface SearchUserFollowsUserFollowsPostRequest {
 
 export interface UpdateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRequest {
     defaultEngineUpdateRequest: DefaultEngineUpdateRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UpdateDefaultFileSystemUserDefaultFileSystemUpdatePostRequest {
+    defaultFileSystemUpdateRequest: DefaultFileSystemUpdateRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -592,6 +601,53 @@ export class UserApi extends runtime.BaseAPI {
      */
     async updateDefaultDocumentParseEngineUserDefaultEngineUpdatePost(requestParameters: UpdateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.updateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update Default File System
+     */
+    async updateDefaultFileSystemUserDefaultFileSystemUpdatePostRaw(requestParameters: UpdateDefaultFileSystemUserDefaultFileSystemUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['defaultFileSystemUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'defaultFileSystemUpdateRequest',
+                'Required parameter "defaultFileSystemUpdateRequest" was null or undefined when calling updateDefaultFileSystemUserDefaultFileSystemUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/default-file-system/update`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DefaultFileSystemUpdateRequestToJSON(requestParameters['defaultFileSystemUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update Default File System
+     */
+    async updateDefaultFileSystemUserDefaultFileSystemUpdatePost(requestParameters: UpdateDefaultFileSystemUserDefaultFileSystemUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.updateDefaultFileSystemUserDefaultFileSystemUpdatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -14,9 +14,9 @@ import RevornixAIModel from '@/components/setting/revornix-ai-model';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
 import DefaultDocumentReadMarkReasonChoose from '@/components/setting/default-document-read-mark-reason-choose';
+import FileSystemManage from '@/components/setting/file-system-manage';
 
 const SettingPage = () => {
 	const t = useTranslations();
@@ -42,6 +42,21 @@ const SettingPage = () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<LanguageChange />
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+			<h2 className='text-xs text-muted-foreground p-3'>
+				{t('setting_file_system_label')}
+			</h2>
+			<Card>
+				<CardContent className='space-y-5'>
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_file_system_manage')}
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<FileSystemManage />
 						</div>
 					</div>
 				</CardContent>

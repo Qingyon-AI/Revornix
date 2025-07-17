@@ -8,21 +8,25 @@ import {
 import { Button } from '../ui/button';
 import { useMutation } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
-import { installEngine } from '@/service/engine';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { EngineInfo } from '@/generated';
+import { FileSystemInfo } from '@/generated';
 import { useTranslations } from 'next-intl';
+import { installFileSystem } from '@/service/file_system';
 
-const ProvideEngineCard = ({ engine }: { engine: EngineInfo }) => {
+const ProvideFileSystemCard = ({
+	file_system,
+}: {
+	file_system: FileSystemInfo;
+}) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const mutateInstallEngine = useMutation({
-		mutationFn: installEngine,
+	const mutateInstallFileSystem = useMutation({
+		mutationFn: installFileSystem,
 		onSuccess: () => {
-			toast.success(t('setting_engine_page_install_success'));
+			toast.success(t('setting_file_system_install_success'));
 			queryClient.invalidateQueries({
-				queryKey: ['mine-engine'],
+				queryKey: ['mine-file-system'],
 			});
 		},
 		onError: (error) => {
@@ -32,23 +36,23 @@ const ProvideEngineCard = ({ engine }: { engine: EngineInfo }) => {
 	return (
 		<Card className='bg-muted/50'>
 			<CardHeader className='flex-1'>
-				<CardTitle>{engine.name}</CardTitle>
-				<CardDescription>{engine.description}</CardDescription>
+				<CardTitle>{file_system.name}</CardTitle>
+				<CardDescription>{file_system.description}</CardDescription>
 			</CardHeader>
 			<CardFooter className='flex flex-col w-full gap-2'>
 				<div className='w-full flex justify-between items-center'>
 					<Button
 						variant={'outline'}
 						className='text-xs shadow-none'
-						disabled={mutateInstallEngine.isPending}
+						disabled={mutateInstallFileSystem.isPending}
 						onClick={() => {
-							mutateInstallEngine.mutate({
-								engine_id: engine.id,
+							mutateInstallFileSystem.mutate({
+								file_system_id: file_system.id,
 								status: true,
 							});
 						}}>
 						{t('install')}
-						{mutateInstallEngine.isPending && (
+						{mutateInstallFileSystem.isPending && (
 							<Loader2 className='animate-spin' />
 						)}
 					</Button>
@@ -57,4 +61,4 @@ const ProvideEngineCard = ({ engine }: { engine: EngineInfo }) => {
 		</Card>
 	);
 };
-export default ProvideEngineCard;
+export default ProvideFileSystemCard;
