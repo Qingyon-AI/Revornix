@@ -48,6 +48,12 @@ async def install_engine(engine_install_request: schemas.engine.EngineInstallReq
             raise schemas.error.CustomException(code=400, message="Operation failed")
         else:
             user_engine.delete_at = datetime.now(tz=timezone.utc)
+            # if the user's default file parse engine is the one to be deleted, set it to None
+            if current_user.default_file_document_parse_engine_id == user_engine.engine_id:
+                current_user.default_file_document_parse_engine_id = None
+            # if the user's default website parse engine is the one to be deleted, set it to None
+            if current_user.default_website_document_parse_engine_id == user_engine.engine_id:
+                current_user.default_website_document_parse_engine_id = None
         now = datetime.now(tz=timezone.utc)
         user_engine.delete_at = now
     db.commit()

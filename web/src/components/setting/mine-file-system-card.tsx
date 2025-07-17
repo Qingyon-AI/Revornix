@@ -41,6 +41,7 @@ import {
 } from '../ui/alert-dialog';
 import { useState } from 'react';
 import { installFileSystem, updateFileSystem } from '@/service/file_system';
+import { useUserContext } from '@/provider/user-provider';
 
 const MineFileSystemCard = ({
 	file_system,
@@ -48,6 +49,7 @@ const MineFileSystemCard = ({
 	file_system: UserFileSystemInfo;
 }) => {
 	const t = useTranslations();
+	const { refreshUserInfo } = useUserContext();
 	const [configDialogOpen, setConfigDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const locale = useLocale();
@@ -68,6 +70,7 @@ const MineFileSystemCard = ({
 			queryClient.invalidateQueries({
 				queryKey: ['mine-file-system'],
 			});
+			refreshUserInfo();
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -156,7 +159,9 @@ const MineFileSystemCard = ({
 									<AlertDialogHeader>
 										<AlertDialogTitle>{t('tip')}</AlertDialogTitle>
 										<AlertDialogDescription>
-											{t('setting_file_system_page_mine_file_system_delete_alert')}
+											{t(
+												'setting_file_system_page_mine_file_system_delete_alert'
+											)}
 										</AlertDialogDescription>
 									</AlertDialogHeader>
 									<AlertDialogFooter>

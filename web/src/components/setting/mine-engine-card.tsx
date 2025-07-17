@@ -42,9 +42,11 @@ import {
 	AlertDialogTrigger,
 } from '../ui/alert-dialog';
 import { useState } from 'react';
+import { useUserContext } from '@/provider/user-provider';
 
 const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 	const t = useTranslations();
+	const { refreshUserInfo } = useUserContext();
 	const [configDialogOpen, setConfigDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const locale = useLocale();
@@ -65,6 +67,7 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 			queryClient.invalidateQueries({
 				queryKey: ['mine-engine'],
 			});
+			refreshUserInfo();
 		},
 		onError: (error) => {
 			toast.error(error.message);

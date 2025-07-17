@@ -48,6 +48,9 @@ async def install_file_system(file_system_install_request: schemas.file_system.F
             raise schemas.error.CustomException(code=400, message="Operation failed")
         else:
             user_file_system.delete_at = datetime.now(tz=timezone.utc)
+            # if the user's default file system is the same as the file system to be uninstalled, set the default file system to None
+            if current_user.default_file_system == file_system_install_request.file_system_id:
+                current_user.default_file_system = None
         now = datetime.now(tz=timezone.utc)
         user_file_system.delete_at = now
     db.commit()

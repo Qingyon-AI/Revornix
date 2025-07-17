@@ -63,7 +63,7 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
 	useEffect(() => {
 		Cookies.get('access_token') && refreshUserInfo();
 	}, []);
-	
+
 	return (
 		<UserContext.Provider
 			value={{

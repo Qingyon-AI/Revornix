@@ -47,29 +47,35 @@ const DefaultFileSystemChange = () => {
 	};
 
 	return (
-		<Select
-			value={
-				userInfo?.default_file_system
-					? String(userInfo?.default_file_system)
-					: undefined
-			}
-			onValueChange={(e) => {
-				handleUpdateDefaultFileSystem(Number(e));
-			}}>
-			<SelectTrigger className='w-[180px]'>
-				<SelectValue placeholder={t('setting_file_system_page_current_file_system_select')} />
-			</SelectTrigger>
-			<SelectContent>
-				<SelectGroup>
-					{mineFileSystems &&
-						mineFileSystems.data.map((file_system, index) => (
-							<SelectItem key={file_system.id} value={String(file_system.id)}>
-								{file_system.name}
-							</SelectItem>
-						))}
-				</SelectGroup>
-			</SelectContent>
-		</Select>
+		<>
+			<Select
+				value={
+					userInfo?.default_file_system
+						? String(userInfo?.default_file_system)
+						: undefined
+				}
+				onValueChange={(e) => {
+					handleUpdateDefaultFileSystem(Number(e));
+				}}>
+				<SelectTrigger className='w-[180px]'>
+					<SelectValue
+						placeholder={t(
+							'setting_file_system_page_current_file_system_select'
+						)}
+					/>
+				</SelectTrigger>
+				<SelectContent>
+					<SelectGroup>
+						{mineFileSystems &&
+							mineFileSystems.data.map((file_system, index) => (
+								<SelectItem key={file_system.id} value={String(file_system.id)}>
+									{file_system.name}
+								</SelectItem>
+							))}
+					</SelectGroup>
+				</SelectContent>
+			</Select>
+		</>
 	);
 };
 
