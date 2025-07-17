@@ -54,7 +54,7 @@ async def install_engine(engine_install_request: schemas.engine.EngineInstallReq
     return schemas.common.SuccessResponse()
 
 @engine_router.post("/update", response_model=schemas.common.NormalResponse)
-async def enable_engine(engine_update_request: schemas.engine.EngineUpdateRequest, 
+async def update_engine(engine_update_request: schemas.engine.EngineUpdateRequest, 
                         db: Session = Depends(get_db),
                         current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     now = datetime.now(tz=timezone.utc)

@@ -14,6 +14,15 @@ from config.oauth2 import SECRET_KEY, ALGORITHM
 
 user_router = APIRouter()
 
+@user_router.post('/default-file-system/update', response_model=schemas.common.NormalResponse)
+async def update_default_file_system(default_file_system_update_request: schemas.user.DefaultFileSystemUpdateRequest,
+                                     user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                                     db: Session = Depends(get_db)):
+    user.default_file_system = default_file_system_update_request.default_file_system
+    db.commit()
+    # TODO: migrate the files from old file system to new file system
+    return schemas.common.SuccessResponse(message="The default file system is updated successfully.")
+
 @user_router.post('/default-engine/update', response_model=schemas.common.NormalResponse)
 async def update_default_document_parse_engine(default_engine_update_request: schemas.user.DefaultEngineUpdateRequest,
                                                user: schemas.user.PrivateUserInfo = Depends(get_current_user),

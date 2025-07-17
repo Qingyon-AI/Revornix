@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 from .attachment import AttachmentInfo
 
+class DefaultFileSystemUpdateRequest(BaseModel):
+    default_file_system: int | None = None
+
 class DefaultReadMarkReasonUpdateRequest(BaseModel):
     default_read_mark_reason: int
 

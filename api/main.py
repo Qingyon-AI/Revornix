@@ -32,6 +32,7 @@ from router.ai import ai_router
 from router.notification import notification_router
 from router.section import section_router
 from router.engine import engine_router
+from router.file_system import file_system_router
 from router.api_key import api_key_router
 from router.task import task_router
 from router.tp import tp_router
@@ -90,6 +91,7 @@ app.include_router(tp_router, prefix="/tp", tags=["tp"])
 app.include_router(task_router, prefix="/task", tags=["task"])
 app.include_router(mcp_router, prefix="/mcp", tags=["mcp"])
 app.include_router(engine_router, prefix="/engine", tags=["engine"])
+app.include_router(file_system_router, prefix="/file_system", tags=["file_system"])
 
 @app.get('/openapi.yaml', include_in_schema=False)
 @functools.lru_cache()
