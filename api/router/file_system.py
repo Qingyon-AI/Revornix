@@ -8,12 +8,12 @@ from common.dependencies import get_current_user, get_db
 file_system_router = APIRouter()
 
 @file_system_router.post("/mine", response_model=schemas.file_system.MineFileSystemSearchResponse)
-async def search_mine_file_system(engine_search_request: schemas.engine.FileSystemSearchRequest, 
+async def search_mine_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
                                   db: Session = Depends(get_db), 
                                   current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     file_systems = crud.file_system.get_user_file_system_by_user_id(db=db,
                                                                     user_id=current_user.id,
-                                                                    keyword=engine_search_request.keyword)
+                                                                    keyword=file_system_search_request.keyword)
     for file_system in file_systems:
         db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
                                                                                                   user_id=current_user.id,
@@ -26,7 +26,7 @@ async def provide_file_system(file_system_search_request: schemas.file_system.Fi
                                         db: Session = Depends(get_db), 
                                         current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     file_systems = crud.file_system.get_all_file_systems(db=db, keyword=file_system_search_request.keyword)
-    return schemas.engine.ProvideEngineSearchResponse(data=file_systems)
+    return schemas.file_system.ProvideFileSystemSearchResponse(data=file_systems)
 
 @file_system_router.post("/install", response_model=schemas.common.NormalResponse)
 async def install_file_system(file_system_install_request: schemas.file_system.FileSystemInstallRequest, 
