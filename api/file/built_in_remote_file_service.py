@@ -1,7 +1,7 @@
 import httpx
 import crud
 from common.sql import SessionLocal
-from common.common import create_upload_token
+from common.jwt_utils import create_upload_token
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
 class BuiltInRemoteFileService(RemoteFileServiceProtocol):

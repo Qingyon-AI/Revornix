@@ -6,7 +6,7 @@ from jose import jwt
 from fastapi import APIRouter, Depends, Depends
 from sqlalchemy.orm import Session
 from schemas.error import CustomException
-from common.common import create_token
+from common.jwt_utils import create_token
 from common.dependencies import get_db
 from common.hash import verify_password
 from common.dependencies import get_current_user, get_db
