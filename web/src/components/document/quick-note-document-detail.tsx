@@ -12,6 +12,7 @@ import { Separator } from '../ui/separator';
 import DocumentOperate from './document-operate';
 import { useInView } from 'react-intersection-observer';
 import { useEffect, useState } from 'react';
+import CustomImage from '../ui/custom-image';
 
 const QuickDocumentDetail = ({
 	id,
@@ -65,15 +66,7 @@ const QuickDocumentDetail = ({
 						<Markdown
 							components={{
 								img: (props) => {
-									let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
-									if (typeof props.src === 'string') {
-										if (props.src.startsWith('images/')) {
-											src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
-										} else if (props.src) {
-											src = props.src;
-										}
-									}
-									return <img {...props} src={src} className='w-full' />;
+									return <CustomImage {...props} className='w-full' />;
 								},
 							}}
 							remarkPlugins={[remarkMath, remarkGfm]}

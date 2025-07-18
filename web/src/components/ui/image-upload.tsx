@@ -3,7 +3,7 @@ import { FileIcon, Loader2, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
-import { uploadFile } from '@/service/file';
+import { uploadFile } from '@/service/built-in-file';
 import { useTranslations } from 'next-intl';
 
 const ImageUpload = ({

@@ -19,6 +19,7 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { Loader2 } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
 import Link from 'next/link';
+import CustomImage from '../ui/custom-image';
 
 const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 	const queryClient = getQueryClient();
@@ -52,9 +53,9 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 		<Card key={user.id} className='px-5 gap-2'>
 			<Link href={`/user/detail/${user.id}`}>
 				<div className='flex flex-row items-center gap-2 mb-2'>
-					<img
+					<CustomImage
 						className='rounded w-12 h-12 object-cover'
-						src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${user.avatar?.name}`}
+						src={user.avatar?.name}
 						alt=''
 					/>
 					<div className='flex flex-col gap-1'>

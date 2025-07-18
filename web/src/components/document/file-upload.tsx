@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import { uploadFile } from '@/service/file';
+import { uploadFile } from '@/service/built-in-file';
 import { useTranslations } from 'next-intl';
 
 const FileUpload = ({

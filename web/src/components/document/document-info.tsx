@@ -1,6 +1,5 @@
 'use client';
 
-import { PhotoProvider, PhotoView } from 'react-photo-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { getDocumentDetail } from '@/service/document';
@@ -9,6 +8,7 @@ import Link from 'next/link';
 import { Badge } from '../ui/badge';
 import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
+import CustomImage from '../ui/custom-image';
 
 const DocumentInfo = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -25,26 +25,11 @@ const DocumentInfo = ({ id }: { id: number }) => {
 			{data && (
 				<div className='relative h-full'>
 					<div className='h-full overflow-auto pb-5'>
-						<PhotoProvider>
-							<PhotoView
-								src={
-									data.cover
-										? data.cover
-										: `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`
-								}>
-								<div className='mb-5'>
-									<img
-										src={
-											data.cover
-												? data.cover
-												: `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`
-										}
-										alt='cover'
-										className='w-full h-64 object-cover'
-									/>
-								</div>
-							</PhotoView>
-						</PhotoProvider>
+						<div className='mb-5'>
+							<div className='w-full h-64 object-cover relative'>
+								<CustomImage src={data.cover} />
+							</div>
+						</div>
 						<div className='flex flex-row justify-between items-center px-5 mb-3'>
 							<div className='font-bold text-lg'>
 								{data.title ? data.title : t('document_no_title')}
@@ -59,10 +44,8 @@ const DocumentInfo = ({ id }: { id: number }) => {
 							<div
 								className='flex flex-row items-center px-5 mb-3'
 								onClick={() => router.push(`/user/detail/${data.creator!.id}`)}>
-								<img
-									src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${
-										data.creator!.avatar?.name
-									}`}
+								<CustomImage
+									src={data.creator!.avatar?.name}
 									className='w-5 h-5 rounded-full mr-2 object-cover'
 								/>
 								<p className='text-xs text-muted-foreground'>

@@ -7,6 +7,7 @@ import remarkMath from 'remark-math';
 import rehypeRaw from 'rehype-raw';
 import KnowledgeRef from './knowledge-ref';
 import SearchResultsRef from './search-results-ref';
+import CustomImage from '../ui/custom-image';
 
 const MessageCard = ({ message }: { message: Message }) => {
 	return (
@@ -24,15 +25,7 @@ const MessageCard = ({ message }: { message: Message }) => {
 					<Markdown
 						components={{
 							img: (props) => {
-								let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
-								if (typeof props.src === 'string') {
-									if (props.src.startsWith('images/')) {
-										src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
-									} else if (props.src) {
-										src = props.src;
-									}
-								}
-								return <img {...props} src={src} />;
+								return <CustomImage {...props} />;
 							},
 						}}
 						remarkPlugins={[remarkMath, remarkGfm]}

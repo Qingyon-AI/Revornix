@@ -12,7 +12,7 @@ import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
-import { getFile } from '@/service/file';
+import { BuiltInFile } from '@/service/built-in-file';
 import { useInterval } from 'ahooks';
 import { useTranslations } from 'next-intl';
 import { Loader2, Info } from 'lucide-react';
@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import DocumentOperate from './document-operate';
 import { Separator } from '../ui/separator';
 import { useInView } from 'react-intersection-observer';
+import CustomImage from '../ui/custom-image';
 
 const WebsiteDocumentDetail = ({
 	id,
@@ -61,9 +62,10 @@ const WebsiteDocumentDetail = ({
 	const [markdown, setMarkdown] = useState<string>();
 	const onGetMarkdown = async () => {
 		if (!document || !document?.website_info?.md_file_name) return;
+		const fileService = new BuiltInFile();
 		try {
 			const [res, err] = await utils.to(
-				getFile(document?.website_info?.md_file_name)
+				fileService.getFileContent(document?.website_info?.md_file_name)
 			);
 			if (!res || err) {
 				throw new Error(err.message);
@@ -192,15 +194,7 @@ const WebsiteDocumentDetail = ({
 						<Markdown
 							components={{
 								img: (props) => {
-									let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
-									if (typeof props.src === 'string') {
-										if (props.src.startsWith('images/')) {
-											src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
-										} else if (props.src) {
-											src = props.src;
-										}
-									}
-									return <img {...props} src={src} className='w-full' />;
+									return <CustomImage {...props} className='w-full' />;
 								},
 							}}
 							remarkPlugins={[remarkMath, remarkGfm]}

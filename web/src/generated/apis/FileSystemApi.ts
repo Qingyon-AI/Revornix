@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  FileSystemInfoRequest,
   FileSystemInstallRequest,
   FileSystemSearchRequest,
   FileSystemUpdateRequest,
@@ -22,8 +23,11 @@ import type {
   MineFileSystemSearchResponse,
   NormalResponse,
   ProvideFileSystemSearchResponse,
+  UserFileSystemInfo,
 } from '../models/index';
 import {
+    FileSystemInfoRequestFromJSON,
+    FileSystemInfoRequestToJSON,
     FileSystemInstallRequestFromJSON,
     FileSystemInstallRequestToJSON,
     FileSystemSearchRequestFromJSON,
@@ -38,7 +42,15 @@ import {
     NormalResponseToJSON,
     ProvideFileSystemSearchResponseFromJSON,
     ProvideFileSystemSearchResponseToJSON,
+    UserFileSystemInfoFromJSON,
+    UserFileSystemInfoToJSON,
 } from '../models/index';
+
+export interface GetFileSystemInfoFileSystemDetailPostRequest {
+    fileSystemInfoRequest: FileSystemInfoRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
 
 export interface InstallFileSystemFileSystemInstallPostRequest {
     fileSystemInstallRequest: FileSystemInstallRequest;
@@ -68,6 +80,53 @@ export interface UpdateFileSystemFileSystemUpdatePostRequest {
  * 
  */
 export class FileSystemApi extends runtime.BaseAPI {
+
+    /**
+     * Get File System Info
+     */
+    async getFileSystemInfoFileSystemDetailPostRaw(requestParameters: GetFileSystemInfoFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserFileSystemInfo>> {
+        if (requestParameters['fileSystemInfoRequest'] == null) {
+            throw new runtime.RequiredError(
+                'fileSystemInfoRequest',
+                'Required parameter "fileSystemInfoRequest" was null or undefined when calling getFileSystemInfoFileSystemDetailPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/file_system/detail`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: FileSystemInfoRequestToJSON(requestParameters['fileSystemInfoRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserFileSystemInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get File System Info
+     */
+    async getFileSystemInfoFileSystemDetailPost(requestParameters: GetFileSystemInfoFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserFileSystemInfo> {
+        const response = await this.getFileSystemInfoFileSystemDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Install File System

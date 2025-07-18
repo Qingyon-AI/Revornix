@@ -53,6 +53,7 @@ export * from './EngineSearchRequest';
 export * from './EngineUpdateRequest';
 export * from './FileDocumentInfo';
 export * from './FileSystemInfo';
+export * from './FileSystemInfoRequest';
 export * from './FileSystemInstallRequest';
 export * from './FileSystemSearchRequest';
 export * from './FileSystemUpdateRequest';

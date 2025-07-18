@@ -8,6 +8,7 @@ import { useRouter } from 'nextjs-toploader/app';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
 import DocumentCommentForm from './document-comment-form';
+import CustomImage from '../ui/custom-image';
 
 const DocumentNotes = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -71,8 +72,8 @@ const DocumentNotes = ({ id }: { id: number }) => {
 									<div
 										className='flex flex-row items-center'
 										onClick={() => router.push(`/user/detail/${note.user.id}`)}>
-										<img
-											src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${note.user.avatar?.name}`}
+										<CustomImage
+											src={note.user.avatar?.name}
 											className='w-5 h-5 rounded-full mr-2 object-cover'
 										/>
 										<p className='text-xs text-muted-foreground'>

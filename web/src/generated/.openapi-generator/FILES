@@ -64,6 +64,7 @@ models/EngineSearchRequest.ts
 models/EngineUpdateRequest.ts
 models/FileDocumentInfo.ts
 models/FileSystemInfo.ts
+models/FileSystemInfoRequest.ts
 models/FileSystemInstallRequest.ts
 models/FileSystemSearchRequest.ts
 models/FileSystemUpdateRequest.ts

@@ -27,6 +27,7 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import CustomImage from '../ui/custom-image';
 
 export function NavUser() {
 	const t = useTranslations();
@@ -83,14 +84,16 @@ export function NavUser() {
 							<SidebarMenuButton
 								size='lg'
 								className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'>
-								<Avatar className='size-8 rounded-lg'>
-									<AvatarImage
-										src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${userInfo.avatar?.name}`}
-										alt={userInfo.avatar?.name}
-										className='object-cover'
-									/>
-									<AvatarFallback className='rounded-lg'>A</AvatarFallback>
-								</Avatar>
+								<CustomImage
+									src={userInfo.avatar?.name}
+									alt={'avatar'}
+									className='object-cover size-8 rounded-lg'
+									errorPlaceHolder={
+										<div className='rounded-lg size-8 flex justify-center items-center bg-muted'>
+											A
+										</div>
+									}
+								/>
 								<div className='grid flex-1 text-left text-sm leading-tight'>
 									<span className='truncate font-semibold line-clamp-1'>
 										{userInfo.nickname}
@@ -109,14 +112,16 @@ export function NavUser() {
 							sideOffset={4}>
 							<DropdownMenuLabel className='p-0 font-normal'>
 								<div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
-									<Avatar className='size-8 rounded-lg'>
-										<AvatarImage
-											className='object-cover'
-											src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${userInfo.avatar?.name}`}
-											alt={userInfo.avatar?.name}
-										/>
-										<AvatarFallback className='rounded-lg'>A</AvatarFallback>
-									</Avatar>
+									<CustomImage
+										src={userInfo.avatar?.name}
+										alt={'avatar'}
+										className='object-cover size-8 rounded-lg'
+										errorPlaceHolder={
+											<div className='rounded-lg size-8 flex justify-center items-center bg-muted'>
+												A
+											</div>
+										}
+									/>
 									<div className='grid flex-1 text-left text-sm leading-tight'>
 										<span className='truncate font-semibold line-clamp-1'>
 											{userInfo.nickname}

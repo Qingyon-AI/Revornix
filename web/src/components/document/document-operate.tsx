@@ -44,6 +44,7 @@ import {
 	SheetTrigger,
 } from '../ui/sheet';
 import DocumentNotes from './document-notes';
+import CustomFileLink from '../ui/custom-file-link';
 
 const DocumentOperate = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -194,15 +195,15 @@ const DocumentOperate = ({ id }: { id: number }) => {
 						</Link>
 					)}
 					{data.category === 0 && data.file_info && (
-						<Link
+						<CustomFileLink
 							title={t('file_document_go_to_origin')}
-							href={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${data.file_info?.file_name}`}
+							target='_blank'
 							className='flex-1 text-center'
-							target='_blank'>
+							href={data.file_info?.file_name}>
 							<Button variant={'ghost'} className='w-full'>
 								<LinkIcon />
 							</Button>
-						</Link>
+						</CustomFileLink>
 					)}
 					<Button
 						variant={'ghost'}

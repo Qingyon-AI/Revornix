@@ -1,5 +1,8 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
+
+class FileSystemInfoRequest(BaseModel):
+    file_system_id: int
     
 class FileSystemUpdateRequest(BaseModel):
     file_system_id: int

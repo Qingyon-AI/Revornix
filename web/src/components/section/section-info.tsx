@@ -14,6 +14,7 @@ import SectionSubscribe from './section-subscribe';
 import SectionDelete from './section-delete';
 import { Badge } from '../ui/badge';
 import { useLocale, useTranslations } from 'next-intl';
+import CustomImage from '../ui/custom-image';
 
 const SectionInfo = ({ id }: { id: number }) => {
 	const locale = useLocale();
@@ -42,22 +43,13 @@ const SectionInfo = ({ id }: { id: number }) => {
 				)}
 			</div>
 			<div className='h-full overflow-auto pb-5'>
-				<PhotoProvider>
-					<PhotoView
-						src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${
-							section?.cover?.name ?? 'images/cover.jpg'
-						}`}>
-						<div className='mb-5'>
-							<img
-								src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${
-									section?.cover?.name ?? 'images/cover.jpg'
-								}`}
-								alt='cover'
-								className='w-full h-64 object-cover'
-							/>
-						</div>
-					</PhotoView>
-				</PhotoProvider>
+				<div className='mb-5'>
+					<CustomImage
+						src={section?.cover?.name}
+						alt='cover'
+						className='w-full h-64 object-cover'
+					/>
+				</div>
 				{section?.update_time && (
 					<div className='px-5 mb-3'>
 						<p className='text-xs text-muted-foreground'>
@@ -97,8 +89,8 @@ const SectionInfo = ({ id }: { id: number }) => {
 						e.preventDefault();
 						e.stopPropagation();
 					}}>
-					<img
-						src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${section?.creator.avatar?.name}`}
+					<CustomImage
+						src={section?.creator.avatar?.name}
 						alt='avatar'
 						className='rounded-full object-cover w-5 h-5'
 					/>

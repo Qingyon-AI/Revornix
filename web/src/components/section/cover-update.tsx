@@ -6,8 +6,8 @@ import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { createAttachment } from '@/service/attachment';
-import { useQuery } from '@tanstack/react-query';
-import { uploadFile } from '@/service/file';
+import { uploadFile } from '@/service/built-in-file';
+import CustomImage from '../ui/custom-image';
 
 const CoverUpdate = () => {
 	const form = useFormContext();
@@ -72,8 +72,9 @@ const CoverUpdate = () => {
 								onChange={handleUploadFile}
 							/>
 						</div>
-						<img
-							src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${field.value.name}`}
+						<CustomImage
+							alt='cover'
+							src={field.value.name}
 							className='w-full object-cover rounded'
 						/>
 						<FormMessage />

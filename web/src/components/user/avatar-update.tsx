@@ -10,8 +10,9 @@ import { updateUserInfo } from '@/service/user';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import { useMutation } from '@tanstack/react-query';
 import { utils } from '@kinda/utils';
-import { uploadFile } from '@/service/file';
+import { uploadFile } from '@/service/built-in-file';
 import { useTranslations } from 'next-intl';
+import CustomImage from '../ui/custom-image';
 
 const AvatarUpdate = () => {
 	const t = useTranslations();
@@ -80,16 +81,11 @@ const AvatarUpdate = () => {
 			{userInfo && userInfo.avatar && (
 				<>
 					<div className='flex flex-row'>
-						<PhotoProvider>
-							<PhotoView
-								src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${userInfo.avatar.name}`}>
-								<img
-									src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${userInfo.avatar.name}`}
-									className='mr-2 size-8 rounded object-cover'
-									alt='avatar'
-								/>
-							</PhotoView>
-						</PhotoProvider>
+						<CustomImage
+							src={userInfo.avatar.name}
+							className='mr-2 size-8 rounded object-cover'
+							alt='avatar'
+						/>
 						<Button
 							className='text-xs'
 							variant={'link'}

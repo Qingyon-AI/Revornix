@@ -1,15 +1,16 @@
 import { UserPublicInfo } from '@/generated';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
+import CustomImage from '../ui/custom-image';
 
 const UserFanCard = ({ user }: { user: UserPublicInfo }) => {
 	return (
 		<Card key={user.id} className='px-5 gap-2'>
 			<Link href={`/user/detail/${user.id}`}>
 				<div className='flex flex-row items-center gap-2 mb-2'>
-					<img
+					<CustomImage
 						className='rounded w-12 h-12 object-cover'
-						src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${user.avatar?.name}`}
+						src={user.avatar?.name}
 						alt=''
 					/>
 					<div className='flex flex-col gap-1'>

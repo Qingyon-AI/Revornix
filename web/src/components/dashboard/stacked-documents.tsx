@@ -2,6 +2,7 @@ import { DocumentInfo } from '@/generated';
 import Image from 'next/image';
 import { useRouter } from 'nextjs-toploader/app';
 import React, { useState } from 'react';
+import CustomImage from '../ui/custom-image';
 
 const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 	const router = useRouter();
@@ -37,14 +38,10 @@ const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 							</div>
 
 							{document.cover && (
-								<img
+								<CustomImage
 									className='h-full aspect-square rounded object-cover'
 									src={document.cover}
 									alt='cover'
-									onError={(e) =>
-										((e.target as HTMLImageElement).src =
-											`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`)
-									}
 								/>
 							)}
 						</div>

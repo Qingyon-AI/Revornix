@@ -1,10 +1,7 @@
 'use client';
 
-import { customImageLoader } from '@/lib/image-loader';
 import { followUser, getUserInfo } from '@/service/user';
 import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
-import Image from 'next/image';
-import { PhotoProvider, PhotoView } from 'react-photo-view';
 import { Separator } from '../ui/separator';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -18,6 +15,7 @@ import { cloneDeep } from 'lodash-es';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
+import CustomImage from '../ui/custom-image';
 
 const UserContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -113,20 +111,11 @@ const UserContainer = ({ id }: { id: number }) => {
 					{userInfo && (
 						<div className='w-full flex flex-col items-center justify-center'>
 							{userInfo.avatar && (
-								<div className='w-20 h-20 relative mb-2'>
-									<PhotoProvider>
-										<PhotoView
-											src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${userInfo.avatar.name}`}>
-											<Image
-												src={userInfo.avatar.name}
-												loader={customImageLoader}
-												alt='avatar'
-												fill
-												className='rounded-full object-cover'
-											/>
-										</PhotoView>
-									</PhotoProvider>
-								</div>
+								<CustomImage
+									src={userInfo.avatar.name}
+									alt='avatar'
+									className='w-20 h-20 relative mb-2 rounded-full object-cover'
+								/>
 							)}
 							<p className='font-bold text-2xl mb-2'>{userInfo.nickname}</p>
 							<p className='text-muted-foreground mb-2'>

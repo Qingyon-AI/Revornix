@@ -5,6 +5,7 @@ import SectionSubscribe from './section-subscribe';
 import { useRouter } from 'nextjs-toploader/app';
 import { useQuery } from '@tanstack/react-query';
 import { getSectionDetail } from '@/service/section';
+import CustomImage from '../ui/custom-image';
 
 const NeedPaySectionDialog = ({ id }: { id: number }) => {
 	const router = useRouter();
@@ -20,16 +21,11 @@ const NeedPaySectionDialog = ({ id }: { id: number }) => {
 				<div className='flex justify-center items-center h-full w-full'>
 					<Card className='pt-0 w-[500px] overflow-auto gap-5'>
 						{section?.cover && (
-							<PhotoProvider>
-								<PhotoView
-									src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${section.cover.name}`}>
-									<img
-										src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${section.cover.name}`}
-										alt='cover'
-										className='w-full h-36 object-cover'
-									/>
-								</PhotoView>
-							</PhotoProvider>
+							<CustomImage
+								src={section.cover.name}
+								alt='cover'
+								className='w-full h-36 object-cover'
+							/>
 						)}
 						<div className='flex flex-col gap-2'>
 							<p className='px-5 font-bold'>{section.title}</p>

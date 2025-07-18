@@ -16,6 +16,7 @@ import { Skeleton } from '../ui/skeleton';
 import { format } from 'date-fns';
 import { useRouter } from 'nextjs-toploader/app';
 import { useTranslations } from 'next-intl';
+import CustomImage from '../ui/custom-image';
 
 const SectionComments = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -167,8 +168,8 @@ const SectionComments = ({ id }: { id: number }) => {
 										onClick={() =>
 											router.push(`/user/detail/${comment.creator.id}`)
 										}>
-										<img
-											src={`${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${comment.creator.avatar?.name}`}
+										<CustomImage
+											src={comment.creator.avatar?.name}
 											className='w-5 h-5 rounded-full mr-2 object-cover'
 										/>
 										<p className='text-xs text-muted-foreground'>

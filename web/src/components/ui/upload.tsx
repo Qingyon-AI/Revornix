@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { uploadFile } from '@/service/file';
+import { uploadFile } from '@/service/built-in-file';
 
 const Upload = () => {
 	const [status, setStatus] = useState<string | null>(null);

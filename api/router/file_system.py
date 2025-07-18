@@ -7,6 +7,29 @@ from common.dependencies import get_current_user, get_db
 
 file_system_router = APIRouter()
 
+@file_system_router.post('/detail', response_model=schemas.file_system.UserFileSystemInfo)
+async def get_file_system_info(file_system_info_request: schemas.file_system.FileSystemInfoRequest,
+                               db: Session = Depends(get_db),
+                               current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_file_system = crud.file_system.get_file_system_by_id(db=db, file_system_id=file_system_info_request.file_system_id)
+    db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
+                                                                                              user_id=current_user.id,
+                                                                                              file_system_id=file_system_info_request.file_system_id)
+    if db_file_system is None:
+        raise Exception(status_code=404, detail="File System not found")
+    if db_user_file_system is None:
+        raise Exception(status_code=404, detail="User File System not found")
+    res = schemas.file_system.UserFileSystemInfo(id=db_file_system.id,
+                                                 name=db_file_system.name,
+                                                 name_zh=db_file_system.name_zh,
+                                                 description=db_file_system.description,
+                                                 description_zh=db_file_system.description_zh,
+                                                 demo_config=db_file_system.demo_config,
+                                                 config_json=db_user_file_system.config_json,
+                                                 create_time=db_user_file_system.create_time,
+                                                 update_time=db_user_file_system.update_time)
+    return res
+
 @file_system_router.post("/mine", response_model=schemas.file_system.MineFileSystemSearchResponse)
 async def search_mine_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
                                   db: Session = Depends(get_db), 

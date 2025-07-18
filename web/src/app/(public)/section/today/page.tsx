@@ -21,8 +21,9 @@ import { format } from 'date-fns';
 import SectionDocumentCard from '@/components/section/section-document-card';
 import Markdown from 'react-markdown';
 import { utils } from '@kinda/utils';
-import { getFile } from '@/service/file';
+import { BuiltInFile } from '@/service/built-in-file';
 import { useTranslations } from 'next-intl';
+import CustomImage from '@/components/ui/custom-image';
 
 const SectionDetailPage = () => {
 	const t = useTranslations();
@@ -42,8 +43,11 @@ const SectionDetailPage = () => {
 
 	const onGetMarkdown = async () => {
 		if (!section || !section.md_file_name) return;
+		const fileService = new BuiltInFile();
 		try {
-			const [res, err] = await utils.to(getFile(section?.md_file_name));
+			const [res, err] = await utils.to(
+				fileService.getFileContent(section?.md_file_name)
+			);
 			if (!res || err) {
 				setMarkdownGetError(err.message);
 				return;
@@ -113,15 +117,7 @@ const SectionDetailPage = () => {
 							<Markdown
 								components={{
 									img: (props) => {
-										let src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/images/cover.jpg`;
-										if (typeof props.src === 'string') {
-											if (props.src.startsWith('images/')) {
-												src = `${process.env.NEXT_PUBLIC_FILE_API_PREFIX}/uploads/${props.src}`;
-											} else if (props.src) {
-												src = props.src;
-											}
-										}
-										return <img {...props} src={src} />;
+										return <CustomImage {...props} />;
 									},
 								}}
 								remarkPlugins={[remarkMath, remarkGfm]}
