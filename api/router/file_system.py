@@ -1,11 +1,50 @@
 import schemas
 import crud
+import json
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from datetime import timezone, datetime
 from common.dependencies import get_current_user, get_db
+from aliyunsdkcore.client import AcsClient
+from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 
 file_system_router = APIRouter()
+
+@file_system_router.post('/oss/sts', response_model=schemas.file_system.OssStsResponse)
+async def get_oss_sts(db: Session = Depends(get_db),
+                      current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
+                                                                                              user_id=current_user.id,
+                                                                                              file_system_id=2)
+    if db_user_file_system is None:
+        raise Exception("User file system not found")
+    
+    config_str = db_user_file_system.config_json
+    
+    if config_str is None:
+        raise Exception("User file system config is empty")
+    
+    config = json.loads(config_str)
+    role_arn = config.get('role_arn')
+    role_session_name = config.get('role_session_name')
+    user_access_key_id = config.get('user_access_key_id')
+    user_access_key_secret = config.get('user_access_key_secret')
+    region_id = config.get('region_id')
+    
+    client = AcsClient(user_access_key_id, user_access_key_secret, region_id)
+    request = AssumeRoleRequest()
+    request.set_accept_format('json')
+    request.set_RoleArn(role_arn)
+    request.set_RoleSessionName(role_session_name)
+
+    response = client.do_action_with_exception(request)
+    result = json.loads(response)
+    sts_role_session_token = result.get('Credentials').get('SecurityToken')
+    sts_role_access_key_id = result.get('Credentials').get('AccessKeyId')
+    sts_role_access_key_secret = result.get('Credentials').get('AccessKeySecret')
+    return schemas.file_system.OssStsResponse(access_key_id=sts_role_access_key_id,
+                                              access_key_secret=sts_role_access_key_secret,
+                                              security_token=sts_role_session_token)
 
 @file_system_router.post('/detail', response_model=schemas.file_system.UserFileSystemInfo)
 async def get_file_system_info(file_system_info_request: schemas.file_system.FileSystemInfoRequest,

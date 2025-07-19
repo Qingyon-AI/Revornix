@@ -12,7 +12,6 @@ import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
-import { BuiltInFile } from '@/service/built-in-file';
 import { useInterval } from 'ahooks';
 import { useTranslations } from 'next-intl';
 import { Loader2, Info } from 'lucide-react';
@@ -21,6 +20,9 @@ import DocumentOperate from './document-operate';
 import { Separator } from '../ui/separator';
 import { useInView } from 'react-intersection-observer';
 import CustomImage from '../ui/custom-image';
+import { FileService } from '@/lib/file';
+import { userInfo } from 'os';
+import { useUserContext } from '@/provider/user-provider';
 
 const WebsiteDocumentDetail = ({
 	id,
@@ -32,6 +34,7 @@ const WebsiteDocumentDetail = ({
 	onFinishRead?: () => void;
 }) => {
 	const t = useTranslations();
+	const { userInfo } = useUserContext();
 	const queryClient = getQueryClient();
 	const [markdownRendered, setMarkdownRendered] = useState(false);
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
@@ -62,7 +65,11 @@ const WebsiteDocumentDetail = ({
 	const [markdown, setMarkdown] = useState<string>();
 	const onGetMarkdown = async () => {
 		if (!document || !document?.website_info?.md_file_name) return;
-		const fileService = new BuiltInFile();
+		if (!userInfo?.default_file_system) {
+			toast.error('No default file system found');
+			return;
+		}
+		const fileService = new FileService(userInfo.default_file_system);
 		try {
 			const [res, err] = await utils.to(
 				fileService.getFileContent(document?.website_info?.md_file_name)

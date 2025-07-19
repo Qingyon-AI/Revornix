@@ -11,7 +11,7 @@ import { useMutation } from '@tanstack/react-query';
 import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
 import CustomImage from '../ui/custom-image';
-import { BuiltInFile } from '@/service/built-in-file';
+import { FileService } from '@/lib/file';
 
 const AvatarUpdate = () => {
 	const t = useTranslations();
@@ -33,7 +33,11 @@ const AvatarUpdate = () => {
 	const onUpload = async (e: ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		const fileService = new BuiltInFile();
+		if (!userInfo?.default_file_system) {
+			toast.error('No default file system found');
+			return;
+		}
+		const fileService = new FileService(userInfo.default_file_system);
 		setUploadingStatus(true);
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();

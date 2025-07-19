@@ -6,11 +6,13 @@ import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { createAttachment } from '@/service/attachment';
-import { BuiltInFile } from '@/service/built-in-file';
 import CustomImage from '../ui/custom-image';
+import { FileService } from '@/lib/file';
+import { useUserContext } from '@/provider/user-provider';
 
 const CoverUpdate = () => {
 	const form = useFormContext();
+	const { userInfo } = useUserContext();
 	const [file, setFile] = useState<File | null>(null);
 	const upload = useRef<HTMLInputElement>(null);
 	const [uploadingStatus, setUploadingStatus] = useState<string | null>();
@@ -23,7 +25,11 @@ const CoverUpdate = () => {
 		if (!file) {
 			return;
 		}
-		const fileService = new BuiltInFile();
+		if (!userInfo?.default_file_system) {
+			toast.error('No default file system found');
+			return;
+		}
+		const fileService = new FileService(userInfo.default_file_system);
 		setUploadingStatus('uploading');
 		setFile(file);
 		const name = crypto.randomUUID();

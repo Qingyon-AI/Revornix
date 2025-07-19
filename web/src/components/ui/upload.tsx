@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { BuiltInFile } from '@/service/built-in-file';
+import { useUserContext } from '@/provider/user-provider';
+import { FileService } from '@/lib/file';
 
 const Upload = () => {
 	const [status, setStatus] = useState<string | null>(null);
+	const { userInfo } = useUserContext();
 	const fileInput = useRef<HTMLInputElement>(null);
 
 	const onChooseFile = async () => {
@@ -17,7 +19,11 @@ const Upload = () => {
 	const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		const fileService = new BuiltInFile();
+		if (!userInfo?.default_file_system) {
+			toast.error('No default file system found');
+			return;
+		}
+		const fileService = new FileService(userInfo.default_file_system);
 		setStatus('uploading');
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();

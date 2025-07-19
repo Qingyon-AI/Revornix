@@ -1,6 +1,11 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
 
+class OssStsResponse(BaseModel):
+    access_key_id: str
+    access_key_secret: str
+    security_token: str
+
 class FileSystemInfoRequest(BaseModel):
     file_system_id: int
     

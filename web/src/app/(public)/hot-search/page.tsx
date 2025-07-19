@@ -111,7 +111,6 @@ const HotSearch = () => {
 				<>
 					<div className='grid grid-cols-1 md:grid-cols-4 gap-5'>
 						{websites.map((website, index) => {
-							console.log(website.code)
 							if (website.code === 200) {
 								return <HotSearchCard key={index} website={website} />;
 							} else {

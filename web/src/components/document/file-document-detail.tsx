@@ -15,13 +15,14 @@ import { Button } from '../ui/button';
 import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
-import { BuiltInFile } from '@/service/built-in-file';
 import { useInterval } from 'ahooks';
 import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
 import DocumentOperate from './document-operate';
 import { useInView } from 'react-intersection-observer';
 import CustomImage from '../ui/custom-image';
+import { FileService } from '@/lib/file';
+import { useUserContext } from '@/provider/user-provider';
 
 const FileDocumentDetail = ({
 	id,
@@ -33,6 +34,7 @@ const FileDocumentDetail = ({
 	onFinishRead?: () => void;
 }) => {
 	const t = useTranslations();
+	const { userInfo } = useUserContext();
 	const queryClient = getQueryClient();
 	const [markdownRendered, setMarkdownRendered] = useState(false);
 	const {
@@ -81,7 +83,11 @@ const FileDocumentDetail = ({
 
 	const onGetMarkdown = async () => {
 		if (!document || !document.file_info?.md_file_name) return;
-		const fileService = new BuiltInFile();
+		if (!userInfo?.default_file_system) {
+			toast.error('No default file system found');
+			return;
+		}
+		const fileService = new FileService(userInfo.default_file_system);
 		try {
 			const [res, err] = await utils.to(
 				fileService.getFileContent(document.file_info?.md_file_name)

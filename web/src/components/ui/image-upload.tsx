@@ -4,7 +4,9 @@ import { useRef, useState } from 'react';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
-import { BuiltInFile } from '@/service/built-in-file';
+import { useUserContext } from '@/provider/user-provider';
+import { FileService } from '@/lib/file';
+import { toast } from 'sonner';
 
 const ImageUpload = ({
 	onSuccess,
@@ -16,6 +18,7 @@ const ImageUpload = ({
 	className?: string;
 }) => {
 	const t = useTranslations();
+	const { userInfo } = useUserContext();
 	const [file, setFile] = useState<File | null>(null);
 	const upload = useRef<HTMLInputElement>(null);
 	const [uploadingStatus, setUploadingStatus] = useState<string | null>();
@@ -27,7 +30,11 @@ const ImageUpload = ({
 		if (!file) {
 			return;
 		}
-		const fileService = new BuiltInFile();
+		if (!userInfo?.default_file_system) {
+			toast.error('No default file system found');
+			return;
+		}
+		const fileService = new FileService(userInfo.default_file_system);
 		setUploadingStatus('uploading');
 		setFile(file);
 		const name = crypto.randomUUID();

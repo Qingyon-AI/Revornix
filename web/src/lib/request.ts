@@ -70,7 +70,6 @@ const addSubscriber = (callback: SubscriberCallback) => {
 }
 
 const checkTokenRefreshStatus = <T>(url: string, initialOptions?: RequestOptions): Promise<T> => {
-    console.log(initialOptions)
     // 无论是否正在刷新，都将当前请求加入队列
     const retryOriginalRequest = new Promise<T>((resolve) => {
         addSubscriber(() => {

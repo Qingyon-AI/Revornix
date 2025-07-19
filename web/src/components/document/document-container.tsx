@@ -64,7 +64,6 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	useEffect(() => {
 		if (!document || document.is_read) return;
 		if (userInfo?.default_read_mark_reason === 0) {
-			console.log('read');
 			mutateRead.mutate();
 		}
 	}, [document, userInfo]);

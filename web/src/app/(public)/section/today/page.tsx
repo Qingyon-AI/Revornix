@@ -21,12 +21,15 @@ import { format } from 'date-fns';
 import SectionDocumentCard from '@/components/section/section-document-card';
 import Markdown from 'react-markdown';
 import { utils } from '@kinda/utils';
-import { BuiltInFile } from '@/service/built-in-file';
 import { useTranslations } from 'next-intl';
 import CustomImage from '@/components/ui/custom-image';
+import { FileService } from '@/lib/file';
+import { useUserContext } from '@/provider/user-provider';
+import { toast } from 'sonner';
 
 const SectionDetailPage = () => {
 	const t = useTranslations();
+	const { userInfo } = useUserContext();
 	const today = new Date().toISOString().split('T')[0];
 	const {
 		data: section,
@@ -43,7 +46,11 @@ const SectionDetailPage = () => {
 
 	const onGetMarkdown = async () => {
 		if (!section || !section.md_file_name) return;
-		const fileService = new BuiltInFile();
+		if (!userInfo?.default_file_system) {
+			toast.error('No default file system found');
+			return;
+		}
+		const fileService = new FileService(userInfo.default_file_system);
 		try {
 			const [res, err] = await utils.to(
 				fileService.getFileContent(section?.md_file_name)

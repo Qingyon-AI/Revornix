@@ -22,6 +22,7 @@ import type {
   HTTPValidationError,
   MineFileSystemSearchResponse,
   NormalResponse,
+  OssStsResponse,
   ProvideFileSystemSearchResponse,
   UserFileSystemInfo,
 } from '../models/index';
@@ -40,6 +41,8 @@ import {
     MineFileSystemSearchResponseToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+    OssStsResponseFromJSON,
+    OssStsResponseToJSON,
     ProvideFileSystemSearchResponseFromJSON,
     ProvideFileSystemSearchResponseToJSON,
     UserFileSystemInfoFromJSON,
@@ -48,6 +51,11 @@ import {
 
 export interface GetFileSystemInfoFileSystemDetailPostRequest {
     fileSystemInfoRequest: FileSystemInfoRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GetOssStsFileSystemOssStsPostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -125,6 +133,43 @@ export class FileSystemApi extends runtime.BaseAPI {
      */
     async getFileSystemInfoFileSystemDetailPost(requestParameters: GetFileSystemInfoFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserFileSystemInfo> {
         const response = await this.getFileSystemInfoFileSystemDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Oss Sts
+     */
+    async getOssStsFileSystemOssStsPostRaw(requestParameters: GetOssStsFileSystemOssStsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OssStsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/file_system/oss/sts`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OssStsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Oss Sts
+     */
+    async getOssStsFileSystemOssStsPost(requestParameters: GetOssStsFileSystemOssStsPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OssStsResponse> {
+        const response = await this.getOssStsFileSystemOssStsPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -5,5 +5,6 @@ export default {
     getProvideFileSystems: API_PREFIX + '/file_system/provide',
     installFileSystem: API_PREFIX + '/file_system/install',
     updateFileSystem: API_PREFIX + '/file_system/update',
-    getFileSystemDetail: API_PREFIX + '/file_system/detail'
+    getFileSystemDetail: API_PREFIX + '/file_system/detail',
+    getAliyunOSSSTSToken: API_PREFIX + "/file_system/oss/sts",
 }

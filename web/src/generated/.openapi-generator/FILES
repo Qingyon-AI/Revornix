@@ -119,6 +119,7 @@ models/NotificationTaskDetailRequest.ts
 models/NotificationTaskResponse.ts
 models/NotificationTemplate.ts
 models/NotificationTemplatesResponse.ts
+models/OssStsResponse.ts
 models/PaginationApiKeyInfo.ts
 models/PasswordUpdateRequest.ts
 models/PrivateUserInfo.ts

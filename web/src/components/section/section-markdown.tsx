@@ -8,12 +8,15 @@ import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import Markdown from 'react-markdown';
 import { utils } from '@kinda/utils';
-import { BuiltInFile } from '@/service/built-in-file';
 import { useTranslations } from 'next-intl';
 import CustomImage from '../ui/custom-image';
+import { useUserContext } from '@/provider/user-provider';
+import { toast } from 'sonner';
+import { FileService } from '@/lib/file';
 
 const SectionMarkdown = ({ id }: { id: number }) => {
 	const t = useTranslations();
+	const { userInfo } = useUserContext();
 	const {
 		data: section,
 		isFetching,
@@ -33,7 +36,11 @@ const SectionMarkdown = ({ id }: { id: number }) => {
 	const onGetMarkdown = async () => {
 		if (!section || !section.md_file_name) return;
 		setMarkdownIsFetching(true);
-		const fileService = new BuiltInFile();
+		if (!userInfo?.default_file_system) {
+			toast.error('No default file system found');
+			return;
+		}
+		const fileService = new FileService(userInfo.default_file_system);
 		try {
 			const [res, err] = await utils.to(
 				fileService.getFileContent(section?.md_file_name)
