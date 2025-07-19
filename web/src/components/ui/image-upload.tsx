@@ -3,8 +3,8 @@ import { FileIcon, Loader2, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
-import { uploadFile } from '@/service/built-in-file';
 import { useTranslations } from 'next-intl';
+import { BuiltInFile } from '@/service/built-in-file';
 
 const ImageUpload = ({
 	onSuccess,
@@ -27,13 +27,14 @@ const ImageUpload = ({
 		if (!file) {
 			return;
 		}
+		const fileService = new BuiltInFile();
 		setUploadingStatus('uploading');
 		setFile(file);
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();
 		const fileName = `files/${name}.${suffix}`;
 		await utils.sleep(2000);
-		await uploadFile(fileName, file);
+		await fileService.uploadFile(fileName, file);
 		onSuccess && onSuccess(fileName);
 		setUploadingStatus('done');
 	};

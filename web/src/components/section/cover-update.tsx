@@ -6,7 +6,7 @@ import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { createAttachment } from '@/service/attachment';
-import { uploadFile } from '@/service/built-in-file';
+import { BuiltInFile } from '@/service/built-in-file';
 import CustomImage from '../ui/custom-image';
 
 const CoverUpdate = () => {
@@ -23,13 +23,14 @@ const CoverUpdate = () => {
 		if (!file) {
 			return;
 		}
+		const fileService = new BuiltInFile();
 		setUploadingStatus('uploading');
 		setFile(file);
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();
 		const fileName = `files/${name}.${suffix}`;
 		await utils.sleep(2000);
-		await uploadFile(fileName, file);
+		await fileService.uploadFile(fileName, file);
 		const [res, err] = await utils.to(
 			createAttachment({
 				name: fileName,

@@ -7,12 +7,11 @@ import { ChangeEvent, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { createAttachment } from '@/service/attachment';
 import { updateUserInfo } from '@/service/user';
-import { PhotoProvider, PhotoView } from 'react-photo-view';
 import { useMutation } from '@tanstack/react-query';
 import { utils } from '@kinda/utils';
-import { uploadFile } from '@/service/built-in-file';
 import { useTranslations } from 'next-intl';
 import CustomImage from '../ui/custom-image';
+import { BuiltInFile } from '@/service/built-in-file';
 
 const AvatarUpdate = () => {
 	const t = useTranslations();
@@ -32,13 +31,14 @@ const AvatarUpdate = () => {
 	};
 
 	const onUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-		setUploadingStatus(true);
 		const file = e.target.files?.[0];
 		if (!file) return;
+		const fileService = new BuiltInFile();
+		setUploadingStatus(true);
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();
 		const fileName = `images/${name}.${suffix}`;
-		await uploadFile(fileName, file);
+		await fileService.uploadFile(fileName, file);
 		const [res_create_attachment, err_create_attachment] = await utils.to(
 			createAttachment({ name: fileName, description: 'avatar' })
 		);

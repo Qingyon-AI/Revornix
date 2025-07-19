@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { uploadFile } from '@/service/built-in-file';
+import { BuiltInFile } from '@/service/built-in-file';
 
 const Upload = () => {
 	const [status, setStatus] = useState<string | null>(null);
@@ -17,11 +17,12 @@ const Upload = () => {
 	const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
+		const fileService = new BuiltInFile();
 		setStatus('uploading');
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();
 		const fileName = `files/${name}.${suffix}`;
-		await uploadFile(fileName, file);
+		await fileService.uploadFile(fileName, file);
 		toast.success('上传成功');
 		setStatus(null);
 	};

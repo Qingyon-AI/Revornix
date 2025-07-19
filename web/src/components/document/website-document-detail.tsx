@@ -194,7 +194,13 @@ const WebsiteDocumentDetail = ({
 						<Markdown
 							components={{
 								img: (props) => {
-									return <CustomImage {...props} className='w-full' />;
+									return (
+										<CustomImage
+											{...props}
+											className='w-full'
+											src={props.src}
+										/>
+									);
 								},
 							}}
 							remarkPlugins={[remarkMath, remarkGfm]}

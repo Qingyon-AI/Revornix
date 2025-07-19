@@ -26,7 +26,7 @@ const CustomImage = (props: Props) => {
 	}
 
 	return (
-		<div className={cn('relative', className)}>
+		<div className={cn('relative overflow-hidden', className)}>
 			{/* 占位元素（加载中） */}
 			{!isLoaded && !hasError && (
 				<div className='absolute inset-0'>
@@ -44,7 +44,6 @@ const CustomImage = (props: Props) => {
 					'w-full h-full object-cover',
 					!isLoaded && 'opacity-0',
 					'isLoaded && !hasError && "opacity-100 transition-opacity duration-300"',
-					className
 				)}
 				onLoad={() => setIsLoaded(true)}
 				onError={() => setHasError(true)}

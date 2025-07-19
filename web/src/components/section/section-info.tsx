@@ -6,7 +6,6 @@ import { formatDistance } from 'date-fns';
 import { Card } from '../ui/card';
 import { useUserContext } from '@/provider/user-provider';
 import SectionConfiguration from './section-configuration';
-import { PhotoProvider, PhotoView } from 'react-photo-view';
 import SectionDocument from './section-document';
 import { useRouter } from 'nextjs-toploader/app';
 import SectionComments from './section-comments';

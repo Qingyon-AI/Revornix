@@ -27,7 +27,9 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					<div className='h-full overflow-auto pb-5'>
 						<div className='mb-5'>
 							<div className='w-full h-64 object-cover relative'>
-								<CustomImage src={data.cover} />
+								<CustomImage
+									src={data.cover ? data.cover : 'images/cover.jpg'}
+								/>
 							</div>
 						</div>
 						<div className='flex flex-row justify-between items-center px-5 mb-3'>
