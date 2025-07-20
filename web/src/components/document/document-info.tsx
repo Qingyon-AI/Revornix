@@ -9,6 +9,7 @@ import { Badge } from '../ui/badge';
 import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
 import CustomImage from '../ui/custom-image';
+import Image from 'next/image';
 
 const DocumentInfo = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -26,9 +27,11 @@ const DocumentInfo = ({ id }: { id: number }) => {
 				<div className='relative h-full'>
 					<div className='h-full overflow-auto pb-5'>
 						<div className='mb-5'>
-							<div className='w-full h-64 object-cover relative'>
-								<CustomImage
-									src={data.cover ? data.cover : 'images/cover.jpg'}
+							<div className='w-full h-64 relative'>
+								<Image
+									alt='cover'
+									src={data.cover ? data.cover : '/images/cover.jpg'}
+									fill
 								/>
 							</div>
 						</div>

@@ -34,9 +34,9 @@ const SectionMarkdown = ({ id }: { id: number }) => {
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
 
 	const onGetMarkdown = async () => {
-		if (!section || !section.md_file_name) return;
+		if (!section || !section.md_file_name || !userInfo) return;
 		setMarkdownIsFetching(true);
-		if (!userInfo?.default_file_system) {
+		if (!userInfo.default_file_system) {
 			toast.error('No default file system found');
 			return;
 		}

@@ -25,7 +25,6 @@ const CustomImage = (props: Props) => {
 
 	const handleGetFinalSrc = async () => {
 		if (!userInfo) {
-			toast.error('请先登陆');
 			return;
 		}
 		if (!userInfo.default_file_system) {
@@ -61,7 +60,7 @@ const CustomImage = (props: Props) => {
 		setIsLoaded(false);
 		setHasError(false);
 		handleGetFinalSrc();
-	}, [src]);
+	}, [src, userInfo]);
 
 	if (hasError && errorPlaceHolder) {
 		return <>{errorPlaceHolder}</>;
@@ -85,7 +84,7 @@ const CustomImage = (props: Props) => {
 				className={cn(
 					'w-full h-full object-cover',
 					!isLoaded && 'opacity-0',
-					'isLoaded && !hasError && "opacity-100 transition-opacity duration-300"'
+					isLoaded && !hasError && 'opacity-100 transition-opacity duration-300'
 				)}
 				onLoad={() => setIsLoaded(true)}
 				onError={() => setHasError(true)}

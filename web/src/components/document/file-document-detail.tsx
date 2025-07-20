@@ -82,7 +82,7 @@ const FileDocumentDetail = ({
 	};
 
 	const onGetMarkdown = async () => {
-		if (!document || !document.file_info?.md_file_name) return;
+		if (!document || !document.file_info?.md_file_name || !userInfo) return;
 		if (!userInfo?.default_file_system) {
 			toast.error('No default file system found');
 			return;
@@ -121,6 +121,8 @@ const FileDocumentDetail = ({
 					{error?.message ?? (
 						<div className='flex flex-col text-center gap-2'>
 							<p>{markdownGetError}</p>
+							<Separator className='my-5' />
+							<DocumentOperate id={id} />
 						</div>
 					)}
 				</div>
@@ -174,6 +176,8 @@ const FileDocumentDetail = ({
 							<Loader2 className='size-4 animate-spin' />
 						)}
 					</Button>
+					<Separator className='my-5' />
+					<DocumentOperate id={id} />
 				</div>
 			)}
 			{document &&

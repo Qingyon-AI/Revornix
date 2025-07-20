@@ -63,39 +63,70 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
         self.oss_client = s3
     
     async def get_file_content_by_file_path(self, file_path: str):
+        await self.auth()
         res = self.oss_client.get_object(Bucket=self.bucket, Key=file_path)
+        content = None
+        contentType = res.get('ContentType')
+        if contentType == 'text/plain':
+            content = res.get('Body').read().decode('utf-8')
+        elif "image" in contentType:
+            content = res.get('Body').read()
+        else:
+            content = res.get('Body').read()
+        return content
+    
+    async def upload_file_to_path(self, file_path, file, content_type: str | None = None):
+        await self.auth()
+        
+        extra_args = {}
+        if content_type:
+            extra_args['ContentType'] = content_type
+            
+        kwargs = {
+            'Fileobj': file,
+            'Bucket': self.bucket,
+            'Key': file_path,
+        }
+
+        if extra_args:
+            kwargs['ExtraArgs'] = extra_args
+
+        res = self.oss_client.upload_fileobj(**kwargs)
         return res
     
-    async def upload_file_to_path(self, file_path, file):
-        res = self.oss_client.upload_fileobj(file, self.bucket, file_path)
-        return res
-    
-    async def upload_raw_content_to_path(self, file_path, content):
-        res = self.oss_client.put_object(Bucket=self.bucket, 
-                                         Body=content,
-                                         Key=file_path)
+    async def upload_raw_content_to_path(self, file_path, content, content_type: str | None = None):
+        await self.auth()
+        
+        kwargs = {
+            'Bucket': self.bucket,
+            'Key': file_path,
+            'Body': content,
+        }
+        
+        if content_type:
+            kwargs['ContentType'] = content_type
+            
+        res = self.oss_client.put_object(**kwargs)
         return res
         
     async def delete_file(self, file_path):
+        await self.auth()
         res = self.oss_client.delete_object(Bucket=self.bucket, Key=file_path)
         return res
     
     async def list_files(self):
+        await self.auth()
         res = self.oss_client.list_objects_v2(Bucket=self.bucket)
         return res
     
 async def main():
-    from rich import print
     service = AliyunOSSRemoteFileService(user_id=1)
     await service.auth()
-    files = await service.list_files()
-    print(files)
-    await service.upload_raw_content_to_path("test/test.txt", "hello world")
-    file_content = await service.get_file_content_by_file_path("test/test.txt")
+    # await service.upload_raw_content_to_path("test/test.txt", "hello world", "text/plain")
+    # file_content = await service.get_file_content_by_file_path("markdown/114d5238a07f4dc48bc8f052f08df6d4.md")
+    file_content = await service.get_file_content_by_file_path("images/d9a662e6-f7af-4d78-97eb-976c6001dc07.png")
     print(file_content)
-    file_content = file_content.get("Body").read()
-    print(file_content)
-    await service.delete_file("test/test.txt")
+    # await service.delete_file("test/test.txt")
     
 if __name__ == "__main__":
     import asyncio

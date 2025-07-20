@@ -64,8 +64,8 @@ const WebsiteDocumentDetail = ({
 	}, delay);
 	const [markdown, setMarkdown] = useState<string>();
 	const onGetMarkdown = async () => {
-		if (!document || !document?.website_info?.md_file_name) return;
-		if (!userInfo?.default_file_system) {
+		if (!document || !document?.website_info?.md_file_name || !userInfo) return;
+		if (!userInfo.default_file_system) {
 			toast.error('No default file system found');
 			return;
 		}
@@ -105,7 +105,7 @@ const WebsiteDocumentDetail = ({
 	useEffect(() => {
 		if (!document || !document.website_info?.md_file_name) return;
 		onGetMarkdown();
-	}, [document]);
+	}, [document, userInfo]);
 
 	const { ref: bottomRef, inView } = useInView();
 
@@ -121,6 +121,8 @@ const WebsiteDocumentDetail = ({
 					{error?.message ?? (
 						<div className='flex flex-col text-center gap-2'>
 							<p>{markdownGetError}</p>
+							<Separator className='my-5' />
+							<DocumentOperate id={id} />
 						</div>
 					)}
 				</div>
@@ -186,6 +188,8 @@ const WebsiteDocumentDetail = ({
 							<Loader2 className='size-4 animate-spin' />
 						)}
 					</Button>
+					<Separator className='my-5' />
+					<DocumentOperate id={id} />
 				</div>
 			)}
 			{document &&

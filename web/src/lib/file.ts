@@ -2,10 +2,10 @@ import { BuiltInFileService } from "@/service/built-in-file";
 import { OSSFileService } from "@/service/oss-file";
 
 export class FileService {
-    
+
     private file_system_id: number;
     private client: FileServiceProtocol | null = null;
-    
+
     constructor(file_system_id: number) {
         this.file_system_id = file_system_id;
         switch (this.file_system_id) {
@@ -13,7 +13,7 @@ export class FileService {
                 this.client = new BuiltInFileService();
                 break;
             case 2:
-                this.client = new OSSFileService
+                this.client = new OSSFileService()
                 break;
             default:
                 break;

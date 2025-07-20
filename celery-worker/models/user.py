@@ -33,6 +33,7 @@ class User(Base):
     default_revornix_model_id = Column(Integer, ForeignKey("ai_model.id"))
     default_website_document_parse_engine_id = Column(Integer, ForeignKey("engine.id"))
     default_file_document_parse_engine_id = Column(Integer, ForeignKey("engine.id"))
+    default_file_system = Column(Integer, ForeignKey("file_system.id"))
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True))
