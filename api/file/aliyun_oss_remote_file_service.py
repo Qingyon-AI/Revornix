@@ -15,8 +15,14 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
     oss_client: AcsClient = None
     bucket: str = None
     
-    def __init__(self, user_id: int):
-        self.user_id = user_id
+    def __init__(self, 
+                 user_id: int | None = None):
+        super().__init__(file_service_uuid='41be24fa741f4716b8dc0ccef3980655',
+                         file_service_name='Aliyun OSS',
+                         file_service_name_zh='阿里云OSS',
+                         file_service_description='Aliyun OSS File System, Based on Aliyun official OSS, has strong stability and availability, but needs to be charged.',
+                         file_service_description_zh='Aliyun OSS 文件系统，基于阿里云官方的OSS，具有极强的稳定性和可用性，但需要收费。',
+                         user_id=user_id)
     
     async def auth(self):
         db = SessionLocal()

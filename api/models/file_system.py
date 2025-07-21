@@ -5,6 +5,7 @@ class FileSystem(Base):
     __tablename__ = "file_system"
     
     id = Column(Integer, primary_key=True)
+    uuid = Column(String(100), nullable=False, index=True, unique=True)
     name = Column(String(200), index=True)
     name_zh = Column(String(200), index=True)
     description = Column(String(500))

@@ -13,8 +13,14 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     s3_client: any = None
     bucket: str = None
 
-    def __init__(self, user_id: int):
-        self.user_id = user_id
+    def __init__(self, 
+                 user_id: int | None = None):
+        super().__init__(file_service_uuid='3ea378364a2d4a65be25085a47835d80',
+                         file_service_name='Built-in',
+                         file_service_name_zh='内置文件系统',
+                         file_service_description='Built-in file system, based on minio, free to use.',
+                         file_service_description_zh='内置文件系统，基于minio，可免费使用。',
+                         user_id=user_id)
         
     async def auth(self) -> None:
         db = SessionLocal()

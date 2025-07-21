@@ -2,10 +2,12 @@ import models
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
-def create_file_system(db: Session, name: str, description: str | None = None):
+def create_file_system(db: Session, name: str, name_zh: str, description: str | None = None, description_zh: str | None = None):
     now = datetime.now(timezone.utc)
     db_file_system = models.file_system.FileSystem(name=name,
+                                                   name_zh=name_zh,
                                                    description=description,
+                                                   description_zh=description_zh,
                                                    create_time=now,
                                                    update_time=now)
     db.add(db_file_system)
