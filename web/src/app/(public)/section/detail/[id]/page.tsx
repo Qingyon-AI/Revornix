@@ -9,6 +9,6 @@ const SectionDetailPage = async ({ params }: { params: Params }) => {
 	const { id } = await params;
 	if (!id) return notFound();
 
-	return <SectionContainer id={id} />;
+	return <SectionContainer id={Number(id)} />;
 };
 export default SectionDetailPage;
