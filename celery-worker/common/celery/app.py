@@ -275,7 +275,7 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
             raise Exception("Document not found")
         if db_document.category == 1:
             website_document = crud.document.get_website_document_by_document_id(db=db,
-                                                                                    document_id=document_id)
+                                                                                 document_id=document_id)
             if website_document is None:
                 raise Exception("Website document not found")
             markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=website_document.md_file_name)

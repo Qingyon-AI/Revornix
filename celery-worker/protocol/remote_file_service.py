@@ -11,7 +11,10 @@ class RemoteFileServiceProtocol(Protocol):
     async def get_file_content_by_file_path(self, file_path: str) -> dict:
         raise NotImplementedError("Method not implemented")
     
-    async def upload_raw_content_to_path(self, file_path: str, content: bytes) -> dict:
+    async def upload_file_to_path(self, file_path: str, file, content_type: str | None = None) -> dict:
+        raise NotImplementedError("Method not implemented")
+    
+    async def upload_raw_content_to_path(self, file_path: str, content: bytes, content_type: str | None = None) -> dict:
         raise NotImplementedError("Method not implemented")
     
     async def delete_file(self, file_path) -> dict:
