@@ -92,17 +92,10 @@ services:
     build:
       context: file-backend
       dockerfile: Dockerfile
-    command: ["sh", "-c", "fastapi run main.py --proxy-headers --host 0.0.0.0 --port 8001"]
+    command: ["minio"]
     volumes:
-      - ./volumes/files:/app/uploads
-    depends_on:
-      - standalone
-      - mysql
-      - redis
-      - neo4j
-    env_file:
-      - ./envs/.file.env
-      
+      - ./volumes/files:/data
+
   celery-worker:
     container_name: celery-worker
     build:

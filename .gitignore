@@ -8,15 +8,6 @@ __pycache__/
 *.egg-info/
 *.egg
 *.log
-volumes/mysql/
-volumes/neo4j/
-volumes/redis/
-volumes/temp/
-volumes/files/markdown/*
-volumes/files/files/*
-volumes/files/images/*
-volumes/files/images/*
-!volumes/files/images/cover.jpg
-!volumes/files/images/default_avatar_1
+volumes/*
 envs/*.env
 .env
