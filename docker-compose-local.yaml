@@ -23,6 +23,9 @@ services:
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9011:9001"
+      - "9010:9000"
     volumes:
       - ./volumes/files:/data
     command: minio server /data --console-address ":9001"
