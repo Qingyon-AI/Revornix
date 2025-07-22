@@ -140,6 +140,15 @@ class SectionInfo(BaseModel):
     labels: list[Label] | None = None
     cover: AttachmentInfo | None = None
     documents: list[SectionDocumentInfo] | None = None
+    @field_serializer("cover")
+    def cover(self, v):
+        if v is None:
+            return None
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator.id)
+        return AttachmentInfo(
+            id=v.id,
+            name=f'{url_prefix}/{v.name}',
+        )
     @field_serializer("md_file_name")
     def md_file_name(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator.id)
@@ -164,6 +173,7 @@ class DaySectionRequest(BaseModel):
     date: str
 
 class DaySectionResponse(BaseModel):
+    creator: UserPublicInfo
     date: str
     title: str
     description: str
@@ -171,6 +181,10 @@ class DaySectionResponse(BaseModel):
     update_time: datetime
     md_file_name: str | None = None
     documents: list[SectionDocumentInfo]
+    @field_serializer("md_file_name")
+    def md_file_name(self, v: str) -> str:
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator.id)
+        return f'{url_prefix}/{v}'
     @field_validator("create_time", mode="before")
     def ensure_create_timezone(cls, v: datetime) -> datetime:
         if v.tzinfo is None:

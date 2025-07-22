@@ -477,6 +477,7 @@ async def get_date_section_info(day_section_request: schemas.section.DaySectionR
                                                                      'status': crud.section.get_section_document_by_section_id_and_document_id(db=db, section_id=db_section.id, document_id=document.id).status}) 
                  for document in db_documents]
     res = schemas.section.DaySectionResponse(
+        creator=db_section.creator,
         create_time=db_section.create_time,
         update_time=db_section.update_time,
         date=day_section_request.date,

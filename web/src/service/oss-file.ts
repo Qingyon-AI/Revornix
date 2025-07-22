@@ -12,16 +12,16 @@ export class OSSFileService implements FileServiceProtocol {
     private async initFileSystemConfig() {
         const [res_user, err_user] = await utils.to(getMyInfo());
         if (err_user || !res_user) {
-            throw err_user || new Error("Not support");
+            throw err_user || new Error("init file system config failed");
         }
         if (res_user.default_file_system !== 2) {
-            throw new Error("Not support");
+            throw new Error("You can't use the oss file system with the default file system equals to 2");
         }
         const [res_sts, err_sts] = await utils.to(
             getAliyunOSSSts()
         );
         if (err_sts || !res_sts) {
-            throw err_sts || new Error("Not support");
+            throw err_sts || new Error("get aliyun oss sts failed");
         }
         this.sts_config = res_sts;
         const [res_oss_file_system_config, err_oss_file_system_config] = await utils.to(
@@ -33,7 +33,7 @@ export class OSSFileService implements FileServiceProtocol {
             throw err_oss_file_system_config || new Error("Not support");
         }
         if (!res_oss_file_system_config.config_json) {
-            throw new Error("Not support");
+            throw new Error("You have not set the config json for the oss file system");
         }
         const config_json = JSON.parse(res_oss_file_system_config.config_json);
         this.file_system_config_json = config_json;

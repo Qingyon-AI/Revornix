@@ -13,7 +13,7 @@ const SectionDocumentCard = ({
 	return (
 		<div
 			onClick={() => router.push(`/document/detail/${document.id}`)}
-			className='relative bg-white dark:bg-black rounded ring-1 ring-inset dark:ring-white/10 ring-black/10 flex justify-between items-center p-5'>
+			className='relative bg-white dark:bg-black rounded ring-1 ring-inset dark:ring-white/10 ring-black/10 flex justify-between items-center gap-3 p-5'>
 			<div className='flex flex-col gap-2'>
 				<div className='text-sm font-bold line-clamp-1'>
 					{document.title

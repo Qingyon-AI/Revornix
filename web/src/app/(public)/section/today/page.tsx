@@ -66,9 +66,9 @@ const SectionDetailPage = () => {
 	};
 
 	useEffect(() => {
-		if (!section || !section?.md_file_name) return;
+		if (!section || !section?.md_file_name || !userInfo) return;
 		onGetMarkdown();
-	}, [section]);
+	}, [section, userInfo]);
 
 	return (
 		<>
@@ -101,6 +101,7 @@ const SectionDetailPage = () => {
 					{section && (
 						<p className='text-xs bg-muted rounded px-4 py-2'>
 							{t('section_updated_at')}
+							{' '}
 							{format(section.update_time as Date, 'yyyy-MM-dd HH:mm:ss')}
 						</p>
 					)}

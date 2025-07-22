@@ -38,6 +38,7 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
             raise Exception("User file system not found")
         
         config_str = db_user_file_system.config_json
+        self.file_service_config = config_str
         config = json.loads(config_str)
         role_arn = config.get('role_arn')
         role_session_name = config.get('role_session_name')

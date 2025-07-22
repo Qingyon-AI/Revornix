@@ -139,13 +139,6 @@ class DocumentInfo(BaseModel):
     users: list[UserPublicInfo] | None = None
     transform_task: DocumentTransformTask | None = None
     
-    @field_serializer("cover")
-    def cover(self, v: str) -> str:
-        if v is None:
-            return ""
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
-        return f'{url_prefix}/{v}'
-    
     @field_validator("create_time", mode="before")
     def ensure_create_timezone(cls, v: datetime) -> datetime:
         if v.tzinfo is None:
