@@ -24,6 +24,7 @@ models/AttachmentCreateResponse.ts
 models/AttachmentInfo.ts
 models/BaseSectionInfo.ts
 models/BindEmailVerifyRequest.ts
+models/BuiltInStsResponse.ts
 models/ChatItem.ts
 models/ChatMessages.ts
 models/CoverImage.ts

@@ -1,5 +1,5 @@
 import { utils } from "@kinda/utils";
-import { getAliyunOSSSts, getFileSystemDetail } from "./file_system";
+import { getAliyunOSSSts, getFileSystemDetail } from "./file-system";
 import { getMyInfo } from "./user";
 import OSS from 'ali-oss';
 

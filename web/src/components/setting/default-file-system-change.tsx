@@ -9,7 +9,7 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { useUserContext } from '@/provider/user-provider';
-import { getMineFileSystems } from '@/service/file_system';
+import { getMineFileSystems } from '@/service/file-system';
 import { updateUserDefaultFileSystem } from '@/service/user';
 import { utils } from '@kinda/utils';
 import { useQuery } from '@tanstack/react-query';

@@ -1,14 +1,45 @@
 import schemas
 import crud
 import json
+import os
+import boto3
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from botocore.config import Config
+from file.built_in_remote_file_service import BuiltInRemoteFileService
 from common.dependencies import get_current_user, get_db
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 
 file_system_router = APIRouter()
+
+@file_system_router.post('/built-in/sts', response_model=schemas.file_system.BuiltInStsResponse)
+async def get_built_in_sts(db: Session = Depends(get_db),
+                           current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    sts = boto3.client(
+        'sts',
+        endpoint_url=os.environ.get('FILE_SERVER_URL'),
+        aws_access_key_id='minioadmin',
+        aws_secret_access_key='minioadmin',
+        config=Config(signature_version='s3v4'),
+        region_name="main" 
+    )
+    resp = sts.assume_role(
+        RoleArn='arn:aws:iam::minio:role/upload-policy',
+        RoleSessionName='upload-session',
+        DurationSeconds=3600
+    )
+    sts_role_session_token = resp.get('Credentials').get('SessionToken')
+    sts_role_access_key_id = resp.get('Credentials').get('AccessKeyId')
+    sts_role_access_key_secret = resp.get('Credentials').get('SecretAccessKey')
+    expiration = resp.get('Credentials').get('Expiration').isoformat()
+    return schemas.file_system.BuiltInStsResponse(access_key_id=sts_role_access_key_id,
+                                                  access_key_secret=sts_role_access_key_secret,
+                                                  security_token=sts_role_session_token,
+                                                  endpoint_url=os.environ.get('FILE_SERVER_URL'),
+                                                  expiration=expiration,
+                                                  region="main")
 
 @file_system_router.post('/oss/sts', response_model=schemas.file_system.OssStsResponse)
 async def get_oss_sts(db: Session = Depends(get_db),
@@ -43,13 +74,14 @@ async def get_oss_sts(db: Session = Depends(get_db),
     sts_role_access_key_id = result.get('Credentials').get('AccessKeyId')
     sts_role_access_key_secret = result.get('Credentials').get('AccessKeySecret')
     expiration = result.get('Credentials').get('Expiration')
+    endpoint_url = config.get('oss_endpoint')
     return schemas.file_system.OssStsResponse(access_key_id=sts_role_access_key_id,
                                               access_key_secret=sts_role_access_key_secret,
                                               security_token=sts_role_session_token,
-                                              endpoint_url=config.get('oss_endpoint'),
+                                              endpoint_url=endpoint_url,
                                               expiration=expiration,
                                               region=region_id)
-    
+
 @file_system_router.post('/detail', response_model=schemas.file_system.UserFileSystemInfo)
 async def get_file_system_info(file_system_info_request: schemas.file_system.FileSystemInfoRequest,
                                db: Session = Depends(get_db),
@@ -107,6 +139,9 @@ async def install_file_system(file_system_install_request: schemas.file_system.F
             crud.file_system.bind_file_system_to_user(db=db,
                                                       user_id=current_user.id,
                                                       file_system_id=file_system_install_request.file_system_id)
+            # create the bucket for user if the file system choosed to install is built-in
+            if file_system_install_request.file_system_id == 1:
+                BuiltInRemoteFileService.ensure_bucket_exists(current_user.uuid)
         else:
             raise schemas.error.CustomException(code=400, message="Operation failed")
     else:

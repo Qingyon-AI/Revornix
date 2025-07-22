@@ -30,7 +30,7 @@ import {
 	getProvideFileSystems,
 	installFileSystem,
 	updateFileSystem,
-} from '@/service/file_system';
+} from '@/service/file-system';
 
 const InitFileSystem = () => {
 	const t = useTranslations();

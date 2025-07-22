@@ -10,6 +10,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.850.0",
+    "@aws-sdk/lib-storage": "^3.850.0",
     "@hookform/resolvers": "^5.1.1",
     "@kinda/utils": "^0.0.6",
     "@mdx-js/mdx": "^3.1.0",

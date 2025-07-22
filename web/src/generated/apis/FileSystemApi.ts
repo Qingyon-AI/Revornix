@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  BuiltInStsResponse,
   FileSystemInfoRequest,
   FileSystemInstallRequest,
   FileSystemSearchRequest,
@@ -27,6 +28,8 @@ import type {
   UserFileSystemInfo,
 } from '../models/index';
 import {
+    BuiltInStsResponseFromJSON,
+    BuiltInStsResponseToJSON,
     FileSystemInfoRequestFromJSON,
     FileSystemInfoRequestToJSON,
     FileSystemInstallRequestFromJSON,
@@ -48,6 +51,11 @@ import {
     UserFileSystemInfoFromJSON,
     UserFileSystemInfoToJSON,
 } from '../models/index';
+
+export interface GetBuiltInStsFileSystemBuiltInStsPostRequest {
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
 
 export interface GetFileSystemInfoFileSystemDetailPostRequest {
     fileSystemInfoRequest: FileSystemInfoRequest;
@@ -88,6 +96,43 @@ export interface UpdateFileSystemFileSystemUpdatePostRequest {
  * 
  */
 export class FileSystemApi extends runtime.BaseAPI {
+
+    /**
+     * Get Built In Sts
+     */
+    async getBuiltInStsFileSystemBuiltInStsPostRaw(requestParameters: GetBuiltInStsFileSystemBuiltInStsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BuiltInStsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/file_system/built-in/sts`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BuiltInStsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Built In Sts
+     */
+    async getBuiltInStsFileSystemBuiltInStsPost(requestParameters: GetBuiltInStsFileSystemBuiltInStsPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BuiltInStsResponse> {
+        const response = await this.getBuiltInStsFileSystemBuiltInStsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Get File System Info

@@ -16,51 +16,51 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface OssStsResponse
+ * @interface BuiltInStsResponse
  */
-export interface OssStsResponse {
+export interface BuiltInStsResponse {
     /**
      * 
      * @type {string}
-     * @memberof OssStsResponse
+     * @memberof BuiltInStsResponse
      */
     access_key_id: string;
     /**
      * 
      * @type {string}
-     * @memberof OssStsResponse
+     * @memberof BuiltInStsResponse
      */
     access_key_secret: string;
     /**
      * 
      * @type {string}
-     * @memberof OssStsResponse
+     * @memberof BuiltInStsResponse
      */
     security_token: string;
     /**
      * 
      * @type {string}
-     * @memberof OssStsResponse
+     * @memberof BuiltInStsResponse
      */
     expiration: string;
     /**
      * 
      * @type {string}
-     * @memberof OssStsResponse
+     * @memberof BuiltInStsResponse
      */
     endpoint_url: string;
     /**
      * 
      * @type {string}
-     * @memberof OssStsResponse
+     * @memberof BuiltInStsResponse
      */
     region: string;
 }
 
 /**
- * Check if a given object implements the OssStsResponse interface.
+ * Check if a given object implements the BuiltInStsResponse interface.
  */
-export function instanceOfOssStsResponse(value: object): value is OssStsResponse {
+export function instanceOfBuiltInStsResponse(value: object): value is BuiltInStsResponse {
     if (!('access_key_id' in value) || value['access_key_id'] === undefined) return false;
     if (!('access_key_secret' in value) || value['access_key_secret'] === undefined) return false;
     if (!('security_token' in value) || value['security_token'] === undefined) return false;
@@ -70,11 +70,11 @@ export function instanceOfOssStsResponse(value: object): value is OssStsResponse
     return true;
 }
 
-export function OssStsResponseFromJSON(json: any): OssStsResponse {
-    return OssStsResponseFromJSONTyped(json, false);
+export function BuiltInStsResponseFromJSON(json: any): BuiltInStsResponse {
+    return BuiltInStsResponseFromJSONTyped(json, false);
 }
 
-export function OssStsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): OssStsResponse {
+export function BuiltInStsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): BuiltInStsResponse {
     if (json == null) {
         return json;
     }
@@ -89,11 +89,11 @@ export function OssStsResponseFromJSONTyped(json: any, ignoreDiscriminator: bool
     };
 }
 
-export function OssStsResponseToJSON(json: any): OssStsResponse {
-    return OssStsResponseToJSONTyped(json, false);
+export function BuiltInStsResponseToJSON(json: any): BuiltInStsResponse {
+    return BuiltInStsResponseToJSONTyped(json, false);
 }
 
-export function OssStsResponseToJSONTyped(value?: OssStsResponse | null, ignoreDiscriminator: boolean = false): any {
+export function BuiltInStsResponseToJSONTyped(value?: BuiltInStsResponse | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

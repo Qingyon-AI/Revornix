@@ -1,6 +1,6 @@
 'use client';
 
-import { createApiKey, deleteApiKeys, searchApiKey } from '@/service/api_key';
+import { createApiKey, deleteApiKeys, searchApiKey } from '@/service/api-key';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import * as React from 'react';

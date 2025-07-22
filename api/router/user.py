@@ -264,6 +264,7 @@ async def initial_see_password(user = Depends(get_current_user),
 async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user),
                   db: Session = Depends(get_db)):
     res = schemas.user.PrivateUserInfo(id=user.id,
+                                       uuid=user.uuid,
                                        nickname=user.nickname,
                                        slogan=user.slogan,
                                        avatar=user.avatar,

@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { FileSystemInfo } from '@/generated';
 import { useTranslations } from 'next-intl';
-import { installFileSystem } from '@/service/file_system';
+import { installFileSystem } from '@/service/file-system';
 
 const ProvideFileSystemCard = ({
 	file_system,

@@ -3,8 +3,10 @@ load_dotenv(override=True)
 import os
 import boto3
 import crud
+import json
 from common.sql import SessionLocal
 from botocore.client import Config
+from botocore.exceptions import ClientError
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
 class BuiltInRemoteFileService(RemoteFileServiceProtocol):
@@ -22,12 +24,80 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                          file_service_description_zh='内置文件系统，基于minio，可免费使用。',
                          user_id=user_id)
         
+    @staticmethod
+    def empty_bucket(bucket_name: str):
+        s3 = boto3.resource('s3',
+            endpoint_url=os.environ.get('FILE_SERVER_URL'),
+            aws_access_key_id='minioadmin',
+            aws_secret_access_key='minioadmin',
+            config=Config(signature_version='s3v4'),
+            verify=False
+        )
+        bucket = s3.Bucket(bucket_name)
+        versioning = bucket.Versioning().status
+
+        if versioning == 'Enabled':
+            bucket.object_versions.delete()
+        else:
+            bucket.objects.all().delete()
+
+    @staticmethod
+    def delete_bucket(bucket_name: str):
+        BuiltInRemoteFileService.empty_bucket(bucket_name)
+        s3 = boto3.resource('s3',
+            endpoint_url=os.environ.get('FILE_SERVER_URL'),
+            aws_access_key_id='minioadmin',
+            aws_secret_access_key='minioadmin',
+            config=Config(signature_version='s3v4'),
+            verify=False
+        )
+        bucket = s3.Bucket(bucket_name)
+        try:
+            bucket.delete()
+            print(f"Bucket `{bucket_name}` 删除成功")
+        except ClientError as e:
+            print("删除失败:", e.response['Error']['Message'])
+            raise
+    
+    @staticmethod
+    def ensure_bucket_exists(bucket_name: str):
+        s3 = boto3.client(
+            's3',
+            endpoint_url=os.environ.get('FILE_SERVER_URL'),
+            aws_access_key_id='minioadmin',
+            aws_secret_access_key='minioadmin',
+            config=Config(signature_version='s3v4'),
+            verify=False
+        )
+        try:
+            s3.head_bucket(Bucket=bucket_name)
+        except ClientError as e:
+            code = e.response['Error']['Code']
+            if code in ['404', '400']:
+                s3.create_bucket(Bucket=bucket_name)
+                # 公开读策略
+                policy = {
+                    "Version": "2012-10-17",
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": ["s3:GetObject"],
+                        "Resource": [f"arn:aws:s3:::{bucket_name}/*"]
+                    }]
+                }
+                s3.put_bucket_policy(Bucket=bucket_name, Policy=json.dumps(policy))
+            elif code == '403':
+                raise Exception("Access denied. You may not have permission to create this bucket.")
+            else:
+                raise
+        
     async def auth(self) -> None:
         db = SessionLocal()
         user = crud.user.get_user_by_id(db=db, 
                                         user_id=self.user_id)
         if user is None:
             raise Exception("User not found")
+        self.ensure_bucket_exists(bucket_name=user.uuid)
         self.bucket = user.uuid
         sts = boto3.client(
             'sts',
@@ -114,13 +184,16 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
 async def main():
     from rich import print
     service = BuiltInRemoteFileService(user_id=1)
-    await service.auth()
-    files = await service.list_files()
-    print(files)
-    await service.upload_raw_content_to_path("test/test.txt", "hello world", "text/plain")
-    file_content = await service.get_file_content_by_file_path("test/test.txt")
-    print(file_content)
-    await service.delete_file("test/test.txt")
+    # service.ensure_bucket_exists("13671ce7-ec89-4327-ac95-76fba71e4322")
+    # service.empty_bucket("13671ce7-ec89-4327-ac95-76fba71e4322")
+    # service.delete_bucket("13671ce7-ec89-4327-ac95-76fba71e4322")
+    # await service.auth()
+    # files = await service.list_files()
+    # print(files)
+    # await service.upload_raw_content_to_path("test/test.txt", "hello world", "text/plain")
+    # file_content = await service.get_file_content_by_file_path("test/test.txt")
+    # print(file_content)
+    # await service.delete_file("test/test.txt")
     
 if __name__ == "__main__":
     import asyncio

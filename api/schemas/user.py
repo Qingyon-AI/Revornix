@@ -76,6 +76,7 @@ class EmailInfo(BaseModel):
     
 class PrivateUserInfo(BaseModel):
     id: int
+    uuid: str
     fans: int | None = None
     follows: int | None = None
     avatar: AttachmentInfo | None = None

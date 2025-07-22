@@ -13,6 +13,7 @@ export * from './AttachmentCreateResponse';
 export * from './AttachmentInfo';
 export * from './BaseSectionInfo';
 export * from './BindEmailVerifyRequest';
+export * from './BuiltInStsResponse';
 export * from './ChatItem';
 export * from './ChatMessages';
 export * from './CoverImage';

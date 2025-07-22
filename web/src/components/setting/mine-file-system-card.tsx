@@ -40,7 +40,7 @@ import {
 	AlertDialogTrigger,
 } from '../ui/alert-dialog';
 import { useState } from 'react';
-import { installFileSystem, updateFileSystem } from '@/service/file_system';
+import { installFileSystem, updateFileSystem } from '@/service/file-system';
 import { useUserContext } from '@/provider/user-provider';
 
 const MineFileSystemCard = ({

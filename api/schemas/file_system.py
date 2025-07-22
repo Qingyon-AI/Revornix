@@ -1,6 +1,14 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
 
+class BuiltInStsResponse(BaseModel):
+    access_key_id: str
+    access_key_secret: str
+    security_token: str
+    expiration: str
+    endpoint_url: str
+    region: str
+    
 class OssStsResponse(BaseModel):
     access_key_id: str
     access_key_secret: str

@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
 	getMineFileSystems,
 	getProvideFileSystems,
-} from '@/service/file_system';
+} from '@/service/file-system';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';

@@ -42,6 +42,12 @@ export interface PrivateUserInfo {
     id: number;
     /**
      * 
+     * @type {string}
+     * @memberof PrivateUserInfo
+     */
+    uuid: string;
+    /**
+     * 
      * @type {number}
      * @memberof PrivateUserInfo
      */
@@ -119,6 +125,7 @@ export interface PrivateUserInfo {
  */
 export function instanceOfPrivateUserInfo(value: object): value is PrivateUserInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('uuid' in value) || value['uuid'] === undefined) return false;
     return true;
 }
 
@@ -133,6 +140,7 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
         
         'id': json['id'],
+        'uuid': json['uuid'],
         'fans': json['fans'] == null ? undefined : json['fans'],
         'follows': json['follows'] == null ? undefined : json['follows'],
         'avatar': json['avatar'] == null ? undefined : AttachmentInfoFromJSON(json['avatar']),
@@ -160,6 +168,7 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
     return {
         
         'id': value['id'],
+        'uuid': value['uuid'],
         'fans': value['fans'],
         'follows': value['follows'],
         'avatar': AttachmentInfoToJSON(value['avatar']),
