@@ -1,6 +1,12 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
 
+class FileUrlPrefixRequest(BaseModel):
+    user_id: int
+
+class FileUrlPrefixResponse(BaseModel):
+    url_prefix: str
+
 class BuiltInStsResponse(BaseModel):
     access_key_id: str
     access_key_secret: str

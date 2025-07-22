@@ -8,4 +8,5 @@ export default {
     getFileSystemDetail: API_PREFIX + '/file_system/detail',
     getAliyunOSSSTSToken: API_PREFIX + "/file_system/oss/sts",
     getBuiltInSTSToken: API_PREFIX + "/file_system/built-in/sts",
+    getUserFileUrlPrefix: API_PREFIX + "/file_system/url-prefix",
 }

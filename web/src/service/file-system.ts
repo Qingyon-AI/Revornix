@@ -1,6 +1,6 @@
 import { request } from '@/lib/request'
 import fileSystemApi from '@/api/file_system'
-import { BuiltInStsResponse, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemSearchRequest, FileSystemUpdateRequest, MineFileSystemSearchResponse, NormalResponse, OssStsResponse, ProvideFileSystemSearchResponse, UserFileSystemInfo } from '@/generated'
+import { BuiltInStsResponse, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemSearchRequest, FileSystemUpdateRequest, FileUrlPrefixRequest, FileUrlPrefixResponse, MineFileSystemSearchResponse, NormalResponse, OssStsResponse, ProvideFileSystemSearchResponse, UserFileSystemInfo } from '@/generated'
 
 export const getProvideFileSystems = async (data: FileSystemSearchRequest): Promise<ProvideFileSystemSearchResponse> => {
     return await request(fileSystemApi.getProvideFileSystems, {
@@ -38,4 +38,10 @@ export const getAliyunOSSSts = async (): Promise<OssStsResponse> => {
 
 export const getBuiltInSts = async (): Promise<BuiltInStsResponse> => {
     return await request(fileSystemApi.getBuiltInSTSToken)
+}
+
+export const getUserFileUrlPrefix = async (data: FileUrlPrefixRequest): Promise<FileUrlPrefixResponse> => {
+    return await request(fileSystemApi.getUserFileUrlPrefix, {
+        data
+    })
 }

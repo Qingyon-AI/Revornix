@@ -14,6 +14,28 @@ from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 
 file_system_router = APIRouter()
 
+@file_system_router.post('/url-prefix', response_model=schemas.file_system.FileUrlPrefixResponse)
+async def get_url_prefix(file_url_prefix_request: schemas.file_system.FileUrlPrefixRequest,
+                         db: Session = Depends(get_db)):
+    db_user = crud.user.get_user_by_id(db=db, user_id=file_url_prefix_request.user_id)
+    res = None
+    if db_user is None:
+        raise Exception('User not found')
+    if db_user.default_file_system == 1:
+        res = schemas.file_system.FileUrlPrefixResponse(url_prefix=f'{os.environ.get("FILE_SERVER_URL")}/{db_user.id}')
+    elif db_user.default_file_system == 2:
+        db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
+                                                                                                  user_id=db_user.id,
+                                                                                                  file_system_id=2)
+        if db_user_file_system is None:
+            raise Exception('User file system not found')
+        config_str = db_user_file_system.config_json
+        if config_str is None:
+            raise Exception("User file system config is empty")
+        config = json.loads(config_str)
+        res = schemas.file_system.FileUrlPrefixResponse(url_prefix=f'{config.get("url_prefix")}')
+    return res
+
 @file_system_router.post('/built-in/sts', response_model=schemas.file_system.BuiltInStsResponse)
 async def get_built_in_sts(db: Session = Depends(get_db),
                            current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):

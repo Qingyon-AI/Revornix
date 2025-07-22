@@ -69,6 +69,8 @@ models/FileSystemInfoRequest.ts
 models/FileSystemInstallRequest.ts
 models/FileSystemSearchRequest.ts
 models/FileSystemUpdateRequest.ts
+models/FileUrlPrefixRequest.ts
+models/FileUrlPrefixResponse.ts
 models/FollowUserRequest.ts
 models/HTTPValidationError.ts
 models/InifiniteScrollPagnitionDocumentInfo.ts

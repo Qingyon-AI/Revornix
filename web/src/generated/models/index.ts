@@ -58,6 +58,8 @@ export * from './FileSystemInfoRequest';
 export * from './FileSystemInstallRequest';
 export * from './FileSystemSearchRequest';
 export * from './FileSystemUpdateRequest';
+export * from './FileUrlPrefixRequest';
+export * from './FileUrlPrefixResponse';
 export * from './FollowUserRequest';
 export * from './HTTPValidationError';
 export * from './InifiniteScrollPagnitionDocumentInfo';

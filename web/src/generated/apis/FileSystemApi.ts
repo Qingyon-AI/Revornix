@@ -20,6 +20,8 @@ import type {
   FileSystemInstallRequest,
   FileSystemSearchRequest,
   FileSystemUpdateRequest,
+  FileUrlPrefixRequest,
+  FileUrlPrefixResponse,
   HTTPValidationError,
   MineFileSystemSearchResponse,
   NormalResponse,
@@ -38,6 +40,10 @@ import {
     FileSystemSearchRequestToJSON,
     FileSystemUpdateRequestFromJSON,
     FileSystemUpdateRequestToJSON,
+    FileUrlPrefixRequestFromJSON,
+    FileUrlPrefixRequestToJSON,
+    FileUrlPrefixResponseFromJSON,
+    FileUrlPrefixResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     MineFileSystemSearchResponseFromJSON,
@@ -66,6 +72,10 @@ export interface GetFileSystemInfoFileSystemDetailPostRequest {
 export interface GetOssStsFileSystemOssStsPostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
+}
+
+export interface GetUrlPrefixFileSystemUrlPrefixPostRequest {
+    fileUrlPrefixRequest: FileUrlPrefixRequest;
 }
 
 export interface InstallFileSystemFileSystemInstallPostRequest {
@@ -215,6 +225,45 @@ export class FileSystemApi extends runtime.BaseAPI {
      */
     async getOssStsFileSystemOssStsPost(requestParameters: GetOssStsFileSystemOssStsPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OssStsResponse> {
         const response = await this.getOssStsFileSystemOssStsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Url Prefix
+     */
+    async getUrlPrefixFileSystemUrlPrefixPostRaw(requestParameters: GetUrlPrefixFileSystemUrlPrefixPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FileUrlPrefixResponse>> {
+        if (requestParameters['fileUrlPrefixRequest'] == null) {
+            throw new runtime.RequiredError(
+                'fileUrlPrefixRequest',
+                'Required parameter "fileUrlPrefixRequest" was null or undefined when calling getUrlPrefixFileSystemUrlPrefixPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/file_system/url-prefix`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: FileUrlPrefixRequestToJSON(requestParameters['fileUrlPrefixRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FileUrlPrefixResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Url Prefix
+     */
+    async getUrlPrefixFileSystemUrlPrefixPost(requestParameters: GetUrlPrefixFileSystemUrlPrefixPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FileUrlPrefixResponse> {
+        const response = await this.getUrlPrefixFileSystemUrlPrefixPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
