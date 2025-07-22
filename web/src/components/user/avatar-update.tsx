@@ -21,8 +21,9 @@ const AvatarUpdate = () => {
 
 	const mutation = useMutation({
 		mutationFn: updateUserInfo,
-		onSuccess: () => {
-			refreshUserInfo();
+		onSuccess: async () => {
+			await utils.sleep(500);
+			await refreshUserInfo();
 		},
 	});
 

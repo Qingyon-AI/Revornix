@@ -1,5 +1,6 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, field_serializer
 from datetime import datetime, timezone
+from protocol.remote_file_service import RemoteFileServiceProtocol
 from .user import UserPublicInfo
 from .task import DocumentTransformTask
 
@@ -125,6 +126,7 @@ class SearchMyStarDocumentsRequest(BaseModel):
 
 class DocumentInfo(BaseModel):
     id: int
+    creator_id: int
     category: int | None = None
     title: str | None = None
     cover: str | None = None
@@ -137,26 +139,50 @@ class DocumentInfo(BaseModel):
     users: list[UserPublicInfo] | None = None
     transform_task: DocumentTransformTask | None = None
     
+    @field_serializer("cover")
+    def cover(self, v: str) -> str:
+        if v is None:
+            return ""
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
+        return f'{url_prefix}/{v}'
+    
     @field_validator("create_time", mode="before")
     def ensure_create_timezone(cls, v: datetime) -> datetime:
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
+    
     @field_validator("update_time", mode="before")
     def ensure_update_timezone(cls, v: datetime) -> datetime:
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
+    
     class Config:
         from_attributes = True 
     
 class WebsiteDocumentInfo(BaseModel):
+    creator_id: int
     url: str
     md_file_name: str | None = None
     
+    @field_serializer("md_file_name")
+    def md_file_name(self, v: str) -> str:
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
+        return f'{url_prefix}/{v}'
+    
 class FileDocumentInfo(BaseModel):
+    creator_id: int
     file_name: str
     md_file_name: str | None = None
+    @field_serializer("md_file_name")
+    def md_file_name(self, v: str) -> str:
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
+        return f'{url_prefix}/{v}'
+    @field_serializer("file_name")
+    def file_name(self, v: str) -> str:
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
+        return f'{url_prefix}/{v}'
     
 class QuickNoteDocumentInfo(BaseModel):
     content: str
@@ -187,11 +213,13 @@ class DocumentDetailResponse(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
+    
     @field_validator("update_time", mode="before")
     def ensure_update_timezone(cls, v: datetime) -> datetime:
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
+    
     class Config:
         from_attributes = True
     

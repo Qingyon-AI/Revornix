@@ -1,10 +1,8 @@
 import { cn } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 
-interface Props extends React.HTMLAttributes<HTMLImageElement> {
+interface Props extends React.ImgHTMLAttributes<HTMLImageElement> {
 	src?: string | Blob;
-	alt?: string;
-	className?: string;
 	errorPlaceHolder?: React.ReactNode;
 	loadingPlaceholder?: React.ReactNode;
 }
@@ -13,43 +11,52 @@ const CustomImage = (props: Props) => {
 	const { src, alt, className, errorPlaceHolder, loadingPlaceholder, ...rest } =
 		props;
 
-	const [isLoaded, setIsLoaded] = useState(false);
 	const [hasError, setHasError] = useState(false);
-	const [finalSrc, setFinalSrc] = useState<string | Blob | undefined>(src);
+	const [finalSrc, setFinalSrc] = useState<string | undefined>(undefined);
 
 	useEffect(() => {
-		setIsLoaded(false);
 		setHasError(false);
+
+		let objectUrl: string | undefined;
+
+		if (!src) {
+			setFinalSrc(undefined);
+			return;
+		}
+
+		if (src instanceof Blob) {
+			objectUrl = URL.createObjectURL(src);
+			setFinalSrc(objectUrl);
+		} else if (typeof src === 'string') {
+			setFinalSrc(src);
+		}
+
+		return () => {
+			if (objectUrl) {
+				URL.revokeObjectURL(objectUrl);
+			}
+		};
 	}, [src]);
 
-	if (hasError && errorPlaceHolder) {
-		return <>{errorPlaceHolder}</>;
-	}
+	const shouldShowImage = finalSrc && !hasError;
 
 	return (
 		<div className={cn('relative overflow-hidden', className)}>
-			{/* 占位元素（加载中） */}
-			{!isLoaded && !hasError && (
-				<div className='absolute inset-0'>
-					{loadingPlaceholder ?? (
-						<div className='w-full h-full bg-gray-100 animate-pulse rounded' />
-					)}
-				</div>
-			)}
-
-			{/* 图片元素 */}
-			<img
-				src={finalSrc}
-				alt={alt}
-				className={cn(
-					'w-full h-full object-cover',
-					!isLoaded && 'opacity-0',
-					isLoaded && !hasError && 'opacity-100 transition-opacity duration-300'
-				)}
-				onLoad={() => setIsLoaded(true)}
-				onError={() => setHasError(true)}
-				{...rest}
-			/>
+			{shouldShowImage ? (
+				<img
+					key={finalSrc}
+					src={finalSrc}
+					alt={alt ?? ''}
+					className='w-full h-full object-cover'
+					onError={() => setHasError(true)}
+					loading='lazy'
+					{...rest}
+				/>
+			) : hasError && errorPlaceHolder ? (
+				<>{errorPlaceHolder}</>
+			) : loadingPlaceholder ? (
+				<>{loadingPlaceholder}</>
+			) : null}
 		</div>
 	);
 };

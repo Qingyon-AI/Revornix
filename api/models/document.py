@@ -63,7 +63,7 @@ class Document(Base):
     creator_id = Column(Integer, ForeignKey("user.id"), index=True)
     from_plat = Column(String(100))
     title = Column(String(500), index=True)
-    description = Column(String(500))
+    description = Column(String(2000))
     ai_summary = Column(String(10000))
     cover = Column(String(500))
     category = Column(Integer, index=True, comment='0: file, 1: website, 2: quick-note')

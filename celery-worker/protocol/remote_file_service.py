@@ -1,4 +1,8 @@
+import crud
+import json
+import os
 from typing import Protocol
+from common.sql import SessionLocal
 
 class RemoteFileServiceProtocol(Protocol):
     
@@ -19,6 +23,35 @@ class RemoteFileServiceProtocol(Protocol):
         self.file_service_description_zh = file_service_description_zh
         self.file_service_demo_config = file_service_demo_config
         self.file_service_config = file_service_config
+        
+    @staticmethod
+    def get_user_file_system_url_prefix(user_id: int) -> str:
+        db = SessionLocal()
+        db_user = crud.user.get_user_by_id(db=db, 
+                                           user_id=user_id)
+        if db_user.default_file_system == 1:
+            return f'{os.environ.get("FILE_SERVER_URL")}/{db_user.uuid}'
+        elif db_user.default_file_system == 2:
+            db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
+                                                                                                    user_id=1,
+                                                                                                    file_system_id=db_user.default_file_system)
+            config_str = db_user_file_system.config_json
+            if config_str is None:
+                raise Exception("User file system config is None")
+            config = json.loads(config_str)
+            return f'{config.get("url_prefix")}'
+        
+    def get_file_service_config(self) -> dict:
+        if self.file_service_config is not None:
+            return json.loads(self.file_service_config)
+        else:
+            db = SessionLocal()
+            db_file_system = crud.file_system.get_file_system_by_uuid(db=db, uuid=self.file_service_uuid)
+            db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
+                                                                                                      user_id=self.user_id,
+                                                                                                      file_system_id=db_file_system.id)
+            self.engine_config = db_user_file_system.config_json
+            return json.loads(self.engine_config)
         
     async def auth(self) -> None:
         raise NotImplementedError("Method not implemented")

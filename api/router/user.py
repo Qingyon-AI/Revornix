@@ -1,6 +1,8 @@
 import crud
 import schemas
 import jwt
+import os
+import json
 from jwt.exceptions import ExpiredSignatureError
 from jose import jwt
 from fastapi import APIRouter, Depends, Depends
@@ -11,6 +13,7 @@ from common.dependencies import get_db
 from common.hash import verify_password
 from common.dependencies import get_current_user, get_db
 from config.oauth2 import SECRET_KEY, ALGORITHM
+from protocol.remote_file_service import RemoteFileServiceProtocol
 
 user_router = APIRouter()
 
@@ -166,9 +169,10 @@ async def user_info(user_info_request: schemas.user.UserInfoRequest,
                                      user_id=user_info_request.user_id)
     follows = crud.user.count_user_follows(db=db,
                                            user_id=user_info_request.user_id)
-    db_user.fans = fans
-    db_user.follows = follows
-    return db_user
+    res = schemas.user.UserPublicInfo.model_validate(db_user)
+    res.fans = fans
+    res.follows = follows
+    return res
 
 @user_router.post('/create/email/verify', response_model=schemas.user.TokenResponse)
 async def create_user_by_email_verify(email_user_create_verify_request: schemas.user.EmailUserCreateVerifyRequest, 
@@ -264,10 +268,10 @@ async def initial_see_password(user = Depends(get_current_user),
 async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user),
                   db: Session = Depends(get_db)):
     res = schemas.user.PrivateUserInfo(id=user.id,
+                                       avatar=user.avatar,
                                        uuid=user.uuid,
                                        nickname=user.nickname,
                                        slogan=user.slogan,
-                                       avatar=user.avatar,
                                        default_document_reader_model_id=user.default_document_reader_model_id,
                                        default_revornix_model_id=user.default_revornix_model_id,
                                        default_website_document_parse_engine_id=user.default_website_document_parse_engine_id,

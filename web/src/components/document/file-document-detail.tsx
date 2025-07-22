@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn, replaceImagePaths } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
@@ -23,6 +23,7 @@ import { useInView } from 'react-intersection-observer';
 import CustomImage from '../ui/custom-image';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
+import { getUserFileUrlPrefix } from '@/service/file-system';
 
 const FileDocumentDetail = ({
 	id,
@@ -45,6 +46,15 @@ const FileDocumentDetail = ({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
+
+	const { data: userRemoteFileUrlPrefix } = useQuery({
+		queryKey: ['getUserRemoteFileUrlPrefix', document?.creator?.id],
+		queryFn: () => {
+			return getUserFileUrlPrefix({ user_id: document!.creator!.id });
+		},
+		enabled: !!document?.creator?.id,
+	});
+
 	const [delay, setDelay] = useState<number | undefined>(1000);
 	useInterval(() => {
 		if (
@@ -89,11 +99,14 @@ const FileDocumentDetail = ({
 		}
 		const fileService = new FileService(userInfo.default_file_system);
 		try {
-			const [res, err] = await utils.to(
+			let [res, err] = await utils.to(
 				fileService.getFileContent(document.file_info?.md_file_name)
 			);
 			if (!res || err) {
 				throw new Error(err.message);
+			}
+			if (userRemoteFileUrlPrefix?.url_prefix) {
+				res = replaceImagePaths(res, userRemoteFileUrlPrefix.url_prefix);
 			}
 			setMarkdown(res);
 			setMarkdownRendered(true);
@@ -105,7 +118,7 @@ const FileDocumentDetail = ({
 	useEffect(() => {
 		if (!document || !document.file_info?.md_file_name) return;
 		onGetMarkdown();
-	}, [document]);
+	}, [document, userInfo, userRemoteFileUrlPrefix]);
 
 	const { ref: bottomRef, inView } = useInView();
 
@@ -193,7 +206,7 @@ const FileDocumentDetail = ({
 						<Markdown
 							components={{
 								img: (props) => {
-									return <CustomImage {...props} className='w-full' />;
+									return <img {...props} className='w-full' />;
 								},
 							}}
 							remarkPlugins={[remarkMath, remarkGfm]}

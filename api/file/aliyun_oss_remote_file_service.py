@@ -22,6 +22,7 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
                          file_service_name_zh='阿里云OSS',
                          file_service_description='Aliyun OSS File System, Based on Aliyun official OSS, has strong stability and availability, but needs to be charged.',
                          file_service_description_zh='Aliyun OSS 文件系统，基于阿里云官方的OSS，具有极强的稳定性和可用性，但需要收费。',
+                         file_service_demo_config='{"role_arn":"","role_session_name":"","user_access_key_id":"","user_access_key_secret":"","region_id":"","oss_endpoint":"","bucket":"","url_prefix":""}',
                          user_id=user_id)
     
     async def auth(self):

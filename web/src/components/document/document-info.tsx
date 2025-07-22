@@ -27,13 +27,11 @@ const DocumentInfo = ({ id }: { id: number }) => {
 				<div className='relative h-full'>
 					<div className='h-full overflow-auto pb-5'>
 						<div className='mb-5'>
-							<div className='w-full h-64 relative'>
-								<Image
-									alt='cover'
-									src={data.cover ? data.cover : '/images/cover.jpg'}
-									fill
-								/>
-							</div>
+							<img
+								className='w-full h-64 relative'
+								alt='cover'
+								src={data.cover ? data.cover : '/images/cover.jpg'}
+							/>
 						</div>
 						<div className='flex flex-row justify-between items-center px-5 mb-3'>
 							<div className='font-bold text-lg'>

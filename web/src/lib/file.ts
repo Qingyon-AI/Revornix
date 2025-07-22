@@ -3,7 +3,7 @@ import { OSSFileService } from "@/service/oss-file";
 
 export class FileService {
 
-    private file_system_id: number;
+    private file_system_id: number | null = null;
     private client: FileServiceProtocol | null = null;
 
     constructor(file_system_id: number) {

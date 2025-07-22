@@ -9,7 +9,7 @@ import asyncio
 from celery import Celery
 from config.redis import REDIS_PORT, REDIS_URL
 from config.base import BASE_DIR
-from common.logger import log_exception, exception_logger
+from common.logger import log_exception, exception_logger, info_logger
 from common.ai import summary_section_with_origin, summary_document, summary_section
 from common.vector import milvus_client, process_document
 from common.common import get_user_remote_file_system
@@ -18,11 +18,11 @@ from engine import markitdown as markitdown_engine
 from engine import jina as jina_engine
 from engine import mineru as mineru_engine
 
-import tracemalloc
+# import tracemalloc
 import warnings
 
-tracemalloc.start()
-warnings.simplefilter("default")
+# tracemalloc.start()
+# warnings.simplefilter("default")
 
 celery_app = Celery('worker', 
                     broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0',
@@ -82,7 +82,9 @@ async def handle_init_file_document_info(document_id: int,
         db_file_document = crud.document.get_file_document_by_document_id(db=db, 
                                                                         document_id=document_id)
         md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-        await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, content=file_info.content)
+        await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
+                                                             content=file_info.content,
+                                                             content_type="text/plain")
         crud.document.update_file_document_by_file_document_id(db=db,
                                                             file_document_id=db_file_document.id,
                                                             md_file_name=md_file_name)
@@ -150,10 +152,12 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
         db_website_document = crud.document.get_website_document_by_document_id(db=db, 
                                                                                 document_id=document_id)
         md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-        await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, content=web_info.content)
+        await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
+                                                             content=web_info.content, 
+                                                             content_type='text/plain')
         crud.document.update_website_document_by_website_document_id(db=db,
-                                                                        website_document_id=db_website_document.id,
-                                                                        md_file_name=md_file_name)
+                                                                     website_document_id=db_website_document.id,
+                                                                     md_file_name=md_file_name)
         db_task.status = 2
         db.commit()
     except Exception as e:
@@ -224,7 +228,8 @@ async def handle_update_sections(sections: list[int],
                         # put the new summary into the file system
                         md_file_name = f"markdown/{uuid.uuid4().hex}.md"
                         await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
-                                                                             content=new_summary)
+                                                                             content=new_summary,
+                                                                             content_type='text/plain')
                         # update the section content
                         crud.section.update_section_by_section_id(db=db,
                                                                   section_id=db_section.id,
@@ -237,7 +242,8 @@ async def handle_update_sections(sections: list[int],
                     # put the summary into the file system
                     md_file_name = f"markdown/{uuid.uuid4().hex}.md"
                     await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
-                                                                         content=summary)
+                                                                         content=summary,
+                                                                         content_type='text/plain')
                     # update the section content
                     crud.section.update_section_by_section_id(db=db,
                                                               section_id=db_section.id,
@@ -281,13 +287,13 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
             markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=website_document.md_file_name)
         if db_document.category == 0:
             file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                                document_id=document_id)
+                                                                           document_id=document_id)
             if file_document is None:
                 raise Exception("Website document not found")
             markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=file_document.md_file_name)
         if db_document.category == 2:
             quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
-                                                                                        document_id=document_id)
+                                                                                       document_id=document_id)
             markdown_content = quick_note_document.content
     except Exception as e:
         exception_logger.error(f"Something is error while getting the markdown content: {e}")
@@ -350,7 +356,8 @@ async def handle_update_section_use_document(section_id: int,
                 # put the new summary into the file system
                 md_file_name = f"markdown/{uuid.uuid4().hex}.md"
                 remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
-                                                               content=new_summary)
+                                                               content=new_summary,
+                                                               content_type="text/plain")
                 # update the section content
                 crud.section.update_section_by_section_id(db=db,
                                                           section_id=db_section.id,
@@ -363,7 +370,8 @@ async def handle_update_section_use_document(section_id: int,
             # put the summary into the file system
             md_file_name = f"markdown/{uuid.uuid4().hex}.md"
             remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
-                                                           content=summary)
+                                                           content=summary,
+                                                           content_type="text/plain")
             # update the section content
             crud.section.update_section_by_section_id(db=db, section_id=db_section.id, 
                                                       md_file_name=md_file_name)

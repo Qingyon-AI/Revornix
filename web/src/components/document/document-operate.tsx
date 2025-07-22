@@ -44,7 +44,6 @@ import {
 	SheetTrigger,
 } from '../ui/sheet';
 import DocumentNotes from './document-notes';
-import CustomFileLink from '../ui/custom-file-link';
 
 const DocumentOperate = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -195,7 +194,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 						</Link>
 					)}
 					{data.category === 0 && data.file_info && (
-						<CustomFileLink
+						<Link
 							title={t('file_document_go_to_origin')}
 							target='_blank'
 							className='flex-1 text-center'
@@ -203,7 +202,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 							<Button variant={'ghost'} className='w-full'>
 								<LinkIcon />
 							</Button>
-						</CustomFileLink>
+						</Link>
 					)}
 					<Button
 						variant={'ghost'}

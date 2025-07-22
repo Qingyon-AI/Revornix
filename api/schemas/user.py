@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 from .attachment import AttachmentInfo
+from protocol.remote_file_service import RemoteFileServiceProtocol
 
 class DefaultFileSystemUpdateRequest(BaseModel):
     default_file_system: int | None = None
@@ -89,6 +90,14 @@ class PrivateUserInfo(BaseModel):
     default_revornix_model_id: int | None = None
     default_website_document_parse_engine_id: int | None = None
     default_file_document_parse_engine_id: int | None = None
+    
+    @field_serializer("avatar")
+    def serialize_avatar(self, v):
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
+        return AttachmentInfo(
+            id=v.id,
+            name=f'{url_prefix}/{v.name}',
+        )
 
     class Config:
         from_attributes = True
@@ -104,5 +113,15 @@ class UserPublicInfo(BaseModel):
     is_followed: bool | None = None
     fans: int | None = None
     follows: int | None = None
+    
+    @field_serializer("avatar")
+    def serialize_avatar(self, v):
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
+        return AttachmentInfo(
+            id=v.id,
+            name=f'{url_prefix}/{v.name}',
+        )
+        
     class Config:
         from_attributes = True 
+        

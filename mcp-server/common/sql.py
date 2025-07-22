@@ -2,9 +2,6 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from common.logger import info_logger
-
-info_logger.info(f"{os.environ.get('USER_NAME')}")
 
 SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{os.environ.get('USER_NAME')}:{os.environ.get('PASSWORD')}@{os.environ.get('DATABASE_URL')}/{os.environ.get('DATABASE_NAME')}?charset=utf8mb4" 
 

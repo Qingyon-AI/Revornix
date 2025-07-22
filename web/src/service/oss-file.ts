@@ -61,10 +61,7 @@ export class OSSFileService implements FileServiceProtocol {
     }
 
     async getFileContent(file_path: string): Promise<string> {
-        if (!this.client) {
-            await this.initOSSClient();
-        }
-        const url = `${this.file_system_config_json.url_prefix}/${file_path}`
+        const url = `${file_path}`
         return await fetch(url).then(res => res.text())
     }
 

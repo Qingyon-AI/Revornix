@@ -159,7 +159,8 @@ async def transform_markdown(request: Request,
             markdown_content = web_info.content
             md_file_name = f"markdown/{uuid.uuid4().hex}.md"
             await remote_file_service.upload_raw_content_to_path(file_path=md_file_name,
-                                                                 content=markdown_content)
+                                                                 content=markdown_content,
+                                                                 content_type='text/plain')
             crud.document.update_website_document_by_website_document_id(db=db,
                                                                          website_document_id=db_website_document.id,
                                                                          md_file_name=md_file_name)
@@ -539,12 +540,14 @@ async def get_document_detail(document_detail_request: schemas.document.Document
     if document.category == 1:
         website_document = crud.document.get_website_document_by_document_id(db=db, 
                                                                              document_id=document_detail_request.document_id)
-        res.website_info = schemas.document.WebsiteDocumentInfo(url=website_document.url, 
+        res.website_info = schemas.document.WebsiteDocumentInfo(creator_id=document.creator_id,
+                                                                url=website_document.url, 
                                                                 md_file_name=website_document.md_file_name)
     elif document.category == 0:
         file_document = crud.document.get_file_document_by_document_id(db=db, 
                                                                        document_id=document_detail_request.document_id)
-        res.file_info = schemas.document.FileDocumentInfo(file_name=file_document.file_name,
+        res.file_info = schemas.document.FileDocumentInfo(creator_id=document.creator_id,
+                                                          file_name=file_document.file_name,
                                                           md_file_name=file_document.md_file_name)
     elif document.category == 2:
         quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db, 

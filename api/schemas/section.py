@@ -1,7 +1,8 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, field_serializer
+from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
-from .attachment import AttachmentInfo
-from .user import UserPublicInfo
+from schemas.attachment import AttachmentInfo
+from schemas.user import UserPublicInfo
 
 class SearchSubscribedSectionRequest(BaseModel):
     user_id: int
@@ -124,7 +125,6 @@ class SectionDocumentInfo(BaseModel):
     class Config:
         from_attributes = True 
     
-    
 class SectionInfo(BaseModel):
     id: int
     title: str
@@ -140,6 +140,10 @@ class SectionInfo(BaseModel):
     labels: list[Label] | None = None
     cover: AttachmentInfo | None = None
     documents: list[SectionDocumentInfo] | None = None
+    @field_serializer("md_file_name")
+    def md_file_name(self, v: str) -> str:
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator.id)
+        return f'{url_prefix}/{v}'
     @field_validator("create_time", mode="before")
     def ensure_create_timezone(cls, v: datetime) -> datetime:
         if v.tzinfo is None:

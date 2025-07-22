@@ -24,3 +24,9 @@ export const getIsServer = () => {
   const isServer = typeof window === 'undefined';
   return isServer
 }
+
+export const replaceImagePaths = (content: string, urlPrefix: string) => {
+  return content.replace(/!\[\]\((images\/[^\)]+)\)/g, (match, path) => {
+    return `![](${urlPrefix}/${path})`;
+  });
+}
