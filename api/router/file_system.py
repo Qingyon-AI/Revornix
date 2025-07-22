@@ -42,10 +42,14 @@ async def get_oss_sts(db: Session = Depends(get_db),
     sts_role_session_token = result.get('Credentials').get('SecurityToken')
     sts_role_access_key_id = result.get('Credentials').get('AccessKeyId')
     sts_role_access_key_secret = result.get('Credentials').get('AccessKeySecret')
+    expiration = result.get('Credentials').get('Expiration')
     return schemas.file_system.OssStsResponse(access_key_id=sts_role_access_key_id,
                                               access_key_secret=sts_role_access_key_secret,
-                                              security_token=sts_role_session_token)
-
+                                              security_token=sts_role_session_token,
+                                              endpoint_url=config.get('oss_endpoint'),
+                                              expiration=expiration,
+                                              region=region_id)
+    
 @file_system_router.post('/detail', response_model=schemas.file_system.UserFileSystemInfo)
 async def get_file_system_info(file_system_info_request: schemas.file_system.FileSystemInfoRequest,
                                db: Session = Depends(get_db),
