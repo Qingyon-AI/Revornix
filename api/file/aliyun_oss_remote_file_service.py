@@ -31,9 +31,8 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
                                         user_id=self.user_id)
         if user is None:
             raise Exception("User not found")
-        db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
-                                                                                                  user_id=self.user_id,
-                                                                                                  file_system_id=2)
+        db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                          user_file_system_id=user.default_user_file_system)
         if db_user_file_system is None:
             raise Exception("User file system not found")
         

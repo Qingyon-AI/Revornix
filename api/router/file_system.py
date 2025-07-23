@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from botocore.config import Config
-from file.built_in_remote_file_service import BuiltInRemoteFileService
 from common.dependencies import get_current_user, get_db
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
@@ -21,14 +20,15 @@ async def get_url_prefix(file_url_prefix_request: schemas.file_system.FileUrlPre
     res = None
     if db_user is None:
         raise Exception('User not found')
-    if db_user.default_file_system == 1:
-        res = schemas.file_system.FileUrlPrefixResponse(url_prefix=f'{os.environ.get("FILE_SERVER_URL")}/{db_user.uuid}')
-    elif db_user.default_file_system == 2:
-        db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
-                                                                                                  user_id=db_user.id,
-                                                                                                  file_system_id=2)
-        if db_user_file_system is None:
+    db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                      user_file_system_id=db_user.default_user_file_system)
+    if db_user_file_system is None:
             raise Exception('User file system not found')
+    db_file_system = crud.file_system.get_file_system_by_id(db=db, 
+                                                            file_system_id=db_user_file_system.file_system_id)
+    if db_file_system.id == 1:
+        res = schemas.file_system.FileUrlPrefixResponse(url_prefix=f'{os.environ.get("FILE_SERVER_URL")}/{db_user.uuid}')
+    elif db_file_system.id == 2:
         config_str = db_user_file_system.config_json
         if config_str is None:
             raise Exception("User file system config is empty")
@@ -48,7 +48,7 @@ async def get_built_in_sts(db: Session = Depends(get_db),
         region_name="main" 
     )
     resp = sts.assume_role(
-        RoleArn='arn:aws:iam::minio:role/upload-policy',
+        RoleArn='arn:minio:iam::minio:role/upload-policy',
         RoleSessionName='upload-session',
         DurationSeconds=3600
     )
@@ -66,9 +66,8 @@ async def get_built_in_sts(db: Session = Depends(get_db),
 @file_system_router.post('/oss/sts', response_model=schemas.file_system.OssStsResponse)
 async def get_oss_sts(db: Session = Depends(get_db),
                       current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
-                                                                                              user_id=current_user.id,
-                                                                                              file_system_id=2)
+    db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                      user_file_system_id=current_user.default_user_file_system)
     if db_user_file_system is None:
         raise Exception("User file system not found")
     
@@ -104,23 +103,33 @@ async def get_oss_sts(db: Session = Depends(get_db),
                                               expiration=expiration,
                                               region=region_id)
 
-@file_system_router.post('/detail', response_model=schemas.file_system.UserFileSystemInfo)
+@file_system_router.post('/detail', response_model=schemas.file_system.FileSystemInfo)
 async def get_file_system_info(file_system_info_request: schemas.file_system.FileSystemInfoRequest,
                                db: Session = Depends(get_db),
                                current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_file_system = crud.file_system.get_file_system_by_id(db=db, file_system_id=file_system_info_request.file_system_id)
-    db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
-                                                                                              user_id=current_user.id,
-                                                                                              file_system_id=file_system_info_request.file_system_id)
+    db_file_system = crud.file_system.get_file_system_by_id(db=db, 
+                                                            file_system_id=file_system_info_request.file_system_id)
     if db_file_system is None:
         raise Exception(status_code=404, detail="File System not found")
+    return schemas.file_system.FileSystemInfo.model_validate(db_file_system)
+
+@file_system_router.post('/user-file-system/detail', response_model=schemas.file_system.UserFileSystemInfo)
+async def get_file_system_info(user_file_system_info_request: schemas.file_system.UserFileSystemInfoRequest,
+                               db: Session = Depends(get_db),
+                               current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db, 
+                                                                      user_file_system_id=user_file_system_info_request.user_file_system_id)
     if db_user_file_system is None:
         raise Exception(status_code=404, detail="User File System not found")
-    res = schemas.file_system.UserFileSystemInfo(id=db_file_system.id,
-                                                 name=db_file_system.name,
-                                                 name_zh=db_file_system.name_zh,
-                                                 description=db_file_system.description,
-                                                 description_zh=db_file_system.description_zh,
+    if db_user_file_system.user_id != current_user.id:
+        raise Exception(status_code=403, detail="You don't have permission to access this user file system info")
+    db_file_system = crud.file_system.get_file_system_by_id(db=db, 
+                                                            file_system_id=db_user_file_system.file_system_id)
+    if db_file_system is None:
+        raise Exception(status_code=404, detail="File System not found")
+    res = schemas.file_system.UserFileSystemInfo(id=db_user_file_system.id,
+                                                 title=db_user_file_system.name,
+                                                 description=db_user_file_system.description,
                                                  demo_config=db_file_system.demo_config,
                                                  config_json=db_user_file_system.config_json,
                                                  create_time=db_user_file_system.create_time,
@@ -131,16 +140,24 @@ async def get_file_system_info(file_system_info_request: schemas.file_system.Fil
 async def search_mine_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
                                   db: Session = Depends(get_db), 
                                   current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    file_systems = crud.file_system.get_file_system_by_user_id(db=db,
-                                                               user_id=current_user.id,
-                                                                    keyword=file_system_search_request.keyword)
-    for file_system in file_systems:
-        db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
-                                                                                                  user_id=current_user.id,
-                                                                                                  file_system_id=file_system.id)
-        if db_user_file_system is not None:
-            file_system.config_json = db_user_file_system.config_json
-    return schemas.file_system.MineFileSystemSearchResponse(data=file_systems)
+    res = []
+    db_user_file_systems = crud.file_system.get_user_file_systems_by_user_id(db=db,
+                                                                             user_id=current_user.id,
+                                                                             keyword=file_system_search_request.keyword)
+    for db_user_file_system in db_user_file_systems:
+        db_file_system = crud.file_system.get_file_system_by_id(db=db, 
+                                                                file_system_id=db_user_file_system.file_system_id)
+        item = schemas.file_system.UserFileSystemInfo(
+            id=db_user_file_system.id,
+            title=db_user_file_system.title,
+            description=db_user_file_system.description,
+            config_json=db_user_file_system.config_json,
+            create_time=db_user_file_system.create_time,
+            update_time=db_user_file_system.update_time,
+            demo_config=db_file_system.demo_config
+        )
+        res.append(item)
+    return schemas.file_system.MineFileSystemSearchResponse(data=res)
 
 @file_system_router.post("/provide", response_model=schemas.file_system.ProvideFileSystemSearchResponse)
 async def provide_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
@@ -153,44 +170,28 @@ async def provide_file_system(file_system_search_request: schemas.file_system.Fi
 async def install_file_system(file_system_install_request: schemas.file_system.FileSystemInstallRequest, 
                               db: Session = Depends(get_db), 
                               current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
-                                                                                           user_id=current_user.id,
-                                                                                           file_system_id=file_system_install_request.file_system_id)
-    if user_file_system is None:
-        if file_system_install_request.status:
-            crud.file_system.bind_file_system_to_user(db=db,
-                                                      user_id=current_user.id,
-                                                      file_system_id=file_system_install_request.file_system_id)
-            # create the bucket for user if the file system choosed to install is built-in
-            if file_system_install_request.file_system_id == 1:
-                BuiltInRemoteFileService.ensure_bucket_exists(current_user.uuid)
-        else:
-            raise schemas.error.CustomException(code=400, message="Operation failed")
-    else:
-        if file_system_install_request.status:
-            raise schemas.error.CustomException(code=400, message="Operation failed")
-        else:
-            user_file_system.delete_at = datetime.now(tz=timezone.utc)
-            # if the user's default file system is the same as the file system to be uninstalled, set the default file system to None
-            if current_user.default_file_system == file_system_install_request.file_system_id:
-                current_user.default_file_system = None
-        now = datetime.now(tz=timezone.utc)
-        user_file_system.delete_at = now
+    crud.file_system.bind_file_system_to_user(db=db,
+                                              user_id=current_user.id,
+                                              file_system_id=file_system_install_request.file_system_id)
     db.commit()
     return schemas.common.SuccessResponse()
 
 @file_system_router.post("/update", response_model=schemas.common.NormalResponse)
-async def update_file_system(file_system_update_request: schemas.file_system.FileSystemUpdateRequest, 
-                        db: Session = Depends(get_db),
-                        current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def update_file_system(user_file_system_update_request: schemas.file_system.UserFileSystemUpdateRequest, 
+                             db: Session = Depends(get_db),
+                             current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     now = datetime.now(tz=timezone.utc)
-    user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
-                                                                                           user_id=current_user.id,
-                                                                                           file_system_id=file_system_update_request.file_system_id)
+    user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                   user_file_system_id=user_file_system_update_request.user_file_system_id)
     if user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User File System not found")
     else:
-        user_file_system.config_json = file_system_update_request.config_json
+        if user_file_system_update_request.title is not None:
+            user_file_system.title = user_file_system_update_request.title
+        if user_file_system_update_request.description is not None:
+            user_file_system.description = user_file_system_update_request.description
+        if user_file_system_update_request.config_json is not None:
+            user_file_system.config_json = user_file_system_update_request.config_json
         user_file_system.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()

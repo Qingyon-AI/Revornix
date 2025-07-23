@@ -24,7 +24,7 @@ export interface DefaultFileSystemUpdateRequest {
      * @type {number}
      * @memberof DefaultFileSystemUpdateRequest
      */
-    default_file_system?: number | null;
+    default_user_file_system?: number | null;
 }
 
 /**
@@ -44,7 +44,7 @@ export function DefaultFileSystemUpdateRequestFromJSONTyped(json: any, ignoreDis
     }
     return {
         
-        'default_file_system': json['default_file_system'] == null ? undefined : json['default_file_system'],
+        'default_user_file_system': json['default_user_file_system'] == null ? undefined : json['default_user_file_system'],
     };
 }
 
@@ -59,7 +59,7 @@ export function DefaultFileSystemUpdateRequestToJSONTyped(value?: DefaultFileSys
 
     return {
         
-        'default_file_system': value['default_file_system'],
+        'default_user_file_system': value['default_user_file_system'],
     };
 }
 

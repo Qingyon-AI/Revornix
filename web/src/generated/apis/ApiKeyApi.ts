@@ -89,7 +89,7 @@ export class ApiKeyApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/api_key/create`;
+        let urlPath = `/api-key/create`;
 
         const response = await this.request({
             path: urlPath,
@@ -136,7 +136,7 @@ export class ApiKeyApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/api_key/delete`;
+        let urlPath = `/api-key/delete`;
 
         const response = await this.request({
             path: urlPath,
@@ -183,7 +183,7 @@ export class ApiKeyApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/api_key/search`;
+        let urlPath = `/api-key/search`;
 
         const response = await this.request({
             path: urlPath,

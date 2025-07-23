@@ -30,25 +30,13 @@ export interface UserFileSystemInfo {
      * @type {string}
      * @memberof UserFileSystemInfo
      */
-    name: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFileSystemInfo
-     */
-    name_zh: string;
+    title: string;
     /**
      * 
      * @type {string}
      * @memberof UserFileSystemInfo
      */
     description?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFileSystemInfo
-     */
-    description_zh?: string | null;
     /**
      * 
      * @type {string}
@@ -80,8 +68,7 @@ export interface UserFileSystemInfo {
  */
 export function instanceOfUserFileSystemInfo(value: object): value is UserFileSystemInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
+    if (!('title' in value) || value['title'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
@@ -98,10 +85,8 @@ export function UserFileSystemInfoFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'id': json['id'],
-        'name': json['name'],
-        'name_zh': json['name_zh'],
+        'title': json['title'],
         'description': json['description'] == null ? undefined : json['description'],
-        'description_zh': json['description_zh'] == null ? undefined : json['description_zh'],
         'demo_config': json['demo_config'] == null ? undefined : json['demo_config'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
         'create_time': (new Date(json['create_time'])),
@@ -121,10 +106,8 @@ export function UserFileSystemInfoToJSONTyped(value?: UserFileSystemInfo | null,
     return {
         
         'id': value['id'],
-        'name': value['name'],
-        'name_zh': value['name_zh'],
+        'title': value['title'],
         'description': value['description'],
-        'description_zh': value['description_zh'],
         'demo_config': value['demo_config'],
         'config_json': value['config_json'],
         'create_time': ((value['create_time']).toISOString()),

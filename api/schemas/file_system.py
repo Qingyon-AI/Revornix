@@ -25,10 +25,15 @@ class OssStsResponse(BaseModel):
 
 class FileSystemInfoRequest(BaseModel):
     file_system_id: int
+
+class UserFileSystemInfoRequest(BaseModel):
+    user_file_system_id: int
     
-class FileSystemUpdateRequest(BaseModel):
-    file_system_id: int
-    config_json: str
+class UserFileSystemUpdateRequest(BaseModel):
+    user_file_system_id: int
+    config_json: str | None = None
+    title: str | None = None
+    description: str | None = None
 
 class FileSystemInfo(BaseModel):
     id: int
@@ -42,10 +47,8 @@ class FileSystemInfo(BaseModel):
         
 class UserFileSystemInfo(BaseModel):
     id: int
-    name: str
-    name_zh: str
+    title: str
     description: str | None = None
-    description_zh: str | None = None
     demo_config: str | None = None
     config_json: str | None = None
     create_time: datetime
@@ -74,5 +77,7 @@ class MineFileSystemSearchResponse(BaseModel):
     
 class FileSystemInstallRequest(BaseModel):
     file_system_id: int
-    status: bool
+    
+class FileSystemUnInstallRequest(BaseModel):
+    user_file_system_id: int
     

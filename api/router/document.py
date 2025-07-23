@@ -80,13 +80,15 @@ async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSumma
                             db: Session = Depends(get_db)):
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=ai_summary_request.document_id)
-    default_file_system = user.default_file_system
-    if default_file_system is None:
+    default_user_file_system = user.default_user_file_system
+    if default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
-        if default_file_system == 1:
+        db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                          user_file_system_id=user.default_user_file_system)
+        if db_user_file_system.file_system_id == 1:
             remote_file_service = BuiltInRemoteFileService(user_id=user.id)
-        elif default_file_system == 2:
+        elif db_user_file_system.file_system_id == 2:
             remote_file_service = AliyunOSSRemoteFileService(user_id=user.id)
     if db_document is None:
         raise Exception('The document you want to transform is not found')
@@ -117,13 +119,15 @@ async def transform_markdown(request: Request,
                              transform_markdown_request: schemas.document.DocumentMarkdownTransformRequest,
                              user: models.user.User = Depends(get_current_user),
                              db: Session = Depends(get_db)):
-    default_file_system = user.default_file_system
-    if default_file_system is None:
+    default_user_file_system = user.default_user_file_system
+    if default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
-        if default_file_system == 1:
+        db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                          user_file_system_id=user.default_user_file_system)
+        if db_user_file_system.file_system_id == 1:
             remote_file_service = BuiltInRemoteFileService(user_id=user.id)
-        elif default_file_system == 2:
+        elif db_user_file_system.file_system_id == 2:
             remote_file_service = AliyunOSSRemoteFileService(user_id=user.id)
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=transform_markdown_request.document_id)

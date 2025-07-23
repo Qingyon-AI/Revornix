@@ -59,6 +59,12 @@ export interface DocumentInfo {
      * @type {number}
      * @memberof DocumentInfo
      */
+    creator_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DocumentInfo
+     */
     category?: number | null;
     /**
      * 
@@ -127,6 +133,7 @@ export interface DocumentInfo {
  */
 export function instanceOfDocumentInfo(value: object): value is DocumentInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     return true;
 }
 
@@ -141,6 +148,7 @@ export function DocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'id': json['id'],
+        'creator_id': json['creator_id'],
         'category': json['category'] == null ? undefined : json['category'],
         'title': json['title'] == null ? undefined : json['title'],
         'cover': json['cover'] == null ? undefined : json['cover'],
@@ -167,6 +175,7 @@ export function DocumentInfoToJSONTyped(value?: DocumentInfo | null, ignoreDiscr
     return {
         
         'id': value['id'],
+        'creator_id': value['creator_id'],
         'category': value['category'],
         'title': value['title'],
         'cover': value['cover'],

@@ -21,6 +21,8 @@ class UserFileSystem(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     file_system_id = Column(Integer, ForeignKey("file_system.id"), nullable=False)
+    title = Column(String(200), index=True, nullable=False)
+    description = Column(String(2000))
     config_json = Column(String(5000))
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)

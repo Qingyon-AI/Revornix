@@ -20,6 +20,13 @@ import {
     SectionDocumentInfoToJSON,
     SectionDocumentInfoToJSONTyped,
 } from './SectionDocumentInfo';
+import type { UserPublicInfo } from './UserPublicInfo';
+import {
+    UserPublicInfoFromJSON,
+    UserPublicInfoFromJSONTyped,
+    UserPublicInfoToJSON,
+    UserPublicInfoToJSONTyped,
+} from './UserPublicInfo';
 
 /**
  * 
@@ -27,6 +34,12 @@ import {
  * @interface DaySectionResponse
  */
 export interface DaySectionResponse {
+    /**
+     * 
+     * @type {UserPublicInfo}
+     * @memberof DaySectionResponse
+     */
+    creator: UserPublicInfo;
     /**
      * 
      * @type {string}
@@ -62,7 +75,7 @@ export interface DaySectionResponse {
      * @type {string}
      * @memberof DaySectionResponse
      */
-    md_file_name?: string | null;
+    md_file_name?: string;
     /**
      * 
      * @type {Array<SectionDocumentInfo>}
@@ -75,6 +88,7 @@ export interface DaySectionResponse {
  * Check if a given object implements the DaySectionResponse interface.
  */
 export function instanceOfDaySectionResponse(value: object): value is DaySectionResponse {
+    if (!('creator' in value) || value['creator'] === undefined) return false;
     if (!('date' in value) || value['date'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
@@ -94,6 +108,7 @@ export function DaySectionResponseFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
+        'creator': UserPublicInfoFromJSON(json['creator']),
         'date': json['date'],
         'title': json['title'],
         'description': json['description'],
@@ -115,6 +130,7 @@ export function DaySectionResponseToJSONTyped(value?: DaySectionResponse | null,
 
     return {
         
+        'creator': UserPublicInfoToJSON(value['creator']),
         'date': value['date'],
         'title': value['title'],
         'description': value['description'],

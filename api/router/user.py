@@ -1,8 +1,6 @@
 import crud
 import schemas
 import jwt
-import os
-import json
 from jwt.exceptions import ExpiredSignatureError
 from jose import jwt
 from fastapi import APIRouter, Depends, Depends
@@ -13,7 +11,7 @@ from common.dependencies import get_db
 from common.hash import verify_password
 from common.dependencies import get_current_user, get_db
 from config.oauth2 import SECRET_KEY, ALGORITHM
-from protocol.remote_file_service import RemoteFileServiceProtocol
+from file.built_in_remote_file_service import BuiltInRemoteFileService
 
 user_router = APIRouter()
 
@@ -21,9 +19,8 @@ user_router = APIRouter()
 async def update_default_file_system(default_file_system_update_request: schemas.user.DefaultFileSystemUpdateRequest,
                                      user: schemas.user.PrivateUserInfo = Depends(get_current_user),
                                      db: Session = Depends(get_db)):
-    user.default_file_system = default_file_system_update_request.default_file_system
+    user.default_user_file_system = default_file_system_update_request.default_user_file_system
     db.commit()
-    # TODO: migrate the files from old file system to new file system
     return schemas.common.SuccessResponse(message="The default file system is updated successfully.")
 
 @user_router.post('/default-engine/update', response_model=schemas.common.NormalResponse)
@@ -189,6 +186,14 @@ async def create_user_by_email_verify(email_user_create_verify_request: schemas.
                                 email=email_user_create_verify_request.email, 
                                 password=email_user_create_verify_request.password,
                                 nickname=email_user_create_verify_request.email)
+    # create the minio file bucket for the user because it's the default file system
+    db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
+                                                                    file_system_id=1,
+                                                                    user_id=db_user.id,
+                                                                    title="Default File System",
+                                                                    description="The default file system for the user")
+    db_user.default_user_file_system = db_user_file_system.id
+    BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
     db.commit()
     access_token, refresh_token = create_token(db_user)
     res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
@@ -277,7 +282,7 @@ async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user)
                                        default_website_document_parse_engine_id=user.default_website_document_parse_engine_id,
                                        default_file_document_parse_engine_id=user.default_file_document_parse_engine_id,
                                        default_read_mark_reason=user.default_read_mark_reason,
-                                       default_file_system=user.default_file_system)
+                                       default_user_file_system=user.default_user_file_system)
     email_user = crud.user.get_email_user_by_user_id(db=db, 
                                                      user_id=user.id)
     if email_user is not None:

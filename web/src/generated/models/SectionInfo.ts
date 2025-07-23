@@ -113,7 +113,7 @@ export interface SectionInfo {
      * @type {string}
      * @memberof SectionInfo
      */
-    md_file_name?: string | null;
+    md_file_name?: string;
     /**
      * 
      * @type {Array<Label>}

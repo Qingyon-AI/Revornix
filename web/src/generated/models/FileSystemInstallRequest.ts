@@ -25,12 +25,6 @@ export interface FileSystemInstallRequest {
      * @memberof FileSystemInstallRequest
      */
     file_system_id: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof FileSystemInstallRequest
-     */
-    status: boolean;
 }
 
 /**
@@ -38,7 +32,6 @@ export interface FileSystemInstallRequest {
  */
 export function instanceOfFileSystemInstallRequest(value: object): value is FileSystemInstallRequest {
     if (!('file_system_id' in value) || value['file_system_id'] === undefined) return false;
-    if (!('status' in value) || value['status'] === undefined) return false;
     return true;
 }
 
@@ -53,7 +46,6 @@ export function FileSystemInstallRequestFromJSONTyped(json: any, ignoreDiscrimin
     return {
         
         'file_system_id': json['file_system_id'],
-        'status': json['status'],
     };
 }
 
@@ -69,7 +61,6 @@ export function FileSystemInstallRequestToJSONTyped(value?: FileSystemInstallReq
     return {
         
         'file_system_id': value['file_system_id'],
-        'status': value['status'],
     };
 }
 
