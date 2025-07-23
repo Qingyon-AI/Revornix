@@ -117,7 +117,12 @@ const WebsiteDocumentDetail = ({
 	};
 
 	useEffect(() => {
-		if (!document || !document.website_info?.md_file_name) return;
+		if (
+			!document ||
+			!document.website_info?.md_file_name ||
+			document.transform_task?.status !== 2
+		)
+			return;
 		onGetMarkdown();
 	}, [document, userInfo]);
 

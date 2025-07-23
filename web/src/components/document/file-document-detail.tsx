@@ -117,7 +117,12 @@ const FileDocumentDetail = ({
 	};
 
 	useEffect(() => {
-		if (!document || !document.file_info?.md_file_name) return;
+		if (
+			!document ||
+			!document.file_info?.md_file_name ||
+			document.transform_task?.status !== 2
+		)
+			return;
 		onGetMarkdown();
 	}, [document, userInfo, userRemoteFileUrlPrefix]);
 
