@@ -284,7 +284,8 @@ const AddLink = () => {
 						className='w-full'
 						disabled={
 							mutateCreateDocument.isPending ||
-							!userInfo?.default_website_document_parse_engine_id
+							!userInfo?.default_website_document_parse_engine_id ||
+							!form.watch('url')
 						}>
 						{t('document_create_submit')}
 						{mutateCreateDocument.isPending && (

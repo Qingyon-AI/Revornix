@@ -256,7 +256,7 @@ const AddQuickNote = (props: {}) => {
 					<Button
 						type='submit'
 						className='w-full'
-						disabled={mutateCreateDocument.isPending}>
+						disabled={mutateCreateDocument.isPending || !form.watch('content')}>
 						{t('document_create_submit')}
 						{mutateCreateDocument.isPending && (
 							<Loader2 className='size-4 animate-spin' />
