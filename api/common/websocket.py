@@ -6,7 +6,7 @@ class ConnectionManager:
         self.connections: dict[str, WebSocket] = {}
 
     async def connect(self, id: str, websocket: WebSocket):
-        info_logger.info(f"websocker {id}连接成功")
+        info_logger.info(f"websocker {id} connected successfully")
         await websocket.accept()
         self.connections[id] = websocket
 

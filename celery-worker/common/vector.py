@@ -55,6 +55,8 @@ def hybrid_search(
 def process_document(document_id: int, 
                      document_category: int, 
                      document_content: str):
+    if document_content == "" or document_content is None:
+        return []
     chunks = chunker(document_content)
     # make a copy of the chunks and convert to a list of strings
     docs = [chunk.text.strip() for chunk in chunks if chunk.text.strip()]

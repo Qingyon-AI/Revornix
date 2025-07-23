@@ -22,7 +22,7 @@ async def get_url_prefix(file_url_prefix_request: schemas.file_system.FileUrlPre
     if db_user is None:
         raise Exception('User not found')
     if db_user.default_file_system == 1:
-        res = schemas.file_system.FileUrlPrefixResponse(url_prefix=f'{os.environ.get("FILE_SERVER_URL")}/{db_user.id}')
+        res = schemas.file_system.FileUrlPrefixResponse(url_prefix=f'{os.environ.get("FILE_SERVER_URL")}/{db_user.uuid}')
     elif db_user.default_file_system == 2:
         db_user_file_system = crud.file_system.get_user_file_system_by_user_id_and_file_system_id(db=db,
                                                                                                   user_id=db_user.id,

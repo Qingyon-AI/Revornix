@@ -6,8 +6,8 @@ import OSS from 'ali-oss';
 export class OSSFileService implements FileServiceProtocol {
 
     private client: OSS | null = null;
-    private file_system_config_json: any = null;
     private sts_config: any = null;
+    private file_system_config_json: any = null;
 
     private async initFileSystemConfig() {
         const [res_user, err_user] = await utils.to(getMyInfo());
@@ -60,16 +60,42 @@ export class OSSFileService implements FileServiceProtocol {
         this.client = client;
     }
 
-    async getFileContent(file_path: string): Promise<string> {
-        const url = `${file_path}`
-        return await fetch(url).then(res => res.text())
+    async getFileContent(file_path: string): Promise<string | Blob | ArrayBuffer> {
+        const url = `${file_path}`;
+        const res = await fetch(url);
+        if (!res.ok) {
+            const errorText = await res.text().catch(() => "Unknown error");
+            throw new Error(`Request failed with status ${res.status}: ${errorText}`);
+        }
+        const contentType = res.headers.get("Content-Type") || "";
+        if (contentType.includes("application/json")) {
+            return await res.json();
+        }
+        if (contentType.includes("text/")) {
+            return await res.text();
+        }
+        if (contentType.includes("application/octet-stream") || contentType.includes("image/") || contentType.includes("audio/") || contentType.includes("video/")) {
+            return await res.blob(); // 可用作下载、预览等
+        }
+        // 默认用 ArrayBuffer 处理
+        return await res.arrayBuffer();
     }
 
-    async uploadFile(file_path: string, file: File): Promise<any> {
+    async uploadFile(file_path: string, file: File, content_type?: string): Promise<any> {
         if (!this.client) {
             await this.initOSSClient();
         }
         if (!this.client) throw new Error("OSS client not initialized");
-        this.client.put(file_path, file);
+        const finalContentType = content_type || file.type || 'application/octet-stream';
+        const [_, err] = await utils.to(
+            this.client.put(file_path, file, {
+                headers: {
+                    'Content-Type': finalContentType
+                }
+            })
+        );
+        if (err) {
+            throw new Error(`Upload failed: ${err.message}`);
+        }
     }
 }

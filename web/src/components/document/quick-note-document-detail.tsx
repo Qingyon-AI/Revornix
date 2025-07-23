@@ -66,7 +66,7 @@ const QuickDocumentDetail = ({
 						<Markdown
 							components={{
 								img: (props) => {
-									return <CustomImage {...props} className='w-full' />;
+									return <img {...props} className='mx-auto' />;
 								},
 							}}
 							remarkPlugins={[remarkMath, remarkGfm]}

@@ -20,14 +20,14 @@ export class FileService {
         }
     }
 
-    async getFileContent(file_path: string) {
+    async getFileContent(file_path: string): Promise<string | Blob | ArrayBuffer> {
         if (!this.client) {
             throw new Error("No file service found");
         }
         return await this.client.getFileContent(file_path);
     }
 
-    async uploadFile(file_path: string, file: File) {
+    async uploadFile(file_path: string, file: File): Promise<any> {
         if (!this.client) {
             throw new Error("No file service found");
         }

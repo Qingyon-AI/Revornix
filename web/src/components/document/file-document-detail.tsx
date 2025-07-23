@@ -20,7 +20,6 @@ import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
 import DocumentOperate from './document-operate';
 import { useInView } from 'react-intersection-observer';
-import CustomImage from '../ui/custom-image';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
 import { getUserFileUrlPrefix } from '@/service/file-system';
@@ -105,11 +104,13 @@ const FileDocumentDetail = ({
 			if (!res || err) {
 				throw new Error(err.message);
 			}
-			if (userRemoteFileUrlPrefix?.url_prefix) {
-				res = replaceImagePaths(res, userRemoteFileUrlPrefix.url_prefix);
+			if (typeof res === 'string') {
+				if (userRemoteFileUrlPrefix?.url_prefix) {
+					res = replaceImagePaths(res, userRemoteFileUrlPrefix.url_prefix);
+				}
+				setMarkdown(res);
+				setMarkdownRendered(true);
 			}
-			setMarkdown(res);
-			setMarkdownRendered(true);
 		} catch (e: any) {
 			setMarkdownGetError(e.message);
 		}
@@ -206,7 +207,7 @@ const FileDocumentDetail = ({
 						<Markdown
 							components={{
 								img: (props) => {
-									return <img {...props} className='w-full' />;
+									return <img {...props} className='mx-auto' />;
 								},
 							}}
 							remarkPlugins={[remarkMath, remarkGfm]}

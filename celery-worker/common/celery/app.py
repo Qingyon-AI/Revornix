@@ -18,11 +18,11 @@ from engine import markitdown as markitdown_engine
 from engine import jina as jina_engine
 from engine import mineru as mineru_engine
 
-# import tracemalloc
+import tracemalloc
 import warnings
 
-# tracemalloc.start()
-# warnings.simplefilter("default")
+tracemalloc.start()
+warnings.simplefilter("default")
 
 celery_app = Celery('worker', 
                     broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0',
@@ -133,7 +133,7 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
         db.commit()
         
         website_extractor = crud.engine.get_engine_by_id(db=db, 
-                                                        id=default_website_document_parse_engine_id)
+                                                         id=default_website_document_parse_engine_id)
         if website_extractor.name.lower() == "markitdown":
             engine = markitdown_engine.MarkitdownEngine(user_id=user_id)
             web_info = await engine.analyse_website(url=db_website_document.url)

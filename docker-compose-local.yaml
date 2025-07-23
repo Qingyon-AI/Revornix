@@ -24,13 +24,13 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
     ports:
-      - "9011:9001"
-      - "9010:9000"
+      - "9011:9011"
+      - "9010:9010"
     volumes:
       - ./volumes/files:/data
-    command: minio server /data --console-address ":9001"
+    command: minio server /data --address :9010 --console-address ":9011"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:9010/minio/health/live"]
       interval: 30s
       timeout: 20s
       retries: 3
