@@ -27,10 +27,22 @@ export interface EngineInstallRequest {
     engine_id: number;
     /**
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof EngineInstallRequest
      */
-    status: boolean;
+    title: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EngineInstallRequest
+     */
+    description?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof EngineInstallRequest
+     */
+    config_json?: string | null;
 }
 
 /**
@@ -38,7 +50,7 @@ export interface EngineInstallRequest {
  */
 export function instanceOfEngineInstallRequest(value: object): value is EngineInstallRequest {
     if (!('engine_id' in value) || value['engine_id'] === undefined) return false;
-    if (!('status' in value) || value['status'] === undefined) return false;
+    if (!('title' in value) || value['title'] === undefined) return false;
     return true;
 }
 
@@ -53,7 +65,9 @@ export function EngineInstallRequestFromJSONTyped(json: any, ignoreDiscriminator
     return {
         
         'engine_id': json['engine_id'],
-        'status': json['status'],
+        'title': json['title'],
+        'description': json['description'] == null ? undefined : json['description'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
 }
 
@@ -69,7 +83,9 @@ export function EngineInstallRequestToJSONTyped(value?: EngineInstallRequest | n
     return {
         
         'engine_id': value['engine_id'],
-        'status': value['status'],
+        'title': value['title'],
+        'description': value['description'],
+        'config_json': value['config_json'],
     };
 }
 

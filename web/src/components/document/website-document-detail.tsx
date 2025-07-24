@@ -19,10 +19,12 @@ import { Button } from '@/components/ui/button';
 import DocumentOperate from './document-operate';
 import { Separator } from '../ui/separator';
 import { useInView } from 'react-intersection-observer';
-import CustomImage from '../ui/custom-image';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
-import { getUserFileUrlPrefix } from '@/service/file-system';
+import {
+	getUserFileSystemDetail,
+	getUserFileUrlPrefix,
+} from '@/service/file-system';
 
 const WebsiteDocumentDetail = ({
 	id,
@@ -58,6 +60,17 @@ const WebsiteDocumentDetail = ({
 		enabled: !!document?.creator?.id,
 	});
 
+	const { data: userFileSystemDetail } = useQuery({
+		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryFn: () =>
+			getUserFileSystemDetail({
+				user_file_system_id: userInfo!.default_user_file_system!,
+			}),
+		enabled:
+			userInfo?.id !== undefined &&
+			userInfo?.default_user_file_system !== undefined,
+	});
+
 	const [delay, setDelay] = useState<number | undefined>(1000);
 	useInterval(() => {
 		if (
@@ -71,14 +84,15 @@ const WebsiteDocumentDetail = ({
 			queryKey: ['getDocumentDetail', id],
 		});
 	}, delay);
+
 	const [markdown, setMarkdown] = useState<string>();
 	const onGetMarkdown = async () => {
 		if (!document || !document?.website_info?.md_file_name || !userInfo) return;
-		if (!userInfo.default_file_system) {
-			toast.error('No default file system found');
+		if (!userInfo.default_user_file_system) {
+			toast.error('No user default file system found');
 			return;
 		}
-		const fileService = new FileService(userInfo.default_file_system);
+		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
 			let [res, err] = await utils.to(
 				fileService.getFileContent(document.website_info?.md_file_name)

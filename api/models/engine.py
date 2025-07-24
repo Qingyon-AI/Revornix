@@ -1,11 +1,12 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
-
 from common.sql import Base
 
 class UserEngine(Base):
     __tablename__ = "user_engine"
 
     id = Column(Integer, primary_key=True)
+    title = Column(String(100), nullable=False, index=True)
+    description = Column(String(2000))
     user_id = Column(Integer, ForeignKey("user.id"))
     engine_id = Column(Integer, ForeignKey("engine.id"))
     create_time = Column(DateTime(timezone=True))

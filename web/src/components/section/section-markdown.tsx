@@ -13,6 +13,7 @@ import CustomImage from '../ui/custom-image';
 import { useUserContext } from '@/provider/user-provider';
 import { toast } from 'sonner';
 import { FileService } from '@/lib/file';
+import { getUserFileSystemDetail } from '@/service/file-system';
 
 const SectionMarkdown = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -29,6 +30,17 @@ const SectionMarkdown = ({ id }: { id: number }) => {
 		},
 	});
 
+	const { data: userFileSystemDetail } = useQuery({
+		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryFn: () =>
+			getUserFileSystemDetail({
+				user_file_system_id: userInfo!.default_user_file_system!,
+			}),
+		enabled:
+			userInfo?.id !== undefined &&
+			userInfo?.default_user_file_system !== undefined,
+	});
+
 	const [markdown, setMarkdown] = useState<string>();
 	const [markdownIsFetching, setMarkdownIsFetching] = useState<boolean>(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
@@ -36,11 +48,11 @@ const SectionMarkdown = ({ id }: { id: number }) => {
 	const onGetMarkdown = async () => {
 		if (!section || !section.md_file_name || !userInfo) return;
 		setMarkdownIsFetching(true);
-		if (!userInfo.default_file_system) {
-			toast.error('No default file system found');
+		if (!userInfo.default_user_file_system) {
+			toast.error('No user default file system found');
 			return;
 		}
-		const fileService = new FileService(userInfo.default_file_system);
+		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
 			const [res, err] = await utils.to(
 				fileService.getFileContent(section?.md_file_name)

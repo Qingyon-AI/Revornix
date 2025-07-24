@@ -20,10 +20,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { useState } from 'react';
-import {
-	getProvideFileSystems,
-	installFileSystem,
-} from '@/service/file-system';
 import { useUserContext } from '@/provider/user-provider';
 import { Input } from '../ui/input';
 import {
@@ -34,15 +30,15 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
+import { getProvideEngines, installEngine } from '@/service/engine';
 
-const MineFileSystemAddCard = ({}: {}) => {
+const MineEngineAddCard = ({}: {}) => {
 	const t = useTranslations();
 	const { refreshUserInfo } = useUserContext();
-	const [showMineFileSystemAddDialog, setShowMineFileSystemAddDialog] =
-		useState(false);
+	const [showMineEngineAddDialog, setShowMineEngineAddDialog] = useState(false);
 	const formSchema = z.object({
-		file_system_id: z.number().int(),
-		title: z.string().optional().nullable(),
+		engine_id: z.number().int(),
+		title: z.string(),
 		description: z.string().optional().nullable(),
 		config_json: z.string().optional().nullable(),
 	});
@@ -56,23 +52,23 @@ const MineFileSystemAddCard = ({}: {}) => {
 	});
 	const queryClient = getQueryClient();
 	const {
-		data: provideFileSystems,
-		isFetching: isFetchingProvideFileSystems,
-		isRefetching: isRefetchingProvideFileSystems,
+		data: provideEngines,
+		isFetching: isFetchingProvideEngines,
+		isRefetching: isRefetchingProvideEngines,
 	} = useQuery({
-		queryKey: ['provide-file-system'],
+		queryKey: ['provide-engine'],
 		queryFn: async () => {
-			return await getProvideFileSystems({ keyword: '' });
+			return await getProvideEngines({ keyword: '' });
 		},
 	});
-	const mutateInstallFileSystem = useMutation({
-		mutationFn: installFileSystem,
+	const mutateInstallEngine = useMutation({
+		mutationFn: installEngine,
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['mine-file-system'],
+				queryKey: ['mine-engine'],
 			});
 			refreshUserInfo();
-			setShowMineFileSystemAddDialog(false);
+			setShowMineEngineAddDialog(false);
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -92,8 +88,8 @@ const MineFileSystemAddCard = ({}: {}) => {
 	};
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		mutateInstallFileSystem.mutateAsync({
-			file_system_id: values.file_system_id,
+		mutateInstallEngine.mutateAsync({
+			engine_id: values.engine_id,
 			title: values.title,
 			description: values.description,
 			config_json: values.config_json,
@@ -108,17 +104,17 @@ const MineFileSystemAddCard = ({}: {}) => {
 	return (
 		<>
 			<Dialog
-				open={showMineFileSystemAddDialog}
-				onOpenChange={setShowMineFileSystemAddDialog}>
+				open={showMineEngineAddDialog}
+				onOpenChange={setShowMineEngineAddDialog}>
 				<DialogContent
 					className='max-h-[80vh] overflow-auto'
 					onOpenAutoFocus={(e) => e.preventDefault()}>
 					<DialogHeader>
 						<DialogTitle>
-							{t('setting_file_system_page_file_system_add_title')}
+							{t('setting_engine_page_engine_add_title')}
 						</DialogTitle>
 						<DialogDescription>
-							{t('setting_file_system_page_file_system_add_description')}
+							{t('setting_engine_page_engine_add_description')}
 						</DialogDescription>
 					</DialogHeader>
 					<Form {...form}>
@@ -128,14 +124,12 @@ const MineFileSystemAddCard = ({}: {}) => {
 							onSubmit={handleSubmit}>
 							<FormField
 								control={form.control}
-								name='file_system_id'
+								name='engine_id'
 								render={({ field }) => (
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
 											<FormLabel className='col-span-3'>
-												{t(
-													'setting_file_system_page_file_system_form_file_system_id'
-												)}
+												{t('setting_engine_page_engine_form_engine_id')}
 											</FormLabel>
 											<div className='col-span-9'>
 												<Select
@@ -146,13 +140,13 @@ const MineFileSystemAddCard = ({}: {}) => {
 													<SelectTrigger className='w-full'>
 														<SelectValue
 															placeholder={t(
-																'setting_file_system_page_file_system_form_file_system_id_placeholder'
+																'setting_engine_page_engine_form_engine_id_placeholder'
 															)}
 														/>
 													</SelectTrigger>
 													<SelectContent>
 														<SelectGroup>
-															{provideFileSystems?.data.map((item) => {
+															{provideEngines?.data.map((item) => {
 																return (
 																	<SelectItem
 																		key={item.id}
@@ -178,13 +172,13 @@ const MineFileSystemAddCard = ({}: {}) => {
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
 											<FormLabel className='col-span-3'>
-												{t('setting_file_system_page_file_system_form_title')}
+												{t('setting_engine_page_engine_form_title')}
 											</FormLabel>
 											<div className='col-span-9'>
 												<Input
 													{...field}
 													placeholder={t(
-														'setting_file_system_page_file_system_form_title_placeholder'
+														'setting_engine_page_engine_form_title_placeholder'
 													)}
 													value={field.value || ''}
 												/>
@@ -201,15 +195,13 @@ const MineFileSystemAddCard = ({}: {}) => {
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
 											<FormLabel className='col-span-3'>
-												{t(
-													'setting_file_system_page_file_system_form_description'
-												)}
+												{t('setting_engine_page_engine_form_description')}
 											</FormLabel>
 											<div className='col-span-9'>
 												<Textarea
 													{...field}
 													placeholder={t(
-														'setting_file_system_page_file_system_form_description_placeholder'
+														'setting_engine_page_engine_form_description_placeholder'
 													)}
 													value={field.value || ''}
 												/>
@@ -219,8 +211,8 @@ const MineFileSystemAddCard = ({}: {}) => {
 									</FormItem>
 								)}
 							/>
-							{provideFileSystems?.data.find((item) => {
-								return item.id === form.watch('file_system_id');
+							{provideEngines?.data.find((item) => {
+								return item.id === form.watch('engine_id');
 							})?.demo_config && (
 								<>
 									<FormField
@@ -231,14 +223,12 @@ const MineFileSystemAddCard = ({}: {}) => {
 												<FormItem>
 													<div className='grid grid-cols-12 gap-2'>
 														<FormLabel className='col-span-3'>
-															{t(
-																'setting_file_system_page_file_system_form_config_json'
-															)}
+															{t('setting_engine_page_engine_form_config_json')}
 														</FormLabel>
 														<div className='col-span-9'>
 															<Textarea
 																placeholder={t(
-																	'setting_file_system_page_file_system_form_config_json_placeholder'
+																	'setting_engine_page_engine_form_config_json_placeholder'
 																)}
 																className='font-mono break-all'
 																{...field}
@@ -253,14 +243,12 @@ const MineFileSystemAddCard = ({}: {}) => {
 									/>
 									<div className='grid grid-cols-12 gap-2'>
 										<FormLabel className='col-span-3'>
-											{t(
-												'setting_file_system_page_mine_file_system_config_demo'
-											)}
+											{t('setting_engine_page_mine_engine_config_demo')}
 										</FormLabel>
 										<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
 											{
-												provideFileSystems?.data.find((item) => {
-													return item.id === form.watch('file_system_id');
+												provideEngines?.data.find((item) => {
+													return item.id === form.watch('engine_id');
 												})?.demo_config
 											}
 										</div>
@@ -278,9 +266,9 @@ const MineFileSystemAddCard = ({}: {}) => {
 						<Button
 							type='submit'
 							form='install_form'
-							disabled={mutateInstallFileSystem.isPending}>
+							disabled={mutateInstallEngine.isPending}>
 							{t('confirm')}
-							{mutateInstallFileSystem.isPending && (
+							{mutateInstallEngine.isPending && (
 								<Loader2 className='animate-spin' />
 							)}
 						</Button>
@@ -291,15 +279,15 @@ const MineFileSystemAddCard = ({}: {}) => {
 				<CardContent
 					className='flex-1 flex flex-col justify-center items-center text-sm rounded cursor-pointer'
 					onClick={() => {
-						setShowMineFileSystemAddDialog(true);
+						setShowMineEngineAddDialog(true);
 					}}>
 					<div className='mb-3 p-3 bg-muted rounded-full'>
 						<PlusIcon className='h-12 w-12' />
 					</div>
-					<p>{t('setting_file_system_page_file_system_add_title')}</p>
+					<p>{t('setting_engine_page_engine_add_title')}</p>
 				</CardContent>
 			</Card>
 		</>
 	);
 };
-export default MineFileSystemAddCard;
+export default MineEngineAddCard;

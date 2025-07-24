@@ -9,6 +9,8 @@ import { createAttachment } from '@/service/attachment';
 import CustomImage from '../ui/custom-image';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
+import { useQuery } from '@tanstack/react-query';
+import { getUserFileSystemDetail } from '@/service/file-system';
 
 const CoverUpdate = () => {
 	const form = useFormContext();
@@ -16,6 +18,17 @@ const CoverUpdate = () => {
 	const [file, setFile] = useState<File | null>(null);
 	const upload = useRef<HTMLInputElement>(null);
 	const [uploadingStatus, setUploadingStatus] = useState<string | null>();
+
+	const { data: userFileSystemDetail } = useQuery({
+		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryFn: () =>
+			getUserFileSystemDetail({
+				user_file_system_id: userInfo!.default_user_file_system!,
+			}),
+		enabled:
+			userInfo?.id !== undefined &&
+			userInfo?.default_user_file_system !== undefined,
+	});
 
 	const handleOnUploadFile = () => {
 		upload.current?.click();
@@ -25,11 +38,11 @@ const CoverUpdate = () => {
 		if (!file) {
 			return;
 		}
-		if (!userInfo?.default_file_system) {
-			toast.error('No default file system found');
+		if (!userInfo?.default_user_file_system) {
+			toast.error('No user default file system found');
 			return;
 		}
-		const fileService = new FileService(userInfo.default_file_system);
+		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		setUploadingStatus('uploading');
 		setFile(file);
 		const name = crypto.randomUUID();

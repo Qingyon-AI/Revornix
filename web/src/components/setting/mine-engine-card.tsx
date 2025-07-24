@@ -1,18 +1,20 @@
 import {
 	Card,
-	CardContent,
 	CardDescription,
 	CardFooter,
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
 import { Button } from '../ui/button';
-import { format } from 'date-fns';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
-import { installEngine, updateEngine } from '@/service/engine';
+import {
+	deleteEngine,
+	getProvideEngines,
+	updateEngine,
+} from '@/service/engine';
 import { toast } from 'sonner';
-import { Eye, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import {
 	Dialog,
 	DialogClose,
@@ -26,11 +28,11 @@ import {
 import { Textarea } from '../ui/textarea';
 import { UserEngineInfo } from '@/generated';
 import { Separator } from '../ui/separator';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormField, FormItem, FormMessage } from '../ui/form';
+import { Form, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -41,27 +43,49 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '../ui/alert-dialog';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUserContext } from '@/provider/user-provider';
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '../ui/select';
+import { Input } from '../ui/input';
 
-const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
+const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 	const t = useTranslations();
 	const { refreshUserInfo } = useUserContext();
 	const [configDialogOpen, setConfigDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-	const locale = useLocale();
 	const formSchema = z.object({
-		config_json: z.string(),
+		title: z.string().optional().nullable(),
+		description: z.string().optional().nullable(),
+		config_json: z.string().optional().nullable(),
 	});
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			config_json: engine.config_json || '',
+			title: '',
+			description: '',
+			config_json: '',
 		},
 	});
 	const queryClient = getQueryClient();
-	const mutateInstallEngine = useMutation({
-		mutationFn: installEngine,
+	const {
+		data: provideEngines,
+		isFetching: isFetchingProvideEngines,
+		isRefetching: isRefetchingProvideEngines,
+	} = useQuery({
+		queryKey: ['provide-engine'],
+		queryFn: async () => {
+			return await getProvideEngines({ keyword: '' });
+		},
+	});
+	const mutateDeleteEngine = useMutation({
+		mutationFn: deleteEngine,
 		onSuccess: () => {
 			toast.success(t('setting_engine_page_mine_engine_delete_success'));
 			queryClient.invalidateQueries({
@@ -99,10 +123,11 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		await mutateUpdateEngine.mutateAsync({
-			engine_id: engine.id,
+			user_engine_id: user_engine.id,
 			config_json: values.config_json,
+			title: values.title,
+			description: values.description,
 		});
-		setConfigDialogOpen(false);
 	};
 
 	const onFormValidateError = (errors: any) => {
@@ -110,147 +135,231 @@ const MineEngineCard = ({ engine }: { engine: UserEngineInfo }) => {
 		toast.error(t('form_validate_failed'));
 	};
 
+	useEffect(() => {
+		if (!user_engine) return;
+		form.setValue('title', user_engine.title);
+		form.setValue('description', user_engine.description);
+		form.setValue('config_json', user_engine.config_json);
+	}, [user_engine]);
+
 	return (
 		<>
 			<Card className='bg-muted/50'>
 				<CardHeader>
-					<CardTitle>
-						{locale === 'en' ? engine.name : engine.name_zh}
-					</CardTitle>
-					<CardDescription>
-						{locale === 'en' ? engine.description : engine.description_zh}
-					</CardDescription>
+					<CardTitle>{user_engine.title}</CardTitle>
+					<CardDescription>{user_engine.description}</CardDescription>
 				</CardHeader>
-				<CardContent className='flex-1'>
-					{engine.config_json && (
-						<div className='bg-muted font-mono p-5 rounded text-xs break-all relative overflow-auto max-h-40'>
-							<div className='group absolute top-0 left-0 w-full h-full backdrop-blur rounded flex flex-col justify-center items-center hover:backdrop-blur-none transition-all'>
-								<Eye className='text-muted-foreground opacity-50 group-hover:hidden' />
-								<p className='text-muted-foreground opacity-50 group-hover:hidden'>
-									{t('setting_engine_page_mine_engine_config_see')}
-								</p>
-							</div>
-							{engine.config_json}
-						</div>
-					)}
-					{!engine.config_json && (
-						<p className='bg-muted font-mono p-5 rounded text-xs flex justify-center items-center h-full'>
-							{t('setting_engine_page_mine_engine_config_empty')}
-						</p>
-					)}
-				</CardContent>
-				<CardFooter className='flex flex-col w-full gap-2'>
-					<div className='w-full flex justify-between items-center'>
-						<div className='flex flex-row gap-1 items-center'>
-							<AlertDialog
-								open={deleteDialogOpen}
-								onOpenChange={setDeleteDialogOpen}>
-								<AlertDialogTrigger asChild>
-									<Button variant={'outline'} className='text-xs shadow-none'>
-										{t('delete')}
-									</Button>
-								</AlertDialogTrigger>
-								<AlertDialogContent>
-									<AlertDialogHeader>
-										<AlertDialogTitle>{t('tip')}</AlertDialogTitle>
-										<AlertDialogDescription>
-											{t('setting_engine_page_mine_engine_delete_alert')}
-										</AlertDialogDescription>
-									</AlertDialogHeader>
-									<AlertDialogFooter>
-										<Button
-											variant={'destructive'}
-											onClick={async () => {
-												const res = await mutateInstallEngine.mutateAsync({
-													engine_id: engine.id,
-													status: false,
-												});
-												if (res.success) {
-													setDeleteDialogOpen(false);
-												}
-											}}
-											disabled={mutateInstallEngine.isPending}>
-											{t('confirm')}
-											{mutateInstallEngine.isPending && (
-												<Loader2 className='animate-spin' />
-											)}
-										</Button>
-										<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-									</AlertDialogFooter>
-								</AlertDialogContent>
-							</AlertDialog>
-
-							<Dialog
-								open={configDialogOpen}
-								onOpenChange={setConfigDialogOpen}>
-								<DialogTrigger asChild>
-									<Button variant={'outline'} className='text-xs shadow-none'>
-										{t('config')}
-									</Button>
-								</DialogTrigger>
-
-								<DialogContent>
-									<DialogHeader>
-										<DialogTitle>{t('config')}</DialogTitle>
-										<DialogDescription>
-											{t('setting_engine_page_mine_engine_config_description', {
-												engine: locale === 'en' ? engine.name : engine.name_zh,
-											})}
-										</DialogDescription>
-									</DialogHeader>
-									<Form {...form}>
-										<form onSubmit={handleSubmit} id='update_form'>
+				<CardFooter className='flex justify-end gap-2'>
+					<Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
+						<DialogTrigger asChild>
+							<Button className='text-xs shadow-none'>{t('config')}</Button>
+						</DialogTrigger>
+						<DialogContent>
+							<DialogHeader>
+								<DialogTitle>{t('config')}</DialogTitle>
+								<DialogDescription>
+									{t('setting_engine_page_mine_engine_config_description', {
+										engine: user_engine.title,
+									})}
+								</DialogDescription>
+							</DialogHeader>
+							<Form {...form}>
+								<form
+									onSubmit={handleSubmit}
+									id='update_form'
+									className='space-y-5'>
+									<FormItem>
+										<div className='grid grid-cols-12 gap-2'>
+											<FormLabel className='col-span-3'>
+												{t('setting_engine_page_engine_form_engine_id')}
+											</FormLabel>
+											<div className='col-span-9'>
+												<Select
+													disabled
+													value={user_engine.engine_id.toString()}>
+													<SelectTrigger className='w-full'>
+														<SelectValue
+															placeholder={t(
+																'setting_engine_page_engine_form_engine_id_placeholder'
+															)}
+														/>
+													</SelectTrigger>
+													<SelectContent>
+														<SelectGroup>
+															{provideEngines?.data.map((item) => {
+																return (
+																	<SelectItem
+																		key={item.id}
+																		value={String(item.id)}
+																		className='w-full'>
+																		{item.name}
+																	</SelectItem>
+																);
+															})}
+														</SelectGroup>
+													</SelectContent>
+												</Select>
+											</div>
+										</div>
+										<FormMessage />
+									</FormItem>
+									<FormField
+										name='title'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<div className='grid grid-cols-12 gap-2'>
+														<FormLabel className='col-span-3'>
+															{t('setting_engine_page_engine_form_title')}
+														</FormLabel>
+														<div className='col-span-9'>
+															<Input
+																{...field}
+																placeholder={t(
+																	'setting_engine_page_engine_form_title_placeholder'
+																)}
+																value={field.value || ''}
+															/>
+														</div>
+													</div>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormField
+										name='description'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<div className='grid grid-cols-12 gap-2'>
+														<FormLabel className='col-span-3'>
+															{t('setting_engine_page_engine_form_description')}
+														</FormLabel>
+														<div className='col-span-9'>
+															<Textarea
+																{...field}
+																placeholder={t(
+																	'setting_engine_page_engine_form_description_placeholder'
+																)}
+																value={field.value || ''}
+															/>
+														</div>
+													</div>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									{user_engine.demo_config && (
+										<>
 											<FormField
 												name='config_json'
 												control={form.control}
 												render={({ field }) => {
 													return (
 														<FormItem>
-															<Textarea
-																placeholder={t(
-																	'setting_engine_page_mine_engine_config_placeholder'
-																)}
-																className='font-mono'
-																{...field}
-															/>
+															<div className='grid grid-cols-12 gap-2'>
+																<FormLabel className='col-span-3'>
+																	{t(
+																		'setting_engine_page_engine_form_config_json'
+																	)}
+																</FormLabel>
+																<div className='col-span-9'>
+																	<Textarea
+																		placeholder={t(
+																			'setting_engine_page_engine_form_config_json_placeholder'
+																		)}
+																		className='font-mono break-all'
+																		{...field}
+																		value={field.value ?? ''}
+																	/>
+																</div>
+															</div>
 															<FormMessage />
 														</FormItem>
 													);
 												}}
 											/>
-										</form>
-									</Form>
-									{engine.demo_config && (
-										<>
-											<Separator />
-											<h3 className='text-xs text-muted-foreground'>
-												{t('setting_engine_page_mine_engine_config_demo')}
-											</h3>
-											<p className='rounded bg-muted p-5 font-mono text-sm'>
-												{engine.demo_config}
-											</p>
+											<div className='grid grid-cols-12 gap-2'>
+												<FormLabel className='col-span-3'>
+													{t('setting_engine_page_mine_engine_config_demo')}
+												</FormLabel>
+												<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
+													{user_engine.demo_config}
+												</div>
+											</div>
 										</>
 									)}
-									<DialogFooter>
-										<DialogClose asChild>
-											<Button type='button' variant={'secondary'}>
-												{t('cancel')}
-											</Button>
-										</DialogClose>
-										<Button
-											type='submit'
-											form='update_form'
-											disabled={mutateUpdateEngine.isPending}>
-											{t('confirm')}
-											{mutateUpdateEngine.isPending && (
-												<Loader2 className='animate-spin' />
-											)}
-										</Button>
-									</DialogFooter>
-								</DialogContent>
-							</Dialog>
-						</div>
-					</div>
+								</form>
+							</Form>
+							{user_engine.demo_config && (
+								<>
+									<Separator />
+									<h3 className='text-xs text-muted-foreground'>
+										{t('setting_engine_page_mine_engine_config_demo')}
+									</h3>
+									<p className='rounded bg-muted p-5 font-mono text-sm'>
+										{user_engine.demo_config}
+									</p>
+								</>
+							)}
+							<DialogFooter>
+								<DialogClose asChild>
+									<Button type='button' variant={'secondary'}>
+										{t('cancel')}
+									</Button>
+								</DialogClose>
+								<Button
+									type='submit'
+									form='update_form'
+									disabled={mutateUpdateEngine.isPending}>
+									{t('confirm')}
+									{mutateUpdateEngine.isPending && (
+										<Loader2 className='animate-spin' />
+									)}
+								</Button>
+							</DialogFooter>
+						</DialogContent>
+					</Dialog>
+					<AlertDialog
+						open={deleteDialogOpen}
+						onOpenChange={setDeleteDialogOpen}>
+						<AlertDialogTrigger asChild>
+							<Button variant={'secondary'} className='text-xs shadow-none'>
+								{t('delete')}
+							</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>{t('tip')}</AlertDialogTitle>
+								<AlertDialogDescription>
+									{t('setting_engine_page_mine_engine_delete_alert')}
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<Button
+									variant={'destructive'}
+									onClick={async () => {
+										const res = await mutateDeleteEngine.mutateAsync({
+											user_engine_id: user_engine.id,
+										});
+										if (res.success) {
+											setDeleteDialogOpen(false);
+										}
+									}}
+									disabled={mutateDeleteEngine.isPending}>
+									{t('confirm')}
+									{mutateDeleteEngine.isPending && (
+										<Loader2 className='animate-spin' />
+									)}
+								</Button>
+								<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
 				</CardFooter>
 			</Card>
 		</>

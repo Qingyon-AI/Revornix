@@ -24,21 +24,32 @@ export interface EngineUpdateRequest {
      * @type {number}
      * @memberof EngineUpdateRequest
      */
-    engine_id: number;
+    user_engine_id: number;
     /**
      * 
      * @type {string}
      * @memberof EngineUpdateRequest
      */
-    config_json: string;
+    config_json?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof EngineUpdateRequest
+     */
+    title?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof EngineUpdateRequest
+     */
+    description?: string | null;
 }
 
 /**
  * Check if a given object implements the EngineUpdateRequest interface.
  */
 export function instanceOfEngineUpdateRequest(value: object): value is EngineUpdateRequest {
-    if (!('engine_id' in value) || value['engine_id'] === undefined) return false;
-    if (!('config_json' in value) || value['config_json'] === undefined) return false;
+    if (!('user_engine_id' in value) || value['user_engine_id'] === undefined) return false;
     return true;
 }
 
@@ -52,8 +63,10 @@ export function EngineUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'engine_id': json['engine_id'],
-        'config_json': json['config_json'],
+        'user_engine_id': json['user_engine_id'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
+        'title': json['title'] == null ? undefined : json['title'],
+        'description': json['description'] == null ? undefined : json['description'],
     };
 }
 
@@ -68,8 +81,10 @@ export function EngineUpdateRequestToJSONTyped(value?: EngineUpdateRequest | nul
 
     return {
         
-        'engine_id': value['engine_id'],
+        'user_engine_id': value['user_engine_id'],
         'config_json': value['config_json'],
+        'title': value['title'],
+        'description': value['description'],
     };
 }
 

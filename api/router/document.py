@@ -129,14 +129,17 @@ async def transform_markdown(request: Request,
         elif db_user_file_system.file_system_id == 2:
             remote_file_service = AliyunOSSRemoteFileService()
         await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
+        
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=transform_markdown_request.document_id)
     if db_document is None:
         raise Exception('The document you want to transform is not found')
+    
     db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                              document_id=transform_markdown_request.document_id)
     if db_transform_task.status == 1:
         raise Exception('The document is being transformed, please wait')
+    
     if db_document.category == 1:
         db_website_document = crud.document.get_website_document_by_document_id(db=db,
                                                                                 document_id=transform_markdown_request.document_id)
@@ -146,20 +149,21 @@ async def transform_markdown(request: Request,
             db_transform_task.status = 1
             db.commit()
             db.refresh(db_document)
-            default_website_document_parse_engine_id = user.default_website_document_parse_engine_id
-            if default_website_document_parse_engine_id is None:
+            default_website_document_parse_user_engine_id = user.default_website_document_parse_user_engine_id
+            if default_website_document_parse_user_engine_id is None:
                 raise Exception("User does not have default website document parse engine")
-            website_extractor = crud.engine.get_engine_by_id(db=db, 
-                                                             id=default_website_document_parse_engine_id)
-            if website_extractor.name.lower() == "markitdown":
-                engine = MarkitdownEngine(user_id=user.id)
-                web_info = await engine.analyse_website(url=db_website_document.url)
-            if website_extractor.name.lower() == "jina":
-                engine = JinaEngine(user_id=user.id)
-                web_info = await engine.analyse_website(url=db_website_document.url)
-            if website_extractor.name.lower() == "mineru":
-                engine = MineruEngine(user_id=user.id)
-                web_info = await engine.analyse_website(url=db_website_document.url)
+            website_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
+                                                                              user_engine_id=default_website_document_parse_user_engine_id)
+            if website_extractor.engine_id == 3:
+                engine = MarkitdownEngine()
+            if website_extractor.engine_id == 2:
+                engine = JinaEngine()
+            if website_extractor.engine_id == 1:
+                engine = MineruEngine()
+                
+            await engine.init_engine_config_by_user_engine_id(user_engine_id=default_website_document_parse_user_engine_id)
+            
+            web_info = await engine.analyse_website(url=db_website_document.url)
             markdown_content = web_info.content
             md_file_name = f"markdown/{uuid.uuid4().hex}.md"
             await remote_file_service.upload_raw_content_to_path(file_path=md_file_name,

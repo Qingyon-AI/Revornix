@@ -111,13 +111,13 @@ export interface PrivateUserInfo {
      * @type {number}
      * @memberof PrivateUserInfo
      */
-    default_website_document_parse_engine_id?: number | null;
+    default_website_document_parse_user_engine_id?: number | null;
     /**
      * 
      * @type {number}
      * @memberof PrivateUserInfo
      */
-    default_file_document_parse_engine_id?: number | null;
+    default_file_document_parse_user_engine_id?: number | null;
 }
 
 /**
@@ -151,8 +151,8 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'default_read_mark_reason': json['default_read_mark_reason'] == null ? undefined : json['default_read_mark_reason'],
         'default_document_reader_model_id': json['default_document_reader_model_id'] == null ? undefined : json['default_document_reader_model_id'],
         'default_revornix_model_id': json['default_revornix_model_id'] == null ? undefined : json['default_revornix_model_id'],
-        'default_website_document_parse_engine_id': json['default_website_document_parse_engine_id'] == null ? undefined : json['default_website_document_parse_engine_id'],
-        'default_file_document_parse_engine_id': json['default_file_document_parse_engine_id'] == null ? undefined : json['default_file_document_parse_engine_id'],
+        'default_website_document_parse_user_engine_id': json['default_website_document_parse_user_engine_id'] == null ? undefined : json['default_website_document_parse_user_engine_id'],
+        'default_file_document_parse_user_engine_id': json['default_file_document_parse_user_engine_id'] == null ? undefined : json['default_file_document_parse_user_engine_id'],
     };
 }
 
@@ -179,8 +179,8 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'default_read_mark_reason': value['default_read_mark_reason'],
         'default_document_reader_model_id': value['default_document_reader_model_id'],
         'default_revornix_model_id': value['default_revornix_model_id'],
-        'default_website_document_parse_engine_id': value['default_website_document_parse_engine_id'],
-        'default_file_document_parse_engine_id': value['default_file_document_parse_engine_id'],
+        'default_website_document_parse_user_engine_id': value['default_website_document_parse_user_engine_id'],
+        'default_file_document_parse_user_engine_id': value['default_file_document_parse_user_engine_id'],
     };
 }
 

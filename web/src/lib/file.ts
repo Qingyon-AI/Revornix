@@ -24,6 +24,7 @@ export class FileService {
         if (!this.client) {
             throw new Error("No file service found");
         }
+        await this.client.initFileSystemConfig()
         return await this.client.getFileContent(file_path);
     }
 
@@ -31,6 +32,7 @@ export class FileService {
         if (!this.client) {
             throw new Error("No file service found");
         }
+        await this.client.initFileSystemConfig()
         return await this.client.uploadFile(file_path, file);
     }
 

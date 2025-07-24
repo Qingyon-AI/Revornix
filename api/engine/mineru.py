@@ -15,14 +15,12 @@ from common.common import is_dir_empty, extract_title_and_summary
 
 class MineruEngine(EngineProtocol):
 
-    def __init__(self, 
-                 user_id: int | None = None):
+    def __init__(self):
         super().__init__(engine_uuid='c59151aa86784d9ab52f74c12c830b1f',
                          engine_name='MinerU',
                          engine_name_zh='MinerU',
                          engine_description='MinerU is an AI-driven file parser that can parse web pages, PDFs, images, etc. into Markdown format and retain the original layout well.',
-                         engine_description_zh='MinerU 是 AI驱动的文件解析器，可以将网页、PDF、图片等文件解析为 Markdown 格式并且较好地保留原来的排版。',
-                         user_id=user_id)
+                         engine_description_zh='MinerU 是 AI驱动的文件解析器，可以将网页、PDF、图片等文件解析为 Markdown 格式并且较好地保留原来的排版。')
 
     async def analyse_website(self, 
                               url: str):

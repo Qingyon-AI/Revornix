@@ -9,8 +9,8 @@ class DefaultReadMarkReasonUpdateRequest(BaseModel):
     default_read_mark_reason: int
 
 class DefaultEngineUpdateRequest(BaseModel):
-    default_website_document_parse_engine_id: int | None = None
-    default_file_document_parse_engine_id: int | None = None
+    default_website_document_parse_user_engine_id: int | None = None
+    default_file_document_parse_user_engine_id: int | None = None
 
 class DefaultModelUpdateRequest(BaseModel):
     default_document_reader_model_id: int | None = None
@@ -88,8 +88,8 @@ class PrivateUserInfo(BaseModel):
     default_read_mark_reason: int | None = None
     default_document_reader_model_id: int | None = None
     default_revornix_model_id: int | None = None
-    default_website_document_parse_engine_id: int | None = None
-    default_file_document_parse_engine_id: int | None = None
+    default_website_document_parse_user_engine_id: int | None = None
+    default_file_document_parse_user_engine_id: int | None = None
     
     @field_serializer("avatar")
     def serialize_avatar(self, v):

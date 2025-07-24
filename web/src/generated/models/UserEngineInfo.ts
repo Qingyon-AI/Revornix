@@ -27,28 +27,22 @@ export interface UserEngineInfo {
     id: number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof UserEngineInfo
      */
-    name: string;
+    engine_id: number;
     /**
      * 
      * @type {string}
      * @memberof UserEngineInfo
      */
-    name_zh: string;
+    title: string;
     /**
      * 
      * @type {string}
      * @memberof UserEngineInfo
      */
     description?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEngineInfo
-     */
-    description_zh?: string | null;
     /**
      * 
      * @type {string}
@@ -86,8 +80,8 @@ export interface UserEngineInfo {
  */
 export function instanceOfUserEngineInfo(value: object): value is UserEngineInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
+    if (!('engine_id' in value) || value['engine_id'] === undefined) return false;
+    if (!('title' in value) || value['title'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
@@ -104,10 +98,9 @@ export function UserEngineInfoFromJSONTyped(json: any, ignoreDiscriminator: bool
     return {
         
         'id': json['id'],
-        'name': json['name'],
-        'name_zh': json['name_zh'],
+        'engine_id': json['engine_id'],
+        'title': json['title'],
         'description': json['description'] == null ? undefined : json['description'],
-        'description_zh': json['description_zh'] == null ? undefined : json['description_zh'],
         'demo_config': json['demo_config'] == null ? undefined : json['demo_config'],
         'enable': json['enable'] == null ? undefined : json['enable'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
@@ -128,10 +121,9 @@ export function UserEngineInfoToJSONTyped(value?: UserEngineInfo | null, ignoreD
     return {
         
         'id': value['id'],
-        'name': value['name'],
-        'name_zh': value['name_zh'],
+        'engine_id': value['engine_id'],
+        'title': value['title'],
         'description': value['description'],
-        'description_zh': value['description_zh'],
         'demo_config': value['demo_config'],
         'enable': value['enable'],
         'config_json': value['config_json'],

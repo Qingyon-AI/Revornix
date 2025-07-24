@@ -24,6 +24,7 @@ import type {
   FileUrlPrefixRequest,
   FileUrlPrefixResponse,
   HTTPValidationError,
+  MigrateFileSystemRequest,
   MineFileSystemSearchResponse,
   NormalResponse,
   OssStsResponse,
@@ -52,6 +53,8 @@ import {
     FileUrlPrefixResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    MigrateFileSystemRequestFromJSON,
+    MigrateFileSystemRequestToJSON,
     MineFileSystemSearchResponseFromJSON,
     MineFileSystemSearchResponseToJSON,
     NormalResponseFromJSON,
@@ -104,6 +107,12 @@ export interface GetUrlPrefixFileSystemUrlPrefixPostRequest {
 
 export interface InstallUserFileSystemFileSystemInstallPostRequest {
     fileSystemInstallRequest: FileSystemInstallRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface MigrateFileSystemFileSystemMigratePostRequest {
+    migrateFileSystemRequest: MigrateFileSystemRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -429,6 +438,53 @@ export class FileSystemApi extends runtime.BaseAPI {
      */
     async installUserFileSystemFileSystemInstallPost(requestParameters: InstallUserFileSystemFileSystemInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FileSystemInstallResponse> {
         const response = await this.installUserFileSystemFileSystemInstallPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Migrate File System
+     */
+    async migrateFileSystemFileSystemMigratePostRaw(requestParameters: MigrateFileSystemFileSystemMigratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['migrateFileSystemRequest'] == null) {
+            throw new runtime.RequiredError(
+                'migrateFileSystemRequest',
+                'Required parameter "migrateFileSystemRequest" was null or undefined when calling migrateFileSystemFileSystemMigratePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/file-system/migrate`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MigrateFileSystemRequestToJSON(requestParameters['migrateFileSystemRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Migrate File System
+     */
+    async migrateFileSystemFileSystemMigratePost(requestParameters: MigrateFileSystemFileSystemMigratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.migrateFileSystemFileSystemMigratePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

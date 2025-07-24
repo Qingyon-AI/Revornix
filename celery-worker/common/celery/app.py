@@ -14,9 +14,9 @@ from common.ai import summary_section_with_origin, summary_document, summary_sec
 from common.vector import milvus_client, process_document
 from common.common import get_user_remote_file_system
 from common.sql import SessionLocal
-from engine import markitdown as markitdown_engine
-from engine import jina as jina_engine
-from engine import mineru as mineru_engine
+from engine.markitdown import MarkitdownEngine
+from engine.jina import JinaEngine
+from engine.mineru import MineruEngine
 
 import tracemalloc
 import warnings
@@ -35,44 +35,53 @@ async def handle_init_file_document_info(document_id: int,
                                        user_id=user_id)
     if db_user is None:
         raise Exception("User not found")
+    
     remote_file_service = await get_user_remote_file_system(user_id=user_id)
+    
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
         if db_document is None:
             raise Exception("Document not found")
+        
         if db_document.category != 0:
             raise Exception("This task is only for file document")
+        
         db_file_document = crud.document.get_file_document_by_document_id(db=db,
                                                                         document_id=document_id)
         if db_file_document is None:
             raise Exception("File document not found")
-        default_file_document_parse_engine_id = db_user.default_file_document_parse_engine_id
-        if default_file_document_parse_engine_id is None:
+        
+        default_file_document_parse_user_engine_id = db_user.default_file_document_parse_user_engine_id
+        if default_file_document_parse_user_engine_id is None:
             raise Exception("User does not have default document parsing engine")
+        
         db_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                     document_id=document_id)
         if db_task is None:
             raise Exception("Document transform task not found")
+        
         db_task.status = 1
         db.commit()
         
-        file_extractor = crud.engine.get_engine_by_id(db=db, 
-                                                    id=default_file_document_parse_engine_id)
+        file_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
+                                                                       user_engine_id=default_file_document_parse_user_engine_id)
         # download the file to the temp dir
         file_content = await remote_file_service.get_file_content_by_file_path(file_path=db_file_document.file_name)
         temp_file_path = f'{str(BASE_DIR)}/temp/{db_file_document.file_name.replace("files/", "")}'
         with open(temp_file_path, 'wb') as f:
             f.write(file_content)
             
-        if file_extractor.name.lower() == "markitdown":
-            engine = markitdown_engine.MarkitdownEngine(user_id=user_id)
-            file_info = await engine.analyse_file(temp_file_path)
-        if file_extractor.name.lower() == "mineru":
-            engine = mineru_engine.MineruEngine(user_id=user_id)
-            file_info = await engine.analyse_file(file_path=temp_file_path)
-        if file_extractor.name.lower() == "jina":
-            raise Exception("Jina engine for file document parsing is not supported yet")
+        if file_extractor.engine_id == 3:
+            engine = MarkitdownEngine()
+        if file_extractor.engine_id == 2:
+            engine = JinaEngine()
+        if file_extractor.engine_id == 1:
+            engine = MineruEngine()
+            
+        await engine.init_engine_config_by_user_engine_id(user_engine_id=default_file_document_parse_user_engine_id)
+        
+        file_info = await engine.analyse_file(file_path=temp_file_path)
 
         db_document.title = file_info.title
         db_document.description = file_info.description
@@ -80,14 +89,14 @@ async def handle_init_file_document_info(document_id: int,
         db.commit()
         
         db_file_document = crud.document.get_file_document_by_document_id(db=db, 
-                                                                        document_id=document_id)
+                                                                          document_id=document_id)
         md_file_name = f"markdown/{uuid.uuid4().hex}.md"
         await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
                                                              content=file_info.content,
                                                              content_type="text/plain")
         crud.document.update_file_document_by_file_document_id(db=db,
-                                                            file_document_id=db_file_document.id,
-                                                            md_file_name=md_file_name)
+                                                               file_document_id=db_file_document.id,
+                                                               md_file_name=md_file_name)
         db_task.status = 2
         db.commit()
     except Exception as e:
@@ -104,13 +113,16 @@ async def handle_init_file_document_info(document_id: int,
         db.commit()
         raise e
 
-async def handle_init_website_document_info(document_id: int, user_id: int):
+async def handle_init_website_document_info(document_id: int, 
+                                            user_id: int):
     db = SessionLocal()
     db_user = crud.user.get_user_by_id(db=db, 
                                        user_id=user_id)
     if db_user is None:
         raise Exception("User not found")
+    
     remote_file_service = await get_user_remote_file_system(user_id=user_id)
+    
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
@@ -118,32 +130,36 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
             raise Exception("Document not found")
         if db_document.category != 1:
             raise Exception("This task is only for website document")
+        
         db_website_document = crud.document.get_website_document_by_document_id(db=db,
                                                                                 document_id=document_id)
         if db_website_document is None:
             raise Exception("Website document not found")
-        default_website_document_parse_engine_id = db_user.default_website_document_parse_engine_id
-        if default_website_document_parse_engine_id is None:
+        
+        default_website_document_parse_user_engine_id = db_user.default_website_document_parse_user_engine_id
+        if default_website_document_parse_user_engine_id is None:
             raise Exception("User does not have default website document parse engine")
+        
         db_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                        document_id=document_id)
         if db_task is None:
             raise Exception("Document transform task not found")
+        
         db_task.status = 1
         db.commit()
         
-        website_extractor = crud.engine.get_engine_by_id(db=db, 
-                                                         id=default_website_document_parse_engine_id)
-        if website_extractor.name.lower() == "markitdown":
-            engine = markitdown_engine.MarkitdownEngine(user_id=user_id)
-            web_info = await engine.analyse_website(url=db_website_document.url)
-        if website_extractor.name.lower() == "jina":
-            engine = jina_engine.JinaEngine(user_id=user_id)
-            web_info = await engine.analyse_website(url=db_website_document.url)
-        if website_extractor.name.lower() == "mineru":
-            engine = mineru_engine.MineruEngine(user_id=user_id)
-            web_info = await engine.analyse_website(url=db_website_document.url)
-
+        website_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
+                                                                          user_engine_id=default_website_document_parse_user_engine_id)
+        if website_extractor.engine_id == 3:
+            engine = MarkitdownEngine()
+        if website_extractor.engine_id == 2:
+            engine = JinaEngine()
+        if website_extractor.engine_id == 1:
+            engine = MineruEngine()
+            
+        await engine.init_engine_config_by_user_engine_id(user_engine_id=default_website_document_parse_user_engine_id)
+        
+        web_info = await engine.analyse_website(url=db_website_document.url)
         db_document.title = web_info.title
         db_document.description = web_info.description
         db_document.cover = web_info.cover
@@ -174,7 +190,8 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
         db.commit()
         raise e
 
-async def handle_add_embedding(document_id: int, user_id: int):
+async def handle_add_embedding(document_id: int, 
+                               user_id: int):
     db = SessionLocal()
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=document_id)
@@ -391,7 +408,8 @@ async def handle_update_section_use_document(section_id: int,
         raise e
 
 @celery_app.task
-def init_website_document_info(document_id: int, user_id: int):
+def init_website_document_info(document_id: int, 
+                               user_id: int):
     asyncio.run(handle_init_website_document_info(document_id=document_id, user_id=user_id))
 
 @celery_app.task

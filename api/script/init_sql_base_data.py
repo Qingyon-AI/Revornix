@@ -62,15 +62,8 @@ if __name__ == '__main__':
                                                              description=markitdown_engine.engine_description,
                                                              description_zh=markitdown_engine.engine_description_zh,
                                                              demo_config=markitdown_engine.engine_demo_config)
-            aliyun_oss_remote_file_service = AliyunOSSRemoteFileService()
             built_in_remote_file_service = BuiltInRemoteFileService()
-            db_aliyun_oss_remote_file_service = crud.file_system.create_file_system(db=db,
-                                                                                    uuid=aliyun_oss_remote_file_service.file_service_uuid,
-                                                                                    name=aliyun_oss_remote_file_service.file_service_name,
-                                                                                    name_zh=aliyun_oss_remote_file_service.file_service_name_zh,
-                                                                                    description=aliyun_oss_remote_file_service.file_service_description,
-                                                                                    description_zh=aliyun_oss_remote_file_service.file_service_description_zh,
-                                                                                    demo_config=aliyun_oss_remote_file_service.file_service_demo_config)
+            aliyun_oss_remote_file_service = AliyunOSSRemoteFileService()
             db_built_in_remote_file_service = crud.file_system.create_file_system(db=db,
                                                                                   uuid=built_in_remote_file_service.file_service_uuid,
                                                                                   name=built_in_remote_file_service.file_service_name,
@@ -78,6 +71,13 @@ if __name__ == '__main__':
                                                                                   description=built_in_remote_file_service.file_service_description,
                                                                                   description_zh=built_in_remote_file_service.file_service_description_zh,
                                                                                   demo_config=built_in_remote_file_service.file_service_demo_config)
+            db_aliyun_oss_remote_file_service = crud.file_system.create_file_system(db=db,
+                                                                                    uuid=aliyun_oss_remote_file_service.file_service_uuid,
+                                                                                    name=aliyun_oss_remote_file_service.file_service_name,
+                                                                                    name_zh=aliyun_oss_remote_file_service.file_service_name_zh,
+                                                                                    description=aliyun_oss_remote_file_service.file_service_description,
+                                                                                    description_zh=aliyun_oss_remote_file_service.file_service_description_zh,
+                                                                                    demo_config=aliyun_oss_remote_file_service.file_service_demo_config)
             db.commit()
         except Exception as e:
             print(f"数据库初始化失败: {e}")

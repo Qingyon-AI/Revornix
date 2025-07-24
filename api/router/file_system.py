@@ -88,7 +88,7 @@ async def get_built_in_sts(db: Session = Depends(get_db),
         region_name="main" 
     )
     resp = sts.assume_role(
-        RoleArn='arn:minio:iam::minio:role/upload-policy',
+        RoleArn='arn:aws:iam::minio:role/upload-policy',
         RoleSessionName='upload-session',
         DurationSeconds=3600
     )
@@ -166,7 +166,8 @@ async def get_file_system_info(user_file_system_info_request: schemas.file_syste
     if db_file_system is None:
         raise Exception(status_code=404, detail="File System not found")
     res = schemas.file_system.UserFileSystemInfo(id=db_user_file_system.id,
-                                                 title=db_user_file_system.name,
+                                                 file_system_id=db_user_file_system.file_system_id,
+                                                 title=db_user_file_system.title,
                                                  description=db_user_file_system.description,
                                                  demo_config=db_file_system.demo_config,
                                                  create_time=db_user_file_system.create_time,
@@ -189,6 +190,7 @@ async def search_mine_file_system(file_system_search_request: schemas.file_syste
                                                                 file_system_id=db_user_file_system.file_system_id)
         item = schemas.file_system.UserFileSystemInfo(
             id=db_user_file_system.id,
+            file_system_id=db_user_file_system.file_system_id,
             title=db_user_file_system.title,
             description=db_user_file_system.description,
             config_json=db_user_file_system.config_json,

@@ -59,8 +59,10 @@ models/EmailInfo.ts
 models/EmailNotificationSource.ts
 models/EmailNotificationTarget.ts
 models/EmailUserCreateVerifyRequest.ts
+models/EngineDeleteRequest.ts
 models/EngineInfo.ts
 models/EngineInstallRequest.ts
+models/EngineInstallResponse.ts
 models/EngineSearchRequest.ts
 models/EngineUpdateRequest.ts
 models/FileDocumentInfo.ts
@@ -90,6 +92,7 @@ models/MCPServerSearchRequest.ts
 models/MCPServerSearchResponse.ts
 models/MCPServerUpdateRequest.ts
 models/Message.ts
+models/MigrateFileSystemRequest.ts
 models/MineEngineSearchResponse.ts
 models/MineFileSystemSearchResponse.ts
 models/Model.ts

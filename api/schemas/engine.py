@@ -1,13 +1,23 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
 
+class EngineDeleteRequest(BaseModel):
+    user_engine_id: int
+
 class EngineInstallRequest(BaseModel):
     engine_id: int
-    status: bool
+    title: str
+    description: str | None = None
+    config_json: str | None = None
+    
+class EngineInstallResponse(BaseModel):
+    user_engine_id: int
     
 class EngineUpdateRequest(BaseModel):
-    engine_id: int
-    config_json: str
+    user_engine_id: int
+    config_json: str| None = None
+    title: str | None = None
+    description: str | None = None
 
 class EngineInfo(BaseModel):
     id: int
@@ -21,10 +31,9 @@ class EngineInfo(BaseModel):
         
 class UserEngineInfo(BaseModel):
     id: int
-    name: str
-    name_zh: str
+    engine_id: int
+    title: str
     description: str | None = None
-    description_zh: str | None = None
     demo_config: str | None = None
     enable: bool | None = None
     config_json: str | None = None

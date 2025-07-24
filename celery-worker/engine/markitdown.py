@@ -7,14 +7,13 @@ from openai import OpenAI
 
 class MarkitdownEngine(EngineProtocol):
     
-    def __init__(self, user_id: int | None = None):
+    def __init__(self):
         super().__init__(engine_uuid='9188ddca93ff4c2bb97fa252723c6c13',
                          engine_name="Markitdown",
                          engine_name_zh="Markitdown",
                          engine_description="Markitdown is a tool that converts file to Markdown.",
                          engine_description_zh="Markitdown 是一个将文件转换为 Markdown 的工具。",
-                         engine_demo_config='{"openai_api_key": "sk-proj-******"}',
-                         user_id=user_id)
+                         engine_demo_config='{"openai_api_key": "sk-proj-******"}')
     
     async def analyse_website(self, url: str):  
         llm_client = OpenAI(api_key=self.get_engine_config().get("openai_api_key"))

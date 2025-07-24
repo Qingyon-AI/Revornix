@@ -45,11 +45,6 @@ class RemoteFileServiceProtocol(Protocol):
             config = json.loads(config_str)
             return f'{config.get("url_prefix")}'
         
-    def get_file_service_config(self) -> dict | None:
-        if self.file_service_config is not None:
-            return json.loads(self.file_service_config)
-        return None
-        
     async def init_client_by_user_file_system_id(self, user_file_system_id: int) -> None:
         raise NotImplementedError("Method not implemented")
     

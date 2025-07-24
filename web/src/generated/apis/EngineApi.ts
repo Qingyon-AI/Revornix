@@ -15,7 +15,9 @@
 
 import * as runtime from '../runtime';
 import type {
+  EngineDeleteRequest,
   EngineInstallRequest,
+  EngineInstallResponse,
   EngineSearchRequest,
   EngineUpdateRequest,
   HTTPValidationError,
@@ -24,8 +26,12 @@ import type {
   ProvideEngineSearchResponse,
 } from '../models/index';
 import {
+    EngineDeleteRequestFromJSON,
+    EngineDeleteRequestToJSON,
     EngineInstallRequestFromJSON,
     EngineInstallRequestToJSON,
+    EngineInstallResponseFromJSON,
+    EngineInstallResponseToJSON,
     EngineSearchRequestFromJSON,
     EngineSearchRequestToJSON,
     EngineUpdateRequestFromJSON,
@@ -39,6 +45,12 @@ import {
     ProvideEngineSearchResponseFromJSON,
     ProvideEngineSearchResponseToJSON,
 } from '../models/index';
+
+export interface DeleteEngineEngineDeletePostRequest {
+    engineDeleteRequest: EngineDeleteRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
 
 export interface InstallEngineEngineInstallPostRequest {
     engineInstallRequest: EngineInstallRequest;
@@ -70,9 +82,56 @@ export interface UpdateEngineEngineUpdatePostRequest {
 export class EngineApi extends runtime.BaseAPI {
 
     /**
+     * Delete Engine
+     */
+    async deleteEngineEngineDeletePostRaw(requestParameters: DeleteEngineEngineDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['engineDeleteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'engineDeleteRequest',
+                'Required parameter "engineDeleteRequest" was null or undefined when calling deleteEngineEngineDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/engine/delete`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: EngineDeleteRequestToJSON(requestParameters['engineDeleteRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete Engine
+     */
+    async deleteEngineEngineDeletePost(requestParameters: DeleteEngineEngineDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteEngineEngineDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Install Engine
      */
-    async installEngineEngineInstallPostRaw(requestParameters: InstallEngineEngineInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async installEngineEngineInstallPostRaw(requestParameters: InstallEngineEngineInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineInstallResponse>> {
         if (requestParameters['engineInstallRequest'] == null) {
             throw new runtime.RequiredError(
                 'engineInstallRequest',
@@ -105,13 +164,13 @@ export class EngineApi extends runtime.BaseAPI {
             body: EngineInstallRequestToJSON(requestParameters['engineInstallRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => EngineInstallResponseFromJSON(jsonValue));
     }
 
     /**
      * Install Engine
      */
-    async installEngineEngineInstallPost(requestParameters: InstallEngineEngineInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+    async installEngineEngineInstallPost(requestParameters: InstallEngineEngineInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EngineInstallResponse> {
         const response = await this.installEngineEngineInstallPostRaw(requestParameters, initOverrides);
         return await response.value();
     }

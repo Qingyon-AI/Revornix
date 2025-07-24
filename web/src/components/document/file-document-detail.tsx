@@ -22,7 +22,10 @@ import DocumentOperate from './document-operate';
 import { useInView } from 'react-intersection-observer';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
-import { getUserFileUrlPrefix } from '@/service/file-system';
+import {
+	getUserFileSystemDetail,
+	getUserFileUrlPrefix,
+} from '@/service/file-system';
 
 const FileDocumentDetail = ({
 	id,
@@ -44,6 +47,17 @@ const FileDocumentDetail = ({
 	} = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
+	});
+
+	const { data: userFileSystemDetail } = useQuery({
+		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryFn: () =>
+			getUserFileSystemDetail({
+				user_file_system_id: userInfo!.default_user_file_system!,
+			}),
+		enabled:
+			userInfo?.id !== undefined &&
+			userInfo?.default_user_file_system !== undefined,
 	});
 
 	const { data: userRemoteFileUrlPrefix } = useQuery({
@@ -92,11 +106,11 @@ const FileDocumentDetail = ({
 
 	const onGetMarkdown = async () => {
 		if (!document || !document.file_info?.md_file_name || !userInfo) return;
-		if (!userInfo?.default_file_system) {
-			toast.error('No default file system found');
+		if (!userInfo?.default_user_file_system) {
+			toast.error('No user default file system found');
 			return;
 		}
-		const fileService = new FileService(userInfo.default_file_system);
+		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
 			let [res, err] = await utils.to(
 				fileService.getFileContent(document.file_info?.md_file_name)
@@ -120,7 +134,10 @@ const FileDocumentDetail = ({
 		if (
 			!document ||
 			!document.file_info?.md_file_name ||
-			document.transform_task?.status !== 2
+			document.transform_task?.status !== 2 ||
+			!userInfo ||
+			!userFileSystemDetail ||
+			!userRemoteFileUrlPrefix
 		)
 			return;
 		onGetMarkdown();

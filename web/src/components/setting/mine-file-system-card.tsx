@@ -6,7 +6,7 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { Button } from '../ui/button';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
@@ -40,11 +40,20 @@ import {
 import { useEffect, useState } from 'react';
 import {
 	deleteUserFileSystem,
+	getProvideFileSystems,
 	installFileSystem,
 	updateFileSystem,
 } from '@/service/file-system';
 import { useUserContext } from '@/provider/user-provider';
 import { Input } from '../ui/input';
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '../ui/select';
 
 const MineFileSystemCard = ({
 	user_file_system,
@@ -69,6 +78,18 @@ const MineFileSystemCard = ({
 		},
 	});
 	const queryClient = getQueryClient();
+
+	const {
+		data: provideFileSystems,
+		isFetching: isFetchingProvideFileSystems,
+		isRefetching: isRefetchingProvideFileSystems,
+	} = useQuery({
+		queryKey: ['provide-file-system'],
+		queryFn: async () => {
+			return await getProvideFileSystems({ keyword: '' });
+		},
+	});
+
 	const mutateInstallFileSystem = useMutation({
 		mutationFn: installFileSystem,
 		onSuccess: () => {
@@ -169,6 +190,43 @@ const MineFileSystemCard = ({
 									onSubmit={handleSubmit}
 									id='update_form'
 									className='space-y-5'>
+									<FormItem>
+										<div className='grid grid-cols-12 gap-2'>
+											<FormLabel className='col-span-3'>
+												{t(
+													'setting_file_system_page_file_system_form_file_system_id'
+												)}
+											</FormLabel>
+											<div className='col-span-9'>
+												<Select
+													disabled
+													value={user_file_system.file_system_id.toString()}>
+													<SelectTrigger className='w-full'>
+														<SelectValue
+															placeholder={t(
+																'setting_file_system_page_file_system_form_file_system_id_placeholder'
+															)}
+														/>
+													</SelectTrigger>
+													<SelectContent>
+														<SelectGroup>
+															{provideFileSystems?.data.map((item) => {
+																return (
+																	<SelectItem
+																		key={item.id}
+																		value={String(item.id)}
+																		className='w-full'>
+																		{item.name}
+																	</SelectItem>
+																);
+															})}
+														</SelectGroup>
+													</SelectContent>
+												</Select>
+											</div>
+										</div>
+										<FormMessage />
+									</FormItem>
 									<FormField
 										name='title'
 										control={form.control}
@@ -311,9 +369,9 @@ const MineFileSystemCard = ({
 											setDeleteDialogOpen(false);
 										}
 									}}
-									disabled={mutateInstallFileSystem.isPending}>
+									disabled={mutateDeleteUserFileSystem.isPending}>
 									{t('confirm')}
-									{mutateInstallFileSystem.isPending && (
+									{mutateDeleteUserFileSystem.isPending && (
 										<Loader2 className='animate-spin' />
 									)}
 								</Button>

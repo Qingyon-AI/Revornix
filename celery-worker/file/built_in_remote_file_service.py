@@ -79,7 +79,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                         "Effect": "Allow",
                         "Principal": "*",
                         "Action": ["s3:GetObject"],
-                        "Resource": [f"arn:minio:s3:::{bucket_name}/*"]
+                        "Resource": [f"arn:aws:s3:::{bucket_name}/*"]
                     }]
                 }
                 s3.put_bucket_policy(Bucket=bucket_name, Policy=json.dumps(policy))
@@ -107,7 +107,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             region_name="main" 
         )
         resp = sts.assume_role(
-            RoleArn='arn:minio:iam::minio:role/upload-policy',  # minio会忽略这一参数
+            RoleArn='arn:aws:iam::minio:role/upload-policy',  # minio会忽略这一参数
             RoleSessionName='upload-session',
             DurationSeconds=3600
         )

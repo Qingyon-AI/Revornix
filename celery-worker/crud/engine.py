@@ -24,10 +24,14 @@ def create_engine(db: Session,
 
 def create_user_engine(db: Session, 
                        user_id: int, 
-                       engine_id: int):
+                       engine_id: int,
+                       title: str,
+                       description: str | None = None,):
     now = datetime.now(timezone.utc)
     db_user_engine = models.engine.UserEngine(user_id=user_id,
                                               engine_id=engine_id,
+                                              title=title,
+                                              description=description,
                                               create_time=now,
                                               update_time=now,
                                               enable=True)
@@ -47,10 +51,9 @@ def get_engine_by_uuid(db: Session, uuid: str):
                          models.engine.Engine.delete_at == None)
     return query.first()
 
-def get_user_engine_by_user_id_and_engine_id(db: Session, user_id: int, engine_id: int):
+def get_user_engine_by_user_engine_id(db: Session, user_engine_id: int):
     query = db.query(models.engine.UserEngine)
-    query = query.filter(models.engine.UserEngine.user_id == user_id,
-                         models.engine.UserEngine.engine_id == engine_id,
+    query = query.filter(models.engine.UserEngine.id == user_engine_id,
                          models.engine.UserEngine.delete_at == None)
     return query.first()
 
@@ -61,9 +64,9 @@ def get_all_engines(db: Session, keyword: str | None = None):
         query = query.filter(models.engine.Engine.name.like(f'%{keyword}%'))
     return query.all()
 
-def get_engine_by_user_id(db: Session, user_id: int, keyword: str | None = None):
-    query = db.query(models.engine.Engine)
-    query = query.join(models.engine.UserEngine)
+def get_user_engine_by_user_id(db: Session, user_id: int, keyword: str | None = None):
+    query = db.query(models.engine.UserEngine)
+    query = query.join(models.engine.Engine)
     query = query.filter(models.engine.UserEngine.user_id == user_id,
                          models.engine.UserEngine.delete_at == None,
                          models.engine.Engine.delete_at == None)
@@ -73,17 +76,17 @@ def get_engine_by_user_id(db: Session, user_id: int, keyword: str | None = None)
 
 def delete_engine(db: Session, engine_id: int):
     now = datetime.now(timezone.utc)
-    db.query(models.engine.Engine)\
-        .filter(models.engine.Engine.id == engine_id,
-                models.engine.Engine.delete_at == None)\
-            .update({models.engine.Engine.delete_at: now})
-    db.commit()
+    query = db.query(models.engine.Engine)
+    query = query.filter(models.engine.Engine.id == engine_id,
+                         models.engine.Engine.delete_at == None)
+    query.update({models.engine.Engine.delete_at: now})
+    db.flush()
     
-def delete_user_engine(db: Session, user_id: int, engine_id: int):
+def delete_user_engine_by_user_engine_id(db: Session, user_id: int, user_engine_id: int):
     now = datetime.now(timezone.utc)
-    db.query(models.engine.UserEngine)\
-        .filter(models.engine.UserEngine.user_id == user_id,
-                models.engine.UserEngine.engine_id == engine_id,
-                models.engine.UserEngine.delete_at == None)\
-            .update({models.engine.Engine.delete_at: now})
-    db.commit()
+    query = db.query(models.engine.UserEngine)
+    query = query.filter(models.engine.UserEngine.id == user_engine_id,
+                         models.engine.UserEngine.delete_at == None,
+                         models.engine.UserEngine.user_id == user_id)
+    query.update({models.engine.UserEngine.delete_at: now})
+    db.flush()

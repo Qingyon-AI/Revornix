@@ -38,14 +38,21 @@ class User(Base):
     gender = Column(Integer, comment='0: unk, 1: male, 2: female')
     age = Column(Integer)
     is_forbidden = Column(Boolean, default=False)
-    default_document_reader_model_id = Column(Integer, ForeignKey("ai_model.id"))
-    default_revornix_model_id = Column(Integer, ForeignKey("ai_model.id"))
-    default_file_document_parse_engine_id = Column(Integer, ForeignKey("engine.id"))
-    default_website_document_parse_engine_id = Column(Integer, ForeignKey("engine.id"))
-    default_read_mark_reason = Column(Integer, comment='0: Request once, 1: Scroll to the bottom of the document, 2: Manually Mark')
-    default_user_file_system = Column(Integer, ForeignKey("user_file_system.id"))
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True))
+    default_document_reader_model_id = Column(Integer)
+    default_revornix_model_id = Column(Integer)
+    default_file_document_parse_user_engine_id = Column(Integer)
+    default_website_document_parse_user_engine_id = Column(Integer)
+    default_read_mark_reason = Column(Integer, comment='0: Request once, 1: Scroll to the bottom of the document, 2: Manually Mark')
+    default_user_file_system = Column(Integer)
     
     avatar = relationship("Attachment", backref="avatar_users")
+    
+class UserDefaultSettings(Base):
+    __tablename__ = "user_default_settings"
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), primary_key=True)
+    

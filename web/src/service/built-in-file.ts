@@ -10,7 +10,7 @@ export class BuiltInFileService implements FileServiceProtocol {
     private sts_config: any = null;
     private file_system_config_json: any = null;
 
-    private async initFileSystemConfig() {
+    public async initFileSystemConfig() {
         const [res_user, err_user] = await utils.to(getMyInfo());
         if (err_user || !res_user) {
             throw err_user || new Error("init file system config failed");

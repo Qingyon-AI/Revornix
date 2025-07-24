@@ -4,7 +4,6 @@ import { ModeToggle } from '@/components/app/mode-toggle';
 import NotificationTaskManage from '@/components/notification/notification-task-manage';
 import NotificationSourceManage from '@/components/notification/notification-source-manage';
 import NotificationTargetManage from '@/components/notification/notification-target-manage';
-import DefaultDocumentParseEngineChange from '@/components/setting/default-document-parse-engine-change';
 import DocumentSummaryModel from '@/components/setting/document-summary-model';
 import EngineManager from '@/components/setting/engine-manager';
 import LanguageChange from '@/components/setting/language-change';
@@ -18,8 +17,8 @@ import { useTranslations } from 'next-intl';
 import DefaultDocumentReadMarkReasonChoose from '@/components/setting/default-document-read-mark-reason-choose';
 import FileSystemManage from '@/components/setting/file-system-manage';
 import DefaultFileSystemChange from '@/components/setting/default-file-system-change';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import DefaultWebsiteDocumentParseEngineChange from '@/components/setting/default-website-document-parse-engine-change';
+import DefaultFileDocumentParseEngineChange from '@/components/setting/default-file-document-parse-engine-change';
 
 const SettingPage = () => {
 	const t = useTranslations();
@@ -165,15 +164,23 @@ const SettingPage = () => {
 					<Separator />
 					<div
 						className='flex justify-between items-center'
-						id='default_markdown_parse_engine_choose'>
+						id='default_website_parse_engine_choose'>
 						<Label className='flex flex-col gap-2 items-start'>
-							{t('setting_default_markdown_parse_engine')}
-							<p className='text-muted-foreground text-xs'>
-								{t('setting_engine_tip')}
-							</p>
+							{t('setting_engine_page_current_user_website_engine')}
 						</Label>
 						<div className='flex flex-col gap-2'>
-							<DefaultDocumentParseEngineChange />
+							<DefaultWebsiteDocumentParseEngineChange />
+						</div>
+					</div>
+					<Separator />
+					<div
+						className='flex justify-between items-center'
+						id='default_file_parse_engine_choose'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_engine_page_current_user_file_engine')}
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<DefaultFileDocumentParseEngineChange />
 						</div>
 					</div>
 				</CardContent>

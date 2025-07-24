@@ -1,7 +1,7 @@
 import { CircleCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Label } from '../ui/label';
-import DefaultDocumentParseEngineChange from './default-document-parse-engine-change';
+import DefaultDocumentParseEngineChange from './default-website-document-parse-engine-change';
 import RevornixAIModel from './revornix-ai-model';
 import { Separator } from '../ui/separator';
 import DocumentSummaryModel from './document-summary-model';

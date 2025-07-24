@@ -54,6 +54,7 @@ class FileSystemInfo(BaseModel):
         
 class UserFileSystemInfo(BaseModel):
     id: int
+    file_system_id: int
     title: str | None = None
     description: str | None = None
     demo_config: str | None = None

@@ -26,6 +26,7 @@ import CustomImage from '@/components/ui/custom-image';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
 import { toast } from 'sonner';
+import { getUserFileSystemDetail } from '@/service/file-system';
 
 const SectionDetailPage = () => {
 	const t = useTranslations();
@@ -41,6 +42,17 @@ const SectionDetailPage = () => {
 		queryFn: () => getDayDocumentsSummarySection({ date: today }),
 	});
 
+	const { data: userFileSystemDetail } = useQuery({
+		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryFn: () =>
+			getUserFileSystemDetail({
+				user_file_system_id: userInfo!.default_user_file_system!,
+			}),
+		enabled:
+			userInfo?.id !== undefined &&
+			userInfo?.default_user_file_system !== undefined,
+	});
+
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
 	const [markdown, setMarkdown] = useState<string>();
 
@@ -50,7 +62,7 @@ const SectionDetailPage = () => {
 			toast.error('No default file system found');
 			return;
 		}
-		const fileService = new FileService(userInfo.default_file_system);
+		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
 			const [res, err] = await utils.to(
 				fileService.getFileContent(section?.md_file_name)
@@ -59,14 +71,22 @@ const SectionDetailPage = () => {
 				setMarkdownGetError(err.message);
 				return;
 			}
-			setMarkdown(res);
+			if (typeof res === 'string') {
+				setMarkdown(res);
+			}
 		} catch (e: any) {
 			setMarkdownGetError(e.message);
 		}
 	};
 
 	useEffect(() => {
-		if (!section || !section?.md_file_name || !userInfo) return;
+		if (
+			!section ||
+			!section?.md_file_name ||
+			!userInfo ||
+			!userFileSystemDetail
+		)
+			return;
 		onGetMarkdown();
 	}, [section, userInfo]);
 
@@ -100,8 +120,7 @@ const SectionDetailPage = () => {
 					</Sheet>
 					{section && (
 						<p className='text-xs bg-muted rounded px-4 py-2'>
-							{t('section_updated_at')}
-							{' '}
+							{t('section_updated_at')}{' '}
 							{format(section.update_time as Date, 'yyyy-MM-dd HH:mm:ss')}
 						</p>
 					)}

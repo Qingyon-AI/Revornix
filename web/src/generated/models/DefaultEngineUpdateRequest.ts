@@ -24,13 +24,13 @@ export interface DefaultEngineUpdateRequest {
      * @type {number}
      * @memberof DefaultEngineUpdateRequest
      */
-    default_website_document_parse_engine_id?: number | null;
+    default_website_document_parse_user_engine_id?: number | null;
     /**
      * 
      * @type {number}
      * @memberof DefaultEngineUpdateRequest
      */
-    default_file_document_parse_engine_id?: number | null;
+    default_file_document_parse_user_engine_id?: number | null;
 }
 
 /**
@@ -50,8 +50,8 @@ export function DefaultEngineUpdateRequestFromJSONTyped(json: any, ignoreDiscrim
     }
     return {
         
-        'default_website_document_parse_engine_id': json['default_website_document_parse_engine_id'] == null ? undefined : json['default_website_document_parse_engine_id'],
-        'default_file_document_parse_engine_id': json['default_file_document_parse_engine_id'] == null ? undefined : json['default_file_document_parse_engine_id'],
+        'default_website_document_parse_user_engine_id': json['default_website_document_parse_user_engine_id'] == null ? undefined : json['default_website_document_parse_user_engine_id'],
+        'default_file_document_parse_user_engine_id': json['default_file_document_parse_user_engine_id'] == null ? undefined : json['default_file_document_parse_user_engine_id'],
     };
 }
 
@@ -66,8 +66,8 @@ export function DefaultEngineUpdateRequestToJSONTyped(value?: DefaultEngineUpdat
 
     return {
         
-        'default_website_document_parse_engine_id': value['default_website_document_parse_engine_id'],
-        'default_file_document_parse_engine_id': value['default_file_document_parse_engine_id'],
+        'default_website_document_parse_user_engine_id': value['default_website_document_parse_user_engine_id'],
+        'default_file_document_parse_user_engine_id': value['default_file_document_parse_user_engine_id'],
     };
 }
 

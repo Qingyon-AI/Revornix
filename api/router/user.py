@@ -29,8 +29,8 @@ async def update_default_document_parse_engine(default_engine_update_request: sc
                                                db: Session = Depends(get_db)):
     crud.user.update_user_default_engine(db=db, 
                                          user_id=user.id, 
-                                         default_file_document_parse_engine_id=default_engine_update_request.default_file_document_parse_engine_id,
-                                         default_website_document_parse_engine_id=default_engine_update_request.default_website_document_parse_engine_id)
+                                         default_file_document_parse_user_engine_id=default_engine_update_request.default_file_document_parse_user_engine_id,
+                                         default_website_document_parse_user_engine_id=default_engine_update_request.default_website_document_parse_user_engine_id)
     db.commit()
     return schemas.common.SuccessResponse(message="The default document parse engine is updated successfully.")
 
@@ -279,8 +279,8 @@ async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user)
                                        slogan=user.slogan,
                                        default_document_reader_model_id=user.default_document_reader_model_id,
                                        default_revornix_model_id=user.default_revornix_model_id,
-                                       default_website_document_parse_engine_id=user.default_website_document_parse_engine_id,
-                                       default_file_document_parse_engine_id=user.default_file_document_parse_engine_id,
+                                       default_website_document_parse_user_engine_id=user.default_website_document_parse_user_engine_id,
+                                       default_file_document_parse_user_engine_id=user.default_file_document_parse_user_engine_id,
                                        default_read_mark_reason=user.default_read_mark_reason,
                                        default_user_file_system=user.default_user_file_system)
     email_user = crud.user.get_email_user_by_user_id(db=db, 
