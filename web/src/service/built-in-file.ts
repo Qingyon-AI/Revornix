@@ -15,15 +15,15 @@ export class BuiltInFileService implements FileServiceProtocol {
         if (err_user || !res_user) {
             throw err_user || new Error("init file system config failed");
         }
-        if (res_user.default_file_system !== 1) {
-            throw new Error("You can't use the oss file system with the default file system equals to 2");
+        if (!res_user.default_user_file_system) {
+            throw new Error("You have not set the default file system");
         }
         this.file_system_config_json = { "bucket": res_user.uuid }
         const [res_sts, err_sts] = await utils.to(
             getBuiltInSts()
         );
         if (err_sts || !res_sts) {
-            throw err_sts || new Error("get aliyun oss sts failed");
+            throw err_sts || new Error("get built in file system sts failed");
         }
         this.sts_config = res_sts;
     }

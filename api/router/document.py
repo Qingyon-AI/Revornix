@@ -78,20 +78,20 @@ async def update_note(search_note_request: schemas.document.SearchDocumentNoteRe
 async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSummaryRequest,
                             user: models.user.User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
-    db_document = crud.document.get_document_by_document_id(db=db,
-                                                            document_id=ai_summary_request.document_id)
-    default_user_file_system = user.default_user_file_system
-    if default_user_file_system is None:
+    if user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
         db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
                                                                           user_file_system_id=user.default_user_file_system)
         if db_user_file_system.file_system_id == 1:
-            remote_file_service = BuiltInRemoteFileService(user_id=user.id)
+            remote_file_service = BuiltInRemoteFileService()
         elif db_user_file_system.file_system_id == 2:
-            remote_file_service = AliyunOSSRemoteFileService(user_id=user.id)
+            remote_file_service = AliyunOSSRemoteFileService()
+        await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
+    db_document = crud.document.get_document_by_document_id(db=db,
+                                                            document_id=ai_summary_request.document_id)
     if db_document is None:
-        raise Exception('The document you want to transform is not found')
+        raise Exception('The document you want to summary is not found')
     if db_document.category == 1:
         db_website_document = crud.document.get_website_document_by_document_id(db=db,
                                                                                 document_id=ai_summary_request.document_id)
@@ -119,22 +119,22 @@ async def transform_markdown(request: Request,
                              transform_markdown_request: schemas.document.DocumentMarkdownTransformRequest,
                              user: models.user.User = Depends(get_current_user),
                              db: Session = Depends(get_db)):
-    default_user_file_system = user.default_user_file_system
-    if default_user_file_system is None:
+    if user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
         db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
                                                                           user_file_system_id=user.default_user_file_system)
         if db_user_file_system.file_system_id == 1:
-            remote_file_service = BuiltInRemoteFileService(user_id=user.id)
+            remote_file_service = BuiltInRemoteFileService()
         elif db_user_file_system.file_system_id == 2:
-            remote_file_service = AliyunOSSRemoteFileService(user_id=user.id)
+            remote_file_service = AliyunOSSRemoteFileService()
+        await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=transform_markdown_request.document_id)
-    db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
-                                                                             document_id=transform_markdown_request.document_id)
     if db_document is None:
         raise Exception('The document you want to transform is not found')
+    db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                             document_id=transform_markdown_request.document_id)
     if db_transform_task.status == 1:
         raise Exception('The document is being transformed, please wait')
     if db_document.category == 1:

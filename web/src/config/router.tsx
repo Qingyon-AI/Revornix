@@ -21,6 +21,13 @@ const routers: RouteItem[] = [
 				title: '文件系统',
 				title_en: 'File System',
 				path: '/file-system',
+				children: [
+					{
+						title: '文件迁移',
+						title_en: 'File Migration',
+						path: '/migration',
+					},
+				],
 			},
 			{
 				title: '通知',

@@ -30,10 +30,10 @@ const DefaultFileSystemChange = () => {
 		},
 	});
 
-	const handleUpdateDefaultFileSystem = async (file_system_id: number) => {
+	const handleUpdateDefaultFileSystem = async (user_file_system_id: number) => {
 		const [res, err] = await utils.to(
 			updateUserDefaultFileSystem({
-				default_file_system: file_system_id,
+				default_user_file_system: user_file_system_id,
 			})
 		);
 		if (err) {
@@ -50,8 +50,8 @@ const DefaultFileSystemChange = () => {
 		<>
 			<Select
 				value={
-					userInfo?.default_file_system
-						? String(userInfo?.default_file_system)
+					userInfo?.default_user_file_system
+						? String(userInfo?.default_user_file_system)
 						: undefined
 				}
 				onValueChange={(e) => {
@@ -60,16 +60,16 @@ const DefaultFileSystemChange = () => {
 				<SelectTrigger className='w-[180px]'>
 					<SelectValue
 						placeholder={t(
-							'setting_file_system_page_current_file_system_select'
+							'setting_file_system_page_current_user_file_system_select'
 						)}
 					/>
 				</SelectTrigger>
 				<SelectContent>
 					<SelectGroup>
 						{mineFileSystems &&
-							mineFileSystems.data.map((file_system, index) => (
-								<SelectItem key={file_system.id} value={String(file_system.id)}>
-									{file_system.name}
+							mineFileSystems.data.map((user_file_system, index) => (
+								<SelectItem key={user_file_system.id} value={String(user_file_system.id)}>
+									{user_file_system.title}
 								</SelectItem>
 							))}
 					</SelectGroup>

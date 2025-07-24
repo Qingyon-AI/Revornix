@@ -19,6 +19,7 @@ import type {
   FileSystemInfo,
   FileSystemInfoRequest,
   FileSystemInstallRequest,
+  FileSystemInstallResponse,
   FileSystemSearchRequest,
   FileUrlPrefixRequest,
   FileUrlPrefixResponse,
@@ -27,6 +28,7 @@ import type {
   NormalResponse,
   OssStsResponse,
   ProvideFileSystemSearchResponse,
+  UserFileSystemDeleteRequest,
   UserFileSystemInfo,
   UserFileSystemInfoRequest,
   UserFileSystemUpdateRequest,
@@ -40,6 +42,8 @@ import {
     FileSystemInfoRequestToJSON,
     FileSystemInstallRequestFromJSON,
     FileSystemInstallRequestToJSON,
+    FileSystemInstallResponseFromJSON,
+    FileSystemInstallResponseToJSON,
     FileSystemSearchRequestFromJSON,
     FileSystemSearchRequestToJSON,
     FileUrlPrefixRequestFromJSON,
@@ -56,6 +60,8 @@ import {
     OssStsResponseToJSON,
     ProvideFileSystemSearchResponseFromJSON,
     ProvideFileSystemSearchResponseToJSON,
+    UserFileSystemDeleteRequestFromJSON,
+    UserFileSystemDeleteRequestToJSON,
     UserFileSystemInfoFromJSON,
     UserFileSystemInfoToJSON,
     UserFileSystemInfoRequestFromJSON,
@@ -63,6 +69,12 @@ import {
     UserFileSystemUpdateRequestFromJSON,
     UserFileSystemUpdateRequestToJSON,
 } from '../models/index';
+
+export interface DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest {
+    userFileSystemDeleteRequest: UserFileSystemDeleteRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
 
 export interface GetBuiltInStsFileSystemBuiltInStsPostRequest {
     authorization?: string | null;
@@ -90,7 +102,7 @@ export interface GetUrlPrefixFileSystemUrlPrefixPostRequest {
     fileUrlPrefixRequest: FileUrlPrefixRequest;
 }
 
-export interface InstallFileSystemFileSystemInstallPostRequest {
+export interface InstallUserFileSystemFileSystemInstallPostRequest {
     fileSystemInstallRequest: FileSystemInstallRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
@@ -118,6 +130,53 @@ export interface UpdateFileSystemFileSystemUpdatePostRequest {
  * 
  */
 export class FileSystemApi extends runtime.BaseAPI {
+
+    /**
+     * Delete User File System
+     */
+    async deleteUserFileSystemFileSystemUserFileSystemDeletePostRaw(requestParameters: DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['userFileSystemDeleteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'userFileSystemDeleteRequest',
+                'Required parameter "userFileSystemDeleteRequest" was null or undefined when calling deleteUserFileSystemFileSystemUserFileSystemDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/file-system/user-file-system/delete`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UserFileSystemDeleteRequestToJSON(requestParameters['userFileSystemDeleteRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete User File System
+     */
+    async deleteUserFileSystemFileSystemUserFileSystemDeletePost(requestParameters: DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteUserFileSystemFileSystemUserFileSystemDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Get Built In Sts
@@ -327,13 +386,13 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Install File System
+     * Install User File System
      */
-    async installFileSystemFileSystemInstallPostRaw(requestParameters: InstallFileSystemFileSystemInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async installUserFileSystemFileSystemInstallPostRaw(requestParameters: InstallUserFileSystemFileSystemInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FileSystemInstallResponse>> {
         if (requestParameters['fileSystemInstallRequest'] == null) {
             throw new runtime.RequiredError(
                 'fileSystemInstallRequest',
-                'Required parameter "fileSystemInstallRequest" was null or undefined when calling installFileSystemFileSystemInstallPost().'
+                'Required parameter "fileSystemInstallRequest" was null or undefined when calling installUserFileSystemFileSystemInstallPost().'
             );
         }
 
@@ -362,14 +421,14 @@ export class FileSystemApi extends runtime.BaseAPI {
             body: FileSystemInstallRequestToJSON(requestParameters['fileSystemInstallRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => FileSystemInstallResponseFromJSON(jsonValue));
     }
 
     /**
-     * Install File System
+     * Install User File System
      */
-    async installFileSystemFileSystemInstallPost(requestParameters: InstallFileSystemFileSystemInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
-        const response = await this.installFileSystemFileSystemInstallPostRaw(requestParameters, initOverrides);
+    async installUserFileSystemFileSystemInstallPost(requestParameters: InstallUserFileSystemFileSystemInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FileSystemInstallResponse> {
+        const response = await this.installUserFileSystemFileSystemInstallPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

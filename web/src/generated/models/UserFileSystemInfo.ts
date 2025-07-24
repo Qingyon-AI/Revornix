@@ -30,7 +30,7 @@ export interface UserFileSystemInfo {
      * @type {string}
      * @memberof UserFileSystemInfo
      */
-    title: string;
+    title?: string | null;
     /**
      * 
      * @type {string}
@@ -68,7 +68,6 @@ export interface UserFileSystemInfo {
  */
 export function instanceOfUserFileSystemInfo(value: object): value is UserFileSystemInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('title' in value) || value['title'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
@@ -85,7 +84,7 @@ export function UserFileSystemInfoFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'id': json['id'],
-        'title': json['title'],
+        'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
         'demo_config': json['demo_config'] == null ? undefined : json['demo_config'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],

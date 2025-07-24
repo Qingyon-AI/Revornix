@@ -67,6 +67,7 @@ models/FileDocumentInfo.ts
 models/FileSystemInfo.ts
 models/FileSystemInfoRequest.ts
 models/FileSystemInstallRequest.ts
+models/FileSystemInstallResponse.ts
 models/FileSystemSearchRequest.ts
 models/FileUrlPrefixRequest.ts
 models/FileUrlPrefixResponse.ts
@@ -165,6 +166,7 @@ models/UpdateNotificationSourceRequest.ts
 models/UpdateNotificationTargetRequest.ts
 models/UpdateNotificationTaskRequest.ts
 models/UserEngineInfo.ts
+models/UserFileSystemDeleteRequest.ts
 models/UserFileSystemInfo.ts
 models/UserFileSystemInfoRequest.ts
 models/UserFileSystemUpdateRequest.ts

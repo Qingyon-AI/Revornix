@@ -15,12 +15,13 @@ def create_file_system(db: Session, name: str, name_zh: str, description: str | 
     db.flush()
     return db_file_system
 
-def bind_file_system_to_user(db: Session, file_system_id: int, user_id: int, title: str | None = None, description: str | None = None):
+def bind_file_system_to_user(db: Session, file_system_id: int, user_id: int, title: str | None = None, description: str | None = None, config_json: str | None = None):
     now = datetime.now(timezone.utc)
     db_file_system_user = models.file_system.UserFileSystem(file_system_id=file_system_id,
                                                             user_id=user_id,
                                                             title=title,
                                                             description=description,
+                                                            config_json=config_json,
                                                             create_time=now,
                                                             update_time=now)
     db.add(db_file_system_user)
@@ -42,6 +43,7 @@ def get_user_file_systems_by_user_id(db: Session, user_id: int, keyword: str | N
                          models.file_system.FileSystem.delete_at == None)
     if keyword is not None and len(keyword) != 0:
         query = query.filter(models.file_system.FileSystem.name.like(f'%{keyword}%'))
+    query = query.order_by(models.file_system.UserFileSystem.create_time)
     return query.all()
 
 def get_file_system_by_uuid(db: Session, uuid: str):
@@ -82,11 +84,12 @@ def delete_file_system_by_id(db: Session, file_system_id: int):
     query.update({models.file_system.FileSystem.delete_at: now})
     db.flush()
     
-def delete_user_file_system_by_id(db: Session, user_file_system_id: int):
+def delete_user_file_system_by_id(db: Session, user_id: int, user_file_system_id: int):
     now = datetime.now(timezone.utc)
     query = db.query(models.file_system.UserFileSystem)
     query = query.filter(models.file_system.UserFileSystem.id == user_file_system_id,
-                         models.file_system.UserFileSystem.delete_at == None)
+                         models.file_system.UserFileSystem.delete_at == None,
+                         models.file_system.UserFileSystem.user_id == user_id)
     query.update({models.file_system.UserFileSystem.delete_at: now})
     db.flush()
     

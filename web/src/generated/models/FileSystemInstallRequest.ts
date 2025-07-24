@@ -25,6 +25,24 @@ export interface FileSystemInstallRequest {
      * @memberof FileSystemInstallRequest
      */
     file_system_id: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof FileSystemInstallRequest
+     */
+    title?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FileSystemInstallRequest
+     */
+    description?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FileSystemInstallRequest
+     */
+    config_json?: string | null;
 }
 
 /**
@@ -46,6 +64,9 @@ export function FileSystemInstallRequestFromJSONTyped(json: any, ignoreDiscrimin
     return {
         
         'file_system_id': json['file_system_id'],
+        'title': json['title'] == null ? undefined : json['title'],
+        'description': json['description'] == null ? undefined : json['description'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
 }
 
@@ -61,6 +82,9 @@ export function FileSystemInstallRequestToJSONTyped(value?: FileSystemInstallReq
     return {
         
         'file_system_id': value['file_system_id'],
+        'title': value['title'],
+        'description': value['description'],
+        'config_json': value['config_json'],
     };
 }
 

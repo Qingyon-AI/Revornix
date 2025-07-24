@@ -34,18 +34,17 @@ def extract_title_and_summary(content: str):
 
     return title, summary
 
-
-def get_user_remote_file_system(user_id: int):
+async def get_user_remote_file_system(user_id: int):
     db = SessionLocal()
     db_user = crud.user.get_user_by_id(db=db, user_id=user_id)   
-    default_user_file_system = db_user.default_user_file_system
-    if default_user_file_system is None:
+    if db_user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
         db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db, 
-                                                                          user_file_system_id=default_user_file_system)
+                                                                          user_file_system_id=db_user.default_user_file_system)
         if db_user_file_system.file_system_id == 1:
-            remote_file_service = BuiltInRemoteFileService(user_id=user_id)
+            remote_file_service = BuiltInRemoteFileService()
         elif db_user_file_system.file_system_id == 2:
-            remote_file_service = AliyunOSSRemoteFileService(user_id=user_id)
+            remote_file_service = AliyunOSSRemoteFileService()
+        await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
     return remote_file_service

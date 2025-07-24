@@ -1,6 +1,10 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
 
+class MigrateFileSystemRequest(BaseModel):
+    source_user_file_system_id: int
+    target_user_file_system_id: int
+
 class FileUrlPrefixRequest(BaseModel):
     user_id: int
 
@@ -29,6 +33,9 @@ class FileSystemInfoRequest(BaseModel):
 class UserFileSystemInfoRequest(BaseModel):
     user_file_system_id: int
     
+class UserFileSystemDeleteRequest(BaseModel):
+    user_file_system_id: int
+    
 class UserFileSystemUpdateRequest(BaseModel):
     user_file_system_id: int
     config_json: str | None = None
@@ -47,7 +54,7 @@ class FileSystemInfo(BaseModel):
         
 class UserFileSystemInfo(BaseModel):
     id: int
-    title: str
+    title: str | None = None
     description: str | None = None
     demo_config: str | None = None
     config_json: str | None = None
@@ -77,6 +84,12 @@ class MineFileSystemSearchResponse(BaseModel):
     
 class FileSystemInstallRequest(BaseModel):
     file_system_id: int
+    title: str | None = None
+    description: str | None = None
+    config_json: str | None = None
+    
+class FileSystemInstallResponse(BaseModel):
+    user_file_system_id: int
     
 class FileSystemUnInstallRequest(BaseModel):
     user_file_system_id: int

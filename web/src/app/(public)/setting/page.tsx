@@ -17,6 +17,9 @@ import { Separator } from '@/components/ui/separator';
 import { useTranslations } from 'next-intl';
 import DefaultDocumentReadMarkReasonChoose from '@/components/setting/default-document-read-mark-reason-choose';
 import FileSystemManage from '@/components/setting/file-system-manage';
+import DefaultFileSystemChange from '@/components/setting/default-file-system-change';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 const SettingPage = () => {
 	const t = useTranslations();
@@ -53,12 +56,21 @@ const SettingPage = () => {
 				<CardContent className='space-y-5'>
 					<div
 						className='flex justify-between items-center'
-						id='default_file_system'>
+						id='default_user_file_system'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_file_system_manage')}
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<FileSystemManage />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_file_system_page_current_user_file_system')}
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<DefaultFileSystemChange />
 						</div>
 					</div>
 				</CardContent>

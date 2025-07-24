@@ -1,6 +1,6 @@
 import { request } from '@/lib/request'
 import fileSystemApi from '@/api/file_system'
-import { BuiltInStsResponse, FileSystemInfo, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemSearchRequest, FileSystemUpdateRequest, FileUrlPrefixRequest, FileUrlPrefixResponse, MineFileSystemSearchResponse, NormalResponse, OssStsResponse, ProvideFileSystemSearchResponse, UserFileSystemInfo, UserFileSystemInfoRequest } from '@/generated'
+import { BuiltInStsResponse, FileSystemInfo, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemInstallResponse, FileSystemSearchRequest, FileUrlPrefixRequest, FileUrlPrefixResponse, MineFileSystemSearchResponse, NormalResponse, OssStsResponse, ProvideFileSystemSearchResponse, UserFileSystemDeleteRequest, UserFileSystemInfo, UserFileSystemInfoRequest, UserFileSystemUpdateRequest } from '@/generated'
 
 export const getProvideFileSystems = async (data: FileSystemSearchRequest): Promise<ProvideFileSystemSearchResponse> => {
     return await request(fileSystemApi.getProvideFileSystems, {
@@ -14,14 +14,20 @@ export const getMineFileSystems = async (data: FileSystemSearchRequest): Promise
     })
 }
 
-export const installFileSystem = async (data: FileSystemInstallRequest): Promise<NormalResponse> => {
+export const installFileSystem = async (data: FileSystemInstallRequest): Promise<FileSystemInstallResponse> => {
     return await request(fileSystemApi.installFileSystem, {
         data
     })
 }
 
-export const updateFileSystem = async (data: FileSystemUpdateRequest): Promise<NormalResponse> => {
+export const updateFileSystem = async (data: UserFileSystemUpdateRequest): Promise<NormalResponse> => {
     return await request(fileSystemApi.updateFileSystem, {
+        data
+    })
+}
+
+export const deleteUserFileSystem = async (data: UserFileSystemDeleteRequest): Promise<NormalResponse> => {
+    return await request(fileSystemApi.deleteUserFileSystem, {
         data
     })
 }

@@ -1,6 +1,5 @@
 import {
 	Card,
-	CardContent,
 	CardDescription,
 	CardFooter,
 	CardHeader,
@@ -10,7 +9,7 @@ import { Button } from '../ui/button';
 import { useMutation } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
 import { toast } from 'sonner';
-import { Eye, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import {
 	Dialog,
 	DialogClose,
@@ -23,12 +22,11 @@ import {
 } from '../ui/dialog';
 import { Textarea } from '../ui/textarea';
 import { UserFileSystemInfo } from '@/generated';
-import { Separator } from '../ui/separator';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormField, FormItem, FormMessage } from '../ui/form';
+import { Form, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -39,27 +37,35 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '../ui/alert-dialog';
-import { useState } from 'react';
-import { installFileSystem, updateFileSystem } from '@/service/file-system';
+import { useEffect, useState } from 'react';
+import {
+	deleteUserFileSystem,
+	installFileSystem,
+	updateFileSystem,
+} from '@/service/file-system';
 import { useUserContext } from '@/provider/user-provider';
+import { Input } from '../ui/input';
 
 const MineFileSystemCard = ({
-	file_system,
+	user_file_system,
 }: {
-	file_system: UserFileSystemInfo;
+	user_file_system: UserFileSystemInfo;
 }) => {
 	const t = useTranslations();
 	const { refreshUserInfo } = useUserContext();
 	const [configDialogOpen, setConfigDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-	const locale = useLocale();
 	const formSchema = z.object({
-		config_json: z.string(),
+		title: z.string().optional().nullable(),
+		description: z.string().optional().nullable(),
+		config_json: z.string().optional().nullable(),
 	});
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			config_json: file_system.config_json || '',
+			title: '',
+			description: '',
+			config_json: '',
 		},
 	});
 	const queryClient = getQueryClient();
@@ -76,12 +82,23 @@ const MineFileSystemCard = ({
 			toast.error(error.message);
 		},
 	});
+	const mutateDeleteUserFileSystem = useMutation({
+		mutationFn: deleteUserFileSystem,
+		onSuccess: () => {
+			toast.success(t('setting_file_system_delete_success'));
+			queryClient.invalidateQueries({
+				queryKey: ['mine-file-system'],
+			});
+			refreshUserInfo();
+		},
+	});
 	const mutateUpdateFileSystem = useMutation({
 		mutationFn: updateFileSystem,
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ['mine-file-system'],
 			});
+			setConfigDialogOpen(false);
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -102,10 +119,11 @@ const MineFileSystemCard = ({
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		await mutateUpdateFileSystem.mutateAsync({
-			file_system_id: file_system.id,
+			user_file_system_id: user_file_system.id,
 			config_json: values.config_json,
+			title: values.title,
+			description: values.description,
 		});
-		setConfigDialogOpen(false);
 	};
 
 	const onFormValidateError = (errors: any) => {
@@ -113,159 +131,196 @@ const MineFileSystemCard = ({
 		toast.error(t('form_validate_failed'));
 	};
 
+	useEffect(() => {
+		if (!user_file_system) return;
+		form.setValue('title', user_file_system.title);
+		form.setValue('description', user_file_system.description);
+		form.setValue('config_json', user_file_system.config_json);
+	}, [user_file_system]);
+
 	return (
 		<>
-			<Card className='bg-muted/50'>
+			<Card>
 				<CardHeader>
-					<CardTitle>
-						{locale === 'en' ? file_system.name : file_system.name_zh}
-					</CardTitle>
-					<CardDescription>
-						{locale === 'en'
-							? file_system.description
-							: file_system.description_zh}
-					</CardDescription>
+					<CardTitle>{user_file_system.title}</CardTitle>
+					<CardDescription>{user_file_system.description}</CardDescription>
 				</CardHeader>
-				<CardContent className='flex-1'>
-					{file_system.config_json && (
-						<div className='bg-muted font-mono p-5 rounded text-xs break-all relative overflow-auto max-h-40'>
-							<div className='group absolute top-0 left-0 w-full h-full backdrop-blur rounded flex flex-col justify-center items-center hover:backdrop-blur-none transition-all'>
-								<Eye className='text-muted-foreground opacity-50 group-hover:hidden' />
-								<p className='text-muted-foreground opacity-50 group-hover:hidden'>
-									{t('setting_file_system_page_mine_file_system_config_see')}
-								</p>
-							</div>
-							{file_system.config_json}
-						</div>
-					)}
-					{!file_system.config_json && (
-						<p className='bg-muted font-mono p-5 rounded text-xs flex justify-center items-center h-full'>
-							{t('setting_file_system_page_mine_file_system_config_empty')}
-						</p>
-					)}
-				</CardContent>
-				<CardFooter className='flex flex-col w-full gap-2'>
-					<div className='w-full flex justify-between items-center'>
-						<div className='flex flex-row gap-1 items-center'>
-							<AlertDialog
-								open={deleteDialogOpen}
-								onOpenChange={setDeleteDialogOpen}>
-								<AlertDialogTrigger asChild>
-									<Button variant={'outline'} className='text-xs shadow-none'>
-										{t('delete')}
-									</Button>
-								</AlertDialogTrigger>
-								<AlertDialogContent>
-									<AlertDialogHeader>
-										<AlertDialogTitle>{t('tip')}</AlertDialogTitle>
-										<AlertDialogDescription>
-											{t(
-												'setting_file_system_page_mine_file_system_delete_alert'
-											)}
-										</AlertDialogDescription>
-									</AlertDialogHeader>
-									<AlertDialogFooter>
-										<Button
-											variant={'destructive'}
-											onClick={async () => {
-												const res = await mutateInstallFileSystem.mutateAsync({
-													file_system_id: file_system.id,
-													status: false,
-												});
-												if (res.success) {
-													setDeleteDialogOpen(false);
-												}
-											}}
-											disabled={mutateInstallFileSystem.isPending}>
-											{t('confirm')}
-											{mutateInstallFileSystem.isPending && (
-												<Loader2 className='animate-spin' />
-											)}
-										</Button>
-										<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-									</AlertDialogFooter>
-								</AlertDialogContent>
-							</AlertDialog>
-
-							<Dialog
-								open={configDialogOpen}
-								onOpenChange={setConfigDialogOpen}>
-								<DialogTrigger asChild>
-									<Button variant={'outline'} className='text-xs shadow-none'>
-										{t('config')}
-									</Button>
-								</DialogTrigger>
-
-								<DialogContent>
-									<DialogHeader>
-										<DialogTitle>{t('config')}</DialogTitle>
-										<DialogDescription>
-											{t(
-												'setting_file_system_page_mine_file_system_config_description',
-												{
-													file_system:
-														locale === 'en'
-															? file_system.name
-															: file_system.name_zh,
-												}
-											)}
-										</DialogDescription>
-									</DialogHeader>
-									<Form {...form}>
-										<form onSubmit={handleSubmit} id='update_form'>
+				<CardFooter className='flex justify-end gap-2'>
+					<Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
+						<DialogTrigger asChild>
+							<Button className='text-xs shadow-none'>{t('config')}</Button>
+						</DialogTrigger>
+						<DialogContent
+							onOpenAutoFocus={(e) => e.preventDefault()}
+							className='max-h-[80vh] overflow-auto'>
+							<DialogHeader>
+								<DialogTitle>{t('config')}</DialogTitle>
+								<DialogDescription>
+									{t(
+										'setting_file_system_page_mine_file_system_config_description',
+										{
+											file_system: user_file_system.title ?? '未命名',
+										}
+									)}
+								</DialogDescription>
+							</DialogHeader>
+							<Form {...form}>
+								<form
+									onSubmit={handleSubmit}
+									id='update_form'
+									className='space-y-5'>
+									<FormField
+										name='title'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<div className='grid grid-cols-12 gap-2'>
+														<FormLabel className='col-span-3'>
+															{t(
+																'setting_file_system_page_file_system_form_title'
+															)}
+														</FormLabel>
+														<div className='col-span-9'>
+															<Input
+																{...field}
+																placeholder={t(
+																	'setting_file_system_page_file_system_form_title_placeholder'
+																)}
+																value={field.value || ''}
+															/>
+														</div>
+													</div>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormField
+										name='description'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<div className='grid grid-cols-12 gap-2'>
+														<FormLabel className='col-span-3'>
+															{t(
+																'setting_file_system_page_file_system_form_description'
+															)}
+														</FormLabel>
+														<div className='col-span-9'>
+															<Textarea
+																{...field}
+																placeholder={t(
+																	'setting_file_system_page_file_system_form_description_placeholder'
+																)}
+																value={field.value || ''}
+															/>
+														</div>
+													</div>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									{user_file_system.demo_config && (
+										<>
 											<FormField
 												name='config_json'
 												control={form.control}
 												render={({ field }) => {
 													return (
 														<FormItem>
-															<Textarea
-																placeholder={t(
-																	'setting_file_system_page_mine_file_system_config_placeholder'
-																)}
-																className='font-mono break-all'
-																{...field}
-															/>
+															<div className='grid grid-cols-12 gap-2'>
+																<FormLabel className='col-span-3'>
+																	{t(
+																		'setting_file_system_page_file_system_form_config_json'
+																	)}
+																</FormLabel>
+																<div className='col-span-9'>
+																	<Textarea
+																		placeholder={t(
+																			'setting_file_system_page_file_system_form_config_json_placeholder'
+																		)}
+																		className='font-mono break-all'
+																		{...field}
+																		value={field.value ?? ''}
+																	/>
+																</div>
+															</div>
 															<FormMessage />
 														</FormItem>
 													);
 												}}
 											/>
-										</form>
-									</Form>
-									{file_system.demo_config && (
-										<>
-											<Separator />
-											<h3 className='text-xs text-muted-foreground'>
-												{t(
-													'setting_file_system_page_mine_file_system_config_demo'
-												)}
-											</h3>
-											<p className='rounded bg-muted p-5 font-mono text-sm break-all'>
-												{file_system.demo_config}
-											</p>
+											<div className='grid grid-cols-12 gap-2'>
+												<FormLabel className='col-span-3'>
+													{t(
+														'setting_file_system_page_mine_file_system_config_demo'
+													)}
+												</FormLabel>
+												<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
+													{user_file_system.demo_config}
+												</div>
+											</div>
 										</>
 									)}
-									<DialogFooter>
-										<DialogClose asChild>
-											<Button type='button' variant={'secondary'}>
-												{t('cancel')}
-											</Button>
-										</DialogClose>
-										<Button
-											type='submit'
-											form='update_form'
-											disabled={mutateUpdateFileSystem.isPending}>
-											{t('confirm')}
-											{mutateUpdateFileSystem.isPending && (
-												<Loader2 className='animate-spin' />
-											)}
-										</Button>
-									</DialogFooter>
-								</DialogContent>
-							</Dialog>
-						</div>
-					</div>
+								</form>
+							</Form>
+							<DialogFooter>
+								<DialogClose asChild>
+									<Button type='button' variant={'secondary'}>
+										{t('cancel')}
+									</Button>
+								</DialogClose>
+								<Button
+									type='submit'
+									form='update_form'
+									disabled={mutateUpdateFileSystem.isPending}>
+									{t('confirm')}
+									{mutateUpdateFileSystem.isPending && (
+										<Loader2 className='animate-spin' />
+									)}
+								</Button>
+							</DialogFooter>
+						</DialogContent>
+					</Dialog>
+					<AlertDialog
+						open={deleteDialogOpen}
+						onOpenChange={setDeleteDialogOpen}>
+						<AlertDialogTrigger asChild>
+							<Button variant={'secondary'} className='text-xs shadow-none'>
+								{t('delete')}
+							</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>{t('tip')}</AlertDialogTitle>
+								<AlertDialogDescription>
+									{t('setting_file_system_page_mine_file_system_delete_alert')}
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<Button
+									variant={'destructive'}
+									onClick={async () => {
+										const res = await mutateDeleteUserFileSystem.mutateAsync({
+											user_file_system_id: user_file_system.id,
+										});
+										if (res.success) {
+											setDeleteDialogOpen(false);
+										}
+									}}
+									disabled={mutateInstallFileSystem.isPending}>
+									{t('confirm')}
+									{mutateInstallFileSystem.isPending && (
+										<Loader2 className='animate-spin' />
+									)}
+								</Button>
+								<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
 				</CardFooter>
 			</Card>
 		</>

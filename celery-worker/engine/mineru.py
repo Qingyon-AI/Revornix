@@ -43,7 +43,7 @@ class MineruEngine(EngineProtocol):
         if not is_dir_empty(str(BASE_DIR / 'temp' / temp_dir_name / 'scene-snap' / 'auto' / 'images')):
             db = SessionLocal()
             db_user = get_user_by_id(db=db, user_id=self.user_id)
-            remote_file_service = get_user_remote_file_system(user_id=db_user.id)
+            remote_file_service = await get_user_remote_file_system(user_id=db_user.id)
             for item in os.listdir(str(BASE_DIR / 'temp' / temp_dir_name / 'scene-snap' / 'auto' / 'images')):
                 with open(str(BASE_DIR / 'temp' / temp_dir_name / 'scene-snap' / 'auto' / 'images' / item), "rb") as f:
                     await remote_file_service.upload_file_to_path(file_path=f'images/{item}', 
@@ -95,7 +95,7 @@ class MineruEngine(EngineProtocol):
         if not is_dir_empty(str(BASE_DIR / 'temp' / temp_dir_name / 'auto' / 'images')):
             db = SessionLocal()
             db_user = get_user_by_id(db=db, user_id=self.user_id)
-            remote_file_service = get_user_remote_file_system(user_id=db_user.id)
+            remote_file_service = await get_user_remote_file_system(user_id=db_user.id)
             for item in os.listdir(str(BASE_DIR / 'temp' / temp_dir_name / 'auto' / 'images')):
                 with open(str(BASE_DIR / 'temp' / temp_dir_name / 'auto' / 'images' / item), "rb") as f:
                     await remote_file_service.upload_file_to_path(file_path=f'images/{item}', 

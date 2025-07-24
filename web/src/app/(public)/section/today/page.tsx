@@ -46,7 +46,7 @@ const SectionDetailPage = () => {
 
 	const onGetMarkdown = async () => {
 		if (!section || !section.md_file_name || !userInfo) return;
-		if (!userInfo.default_file_system) {
+		if (!userInfo.default_user_file_system) {
 			toast.error('No default file system found');
 			return;
 		}

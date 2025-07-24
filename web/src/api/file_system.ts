@@ -10,4 +10,5 @@ export default {
     getAliyunOSSSTSToken: API_PREFIX + "/file-system/oss/sts",
     getBuiltInSTSToken: API_PREFIX + "/file-system/built-in/sts",
     getUserFileUrlPrefix: API_PREFIX + "/file-system/url-prefix",
+    deleteUserFileSystem: API_PREFIX + "/file-system/user-file-system/delete",
 }

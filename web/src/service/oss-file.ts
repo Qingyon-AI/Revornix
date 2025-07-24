@@ -1,5 +1,5 @@
 import { utils } from "@kinda/utils";
-import { getAliyunOSSSts, getFileSystemDetail } from "./file-system";
+import { getAliyunOSSSts, getUserFileSystemDetail } from "./file-system";
 import { getMyInfo } from "./user";
 import OSS from 'ali-oss';
 
@@ -14,8 +14,8 @@ export class OSSFileService implements FileServiceProtocol {
         if (err_user || !res_user) {
             throw err_user || new Error("init file system config failed");
         }
-        if (res_user.default_file_system !== 2) {
-            throw new Error("You can't use the oss file system with the default file system equals to 2");
+        if (!res_user.default_user_file_system) {
+            throw new Error("You have not set the default file system");
         }
         const [res_sts, err_sts] = await utils.to(
             getAliyunOSSSts()
@@ -25,12 +25,12 @@ export class OSSFileService implements FileServiceProtocol {
         }
         this.sts_config = res_sts;
         const [res_oss_file_system_config, err_oss_file_system_config] = await utils.to(
-            getFileSystemDetail({
-                file_system_id: res_user.default_file_system
+            getUserFileSystemDetail({
+                user_file_system_id: res_user.default_user_file_system
             })
         )
         if (err_oss_file_system_config || !res_oss_file_system_config) {
-            throw err_oss_file_system_config || new Error("Not support");
+            throw err_oss_file_system_config || new Error("get oss file system config failed");
         }
         if (!res_oss_file_system_config.config_json) {
             throw new Error("You have not set the config json for the oss file system");

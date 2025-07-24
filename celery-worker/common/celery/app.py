@@ -35,7 +35,7 @@ async def handle_init_file_document_info(document_id: int,
                                        user_id=user_id)
     if db_user is None:
         raise Exception("User not found")
-    remote_file_service = get_user_remote_file_system(user_id=user_id)
+    remote_file_service = await get_user_remote_file_system(user_id=user_id)
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
@@ -110,7 +110,7 @@ async def handle_init_website_document_info(document_id: int, user_id: int):
                                        user_id=user_id)
     if db_user is None:
         raise Exception("User not found")
-    remote_file_service = get_user_remote_file_system(user_id=user_id)
+    remote_file_service = await get_user_remote_file_system(user_id=user_id)
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
@@ -197,7 +197,7 @@ async def handle_update_sections(sections: list[int],
     db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
     if db_user is None:
         raise Exception("User does not exist")
-    remote_file_service = get_user_remote_file_system(user_id=user_id)
+    remote_file_service = await get_user_remote_file_system(user_id=user_id)
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=document_id)
     if db_document is None:
@@ -273,7 +273,7 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
     db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
     if db_user is None:
         raise Exception("User does not exist")
-    remote_file_service = get_user_remote_file_system(user_id=user_id)
+    remote_file_service = await get_user_remote_file_system(user_id=user_id)
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
@@ -331,7 +331,7 @@ async def handle_update_section_use_document(section_id: int,
     db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
     if db_user is None:
         raise Exception("User does not exist")
-    remote_file_service = get_user_remote_file_system(user_id=user_id)
+    remote_file_service = await get_user_remote_file_system(user_id=user_id)
     try:
         markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
                                                                      user_id=user_id)

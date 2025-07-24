@@ -8,14 +8,12 @@ class RemoteFileServiceProtocol(Protocol):
     
     def __init__(self, 
                  file_service_uuid: int,
-                 user_id: int | None = None,
                  file_service_name: str | None = None, 
                  file_service_name_zh: str | None = None, 
                  file_service_description: str | None = None, 
                  file_service_description_zh: str | None = None, 
                  file_service_demo_config: str | None = None,
                  file_service_config: str | None = None):
-        self.user_id = user_id
         self.file_service_uuid = file_service_uuid
         self.file_service_name = file_service_name
         self.file_service_name_zh = file_service_name_zh
@@ -52,7 +50,7 @@ class RemoteFileServiceProtocol(Protocol):
             return json.loads(self.file_service_config)
         return None
         
-    async def auth(self) -> None:
+    async def init_client_by_user_file_system_id(self, user_file_system_id: int) -> None:
         raise NotImplementedError("Method not implemented")
     
     async def get_file_content_by_file_path(self, file_path: str) -> dict:

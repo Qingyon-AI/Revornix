@@ -10,8 +10,48 @@ from botocore.config import Config
 from common.dependencies import get_current_user, get_db
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
+from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
+from file.built_in_remote_file_service import BuiltInRemoteFileService
 
 file_system_router = APIRouter()
+
+@file_system_router.post('/migrate', response_model=schemas.common.NormalResponse)
+async def migrate_file_system(migrate_file_system_request: schemas.file_system.MigrateFileSystemRequest,
+                              db: Session = Depends(get_db),
+                              current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_source_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                             user_file_system_id=migrate_file_system_request.source_user_file_system_id)
+    if db_source_user_file_system is None:
+        raise Exception('Source user file system not found')
+    db_target_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                             user_file_system_id=migrate_file_system_request.target_user_file_system_id)
+    if db_target_user_file_system is None:
+        raise Exception('Target user file system not found')
+    if db_source_user_file_system.file_system_id == db_target_user_file_system.file_system_id:
+        raise Exception('Source and target file system are the same')
+    source_remote_file_service = None
+    target_remote_file_service = None
+    if db_source_user_file_system.file_system_id == 1:
+        source_remote_file_service = BuiltInRemoteFileService()
+    elif db_source_user_file_system.file_system_id == 2:
+        source_remote_file_service = AliyunOSSRemoteFileService()
+    await source_remote_file_service.init_client_by_user_file_system_id(db=db, 
+                                                                        user_file_system_id=db_source_user_file_system.id)
+    if db_target_user_file_system.file_system_id == 1:
+        target_remote_file_service = BuiltInRemoteFileService()
+    elif db_target_user_file_system.file_system_id == 2:
+        target_remote_file_service = AliyunOSSRemoteFileService()
+    await target_remote_file_service.init_client_by_user_file_system_id(db=db,
+                                                                        user_file_system_id=db_target_user_file_system.id)
+    source_files = await source_remote_file_service.list_files()
+    for file in source_files:
+        print(file)
+        # TODO
+        # await target_remote_file_service.upload_file_to_path(file_path=,
+        #                                                      file=,)
+    return schemas.common.SuccessResponse()
+        
+    
 
 @file_system_router.post('/url-prefix', response_model=schemas.file_system.FileUrlPrefixResponse)
 async def get_url_prefix(file_url_prefix_request: schemas.file_system.FileUrlPrefixRequest,
@@ -121,8 +161,6 @@ async def get_file_system_info(user_file_system_info_request: schemas.file_syste
                                                                       user_file_system_id=user_file_system_info_request.user_file_system_id)
     if db_user_file_system is None:
         raise Exception(status_code=404, detail="User File System not found")
-    if db_user_file_system.user_id != current_user.id:
-        raise Exception(status_code=403, detail="You don't have permission to access this user file system info")
     db_file_system = crud.file_system.get_file_system_by_id(db=db, 
                                                             file_system_id=db_user_file_system.file_system_id)
     if db_file_system is None:
@@ -131,9 +169,11 @@ async def get_file_system_info(user_file_system_info_request: schemas.file_syste
                                                  title=db_user_file_system.name,
                                                  description=db_user_file_system.description,
                                                  demo_config=db_file_system.demo_config,
-                                                 config_json=db_user_file_system.config_json,
                                                  create_time=db_user_file_system.create_time,
                                                  update_time=db_user_file_system.update_time)
+    if db_user_file_system.user_id == current_user.id:
+        # only if the user is the owner of the user file system, the config_json will be returned
+        res.config_json=db_user_file_system.config_json
     return res
 
 @file_system_router.post("/mine", response_model=schemas.file_system.MineFileSystemSearchResponse)
@@ -161,18 +201,31 @@ async def search_mine_file_system(file_system_search_request: schemas.file_syste
 
 @file_system_router.post("/provide", response_model=schemas.file_system.ProvideFileSystemSearchResponse)
 async def provide_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
-                                        db: Session = Depends(get_db), 
-                                        current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                              db: Session = Depends(get_db), 
+                              current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     file_systems = crud.file_system.get_all_file_systems(db=db, keyword=file_system_search_request.keyword)
     return schemas.file_system.ProvideFileSystemSearchResponse(data=file_systems)
 
-@file_system_router.post("/install", response_model=schemas.common.NormalResponse)
-async def install_file_system(file_system_install_request: schemas.file_system.FileSystemInstallRequest, 
-                              db: Session = Depends(get_db), 
-                              current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    crud.file_system.bind_file_system_to_user(db=db,
-                                              user_id=current_user.id,
-                                              file_system_id=file_system_install_request.file_system_id)
+@file_system_router.post("/install", response_model=schemas.file_system.FileSystemInstallResponse)
+async def install_user_file_system(file_system_install_request: schemas.file_system.FileSystemInstallRequest, 
+                                   db: Session = Depends(get_db), 
+                                   current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
+                                                                    user_id=current_user.id,
+                                                                    file_system_id=file_system_install_request.file_system_id,
+                                                                    title=file_system_install_request.title,
+                                                                    description=file_system_install_request.description,
+                                                                    config_json=file_system_install_request.config_json)
+    db.commit()
+    return schemas.file_system.FileSystemInstallResponse(user_file_system_id=db_user_file_system.id)
+
+@file_system_router.post("/user-file-system/delete", response_model=schemas.common.NormalResponse)
+async def delete_user_file_system(user_file_system_delete_request: schemas.file_system.UserFileSystemDeleteRequest,
+                                  db: Session = Depends(get_db),
+                                  current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    crud.file_system.delete_user_file_system_by_id(db=db,
+                                                   user_id=current_user.id,
+                                                   user_file_system_id=user_file_system_delete_request.user_file_system_id)
     db.commit()
     return schemas.common.SuccessResponse()
 

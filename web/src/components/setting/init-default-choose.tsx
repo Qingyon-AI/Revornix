@@ -17,18 +17,8 @@ const InitDefaultChoose = () => {
 				!userInfo.default_file_document_parse_engine_id ||
 				!userInfo.default_website_document_parse_engine_id ||
 				!userInfo.default_revornix_model_id ||
-				!userInfo.default_file_system) && (
+				!userInfo.default_user_file_system) && (
 				<div className='space-y-5'>
-					<div
-						className='flex justify-between items-center'
-						id='default_file_system'>
-						<Label className='flex flex-col gap-2 items-start'>
-							{t('setting_file_system_page_current_file_system')}
-						</Label>
-						<div className='flex flex-col gap-2'>
-							<DefaultFileSystemChange />
-						</div>
-					</div>
 					<div
 						className='flex justify-between items-center'
 						id='default_markdown_parse_engine_choose'>
