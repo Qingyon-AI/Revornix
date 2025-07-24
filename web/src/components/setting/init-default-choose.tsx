@@ -14,8 +14,8 @@ const InitDefaultChoose = () => {
 	return (
 		<>
 			{(!userInfo?.default_document_reader_model_id ||
-				!userInfo.default_file_document_parse_engine_id ||
-				!userInfo.default_website_document_parse_engine_id ||
+				!userInfo.default_file_document_parse_user_engine_id ||
+				!userInfo.default_website_document_parse_user_engine_id ||
 				!userInfo.default_revornix_model_id ||
 				!userInfo.default_user_file_system) && (
 				<div className='space-y-5'>
@@ -57,9 +57,9 @@ const InitDefaultChoose = () => {
 				</div>
 			)}
 			{userInfo?.default_document_reader_model_id &&
-				userInfo.default_file_document_parse_engine_id &&
+				userInfo.default_file_document_parse_user_engine_id &&
 				userInfo.default_revornix_model_id &&
-				userInfo.default_website_document_parse_engine_id && (
+				userInfo.default_website_document_parse_user_engine_id && (
 					<div className='bg-muted rounded p-5 py-12 flex flex-col justify-center items-center gap-5'>
 						<CircleCheck className='size-28 text-muted-foreground' />
 						<p className='text-muted-foreground text-sm'>{t('init_done')}</p>

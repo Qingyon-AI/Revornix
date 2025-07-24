@@ -135,7 +135,7 @@ const AddFile = () => {
 			<Form {...form}>
 				<form onSubmit={onSubmitMessageForm} className='flex flex-col h-full'>
 					<div className='flex flex-col w-full gap-5 flex-1 mb-5'>
-						{!userInfo?.default_file_document_parse_engine_id && (
+						{!userInfo?.default_file_document_parse_user_engine_id && (
 							<Alert>
 								<AlertCircleIcon />
 								<AlertTitle>
@@ -286,7 +286,7 @@ const AddFile = () => {
 						className='w-full'
 						disabled={
 							mutateCreateDocument.isPending ||
-							!userInfo?.default_file_document_parse_engine_id ||
+							!userInfo?.default_file_document_parse_user_engine_id ||
 							!form.watch('file_name')
 						}>
 						{t('document_create_submit')}

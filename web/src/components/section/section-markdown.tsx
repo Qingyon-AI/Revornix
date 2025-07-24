@@ -62,7 +62,9 @@ const SectionMarkdown = ({ id }: { id: number }) => {
 				setMarkdownIsFetching(false);
 				return;
 			}
-			setMarkdown(res);
+			if (typeof res === 'string') {
+				setMarkdown(res);
+			}
 			setMarkdownIsFetching(false);
 		} catch (e: any) {
 			setMarkdownIsFetching(false);

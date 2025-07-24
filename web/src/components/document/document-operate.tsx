@@ -198,7 +198,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 							title={t('file_document_go_to_origin')}
 							target='_blank'
 							className='flex-1 text-center'
-							href={data.file_info?.file_name}>
+							href={data.file_info?.file_name ?? '#'}>
 							<Button variant={'ghost'} className='w-full'>
 								<LinkIcon />
 							</Button>

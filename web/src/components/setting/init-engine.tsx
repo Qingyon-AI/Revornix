@@ -19,7 +19,6 @@ import {
 	getMineEngines,
 	getProvideEngines,
 	installEngine,
-	updateEngine,
 } from '@/service/engine';
 import {
 	Select,
@@ -29,15 +28,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
-import { updateUserDefaultEngine } from '@/service/user';
-import { useUserContext } from '@/provider/user-provider';
 import { getQueryClient } from '@/lib/get-query-client';
 import { CircleCheck } from 'lucide-react';
 
 const InitEngine = () => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const { refreshUserInfo } = useUserContext();
 	const {
 		data: provideEngines,
 		isFetching: isFetchingProvideEngines,
@@ -110,24 +106,14 @@ const InitEngine = () => {
 		},
 	});
 
-	const mutateUpdateEngineConfig = useMutation({
-		mutationFn: updateEngine,
-		onError: (error) => {
-			toast.error(error.message);
-		},
-	});
-
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		if (!mineEngines?.data.find((item) => item.id === values.engine_id)) {
 			await mutateInstallEngine.mutateAsync({
 				engine_id: values.engine_id,
-				status: true,
+				title: 'New Engine',
+				description: 'The engine created by initialization steps.',
 			});
 		}
-		await mutateUpdateEngineConfig.mutateAsync({
-			engine_id: values.engine_id,
-			config_json: values.engine_config,
-		});
 	};
 
 	const onFormValidateError = (errors: any) => {

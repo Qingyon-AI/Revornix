@@ -29,8 +29,8 @@ const InitSettingDialog = () => {
 	useEffect(() => {
 		if (
 			!userInfo?.default_document_reader_model_id ||
-			!userInfo.default_file_document_parse_engine_id ||
-			!userInfo.default_website_document_parse_engine_id ||
+			!userInfo.default_file_document_parse_user_engine_id ||
+			!userInfo.default_website_document_parse_user_engine_id ||
 			!userInfo.default_revornix_model_id
 		) {
 			setNeedInitial(true);
@@ -60,14 +60,14 @@ const InitSettingDialog = () => {
 								<div className='flex flex-row gap-3 flex-wrap'>
 									<Link href={'/setting#default_markdown_parse_engine_choose'}>
 										<Badge variant='secondary'>
-											{userInfo?.default_file_document_parse_engine_id ? (
+											{userInfo?.default_file_document_parse_user_engine_id ? (
 												<BadgeCheckIcon />
 											) : (
 												<Info className='text-red-500' />
 											)}
 											<span
 												className={
-													userInfo?.default_file_document_parse_engine_id
+													userInfo?.default_file_document_parse_user_engine_id
 														? ''
 														: 'text-red-500'
 												}>
@@ -77,14 +77,14 @@ const InitSettingDialog = () => {
 									</Link>
 									<Link href={'/setting#default_markdown_parse_engine_choose'}>
 										<Badge variant='secondary'>
-											{userInfo?.default_website_document_parse_engine_id ? (
+											{userInfo?.default_website_document_parse_user_engine_id ? (
 												<BadgeCheckIcon />
 											) : (
 												<Info className='text-red-500' />
 											)}
 											<span
 												className={
-													userInfo?.default_website_document_parse_engine_id
+													userInfo?.default_website_document_parse_user_engine_id
 														? ''
 														: 'text-red-500'
 												}>
