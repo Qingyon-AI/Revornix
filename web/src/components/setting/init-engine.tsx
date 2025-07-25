@@ -30,6 +30,7 @@ import {
 } from '../ui/select';
 import { getQueryClient } from '@/lib/get-query-client';
 import { CircleCheck } from 'lucide-react';
+import { Input } from '../ui/input';
 
 const InitEngine = () => {
 	const t = useTranslations();
@@ -59,13 +60,15 @@ const InitEngine = () => {
 	const formSchema = z
 		.object({
 			engine_id: z.number(),
-			engine_config: z.string(),
+			title: z.string(),
+			description: z.string().optional().nullable(),
+			config_json: z.string().optional().nullable(),
 		})
 		.superRefine((data, ctx) => {
 			const engine = provideEngines?.data.find(
 				(item) => item.id === data.engine_id
 			);
-			if (engine?.demo_config && !data.engine_config) {
+			if (engine?.demo_config && !data.config_json) {
 				ctx.addIssue({
 					code: z.ZodIssueCode.custom,
 					message: t('init_engine_form_config_needed'),
@@ -77,7 +80,9 @@ const InitEngine = () => {
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			engine_config: '',
+			title: '',
+			description: '',
+			config_json: '',
 		},
 	});
 
@@ -96,7 +101,6 @@ const InitEngine = () => {
 	const mutateInstallEngine = useMutation({
 		mutationFn: installEngine,
 		onSuccess: () => {
-			toast.success(t('setting_engine_page_install_success'));
 			queryClient.invalidateQueries({
 				queryKey: ['mine-engine'],
 			});
@@ -107,13 +111,12 @@ const InitEngine = () => {
 	});
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		if (!mineEngines?.data.find((item) => item.id === values.engine_id)) {
-			await mutateInstallEngine.mutateAsync({
-				engine_id: values.engine_id,
-				title: 'New Engine',
-				description: 'The engine created by initialization steps.',
-			});
-		}
+		await mutateInstallEngine.mutateAsync({
+			engine_id: values.engine_id,
+			title: values.title,
+			description: values.description,
+			config_json: values.config_json,
+		});
 	};
 
 	const onFormValidateError = (errors: any) => {
@@ -167,44 +170,92 @@ const InitEngine = () => {
 								</FormItem>
 							)}
 						/>
-						{provideEngines?.data.find((item) => {
-							return item.id === form.watch('engine_id');
-						})?.demo_config && (
-							<FormItem className='space-y-2 gap-0'>
-								<div className='grid grid-cols-12 gap-2'>
-									<FormLabel className='col-span-3'>
-										{t('init_engine_form_config')}
-									</FormLabel>
-									<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
-										{
-											provideEngines?.data.find((item) => {
-												return item.id === form.watch('engine_id');
-											})?.demo_config
-										}
-									</div>
-								</div>
-							</FormItem>
-						)}
-
 						<FormField
 							control={form.control}
-							name='engine_config'
+							name='title'
 							render={({ field }) => (
 								<FormItem>
 									<div className='grid grid-cols-12 gap-2'>
 										<FormLabel className='col-span-3'>
-											{t('init_engine_form_config')}
+											{t('setting_engine_page_engine_form_title')}
 										</FormLabel>
-										<Textarea
-											className='col-span-9'
-											placeholder={t('init_engine_form_config_placeholder')}
-											{...field}
-										/>
+										<div className='col-span-9'>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_engine_page_engine_form_title_placeholder'
+												)}
+												value={field.value || ''}
+											/>
+										</div>
 									</div>
 									<FormMessage />
 								</FormItem>
 							)}
 						/>
+						<FormField
+							control={form.control}
+							name='description'
+							render={({ field }) => (
+								<FormItem>
+									<div className='grid grid-cols-12 gap-2'>
+										<FormLabel className='col-span-3'>
+											{t('setting_engine_page_engine_form_description')}
+										</FormLabel>
+										<div className='col-span-9'>
+											<Textarea
+												{...field}
+												placeholder={t(
+													'setting_engine_page_engine_form_description_placeholder'
+												)}
+												value={field.value || ''}
+											/>
+										</div>
+									</div>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						{provideEngines?.data.find((item) => {
+							return item.id === form.watch('engine_id');
+						})?.demo_config && (
+							<>
+								<FormField
+									control={form.control}
+									name='config_json'
+									render={({ field }) => (
+										<FormItem>
+											<div className='grid grid-cols-12 gap-2'>
+												<FormLabel className='col-span-3'>
+													{t('init_engine_form_config')}
+												</FormLabel>
+												<Textarea
+													className='col-span-9'
+													placeholder={t('init_engine_form_config_placeholder')}
+													{...field}
+													value={field.value ?? ''}
+												/>
+											</div>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormItem className='space-y-2 gap-0'>
+									<div className='grid grid-cols-12 gap-2'>
+										<FormLabel className='col-span-3'>
+											{t('init_engine_form_config')}
+										</FormLabel>
+										<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
+											{
+												provideEngines?.data.find((item) => {
+													return item.id === form.watch('engine_id');
+												})?.demo_config
+											}
+										</div>
+									</div>
+								</FormItem>
+							</>
+						)}
 						<Button className='w-full' type='submit'>
 							{t('save')}
 						</Button>
