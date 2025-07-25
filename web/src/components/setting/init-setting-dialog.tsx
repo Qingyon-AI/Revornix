@@ -58,7 +58,7 @@ const InitSettingDialog = () => {
 							<AlertDescription>
 								<p>{t('init_setting_alert')}</p>
 								<div className='flex flex-row gap-3 flex-wrap'>
-									<Link href={'/setting#default_markdown_parse_engine_choose'}>
+									<Link href={'/setting#default_file_markdown_parse_user_engine_choose'}>
 										<Badge variant='secondary'>
 											{userInfo?.default_file_document_parse_user_engine_id ? (
 												<BadgeCheckIcon />
@@ -75,7 +75,7 @@ const InitSettingDialog = () => {
 											</span>
 										</Badge>
 									</Link>
-									<Link href={'/setting#default_markdown_parse_engine_choose'}>
+									<Link href={'/setting#default_website_markdown_parse_user_engine_choose'}>
 										<Badge variant='secondary'>
 											{userInfo?.default_website_document_parse_user_engine_id ? (
 												<BadgeCheckIcon />

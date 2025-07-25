@@ -164,7 +164,7 @@ const SettingPage = () => {
 					<Separator />
 					<div
 						className='flex justify-between items-center'
-						id='default_website_parse_engine_choose'>
+						id='default_website_markdown_parse_user_engine_choose'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_engine_page_current_user_website_engine')}
 						</Label>
@@ -175,7 +175,7 @@ const SettingPage = () => {
 					<Separator />
 					<div
 						className='flex justify-between items-center'
-						id='default_file_parse_engine_choose'>
+						id='default_file_markdown_parse_user_engine_choose'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_engine_page_current_user_file_engine')}
 						</Label>

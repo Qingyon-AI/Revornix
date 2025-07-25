@@ -1,12 +1,12 @@
 import { CircleCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Label } from '../ui/label';
-import DefaultDocumentParseEngineChange from './default-website-document-parse-engine-change';
 import RevornixAIModel from './revornix-ai-model';
 import { Separator } from '../ui/separator';
 import DocumentSummaryModel from './document-summary-model';
 import { useUserContext } from '@/provider/user-provider';
-import DefaultFileSystemChange from './default-file-system-change';
+import DefaultWebsiteDocumentParseEngineChange from './default-website-document-parse-engine-change';
+import DefaultFileDocumentParseEngineChange from './default-file-document-parse-engine-change';
 
 const InitDefaultChoose = () => {
 	const t = useTranslations();
@@ -21,15 +21,23 @@ const InitDefaultChoose = () => {
 				<div className='space-y-5'>
 					<div
 						className='flex justify-between items-center'
-						id='default_markdown_parse_engine_choose'>
+						id='default_website_parse_engine_choose'>
 						<Label className='flex flex-col gap-2 items-start'>
-							{t('setting_default_markdown_parse_engine')}
-							<p className='text-muted-foreground text-xs'>
-								{t('setting_engine_tip')}
-							</p>
+							{t('setting_engine_page_current_user_website_engine')}
 						</Label>
 						<div className='flex flex-col gap-2'>
-							<DefaultDocumentParseEngineChange />
+							<DefaultWebsiteDocumentParseEngineChange />
+						</div>
+					</div>
+					<Separator />
+					<div
+						className='flex justify-between items-center'
+						id='default_file_parse_engine_choose'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_engine_page_current_user_file_engine')}
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<DefaultFileDocumentParseEngineChange />
 						</div>
 					</div>
 					<Separator />
