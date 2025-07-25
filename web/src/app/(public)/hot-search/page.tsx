@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import HotSearchCard from '@/components/hot-search/hot-search-card';
 import HotSearchErrorCard from '@/components/hot-search/hot-search-error-card';
+import { DAILY_HOT_API_PREFIX } from '@/config/api';
 
 export interface Website {
 	code: number;
@@ -27,7 +28,7 @@ interface HotItem {
 }
 
 const HotSearch = () => {
-	const baseUrl = process.env.NEXT_PUBLIC_DAILY_HOT_API_PREFIX;
+	const baseUrl = DAILY_HOT_API_PREFIX;
 	const websites_to_craw = [
 		'history',
 		'bilibili',

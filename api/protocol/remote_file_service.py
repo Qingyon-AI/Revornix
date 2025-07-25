@@ -37,7 +37,7 @@ class RemoteFileServiceProtocol(Protocol):
         if db_file_system is None:
             raise Exception("File system is None")
         if db_file_system.id == 1:
-            return f'{os.environ.get("FILE_SERVER_URL")}/{db_user.uuid}'
+            return f'{os.environ.get("FILE_SYSTEM_SERVER_URL")}/{db_user.uuid}'
         elif db_file_system.id == 2:
             config_str = db_user_file_system.config_json
             if config_str is None:

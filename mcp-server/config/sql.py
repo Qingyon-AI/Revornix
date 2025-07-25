@@ -1,6 +1,6 @@
 import os
 
-USER_NAME = os.environ.get('USER_NAME')
-PASSWORD = os.environ.get('PASSWORD')
-DATABASE_URL = os.environ.get('DATABASE_URL')
-DATABASE_NAME = os.environ.get('DATABASE_NAME')
+MYSQL_USER_NAME = os.environ.get('MYSQL_USER_NAME')
+MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD')
+MYSQL_DATABASE_URL = os.environ.get('MYSQL_DATABASE_URL')
+MYSQL_DATABASE_NAME = os.environ.get('MYSQL_DATABASE_NAME')

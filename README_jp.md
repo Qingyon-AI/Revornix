@@ -42,12 +42,11 @@ cd Revornix
 #### 環境変数の設定
 
 ```shell
+cp .env.example .env
 cp ./envs/.api.env.example ./envs/.api.env
 cp ./envs/.file.env.example ./envs/.file.env
 cp ./envs/.celery.env.example ./envs/.celery.env
-cp ./envs/.hot.env.example ./envs/.hot.env
 cp ./envs/.mcp.env.example ./envs/.mcp.env
-cp ./envs/.web.env.example ./web/.env
 ```
 
 対応する環境変数ファイルを編集してください。詳しくは[環境変数設定セクション](https://revornix.com/en/docs/environment)をご覧ください。

@@ -42,12 +42,11 @@ cd Revornix
 #### 环境变量配置
 
 ```shell
+cp .env.example .env
 cp ./envs/.api.env.example ./envs/.api.env
 cp ./envs/.file.env.example ./envs/.file.env
 cp ./envs/.celery.env.example ./envs/.celery.env
-cp ./envs/.hot.env.example ./envs/.hot.env
 cp ./envs/.mcp.env.example ./envs/.mcp.env
-cp ./envs/.web.env.example ./web/.env
 ```
 
 前往对应的环境变量文件配置，详情见[环境变量配置篇章](https://revornix.com/en/docs/environment)

@@ -11,3 +11,4 @@ __pycache__/
 volumes/*
 envs/*.env
 .env
+127.0.0.1

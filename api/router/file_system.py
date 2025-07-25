@@ -12,6 +12,7 @@ from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
+from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_URL
 
 file_system_router = APIRouter()
 
@@ -67,7 +68,7 @@ async def get_url_prefix(file_url_prefix_request: schemas.file_system.FileUrlPre
     db_file_system = crud.file_system.get_file_system_by_id(db=db, 
                                                             file_system_id=db_user_file_system.file_system_id)
     if db_file_system.id == 1:
-        res = schemas.file_system.FileUrlPrefixResponse(url_prefix=f'{os.environ.get("FILE_SERVER_URL")}/{db_user.uuid}')
+        res = schemas.file_system.FileUrlPrefixResponse(url_prefix=f'{os.environ.get("FILE_SYSTEM_SERVER_URL")}/{db_user.uuid}')
     elif db_file_system.id == 2:
         config_str = db_user_file_system.config_json
         if config_str is None:
@@ -81,9 +82,9 @@ async def get_built_in_sts(db: Session = Depends(get_db),
                            current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     sts = boto3.client(
         'sts',
-        endpoint_url=os.environ.get('FILE_SERVER_URL'),
-        aws_access_key_id='minioadmin',
-        aws_secret_access_key='minioadmin',
+        endpoint_url=FILE_SYSTEM_SERVER_URL,
+        aws_access_key_id=FILE_SYSTEM_USER_NAME,
+        aws_secret_access_key=FILE_SYSTEM_PASSWORD,
         config=Config(signature_version='s3v4'),
         region_name="main" 
     )
@@ -99,7 +100,7 @@ async def get_built_in_sts(db: Session = Depends(get_db),
     return schemas.file_system.BuiltInStsResponse(access_key_id=sts_role_access_key_id,
                                                   access_key_secret=sts_role_access_key_secret,
                                                   security_token=sts_role_session_token,
-                                                  endpoint_url=os.environ.get('FILE_SERVER_URL'),
+                                                  endpoint_url=FILE_SYSTEM_SERVER_URL,
                                                   expiration=expiration,
                                                   region="main")
 

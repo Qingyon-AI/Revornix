@@ -42,12 +42,11 @@ cd Revornix
 #### Environment Variables Configuration
 
 ```shell
+cp .env.example .env
 cp ./envs/.api.env.example ./envs/.api.env
 cp ./envs/.file.env.example ./envs/.file.env
 cp ./envs/.celery.env.example ./envs/.celery.env
-cp ./envs/.hot.env.example ./envs/.hot.env
 cp ./envs/.mcp.env.example ./envs/.mcp.env
-cp ./envs/.web.env.example ./web/.env
 ```
 
 Go to the corresponding environment variable files and configure them. For details, refer to [Environment Variables Configuration](https://revornix.com/en/docs/environment).
