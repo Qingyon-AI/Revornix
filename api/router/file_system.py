@@ -12,7 +12,8 @@ from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
-from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_URL
+from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL, FILE_SYSTEM_SERVER_PUBLIC_URL
+from protocol.remote_file_service import RemoteFileServiceProtocol
 
 file_system_router = APIRouter()
 
@@ -57,24 +58,8 @@ async def migrate_file_system(migrate_file_system_request: schemas.file_system.M
 @file_system_router.post('/url-prefix', response_model=schemas.file_system.FileUrlPrefixResponse)
 async def get_url_prefix(file_url_prefix_request: schemas.file_system.FileUrlPrefixRequest,
                          db: Session = Depends(get_db)):
-    db_user = crud.user.get_user_by_id(db=db, user_id=file_url_prefix_request.user_id)
-    res = None
-    if db_user is None:
-        raise Exception('User not found')
-    db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                      user_file_system_id=db_user.default_user_file_system)
-    if db_user_file_system is None:
-            raise Exception('User file system not found')
-    db_file_system = crud.file_system.get_file_system_by_id(db=db, 
-                                                            file_system_id=db_user_file_system.file_system_id)
-    if db_file_system.id == 1:
-        res = schemas.file_system.FileUrlPrefixResponse(url_prefix=f'{os.environ.get("FILE_SYSTEM_SERVER_URL")}/{db_user.uuid}')
-    elif db_file_system.id == 2:
-        config_str = db_user_file_system.config_json
-        if config_str is None:
-            raise Exception("User file system config is empty")
-        config = json.loads(config_str)
-        res = schemas.file_system.FileUrlPrefixResponse(url_prefix=f'{config.get("url_prefix")}')
+    url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=file_url_prefix_request.user_id)
+    res = schemas.file_system.FileUrlPrefixResponse(url_prefix=url_prefix)
     return res
 
 @file_system_router.post('/built-in/sts', response_model=schemas.file_system.BuiltInStsResponse)
@@ -82,7 +67,7 @@ async def get_built_in_sts(db: Session = Depends(get_db),
                            current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     sts = boto3.client(
         'sts',
-        endpoint_url=FILE_SYSTEM_SERVER_URL,
+        endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
         aws_access_key_id=FILE_SYSTEM_USER_NAME,
         aws_secret_access_key=FILE_SYSTEM_PASSWORD,
         config=Config(signature_version='s3v4'),
@@ -100,7 +85,7 @@ async def get_built_in_sts(db: Session = Depends(get_db),
     return schemas.file_system.BuiltInStsResponse(access_key_id=sts_role_access_key_id,
                                                   access_key_secret=sts_role_access_key_secret,
                                                   security_token=sts_role_session_token,
-                                                  endpoint_url=FILE_SYSTEM_SERVER_URL,
+                                                  endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
                                                   expiration=expiration,
                                                   region="main")
 

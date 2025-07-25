@@ -1,7 +1,7 @@
 import models
 import jwt
 from datetime import datetime, timezone, timedelta
-from config.oauth2 import SECRET_KEY, ALGORITHM
+from config.oauth2 import OAUTH_SECRET_KEY
 
 def create_jwt(data: dict, 
                expires_delta: timedelta | None = None):
@@ -10,9 +10,9 @@ def create_jwt(data: dict,
         expire = datetime.now(timezone.utc) + expires_delta
         to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(payload=to_encode, 
-                             key=SECRET_KEY, 
-                             algorithm=ALGORITHM,
-                             headers={"alg": ALGORITHM})
+                             key=OAUTH_SECRET_KEY, 
+                             algorithm='HS256',
+                             headers={"alg": 'HS256'})
     return encoded_jwt
 
 def create_upload_token(user: models.user.User):

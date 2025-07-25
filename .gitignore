@@ -9,6 +9,8 @@ __pycache__/
 *.egg
 *.log
 volumes/*
-envs/*.env
 .env
+.env.*
+!.env.example
+!.env.*.example
 127.0.0.1

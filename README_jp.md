@@ -43,16 +43,12 @@ cd Revornix
 
 ```shell
 cp .env.example .env
-cp ./envs/.api.env.example ./envs/.api.env
-cp ./envs/.file.env.example ./envs/.file.env
-cp ./envs/.celery.env.example ./envs/.celery.env
-cp ./envs/.mcp.env.example ./envs/.mcp.env
 ```
 
 対応する環境変数ファイルを編集してください。詳しくは[環境変数設定セクション](https://revornix.com/en/docs/environment)をご覧ください。
 
 > [!TIP]
-> 通常は、ユーザー認証機構の SECRET_KEY パラメータだけを設定すれば十分で、その他のパラメータはデフォルトのままで問題ありません。なお、異なるサービス間で SECRET_KEY が一致していないと、ユーザー認証システムが連携できなくなるため、ご注意ください。
+> 通常は、ユーザー認証機構の OAUTH_SECRET_KEY パラメータだけを設定すれば十分で、その他のパラメータはデフォルトのままで問題ありません。なお、異なるサービス間で OAUTH_SECRET_KEY が一致していないと、ユーザー認証システムが連携できなくなるため、ご注意ください。
 
 #### dockerで必要なイメージを取得して起動
 
@@ -60,7 +56,7 @@ cp ./envs/.mcp.env.example ./envs/.mcp.env
 docker compose up -d
 ```
 
-すべてのサービスが起動したら、http://localhost にアクセスしてフロントエンド画面をご確認ください。バックエンドの起動には少し時間がかかるため、フロントエンドからのリクエストが通るまで通常3〜5分ほどかかることがあります。docker compose logs apiでバックエンドの起動状況を確認できます。
+すべてのサービスが起動したら、http://localhost にアクセスしてフロントエンド画面をご確認ください。バックエンドの起動には少し時間がかかるため、フロントエンドからのリクエストが通るまで通常10〜15分ほどかかることがあります。docker compose logs apiでバックエンドの起動状況を確認できます。
 
 ### 手動デプロイ
 

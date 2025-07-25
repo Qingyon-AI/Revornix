@@ -11,7 +11,7 @@ FROM base AS builder
 RUN npm install -g pnpm
 WORKDIR /app
 
-COPY package*json tsconfig.json pnpm-lock.yaml .env.example ./
+COPY package*json tsconfig.json pnpm-lock.yaml ./
 COPY src ./src
 COPY public ./public
 
@@ -37,8 +37,7 @@ RUN ln -s /app/logs /logs
 # 复制文件
 COPY --from=builder --chown=hono:nodejs /app/node_modules /app/node_modules
 COPY --from=builder --chown=hono:nodejs /app/dist /app/dist
-COPY --from=builder /app/public /app/public
-COPY --from=builder /app/.env /app/.env
+COPY --from=builder /app/public /app/publics
 COPY --from=builder /app/package.json /app/package.json
 
 # 切换用户

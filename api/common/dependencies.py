@@ -7,8 +7,7 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from common.sql import SessionLocal
 from datetime import datetime, timezone
-from config.oauth2 import SECRET_KEY, ALGORITHM
-from fastapi.encoders import jsonable_encoder
+from config.oauth2 import OAUTH_SECRET_KEY
 from fastapi import Request, HTTPException, status, Depends, Header, Cookie, Query, WebSocketException
 
 def get_db():
@@ -37,7 +36,7 @@ async def get_current_user_with_websocket(
     if token is None:
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, OAUTH_SECRET_KEY, algorithms=['HS256'])
         uuid: str = payload.get("sub")
         if uuid is None:
             raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
@@ -89,7 +88,7 @@ def get_current_user(authorization: str | None = Header(default=None),
         raise credentials_exception
     try:
         token = authorization.replace('Bearer ', '')
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, OAUTH_SECRET_KEY, algorithms=['HS256'])
         uuid: str = payload.get("sub")
         if uuid is None:
             raise credentials_exception

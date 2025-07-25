@@ -43,16 +43,12 @@ cd Revornix
 
 ```shell
 cp .env.example .env
-cp ./envs/.api.env.example ./envs/.api.env
-cp ./envs/.file.env.example ./envs/.file.env
-cp ./envs/.celery.env.example ./envs/.celery.env
-cp ./envs/.mcp.env.example ./envs/.mcp.env
 ```
 
 前往对应的环境变量文件配置，详情见[环境变量配置篇章](https://revornix.com/en/docs/environment)
 
 > [!TIP]
-> 一般情况下，你仅仅只需要配置用户认证机制的`SECRET_KEY`这一参数，其他参数保持默认即可。注意不同服务的`SECRET_KEY`必须保持一致，否则会导致不同服务之间的用户认证体系无法互通。
+> 一般情况下，你仅仅只需要配置用户认证机制的`OAUTH_SECRET_KEY`这一参数，其他参数保持默认即可。注意不同服务的`OAUTH_SECRET_KEY`必须保持一致，否则会导致不同服务之间的用户认证体系无法互通。
 
 #### docker 拉取必要仓库并启动
 
@@ -60,7 +56,7 @@ cp ./envs/.mcp.env.example ./envs/.mcp.env
 docker compose up -d
 ```
 
-当所有服务均启动之后，访问 http://localhost 即可看到前端页面，注意由于后端服务启动时间较长，前端可能需要等待一段时间（正常情况下为 3-5 分钟左右）才能正常请求接口，可以通过`docker compose logs api`查看核心后端服务启动状态。
+当所有服务均启动之后，访问 http://localhost 即可看到前端页面，注意由于后端服务启动时间较长，前端可能需要等待一段时间（正常情况下为 10-15 分钟左右）才能正常请求接口，可以通过`docker compose logs api`查看核心后端服务启动状态。
 
 ### 手动部署方式
 

@@ -43,16 +43,12 @@ cd Revornix
 
 ```shell
 cp .env.example .env
-cp ./envs/.api.env.example ./envs/.api.env
-cp ./envs/.file.env.example ./envs/.file.env
-cp ./envs/.celery.env.example ./envs/.celery.env
-cp ./envs/.mcp.env.example ./envs/.mcp.env
 ```
 
 Go to the corresponding environment variable files and configure them. For details, refer to [Environment Variables Configuration](https://revornix.com/en/docs/environment).
 
 > [!TIP]
-> In most cases, you only need to configure the `SECRET_KEY` parameter for the user authentication mechanism, and leave the other parameters as default. Note that the `SECRET_KEY` must be consistent across different services; otherwise, the user authentication systems will not be interoperable.
+> In most cases, you only need to configure the `OAUTH_SECRET_KEY` parameter for the user authentication mechanism, and leave the other parameters as default. Note that the `OAUTH_SECRET_KEY` must be consistent across different services; otherwise, the user authentication systems will not be interoperable.
 
 #### Pull Necessary Repositories and Start with Docker
 
@@ -60,7 +56,7 @@ Go to the corresponding environment variable files and configure them. For detai
 docker compose up -d
 ```
 
-Once all services are started, you can visit http://localhost to view the front-end page. Note that due to the back-end services taking longer to start, the front-end may need to wait for some time (usually around 3-5 minutes) before it can make successful requests. You can check the core back-end service status with docker compose logs api.
+Once all services are started, you can visit http://localhost to view the front-end page. Note that due to the back-end services taking longer to start, the front-end may need to wait for some time (usually around 10-15 minutes) before it can make successful requests. You can check the core back-end service status with docker compose logs api.
 
 ### Manual Deployment Method
 

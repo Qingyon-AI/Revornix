@@ -10,7 +10,7 @@ from common.jwt_utils import create_token
 from common.dependencies import get_db
 from common.hash import verify_password
 from common.dependencies import get_current_user, get_db
-from config.oauth2 import SECRET_KEY, ALGORITHM
+from config.oauth2 import OAUTH_SECRET_KEY
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 
 user_router = APIRouter()
@@ -321,8 +321,8 @@ async def update_token(token_update_request: schemas.user.TokenUpdateRequest,
                        db: Session = Depends(get_db)):
     try:
         payload = jwt.decode(token=token_update_request.refresh_token, 
-                             key=SECRET_KEY, 
-                             algorithms=[ALGORITHM])
+                             key=OAUTH_SECRET_KEY, 
+                             algorithms=['HS256'])
     except ExpiredSignatureError as e:
         return Exception("Refresh token is expired, please login again.")
     user_uuid: str | None = payload.get("sub")

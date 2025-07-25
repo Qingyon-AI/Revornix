@@ -3,6 +3,7 @@ import json
 import os
 from typing import Protocol
 from common.sql import SessionLocal
+from config.file_system import FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_SERVER_PRIVATE_URL
 
 class RemoteFileServiceProtocol(Protocol):
     
@@ -22,8 +23,9 @@ class RemoteFileServiceProtocol(Protocol):
         self.file_service_demo_config = file_service_demo_config
         self.file_service_config = file_service_config
         
+    # 本函数默认用来返回任何前端需要url_prefix的情况，如果传参数private为True，则返回docker内访问文件系统的url_prefix
     @staticmethod
-    def get_user_file_system_url_prefix(user_id: int) -> str:
+    def get_user_file_system_url_prefix(user_id: int, private: bool | None = False) -> str:
         db = SessionLocal()
         db_user = crud.user.get_user_by_id(db=db, 
                                            user_id=user_id)
@@ -37,7 +39,7 @@ class RemoteFileServiceProtocol(Protocol):
         if db_file_system is None:
             raise Exception("File system is None")
         if db_file_system.id == 1:
-            return f'{os.environ.get("FILE_SYSTEM_SERVER_URL")}/{db_user.uuid}'
+            return f'{FILE_SYSTEM_SERVER_PUBLIC_URL if not private else FILE_SYSTEM_SERVER_PRIVATE_URL}/{db_user.uuid}'
         elif db_file_system.id == 2:
             config_str = db_user_file_system.config_json
             if config_str is None:
