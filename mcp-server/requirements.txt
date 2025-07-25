@@ -4,7 +4,6 @@ pydantic_core==2.33.1
 python-dotenv==1.1.0
 redis==5.2.1
 SQLAlchemy==2.0.40
-PyMySQL==1.1.1
 python-jose==3.4.0
 mcp[cli]==1.9.0
 openai==1.68.2
@@ -13,3 +12,4 @@ langchain_openai==0.3.16
 pymilvus[model]==2.5.12
 chonkie==1.1.0
 torch==2.7.0
+psycopg2-binary==2.9.10

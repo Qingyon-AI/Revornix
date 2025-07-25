@@ -33,8 +33,6 @@ services:
     build:
       context: daily-hot
       dockerfile: Dockerfile
-    env_file:
-      - ./envs/.hot.env
 
   api:
     container_name: api
@@ -45,7 +43,7 @@ services:
     volumes:
       - ./api:/app
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
       standalone:
         condition: service_started
@@ -65,7 +63,7 @@ services:
       dockerfile: Dockerfile
     command: ["sh", "-c", "fastapi run main.py --proxy-headers --host 0.0.0.0 --port 8001"]
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
       standalone:
         condition: service_started
@@ -86,7 +84,7 @@ services:
       - ./volumes/temp:/app/temp
     depends_on:
       - standalone
-      - mysql
+      - postgres
       - redis
       - neo4j
     env_file:
@@ -130,22 +128,22 @@ services:
       timeout: 20s
       retries: 3
 
-  mysql:
-    container_name: mysql
-    image: 
-      mysql:latest
+  postgres:
+    container_name: postgres
+    image: postgres:15-alpine
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-       - ./volumes/mysql:/var/lib/mysql
+       - ./volumes/postgresql:/var/lib/postgresql/data
     ports:
-      - "3306:3306"
+      - "5432:5432"
     healthcheck:
-      test: bash -c "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD}"
-      interval: 30s
-      timeout: 20s
-      retries: 3
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: 
@@ -190,10 +188,10 @@ services:
       - minio:/minio_data
     command: minio server /minio_data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   standalone:
     container_name: milvus-standalone

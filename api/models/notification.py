@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
-from sqlalchemy.dialects.mysql import LONGTEXT
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Text
 from common.sql import Base
 
 class NotificationTask(Base):
@@ -30,7 +29,7 @@ class NotificationTaskContentCustom(Base):
     id = Column(Integer, primary_key=True)
     notification_task_id = Column(Integer, ForeignKey("notification_task.id"), index=True)
     title = Column(String(500), index=True, nullable=False)
-    content = Column(LONGTEXT())
+    content = Column(Text())
     delete_at = Column(DateTime(timezone=True), index=True)
 
 class NotificationRecord(Base):
@@ -39,7 +38,7 @@ class NotificationRecord(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"), index=True)
     title = Column(String(500), index=True, nullable=False)
-    content = Column(LONGTEXT(), nullable=False)
+    content = Column(Text(), nullable=False)
     notification_source_id = Column(Integer, ForeignKey("notification_source.id"), index=True)
     notification_target_id = Column(Integer, ForeignKey("notification_target.id"), index=True)
     read_at = Column(DateTime(timezone=True), nullable=True)

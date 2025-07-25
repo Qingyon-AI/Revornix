@@ -1,6 +1,6 @@
 import os
 
-MYSQL_USER_NAME = os.environ.get('MYSQL_USER_NAME')
-MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD')
-MYSQL_DATABASE_URL = os.environ.get('MYSQL_DATABASE_URL')
-MYSQL_DATABASE_NAME = os.environ.get('MYSQL_DATABASE_NAME')
+POSTGRES_USER = os.environ.get('POSTGRES_USER')
+POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
+POSTGRES_DB_URL = os.environ.get('POSTGRES_DB_URL')
+POSTGRES_DB = os.environ.get('POSTGRES_DB')

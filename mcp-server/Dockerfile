@@ -6,7 +6,6 @@ RUN set -ex \
     && apt-get update \
     && apt-get upgrade -y \
     && apt-get autoremove -y \
-    && apt-get install -y default-mysql-client \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 

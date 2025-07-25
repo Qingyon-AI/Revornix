@@ -18,7 +18,7 @@ from alembic import context
 config = context.config
 
 # 动态设置 sqlalchemy.url
-db_url = f"mysql+pymysql://{os.environ.get('MYSQL_USER_NAME')}:{os.environ.get('MYSQL_PASSWORD')}@{os.environ.get('MYSQL_DATABASE_URL')}/{os.environ.get('MYSQL_DATABASE_NAME')}?charset=utf8mb4"  # 替换为动态值
+db_url = f"postgresql://{os.environ.get('POSTGRES_USER')}:{os.environ.get('POSTGRES_PASSWORD')}@{os.environ.get('POSTGRES_DB_URL')}/{os.environ.get('POSTGRES_DB')}"
 config.set_main_option('sqlalchemy.url', db_url)
 
 # Interpret the config file for Python logging.

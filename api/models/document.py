@@ -1,6 +1,5 @@
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
-from sqlalchemy.dialects.mysql import LONGTEXT
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text
 
 from common.sql import Base
 
@@ -78,7 +77,7 @@ class QuickNoteDocument(Base):
 
     id = Column(Integer, primary_key=True)
     document_id = Column(Integer, ForeignKey("document.id"), index=True)
-    content = Column(LONGTEXT(), nullable=False)
+    content = Column(Text(), nullable=False)
     delete_at = Column(DateTime(timezone=True))
     
 class WebsiteDocument(Base):
