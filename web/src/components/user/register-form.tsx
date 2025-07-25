@@ -53,6 +53,7 @@ export function RegisterForm() {
 		defaultValues: {
 			email: '',
 			password: '',
+			passwordAgain: '',
 		},
 	});
 
@@ -82,11 +83,11 @@ export function RegisterForm() {
 			return;
 		}
 		toast.success(t('seo_register_success'));
-		setSubmitting(false);
 		Cookies.set('access_token', res.access_token);
 		Cookies.set('refresh_token', res.refresh_token);
 		refreshUserInfo();
 		router.push('/dashboard');
+		setSubmitting(false);
 	};
 
 	const onError = (errors: any) => {
