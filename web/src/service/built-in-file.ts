@@ -1,14 +1,8 @@
 import { utils } from "@kinda/utils";
-import { getBuiltInSts } from "./file-system";
 import { getMyInfo } from "./user";
-import { S3Client } from "@aws-sdk/client-s3";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { getBuiltInPresignUploadURL } from "./file-system";
 
 export class BuiltInFileService implements FileServiceProtocol {
-
-    private client: S3Client | null = null;
-    private sts_config: any = null;
-    private file_system_config_json: any = null;
 
     public async initFileSystemConfig() {
         const [res_user, err_user] = await utils.to(getMyInfo());
@@ -18,30 +12,6 @@ export class BuiltInFileService implements FileServiceProtocol {
         if (!res_user.default_user_file_system) {
             throw new Error("You have not set the default file system");
         }
-        this.file_system_config_json = { "bucket": res_user.uuid }
-        const [res_sts, err_sts] = await utils.to(
-            getBuiltInSts()
-        );
-        if (err_sts || !res_sts) {
-            throw err_sts || new Error("get built in file system sts failed");
-        }
-        this.sts_config = res_sts;
-    }
-
-    private async initS3Client() {
-        await this.initFileSystemConfig();
-        const client = new S3Client({
-            region: this.sts_config.region || "main",
-            endpoint: this.sts_config.endpoint_url,
-            credentials: {
-                accessKeyId: this.sts_config.access_key_id,
-                secretAccessKey: this.sts_config.access_key_secret,
-                sessionToken: this.sts_config.security_token,
-            },
-            forcePathStyle: true, // MinIO 需要这个 因为minio的文件索引是路径方式而不是virtual方式
-            requestChecksumCalculation: "WHEN_REQUIRED"
-        });
-        this.client = client;
     }
 
     async getFileContent(file_path: string): Promise<string | Blob | ArrayBuffer> {
@@ -66,21 +36,35 @@ export class BuiltInFileService implements FileServiceProtocol {
     }
 
     async uploadFile(file_path: string, file: File, content_type?: string): Promise<any> {
-        if (!this.client) {
-            await this.initS3Client();
-        }
-        if (!this.client) throw new Error("OSS client not initialized");
-        if (!this.file_system_config_json.bucket) throw new Error("Bucket not initialized");
         const finalContentType = content_type || file.type || 'application/octet-stream';
-        const cmd = new PutObjectCommand({
-            Bucket: this.file_system_config_json.bucket,
-            Key: file_path,
-            Body: file,
-            ContentType: finalContentType,
-        });
-        const [_, err] = await utils.to(this.client.send(cmd));
-        if (err) {
-            throw new Error(`Upload failed ${err.message}`);
+        const [res_presign_url, err_presign_url] = await utils.to(getBuiltInPresignUploadURL({
+            file_path: file_path,
+            content_type: finalContentType
+        }));
+        if (err_presign_url || !res_presign_url) {
+            throw err_presign_url || new Error("get presign url failed");
         }
+        const { upload_url, fields } = res_presign_url;
+        const formData = new FormData();
+
+        // 将 fields 中所有键值填入 formData
+        Object.entries(fields).forEach(([key, value]) => {
+            formData.append(key, value);
+        });
+
+        // 最后 append 文件
+        formData.append('file', file);
+
+        const uploadRes = await fetch(upload_url, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (uploadRes.ok) {
+            console.log('Upload OK, status:', uploadRes.status);
+        } else {
+            throw new Error('Upload failed: ' + uploadRes.statusText);
+        }
+
     }
 }

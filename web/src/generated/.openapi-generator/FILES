@@ -24,7 +24,6 @@ models/AttachmentCreateResponse.ts
 models/AttachmentInfo.ts
 models/BaseSectionInfo.ts
 models/BindEmailVerifyRequest.ts
-models/BuiltInStsResponse.ts
 models/ChatItem.ts
 models/ChatMessages.ts
 models/CoverImage.ts
@@ -92,7 +91,6 @@ models/MCPServerSearchRequest.ts
 models/MCPServerSearchResponse.ts
 models/MCPServerUpdateRequest.ts
 models/Message.ts
-models/MigrateFileSystemRequest.ts
 models/MineEngineSearchResponse.ts
 models/MineFileSystemSearchResponse.ts
 models/Model.ts
@@ -128,6 +126,8 @@ models/NotificationTemplatesResponse.ts
 models/OssStsResponse.ts
 models/PaginationApiKeyInfo.ts
 models/PasswordUpdateRequest.ts
+models/PresignUploadURLRequest.ts
+models/PresignUploadURLResponse.ts
 models/PrivateUserInfo.ts
 models/ProvideEngineSearchResponse.ts
 models/ProvideFileSystemSearchResponse.ts

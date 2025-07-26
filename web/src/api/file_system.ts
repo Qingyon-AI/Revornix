@@ -8,7 +8,7 @@ export default {
     getFileSystemDetail: API_PREFIX + '/file-system/detail',
     getUserFileSystemDetail: API_PREFIX + '/file-system/user-file-system/detail',
     getAliyunOSSSTSToken: API_PREFIX + "/file-system/oss/sts",
-    getBuiltInSTSToken: API_PREFIX + "/file-system/built-in/sts",
+    getBuiltInPresignUploadURL: API_PREFIX + "/file-system/built-in/presign-upload-url",
     getUserFileUrlPrefix: API_PREFIX + "/file-system/url-prefix",
     deleteUserFileSystem: API_PREFIX + "/file-system/user-file-system/delete",
 }

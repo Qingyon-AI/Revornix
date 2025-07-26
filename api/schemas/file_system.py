@@ -1,6 +1,15 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
 
+class PresignUploadURLRequest(BaseModel):
+    file_path: str
+    content_type: str
+    
+class PresignUploadURLResponse(BaseModel):
+    upload_url: str
+    file_path: str
+    fields: dict
+
 class MigrateFileSystemRequest(BaseModel):
     source_user_file_system_id: int
     target_user_file_system_id: int
@@ -10,14 +19,6 @@ class FileUrlPrefixRequest(BaseModel):
 
 class FileUrlPrefixResponse(BaseModel):
     url_prefix: str
-
-class BuiltInStsResponse(BaseModel):
-    access_key_id: str
-    access_key_secret: str
-    security_token: str
-    expiration: str
-    endpoint_url: str
-    region: str
     
 class OssStsResponse(BaseModel):
     access_key_id: str

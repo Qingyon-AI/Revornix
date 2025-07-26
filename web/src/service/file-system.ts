@@ -1,6 +1,6 @@
 import { request } from '@/lib/request'
 import fileSystemApi from '@/api/file_system'
-import { BuiltInStsResponse, FileSystemInfo, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemInstallResponse, FileSystemSearchRequest, FileUrlPrefixRequest, FileUrlPrefixResponse, MineFileSystemSearchResponse, NormalResponse, OssStsResponse, ProvideFileSystemSearchResponse, UserFileSystemDeleteRequest, UserFileSystemInfo, UserFileSystemInfoRequest, UserFileSystemUpdateRequest } from '@/generated'
+import { FileSystemInfo, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemInstallResponse, FileSystemSearchRequest, FileUrlPrefixRequest, FileUrlPrefixResponse, MineFileSystemSearchResponse, NormalResponse, OssStsResponse, PresignUploadURLRequest, PresignUploadURLResponse, ProvideFileSystemSearchResponse, UserFileSystemDeleteRequest, UserFileSystemInfo, UserFileSystemInfoRequest, UserFileSystemUpdateRequest } from '@/generated'
 
 export const getProvideFileSystems = async (data: FileSystemSearchRequest): Promise<ProvideFileSystemSearchResponse> => {
     return await request(fileSystemApi.getProvideFileSystems, {
@@ -48,8 +48,10 @@ export const getAliyunOSSSts = async (): Promise<OssStsResponse> => {
     return await request(fileSystemApi.getAliyunOSSSTSToken)
 }
 
-export const getBuiltInSts = async (): Promise<BuiltInStsResponse> => {
-    return await request(fileSystemApi.getBuiltInSTSToken)
+export const getBuiltInPresignUploadURL = async (data: PresignUploadURLRequest): Promise<PresignUploadURLResponse> => {
+    return await request(fileSystemApi.getBuiltInPresignUploadURL, {
+        data
+    })
 }
 
 export const getUserFileUrlPrefix = async (data: FileUrlPrefixRequest): Promise<FileUrlPrefixResponse> => {

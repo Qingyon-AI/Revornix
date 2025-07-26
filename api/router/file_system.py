@@ -1,7 +1,6 @@
 import schemas
 import crud
 import json
-import os
 import boto3
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
@@ -10,50 +9,10 @@ from botocore.config import Config
 from common.dependencies import get_current_user, get_db
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
-from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
-from file.built_in_remote_file_service import BuiltInRemoteFileService
 from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL, FILE_SYSTEM_SERVER_PUBLIC_URL
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
 file_system_router = APIRouter()
-
-@file_system_router.post('/migrate', response_model=schemas.common.NormalResponse)
-async def migrate_file_system(migrate_file_system_request: schemas.file_system.MigrateFileSystemRequest,
-                              db: Session = Depends(get_db),
-                              current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_source_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                             user_file_system_id=migrate_file_system_request.source_user_file_system_id)
-    if db_source_user_file_system is None:
-        raise Exception('Source user file system not found')
-    db_target_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                             user_file_system_id=migrate_file_system_request.target_user_file_system_id)
-    if db_target_user_file_system is None:
-        raise Exception('Target user file system not found')
-    if db_source_user_file_system.file_system_id == db_target_user_file_system.file_system_id:
-        raise Exception('Source and target file system are the same')
-    source_remote_file_service = None
-    target_remote_file_service = None
-    if db_source_user_file_system.file_system_id == 1:
-        source_remote_file_service = BuiltInRemoteFileService()
-    elif db_source_user_file_system.file_system_id == 2:
-        source_remote_file_service = AliyunOSSRemoteFileService()
-    await source_remote_file_service.init_client_by_user_file_system_id(db=db, 
-                                                                        user_file_system_id=db_source_user_file_system.id)
-    if db_target_user_file_system.file_system_id == 1:
-        target_remote_file_service = BuiltInRemoteFileService()
-    elif db_target_user_file_system.file_system_id == 2:
-        target_remote_file_service = AliyunOSSRemoteFileService()
-    await target_remote_file_service.init_client_by_user_file_system_id(db=db,
-                                                                        user_file_system_id=db_target_user_file_system.id)
-    source_files = await source_remote_file_service.list_files()
-    for file in source_files:
-        print(file)
-        # TODO
-        # await target_remote_file_service.upload_file_to_path(file_path=,
-        #                                                      file=,)
-    return schemas.common.SuccessResponse()
-        
-    
 
 @file_system_router.post('/url-prefix', response_model=schemas.file_system.FileUrlPrefixResponse)
 async def get_url_prefix(file_url_prefix_request: schemas.file_system.FileUrlPrefixRequest,
@@ -62,9 +21,10 @@ async def get_url_prefix(file_url_prefix_request: schemas.file_system.FileUrlPre
     res = schemas.file_system.FileUrlPrefixResponse(url_prefix=url_prefix)
     return res
 
-@file_system_router.post('/built-in/sts', response_model=schemas.file_system.BuiltInStsResponse)
-async def get_built_in_sts(db: Session = Depends(get_db),
-                           current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+@file_system_router.post("/built-in/presign-upload-url", response_model=schemas.file_system.PresignUploadURLResponse)
+def get_presigned_url(presign_upload_url_request: schemas.file_system.PresignUploadURLRequest,
+                      db: Session = Depends(get_db),
+                      current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     sts = boto3.client(
         'sts',
         endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
@@ -78,16 +38,29 @@ async def get_built_in_sts(db: Session = Depends(get_db),
         RoleSessionName='upload-session',
         DurationSeconds=3600
     )
-    sts_role_session_token = resp.get('Credentials').get('SessionToken')
-    sts_role_access_key_id = resp.get('Credentials').get('AccessKeyId')
-    sts_role_access_key_secret = resp.get('Credentials').get('SecretAccessKey')
-    expiration = resp.get('Credentials').get('Expiration').isoformat()
-    return schemas.file_system.BuiltInStsResponse(access_key_id=sts_role_access_key_id,
-                                                  access_key_secret=sts_role_access_key_secret,
-                                                  security_token=sts_role_session_token,
-                                                  endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
-                                                  expiration=expiration,
-                                                  region="main")
+    creds = resp['Credentials']
+    s3 = boto3.client(
+        's3',
+        endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
+        aws_access_key_id=creds['AccessKeyId'],
+        aws_secret_access_key=creds['SecretAccessKey'],
+        aws_session_token=creds['SessionToken'],
+        config=Config(signature_version='s3v4'),
+        verify=False
+    )
+    response = s3.generate_presigned_post(
+        Bucket=current_user.uuid,
+        Key=presign_upload_url_request.file_path,
+        Fields={
+            "Content-Type": presign_upload_url_request.content_type
+        },
+        ExpiresIn=3600,
+    )
+    return schemas.file_system.PresignUploadURLResponse(
+        upload_url=response.get('url').replace(FILE_SYSTEM_SERVER_PRIVATE_URL, FILE_SYSTEM_SERVER_PUBLIC_URL),
+        file_path=presign_upload_url_request.file_path,
+        fields=response.get('fields')
+    )
 
 @file_system_router.post('/oss/sts', response_model=schemas.file_system.OssStsResponse)
 async def get_oss_sts(db: Session = Depends(get_db),
