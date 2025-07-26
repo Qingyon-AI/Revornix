@@ -196,6 +196,8 @@ async def create_user_by_email_verify(email_user_create_verify_request: schemas.
     BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
     db.commit()
     access_token, refresh_token = create_token(db_user)
+    if access_token is None or refresh_token is None:
+        raise CustomException(message='The token is not created.')
     res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
     return res
 
