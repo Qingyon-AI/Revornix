@@ -1,3 +1,4 @@
+import { AWSS3FileService } from "@/service/aws-s3-file";
 import { BuiltInFileService } from "@/service/built-in-file";
 import { OSSFileService } from "@/service/oss-file";
 
@@ -15,6 +16,8 @@ export class FileService {
             case 2:
                 this.client = new OSSFileService()
                 break;
+            case 3:
+                this.client = new AWSS3FileService()
             default:
                 break;
         }

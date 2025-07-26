@@ -20,7 +20,7 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
                          file_service_name_zh='阿里云OSS',
                          file_service_description='Aliyun OSS File System, Based on Aliyun official OSS, has strong stability and availability, but needs to be charged.',
                          file_service_description_zh='Aliyun OSS 文件系统，基于阿里云官方的OSS，具有极强的稳定性和可用性，但需要收费。',
-                         file_service_demo_config='{"role_arn":"","role_session_name":"","user_access_key_id":"","user_access_key_secret":"","region_id":"","oss_endpoint":"","bucket":"","url_prefix":""}',)
+                         file_service_demo_config='{"role_arn":"","user_access_key_id":"","user_access_key_secret":"","region_id":"","endpoint_url":"","bucket":"","url_prefix":""}')
     
     async def init_client_by_user_file_system_id(self, user_file_system_id: int):
         db = SessionLocal()
@@ -32,19 +32,19 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
         config_str = db_user_file_system.config_json
         self.file_service_config = config_str
         config = json.loads(config_str)
+        
         role_arn = config.get('role_arn')
-        role_session_name = config.get('role_session_name')
         user_access_key_id = config.get('user_access_key_id')
         user_access_key_secret = config.get('user_access_key_secret')
         region_id = config.get('region_id')
-        oss_endpoint = config.get('oss_endpoint')
+        endpoint_url = config.get('endpoint_url')
         self.bucket = config.get('bucket')
 
         client = AcsClient(user_access_key_id, user_access_key_secret, region_id)
         request = AssumeRoleRequest()
         request.set_accept_format('json')
         request.set_RoleArn(role_arn)
-        request.set_RoleSessionName(role_session_name)
+        request.set_RoleSessionName('oss-session')
 
         response = client.do_action_with_exception(request)
         result = json.loads(response)
@@ -57,7 +57,7 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
             aws_access_key_id=sts_role_access_key_id,
             aws_secret_access_key=sts_role_access_key_secret,
             aws_session_token=sts_role_session_token,
-            endpoint_url=oss_endpoint,
+            endpoint_url=endpoint_url,
             config=Config(s3={"addressing_style": "virtual"},
                           signature_version='v4'))
         self.oss_client = s3

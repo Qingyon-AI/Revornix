@@ -13,6 +13,7 @@ from engine.markitdown import MarkitdownEngine
 from engine.mineru import MineruEngine
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
+from file.aws_s3_remote_file_service import AWSS3RemoteFileService
 
 alembic_cfg_path = BASE_DIR / 'alembic.ini'
 
@@ -64,6 +65,7 @@ if __name__ == '__main__':
                                                              demo_config=markitdown_engine.engine_demo_config)
             built_in_remote_file_service = BuiltInRemoteFileService()
             aliyun_oss_remote_file_service = AliyunOSSRemoteFileService()
+            aws_s3_remote_file_service = AWSS3RemoteFileService()
             db_built_in_remote_file_service = crud.file_system.create_file_system(db=db,
                                                                                   uuid=built_in_remote_file_service.file_service_uuid,
                                                                                   name=built_in_remote_file_service.file_service_name,
@@ -78,8 +80,16 @@ if __name__ == '__main__':
                                                                                     description=aliyun_oss_remote_file_service.file_service_description,
                                                                                     description_zh=aliyun_oss_remote_file_service.file_service_description_zh,
                                                                                     demo_config=aliyun_oss_remote_file_service.file_service_demo_config)
+            db_aws_s3_remote_file_service = crud.file_system.create_file_system(db=db,
+                                                                                uuid=aws_s3_remote_file_service.file_service_uuid,
+                                                                                name=aws_s3_remote_file_service.file_service_name,
+                                                                                name_zh=aws_s3_remote_file_service.file_service_name_zh,
+                                                                                description=aws_s3_remote_file_service.file_service_description,
+                                                                                description_zh=aws_s3_remote_file_service.file_service_description_zh,
+                                                                                demo_config=aws_s3_remote_file_service.file_service_demo_config)
             db.commit()
         except Exception as e:
             print(f"数据库初始化失败: {e}")
             command.downgrade(config=alembic_cfg, revision='head')
             db.rollback()
+            

@@ -50,6 +50,12 @@ export const getAliyunOSSPresignUploadURL = async (data: AliyunOSSPresignUploadU
     })
 }
 
+export const getAWSS3PresignUploadURL = async (data: S3PresignUploadURLRequest): Promise<S3PresignUploadURLResponse> => {
+    return await request(fileSystemApi.getAWSS3PresignUploadURL, {
+        data
+    })
+}
+
 export const getBuiltInPresignUploadURL = async (data: S3PresignUploadURLRequest): Promise<S3PresignUploadURLResponse> => {
     return await request(fileSystemApi.getBuiltInPresignUploadURL, {
         data

@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 load_dotenv(override=True)
-import os
 import boto3
 import crud
 import json

@@ -1,6 +1,5 @@
 import crud
 import json
-import os
 from typing import Protocol
 from common.sql import SessionLocal
 from config.file_system import FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_SERVER_PRIVATE_URL
@@ -41,6 +40,12 @@ class RemoteFileServiceProtocol(Protocol):
         if db_file_system.id == 1:
             return f'{FILE_SYSTEM_SERVER_PUBLIC_URL if not private else FILE_SYSTEM_SERVER_PRIVATE_URL}/{db_user.uuid}'
         elif db_file_system.id == 2:
+            config_str = db_user_file_system.config_json
+            if config_str is None:
+                raise Exception("User file system config is None")
+            config = json.loads(config_str)
+            return f'{config.get("url_prefix")}'
+        elif db_file_system.id == 3:
             config_str = db_user_file_system.config_json
             if config_str is None:
                 raise Exception("User file system config is None")

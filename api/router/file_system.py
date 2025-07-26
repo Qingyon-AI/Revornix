@@ -67,6 +67,74 @@ def get_built_in_presigned_url(s3_presign_upload_url_request: schemas.file_syste
         expiration=expiration
     )
 
+@file_system_router.post("/aws-s3/presign-upload-url", response_model=schemas.file_system.S3PresignUploadURLResponse)
+def get_aws_s3_presigned_url(s3_presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
+                             db: Session = Depends(get_db),
+                             current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                      user_file_system_id=current_user.default_user_file_system)
+    if db_user_file_system is None:
+        raise Exception("User file system not found")
+    
+    config_str = db_user_file_system.config_json
+    
+    if config_str is None:
+        raise Exception("User file system config is empty")
+    
+    config = json.loads(config_str)
+    
+    role_arn = config.get('role_arn')
+    user_access_key_id = config.get('user_access_key_id')
+    user_access_key_secret = config.get('user_access_key_secret')
+    region_name = config.get('region_id')
+    endpoint_url = config.get('endpoint_url')
+    bucket = config.get('bucket')
+    
+    sts = boto3.client(
+        'sts',
+        endpoint_url=endpoint_url,
+        aws_access_key_id=user_access_key_id,
+        aws_secret_access_key=user_access_key_secret,
+        config=Config(signature_version='s3v4'),
+        region_name=region_name
+    )
+    resp = sts.assume_role(
+        RoleArn=role_arn,
+        RoleSessionName='s3-session',
+        DurationSeconds=3600
+    )
+    creds = resp['Credentials']
+    s3 = boto3.client(
+        's3',
+        endpoint_url=endpoint_url,
+        aws_access_key_id=creds['AccessKeyId'],
+        aws_secret_access_key=creds['SecretAccessKey'],
+        aws_session_token=creds['SessionToken'],
+        config=Config(signature_version='s3v4')
+    )
+    expires_in = 3600
+    now = datetime.now(timezone.utc)
+    expiration = now + timedelta(seconds=expires_in)
+    response = s3.generate_presigned_post(
+        Bucket=bucket,
+        Key=s3_presign_upload_url_request.file_path,
+        Fields={
+            "Content-Type": s3_presign_upload_url_request.content_type
+        },
+        Conditions=[
+            {"Content-Type": s3_presign_upload_url_request.content_type},
+            {"bucket": bucket},
+            ["eq", "$key", s3_presign_upload_url_request.file_path]
+        ],
+        ExpiresIn=expires_in,
+    )
+    return schemas.file_system.S3PresignUploadURLResponse(
+        upload_url=response.get('url'),
+        file_path=s3_presign_upload_url_request.file_path,
+        fields=response.get('fields'),
+        expiration=expiration
+    )
+
 @file_system_router.post('/aliyun-oss/presign-upload-url', response_model=schemas.file_system.AliyunOSSPresignUploadURLResponse)
 def get_aliyun_oss_presigned_url(presign_upload_url_request: schemas.file_system.AliyunOSSPresignUploadURLRequest,
                                  db: Session = Depends(get_db),
