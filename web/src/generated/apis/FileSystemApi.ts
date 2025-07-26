@@ -15,6 +15,8 @@
 
 import * as runtime from '../runtime';
 import type {
+  AliyunOSSPresignUploadURLRequest,
+  AliyunOSSPresignUploadURLResponse,
   FileSystemInfo,
   FileSystemInfoRequest,
   FileSystemInstallRequest,
@@ -25,16 +27,19 @@ import type {
   HTTPValidationError,
   MineFileSystemSearchResponse,
   NormalResponse,
-  OssStsResponse,
-  PresignUploadURLRequest,
-  PresignUploadURLResponse,
   ProvideFileSystemSearchResponse,
+  S3PresignUploadURLRequest,
+  S3PresignUploadURLResponse,
   UserFileSystemDeleteRequest,
   UserFileSystemInfo,
   UserFileSystemInfoRequest,
   UserFileSystemUpdateRequest,
 } from '../models/index';
 import {
+    AliyunOSSPresignUploadURLRequestFromJSON,
+    AliyunOSSPresignUploadURLRequestToJSON,
+    AliyunOSSPresignUploadURLResponseFromJSON,
+    AliyunOSSPresignUploadURLResponseToJSON,
     FileSystemInfoFromJSON,
     FileSystemInfoToJSON,
     FileSystemInfoRequestFromJSON,
@@ -55,14 +60,12 @@ import {
     MineFileSystemSearchResponseToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
-    OssStsResponseFromJSON,
-    OssStsResponseToJSON,
-    PresignUploadURLRequestFromJSON,
-    PresignUploadURLRequestToJSON,
-    PresignUploadURLResponseFromJSON,
-    PresignUploadURLResponseToJSON,
     ProvideFileSystemSearchResponseFromJSON,
     ProvideFileSystemSearchResponseToJSON,
+    S3PresignUploadURLRequestFromJSON,
+    S3PresignUploadURLRequestToJSON,
+    S3PresignUploadURLResponseFromJSON,
+    S3PresignUploadURLResponseToJSON,
     UserFileSystemDeleteRequestFromJSON,
     UserFileSystemDeleteRequestToJSON,
     UserFileSystemInfoFromJSON,
@@ -79,6 +82,18 @@ export interface DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest {
+    aliyunOSSPresignUploadURLRequest: AliyunOSSPresignUploadURLRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GetBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPostRequest {
+    s3PresignUploadURLRequest: S3PresignUploadURLRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface GetFileSystemInfoFileSystemDetailPostRequest {
     fileSystemInfoRequest: FileSystemInfoRequest;
     authorization?: string | null;
@@ -87,17 +102,6 @@ export interface GetFileSystemInfoFileSystemDetailPostRequest {
 
 export interface GetFileSystemInfoFileSystemUserFileSystemDetailPostRequest {
     userFileSystemInfoRequest: UserFileSystemInfoRequest;
-    authorization?: string | null;
-    xForwardedFor?: string | null;
-}
-
-export interface GetOssStsFileSystemOssStsPostRequest {
-    authorization?: string | null;
-    xForwardedFor?: string | null;
-}
-
-export interface GetPresignedUrlFileSystemBuiltInPresignUploadUrlPostRequest {
-    presignUploadURLRequest: PresignUploadURLRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -179,6 +183,100 @@ export class FileSystemApi extends runtime.BaseAPI {
      */
     async deleteUserFileSystemFileSystemUserFileSystemDeletePost(requestParameters: DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.deleteUserFileSystemFileSystemUserFileSystemDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Aliyun Oss Presigned Url
+     */
+    async getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRaw(requestParameters: GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AliyunOSSPresignUploadURLResponse>> {
+        if (requestParameters['aliyunOSSPresignUploadURLRequest'] == null) {
+            throw new runtime.RequiredError(
+                'aliyunOSSPresignUploadURLRequest',
+                'Required parameter "aliyunOSSPresignUploadURLRequest" was null or undefined when calling getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/file-system/aliyun-oss/presign-upload-url`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AliyunOSSPresignUploadURLRequestToJSON(requestParameters['aliyunOSSPresignUploadURLRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AliyunOSSPresignUploadURLResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Aliyun Oss Presigned Url
+     */
+    async getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost(requestParameters: GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AliyunOSSPresignUploadURLResponse> {
+        const response = await this.getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Built In Presigned Url
+     */
+    async getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPostRaw(requestParameters: GetBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<S3PresignUploadURLResponse>> {
+        if (requestParameters['s3PresignUploadURLRequest'] == null) {
+            throw new runtime.RequiredError(
+                's3PresignUploadURLRequest',
+                'Required parameter "s3PresignUploadURLRequest" was null or undefined when calling getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/file-system/built-in/presign-upload-url`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: S3PresignUploadURLRequestToJSON(requestParameters['s3PresignUploadURLRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => S3PresignUploadURLResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Built In Presigned Url
+     */
+    async getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPost(requestParameters: GetBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<S3PresignUploadURLResponse> {
+        const response = await this.getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -273,90 +371,6 @@ export class FileSystemApi extends runtime.BaseAPI {
      */
     async getFileSystemInfoFileSystemUserFileSystemDetailPost(requestParameters: GetFileSystemInfoFileSystemUserFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserFileSystemInfo> {
         const response = await this.getFileSystemInfoFileSystemUserFileSystemDetailPostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Get Oss Sts
-     */
-    async getOssStsFileSystemOssStsPostRaw(requestParameters: GetOssStsFileSystemOssStsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OssStsResponse>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
-
-        let urlPath = `/file-system/oss/sts`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => OssStsResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Get Oss Sts
-     */
-    async getOssStsFileSystemOssStsPost(requestParameters: GetOssStsFileSystemOssStsPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OssStsResponse> {
-        const response = await this.getOssStsFileSystemOssStsPostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Get Presigned Url
-     */
-    async getPresignedUrlFileSystemBuiltInPresignUploadUrlPostRaw(requestParameters: GetPresignedUrlFileSystemBuiltInPresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PresignUploadURLResponse>> {
-        if (requestParameters['presignUploadURLRequest'] == null) {
-            throw new runtime.RequiredError(
-                'presignUploadURLRequest',
-                'Required parameter "presignUploadURLRequest" was null or undefined when calling getPresignedUrlFileSystemBuiltInPresignUploadUrlPost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
-
-        let urlPath = `/file-system/built-in/presign-upload-url`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: PresignUploadURLRequestToJSON(requestParameters['presignUploadURLRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => PresignUploadURLResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Get Presigned Url
-     */
-    async getPresignedUrlFileSystemBuiltInPresignUploadUrlPost(requestParameters: GetPresignedUrlFileSystemBuiltInPresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PresignUploadURLResponse> {
-        const response = await this.getPresignedUrlFileSystemBuiltInPresignUploadUrlPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

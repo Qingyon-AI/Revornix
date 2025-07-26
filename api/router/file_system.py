@@ -2,7 +2,8 @@ import schemas
 import crud
 import json
 import boto3
-from datetime import datetime, timezone
+import alibabacloud_oss_v2 as oss
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from botocore.config import Config
@@ -21,10 +22,10 @@ async def get_url_prefix(file_url_prefix_request: schemas.file_system.FileUrlPre
     res = schemas.file_system.FileUrlPrefixResponse(url_prefix=url_prefix)
     return res
 
-@file_system_router.post("/built-in/presign-upload-url", response_model=schemas.file_system.PresignUploadURLResponse)
-def get_presigned_url(presign_upload_url_request: schemas.file_system.PresignUploadURLRequest,
-                      db: Session = Depends(get_db),
-                      current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+@file_system_router.post("/built-in/presign-upload-url", response_model=schemas.file_system.S3PresignUploadURLResponse)
+def get_built_in_presigned_url(s3_presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
+                               db: Session = Depends(get_db),
+                               current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     sts = boto3.client(
         'sts',
         endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
@@ -48,23 +49,28 @@ def get_presigned_url(presign_upload_url_request: schemas.file_system.PresignUpl
         config=Config(signature_version='s3v4'),
         verify=False
     )
+    expires_in = 3600
+    now = datetime.now(timezone.utc)
+    expiration = now + timedelta(seconds=expires_in)
     response = s3.generate_presigned_post(
         Bucket=current_user.uuid,
-        Key=presign_upload_url_request.file_path,
+        Key=s3_presign_upload_url_request.file_path,
         Fields={
-            "Content-Type": presign_upload_url_request.content_type
+            "Content-Type": s3_presign_upload_url_request.content_type
         },
-        ExpiresIn=3600,
+        ExpiresIn=expires_in,
     )
-    return schemas.file_system.PresignUploadURLResponse(
+    return schemas.file_system.S3PresignUploadURLResponse(
         upload_url=response.get('url').replace(FILE_SYSTEM_SERVER_PRIVATE_URL, FILE_SYSTEM_SERVER_PUBLIC_URL),
-        file_path=presign_upload_url_request.file_path,
-        fields=response.get('fields')
+        file_path=s3_presign_upload_url_request.file_path,
+        fields=response.get('fields'),
+        expiration=expiration
     )
 
-@file_system_router.post('/oss/sts', response_model=schemas.file_system.OssStsResponse)
-async def get_oss_sts(db: Session = Depends(get_db),
-                      current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+@file_system_router.post('/aliyun-oss/presign-upload-url', response_model=schemas.file_system.AliyunOSSPresignUploadURLResponse)
+def get_aliyun_oss_presigned_url(presign_upload_url_request: schemas.file_system.AliyunOSSPresignUploadURLRequest,
+                                 db: Session = Depends(get_db),
+                                 current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
                                                                       user_file_system_id=current_user.default_user_file_system)
     if db_user_file_system is None:
@@ -76,31 +82,63 @@ async def get_oss_sts(db: Session = Depends(get_db),
         raise Exception("User file system config is empty")
     
     config = json.loads(config_str)
+    
     role_arn = config.get('role_arn')
     role_session_name = config.get('role_session_name')
     user_access_key_id = config.get('user_access_key_id')
     user_access_key_secret = config.get('user_access_key_secret')
     region_id = config.get('region_id')
+    bucket = config.get('bucket')
     
     client = AcsClient(user_access_key_id, user_access_key_secret, region_id)
     request = AssumeRoleRequest()
     request.set_accept_format('json')
     request.set_RoleArn(role_arn)
     request.set_RoleSessionName(role_session_name)
-
     response = client.do_action_with_exception(request)
     result = json.loads(response)
-    sts_role_session_token = result.get('Credentials').get('SecurityToken')
+    
     sts_role_access_key_id = result.get('Credentials').get('AccessKeyId')
     sts_role_access_key_secret = result.get('Credentials').get('AccessKeySecret')
-    expiration = result.get('Credentials').get('Expiration')
-    endpoint_url = config.get('oss_endpoint')
-    return schemas.file_system.OssStsResponse(access_key_id=sts_role_access_key_id,
-                                              access_key_secret=sts_role_access_key_secret,
-                                              security_token=sts_role_session_token,
-                                              endpoint_url=endpoint_url,
-                                              expiration=expiration,
-                                              region=region_id)
+    sts_role_session_token = result.get('Credentials').get('SecurityToken')
+
+    # 创建静态凭证提供者，显式设置临时访问密钥AccessKey ID和AccessKey Secret，以及STS安全令牌
+    credentials_provider = oss.credentials.StaticCredentialsProvider(
+        access_key_id=sts_role_access_key_id,
+        access_key_secret=sts_role_access_key_secret,
+        security_token=sts_role_session_token,
+    )
+
+    # 加载SDK的默认配置，并设置凭证提供者
+    cfg = oss.config.load_default()
+    cfg.credentials_provider = credentials_provider
+
+    # 填写Bucket所在地域。以华东1（杭州）为例，Region填写为cn-hangzhou
+    cfg.region = region_id
+
+    # 使用配置好的信息创建OSS客户端
+    client = oss.Client(cfg)
+    # 发送请求以生成指定对象的预签名PUT请求
+    
+    put_object_request = oss.PutObjectRequest(
+        bucket=bucket,
+        key=presign_upload_url_request.file_path
+    )
+    
+    if presign_upload_url_request.content_type is not None:
+        put_object_request.content_type = presign_upload_url_request.content_type
+    
+    expires_in = 3600
+    
+    pre_result = client.presign(
+        request=put_object_request,
+        expires=timedelta(seconds=expires_in)
+    )
+    
+    return schemas.file_system.AliyunOSSPresignUploadURLResponse(file_path=presign_upload_url_request.file_path,
+                                                                 upload_url=pre_result.url,
+                                                                 expiration=pre_result.expiration,
+                                                                 fields=pre_result.signed_headers)
 
 @file_system_router.post('/detail', response_model=schemas.file_system.FileSystemInfo)
 async def get_file_system_info(file_system_info_request: schemas.file_system.FileSystemInfoRequest,

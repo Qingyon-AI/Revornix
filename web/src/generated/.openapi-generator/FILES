@@ -14,6 +14,8 @@ index.ts
 models/AddNotificationSourceRequest.ts
 models/AddNotificationTargetRequest.ts
 models/AddNotificationTaskRequest.ts
+models/AliyunOSSPresignUploadURLRequest.ts
+models/AliyunOSSPresignUploadURLResponse.ts
 models/AllMySectionsResponse.ts
 models/ApiKeyCreateRequest.ts
 models/ApiKeyCreateResponse.ts
@@ -123,11 +125,8 @@ models/NotificationTaskDetailRequest.ts
 models/NotificationTaskResponse.ts
 models/NotificationTemplate.ts
 models/NotificationTemplatesResponse.ts
-models/OssStsResponse.ts
 models/PaginationApiKeyInfo.ts
 models/PasswordUpdateRequest.ts
-models/PresignUploadURLRequest.ts
-models/PresignUploadURLResponse.ts
 models/PrivateUserInfo.ts
 models/ProvideEngineSearchResponse.ts
 models/ProvideFileSystemSearchResponse.ts
@@ -135,6 +134,8 @@ models/QuickNoteDocumentInfo.ts
 models/ReadNotificationRecordRequest.ts
 models/ReadRequest.ts
 models/ReferenceItem.ts
+models/S3PresignUploadURLRequest.ts
+models/S3PresignUploadURLResponse.ts
 models/SearchAllMyDocumentsRequest.ts
 models/SearchApiKeysRequest.ts
 models/SearchDocumentNoteRequest.ts

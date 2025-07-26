@@ -60,9 +60,7 @@ export class BuiltInFileService implements FileServiceProtocol {
             body: formData
         });
 
-        if (uploadRes.ok) {
-            console.log('Upload OK, status:', uploadRes.status);
-        } else {
+        if (!uploadRes.ok) {
             throw new Error('Upload failed: ' + uploadRes.statusText);
         }
 

@@ -1,5 +1,5 @@
 import { utils } from "@kinda/utils";
-import { getAliyunOSSSts, getUserFileSystemDetail } from "./file-system";
+import { getAliyunOSSPresignUploadURL, getUserFileSystemDetail } from "./file-system";
 import { getMyInfo } from "./user";
 import OSS from 'ali-oss';
 
@@ -17,47 +17,6 @@ export class OSSFileService implements FileServiceProtocol {
         if (!res_user.default_user_file_system) {
             throw new Error("You have not set the default file system");
         }
-        const [res_sts, err_sts] = await utils.to(
-            getAliyunOSSSts()
-        );
-        if (err_sts || !res_sts) {
-            throw err_sts || new Error("get aliyun oss sts failed");
-        }
-        this.sts_config = res_sts;
-        const [res_oss_file_system_config, err_oss_file_system_config] = await utils.to(
-            getUserFileSystemDetail({
-                user_file_system_id: res_user.default_user_file_system
-            })
-        )
-        if (err_oss_file_system_config || !res_oss_file_system_config) {
-            throw err_oss_file_system_config || new Error("get oss file system config failed");
-        }
-        if (!res_oss_file_system_config.config_json) {
-            throw new Error("You have not set the config json for the oss file system");
-        }
-        const config_json = JSON.parse(res_oss_file_system_config.config_json);
-        this.file_system_config_json = config_json;
-    }
-
-    private async initOSSClient() {
-        await this.initFileSystemConfig();
-        const client = new OSS({
-            region: `oss-${this.file_system_config_json.region_id}`,
-            accessKeyId: this.sts_config.access_key_id,
-            accessKeySecret: this.sts_config.access_key_secret,
-            stsToken: this.sts_config.security_token,
-            refreshSTSToken: async () => {
-                const resp = await getAliyunOSSSts();
-                return {
-                    accessKeyId: resp.access_key_id,
-                    accessKeySecret: resp.access_key_secret,
-                    stsToken: resp.security_token
-                };
-            },
-            refreshSTSTokenInterval: 300000,
-            bucket: this.file_system_config_json.bucket
-        });
-        this.client = client;
     }
 
     async getFileContent(file_path: string): Promise<string | Blob | ArrayBuffer> {
@@ -82,20 +41,31 @@ export class OSSFileService implements FileServiceProtocol {
     }
 
     async uploadFile(file_path: string, file: File, content_type?: string): Promise<any> {
-        if (!this.client) {
-            await this.initOSSClient();
-        }
-        if (!this.client) throw new Error("OSS client not initialized");
         const finalContentType = content_type || file.type || 'application/octet-stream';
-        const [_, err] = await utils.to(
-            this.client.put(file_path, file, {
-                headers: {
-                    'Content-Type': finalContentType
-                }
-            })
-        );
-        if (err) {
-            throw new Error(`Upload failed: ${err.message}`);
+        const [res_presign_url, err_presign_url] = await utils.to(getAliyunOSSPresignUploadURL({
+            file_path: file_path,
+            content_type: finalContentType
+        }));
+        if (err_presign_url || !res_presign_url) {
+            throw err_presign_url || new Error("get presign url failed");
+        }
+        const { upload_url, fields } = res_presign_url;
+
+        let init: RequestInit = {
+            method: 'PUT',
+            body: file
+        }
+
+        if (content_type) {
+            init.headers = {
+                "Content-Type": content_type
+            };
+        }
+
+        const response = await fetch(upload_url, init);
+
+        if (!response.ok) {
+            throw new Error('Upload failed: ' + response.statusText);
         }
     }
 }

@@ -7,7 +7,7 @@ export default {
     updateFileSystem: API_PREFIX + '/file-system/update',
     getFileSystemDetail: API_PREFIX + '/file-system/detail',
     getUserFileSystemDetail: API_PREFIX + '/file-system/user-file-system/detail',
-    getAliyunOSSSTSToken: API_PREFIX + "/file-system/oss/sts",
+    getAliyunOSSPresignUploadURL: API_PREFIX + "/file-system/aliyun-oss/presign-upload-url",
     getBuiltInPresignUploadURL: API_PREFIX + "/file-system/built-in/presign-upload-url",
     getUserFileUrlPrefix: API_PREFIX + "/file-system/url-prefix",
     deleteUserFileSystem: API_PREFIX + "/file-system/user-file-system/delete",

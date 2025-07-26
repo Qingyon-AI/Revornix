@@ -13,3 +13,4 @@ pymilvus[model]==2.5.12
 chonkie==1.1.0
 torch==2.7.0
 psycopg2-binary==2.9.10
+alibabacloud-oss-v2==1.1.2
