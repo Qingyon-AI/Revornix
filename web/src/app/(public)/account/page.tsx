@@ -10,12 +10,13 @@ import DeleteUserButton from '@/components/user/delete-user-button';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import UserUUID from '@/components/user/uuid';
 
 const AccountPage = async () => {
 	const t = await getTranslations();
 	return (
 		<div className='px-5 pb-5'>
-			<Card>
+			<Card className='mb-5'>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
@@ -54,7 +55,7 @@ const AccountPage = async () => {
 					</div>
 				</CardContent>
 			</Card>
-			<Card className='mt-5'>
+			<Card className='mb-5'>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
@@ -81,7 +82,7 @@ const AccountPage = async () => {
 					</div>
 				</CardContent>
 			</Card>
-			<Card className='mt-5'>
+			<Card className='mb-5'>
 				<CardContent className='space-y-5'>
 					<div className='flex justify-between items-center'>
 						<Label className='flex flex-col gap-2 items-start'>
@@ -100,8 +101,11 @@ const AccountPage = async () => {
 					</div>
 				</CardContent>
 			</Card>
-			<div className='mt-5'>
+			<div className='mb-5'>
 				<DeleteUserButton />
+			</div>
+			<div className='mb-5'>
+				<UserUUID />
 			</div>
 		</div>
 	);
