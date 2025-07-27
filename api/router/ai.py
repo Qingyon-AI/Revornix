@@ -351,6 +351,8 @@ async def stream_ops_stream(user_id: int, ai_client: OpenAI, model: str, query: 
     except Exception as e:
         logger.exception(f"Unexpected error in stream_ops_stream: {e}")
         yield ResponseItem(status="Error", content=str(e)).model_dump_json()
+    finally:
+        db.close()
 
 @ai_router.post("/ask")
 async def ask_ai(chat_messages: schemas.ai.ChatMessages, 

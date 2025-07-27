@@ -26,37 +26,44 @@ class RemoteFileServiceProtocol(Protocol):
     @staticmethod
     def get_user_file_system_url_prefix(user_id: int, private: bool | None = False) -> str:
         db = SessionLocal()
-        db_user = crud.user.get_user_by_id(db=db, 
-                                           user_id=user_id)
-        db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                          user_file_system_id=db_user.default_user_file_system)
-        if db_user_file_system is None:
-            raise Exception("User file system is None")
-        db_file_system = crud.file_system.get_file_system_by_id(db=db,
-                                                                file_system_id=db_user_file_system.file_system_id)
-        
-        if db_file_system is None:
-            raise Exception("File system is None")
-        if db_file_system.id == 1:
-            return f'{FILE_SYSTEM_SERVER_PUBLIC_URL if not private else FILE_SYSTEM_SERVER_PRIVATE_URL}/{db_user.uuid}'
-        elif db_file_system.id == 2:
-            config_str = db_user_file_system.config_json
-            if config_str is None:
-                raise Exception("User file system config is None")
-            config = json.loads(config_str)
-            return f'{config.get("url_prefix")}'
-        elif db_file_system.id == 3:
-            config_str = db_user_file_system.config_json
-            if config_str is None:
-                raise Exception("User file system config is None")
-            config = json.loads(config_str)
-            return f'{config.get("url_prefix")}'
-        elif db_file_system.id == 4:
-            config_str = db_user_file_system.config_json
-            if config_str is None:
-                raise Exception("User file system config is None")
-            config = json.loads(config_str)
-            return f'{config.get("url_prefix")}'
+        try:
+            db_user = crud.user.get_user_by_id(db=db, 
+                                            user_id=user_id)
+            db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                            user_file_system_id=db_user.default_user_file_system)
+            if db_user_file_system is None:
+                raise Exception("User file system is None")
+            db_file_system = crud.file_system.get_file_system_by_id(db=db,
+                                                                    file_system_id=db_user_file_system.file_system_id)
+            
+            if db_file_system is None:
+                raise Exception("File system is None")
+            if db_file_system.id == 1:
+                return f'{FILE_SYSTEM_SERVER_PUBLIC_URL if not private else FILE_SYSTEM_SERVER_PRIVATE_URL}/{db_user.uuid}'
+            elif db_file_system.id == 2:
+                config_str = db_user_file_system.config_json
+                if config_str is None:
+                    raise Exception("User file system config is None")
+                config = json.loads(config_str)
+                return f'{config.get("url_prefix")}'
+            elif db_file_system.id == 3:
+                config_str = db_user_file_system.config_json
+                if config_str is None:
+                    raise Exception("User file system config is None")
+                config = json.loads(config_str)
+                return f'{config.get("url_prefix")}'
+            elif db_file_system.id == 4:
+                config_str = db_user_file_system.config_json
+                if config_str is None:
+                    raise Exception("User file system config is None")
+                config = json.loads(config_str)
+                return f'{config.get("url_prefix")}'
+            else:
+                raise Exception("File system didn't set url_prefix")
+        except Exception as e:
+            raise e
+        finally:
+            db.close()
         
     async def init_client_by_user_file_system_id(self, user_file_system_id: int) -> None:
         raise NotImplementedError("Method not implemented")

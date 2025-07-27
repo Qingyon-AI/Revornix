@@ -42,6 +42,7 @@ def summary_section(user_id: int, model_id: int, markdown_content: str):
     )
     content = json.loads(completion.choices[0].message.content)
     summary = content.get('summary')
+    db.close()
     return {
         "summary": summary
     }
@@ -87,6 +88,7 @@ def summary_section_with_origin(user_id: int, model_id: int, origin_section_mark
     )
     content = json.loads(completion.choices[0].message.content)
     summary = content.get('summary')
+    db.close()
     return {
         "summary": summary
     }
@@ -131,6 +133,7 @@ def summary_document(user_id: int, model_id: int, markdown_content: str):
     title = content.get('title')
     description = content.get('description')
     summary = content.get('summary')
+    db.close()
     return {
         "title": title,
         "description": description,

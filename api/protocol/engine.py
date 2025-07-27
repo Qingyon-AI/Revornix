@@ -102,6 +102,7 @@ class EngineProtocol(Protocol):
         if db_engine.uuid != self.get_engine_uuid():
             raise Exception('Engine uuid not match')
         self.engine_config = db_user_engine.config_json
+        db.close()
     
     async def analyse_website(self, url: str) -> WebsiteInfo:
         raise NotImplementedError("Method not implemented")

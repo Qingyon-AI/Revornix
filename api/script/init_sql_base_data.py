@@ -101,4 +101,6 @@ if __name__ == '__main__':
             print(f"数据库初始化失败: {e}")
             command.downgrade(config=alembic_cfg, revision='head')
             db.rollback()
+        finally:
+            db.close()
             

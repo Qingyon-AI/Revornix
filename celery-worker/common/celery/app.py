@@ -112,6 +112,8 @@ async def handle_init_file_document_info(document_id: int,
         db_document.description = f'Document Convert Error: {e}'
         db.commit()
         raise e
+    finally:
+        db.close()
 
 async def handle_init_website_document_info(document_id: int, 
                                             user_id: int):
@@ -189,6 +191,8 @@ async def handle_init_website_document_info(document_id: int,
         db_document.description = f'Document Convert Error: {e}'
         db.commit()
         raise e
+    finally:
+        db.close()
 
 async def handle_add_embedding(document_id: int, 
                                user_id: int):
@@ -206,6 +210,8 @@ async def handle_add_embedding(document_id: int,
     except Exception as e:
         exception_logger.error(f"Something is error while embedding the document and write into the milvus cloud: {e}")
         log_exception()
+    finally:
+        db.close()
 
 async def handle_update_sections(sections: list[int], 
                                  document_id: int, 
@@ -284,6 +290,8 @@ async def handle_update_sections(sections: list[int],
         log_exception()
         db.rollback()
         raise e
+    finally:
+        db.close()
         
 async def get_markdown_content_by_document_id(document_id: int, user_id: int):
     db = SessionLocal()
@@ -316,7 +324,10 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
         exception_logger.error(f"Something is error while getting the markdown content: {e}")
         log_exception()
         raise e
+    finally:
+        db.close()
     return markdown_content
+
         
 async def handle_update_ai_summary(document_id: int, 
                                    user_id: int):
@@ -340,6 +351,8 @@ async def handle_update_ai_summary(document_id: int,
         exception_logger.error(f"Something is error while updating the ai summary: {e}")
         log_exception()
         db.rollback()
+    finally:
+        db.close()
 
 async def handle_update_section_use_document(section_id: int,
                                              document_id: int,
@@ -406,7 +419,9 @@ async def handle_update_section_use_document(section_id: int,
                                                                             section_id=db_section.id,
                                                                             status=3)
         raise e
-
+    finally:
+        db.close()
+        
 @celery_app.task
 def init_website_document_info(document_id: int, 
                                user_id: int):

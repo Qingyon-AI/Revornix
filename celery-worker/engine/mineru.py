@@ -49,8 +49,7 @@ class MineruEngine(EngineProtocol):
                     await remote_file_service.upload_file_to_path(file_path=f'images/{item}', 
                                                                   file=f, 
                                                                   content_type='image/png')
-            # replace the url of the images in the markdown (if needed)
-            # content = content.replace('', '')
+            db.close()
         # 3. analyse the base info of the website
         soup = BeautifulSoup(html_content, 'html.parser')
         og_title_meta = soup.find('meta', property='og:title')
@@ -101,6 +100,7 @@ class MineruEngine(EngineProtocol):
                     await remote_file_service.upload_file_to_path(file_path=f'images/{item}', 
                                                                   file=f, 
                                                                   content_type='image/png')
+            db.close()
 
         return FileInfo(title=title,
                         description=description,

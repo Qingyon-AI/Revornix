@@ -47,4 +47,5 @@ async def get_user_remote_file_system(user_id: int):
         elif db_user_file_system.file_system_id == 2:
             remote_file_service = AliyunOSSRemoteFileService()
         await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
+    db.close()
     return remote_file_service

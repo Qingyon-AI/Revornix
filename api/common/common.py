@@ -46,4 +46,5 @@ def get_user_remote_file_system(user_id: int):
             remote_file_service = BuiltInRemoteFileService()
         elif db_user_file_system.file_system_id == 2:
             remote_file_service = AliyunOSSRemoteFileService()
+    db.close()
     return remote_file_service

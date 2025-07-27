@@ -33,6 +33,7 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
                                            user_id=self.user_id)
         remote_file_service = await get_user_remote_file_system(user_id=db_user.user_id)
         markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=md_file_name)
+        db.close()
         return schemas.notification.Message(
             title=f"Daily Summary Of {date_str}",
             content=markdown_content

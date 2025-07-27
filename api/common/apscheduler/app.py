@@ -84,6 +84,7 @@ async def send_notification(user_id:int,
                                                      notification_source_id=db_notification_task.notification_source_id,
                                                      notification_target_id=db_notification_task.notification_target_id)
         db.commit()
+    db.close()
         
 
 # restart all tasks when the program starts
@@ -103,6 +104,7 @@ def restart_all_tasks():
             next_run_time=datetime.now()
         )
     info_logger.info("All tasks restarted")
+    db.close()
 
 scheduler.add_listener(job_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
