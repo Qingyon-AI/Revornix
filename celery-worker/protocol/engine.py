@@ -71,7 +71,7 @@ class EngineProtocol(Protocol):
         return cover
     
     def __init__(self, 
-                 engine_uuid: int,
+                 engine_uuid: str,
                  engine_name: str | None = None, 
                  engine_name_zh: str | None = None, 
                  engine_description: str | None = None, 
@@ -99,7 +99,7 @@ class EngineProtocol(Protocol):
                                                  id=db_user_engine.engine_id)
         if db_engine is None:
             raise Exception('Engine not found')
-        if db_engine.uuid != self.get_engine_uuid():
+        if db_engine.uuid != self.engine_uuid:
             raise Exception('Engine uuid not match')
         self.engine_config = db_user_engine.config_json
         db.close()
