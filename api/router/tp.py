@@ -77,7 +77,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
         db_today_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                      user_id=user.id,
-                                                                     date=now.date())
+                                                                     date=now.date().isoformat())
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
@@ -133,7 +133,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
         db_today_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                      user_id=user.id,
-                                                                     date=now.date())
+                                                                     date=now.date().isoformat())
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
@@ -186,7 +186,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
         db_today_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                      user_id=user.id,
-                                                                     date=now.date())
+                                                                     date=now.date().isoformat())
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,

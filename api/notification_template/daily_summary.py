@@ -19,10 +19,11 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
             self.user_id = user_id
     async def generate(self):
         db = SessionLocal()
-        date_str = datetime.now(tz=timezone.utc).strftime('%Y-%m-%d')
+        now = datetime.now(tz=timezone.utc)
+        date_str = datetime.now(tz=timezone.utc)
         db_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                user_id=self.user_id,
-                                                               date=date_str)
+                                                               date=now.isoformat())
         if db_section is None:
             return schemas.notification.Message(
                 title=f"Daily Summary Of {date_str}",
