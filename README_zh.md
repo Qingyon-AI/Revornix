@@ -1,9 +1,12 @@
-# Revornix
+![logo](./images/logo.png)
 
 ![](https://img.shields.io/badge/free-pricing?logo=free&color=%20%23155EEF&label=pricing&labelColor=%20%23528bff)
 ![](https://github.com/Qingyon-AI/Revornix/actions/workflows/release.yml/badge.svg?branch=release)
-![](https://img.shields.io/github/v/release/Qingyon-AI/Revornix)
 ![](https://img.shields.io/github/commit-activity/m/Qingyon-AI/Revornix)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/Qingyon-AI/Revornix/develop)
+![](https://img.shields.io/github/v/release/Qingyon-AI/Revornix)
+![GitHub Release Date](https://img.shields.io/github/release-date-pre/Qingyon-AI/Revornix)
+
 
 [English](./README.md) | 中文文档 | [日本語ドキュメント](./README_jp.md)
 
