@@ -7,18 +7,18 @@ from common.sql import SessionLocal
 from botocore.client import Config
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
-class AWSS3RemoteFileService(RemoteFileServiceProtocol):
+class GenericS3RemoteFileService(RemoteFileServiceProtocol):
     
     s3_client: any = None
     bucket: str = None
 
     def __init__(self):
-        super().__init__(file_service_uuid='01eef562970243af8ba12f6f4ddad3b1',
-                         file_service_name='AWS-S3',
-                         file_service_name_zh='亚马逊S3',
-                         file_service_description="AWS S3, this amazon's paid oss service.",
-                         file_service_description_zh='AWS S3，亚马逊云付费存储服务。',
-                         file_service_demo_config='{"role_arn":"","user_access_key_id":"","user_access_key_secret":"","region_name":"","endpoint_url":"","bucket":"","url_prefix":""}')
+        super().__init__(file_service_uuid='3e9993b6722244969db2c27670cefdac',
+                         file_service_name='Generic-S3',
+                         file_service_name_zh='通用S3',
+                         file_service_description="Generic S3 Service — this can be used as a template for any cloud storage service that supports the S3 protocol.",
+                         file_service_description_zh='通用S3服务, 任意支持S3协议的云存储服务都可以使用这个作为模版。',
+                         file_service_demo_config='{"user_access_key_id":"","user_access_key_secret":"","region_name":"","endpoint_url":"","bucket":"","url_prefix":""}')
 
     async def init_client_by_user_file_system_id(self, user_file_system_id: int):
         db = SessionLocal()
@@ -31,7 +31,6 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
         self.file_service_config = config_str
         config = json.loads(config_str)
         
-        role_arn = config.get('role_arn')
         user_access_key_id = config.get('user_access_key_id')
         user_access_key_secret = config.get('user_access_key_secret')
         region_name = config.get('region_name')
@@ -39,27 +38,14 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
         bucket = config.get('bucket')
         self.bucket = bucket
 
-        sts = boto3.client(
-            'sts',
-            endpoint_url=endpoint_url,
-            aws_access_key_id=user_access_key_id,
-            aws_secret_access_key=user_access_key_secret,
-            config=Config(signature_version='s3v4'),
-            region_name=region_name
-        )
-        resp = sts.assume_role(
-            RoleArn=role_arn,
-            RoleSessionName='s3-session',
-            DurationSeconds=3600
-        )
-        creds = resp['Credentials']
         s3 = boto3.client(
             's3',
             endpoint_url=endpoint_url,
-            aws_access_key_id=creds['AccessKeyId'],
-            aws_secret_access_key=creds['SecretAccessKey'],
-            aws_session_token=creds['SessionToken'],
-            config=Config(signature_version='s3v4')
+            aws_access_key_id=user_access_key_id,
+            aws_secret_access_key=user_access_key_secret,
+            config=Config(signature_version='s3v4',
+                          s3={'addressing_style': 'virtual'}),
+            region_name=region_name
         )
         self.s3_client = s3
         db.close()
@@ -91,6 +77,8 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
         return res
     
     async def upload_raw_content_to_path(self, file_path, content, content_type: str | None = None):
+        from rich import print
+        print(11111, file_path, content_type)
         kwargs = {
             'Bucket': self.bucket,
             'Key': file_path,
@@ -99,6 +87,7 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
         if content_type:
             kwargs['ContentType'] = content_type
         res = self.s3_client.put_object(**kwargs)
+        print(22222, res)
         return res
         
     async def delete_file(self, file_path):

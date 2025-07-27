@@ -24,6 +24,7 @@ import type {
   FileSystemSearchRequest,
   FileUrlPrefixRequest,
   FileUrlPrefixResponse,
+  GenericFileSystemUploadResponse,
   HTTPValidationError,
   MineFileSystemSearchResponse,
   NormalResponse,
@@ -54,6 +55,8 @@ import {
     FileUrlPrefixRequestToJSON,
     FileUrlPrefixResponseFromJSON,
     FileUrlPrefixResponseToJSON,
+    GenericFileSystemUploadResponseFromJSON,
+    GenericFileSystemUploadResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     MineFileSystemSearchResponseFromJSON,
@@ -84,6 +87,12 @@ export interface DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest {
 
 export interface GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest {
     aliyunOSSPresignUploadURLRequest: AliyunOSSPresignUploadURLRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GetAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPostRequest {
+    s3PresignUploadURLRequest: S3PresignUploadURLRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -130,6 +139,14 @@ export interface SearchMineFileSystemFileSystemMinePostRequest {
 
 export interface UpdateFileSystemFileSystemUpdatePostRequest {
     userFileSystemUpdateRequest: UserFileSystemUpdateRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UploadFileSystemFileSystemGenericS3UploadPostRequest {
+    file: Blob;
+    filePath: string;
+    contentType: string;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -230,6 +247,53 @@ export class FileSystemApi extends runtime.BaseAPI {
      */
     async getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost(requestParameters: GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AliyunOSSPresignUploadURLResponse> {
         const response = await this.getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Aws S3 Presigned Url
+     */
+    async getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPostRaw(requestParameters: GetAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<S3PresignUploadURLResponse>> {
+        if (requestParameters['s3PresignUploadURLRequest'] == null) {
+            throw new runtime.RequiredError(
+                's3PresignUploadURLRequest',
+                'Required parameter "s3PresignUploadURLRequest" was null or undefined when calling getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/file-system/aws-s3/presign-upload-url`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: S3PresignUploadURLRequestToJSON(requestParameters['s3PresignUploadURLRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => S3PresignUploadURLResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Aws S3 Presigned Url
+     */
+    async getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPost(requestParameters: GetAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<S3PresignUploadURLResponse> {
+        const response = await this.getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -598,6 +662,93 @@ export class FileSystemApi extends runtime.BaseAPI {
      */
     async updateFileSystemFileSystemUpdatePost(requestParameters: UpdateFileSystemFileSystemUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.updateFileSystemFileSystemUpdatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Upload File System
+     */
+    async uploadFileSystemFileSystemGenericS3UploadPostRaw(requestParameters: UploadFileSystemFileSystemGenericS3UploadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GenericFileSystemUploadResponse>> {
+        if (requestParameters['file'] == null) {
+            throw new runtime.RequiredError(
+                'file',
+                'Required parameter "file" was null or undefined when calling uploadFileSystemFileSystemGenericS3UploadPost().'
+            );
+        }
+
+        if (requestParameters['filePath'] == null) {
+            throw new runtime.RequiredError(
+                'filePath',
+                'Required parameter "filePath" was null or undefined when calling uploadFileSystemFileSystemGenericS3UploadPost().'
+            );
+        }
+
+        if (requestParameters['contentType'] == null) {
+            throw new runtime.RequiredError(
+                'contentType',
+                'Required parameter "contentType" was null or undefined when calling uploadFileSystemFileSystemGenericS3UploadPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['file'] != null) {
+            formParams.append('file', requestParameters['file'] as any);
+        }
+
+        if (requestParameters['filePath'] != null) {
+            formParams.append('file_path', requestParameters['filePath'] as any);
+        }
+
+        if (requestParameters['contentType'] != null) {
+            formParams.append('content_type', requestParameters['contentType'] as any);
+        }
+
+
+        let urlPath = `/file-system/generic-s3/upload`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GenericFileSystemUploadResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Upload File System
+     */
+    async uploadFileSystemFileSystemGenericS3UploadPost(requestParameters: UploadFileSystemFileSystemGenericS3UploadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GenericFileSystemUploadResponse> {
+        const response = await this.uploadFileSystemFileSystemGenericS3UploadPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

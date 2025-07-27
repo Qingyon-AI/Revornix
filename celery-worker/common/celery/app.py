@@ -372,9 +372,9 @@ async def handle_update_section_use_document(section_id: int,
                                                           new_document_markdown_content=markdown_content).get('summary')
                 # put the new summary into the file system
                 md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-                remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
-                                                               content=new_summary,
-                                                               content_type="text/plain")
+                await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
+                                                                     content=new_summary,
+                                                                     content_type="text/plain")
                 # update the section content
                 crud.section.update_section_by_section_id(db=db,
                                                           section_id=db_section.id,
@@ -386,9 +386,9 @@ async def handle_update_section_use_document(section_id: int,
                                       markdown_content=markdown_content).get('summary')
             # put the summary into the file system
             md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-            remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
-                                                           content=summary,
-                                                           content_type="text/plain")
+            await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
+                                                                 content=summary,
+                                                                 content_type="text/plain")
             # update the section content
             crud.section.update_section_by_section_id(db=db, section_id=db_section.id, 
                                                       md_file_name=md_file_name)

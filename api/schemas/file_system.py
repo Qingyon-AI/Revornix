@@ -1,6 +1,9 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timezone
 
+class GenericFileSystemUploadResponse(BaseModel):
+    file_path: str
+
 class AliyunOSSPresignUploadURLRequest(BaseModel):
     file_path: str
     content_type: str

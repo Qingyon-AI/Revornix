@@ -12,4 +12,5 @@ export default {
     getBuiltInPresignUploadURL: API_PREFIX + "/file-system/built-in/presign-upload-url",
     getUserFileUrlPrefix: API_PREFIX + "/file-system/url-prefix",
     deleteUserFileSystem: API_PREFIX + "/file-system/user-file-system/delete",
+    uploadFileToGenericFileSystem: API_PREFIX + "/file-system/generic-s3/upload",
 }

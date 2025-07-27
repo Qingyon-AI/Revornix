@@ -62,6 +62,7 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
             config=Config(signature_version='s3v4')
         )
         self.s3_client = s3
+        db.close()
 
     async def get_file_content_by_file_path(self, file_path: str):
         res = self.s3_client.get_object(Bucket=self.bucket, Key=file_path)

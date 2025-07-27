@@ -4,7 +4,7 @@ import json
 import boto3
 import alibabacloud_oss_v2 as oss
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from botocore.config import Config
 from common.dependencies import get_current_user, get_db
@@ -12,6 +12,7 @@ from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL, FILE_SYSTEM_SERVER_PUBLIC_URL
 from protocol.remote_file_service import RemoteFileServiceProtocol
+from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 
 file_system_router = APIRouter()
 
@@ -315,3 +316,23 @@ async def update_file_system(user_file_system_update_request: schemas.file_syste
         user_file_system.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()
+
+@file_system_router.post("/generic-s3/upload", response_model=schemas.file_system.GenericFileSystemUploadResponse)
+async def upload_file_system(file: UploadFile = File(...),
+                             file_path: str = Form(...),
+                             content_type: str = Form(...),
+                             db: Session = Depends(get_db),
+                             current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    content = await file.read()
+    user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                   user_file_system_id=current_user.default_user_file_system)
+    if user_file_system is None:
+        raise schemas.error.CustomException(code=404, message="User File System not found")
+    if current_user.default_user_file_system != 4:
+        raise schemas.error.CustomException(code=404, message="The default user file system is not Generic S3")
+    generic_s3_remote_file_service = GenericS3RemoteFileService()
+    await generic_s3_remote_file_service.init_client_by_user_file_system_id(user_file_system_id=current_user.default_user_file_system)
+    await generic_s3_remote_file_service.upload_raw_content_to_path(file_path=file_path,
+                                                                    content=content,
+                                                                    content_type=content_type)
+    return schemas.file_system.GenericFileSystemUploadResponse(file_path=file_path)

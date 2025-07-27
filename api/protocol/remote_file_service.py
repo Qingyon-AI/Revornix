@@ -51,6 +51,12 @@ class RemoteFileServiceProtocol(Protocol):
                 raise Exception("User file system config is None")
             config = json.loads(config_str)
             return f'{config.get("url_prefix")}'
+        elif db_file_system.id == 4:
+            config_str = db_user_file_system.config_json
+            if config_str is None:
+                raise Exception("User file system config is None")
+            config = json.loads(config_str)
+            return f'{config.get("url_prefix")}'
         
     async def init_client_by_user_file_system_id(self, user_file_system_id: int) -> None:
         raise NotImplementedError("Method not implemented")

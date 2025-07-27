@@ -61,6 +61,7 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
             config=Config(s3={"addressing_style": "virtual"},
                           signature_version='v4'))
         self.oss_client = s3
+        db.close()
     
     async def get_file_content_by_file_path(self, file_path: str):
         res = self.oss_client.get_object(Bucket=self.bucket, Key=file_path)
