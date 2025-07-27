@@ -95,6 +95,7 @@ class EngineProtocol(Protocol):
         db = SessionLocal()
         db_user_engine = crud.engine.get_user_engine_by_user_engine_id(db=db, 
                                                                        user_engine_id=user_engine_id)
+        self.user_id = db_user_engine.user_id
         db_engine = crud.engine.get_engine_by_id(db=db,
                                                  id=db_user_engine.engine_id)
         if db_engine is None:

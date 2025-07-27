@@ -1,14 +1,11 @@
 import os
 import uuid
 import shutil
-import crud
 from bs4 import BeautifulSoup
 from pathlib import Path
-from crud.user import get_user_by_id
 from config.base import BASE_DIR
 from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
 from playwright.async_api import async_playwright
-from common.sql import SessionLocal
 from common.common import get_user_remote_file_system
 from common.mineru import parse_doc
 from common.common import is_dir_empty, extract_title_and_summary
@@ -41,15 +38,12 @@ class MineruEngine(EngineProtocol):
             content = f.read()
         # if the markdown has images in it, upload the images to the remote server
         if not is_dir_empty(str(BASE_DIR / 'temp' / temp_dir_name / 'scene-snap' / 'auto' / 'images')):
-            db = SessionLocal()
-            db_user = crud.user.get_user_by_id(db=db, user_id=self.user_id)   
-            remote_file_service = await get_user_remote_file_system(user_id=db_user.id)
+            remote_file_service = await get_user_remote_file_system(user_id=self.user_id)
             for item in os.listdir(str(BASE_DIR / 'temp' / temp_dir_name / 'scene-snap' / 'auto' / 'images')):
                 with open(str(BASE_DIR / 'temp' / temp_dir_name / 'scene-snap' / 'auto' / 'images' / item), "rb") as f:
                     await remote_file_service.upload_file_to_path(file_path=f'images/{item}', 
                                                                   file=f, 
                                                                   content_type='image/png')
-            db.close()
         # 3. analyse the base info of the website
         soup = BeautifulSoup(html_content, 'html.parser')
         og_title_meta = soup.find('meta', property='og:title')
@@ -71,7 +65,8 @@ class MineruEngine(EngineProtocol):
             keywords=keywords
         )
 
-    async def analyse_file(self, file_path: str) -> FileInfo:
+    async def analyse_file(self, 
+                           file_path: str) -> FileInfo:
         # 1. copy the file and paste it to the temp dir with a random name
         temp_dir_name = f'{uuid.uuid4()}'
         
@@ -92,15 +87,12 @@ class MineruEngine(EngineProtocol):
         
         # if the markdown has images in it, upload the images to the remote server
         if not is_dir_empty(str(BASE_DIR / 'temp' / temp_dir_name / 'auto' / 'images')):
-            db = SessionLocal()
-            db_user = get_user_by_id(db=db, user_id=self.user_id)
-            remote_file_service = await get_user_remote_file_system(user_id=db_user.id)
+            remote_file_service = await get_user_remote_file_system(user_id=self.user_id)
             for item in os.listdir(str(BASE_DIR / 'temp' / temp_dir_name / 'auto' / 'images')):
                 with open(str(BASE_DIR / 'temp' / temp_dir_name / 'auto' / 'images' / item), "rb") as f:
                     await remote_file_service.upload_file_to_path(file_path=f'images/{item}', 
                                                                   file=f, 
                                                                   content_type='image/png')
-            db.close()
 
         return FileInfo(title=title,
                         description=description,

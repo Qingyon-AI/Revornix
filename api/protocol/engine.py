@@ -85,7 +85,7 @@ class EngineProtocol(Protocol):
         self.engine_description_zh = engine_description_zh
         self.engine_demo_config = engine_demo_config
         self.engine_config = engine_config
-        
+    
     def get_engine_config(self):
         if self.engine_config is not None:
             return json.loads(self.engine_config)
@@ -95,6 +95,7 @@ class EngineProtocol(Protocol):
         db = SessionLocal()
         db_user_engine = crud.engine.get_user_engine_by_user_engine_id(db=db, 
                                                                        user_engine_id=user_engine_id)
+        self.user_id = db_user_engine.user_id
         db_engine = crud.engine.get_engine_by_id(db=db,
                                                  id=db_user_engine.engine_id)
         if db_engine is None:
