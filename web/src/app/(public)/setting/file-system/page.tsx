@@ -2,9 +2,11 @@
 
 import MineFileSystemAddCard from '@/components/setting/mine-file-system-add-card';
 import MineFileSystemCard from '@/components/setting/mine-file-system-card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMineFileSystems } from '@/service/file-system';
 import { useQuery } from '@tanstack/react-query';
+import { AlertCircleIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 const FileSystemPage = () => {
@@ -23,6 +25,13 @@ const FileSystemPage = () => {
 
 	return (
 		<div className='px-5 pb-5'>
+			<Alert className='mb-5'>
+				<AlertCircleIcon />
+				<AlertTitle>{t('important_notice')}</AlertTitle>
+				<AlertDescription>
+					{t('setting_file_system_page_alert')}
+				</AlertDescription>
+			</Alert>
 			{isFetching && !mineFileSystems && <Skeleton className='w-full h-52' />}
 			{isError && (
 				<div className='w-full h-full flex justify-center items-center'>

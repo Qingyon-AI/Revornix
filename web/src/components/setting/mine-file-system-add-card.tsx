@@ -14,7 +14,7 @@ import {
 	DialogTitle,
 } from '../ui/dialog';
 import { Textarea } from '../ui/textarea';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,9 +34,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { InfoIcon } from 'lucide-react';
 
 const MineFileSystemAddCard = ({}: {}) => {
 	const t = useTranslations();
+	const locale = useLocale();
 	const { refreshUserInfo } = useUserContext();
 	const [showMineFileSystemAddDialog, setShowMineFileSystemAddDialog] =
 		useState(false);
@@ -158,7 +161,7 @@ const MineFileSystemAddCard = ({}: {}) => {
 																		key={item.id}
 																		value={String(item.id)}
 																		className='w-full'>
-																		{item.name}
+																		{locale === 'zh' ? item.name_zh : item.name}
 																	</SelectItem>
 																);
 															})}
@@ -171,6 +174,22 @@ const MineFileSystemAddCard = ({}: {}) => {
 									</FormItem>
 								)}
 							/>
+
+							{form.watch('file_system_id') && (
+								<Alert>
+									<InfoIcon className='h-4 w-4' />
+									<AlertDescription>
+										{locale === 'zh'
+											? provideFileSystems?.data.find((item) => {
+													return item.id === form.watch('file_system_id');
+											  })?.description_zh
+											: provideFileSystems?.data.find((item) => {
+													return item.id === form.watch('file_system_id');
+											  })?.description}
+									</AlertDescription>
+								</Alert>
+							)}
+
 							<FormField
 								control={form.control}
 								name='title'

@@ -16,11 +16,10 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
 
     def __init__(self):
         super().__init__(file_service_uuid='3ea378364a2d4a65be25085a47835d80',
-                         file_service_name='Built-in',
+                         file_service_name='Built-In',
                          file_service_name_zh='内置文件系统',
-                         file_service_description='Built-in file system, based on minio, free to use.',
+                         file_service_description='Built-In file system, based on minio, free to use.',
                          file_service_description_zh='内置文件系统，基于minio，可免费使用。')
-        
     @staticmethod
     def empty_bucket(bucket_name: str):
         s3 = boto3.resource('s3',

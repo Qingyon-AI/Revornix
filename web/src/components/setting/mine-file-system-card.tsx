@@ -9,7 +9,7 @@ import { Button } from '../ui/button';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { InfoIcon, Loader2 } from 'lucide-react';
 import {
 	Dialog,
 	DialogClose,
@@ -22,7 +22,7 @@ import {
 } from '../ui/dialog';
 import { Textarea } from '../ui/textarea';
 import { UserFileSystemInfo } from '@/generated';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -54,6 +54,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
+import { Alert, AlertDescription } from '../ui/alert';
 
 const MineFileSystemCard = ({
 	user_file_system,
@@ -61,6 +62,7 @@ const MineFileSystemCard = ({
 	user_file_system: UserFileSystemInfo;
 }) => {
 	const t = useTranslations();
+	const locale = useLocale();
 	const { refreshUserInfo } = useUserContext();
 	const [configDialogOpen, setConfigDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -90,19 +92,6 @@ const MineFileSystemCard = ({
 		},
 	});
 
-	const mutateInstallFileSystem = useMutation({
-		mutationFn: installFileSystem,
-		onSuccess: () => {
-			toast.success(t('setting_file_system_install_success'));
-			queryClient.invalidateQueries({
-				queryKey: ['mine-file-system'],
-			});
-			refreshUserInfo();
-		},
-		onError: (error) => {
-			toast.error(error.message);
-		},
-	});
 	const mutateDeleteUserFileSystem = useMutation({
 		mutationFn: deleteUserFileSystem,
 		onSuccess: () => {
@@ -227,6 +216,19 @@ const MineFileSystemCard = ({
 										</div>
 										<FormMessage />
 									</FormItem>
+
+									<Alert>
+										<InfoIcon className='h-4 w-4' />
+										<AlertDescription>
+											{locale === 'zh'
+												? provideFileSystems?.data.find((item) => {
+														return item.id === user_file_system.file_system_id;
+												  })?.description_zh
+												: provideFileSystems?.data.find((item) => {
+														return item.id === user_file_system.file_system_id;
+												  })?.description}
+										</AlertDescription>
+									</Alert>
 									<FormField
 										name='title'
 										control={form.control}
