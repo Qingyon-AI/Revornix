@@ -370,10 +370,10 @@ async def ask_ai(chat_messages: schemas.ai.ChatMessages,
     db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
     if db_model is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
-    db_user_model = crud.model.get_user_ai_model_by_id(db=db, user_id=user.id, model_id=model_id)
     db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
     if db_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
+    db_user_model = crud.model.get_user_ai_model_by_id(db=db, user_id=user.id, model_id=model_id)
     db_user_model_provider = crud.model.get_user_ai_model_provider_by_id(db=db, 
                                                                          user_id=user.id, 
                                                                          provider_id=db_model.provider_id)

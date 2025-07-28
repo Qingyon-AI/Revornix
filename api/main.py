@@ -19,7 +19,7 @@ import schemas
 import functools
 from common.redis import redis_pool
 from common.apscheduler.app import scheduler
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, AsyncExitStack
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
@@ -36,7 +36,9 @@ from router.file_system import file_system_router
 from router.api_key import api_key_router
 from router.task import task_router
 from router.tp import tp_router
-from common.logger import exception_logger
+from mcp_router.common import common_mcp_router
+from mcp_router.document import document_mcp_router
+from common.logger import exception_logger, info_logger, exception_logger
 
 root_path = '/api/main-service'
 
@@ -45,10 +47,21 @@ if os.getenv('ENV') == 'dev':
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.redis = await redis_pool()
+    try:
+        app.state.redis = await redis_pool()
+    except Exception as e:
+        exception_logger.exception("❌ Redis 初始化失败")
+        raise
     scheduler.start()
-    yield
-    await app.state.redis.close()
+    async with AsyncExitStack() as stack:
+        # ✅ 这些 session manager 会在 FastAPI 停止时统一退出
+        await stack.enter_async_context(common_mcp_router.session_manager.run())
+        await stack.enter_async_context(document_mcp_router.session_manager.run())
+        info_logger.info("✅ FastAPI lifespan started.")
+        yield  # FastAPI 启动后开始处理请求
+        info_logger.info("🛑 FastAPI shutting down...")
+        await app.state.redis.close()
+        info_logger.info("✅ Redis connection closed.")
     
 app = FastAPI(
         root_path=root_path,
@@ -92,6 +105,9 @@ app.include_router(task_router, prefix="/task", tags=["task"])
 app.include_router(mcp_router, prefix="/mcp", tags=["mcp"])
 app.include_router(engine_router, prefix="/engine", tags=["engine"])
 app.include_router(file_system_router, prefix="/file-system", tags=["file-system"])
+
+app.mount("/mcp-server/common", common_mcp_router.streamable_http_app())
+app.mount("/mcp-server/document", document_mcp_router.streamable_http_app())
 
 @app.get('/openapi.yaml', include_in_schema=False)
 @functools.lru_cache()
