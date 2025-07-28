@@ -232,9 +232,7 @@ async def handle_update_sections(sections: list[int],
             db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                                       section_id=section_id,
                                                                                       user_id=user_id)
-            if db_user_section is None:
-                raise Exception("User does not have permission to modify this section")
-            if db_user_section.authority == 2:
+            if db_user_section is None or db_user_section.authority == 2:
                 raise Exception("User does not have permission to modify this section")
             db_section = crud.section.get_section_by_section_id(db=db,
                                                                 section_id=section_id)
