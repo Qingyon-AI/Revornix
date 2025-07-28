@@ -6,14 +6,17 @@
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/Qingyon-AI/Revornix/develop)
 ![](https://img.shields.io/github/v/release/Qingyon-AI/Revornix)
 ![GitHub Release Date](https://img.shields.io/github/release-date-pre/Qingyon-AI/Revornix)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Qingyon-AI/Revornix)
 
 English | [中文文档](./README_zh.md) | [日本語ドキュメント](./README_jp.md)
 
 ## Introduction
 
-Official Website: [https://revornix.com](https://revornix.com)
+🚀 RoadMap: [RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
 
-Join our community: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
+🖥️ Official Website: [https://revornix.com](https://revornix.com)
+
+❤️ Join our community: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
 
 Revornix is an information management tool for the AI era. It helps you conveniently integrate all visible information and provides you with a comprehensive report at a specific time.
 

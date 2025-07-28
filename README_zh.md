@@ -6,15 +6,17 @@
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/Qingyon-AI/Revornix/develop)
 ![](https://img.shields.io/github/v/release/Qingyon-AI/Revornix)
 ![GitHub Release Date](https://img.shields.io/github/release-date-pre/Qingyon-AI/Revornix)
-
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Qingyon-AI/Revornix)
 
 [English](./README.md) | 中文文档 | [日本語ドキュメント](./README_jp.md)
 
 ## 简介
 
-官网链接: [https://revornix.com](https://revornix.com)
+🚀 开发计划: [RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
 
-加入社区: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
+🖥️ 官网链接: [https://revornix.com](https://revornix.com)
+
+❤️ 加入社区: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
 
 AI时代的资讯管理工具。Revornix可以帮助你便捷整合所有可见资讯，并在特定时间给你一份完整的报告。
 
