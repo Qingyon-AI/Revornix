@@ -30,7 +30,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 
 	return (
 		<Card className='h-full overflow-auto flex py-0 col-span-4 gap-0 relative'>
-			<div className='flex flex-row gap-2 items-center absolute top-0 right-0 p-5 bg-linear-to-b from-white dark:from-black w-full justify-end'>
+			<div className='z-10 flex flex-row gap-2 items-center absolute top-0 right-0 p-5 bg-linear-to-b from-white dark:from-black w-full justify-end'>
 				{section && userInfo?.id === section?.creator.id && (
 					<>
 						<SectionConfiguration section_id={id} />
