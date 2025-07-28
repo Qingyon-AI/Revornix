@@ -541,6 +541,7 @@
     "document_md_status_doing": "转换中",
     "document_md_status_todo": "待转换",
     "document_md_status_failed": "失败",
+    "document_transform_again": "已重新加入转换队列，请稍后",
     "account_avatar": "头像",
     "account_avatar_description": "这可是你的头像哦",
     "account_avatar_upload": "上传头像",

@@ -20,7 +20,6 @@ apscheduler==3.11.0
 pyJWT==2.10.1
 python-jose==3.5.0
 opencv-python-headless==4.12.0.88
-mineru==2.1.7
 playwright==1.54.0
 mcp==1.12.2
 markitdown==0.1.2

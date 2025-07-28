@@ -45,19 +45,9 @@ const WebsiteDocumentDetail = ({
 		data: document,
 		isError,
 		error,
-		isRefetching,
-		refetch,
 	} = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
-	});
-
-	const { data: userRemoteFileUrlPrefix } = useQuery({
-		queryKey: ['getUserRemoteFileUrlPrefix', document?.creator?.id],
-		queryFn: () => {
-			return getUserFileUrlPrefix({ user_id: document!.creator!.id });
-		},
-		enabled: !!document?.creator?.id,
 	});
 
 	const { data: userFileSystemDetail } = useQuery({
@@ -69,6 +59,14 @@ const WebsiteDocumentDetail = ({
 		enabled:
 			userInfo?.id !== undefined &&
 			userInfo?.default_user_file_system !== undefined,
+	});
+
+	const { data: userRemoteFileUrlPrefix } = useQuery({
+		queryKey: ['getUserRemoteFileUrlPrefix', document?.creator?.id],
+		queryFn: () => {
+			return getUserFileUrlPrefix({ user_id: document!.creator!.id });
+		},
+		enabled: !!document?.creator?.id,
 	});
 
 	const [delay, setDelay] = useState<number | undefined>(1000);
@@ -97,6 +95,7 @@ const WebsiteDocumentDetail = ({
 			let [res, err] = await utils.to(
 				fileService.getFileContent(document.website_info?.md_file_name)
 			);
+			console.log(res, err);
 			if (!res || err) {
 				throw new Error(err.message);
 			}
@@ -125,20 +124,23 @@ const WebsiteDocumentDetail = ({
 			return;
 		}
 		setMarkdowningTransform(false);
-		queryClient.invalidateQueries({
-			queryKey: ['getDocumentDetail', id],
-		});
+		toast.success(t('document_transform_again'));
+		setDelay(1000);
 	};
 
 	useEffect(() => {
+		console.log('userFileSystemDetail', userFileSystemDetail);
 		if (
 			!document ||
 			!document.website_info?.md_file_name ||
-			document.transform_task?.status !== 2
+			document.transform_task?.status !== 2 ||
+			!userInfo ||
+			!userFileSystemDetail ||
+			!userRemoteFileUrlPrefix
 		)
 			return;
 		onGetMarkdown();
-	}, [document, userInfo]);
+	}, [document, userInfo, userRemoteFileUrlPrefix, userFileSystemDetail]);
 
 	const { ref: bottomRef, inView } = useInView();
 
@@ -154,10 +156,15 @@ const WebsiteDocumentDetail = ({
 					{error?.message ?? (
 						<div className='flex flex-col text-center gap-2 w-full'>
 							<p>{markdownGetError}</p>
-							<Separator className='my-5' />
+							<Separator />
 							<DocumentOperate id={id} />
 						</div>
 					)}
+				</div>
+			)}
+			{document && document.transform_task?.status === 1 && (
+				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
+					<p>{t('document_transform_to_markdown_doing')}</p>
 				</div>
 			)}
 			{document && document.transform_task?.status === 0 && (
@@ -187,23 +194,8 @@ const WebsiteDocumentDetail = ({
 							<Loader2 className='size-4 animate-spin' />
 						)}
 					</Button>
-				</div>
-			)}
-			{document && document.transform_task?.status === 1 && (
-				<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
-					<p>{t('document_transform_to_markdown_doing')}</p>
-					<Button
-						variant={'link'}
-						className='h-fit p-0 text-xs'
-						disabled={markdownTransforming}
-						onClick={() => {
-							handleTransformToMarkdown();
-						}}>
-						{t('retry')}
-						{markdownTransforming && (
-							<Loader2 className='size-4 animate-spin' />
-						)}
-					</Button>
+					<Separator />
+					<DocumentOperate id={id} />
 				</div>
 			)}
 			{document && document.transform_task?.status === 3 && (
@@ -221,7 +213,7 @@ const WebsiteDocumentDetail = ({
 							<Loader2 className='size-4 animate-spin' />
 						)}
 					</Button>
-					<Separator className='my-5' />
+					<Separator />
 					<DocumentOperate id={id} />
 				</div>
 			)}
@@ -250,7 +242,7 @@ const WebsiteDocumentDetail = ({
 						</p>
 						<div ref={bottomRef}></div>
 					</div>
-					<Separator className='my-5' />
+					<Separator className='mt-5' />
 					<DocumentOperate id={id} />
 				</div>
 			)}

@@ -1,12 +1,11 @@
 import crud
 import models
-import uuid
 import schemas
 from celery import chain, group
 from datetime import datetime, timezone
 from schemas.common import SuccessResponse
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from fastapi.encoders import jsonable_encoder
 from common.ai import summary_document
 from common.dependencies import get_db
@@ -16,9 +15,6 @@ from common.logger import log_exception, exception_logger
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, init_file_document_info
-from engine.markitdown import MarkitdownEngine
-from engine.jina import JinaEngine
-from engine.mineru import MineruEngine
 
 document_router = APIRouter()
     
@@ -115,8 +111,7 @@ async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSumma
     return schemas.common.SuccessResponse()
 
 @document_router.post('/markdown/transform', response_model=schemas.common.NormalResponse)
-async def transform_markdown(request: Request,
-                             transform_markdown_request: schemas.document.DocumentMarkdownTransformRequest,
+async def transform_markdown(transform_markdown_request: schemas.document.DocumentMarkdownTransformRequest,
                              user: models.user.User = Depends(get_current_user),
                              db: Session = Depends(get_db)):
     if user.default_user_file_system is None:
@@ -135,74 +130,53 @@ async def transform_markdown(request: Request,
     if db_document is None:
         raise Exception('The document you want to transform is not found')
     
+    db_sections = crud.section.get_section_documents_by_document_id(db=db,
+                                                                    document_id=transform_markdown_request.document_id)
+    db_section_ids = [db_section.section_id for db_section in db_sections]
+    
     db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                              document_id=transform_markdown_request.document_id)
-    if db_transform_task.status == 1:
-        raise Exception('The document is being transformed, please wait')
-    
-    if db_document.category == 1:
-        db_website_document = crud.document.get_website_document_by_document_id(db=db,
-                                                                                document_id=transform_markdown_request.document_id)
-        if db_website_document is None:
-            raise Exception('The website info of the document you want to transform is not found, please connect the administrator')
-        try:
-            db_transform_task.status = 1
-            db.commit()
-            db.refresh(db_document)
-            default_website_document_parse_user_engine_id = user.default_website_document_parse_user_engine_id
-            if default_website_document_parse_user_engine_id is None:
-                raise Exception("User does not have default website document parse engine")
-            website_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
-                                                                              user_engine_id=default_website_document_parse_user_engine_id)
-            if website_extractor.engine_id == 3:
-                engine = MarkitdownEngine()
-            if website_extractor.engine_id == 2:
-                engine = JinaEngine()
-            if website_extractor.engine_id == 1:
-                engine = MineruEngine()
-                
-            await engine.init_engine_config_by_user_engine_id(user_engine_id=default_website_document_parse_user_engine_id)
+    # if db_transform_task.status == 0:
+    #     raise Exception('The transform task is already in pending, please wait for a while')
+    # if db_transform_task.status == 1:
+    #     raise Exception('The document is being transformed, please wait')
+    if db_transform_task.status == 2:
+        raise Exception('The transform task is already finished, please refresh the page')
+    try:
+        if db_document.category == 1:
+            db_website_document = crud.document.get_website_document_by_document_id(db=db,
+                                                                                    document_id=transform_markdown_request.document_id)
+            if db_website_document is None:
+                raise Exception('The website info of the document you want to transform is not found, please connect the administrator')
             
-            web_info = await engine.analyse_website(url=db_website_document.url)
-            markdown_content = web_info.content
-            md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-            await remote_file_service.upload_raw_content_to_path(file_path=md_file_name,
-                                                                 content=markdown_content,
-                                                                 content_type='text/plain')
-            crud.document.update_website_document_by_website_document_id(db=db,
-                                                                         website_document_id=db_website_document.id,
-                                                                         md_file_name=md_file_name)
-            db_transform_task.status = 2
-        except Exception as e:
-            exception_logger.error(f"记载报错，涉及请求{request}，错误{e}")
-            log_exception()
-            db.rollback()
-            db_transform_task.status = 3
-    if db_document.category == 0:
-        db_file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                          document_id=transform_markdown_request.document_id)
-        if db_file_document is None:
-            raise Exception('The file info of the document you want to transform is not found, please connect the administrator')
-        transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
+            first_task = init_website_document_info.si(db_document.id, user.id)
+            second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(db_section_ids, db_document.id, user.id)]
+            task_chain = chain(first_task, group(second_tasks))
+            task_chain.apply_async()
+        elif db_document.category == 0:
+            db_file_document = crud.document.get_file_document_by_document_id(db=db,
                                                                               document_id=transform_markdown_request.document_id)
-        if transform_task is None:
-            crud.task.create_document_transform_task(db=db,
-                                                     user_id=user.id,
-                                                     document_id=transform_markdown_request.document_id)
-        else:
-            if transform_task.status == 0:
-                raise Exception('The transform task is already in pending, please wait for a while')
-            if transform_task.status == 1:
-                raise Exception('The transform task is already running, please wait for a while')
-            if transform_task.status == 2:
-                raise Exception('The transform task is already finished, please refresh the page')
-            if transform_task.status == 3:
-                transform_task.status = 1
-                db.commit()
-                db.refresh(transform_task)
-                first_task = init_file_document_info.si(db_document.id, user.id)
-                task_chain = chain(first_task)
-                task_chain.apply_async()
+            if db_file_document is None:
+                raise Exception('The file info of the document you want to transform is not found, please connect the administrator')
+            first_task = init_file_document_info.si(db_document.id, user.id)
+            second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(db_section_ids, db_document.id, user.id)]
+            task_chain = chain(first_task, group(second_tasks))
+            task_chain.apply_async()
+        elif db_document.category == 2:
+            db_quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
+                                                                                          document_id=transform_markdown_request.document_id)
+            if db_quick_note_document is None:
+                raise Exception('The quick note info of the document you want to transform is not found, please connect the administrator')
+            first_task = [add_embedding.si(db_document.id, user.id), update_sections.si(db_section_ids, db_document.id, user.id)]
+            second_tasks = []
+            task_chain = chain(group(first_task), group(second_tasks))
+            task_chain.apply_async()
+            
+    except Exception as e:
+        exception_logger.error(f"document transform request failed, error {e}")
+        log_exception()
+        db.rollback()
+        db_transform_task.status = 3
     db.commit()
     return schemas.common.SuccessResponse()
         

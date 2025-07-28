@@ -12,7 +12,6 @@ import { Separator } from '../ui/separator';
 import DocumentOperate from './document-operate';
 import { useInView } from 'react-intersection-observer';
 import { useEffect, useState } from 'react';
-import CustomImage from '../ui/custom-image';
 
 const QuickDocumentDetail = ({
 	id,

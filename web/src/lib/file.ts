@@ -19,8 +19,10 @@ export class FileService {
                 break;
             case 3:
                 this.client = new AWSS3FileService()
+                break;
             case 4:
                 this.client = new GenericFileService()
+                break;
             default:
                 break;
         }

@@ -49,3 +49,6 @@ async def get_user_remote_file_system(user_id: int):
         await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
     db.close()
     return remote_file_service
+
+def truncate(text: str, max_len: int = 500) -> str:
+    return text[:max_len] if len(text) > max_len else text

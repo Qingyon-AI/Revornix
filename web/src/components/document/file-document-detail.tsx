@@ -99,8 +99,7 @@ const FileDocumentDetail = ({
 			return;
 		}
 		setMarkdowningTransform(false);
-		queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
-		toast.success(t('document_transform_to_markdown_retry_submit_success'));
+		toast.success(t('document_transform_again'));
 		setDelay(1000);
 	};
 
@@ -141,7 +140,7 @@ const FileDocumentDetail = ({
 		)
 			return;
 		onGetMarkdown();
-	}, [document, userInfo, userRemoteFileUrlPrefix]);
+	}, [document, userInfo, userRemoteFileUrlPrefix, userFileSystemDetail]);
 
 	const { ref: bottomRef, inView } = useInView();
 
@@ -157,14 +156,14 @@ const FileDocumentDetail = ({
 					{error?.message ?? (
 						<div className='flex flex-col text-center gap-2'>
 							<p>{markdownGetError}</p>
-							<Separator className='my-5' />
+							<Separator />
 							<DocumentOperate id={id} />
 						</div>
 					)}
 				</div>
 			)}
 			{document && document.transform_task?.status === 1 && (
-				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs gap-5'>
+				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 					{t('document_transform_to_markdown_doing')}
 				</div>
 			)}
@@ -195,6 +194,8 @@ const FileDocumentDetail = ({
 							<Loader2 className='size-4 animate-spin' />
 						)}
 					</Button>
+					<Separator />
+					<DocumentOperate id={id} />
 				</div>
 			)}
 			{document && document.transform_task?.status === 3 && (
@@ -212,7 +213,7 @@ const FileDocumentDetail = ({
 							<Loader2 className='size-4 animate-spin' />
 						)}
 					</Button>
-					<Separator className='my-5' />
+					<Separator />
 					<DocumentOperate id={id} />
 				</div>
 			)}
@@ -241,7 +242,7 @@ const FileDocumentDetail = ({
 						</p>
 						<div ref={bottomRef}></div>
 					</div>
-					<Separator className='my-5' />
+					<Separator className='mt-5' />
 					<DocumentOperate id={id} />
 				</div>
 			)}

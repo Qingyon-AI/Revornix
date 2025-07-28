@@ -540,6 +540,7 @@
     "document_md_status_doing": "Converting",
     "document_md_status_todo": "Pending Conversion",
     "document_md_status_failed": "Failed",
+    "document_transform_again": "Added to conversion queue again, please wait",
     "account_avatar": "Avatar",
     "account_avatar_description": "This is your avatar!",
     "account_avatar_upload": "Upload Avatar",
