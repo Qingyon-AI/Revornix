@@ -242,7 +242,7 @@ const WebsiteDocumentDetail = ({
 						</p>
 						<div ref={bottomRef}></div>
 					</div>
-					<Separator className='mt-5' />
+					<Separator className='mb-5' />
 					<DocumentOperate id={id} />
 				</div>
 			)}
