@@ -20,7 +20,7 @@ English | [中文文档](./README_zh.md) | [日本語ドキュメント](./READM
 
 Revornix is an information management tool for the AI era. It helps you conveniently integrate all visible information and provides you with a comprehensive report at a specific time.
 
-![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202507021504358.png)
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202507292035718.png)
 
 ## Features
 

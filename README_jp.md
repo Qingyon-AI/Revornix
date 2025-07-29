@@ -20,7 +20,7 @@
 
 AI時代の情報管理ツール。Revornixは、あらゆる情報を簡単に統合し、特定の時間に完全なレポートとして提供します。
 
-![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202507021504358.png)
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202507292035718.png)
 
 ## 主な機能
 
