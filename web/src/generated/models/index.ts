@@ -76,6 +76,8 @@ export * from './InitialPasswordResponse';
 export * from './Label';
 export * from './LabelAddRequest';
 export * from './LabelListResponse';
+export * from './LabelSummaryItem';
+export * from './LabelSummaryResponse';
 export * from './MCPServerCreateRequest';
 export * from './MCPServerDeleteRequest';
 export * from './MCPServerInfo';

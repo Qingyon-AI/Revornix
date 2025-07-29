@@ -236,3 +236,10 @@ class VectorSearchRequest(BaseModel):
     
 class VectorSearchResponse(BaseModel):
     documents: list[DocumentInfo]
+    
+class LabelSummaryItem(BaseModel):
+    label_info: Label
+    count: int
+    
+class LabelSummaryResponse(BaseModel):
+    data: list[LabelSummaryItem]

@@ -31,6 +31,7 @@ import type {
   InifiniteScrollPagnitionDocumentNoteInfo,
   LabelAddRequest,
   LabelListResponse,
+  LabelSummaryResponse,
   NormalResponse,
   ReadRequest,
   SearchAllMyDocumentsRequest,
@@ -76,6 +77,8 @@ import {
     LabelAddRequestToJSON,
     LabelListResponseFromJSON,
     LabelListResponseToJSON,
+    LabelSummaryResponseFromJSON,
+    LabelSummaryResponseToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
     ReadRequestFromJSON,
@@ -138,6 +141,11 @@ export interface DeleteNoteDocumentNoteDeletePostRequest {
 
 export interface GetDocumentDetailDocumentDetailPostRequest {
     documentDetailRequest: DocumentDetailRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GetLabelSummaryDocumentLabelSummaryPostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -537,6 +545,43 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async getDocumentDetailDocumentDetailPost(requestParameters: GetDocumentDetailDocumentDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentDetailResponse> {
         const response = await this.getDocumentDetailDocumentDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Label Summary
+     */
+    async getLabelSummaryDocumentLabelSummaryPostRaw(requestParameters: GetLabelSummaryDocumentLabelSummaryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<LabelSummaryResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/document/label/summary`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => LabelSummaryResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Label Summary
+     */
+    async getLabelSummaryDocumentLabelSummaryPost(requestParameters: GetLabelSummaryDocumentLabelSummaryPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LabelSummaryResponse> {
+        const response = await this.getLabelSummaryDocumentLabelSummaryPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

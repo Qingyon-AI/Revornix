@@ -373,6 +373,24 @@ def search_next_note_by_document_note(db: Session,
     query = query.filter(models.document.DocumentNote.create_time < document_note.create_time)
     return query.first()
 
+def get_labels_summary(db: Session,
+                       user_id: int):
+    query = db.query(models.document.Label, func.count(models.document.DocumentLabel.id).label('count'))
+    query = query.join(models.document.DocumentLabel,
+                       models.document.DocumentLabel.label_id == models.document.Label.id)
+    query = query.join(models.document.UserDocument, 
+                       models.document.UserDocument.document_id == models.document.DocumentLabel.document_id)
+    query = query.join(models.document.Document,
+                       models.document.Document.id == models.document.DocumentLabel.document_id)
+    query = query.filter(models.document.UserDocument.delete_at == None,
+                         models.document.UserDocument.user_id == user_id,
+                         models.document.DocumentLabel.delete_at == None,
+                         models.document.Label.delete_at == None,
+                         models.document.Document.delete_at == None)
+    query = query.group_by(models.document.Label.id)
+    query = query.order_by(func.count(models.document.DocumentLabel.document_id).desc())
+    return query.all()
+
 def get_labels_by_document_id(db: Session, 
                               document_id: int):
     query = db.query(models.document.Label)

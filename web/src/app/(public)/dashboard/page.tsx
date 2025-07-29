@@ -1,9 +1,4 @@
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import UnReadDocumentBox from '@/components/document/unread-documents-box';
 import StarDocumentBox from '@/components/document/star-document-box';
 import RecentReadDocumentBox from '@/components/document/recent-read-document-box';
@@ -12,17 +7,21 @@ import DocumentMonthSummary from '@/components/document/document-month-summary';
 import SectionLabelsBox from '@/components/document/section-labels-box';
 import { useTranslations } from 'next-intl';
 import InitSettingDialog from '@/components/setting/init-setting-dialog';
+import DocumentLabelSummary from '@/components/dashboard/document-label-summary';
 
 const DashboardPage = () => {
 	const t = useTranslations();
 	return (
 		<div className='flex flex-col px-5 gap-5 pb-5 w-full'>
 			<InitSettingDialog />
-			<DocumentMonthSummary />
 			<div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
 				<UnReadDocumentBox />
 				<StarDocumentBox />
 				<RecentReadDocumentBox />
+			</div>
+			<div className='grid grid-cols-12 gap-5'>
+				<DocumentMonthSummary className='col-span-12 md:col-span-8' />
+				<DocumentLabelSummary className='col-span-12 md:col-span-4' />
 			</div>
 			<div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
 				<Card>

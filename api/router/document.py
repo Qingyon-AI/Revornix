@@ -357,6 +357,18 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         task_chain.apply_async()
     return schemas.document.DocumentCreateResponse(document_id=db_document.id)
 
+@document_router.post('/label/summary', response_model=schemas.document.LabelSummaryResponse)
+async def get_label_summary(db: Session = Depends(get_db),
+                            user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    res = []
+    db_labels_summary = crud.document.get_labels_summary(db=db, user_id=user.id)
+    for label, count in db_labels_summary:
+        res.append(schemas.document.LabelSummaryItem(label_info=schemas.document.Label(id=label.id,
+                                                                                       name=label.name),
+                                                     count=count))
+    return schemas.document.LabelSummaryResponse(data=res)
+    
+
 @document_router.post("/label/list", response_model=schemas.document.LabelListResponse)
 async def list_label(db: Session = Depends(get_db), 
                      user: schemas.user.PrivateUserInfo = Depends(get_current_user)):

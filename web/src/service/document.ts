@@ -1,5 +1,5 @@
 import documentApi from '@/api/document'
-import { InifiniteScrollPagnitionDocumentInfo, LabelListResponse, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, CreateLabelResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InifiniteScrollPagnitionDocumentNoteInfo, SearchDocumentNoteRequest, DocumentMarkdownTransformRequest, DocumentAiSummaryRequest, SearchUnreadListRequest } from '@/generated'
+import { InifiniteScrollPagnitionDocumentInfo, LabelListResponse, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, CreateLabelResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InifiniteScrollPagnitionDocumentNoteInfo, SearchDocumentNoteRequest, DocumentMarkdownTransformRequest, DocumentAiSummaryRequest, SearchUnreadListRequest, LabelSummaryResponse } from '@/generated'
 import { request } from '@/lib/request'
 import { serverRequest } from '@/lib/request-server'
 
@@ -112,4 +112,8 @@ export const deleteDocument = async (data: DocumentDeleteRequest): Promise<Norma
     return await request(documentApi.deleteDocument, {
         data
     })
+}
+
+export const getDocumentLabelSummary = async (): Promise<LabelSummaryResponse> => {
+    return await request(documentApi.getDocumentLabelSummary)
 }

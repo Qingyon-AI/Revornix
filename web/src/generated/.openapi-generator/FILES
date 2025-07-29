@@ -87,6 +87,8 @@ models/InitialPasswordResponse.ts
 models/Label.ts
 models/LabelAddRequest.ts
 models/LabelListResponse.ts
+models/LabelSummaryItem.ts
+models/LabelSummaryResponse.ts
 models/MCPServerCreateRequest.ts
 models/MCPServerDeleteRequest.ts
 models/MCPServerInfo.ts

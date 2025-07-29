@@ -20,8 +20,9 @@ import { format, subDays } from 'date-fns';
 import { useMemo } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
 
-const DocumentMonthSummary = () => {
+const DocumentMonthSummary = ({ className }: { className?: string }) => {
 	const t = useTranslations();
 
 	const chartConfig = {
@@ -57,15 +58,15 @@ const DocumentMonthSummary = () => {
 	}, [data]);
 
 	return (
-		<Card>
+		<Card className={cn(className)}>
 			<CardHeader>
 				<CardTitle>{t('month_summary_title')}</CardTitle>
 				<CardDescription>{t('month_summary_description')}</CardDescription>
 			</CardHeader>
 			<CardContent>
-				{isFetching && <Skeleton className='w-full h-52' />}
+				{isFetching && <Skeleton className='w-full h-[250px]' />}
 				{!isFetching && data && (
-					<ChartContainer config={chartConfig} className='h-52 w-full'>
+					<ChartContainer config={chartConfig} className='mx-auto max-h-[250px] w-full'>
 						<BarChart accessibilityLayer data={fillMissingDates}>
 							<CartesianGrid vertical={false} />
 							<XAxis
@@ -79,7 +80,7 @@ const DocumentMonthSummary = () => {
 								cursor={false}
 								content={<ChartTooltipContent hideLabel />}
 							/>
-							<Bar dataKey='total' fill='var(--color-total)' radius={8} />
+							<Bar dataKey='total' fill='var(--color-total)' radius={6} />
 						</BarChart>
 					</ChartContainer>
 				)}
