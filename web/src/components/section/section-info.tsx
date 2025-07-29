@@ -43,8 +43,8 @@ const SectionInfo = ({ id }: { id: number }) => {
 			</div>
 			<div className='h-full overflow-auto pb-5'>
 				<div className='mb-5'>
-					<CustomImage
-						src={section?.cover?.name}
+					<img
+						src={section?.cover?.name ? section.cover.name : '/images/cover.jpg'}
 						alt='cover'
 						className='w-full h-64 object-cover'
 					/>
@@ -53,6 +53,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 					<div className='px-5 mb-3'>
 						<p className='text-xs text-muted-foreground'>
 							{t('section_updated_at')}
+							{' '}
 							{formatDistance(new Date(section.update_time), new Date(), {
 								addSuffix: true,
 								locale: locale === 'zh' ? zhCN : enUS,

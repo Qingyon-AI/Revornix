@@ -9,7 +9,6 @@ import { Badge } from '../ui/badge';
 import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
 import CustomImage from '../ui/custom-image';
-import Image from 'next/image';
 
 const DocumentInfo = ({ id }: { id: number }) => {
 	const t = useTranslations();
