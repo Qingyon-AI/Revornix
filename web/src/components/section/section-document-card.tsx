@@ -72,7 +72,7 @@ const SectionDocumentCard = ({
 				<img
 					src={document.cover}
 					alt='cover'
-					className='relative h-12 aspect-square rounded overflow-hidden shrink-0 object-cover'
+					className='relative h-16 aspect-square rounded overflow-hidden shrink-0 object-cover'
 				/>
 			)}
 		</div>

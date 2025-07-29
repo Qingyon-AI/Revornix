@@ -77,9 +77,6 @@ const DocumentContainer = ({ id }: { id: number }) => {
 
 	return (
 		<div className='h-full grid grid-cols-12 gap-5 px-5 pb-5'>
-			<Card className='col-span-4 py-0 overflow-hidden h-full'>
-				<DocumentInfo id={id} />
-			</Card>
 			<div className='col-span-8 h-full overflow-auto relative'>
 				{document?.category === 1 && (
 					<WebsiteDocumentDetail onFinishRead={handleFinishRead} id={id} />
@@ -91,6 +88,9 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					<QuickDocumentDetail onFinishRead={handleFinishRead} id={id} />
 				)}
 			</div>
+			<Card className='col-span-4 py-0 overflow-hidden h-full'>
+				<DocumentInfo id={id} />
+			</Card>
 		</div>
 	);
 };

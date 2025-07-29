@@ -142,7 +142,7 @@ const SectionConfiguration = ({ section_id }: { section_id: number }) => {
 			<SheetTrigger asChild>
 				<Button className='text-xs'>{t('section_configuration_title')}</Button>
 			</SheetTrigger>
-			<SheetContent>
+			<SheetContent onOpenAutoFocus={(e) => e.preventDefault()}>
 				<SheetHeader>
 					<SheetTitle>{t('section_configuration_title')}</SheetTitle>
 					<SheetDescription>
