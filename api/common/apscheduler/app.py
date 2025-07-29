@@ -1,5 +1,8 @@
+from dotenv import load_dotenv
+load_dotenv(override=True)
 import crud
 import schemas
+import markdown
 from common.sql import SessionLocal
 from common.logger import info_logger, exception_logger
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -73,7 +76,7 @@ async def send_notification(user_id:int,
         )
     )
     send_res = email_notify.send_notification(message=schemas.notification.Message(title=title,
-                                                                                   content=content))
+                                                                                   content=markdown.markdown(content)))
     if not send_res:
         raise schemas.error.CustomException(message="send notification failed", code=500)
     else:
@@ -109,3 +112,10 @@ def restart_all_tasks():
 scheduler.add_listener(job_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
 restart_all_tasks()
+
+    
+if __name__ == '__main__':
+    async def main():
+        await send_notification(user_id=1, notification_task_id=1)
+    import asyncio
+    asyncio.run(main())

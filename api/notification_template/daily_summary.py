@@ -20,23 +20,22 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
     async def generate(self):
         db = SessionLocal()
         now = datetime.now(tz=timezone.utc)
-        date_str = datetime.now(tz=timezone.utc)
         db_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                user_id=self.user_id,
-                                                               date=now.isoformat())
+                                                               date=now.date().isoformat())
         if db_section is None:
             return schemas.notification.Message(
-                title=f"Daily Summary Of {date_str}",
+                title=f"Daily Summary Of {now.date().isoformat()}",
                 content="No Summary Today"
             )
         md_file_name = db_section.md_file_name
-        db_user = crud.user.get_user_by_id(db=db, 
-                                           user_id=self.user_id)
-        remote_file_service = await get_user_remote_file_system(user_id=db_user.user_id)
+        remote_file_service = get_user_remote_file_system(user_id=self.user_id)
+        db_user = crud.user.get_user_by_id(db=db, user_id=self.user_id)
+        await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
         markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=md_file_name)
         db.close()
         return schemas.notification.Message(
-            title=f"Daily Summary Of {date_str}",
+            title=f"Daily Summary Of {now.date().isoformat()}",
             content=markdown_content
         )
         
