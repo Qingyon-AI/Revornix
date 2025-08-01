@@ -11,6 +11,9 @@ RUN rm -f /etc/apt/sources.list.d/debian.sources \
 # 安装系统依赖
 RUN apt-get update -o Acquire::Check-Valid-Until=false \
  && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    make \
     wget \
     sudo \
     libnss3 \
