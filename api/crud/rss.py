@@ -125,10 +125,14 @@ def delete_rss_servers(db: Session, ids: list[int], user_id: int):
     db.flush()
     
 def delete_rss_sections(db: Session, ids: list[int], user_id: int):
-    query = db.query(models.rss.RSSSection)
-    query = query.join(models.rss.RSSServer)
-    query = query.filter(models.rss.RSSSection.id.in_(ids),
-                         models.rss.RSSSection.delete_at == None,
-                         models.rss.RSSServer.user_id == user_id)
-    query.update({models.rss.RSSSection.delete_at: datetime.now(timezone.utc)})
+    db_rss_sections = db.query(models.rss.RSSSection) \
+            .join(models.rss.RSSServer) \
+            .filter(models.rss.RSSSection.id.in_(ids),
+                    models.rss.RSSSection.delete_at == None,
+                    models.rss.RSSServer.user_id == user_id) \
+            .all()
+    db_rss_section_ids = [id[0] for id in db_rss_sections]
+    db.query(models.rss.RSSSection) \
+        .filter(models.rss.RSSSection.id.in_(db_rss_section_ids)) \
+        .update({models.rss.RSSSection.delete_at: datetime.now(timezone.utc)})
     db.flush()
