@@ -31,10 +31,13 @@ import { Info, Loader2 } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
 import AddNotificationTarget from '@/components/notification/add-notification-target';
 import UpdateNotificationTarget from '@/components/notification/update-notification-target';
+import { useState } from 'react';
 
 const NotificationSourceManagePage = () => {
-	const queryClient = getQueryClient();
 	const t = useTranslations();
+	const queryClient = getQueryClient();
+
+	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
 	const { data, isFetching, isSuccess } = useQuery({
 		queryKey: ['notification-target'],
@@ -53,6 +56,7 @@ const NotificationSourceManagePage = () => {
 			queryClient.invalidateQueries({
 				queryKey: ['notification-source'],
 			});
+			setShowDeleteDialog(false);
 		},
 	});
 
@@ -61,7 +65,6 @@ const NotificationSourceManagePage = () => {
 			<div className='px-5 pb-5'>
 				<Alert className='mb-5'>
 					<Info />
-					<AlertTitle>{t('note')}</AlertTitle>
 					<AlertDescription>
 						{t('setting_notification_target_manage_alert')}
 					</AlertDescription>
@@ -90,7 +93,9 @@ const NotificationSourceManagePage = () => {
 												<UpdateNotificationTarget
 													notification_target_id={item.id}
 												/>
-												<AlertDialog>
+												<AlertDialog
+													open={showDeleteDialog}
+													onOpenChange={setShowDeleteDialog}>
 													<AlertDialogTrigger asChild>
 														<Button variant='destructive'>{t('delete')}</Button>
 													</AlertDialogTrigger>
@@ -100,7 +105,9 @@ const NotificationSourceManagePage = () => {
 																{t('warning')}
 															</AlertDialogTitle>
 															<AlertDialogDescription>
-																{t('setting_notification_target_manage_delete_alert')}
+																{t(
+																	'setting_notification_target_manage_delete_alert'
+																)}
 															</AlertDialogDescription>
 														</AlertDialogHeader>
 														<AlertDialogFooter>

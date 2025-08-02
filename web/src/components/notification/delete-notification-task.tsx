@@ -15,6 +15,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 const DeleteNotificationTask = ({
 	notification_task_id,
@@ -23,6 +24,7 @@ const DeleteNotificationTask = ({
 }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
+	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const mutateDelete = useMutation({
 		mutationFn: () => {
 			return deleteNotificationTask({
@@ -33,6 +35,7 @@ const DeleteNotificationTask = ({
 			queryClient.invalidateQueries({
 				queryKey: ['notification-task'],
 			});
+			setShowDeleteDialog(false);
 		},
 		onError(error, variables, context) {
 			toast.error(error.message);
@@ -40,7 +43,7 @@ const DeleteNotificationTask = ({
 	});
 	return (
 		<>
-			<AlertDialog>
+			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<AlertDialogTrigger asChild>
 					<Button variant={'outline'}>{t('delete')}</Button>
 				</AlertDialogTrigger>

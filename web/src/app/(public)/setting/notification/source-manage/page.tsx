@@ -31,10 +31,13 @@ import { toast } from 'sonner';
 import { Info, Loader2 } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
 import UpdateNotificationSource from '@/components/notification/update-notification-source';
+import { useState } from 'react';
 
 const NotificationSourceManagePage = () => {
-	const queryClient = getQueryClient();
 	const t = useTranslations();
+	const queryClient = getQueryClient();
+
+	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
 	const { data, isFetching, isSuccess } = useQuery({
 		queryKey: ['notification-source'],
@@ -61,7 +64,6 @@ const NotificationSourceManagePage = () => {
 			<div className='px-5 pb-5'>
 				<Alert className='mb-5'>
 					<Info />
-					<AlertTitle>{t('note')}</AlertTitle>
 					<AlertDescription>
 						{t('setting_notification_source_manage_alert')}
 					</AlertDescription>
@@ -90,7 +92,9 @@ const NotificationSourceManagePage = () => {
 												<UpdateNotificationSource
 													notification_source_id={item.id}
 												/>
-												<AlertDialog>
+												<AlertDialog
+													open={showDeleteDialog}
+													onOpenChange={setShowDeleteDialog}>
 													<AlertDialogTrigger asChild>
 														<Button variant='destructive'>{t('delete')}</Button>
 													</AlertDialogTrigger>
