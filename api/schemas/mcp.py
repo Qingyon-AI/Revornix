@@ -1,5 +1,8 @@
 from pydantic import BaseModel
 
+class MCPServerDetailRequest(BaseModel):
+    id: int
+
 class MCPServerCreateRequest(BaseModel):
     name: str
     category: int

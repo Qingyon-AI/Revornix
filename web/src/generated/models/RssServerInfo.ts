@@ -60,28 +60,28 @@ export interface RssServerInfo {
     address: string;
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof RssServerInfo
      */
-    create_time: string;
+    create_time: Date;
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof RssServerInfo
      */
-    update_time: string;
+    update_time: Date;
     /**
      * 
      * @type {Array<DocumentInfo>}
      * @memberof RssServerInfo
      */
-    documents: Array<DocumentInfo>;
+    documents?: Array<DocumentInfo>;
     /**
      * 
      * @type {Array<SectionInfo>}
      * @memberof RssServerInfo
      */
-    sections: Array<SectionInfo>;
+    sections?: Array<SectionInfo>;
 }
 
 /**
@@ -94,8 +94,6 @@ export function instanceOfRssServerInfo(value: object): value is RssServerInfo {
     if (!('address' in value) || value['address'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
-    if (!('documents' in value) || value['documents'] === undefined) return false;
-    if (!('sections' in value) || value['sections'] === undefined) return false;
     return true;
 }
 
@@ -113,10 +111,10 @@ export function RssServerInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         'title': json['title'],
         'description': json['description'],
         'address': json['address'],
-        'create_time': json['create_time'],
-        'update_time': json['update_time'],
-        'documents': ((json['documents'] as Array<any>).map(DocumentInfoFromJSON)),
-        'sections': ((json['sections'] as Array<any>).map(SectionInfoFromJSON)),
+        'create_time': (new Date(json['create_time'])),
+        'update_time': (new Date(json['update_time'])),
+        'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(DocumentInfoFromJSON)),
+        'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SectionInfoFromJSON)),
     };
 }
 
@@ -135,10 +133,10 @@ export function RssServerInfoToJSONTyped(value?: RssServerInfo | null, ignoreDis
         'title': value['title'],
         'description': value['description'],
         'address': value['address'],
-        'create_time': value['create_time'],
-        'update_time': value['update_time'],
-        'documents': ((value['documents'] as Array<any>).map(DocumentInfoToJSON)),
-        'sections': ((value['sections'] as Array<any>).map(SectionInfoToJSON)),
+        'create_time': ((value['create_time']).toISOString()),
+        'update_time': ((value['update_time']).toISOString()),
+        'documents': value['documents'] == null ? undefined : ((value['documents'] as Array<any>).map(DocumentInfoToJSON)),
+        'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SectionInfoToJSON)),
     };
 }
 

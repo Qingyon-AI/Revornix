@@ -18,6 +18,8 @@ import type {
   HTTPValidationError,
   MCPServerCreateRequest,
   MCPServerDeleteRequest,
+  MCPServerDetailRequest,
+  MCPServerInfo,
   MCPServerSearchRequest,
   MCPServerSearchResponse,
   MCPServerUpdateRequest,
@@ -30,6 +32,10 @@ import {
     MCPServerCreateRequestToJSON,
     MCPServerDeleteRequestFromJSON,
     MCPServerDeleteRequestToJSON,
+    MCPServerDetailRequestFromJSON,
+    MCPServerDetailRequestToJSON,
+    MCPServerInfoFromJSON,
+    MCPServerInfoToJSON,
     MCPServerSearchRequestFromJSON,
     MCPServerSearchRequestToJSON,
     MCPServerSearchResponseFromJSON,
@@ -48,6 +54,12 @@ export interface CreateServerMcpServerCreatePostRequest {
 
 export interface DeleteServerMcpServerDeletePostRequest {
     mCPServerDeleteRequest: MCPServerDeleteRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GetMcpServerDetailMcpServerDetailPostRequest {
+    mCPServerDetailRequest: MCPServerDetailRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -160,6 +172,53 @@ export class McpApi extends runtime.BaseAPI {
      */
     async deleteServerMcpServerDeletePost(requestParameters: DeleteServerMcpServerDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.deleteServerMcpServerDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Mcp Server Detail
+     */
+    async getMcpServerDetailMcpServerDetailPostRaw(requestParameters: GetMcpServerDetailMcpServerDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MCPServerInfo>> {
+        if (requestParameters['mCPServerDetailRequest'] == null) {
+            throw new runtime.RequiredError(
+                'mCPServerDetailRequest',
+                'Required parameter "mCPServerDetailRequest" was null or undefined when calling getMcpServerDetailMcpServerDetailPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/mcp/server/detail`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MCPServerDetailRequestToJSON(requestParameters['mCPServerDetailRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MCPServerInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Mcp Server Detail
+     */
+    async getMcpServerDetailMcpServerDetailPost(requestParameters: GetMcpServerDetailMcpServerDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MCPServerInfo> {
+        const response = await this.getMcpServerDetailMcpServerDetailPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -8,6 +8,27 @@ from common.dependencies import get_current_user, get_db
 
 rss_router = APIRouter()
 
+@rss_router.post('/detail', response_model=schemas.rss.RssServerInfo)
+async def getRssServerDetail(get_rss_server_detail_request: schemas.rss.GetRssServerDetailRequest,
+                             db: Session = Depends(get_db),
+                             current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_rss_server = crud.rss.get_rss_server_by_id(db=db,
+                                                  id=get_rss_server_detail_request.rss_id)
+    if db_rss_server is None:
+        return schemas.common.ErrorResponse(message='rss server not found', code=404)
+    rss_server_info = schemas.rss.RssServerInfo.model_validate(db_rss_server)
+        
+    rss_server_info.sections = []
+    db_rss_sections = crud.rss.get_sections_by_rss_id(db=db, rss_server_id=db_rss_server.id)
+    for db_rss_section in db_rss_sections:
+        rss_server_info.sections.append(schemas.rss.RssSectionInfo.model_validate(db_rss_section))
+        
+    rss_server_info.documents = []
+    db_rss_documents = crud.rss.get_documents_by_rss_id(db=db, rss_server_id=db_rss_server.id)
+    for db_rss_document in db_rss_documents:
+        rss_server_info.documents.append(schemas.rss.RssDocumentInfo.model_validate(db_rss_document))
+    return rss_server_info             
+
 @rss_router.post('/add', response_model=schemas.rss.AddRssServerResponse)
 async def addRssServer(add_rss_request: schemas.rss.AddRssServerRequest, 
                        db: Session = Depends(get_db), 

@@ -189,7 +189,7 @@ const MCPPage = () => {
 													</AlertDialogFooter>
 												</AlertDialogContent>
 											</AlertDialog>
-											<UpdateMcp mcp_server={mcp_server} />
+											<UpdateMcp mcp_id={mcp_server.id} />
 										</TableCell>
 									</TableRow>
 								);

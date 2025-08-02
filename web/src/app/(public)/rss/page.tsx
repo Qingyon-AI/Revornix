@@ -3,10 +3,8 @@
 import AddRss from '@/components/rss/add-rss';
 import RssCard from '@/components/rss/rss-card';
 import RssCardSkeleton from '@/components/rss/rss-card-skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { getQueryClient } from '@/lib/get-query-client';
 import { searchMineRssServer } from '@/service/rss';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';

@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import {
 	Card,
+	CardContent,
 	CardDescription,
 	CardFooter,
 	CardHeader,
@@ -24,6 +25,7 @@ import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useState } from 'react';
+import UpdateRss from './update-rss';
 
 const RssCard = ({ rss }: { rss: RssServerInfo }) => {
 	const t = useTranslations();
@@ -49,8 +51,16 @@ const RssCard = ({ rss }: { rss: RssServerInfo }) => {
 				<CardTitle>{rss.title}</CardTitle>
 				<CardDescription>{rss.description}</CardDescription>
 			</CardHeader>
+			<CardContent>
+				<p className='text-xs text-muted-foreground mb-1'>
+					累计文档{rss.documents?.length ?? 0}篇
+				</p>
+				<p className='text-xs text-muted-foreground'>
+					关联专栏{rss.sections?.length ?? 0}份
+				</p>
+			</CardContent>
 			<CardFooter className='flex justify-end gap-3'>
-				<Button>更新</Button>
+				<UpdateRss rss_id={rss.id} />
 				<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 					<AlertDialogTrigger asChild>
 						<Button variant={'secondary'}>删除</Button>

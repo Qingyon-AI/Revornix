@@ -80,6 +80,7 @@ models/FileUrlPrefixRequest.ts
 models/FileUrlPrefixResponse.ts
 models/FollowUserRequest.ts
 models/GenericFileSystemUploadResponse.ts
+models/GetRssServerDetailRequest.ts
 models/HTTPValidationError.ts
 models/InifiniteScrollPagnitionDocumentInfo.ts
 models/InifiniteScrollPagnitionDocumentNoteInfo.ts
@@ -96,6 +97,7 @@ models/LabelSummaryItem.ts
 models/LabelSummaryResponse.ts
 models/MCPServerCreateRequest.ts
 models/MCPServerDeleteRequest.ts
+models/MCPServerDetailRequest.ts
 models/MCPServerInfo.ts
 models/MCPServerSearchRequest.ts
 models/MCPServerSearchResponse.ts
@@ -179,6 +181,7 @@ models/TokenUpdateRequest.ts
 models/UpdateNotificationSourceRequest.ts
 models/UpdateNotificationTargetRequest.ts
 models/UpdateNotificationTaskRequest.ts
+models/UpdateRssServerRequest.ts
 models/UserEngineInfo.ts
 models/UserFileSystemDeleteRequest.ts
 models/UserFileSystemInfo.ts

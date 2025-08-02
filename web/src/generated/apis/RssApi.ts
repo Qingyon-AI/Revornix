@@ -18,10 +18,13 @@ import type {
   AddRssServerRequest,
   AddRssServerResponse,
   DeleteRssServerRequest,
+  GetRssServerDetailRequest,
   HTTPValidationError,
   InifiniteScrollPagnitionRssServerInfo,
   NormalResponse,
+  RssServerInfo,
   SearchRssServerRequest,
+  UpdateRssServerRequest,
 } from '../models/index';
 import {
     AddRssServerRequestFromJSON,
@@ -30,14 +33,20 @@ import {
     AddRssServerResponseToJSON,
     DeleteRssServerRequestFromJSON,
     DeleteRssServerRequestToJSON,
+    GetRssServerDetailRequestFromJSON,
+    GetRssServerDetailRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     InifiniteScrollPagnitionRssServerInfoFromJSON,
     InifiniteScrollPagnitionRssServerInfoToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+    RssServerInfoFromJSON,
+    RssServerInfoToJSON,
     SearchRssServerRequestFromJSON,
     SearchRssServerRequestToJSON,
+    UpdateRssServerRequestFromJSON,
+    UpdateRssServerRequestToJSON,
 } from '../models/index';
 
 export interface AddRssServerRssAddPostRequest {
@@ -52,8 +61,20 @@ export interface DeleteRssServerRssDeletePostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface GetRssServerDetailRssDetailPostRequest {
+    getRssServerDetailRequest: GetRssServerDetailRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface SearchRssServerRssSearchPostRequest {
     searchRssServerRequest: SearchRssServerRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UpdateRssServerRssUpdatePostRequest {
+    updateRssServerRequest: UpdateRssServerRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -158,6 +179,53 @@ export class RssApi extends runtime.BaseAPI {
     }
 
     /**
+     * Getrssserverdetail
+     */
+    async getRssServerDetailRssDetailPostRaw(requestParameters: GetRssServerDetailRssDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RssServerInfo>> {
+        if (requestParameters['getRssServerDetailRequest'] == null) {
+            throw new runtime.RequiredError(
+                'getRssServerDetailRequest',
+                'Required parameter "getRssServerDetailRequest" was null or undefined when calling getRssServerDetailRssDetailPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/rss/detail`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GetRssServerDetailRequestToJSON(requestParameters['getRssServerDetailRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RssServerInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Getrssserverdetail
+     */
+    async getRssServerDetailRssDetailPost(requestParameters: GetRssServerDetailRssDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RssServerInfo> {
+        const response = await this.getRssServerDetailRssDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Searchrssserver
      */
     async searchRssServerRssSearchPostRaw(requestParameters: SearchRssServerRssSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionRssServerInfo>> {
@@ -201,6 +269,53 @@ export class RssApi extends runtime.BaseAPI {
      */
     async searchRssServerRssSearchPost(requestParameters: SearchRssServerRssSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionRssServerInfo> {
         const response = await this.searchRssServerRssSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Updaterssserver
+     */
+    async updateRssServerRssUpdatePostRaw(requestParameters: UpdateRssServerRssUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['updateRssServerRequest'] == null) {
+            throw new runtime.RequiredError(
+                'updateRssServerRequest',
+                'Required parameter "updateRssServerRequest" was null or undefined when calling updateRssServerRssUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/rss/update`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateRssServerRequestToJSON(requestParameters['updateRssServerRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Updaterssserver
+     */
+    async updateRssServerRssUpdatePost(requestParameters: UpdateRssServerRssUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.updateRssServerRssUpdatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

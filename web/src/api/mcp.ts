@@ -5,4 +5,5 @@ export default {
     updateMCPServer: API_PREFIX + '/mcp/server/update',
     deleteMCPServer: API_PREFIX + '/mcp/server/delete',
     searchMCPServer: API_PREFIX + '/mcp/server/search',
+    getMCPServerDetail: API_PREFIX + '/mcp/server/detail',
 }

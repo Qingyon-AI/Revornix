@@ -6,6 +6,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	DialogTrigger,
 } from '@/components/ui/dialog';
 import {
 	Form,
@@ -24,18 +25,18 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import z from 'zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../ui/button';
 import { Loader2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { MCPServerInfo } from '@/generated';
-import { updateMCPServer } from '@/service/mcp';
+import { getMCPServerDetail, updateMCPServer } from '@/service/mcp';
 
-const UpdateMcp = ({ mcp_server }: { mcp_server: MCPServerInfo }) => {
+const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 	const t = useTranslations();
 
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
@@ -136,25 +137,32 @@ const UpdateMcp = ({ mcp_server }: { mcp_server: MCPServerInfo }) => {
 		toast.error(t('form_validate_failed'));
 	};
 
+	const { data } = useQuery({
+		queryKey: ['mcp-server-detail', mcp_id],
+		queryFn: () => getMCPServerDetail({ id: mcp_id }),
+	});
+
+	useEffect(() => {
+		if (!data) return;
+		mcpUpdateForm.reset({
+			id: data.id,
+			name: data.name,
+			category: data.category,
+			args: data.args,
+			cmd: data.cmd,
+			address: data.address,
+			enable: data.enable,
+		});
+	}, [data]);
+
 	return (
 		<>
-			<Button
-				size={'icon'}
-				onClick={() => {
-					mcpUpdateForm.reset({
-						id: mcp_server.id,
-						name: mcp_server.name,
-						category: mcp_server.category,
-						address: mcp_server.address,
-						cmd: mcp_server.cmd,
-						args: mcp_server.args,
-						enable: mcp_server.enable,
-					});
-					setShowUpdateDialog(true);
-				}}>
-				<Pencil />
-			</Button>
 			<Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
+				<DialogTrigger asChild>
+					<Button size={'icon'}>
+						<Pencil />
+					</Button>
+				</DialogTrigger>
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>{t('mcp_server_update_form_title')}</DialogTitle>

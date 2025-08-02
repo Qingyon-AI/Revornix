@@ -3,6 +3,9 @@ from .document import DocumentInfo
 from .section import SectionInfo
 from datetime import datetime
 
+class GetRssServerDetailRequest(BaseModel):
+    rss_id: int
+    
 class UpdateRssServerRequest(BaseModel):
     rss_id: int
     title: str | None = None
