@@ -55,6 +55,7 @@ def search_mcp_servers(db: Session,
     query = db.query(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.user_id == user_id,
                          models.mcp.MCPServer.delete_at == None)
+    query = query.order_by(models.mcp.MCPServer.id.desc())
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.mcp.MCPServer.name.like(f'%{keyword}%'))
     return query.all()
