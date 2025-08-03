@@ -6,7 +6,8 @@ from common.common import get_user_remote_file_system
 from datetime import datetime, timezone
 
 class DailySummaryNotificationTemplate(NotificationTemplate):
-    def __init__(self, user_id: int | None = None):
+    
+    def __init__(self):
         super().__init__(
             template_id=1,
             template_name="Daily Summary Template",
@@ -15,8 +16,10 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
             template_description_zh="这是一个每日总结模板",
             template_version="0.0.1"
         )
-        if user_id is not None:
-            self.user_id = user_id
+        
+    def init_user(self, user_id: int):
+        self.user_id = user_id
+        
     async def generate(self):
         db = SessionLocal()
         now = datetime.now(tz=timezone.utc)

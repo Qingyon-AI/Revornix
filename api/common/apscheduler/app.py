@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv(override=True)
 import crud
+import httpx
 import schemas
 import markdown
 import feedparser
@@ -25,24 +26,24 @@ def job_listener(event):
         info_logger.info(f'Job {event.job_id} executed')
 
 async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
-    db = SessionLocal()
+    response = httpx.get(rss_server.address, timeout=10)
+    response.raise_for_status()
     parsed = feedparser.parse(rss_server.address)
     if not parsed.entries:
         return
+    db = SessionLocal()
     try:
-        for index, entry in enumerate(parsed.entries):
+        for entry in parsed.entries:
             
-            if index > 0:
-                break;
-            
-            try:
-                entry_published = datetime.strptime(entry.published, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=timezone.utc) if hasattr(entry, "published") else None
-            except Exception:
-                entry_published = None
+            # 获取文档的最近更新时间
+            entry_published = datetime.strptime(entry.published, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=timezone.utc) if hasattr(entry, "published") else None
+            entry_updated = datetime.strptime(entry.updated, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=timezone.utc) if hasattr(entry, "updated") else None
                 
             existing_doc = crud.document.get_website_document_by_url(db=db, url=entry.link)
             if existing_doc:
-                if entry_published and existing_doc.update_time >= entry_published:
+                if entry_updated and existing_doc.update_time >= entry_updated:
+                    continue
+                elif entry_published and existing_doc.update_time >= entry_published:
                     continue
                 else:
                     existing_doc.update_time = datetime.now()
@@ -67,11 +68,11 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                     task_chain.apply_async()
             else:
                 db_base_document = crud.document.create_base_document(db=db,
-                                                                    creator_id=rss_server.user_id,
-                                                                    title=entry.title,
-                                                                    description=entry.summary,
-                                                                    category=1,
-                                                                    from_plat='rss')
+                                                                      creator_id=rss_server.user_id,
+                                                                      title=entry.title,
+                                                                      description=entry.summary,
+                                                                      category=1,
+                                                                      from_plat='rss')
                 db_rss_document = crud.rss.bind_document_to_rss(db=db,
                                                                 rss_server_id=rss_server.id,
                                                                 document_id=db_base_document.id)
@@ -96,7 +97,7 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
     finally:
         db.close()
 
-async def fetch_all_rss_sources():
+async def fetch_all_rss_sources_and_update():
     db = SessionLocal()
     db_rss_servers = crud.rss.get_all_rss_servers(db=db)
     for rss_server in db_rss_servers:
@@ -112,57 +113,23 @@ async def send_notification(user_id:int,
                             notification_task_id: int | None = None):
     db = SessionLocal()
     db_notification_task = crud.notification.get_notification_task_by_notification_task_id(db=db,
-                                                                                          notification_task_id=notification_task_id)
-    db_notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
-                                                                                                 notification_source_id=db_notification_task.notification_source_id)
-    db_notification_target = crud.notification.get_notification_target_by_notification_target_id(db=db,
-                                                                                                 notification_target_id=db_notification_task.notification_target_id)
-    if db_notification_source is None or db_notification_target is None:
-        raise schemas.error.CustomException(message="notification source or target not found", code=404)
-    if db_notification_source.category == 0:
-        db_notification_email_source = crud.notification.get_email_notification_source_by_notification_source_id(db=db,
-                                                                                                                 notification_source_id=db_notification_source.id)
-    if db_notification_target.category == 0:
-        db_notification_email_target = crud.notification.get_email_notification_target_by_notification_target_id(db=db,
-                                                                                                                 notification_target_id=db_notification_target.id)
+                                                                                           notification_task_id=notification_task_id)
     if db_notification_task.notification_content_type == 0:
         db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(db=db,
-                                                                                                                            notification_task_id=notification_task_id)
+                                                                                                                        notification_task_id=notification_task_id)
         title = db_notification_content_custom.title
         content = db_notification_content_custom.content
     elif db_notification_task.notification_content_type == 1:
         db_notification_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(db=db,
                                                                                                                             notification_task_id=notification_task_id)
         if db_notification_content_template.notification_template_id == 1:
-            template = DailySummaryNotificationTemplate(user_id=user_id)
+            template = DailySummaryNotificationTemplate()
+            template.init_user(user_id=user_id)
             generate_res = await template.generate()
             title = generate_res.title
             content = generate_res.content
-    email_notify = EmailNotify(
-        source=schemas.notification.NotificationSourceDetail(
-            id=db_notification_source.id,
-            title=db_notification_source.title,
-            description=db_notification_source.description,
-            category=db_notification_source.category,
-            email_notification_source=schemas.notification.EmailNotificationSource(
-                id=db_notification_email_source.id,
-                email=db_notification_email_source.email,
-                password=db_notification_email_source.password,
-                port=db_notification_email_source.port,
-                server=db_notification_email_source.server,
-            )
-        ),
-        target=schemas.notification.NotificationTargetDetail(
-            id=db_notification_target.id,
-            title=db_notification_target.title,
-            description=db_notification_target.description,
-            category=db_notification_target.category,
-            email_notification_target=schemas.notification.EmailNotificationTarget(
-                id=db_notification_email_target.id,
-                email=db_notification_email_target.email,
-            )
-        )
-    )
+    email_notify = EmailNotify(source_id=db_notification_task.notification_source_id,
+                               target_id=db_notification_task.notification_target_id)
     send_res = email_notify.send_notification(message=schemas.notification.Message(title=title,
                                                                                    content=markdown.markdown(content)))
     if not send_res:
@@ -177,38 +144,39 @@ async def send_notification(user_id:int,
         db.commit()
     db.close()  
 
-# restart all tasks when the program starts
-def restart_all_tasks():
-    info_logger.info("Restarting all tasks...")
-    db = SessionLocal()
-    db_notification_tasks = crud.notification.get_all_notification_tasks(db=db)
-    for db_notification_task in db_notification_tasks:
-        if not db_notification_task.enable: 
-            continue
-        scheduler.add_job(
-            func=send_notification,
-            trigger=CronTrigger.from_crontab(db_notification_task.cron_expr),
-            args=[db_notification_task.user_id,
-                  db_notification_task.id],
-            id=str(db_notification_task.id),
-            next_run_time=datetime.now()
-        )
-    info_logger.info("All tasks restarted")
-    db.close()
-
 scheduler.add_listener(job_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
-restart_all_tasks()
+info_logger.info("Restarting all apscheduler tasks...")
 
+db = SessionLocal()
+
+db_notification_tasks = crud.notification.get_all_notification_tasks(db=db)
+
+for db_notification_task in db_notification_tasks:
+    if not db_notification_task.enable: 
+        continue
+    scheduler.add_job(
+        func=send_notification,
+        trigger=CronTrigger.from_crontab(db_notification_task.cron_expr),
+        args=[db_notification_task.user_id,
+                db_notification_task.id],
+        id=str(db_notification_task.id),
+        next_run_time=datetime.now()
+    )
+    
 scheduler.add_job(
-    func=fetch_all_rss_sources,
+    func=fetch_all_rss_sources_and_update,
     trigger=CronTrigger.from_crontab("0 0 * * *"),
     id="fetch_all_rss_sources",
     next_run_time=datetime.now(tz=timezone.utc)
 )
 
-if __name__ == '__main__':
-    async def main():
-        await fetch_all_rss_sources()
-    import asyncio
-    asyncio.run(main())
+info_logger.info("All apscheduler tasks restarted")
+
+db.close()
+
+# if __name__ == '__main__':
+#     async def main():
+#         await fetch_all_rss_sources()
+#     import asyncio
+#     asyncio.run(main())

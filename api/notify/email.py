@@ -9,9 +9,9 @@ from common.logger import exception_logger
 
 class EmailNotify(NotifyProtocol):
     def __init__(self, 
-                 source: schemas.notification.NotificationSourceDetail, 
-                 target: schemas.notification.NotificationTargetDetail):
-        super().__init__(source=source, target=target)
+                 source_id: int, 
+                 target_id: int):
+        super().__init__(source_id, target_id)
         
     def send_notification(self, message: schemas.notification.Message) -> bool:
         smtp_server = self.source.email_notification_source.server

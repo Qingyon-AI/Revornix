@@ -32,7 +32,8 @@ async def websocket_ask_ai(websocket: WebSocket,
 @notification_router.post('/template/all', response_model=schemas.notification.NotificationTemplatesResponse)
 async def get_notification_templates(user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     data = []
-    daily_summary_template = DailySummaryNotificationTemplate(user_id=user.id)
+    daily_summary_template = DailySummaryNotificationTemplate()
+    daily_summary_template.init_user(user_id=user.id)
     data.append(schemas.notification.NotificationTemplate(
         id=daily_summary_template.template_id,
         name=daily_summary_template.template_name,
