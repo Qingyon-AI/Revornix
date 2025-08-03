@@ -53,27 +53,31 @@ const RssCard = ({ rss }: { rss: RssServerInfo }) => {
 			</CardHeader>
 			<CardContent>
 				<p className='text-xs text-muted-foreground mb-1'>
-					累计文档{rss.documents?.length ?? 0}篇
+					{t('rss_documents_count', {
+						document_count: rss.documents?.length ?? 0,
+					})}
 				</p>
 				<p className='text-xs text-muted-foreground'>
-					关联专栏{rss.sections?.length ?? 0}份
+					{t('rss_sections_count', {
+						section_count: rss.sections?.length ?? 0,
+					})}
 				</p>
 			</CardContent>
 			<CardFooter className='flex justify-end gap-3'>
 				<UpdateRss rss_id={rss.id} />
 				<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 					<AlertDialogTrigger asChild>
-						<Button variant={'secondary'}>删除</Button>
+						<Button variant={'secondary'}>{t('delete')}</Button>
 					</AlertDialogTrigger>
 					<AlertDialogContent>
 						<AlertDialogHeader>
-							<AlertDialogTitle>警告</AlertDialogTitle>
+							<AlertDialogTitle>{t('warning')}</AlertDialogTitle>
 							<AlertDialogDescription>
-								确认删除吗，一经删除，将不再自动爬取对应源。但注意过往已爬取的文档会保留。
+								{t('rss_delete_warning')}
 							</AlertDialogDescription>
 						</AlertDialogHeader>
 						<AlertDialogFooter>
-							<AlertDialogCancel>取消</AlertDialogCancel>
+							<AlertDialogCancel>{t('cancel')}ƒ</AlertDialogCancel>
 							<Button
 								variant='destructive'
 								disabled={mutateDeleteRssServer.isPending}
@@ -82,7 +86,7 @@ const RssCard = ({ rss }: { rss: RssServerInfo }) => {
 										ids: [rss.id],
 									});
 								}}>
-								确认
+								{t('confirm')}
 								{mutateDeleteRssServer.isPending && (
 									<Loader2 className='h-4 w-4 animate-spin' />
 								)}

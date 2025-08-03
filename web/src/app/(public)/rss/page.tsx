@@ -54,7 +54,7 @@ const RSSPage = () => {
 				<Alert className='mb-5'>
 					<Info />
 					<AlertDescription>
-						RSS订阅将会在后台自动识别源的更新，并且生成对应文档，同时归类更新对应专栏。识别频率默认60分钟一次。
+						{t('rss_page_tips')}
 					</AlertDescription>
 				</Alert>
 				<div className='flex justify-end mb-5'>

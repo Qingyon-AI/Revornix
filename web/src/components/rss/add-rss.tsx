@@ -101,16 +101,14 @@ const AddRss = () => {
 		<Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
 			<DialogTrigger asChild>
 				<Button>
-					增加Rss Server
+					{t('rss_add')}
 					<PlusCircle />
 				</Button>
 			</DialogTrigger>
 			<DialogContent className='max-h-[80vh] overflow-auto'>
 				<DialogHeader>
-					<DialogTitle>增加Rss Server</DialogTitle>
-					<DialogDescription>
-						增加Server后，Revornix会定期（默认情况下60分钟一次）通过订阅源的变动来抓取对应页面，并且新建对应文档。
-					</DialogDescription>
+					<DialogTitle>{t('rss_add')}</DialogTitle>
+					<DialogDescription>{t('rss_add_tips')}</DialogDescription>
 				</DialogHeader>
 
 				<Form {...form}>
@@ -122,7 +120,9 @@ const AddRss = () => {
 								return (
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
-											<FormLabel className='col-span-3'>标题</FormLabel>
+											<FormLabel className='col-span-3'>
+												{t('rss_form_title')}
+											</FormLabel>
 											<div className='col-span-9'>
 												<Input {...field} />
 											</div>
@@ -139,7 +139,9 @@ const AddRss = () => {
 								return (
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
-											<FormLabel className='col-span-3'>描述</FormLabel>
+											<FormLabel className='col-span-3'>
+												{t('rss_form_description')}
+											</FormLabel>
 											<Textarea {...field} className='col-span-9' />
 										</div>
 										<FormMessage />
@@ -154,7 +156,9 @@ const AddRss = () => {
 								return (
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
-											<FormLabel className='col-span-3'>源</FormLabel>
+											<FormLabel className='col-span-3'>
+												{t('rss_form_address')}
+											</FormLabel>
 											<Input {...field} className='col-span-9' />
 										</div>
 										<FormMessage />
@@ -169,7 +173,9 @@ const AddRss = () => {
 								render={({ field }) => {
 									return (
 										<FormItem className='grid grid-cols-12 gap-2'>
-											<FormLabel className='col-span-3'>专栏</FormLabel>
+											<FormLabel className='col-span-3'>
+												{t('rss_form_sections')}
+											</FormLabel>
 											<div className='col-span-9'>
 												<MultipleSelector
 													defaultOptions={sections.data.map((section) => {
@@ -188,7 +194,7 @@ const AddRss = () => {
 													}
 													emptyIndicator={
 														<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-															暂无专栏
+															{t('rss_form_section_empty')}
 														</p>
 													}
 												/>
@@ -204,10 +210,10 @@ const AddRss = () => {
 				</Form>
 				<DialogFooter>
 					<DialogClose asChild>
-						<Button>取消</Button>
+						<Button>{t('cancel')}</Button>
 					</DialogClose>
 					<Button type='submit' form='add-form'>
-						提交
+						{t('submit')}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

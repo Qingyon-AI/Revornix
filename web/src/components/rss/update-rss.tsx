@@ -67,7 +67,6 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 	const mutateAddRssServer = useMutation({
 		mutationFn: updateRssServer,
 		onSuccess(data, variables, context) {
-			toast.success('更新成功');
 			queryClient.invalidateQueries({
 				queryKey: ['searchMyRssServers', ''],
 			});
@@ -77,7 +76,7 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 			setShowUpdateDialog(false);
 		},
 		onError(error, variables, context) {
-			toast.error('更新失败');
+			toast.error(error.message);
 			console.error(error);
 		},
 	});
@@ -124,14 +123,12 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 	return (
 		<Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
 			<DialogTrigger asChild>
-				<Button>更新</Button>
+				<Button>{t('update')}</Button>
 			</DialogTrigger>
 			<DialogContent className='max-h-[80vh] overflow-auto'>
 				<DialogHeader>
-					<DialogTitle>更新RSS</DialogTitle>
-					<DialogDescription>
-						更新后，原订阅涉及的自动爬取会停止，但保留已抓取文档。
-					</DialogDescription>
+					<DialogTitle>{t('rss_update_title')}</DialogTitle>
+					<DialogDescription>{t('rss_update_tips')}</DialogDescription>
 				</DialogHeader>
 				<Form {...form}>
 					<form id='update-form' className='space-y-5' onSubmit={handleSubmit}>
@@ -142,7 +139,9 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 								return (
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
-											<FormLabel className='col-span-3'>标题</FormLabel>
+											<FormLabel className='col-span-3'>
+												{t('rss_form_title')}
+											</FormLabel>
 											<div className='col-span-9'>
 												<Input {...field} />
 											</div>
@@ -159,7 +158,9 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 								return (
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
-											<FormLabel className='col-span-3'>描述</FormLabel>
+											<FormLabel className='col-span-3'>
+												{t('rss_form_description')}
+											</FormLabel>
 											<Textarea {...field} className='col-span-9' />
 										</div>
 										<FormMessage />
@@ -174,7 +175,9 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 								return (
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
-											<FormLabel className='col-span-3'>源</FormLabel>
+											<FormLabel className='col-span-3'>
+												{t('rss_form_address')}
+											</FormLabel>
 											<Input {...field} className='col-span-9' />
 										</div>
 										<FormMessage />
@@ -190,7 +193,9 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 									return (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>专栏</FormLabel>
+												<FormLabel className='col-span-3'>
+													{t('rss_form_sections')}
+												</FormLabel>
 												<div className='col-span-9'>
 													<MultipleSelector
 														defaultOptions={sections.data.map((section) => {
@@ -212,7 +217,7 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 														}
 														emptyIndicator={
 															<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-																暂无专栏
+																{t('rss_form_section_empty')}
 															</p>
 														}
 													/>
@@ -230,10 +235,10 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 				</Form>
 				<DialogFooter>
 					<DialogClose asChild>
-						<Button variant='secondary'>取消</Button>
+						<Button variant='secondary'>{t('cancel')}</Button>
 					</DialogClose>
 					<Button type='submit' form='update-form'>
-						确认
+						{t('confirm')}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
