@@ -125,7 +125,9 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 			<DialogTrigger asChild>
 				<Button>{t('update')}</Button>
 			</DialogTrigger>
-			<DialogContent className='max-h-[80vh] overflow-auto'>
+			<DialogContent
+				className='max-h-[80vh] overflow-auto'
+				onOpenAutoFocus={(e) => e.preventDefault()}>
 				<DialogHeader>
 					<DialogTitle>{t('rss_update_title')}</DialogTitle>
 					<DialogDescription>{t('rss_update_tips')}</DialogDescription>

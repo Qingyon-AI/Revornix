@@ -186,7 +186,9 @@ const PassWordUpdate = () => {
 					<Dialog
 						open={showPasswordUpdateDialog}
 						onOpenChange={setShowPasswordUpdateDialog}>
-						<DialogContent className='sm:max-w-md'>
+						<DialogContent
+							className='sm:max-w-md'
+							onOpenAutoFocus={(e) => e.preventDefault()}>
 							<DialogHeader>
 								<DialogTitle>{t('account_password_update')}</DialogTitle>
 							</DialogHeader>

@@ -108,7 +108,9 @@ const NicknameUpdate = () => {
 			<Dialog
 				open={showNicknameUpdateFormDialog}
 				onOpenChange={setShowNicknameUpdateFormDialog}>
-				<DialogContent className='sm:max-w-md'>
+				<DialogContent
+					className='sm:max-w-md'
+					onOpenAutoFocus={(e) => e.preventDefault()}>
 					<DialogHeader>
 						<DialogTitle>{t('account_nickname_update')}</DialogTitle>
 					</DialogHeader>
