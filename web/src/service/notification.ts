@@ -1,5 +1,5 @@
 import notificationApi from '@/api/notification'
-import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, DeleteNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, NotificationSourceDetail, NotificationSourceDetailRequest, AddNotificationTargetRequest, DeleteNotificationTargetRequest, NotificationTargetDetailRequest, UpdateNotificationTargetRequest, NotificationTargetDetail, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTaskResponse, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse } from '@/generated';
+import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, DeleteNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, NotificationSourceDetail, NotificationSourceDetailRequest, AddNotificationTargetRequest, DeleteNotificationTargetRequest, NotificationTargetDetailRequest, UpdateNotificationTargetRequest, NotificationTargetDetail, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTaskResponse, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, NotificationTargetsResponse } from '@/generated';
 import { request } from '@/lib/request';
 
 export const deleteNotificationRecords = async (data: DeleteNotificationRecordRequest): Promise<NormalResponse> => {
@@ -76,7 +76,7 @@ export const getMineNotificationTargetDetail = async (data: NotificationTargetDe
     })
 }
 
-export const getMineNotificationTargets = async (): Promise<NotificationSourcesResponse> => {
+export const getMineNotificationTargets = async (): Promise<NotificationTargetsResponse> => {
     return await request(notificationApi.getMineNotificationTargets)
 }
 

@@ -11,7 +11,13 @@ class EmailNotify(NotifyProtocol):
     def __init__(self, 
                  source_id: int, 
                  target_id: int):
-        super().__init__(source_id, target_id)
+        super().__init__(notify_uuid='e8118c5a5ff4418cafe6f1bc5914f598',
+                         notify_name='EmailNotify',
+                         notify_name_zh='电子邮件通知',
+                         notify_description='Send notification via email',
+                         notify_description_zh='通过电子邮件发送通知',
+                         source_id=source_id, 
+                         target_id=target_id)
         
     def send_notification(self, message: schemas.notification.Message) -> bool:
         smtp_server = self.source.email_notification_source.server

@@ -9,15 +9,19 @@ class NotifyProtocol(Protocol):
     target: schemas.notification.NotificationTargetDetail | None = None
     
     def __init__(self, 
-                 notify_name: str | None = None, 
-                 notify_version: str | None = None, 
+                 notify_uuid: str,
+                 notify_name: str, 
+                 notify_name_zh: str,
                  notify_description: str | None = None, 
+                 notify_description_zh: str | None = None,
                  source_id: int | None = None, 
                  target_id: int | None = None):
         db = SessionLocal()
+        self.notify_uuid = notify_uuid
         self.notify_name = notify_name
-        self.notify_version = notify_version
+        self.notify_name_zh = notify_name_zh
         self.notify_description = notify_description
+        self.notify_description_zh = notify_description_zh
         self.source_id = source_id
         self.target_id = target_id
         db_notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,

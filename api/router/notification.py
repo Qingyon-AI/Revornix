@@ -268,7 +268,7 @@ async def delete_notification_target(delete_notification_target_request: schemas
                                      db: Session = Depends(get_db),
                                      user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     crud.notification.delete_notification_targets_by_notification_target_ids(db=db,
-                                                                             user_id=user.id,
+                                                                             creator_id=user.id,
                                                                              notification_target_ids=delete_notification_target_request.notification_target_ids)
     db.commit()
     return schemas.common.NormalResponse(message="success")
@@ -364,7 +364,7 @@ async def update_email_source(update_notification_source_request: schemas.notifi
 @notification_router.post("/source/mine", response_model=schemas.notification.NotificationSourcesResponse)
 async def get_email_source(db: Session = Depends(get_db),
                            user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    notification_sources = crud.notification.get_notification_sources_by_user_id(db=db, user_id=user.id)
+    notification_sources = crud.notification.get_notification_sources_by_creator_id(db=db, creator_id=user.id)
     return schemas.notification.NotificationSourcesResponse(data=notification_sources)
 
 @notification_router.post("/source/detail", response_model=schemas.notification.NotificationSourceDetail)
@@ -375,7 +375,7 @@ async def get_notification_detail(notification_source_detail_request: schemas.no
                                                                                               notification_source_id=notification_source_detail_request.notification_source_id)
     if notification_source is None:
         raise schemas.error.CustomException(message="notification source not found", code=404)
-    if notification_source.user_id != user.id:
+    if notification_source.creator_id != user.id:
         raise schemas.error.CustomException(message="you don't have permission to access this notification source", code=403)
 
     if notification_source.category == 0:
@@ -403,7 +403,7 @@ async def add_email_source(add_notification_source_request: schemas.notification
                            db: Session = Depends(get_db),
                            user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     db_notification_source = crud.notification.create_notification_source(db=db, 
-                                                                          user_id=user.id, 
+                                                                          creator_id=user.id, 
                                                                           title=add_notification_source_request.title,
                                                                           description=add_notification_source_request.description,
                                                                           category=add_notification_source_request.category)
@@ -422,10 +422,10 @@ async def delete_email_source(delete_email_source_request: schemas.notification.
                               db: Session = Depends(get_db),
                               user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     crud.notification.delete_notification_sources_by_notification_source_ids(db=db, 
-                                                                             user_id=user.id,
+                                                                             creator_id=user.id,
                                                                              notification_source_ids=delete_email_source_request.notification_source_ids)
     crud.notification.delete_email_notification_sources_by_notification_source_ids(db=db,
-                                                                                   user_id=user.id,
+                                                                                   creator_id=user.id,
                                                                                    notification_source_ids=delete_email_source_request.notification_source_ids)
     db.commit()
     return schemas.common.NormalResponse(message="success")

@@ -8,6 +8,7 @@ import {
 	DialogDescription,
 	DialogFooter,
 	DialogTitle,
+	DialogTrigger,
 } from '@/components/ui/dialog';
 import {
 	Form,
@@ -104,12 +105,14 @@ const AddNotificationSource = () => {
 
 	return (
 		<>
-			<Button onClick={() => setShowAddDialog(true)}>
-				{t('setting_notification_source_manage_add_form_label')}
-				<PlusCircleIcon />
-			</Button>
 			<Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-				<DialogContent>
+				<DialogTrigger asChild>
+					<Button>
+						{t('setting_notification_source_manage_add_form_label')}
+						<PlusCircleIcon />
+					</Button>
+				</DialogTrigger>
+				<DialogContent className='max-h-[80vh] overflow-auto'>
 					<DialogTitle>
 						{t('setting_notification_source_manage_add_form_label')}
 					</DialogTitle>

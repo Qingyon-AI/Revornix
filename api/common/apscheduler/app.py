@@ -114,6 +114,8 @@ async def send_notification(user_id:int,
     db = SessionLocal()
     db_notification_task = crud.notification.get_notification_task_by_notification_task_id(db=db,
                                                                                            notification_task_id=notification_task_id)
+    if db_notification_task is None:
+        raise schemas.error.CustomException(message="notification task not found", code=404)
     if db_notification_task.notification_content_type == 0:
         db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(db=db,
                                                                                                                         notification_task_id=notification_task_id)
@@ -166,7 +168,7 @@ for db_notification_task in db_notification_tasks:
     
 scheduler.add_job(
     func=fetch_all_rss_sources_and_update,
-    trigger=CronTrigger.from_crontab("0 0 * * *"),
+    trigger=CronTrigger.from_crontab("0 * * * *"),
     id="fetch_all_rss_sources",
     next_run_time=datetime.now(tz=timezone.utc)
 )
