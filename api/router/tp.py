@@ -7,7 +7,7 @@ import crud
 from fastapi.encoders import jsonable_encoder
 from celery import group, chain
 from datetime import datetime, timezone
-from common.celery.app import update_ai_summary, add_embedding, update_website_document_markdown_with_jina, init_website_document_info, update_sections, init_file_document_info
+from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, init_file_document_info
 from common.dependencies import get_db, get_current_user_with_api_key
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
@@ -58,8 +58,8 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
-            title='加载中...',
-            description='加载中...',
+            title='Website Analysing...',
+            description='Website Analysing...',
             category=document_create_request.category,
             from_plat=document_create_request.from_plat
         )
@@ -101,11 +101,10 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                  document_id=db_document.id)
         db.commit()
         first_task = init_website_document_info.si(db_document.id, user.id)
-        second_task = update_website_document_markdown_with_jina.si(db_document.id, user.id)
-        third_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(document_create_request.sections, db_document.id, user.id)]
+        second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(document_create_request.sections, db_document.id, user.id)]
         if document_create_request.auto_summary:
-            third_tasks.append(update_ai_summary.si(db_document.id, user.id))
-        task_chain = chain(first_task, second_task, group(third_tasks))
+            second_tasks.append(update_ai_summary.si(db_document.id, user.id))
+        task_chain = chain(first_task, group(second_tasks))
         task_chain.apply_async()
     elif document_create_request.category == 0:
         db_document = crud.document.create_base_document(
@@ -113,8 +112,8 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             creator_id=user.id,
             category=document_create_request.category,
             from_plat=document_create_request.from_plat,
-            title=f'文件文档{now}',
-            description=f'文件文档{now}'
+            title=f'File document analysing...',
+            description=f'File document analysing...'
         )
         db_file_document = crud.document.create_file_document(db=db,
                                                               document_id=db_document.id,
@@ -137,9 +136,9 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
-                                                           title=f'{now.date()}总结',
+                                                           title=f'{now.date()} Summary',
                                                            public=False,
-                                                           description=f'这篇文档是{now.date()}的所有文档的总结')
+                                                           description=f'This document is the summary of all documents on {now.date()}.')
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,
                                               user_id=user.id,
@@ -169,8 +168,8 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             creator_id=user.id,
             category=document_create_request.category,
             from_plat=document_create_request.from_plat,
-            title=f'速记文档{now}',
-            description=f'速记文档{now}'
+            title=f'Quick Note saved at {now}',
+            description=f'Quick Note saved at {now}'
         )
         db_quick_note_document = crud.document.create_quick_note_document(db=db,
                                                                           document_id=db_document.id,
@@ -190,9 +189,9 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
-                                                           title=f'{now.date()}总结',
+                                                           title=f'{now.date()} Summary',
                                                            public=False,
-                                                           description=f'这篇文档是{now.date()}的所有文档的总结')
+                                                           description=f'This document is the summary of all documents on {now.date()}.')
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,
                                               user_id=user.id,
