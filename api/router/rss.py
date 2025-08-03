@@ -4,6 +4,7 @@ import models
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime
+from common.apscheduler.app import scheduler
 from common.dependencies import get_current_user, get_db
 
 rss_router = APIRouter()

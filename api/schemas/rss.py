@@ -38,6 +38,7 @@ class RssDocumentInfo(BaseModel):
 
 class RssServerInfo(BaseModel):
     id: int
+    user_id: int
     title: str
     description: str
     address: str

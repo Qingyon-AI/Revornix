@@ -3,14 +3,18 @@ load_dotenv(override=True)
 import crud
 import schemas
 import markdown
+import feedparser
 from common.sql import SessionLocal
 from common.logger import info_logger, exception_logger
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from apscheduler.triggers.cron import CronTrigger
 from notify.email import EmailNotify
-from datetime import datetime
+from datetime import datetime, timezone
+from common.sql import SessionLocal
 from notification_template.daily_summary import DailySummaryNotificationTemplate
+from common.celery.app import add_embedding, update_sections, init_website_document_info
+from celery import chain, group
 
 scheduler = AsyncIOScheduler()
 
@@ -19,6 +23,90 @@ def job_listener(event):
         exception_logger.error(f'Job {event.job_id} failed')
     else:
         info_logger.info(f'Job {event.job_id} executed')
+
+async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
+    db = SessionLocal()
+    parsed = feedparser.parse(rss_server.address)
+    if not parsed.entries:
+        return
+    try:
+        for index, entry in enumerate(parsed.entries):
+            
+            if index > 0:
+                break;
+            
+            try:
+                entry_published = datetime.strptime(entry.published, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=timezone.utc) if hasattr(entry, "published") else None
+            except Exception:
+                entry_published = None
+                
+            existing_doc = crud.document.get_website_document_by_url(db=db, url=entry.link)
+            if existing_doc:
+                if entry_published and existing_doc.update_time >= entry_published:
+                    continue
+                else:
+                    existing_doc.update_time = datetime.now()
+                    existing_doc.title = entry.title
+                    existing_doc.description = entry.summary
+                    db.commit()
+                    db_website_document = crud.document.get_website_document_by_document_id(db=db, 
+                                                                                            document_id=existing_doc.id)
+                    crud.document.delete_website_document_by_website_document_id(db=db, 
+                                                                                 user_id=existing_doc.creator_id,
+                                                                                 website_document_id=db_website_document.id)
+                    db_new_website_document = crud.document.create_website_document(db=db,
+                                                                                    url=entry.link,
+                                                                                    document_id=existing_doc.id)
+                    db_document_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                                                      document_id=existing_doc.id)
+                    db_document_transform_task.status = 0
+                    db.commit()
+                    first_task = init_website_document_info.si(existing_doc.id, rss_server.user_id)
+                    second_tasks = [add_embedding.si(existing_doc.id, rss_server.user_id), update_sections.si([section.id for section in rss_server.sections], existing_doc.id, rss_server.user_id)]
+                    task_chain = chain(first_task, group(second_tasks))
+                    task_chain.apply_async()
+            else:
+                db_base_document = crud.document.create_base_document(db=db,
+                                                                    creator_id=rss_server.user_id,
+                                                                    title=entry.title,
+                                                                    description=entry.summary,
+                                                                    category=1,
+                                                                    from_plat='rss')
+                db_rss_document = crud.rss.bind_document_to_rss(db=db,
+                                                                rss_server_id=rss_server.id,
+                                                                document_id=db_base_document.id)
+                crud.document.bind_document_to_user(db=db,
+                                                    user_id=rss_server.user_id,
+                                                    document_id=db_base_document.id,
+                                                    authority='owner')
+                db_website_document = crud.document.create_website_document(db=db, 
+                                                                            url=entry.link, 
+                                                                            document_id=db_base_document.id)
+                crud.task.create_document_transform_task(db=db,
+                                                         user_id=rss_server.user_id,
+                                                         document_id=db_base_document.id)
+                db.commit()
+                first_task = init_website_document_info.si(db_base_document.id, rss_server.user_id)
+                second_tasks = [add_embedding.si(db_base_document.id, rss_server.user_id), update_sections.si([section.id for section in rss_server.sections], db_base_document.id, rss_server.user_id)]
+                task_chain = chain(first_task, group(second_tasks))
+                task_chain.apply_async()
+    except Exception as e:
+        exception_logger.error(f'Error while fetching and saving rss server {rss_server.id}: {e}')
+        db.rollback()
+    finally:
+        db.close()
+
+async def fetch_all_rss_sources():
+    db = SessionLocal()
+    db_rss_servers = crud.rss.get_all_rss_servers(db=db)
+    for rss_server in db_rss_servers:
+        rss_server_info = schemas.rss.RssServerInfo.model_validate(rss_server)
+        rss_server_info.sections = []
+        db_rss_sections = crud.rss.get_sections_by_rss_id(db=db, rss_server_id=rss_server.id)
+        for db_rss_section in db_rss_sections:
+            rss_server_info.sections.append(schemas.rss.RssSectionInfo.model_validate(db_rss_section))
+        await fetch_and_save(rss_server_info)
+    db.close()
 
 async def send_notification(user_id:int,
                             notification_task_id: int | None = None):
@@ -87,8 +175,7 @@ async def send_notification(user_id:int,
                                                      notification_source_id=db_notification_task.notification_source_id,
                                                      notification_target_id=db_notification_task.notification_target_id)
         db.commit()
-    db.close()
-        
+    db.close()  
 
 # restart all tasks when the program starts
 def restart_all_tasks():
@@ -113,9 +200,15 @@ scheduler.add_listener(job_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
 restart_all_tasks()
 
-    
+scheduler.add_job(
+    func=fetch_all_rss_sources,
+    trigger=CronTrigger.from_crontab("0 0 * * *"),
+    id="fetch_all_rss_sources",
+    next_run_time=datetime.now(tz=timezone.utc)
+)
+
 if __name__ == '__main__':
     async def main():
-        await send_notification(user_id=1, notification_task_id=1)
+        await fetch_all_rss_sources()
     import asyncio
     asyncio.run(main())

@@ -35,6 +35,11 @@ def bind_document_to_rss(db: Session, rss_server_id: int, document_id: int):
     db.flush()
     return db_rss_document
 
+def get_all_rss_servers(db: Session):
+    query = db.query(models.rss.RSSServer)
+    query = query.filter(models.rss.RSSServer.delete_at == None)
+    return query.all()
+
 def search_user_rss_servers(db: Session, 
                             user_id: int, 
                             start: int | None = None, 

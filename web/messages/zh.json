@@ -519,6 +519,7 @@
     "document_from_plat": "来源",
     "document_from_plat_website": "网站",
     "document_from_plat_api": "API",
+    "document_from_plat_rss": "RSS",
     "document_from_plat_others": "其他",
     "document_category": "文档类型",
     "document_category_quick_note": "速记",

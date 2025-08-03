@@ -65,6 +65,8 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 							? t('document_from_plat_website')
 							: document.from_plat === 'api'
 							? t('document_from_plat_api')
+							: document.from_plat === 'rss'
+							? t('document_from_plat_rss')
 							: t('document_from_plat_others')}
 					</div>
 					<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
