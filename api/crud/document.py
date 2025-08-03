@@ -108,6 +108,15 @@ def bind_labels_to_document(db: Session,
     db.flush()
     return db_document_labels
 
+def get_website_document_by_url(db: Session, 
+                                url: str):
+    query = db.query(models.document.Document)
+    query = query.join(models.document.WebsiteDocument)
+    query = query.filter(models.document.WebsiteDocument.url == url,
+                         models.document.WebsiteDocument.delete_at == None,
+                         models.document.Document.delete_at == None)
+    return query.first()
+
 def get_sections_by_document_id(db: Session,
                                 document_id: int):
     query = db.query(models.section.Section)
@@ -889,3 +898,19 @@ def delete_document_notes_by_user_id_and_note_ids(db: Session,
                          models.document.DocumentNote.delete_at == None)
     query = query.update({models.document.DocumentNote.delete_at: delete_time})
     db.flush()
+    
+def delete_website_document_by_website_document_id(db: Session, 
+                                                   user_id: int,
+                                                   website_document_id: int):
+    delete_time = datetime.now(timezone.utc)
+    db_website_documents = db.query(models.document.WebsiteDocument)\
+        .join(models.document.UserDocument, models.document.WebsiteDocument.document_id == models.document.UserDocument.document_id)\
+        .filter(models.document.WebsiteDocument.id == website_document_id,
+                models.document.WebsiteDocument.delete_at == None,
+                models.document.UserDocument.user_id == user_id)\
+        .all()
+    db_website_document_ids = [website_document.id for website_document in db_website_documents]
+    db.query(models.document.WebsiteDocument)\
+        .filter(models.document.WebsiteDocument.id.in_(db_website_document_ids),
+                models.document.WebsiteDocument.delete_at == None)\
+        .update({models.document.WebsiteDocument.delete_at: delete_time}, synchronize_session=False)

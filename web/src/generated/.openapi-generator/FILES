@@ -6,6 +6,7 @@ apis/EngineApi.ts
 apis/FileSystemApi.ts
 apis/McpApi.ts
 apis/NotificationApi.ts
+apis/RssApi.ts
 apis/SectionApi.ts
 apis/TpApi.ts
 apis/UserApi.ts
@@ -14,6 +15,8 @@ index.ts
 models/AddNotificationSourceRequest.ts
 models/AddNotificationTargetRequest.ts
 models/AddNotificationTaskRequest.ts
+models/AddRssServerRequest.ts
+models/AddRssServerResponse.ts
 models/AliyunOSSPresignUploadURLRequest.ts
 models/AliyunOSSPresignUploadURLResponse.ts
 models/AllMySectionsResponse.ts
@@ -42,6 +45,7 @@ models/DeleteNotificationRecordRequest.ts
 models/DeleteNotificationSourceRequest.ts
 models/DeleteNotificationTargetRequest.ts
 models/DeleteNotificationTaskRequest.ts
+models/DeleteRssServerRequest.ts
 models/Document.ts
 models/DocumentAiSummaryRequest.ts
 models/DocumentCreateRequest.ts
@@ -76,10 +80,12 @@ models/FileUrlPrefixRequest.ts
 models/FileUrlPrefixResponse.ts
 models/FollowUserRequest.ts
 models/GenericFileSystemUploadResponse.ts
+models/GetRssServerDetailRequest.ts
 models/HTTPValidationError.ts
 models/InifiniteScrollPagnitionDocumentInfo.ts
 models/InifiniteScrollPagnitionDocumentNoteInfo.ts
 models/InifiniteScrollPagnitionNotificationRecord.ts
+models/InifiniteScrollPagnitionRssServerInfo.ts
 models/InifiniteScrollPagnitionSectionCommentInfo.ts
 models/InifiniteScrollPagnitionSectionInfo.ts
 models/InifiniteScrollPagnitionUserPublicInfo.ts
@@ -91,6 +97,7 @@ models/LabelSummaryItem.ts
 models/LabelSummaryResponse.ts
 models/MCPServerCreateRequest.ts
 models/MCPServerDeleteRequest.ts
+models/MCPServerDetailRequest.ts
 models/MCPServerInfo.ts
 models/MCPServerSearchRequest.ts
 models/MCPServerSearchResponse.ts
@@ -137,6 +144,7 @@ models/QuickNoteDocumentInfo.ts
 models/ReadNotificationRecordRequest.ts
 models/ReadRequest.ts
 models/ReferenceItem.ts
+models/RssServerInfo.ts
 models/S3PresignUploadURLRequest.ts
 models/S3PresignUploadURLResponse.ts
 models/SearchAllMyDocumentsRequest.ts
@@ -147,6 +155,7 @@ models/SearchMyStarDocumentsRequest.ts
 models/SearchNotificationRecordRequest.ts
 models/SearchPublicSectionsRequest.ts
 models/SearchRecentReadRequest.ts
+models/SearchRssServerRequest.ts
 models/SearchSubscribedSectionRequest.ts
 models/SearchUnreadListRequest.ts
 models/SearchUserFansRequest.ts
@@ -172,6 +181,7 @@ models/TokenUpdateRequest.ts
 models/UpdateNotificationSourceRequest.ts
 models/UpdateNotificationTargetRequest.ts
 models/UpdateNotificationTaskRequest.ts
+models/UpdateRssServerRequest.ts
 models/UserEngineInfo.ts
 models/UserFileSystemDeleteRequest.ts
 models/UserFileSystemInfo.ts

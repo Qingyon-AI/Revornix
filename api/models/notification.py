@@ -50,6 +50,7 @@ class NotificationTarget(Base):
     __tablename__ = "notification_target"
 
     id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), index=True)
     title = Column(String(200), index=True, nullable=False)
     description = Column(String(500), nullable=False)
     creator_id = Column(Integer, ForeignKey("user.id"), index=True)

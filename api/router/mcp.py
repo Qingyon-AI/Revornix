@@ -6,6 +6,36 @@ from common.dependencies import get_current_user, get_db
 
 mcp_router = APIRouter()
 
+@mcp_router.post('/server/detail', response_model=schemas.mcp.MCPServerInfo)
+async def get_mcp_server_detail(mcp_server_detail_request: schemas.mcp.MCPServerDetailRequest,
+                                db: Session = Depends(get_db),
+                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    mcp_server = crud.mcp.get_base_mcp_server_by_id(db=db, 
+                                                    id=mcp_server_detail_request.id)
+    if mcp_server.category == 0:
+        db_std_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, 
+                                                                   base_id=mcp_server.id)
+        return schemas.mcp.MCPServerInfo(
+            id=mcp_server.id,
+            enable=mcp_server.enable,
+            name=mcp_server.name,
+            category=mcp_server.category,
+            cmd=db_std_mcp_server.cmd,
+            args=db_std_mcp_server.args
+        )
+    elif mcp_server.category == 1:
+        db_stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db,
+                                                                         base_id=mcp_server.id)
+        return schemas.mcp.MCPServerInfo(
+            id=mcp_server.id,
+            enable=mcp_server.enable,
+            name=mcp_server.name,
+            category=mcp_server.category,
+            address=db_stream_mcp_server.address
+        )
+    else:
+        raise schemas.error.CustomException(message="MCPServerCategoryError")
+
 @mcp_router.post("/server/search", response_model=schemas.mcp.MCPServerSearchResponse)
 async def get_mcp_server_list(mcp_server_search_request: schemas.mcp.MCPServerSearchRequest,
                               db: Session = Depends(get_db),

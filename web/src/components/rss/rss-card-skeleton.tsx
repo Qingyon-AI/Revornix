@@ -1,6 +1,6 @@
 import { Skeleton } from '../ui/skeleton';
 
-const DocumentCardSkeleton = () => {
+const RssCardSkeleton = () => {
 	return (
 		<div className='flex flex-col'>
 			<Skeleton className='h-64 w-full' />
@@ -8,4 +8,4 @@ const DocumentCardSkeleton = () => {
 	);
 };
 
-export default DocumentCardSkeleton;
+export default RssCardSkeleton;

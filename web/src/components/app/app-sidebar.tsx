@@ -4,6 +4,7 @@ import {
 	Flame,
 	LayoutDashboard,
 	PlusCircle,
+	RssIcon,
 	SatelliteDish,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -79,6 +80,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 										<Flame />
 										<Link href={'/hot-search'} className='w-full'>
 											{t('sidebar_hot_search')}
+										</Link>
+									</div>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<SidebarMenuButton asChild>
+									<div className='w-full'>
+										<RssIcon />
+										<Link href={'/rss'} className='w-full'>
+											RSS
 										</Link>
 									</div>
 								</SidebarMenuButton>
@@ -203,7 +214,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 							</SidebarMenuItem>
 							<SidebarMenuItem>
 								<SidebarMenuButton asChild>
-									<Link href={'https://github.com/Qingyon-AI/Revornix'} target='_blank'>
+									<Link
+										href={'https://github.com/Qingyon-AI/Revornix'}
+										target='_blank'>
 										{t('sidebar_github')}
 									</Link>
 								</SidebarMenuButton>

@@ -79,6 +79,11 @@ const routers: RouteItem[] = [
 		path: '/hot-search',
 	},
 	{
+		title: 'RSS',
+		title_en: 'RSS',
+		path: '/rss',
+	},
+	{
 		title: 'Revornix AI',
 		title_en: 'Revornix AI',
 		path: '/revornix-ai',
