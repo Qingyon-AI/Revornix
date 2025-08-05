@@ -72,7 +72,7 @@ class DocumentCreateRequest(BaseModel):
     labels: list[int] | None = None
     title: str | None = None
     description: str | None = None
-    cover: int | None = None
+    cover: str | None = None
     url: str | None = None
     content: str | None = None
     file_name: str | None = None
