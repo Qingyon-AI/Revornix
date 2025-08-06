@@ -22,3 +22,4 @@ mineru==2.1.7
 boto3==1.39.4
 psycopg2-binary==2.9.10
 playwright==1.54.0
+doclayout_yolo==0.0.4
