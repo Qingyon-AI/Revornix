@@ -24,3 +24,4 @@ psycopg2-binary==2.9.10
 playwright==1.54.0
 doclayout_yolo==0.0.4
 ultralytics==8.3.106
+rapid_table==1.0.5

@@ -1,6 +1,6 @@
 from contextlib import AsyncExitStack
 from typing import Dict
-from loguru import logger
+from common.logger import info_logger
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
@@ -35,7 +35,7 @@ class MCPClientWrapper:
         await self.stack.enter_async_context(self.session)
 
         info = await self.session.initialize()
-        logger.info(f"Connected to MCP server at {self.base_url} ({info.serverInfo.name})")
+        info_logger.info(f"Connected to MCP server at {self.base_url} ({info.serverInfo.name})")
 
         return self
 

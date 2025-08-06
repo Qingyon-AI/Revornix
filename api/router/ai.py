@@ -14,8 +14,7 @@ from common.dependencies import get_db, get_current_user
 from schemas.ai import ChatItem, ResponseItem
 from fastapi.responses import StreamingResponse
 from typing import List
-from loguru import logger
-from common.logger import log_exception
+from common.logger import log_exception, info_logger, exception_logger
 from common.sql import SessionLocal
 from common.mcp_client_wrapper import MCPClientWrapper
 from common.prompts.mcp import get_prompt_to_identify_tool_and_arguments, get_prompt_to_process_tool_response, get_if_down_prompt, get_prompt_to_continue_next_tool
@@ -347,9 +346,9 @@ async def stream_ops_stream(user_id: int, ai_client: OpenAI, model: str, query: 
                     yield ResponseItem(status="AI Answering", content=chunk.model_dump_json()).model_dump_json()
     except GeneratorExit:
         # 客户端主动断开连接时，GeneratorExit 会被抛出
-        logger.info("Client disconnected during stream.")
+        info_logger.info("Client disconnected during stream.")
     except Exception as e:
-        logger.exception(f"Unexpected error in stream_ops_stream: {e}")
+        exception_logger.exception(f"Unexpected error in stream_ops_stream: {e}")
         yield ResponseItem(status="Error", content=str(e)).model_dump_json()
     finally:
         db.close()

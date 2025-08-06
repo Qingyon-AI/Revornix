@@ -5,7 +5,7 @@ import copy
 import json
 import os
 from pathlib import Path
-from loguru import logger
+from common.logger import info_logger, exception_logger
 from mineru.cli.common import convert_pdf_bytes_to_bytes_by_pypdfium2, prepare_env, read_fn
 from mineru.data.data_reader_writer import FileBasedDataWriter
 from mineru.utils.draw_bbox import draw_layout_bbox, draw_span_bbox
@@ -138,7 +138,7 @@ def do_parse(
                     json.dumps(model_json, ensure_ascii=False, indent=4),
                 )
 
-            logger.info(f"local output dir is {local_md_dir}")
+            info_logger.info(f"local output dir is {local_md_dir}")
     else:
         if backend.startswith("vlm-"):
             backend = backend[4:]
@@ -198,7 +198,7 @@ def do_parse(
                     model_output,
                 )
 
-            logger.info(f"local output dir is {local_md_dir}")
+            info_logger.info(f"local output dir is {local_md_dir}")
 
 
 def parse_doc(
@@ -254,7 +254,7 @@ def parse_doc(
             end_page_id=end_page_id
         )
     except Exception as e:
-        logger.exception(e)
+        exception_logger.exception(e)
         
 if __name__ == '__main__':
     # args
