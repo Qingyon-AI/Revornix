@@ -39,7 +39,7 @@ async def list_label(db: Session = Depends(get_db),
     labels = jsonable_encoder(labels)
     return schemas.document.LabelListResponse(data=labels)
 
-@tp_router.post("/document/label/create", response_model=schemas.document.DocumentCreateResponse)
+@tp_router.post("/document/label/create", response_model=schemas.document.CreateLabelResponse)
 async def create_document_label(label_add_request: schemas.document.LabelAddRequest,
                                 db: Session = Depends(get_db),
                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
