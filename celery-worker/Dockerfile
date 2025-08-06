@@ -2,13 +2,6 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Configure the sources of system dependent packages
-RUN rm -f /etc/apt/sources.list.d/debian.sources \
-   && echo "deb http://deb.debian.org/debian bookworm main contrib non-free" > /etc/apt/sources.list \
-   && echo "deb http://deb.debian.org/debian bookworm-updates main contrib non-free" >> /etc/apt/sources.list \
-   && echo "deb http://security.debian.org/debian-security bookworm-security main contrib non-free" >> /etc/apt/sources.list \
-   && echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
-
 # Install the system dependent packages
 RUN apt-get update -o Acquire::Check-Valid-Until=false \
    && apt-get install -y --no-install-recommends \
