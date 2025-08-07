@@ -14,6 +14,27 @@ from fastapi import APIRouter, Depends
 
 tp_router = APIRouter()
 
+@tp_router.post('/section/create', response_model=schemas.section.SectionCreateResponse)
+async def create_section(section_create_request: schemas.section.SectionCreateRequest,
+                         db: Session = Depends(get_db),
+                         user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
+    db_section = crud.section.create_section(db=db, 
+                                             creator_id=user.id,
+                                             cover_attachment_id=section_create_request.cover_id,
+                                             title=section_create_request.title, 
+                                             description=section_create_request.description,
+                                             public=section_create_request.public)
+    if section_create_request.labels:
+            crud.section.bind_labels_to_section(db=db, 
+                                                section_id=db_section.id, 
+                                                label_ids=section_create_request.labels)
+    db_user_section = crud.section.bind_section_to_user(db=db,
+                                                        section_id=db_section.id,
+                                                        user_id=user.id,
+                                                        authority=0)
+    db.commit()
+    return schemas.section.SectionCreateResponse(id=db_section.id)
+
 @tp_router.post('/section/label/create', response_model=schemas.section.CreateLabelResponse)
 async def add_label(label_add_request: schemas.section.LabelAddRequest,
                     db: Session = Depends(get_db), 
