@@ -27,7 +27,7 @@ class MineruEngine(EngineProtocol):
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
             page = await browser.new_page()
-            await page.goto(url, wait_until="networkidle")
+            await page.goto(url)
             html_content = await page.content()
             await page.screenshot(path=str(temp_shot_img_path), full_page=True)
             await browser.close()
