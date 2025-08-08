@@ -103,6 +103,8 @@ const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 			queryClient.invalidateQueries({
 				queryKey: ['mine-engine'],
 			});
+			toast.success(t('setting_engine_page_mine_engine_update_success'));
+			setConfigDialogOpen(false);
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -295,17 +297,6 @@ const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 									)}
 								</form>
 							</Form>
-							{user_engine.demo_config && (
-								<>
-									<Separator />
-									<h3 className='text-xs text-muted-foreground'>
-										{t('setting_engine_page_mine_engine_config_demo')}
-									</h3>
-									<p className='rounded bg-muted p-5 font-mono text-sm'>
-										{user_engine.demo_config}
-									</p>
-								</>
-							)}
 							<DialogFooter>
 								<DialogClose asChild>
 									<Button type='button' variant={'secondary'}>

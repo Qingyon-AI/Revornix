@@ -26,12 +26,14 @@ def create_user_engine(db: Session,
                        user_id: int, 
                        engine_id: int,
                        title: str,
-                       description: str | None = None,):
+                       description: str | None = None,
+                       config_json: str | None = None):
     now = datetime.now(timezone.utc)
     db_user_engine = models.engine.UserEngine(user_id=user_id,
                                               engine_id=engine_id,
                                               title=title,
                                               description=description,
+                                              config_json=config_json,
                                               create_time=now,
                                               update_time=now,
                                               enable=True)

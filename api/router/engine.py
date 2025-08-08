@@ -30,7 +30,7 @@ async def search_document_parse_engine(engine_search_request: schemas.engine.Eng
             update_time=db_user_engine.update_time
         )
         res.append(item)
-    return schemas.engine.MineEngineSearchResponse(data=db_user_engines)
+    return schemas.engine.MineEngineSearchResponse(data=res)
 
 @engine_router.post("/provide", response_model=schemas.engine.ProvideEngineSearchResponse)
 async def provide_document_parse_engine(engine_search_request: schemas.engine.EngineSearchRequest, 
@@ -47,7 +47,8 @@ async def install_engine(engine_install_request: schemas.engine.EngineInstallReq
                                                     user_id=current_user.id,
                                                     engine_id=engine_install_request.engine_id,
                                                     title=engine_install_request.title,
-                                                    description=engine_install_request.description)
+                                                    description=engine_install_request.description,
+                                                    config_json=engine_install_request.config_json)
     db.commit()
     return schemas.engine.EngineInstallResponse(user_engine_id=db_user_engine.id)
 
