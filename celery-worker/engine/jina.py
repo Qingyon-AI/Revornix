@@ -13,11 +13,14 @@ class JinaEngine(EngineProtocol):
         
         
     async def analyse_website(self, url: str):
+        if self.get_engine_config() is None:
+            raise Exception('Please init engine config first, or check your user engine config.')
         headers = {
             'Accept': 'application/json',
-            'Authorization': f'Bearer {self.get_engine_config().get("apikey")}'
+            'Authorization': f'Bearer {self.get_engine_config().get("api_key")}'
         }
-        timeout = httpx.Timeout(10.0, connect=10.0)
+        # as jina ai sometimes do take a lot of times to response, so we set a timeout
+        timeout = httpx.Timeout(60.0, connect=10.0)
         async with httpx.AsyncClient(timeout=timeout, verify=False) as client:
             response = await client.get(f'https://r.jina.ai/{url}', headers=headers)
             title = response.json().get('data').get('title')
