@@ -335,7 +335,7 @@ def search_next_all_document(db: Session,
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
-    query = query.order_by(models.document.Document.create_time.desc())
+    query = query.order_by(models.document.Document.id.desc())
     query = query.filter(models.document.Document.create_time < document.create_time)
     return query.first()
 
@@ -351,7 +351,7 @@ def search_all_document_notes_by_document_id(db: Session,
     query = query.filter(models.document.DocumentNote.document_id == document_id)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.DocumentNote.content.like(f'%{keyword}%'))
-    query = query.order_by(models.document.DocumentNote.create_time.desc())
+    query = query.order_by(models.document.DocumentNote.id.desc())
     if start is not None:
         query = query.filter(models.document.DocumentNote.id <= start)
     query = query.options(selectinload(models.document.DocumentNote.user))
@@ -378,8 +378,8 @@ def search_next_note_by_document_note(db: Session,
     query = db.query(models.document.DocumentNote)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.DocumentNote.content.like(f"%{keyword}%"))
-    query = query.order_by(models.document.DocumentNote.create_time.desc())
-    query = query.filter(models.document.DocumentNote.create_time < document_note.create_time)
+    query = query.order_by(models.document.DocumentNote.id.desc())
+    query = query.filter(models.document.DocumentNote.id < document_note.id)
     return query.first()
 
 def get_labels_summary(db: Session,
