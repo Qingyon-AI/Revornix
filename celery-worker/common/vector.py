@@ -5,7 +5,7 @@ from pymilvus.model import DefaultEmbeddingFunction
 from pymilvus.model.sparse import SpladeEmbeddingFunction
 dense_model = DefaultEmbeddingFunction()
 splade_model = SpladeEmbeddingFunction(batch_size=16)
-chunker = TokenChunker()
+chunker = TokenChunker(chunk_size=4096)
 
 milvus_client = MilvusClient(
     uri=MILVUS_CLUSTER_ENDPOINT, # Cluster endpoint obtained from the console
