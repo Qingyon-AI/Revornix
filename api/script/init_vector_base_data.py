@@ -19,7 +19,7 @@ def init_document_collection():
     )
     schema.add_field(field_name="id", datatype=DataType.VARCHAR, is_primary=True, max_length=100, auto_id=True)
     schema.add_field(field_name="category", datatype=DataType.INT32)
-    schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=4000, enable_analyzer=True)
+    schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=4096, enable_analyzer=True)
     schema.add_field(field_name="document_id", datatype=DataType.INT32)
     schema.add_field(field_name="dense", datatype=DataType.FLOAT_VECTOR, dim=768)
     schema.add_field(field_name="sparse", datatype=DataType.SPARSE_FLOAT_VECTOR)
