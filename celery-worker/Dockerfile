@@ -30,11 +30,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # 安装运行时依赖（无编译工具）
-RUN rm -f /etc/apt/sources.list.d/debian.sources && \ 
-  echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main non-free contrib" > /etc/apt/sources.list && \ 
-  echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-updates main non-free contrib" >> /etc/apt/sources.list && \ 
-  echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main" >> /etc/apt/sources.list && \ 
-  echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries && \ 
+RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries && \ 
   apt-get update -o Acquire::Check-Valid-Until=false && \
   apt-get install -y --no-install-recommends \
   libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
