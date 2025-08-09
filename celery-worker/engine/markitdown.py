@@ -1,9 +1,10 @@
 import io
-from protocol.engine import EngineProtocol, WebsiteInfo, AsyncChromiumLoader, FileInfo
+from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
 from common.common import extract_title_and_summary
 from bs4 import BeautifulSoup
 from markitdown import MarkItDown
 from openai import OpenAI
+from playwright.async_api import async_playwright
 
 class MarkitdownEngine(EngineProtocol):
     
@@ -17,9 +18,13 @@ class MarkitdownEngine(EngineProtocol):
     
     async def analyse_website(self, url: str):  
         llm_client = OpenAI(api_key=self.get_engine_config().get("openai_api_key"))
-        loader_headless = AsyncChromiumLoader([url], user_agent="MyAppUserAgent")
-        docs = await loader_headless.aload()
-        html_content = docs[0].page_content
+        html_content = None
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+            await page.goto(url)
+            html_content = await page.content()
+            await browser.close()
         md = MarkItDown(llm_client=llm_client, llm_model="gpt-4o-mini")
         stream = io.BytesIO(html_content.encode('utf-8'))
         content = md.convert_stream(stream).text_content

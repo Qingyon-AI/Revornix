@@ -22,17 +22,17 @@ class MineruEngine(EngineProtocol):
     async def analyse_website(self, 
                               url: str):
         temp_dir_name = f'{uuid.uuid4()}'
-        temp_shot_img_path = BASE_DIR / 'temp' / temp_dir_name / f'scene-snap.png'
-        # 1. open the website and take a screenshot
+        temp_shot_pdf_path = BASE_DIR / 'temp' / temp_dir_name / f'scene-snap.pdf'
+        html_content = None
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
             page = await browser.new_page()
             await page.goto(url)
             html_content = await page.content()
-            await page.screenshot(path=str(temp_shot_img_path), full_page=True)
+            await page.pdf(path=temp_shot_pdf_path)
             await browser.close()
         # 2. convert the image to markdown
-        parse_doc(path_list=[str(temp_shot_img_path)],
+        parse_doc(path_list=[str(temp_shot_pdf_path)],
                   output_dir=str(BASE_DIR / 'temp' / temp_dir_name))
         with open(str(BASE_DIR / 'temp' / temp_dir_name / 'scene-snap' / 'auto' / f'scene-snap.md'), 'r', encoding='utf-8') as f:
             content = f.read()

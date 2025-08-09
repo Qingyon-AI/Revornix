@@ -1,5 +1,6 @@
 import crud
 import json
+import httpx
 from common.sql import SessionLocal
 from pydantic import BaseModel
 from typing import Protocol
@@ -20,55 +21,50 @@ class FileInfo(BaseModel):
     keywords: str | None = None
     content: str | None = None
     cover: str | None = None
-    
-class AsyncChromiumLoader:
-    def __init__(self, urls, user_agent=None):
-        self.urls = urls
-        self.user_agent = user_agent
-    async def aload(self):
-        # 启动 Playwright
-        async with async_playwright() as p:
-            # 使用 Chromium 浏览器
-            browser = await p.chromium.launch(headless=True)  # headless=True 表示无头浏览器
-            # 如果设置了 User-Agent，则设置自定义的 User-Agent
-            if self.user_agent:
-                context = await browser.new_context(user_agent=self.user_agent)
-                page = await context.new_page()
-            else:
-                page = await browser.new_page()
-            # 存储返回的文档内容
-            docs = []
-            # 加载所有 URL 并获取内容
-            for url in self.urls:
-                await page.goto(url)
-                page_content = await page.content()  # 获取页面 HTML 内容
-                page_shot = await page.screenshot()
-                docs.append(PageContent(page_content=page_content,
-                                        page_shot=page_shot))  # 将页面内容包装成对象存储
-            # 关闭浏览器
-            await browser.close()
-            return docs
-
-class PageContent:
-    def __init__(self, page_content=None, page_shot=None):
-        self.page_content = page_content
-        self.page_shot = page_shot
-    def get_text(self):
-        return self.page_content
-    def get_shot(self):
-        return self.page_shot
 
 class EngineProtocol(Protocol):
     
     @staticmethod
     async def get_website_cover_by_playwright(url: str):
-        loader_headless = AsyncChromiumLoader([url], user_agent="MyAppUserAgent")
-        docs = await loader_headless.aload()
-        html = docs[0].page_content
-        soup = BeautifulSoup(html, 'html.parser')
-        og_cover_meta = soup.find('meta', property='og:image')
-        cover = og_cover_meta.attrs['content'] if og_cover_meta is not None else None
-        return cover
+        html_content = None
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+            await page.goto(url)
+            html_content = await page.content()
+            await browser.close()
+        soup = BeautifulSoup(html_content, 'html.parser')
+
+        og = soup.find('meta', property='og:image')
+        if og and og.get('content'):
+            return og['content']
+        
+        twitter = soup.find('meta', attrs={'name': 'twitter:image'})
+        if twitter and twitter.get('content'):
+            return twitter['content']
+        
+        imgs = soup.find_all('img')
+        biggest_img_url = None
+        biggest_area = 0
+        for img in imgs:
+            src = img.get('src') or img.get('data-src')
+            if not src:
+                continue
+
+            # 下面请求图片大小，这里为了速度和简洁，简单用Content-Length估计大小，
+            try:
+                head = httpx.head(src, timeout=5)
+                size = int(head.headers.get('Content-Length', 0))
+            except:
+                size = 0
+
+            if size > biggest_area:
+                biggest_area = size
+                biggest_img_url = src
+
+            return biggest_img_url
+
+        return None
     
     def __init__(self, 
                  engine_uuid: str,
