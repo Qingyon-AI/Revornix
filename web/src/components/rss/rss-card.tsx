@@ -19,8 +19,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
-import { useMutation } from '@tanstack/react-query';
-import { deleteRssServer } from '@/service/rss';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import { deleteRssServer, searchRssDocuments } from '@/service/rss';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -31,6 +31,35 @@ const RssCard = ({ rss }: { rss: RssServerInfo }) => {
 	const t = useTranslations();
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const queryClient = getQueryClient();
+
+	const {
+		data,
+		isFetchingNextPage,
+		isFetching,
+		isSuccess,
+		fetchNextPage,
+		isError,
+		hasNextPage,
+	} = useInfiniteQuery({
+		queryKey: ['searchRssDocument', rss.id],
+		queryFn: (pageParam) => searchRssDocuments({ ...pageParam.pageParam }),
+		initialPageParam: {
+			rss_id: rss.id,
+			keyword: '',
+			limit: 10,
+		},
+		getNextPageParam: (lastPage) => {
+			return lastPage.has_more
+				? {
+						rss_id: rss.id,
+						keyword: '',
+						start: lastPage.next_start,
+						limit: lastPage.limit,
+				  }
+				: undefined;
+		},
+	});
+
 	const mutateDeleteRssServer = useMutation({
 		mutationFn: deleteRssServer,
 		onSuccess(data, variables, context) {

@@ -69,6 +69,7 @@ export * from './FileUrlPrefixResponse';
 export * from './FollowUserRequest';
 export * from './GenericFileSystemUploadResponse';
 export * from './GetRssServerDetailRequest';
+export * from './GetRssServerDocumentRequest';
 export * from './HTTPValidationError';
 export * from './InifiniteScrollPagnitionDocumentInfo';
 export * from './InifiniteScrollPagnitionDocumentNoteInfo';

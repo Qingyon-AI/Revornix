@@ -22,6 +22,8 @@ import type {
   HTTPValidationError,
   LabelAddRequest,
   LabelListResponse,
+  SectionCreateRequest,
+  SectionCreateResponse,
 } from '../models/index';
 import {
     AllMySectionsResponseFromJSON,
@@ -38,6 +40,10 @@ import {
     LabelAddRequestToJSON,
     LabelListResponseFromJSON,
     LabelListResponseToJSON,
+    SectionCreateRequestFromJSON,
+    SectionCreateRequestToJSON,
+    SectionCreateResponseFromJSON,
+    SectionCreateResponseToJSON,
 } from '../models/index';
 
 export interface AddLabelTpSectionLabelCreatePostRequest {
@@ -52,6 +58,11 @@ export interface CreateDocumentLabelTpDocumentLabelCreatePostRequest {
 
 export interface CreateDocumentTpDocumentCreatePostRequest {
     documentCreateRequest: DocumentCreateRequest;
+    apiKey?: string | null;
+}
+
+export interface CreateSectionTpSectionCreatePostRequest {
+    sectionCreateRequest: SectionCreateRequest;
     apiKey?: string | null;
 }
 
@@ -114,7 +125,7 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Create Document Label
      */
-    async createDocumentLabelTpDocumentLabelCreatePostRaw(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentCreateResponse>> {
+    async createDocumentLabelTpDocumentLabelCreatePostRaw(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
         if (requestParameters['labelAddRequest'] == null) {
             throw new runtime.RequiredError(
                 'labelAddRequest',
@@ -143,13 +154,13 @@ export class TpApi extends runtime.BaseAPI {
             body: LabelAddRequestToJSON(requestParameters['labelAddRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DocumentCreateResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CreateLabelResponseFromJSON(jsonValue));
     }
 
     /**
      * Create Document Label
      */
-    async createDocumentLabelTpDocumentLabelCreatePost(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentCreateResponse> {
+    async createDocumentLabelTpDocumentLabelCreatePost(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateLabelResponse> {
         const response = await this.createDocumentLabelTpDocumentLabelCreatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -194,6 +205,49 @@ export class TpApi extends runtime.BaseAPI {
      */
     async createDocumentTpDocumentCreatePost(requestParameters: CreateDocumentTpDocumentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentCreateResponse> {
         const response = await this.createDocumentTpDocumentCreatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Create Section
+     */
+    async createSectionTpSectionCreatePostRaw(requestParameters: CreateSectionTpSectionCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionCreateResponse>> {
+        if (requestParameters['sectionCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionCreateRequest',
+                'Required parameter "sectionCreateRequest" was null or undefined when calling createSectionTpSectionCreatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/create`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionCreateRequestToJSON(requestParameters['sectionCreateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SectionCreateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Section
+     */
+    async createSectionTpSectionCreatePost(requestParameters: CreateSectionTpSectionCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SectionCreateResponse> {
+        const response = await this.createSectionTpSectionCreatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

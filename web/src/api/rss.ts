@@ -6,4 +6,5 @@ export default {
     searchMineRssServer: API_PREFIX + '/rss/search',
     updateRssServer: API_PREFIX + '/rss/update',
     getRssServerDetail: API_PREFIX + '/rss/detail',
+    searchRssDocuments: API_PREFIX + '/rss/document',
 }

@@ -40,6 +40,69 @@ def get_all_rss_servers(db: Session):
     query = query.filter(models.rss.RSSServer.delete_at == None)
     return query.all()
 
+def search_rss_documents(db: Session,
+                         rss_id: int,
+                         start: int | None = None,
+                         limit: int = 10,
+                         keyword: str | None = None,
+                         desc: bool = True):
+    query = db.query(models.document.Document)
+    query = query.join(models.rss.RSSDocument, models.rss.RSSDocument.document_id == models.document.Document.id)
+    query = query.filter(models.rss.RSSDocument.rss_server_id == rss_id,
+                         models.rss.RSSDocument.delete_at == None,
+                         models.document.Document.delete_at == None)
+    if keyword is not None and len(keyword) != 0:
+        query = query.filter(or_(models.document.Document.title.like(f'%{keyword}%'),
+                                 models.document.Document.description.like(f'%{keyword}%')))
+    if desc:
+        query = query.order_by(models.document.Document.id.desc())
+    else:
+        query = query.order_by(models.document.Document.id.asc())
+    if start is not None:
+        if desc is True:
+            query = query.filter(models.document.Document.id <= start)
+        else:
+            query = query.filter(models.document.Document.id >= start)
+    query = query.distinct(models.document.Document.id)
+    query = query.limit(limit)
+    return query.all()
+
+def search_next_rss_document(db: Session,
+                             rss_id: int,
+                             document: models.document.Document,
+                             keyword: str | None = None,
+                             desc: bool = True):
+    query = db.query(models.document.Document)
+    query = query.join(models.rss.RSSDocument, models.rss.RSSDocument.document_id == models.document.Document.id)
+    query = query.filter(models.rss.RSSDocument.rss_server_id == rss_id,
+                         models.rss.RSSDocument.delete_at == None,
+                         models.document.Document.delete_at == None)
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(or_(models.document.Document.title.like(f"%{keyword}%"),
+                                 models.document.Document.description.like(f"%{keyword}%")))
+    if desc is True:
+        query = query.order_by(models.document.Document.id.desc())
+    else:
+        query = query.order_by(models.document.Document.id.asc())
+    
+    if desc is True:
+        query = query.filter(models.document.Document.id < document.id)
+    else:
+        query = query.filter(models.document.Document.id > document.id)
+    return query.first()
+
+def count_rss_documents(db: Session, rss_id: int, keyword: str | None = None):
+    query = db.query(models.document.Document)
+    query = query.join(models.rss.RSSDocument, models.rss.RSSDocument.document_id == models.document.Document.id)
+    query = query.filter(models.rss.RSSDocument.rss_server_id == rss_id,
+                         models.rss.RSSDocument.delete_at == None,
+                         models.document.Document.delete_at == None)
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(or_(models.document.Document.title.like(f"%{keyword}%"),
+                                 models.document.Document.description.like(f"%{keyword}%")))
+    query = query.distinct(models.document.Document.id)
+    return query.count()
+
 def search_user_rss_servers(db: Session, 
                             user_id: int, 
                             start: int | None = None, 
@@ -67,8 +130,8 @@ def search_next_user_rss_server(db: Session,
     if keyword is not None and len(keyword) > 0:
         query = query.filter(or_(models.rss.RSSServer.title.like(f"%{keyword}%"),
                                  models.rss.RSSServer.description.like(f"%{keyword}%")))
-    query = query.order_by(models.rss.Document.id.desc())
-    query = query.filter(models.rss.Document.id < rss_server.id)
+    query = query.order_by(models.document.Document.id.desc())
+    query = query.filter(models.document.Document.id < rss_server.id)
     return query.first()     
 
 def count_user_rss_servers(db: Session, 

@@ -63,10 +63,10 @@ export interface DocumentCreateRequest {
     description?: string | null;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof DocumentCreateRequest
      */
-    cover?: number | null;
+    cover?: string | null;
     /**
      * 
      * @type {string}

@@ -4,7 +4,6 @@ import models
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime
-from common.apscheduler.app import scheduler
 from common.dependencies import get_current_user, get_db
 
 rss_router = APIRouter()
@@ -28,7 +27,52 @@ async def getRssServerDetail(get_rss_server_detail_request: schemas.rss.GetRssSe
     db_rss_documents = crud.rss.get_documents_by_rss_id(db=db, rss_server_id=db_rss_server.id)
     for db_rss_document in db_rss_documents:
         rss_server_info.documents.append(schemas.rss.RssDocumentInfo.model_validate(db_rss_document))
-    return rss_server_info             
+    return rss_server_info
+
+@rss_router.post('/document', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
+async def getRssServerDocument(get_rss_server_document_request: schemas.rss.GetRssServerDocumentRequest,
+                               db: Session = Depends(get_db),
+                               user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    has_more = True
+    next_start = None
+    db_documents = crud.rss.search_rss_documents(db=db, 
+                                                 rss_id=get_rss_server_document_request.rss_id,
+                                                 start=get_rss_server_document_request.start,
+                                                 limit=get_rss_server_document_request.limit,
+                                                 keyword=get_rss_server_document_request.keyword,
+                                                 desc=get_rss_server_document_request.desc)
+    def get_document_info(db_document: models.rss.RSSDocument): 
+        db_labels = crud.document.get_labels_by_document_id(db=db,
+                                                            document_id=db_document.id)
+        db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                                 document_id=db_document.id)
+        return schemas.document.DocumentInfo(
+            **db_document.__dict__,
+            labels=db_labels,
+            transform_task=db_transform_task
+        )
+    documents = [get_document_info(db_document) for db_document in db_documents]
+    if len(documents) < get_rss_server_document_request.limit or len(documents) == 0:
+        has_more = False
+    if len(documents) == get_rss_server_document_request.limit:
+        next_rss_document = crud.rss.search_next_rss_document(db=db, 
+                                                              rss_id=get_rss_server_document_request.rss_id,
+                                                              document=db_documents[-1],
+                                                              keyword=get_rss_server_document_request.keyword,
+                                                              desc=get_rss_server_document_request.desc)
+        has_more = next_rss_document is not None
+        next_start = next_rss_document.id if has_more else None
+    total = crud.rss.count_rss_documents(db=db,
+                                         rss_id=get_rss_server_document_request.rss_id,
+                                         keyword=get_rss_server_document_request.keyword)
+    return schemas.pagination.InifiniteScrollPagnition(
+        total=total,
+        elements=documents,
+        start=get_rss_server_document_request.start,
+        limit=get_rss_server_document_request.limit,
+        has_more=has_more,
+        next_start=next_start
+    )
 
 @rss_router.post('/add', response_model=schemas.rss.AddRssServerResponse)
 async def addRssServer(add_rss_request: schemas.rss.AddRssServerRequest, 

@@ -42,6 +42,12 @@ export interface RssServerInfo {
     id: number;
     /**
      * 
+     * @type {number}
+     * @memberof RssServerInfo
+     */
+    user_id: number;
+    /**
+     * 
      * @type {string}
      * @memberof RssServerInfo
      */
@@ -89,6 +95,7 @@ export interface RssServerInfo {
  */
 export function instanceOfRssServerInfo(value: object): value is RssServerInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('user_id' in value) || value['user_id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('address' in value) || value['address'] === undefined) return false;
@@ -108,6 +115,7 @@ export function RssServerInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
     return {
         
         'id': json['id'],
+        'user_id': json['user_id'],
         'title': json['title'],
         'description': json['description'],
         'address': json['address'],
@@ -130,6 +138,7 @@ export function RssServerInfoToJSONTyped(value?: RssServerInfo | null, ignoreDis
     return {
         
         'id': value['id'],
+        'user_id': value['user_id'],
         'title': value['title'],
         'description': value['description'],
         'address': value['address'],

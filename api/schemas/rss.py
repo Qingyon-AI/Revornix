@@ -3,6 +3,13 @@ from .document import DocumentInfo
 from .section import SectionInfo
 from datetime import datetime
 
+class GetRssServerDocumentRequest(BaseModel):
+    rss_id: int
+    start: int | None = None
+    limit: int = 10
+    keyword: str | None = None
+    desc: bool = True
+
 class GetRssServerDetailRequest(BaseModel):
     rss_id: int
     

@@ -81,6 +81,7 @@ models/FileUrlPrefixResponse.ts
 models/FollowUserRequest.ts
 models/GenericFileSystemUploadResponse.ts
 models/GetRssServerDetailRequest.ts
+models/GetRssServerDocumentRequest.ts
 models/HTTPValidationError.ts
 models/InifiniteScrollPagnitionDocumentInfo.ts
 models/InifiniteScrollPagnitionDocumentNoteInfo.ts

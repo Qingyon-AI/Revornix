@@ -1,5 +1,5 @@
 import rssApi from '@/api/rss'
-import { AddRssServerRequest, AddRssServerResponse, DeleteRssServerRequest, GetRssServerDetailRequest, InifiniteScrollPagnitionRssServerInfo, NormalResponse, RssServerInfo, SearchRssServerRequest, UpdateRssServerRequest } from '@/generated'
+import { AddRssServerRequest, AddRssServerResponse, DeleteRssServerRequest, GetRssServerDetailRequest, GetRssServerDocumentRequest, InifiniteScrollPagnitionDocumentInfo, InifiniteScrollPagnitionRssServerInfo, NormalResponse, RssServerInfo, SearchRssServerRequest, UpdateRssServerRequest } from '@/generated'
 import { request } from '@/lib/request'
 
 export const createRssServer = async (data: AddRssServerRequest): Promise<AddRssServerResponse> => {
@@ -28,6 +28,12 @@ export const updateRssServer = async (data: UpdateRssServerRequest): Promise<Nor
 
 export const getRssServerDetail = async (data: GetRssServerDetailRequest): Promise<RssServerInfo> => {
     return await request(rssApi.getRssServerDetail, {
+        data
+    })
+}
+
+export const searchRssDocuments = async (data: GetRssServerDocumentRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
+    return await request(rssApi.searchRssDocuments, {
         data
     })
 }

@@ -19,7 +19,9 @@ import type {
   AddRssServerResponse,
   DeleteRssServerRequest,
   GetRssServerDetailRequest,
+  GetRssServerDocumentRequest,
   HTTPValidationError,
+  InifiniteScrollPagnitionDocumentInfo,
   InifiniteScrollPagnitionRssServerInfo,
   NormalResponse,
   RssServerInfo,
@@ -35,8 +37,12 @@ import {
     DeleteRssServerRequestToJSON,
     GetRssServerDetailRequestFromJSON,
     GetRssServerDetailRequestToJSON,
+    GetRssServerDocumentRequestFromJSON,
+    GetRssServerDocumentRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    InifiniteScrollPagnitionDocumentInfoFromJSON,
+    InifiniteScrollPagnitionDocumentInfoToJSON,
     InifiniteScrollPagnitionRssServerInfoFromJSON,
     InifiniteScrollPagnitionRssServerInfoToJSON,
     NormalResponseFromJSON,
@@ -63,6 +69,12 @@ export interface DeleteRssServerRssDeletePostRequest {
 
 export interface GetRssServerDetailRssDetailPostRequest {
     getRssServerDetailRequest: GetRssServerDetailRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GetRssServerDocumentRssDocumentPostRequest {
+    getRssServerDocumentRequest: GetRssServerDocumentRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -222,6 +234,53 @@ export class RssApi extends runtime.BaseAPI {
      */
     async getRssServerDetailRssDetailPost(requestParameters: GetRssServerDetailRssDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RssServerInfo> {
         const response = await this.getRssServerDetailRssDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Getrssserverdocument
+     */
+    async getRssServerDocumentRssDocumentPostRaw(requestParameters: GetRssServerDocumentRssDocumentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+        if (requestParameters['getRssServerDocumentRequest'] == null) {
+            throw new runtime.RequiredError(
+                'getRssServerDocumentRequest',
+                'Required parameter "getRssServerDocumentRequest" was null or undefined when calling getRssServerDocumentRssDocumentPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/rss/document`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GetRssServerDocumentRequestToJSON(requestParameters['getRssServerDocumentRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Getrssserverdocument
+     */
+    async getRssServerDocumentRssDocumentPost(requestParameters: GetRssServerDocumentRssDocumentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+        const response = await this.getRssServerDocumentRssDocumentPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

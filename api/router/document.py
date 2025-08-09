@@ -414,14 +414,14 @@ async def search_user_unread_documents(search_unread_list_request: schemas.docum
     if len(documents) < search_unread_list_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_unread_list_request.limit:
-        next_notification = crud.document.search_next_user_unread_document(db=db, 
-                                                                           user_id=user.id, 
-                                                                           document=documents[-1],
-                                                                           keyword=search_unread_list_request.keyword,
-                                                                           label_ids=search_unread_list_request.label_ids,
-                                                                           desc=search_unread_list_request.desc)
-        has_more = next_notification is not None
-        next_start = next_notification.id if has_more else None
+        next_document = crud.document.search_next_user_unread_document(db=db, 
+                                                                       user_id=user.id, 
+                                                                       document=documents[-1],
+                                                                       keyword=search_unread_list_request.keyword,
+                                                                       label_ids=search_unread_list_request.label_ids,
+                                                                       desc=search_unread_list_request.desc)
+        has_more = next_document is not None
+        next_start = next_document.id if has_more else None
     total = crud.document.count_user_unread_documents(db=db,
                                                       user_id=user.id,
                                                       keyword=search_unread_list_request.keyword,
@@ -475,14 +475,14 @@ async def recent_read_document(search_recent_read_request: schemas.document.Sear
     if len(documents) < search_recent_read_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_recent_read_request.limit:
-        next_notification = crud.document.search_next_user_recent_read_document(db=db, 
-                                                                                user_id=user.id, 
-                                                                                document=documents[-1],
-                                                                                keyword=search_recent_read_request.keyword,
-                                                                                label_ids=search_recent_read_request.label_ids,
-                                                                                desc=search_recent_read_request.desc)
-        has_more = next_notification is not None
-        next_start = next_notification.id if has_more else None
+        next_document = crud.document.search_next_user_recent_read_document(db=db, 
+                                                                            user_id=user.id, 
+                                                                            document=documents[-1],
+                                                                            keyword=search_recent_read_request.keyword,
+                                                                            label_ids=search_recent_read_request.label_ids,
+                                                                            desc=search_recent_read_request.desc)
+        has_more = next_document is not None
+        next_start = next_document.id if has_more else None
     total = crud.document.count_user_recent_read_documents(db=db,
                                                            user_id=user.id,
                                                            keyword=search_recent_read_request.keyword,
@@ -626,14 +626,14 @@ async def search_all_mine_documents(search_all_my_document_request: schemas.docu
     if len(documents) < search_all_my_document_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_all_my_document_request.limit:
-        next_notification = crud.document.search_next_user_document(db=db, 
-                                                                    user_id=user.id, 
-                                                                    document=documents[-1],
-                                                                    keyword=search_all_my_document_request.keyword,
-                                                                    label_ids=search_all_my_document_request.label_ids,
-                                                                    desc=search_all_my_document_request.desc)
-        has_more = next_notification is not None
-        next_start = next_notification.id if has_more else None
+        next_document = crud.document.search_next_user_document(db=db, 
+                                                                user_id=user.id, 
+                                                                document=documents[-1],
+                                                                keyword=search_all_my_document_request.keyword,
+                                                                label_ids=search_all_my_document_request.label_ids,
+                                                                desc=search_all_my_document_request.desc)
+        has_more = next_document is not None
+        next_start = next_document.id if has_more else None
     total = crud.document.count_user_documents(db=db,
                                                user_id=user.id,
                                                keyword=search_all_my_document_request.keyword,
@@ -671,14 +671,14 @@ async def search_my_star_documents(search_my_star_documents_request: schemas.doc
     if len(documents) < search_my_star_documents_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_my_star_documents_request.limit:
-        next_notification = crud.document.search_next_user_star_document(db=db, 
-                                                                         user_id=user.id, 
-                                                                         document=documents[-1],
-                                                                         keyword=search_my_star_documents_request.keyword,
-                                                                         label_ids=search_my_star_documents_request.label_ids,
-                                                                         desc=search_my_star_documents_request.desc)
-        has_more = next_notification is not None
-        next_start = next_notification.id if has_more else None
+        next_document = crud.document.search_next_user_star_document(db=db, 
+                                                                     user_id=user.id, 
+                                                                     document=documents[-1],
+                                                                     keyword=search_my_star_documents_request.keyword,
+                                                                     label_ids=search_my_star_documents_request.label_ids,
+                                                                     desc=search_my_star_documents_request.desc)
+        has_more = next_document is not None
+        next_start = next_document.id if has_more else None
     total = crud.document.count_user_stared_documents(db=db, 
                                                       user_id=user.id, 
                                                       keyword=search_my_star_documents_request.keyword, 
