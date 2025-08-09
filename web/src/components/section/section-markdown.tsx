@@ -48,14 +48,6 @@ const SectionMarkdown = ({ id }: { id: number }) => {
 	const [markdownIsFetching, setMarkdownIsFetching] = useState<boolean>(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
 
-	const { data: userRemoteFileUrlPrefix } = useQuery({
-		queryKey: ['getUserRemoteFileUrlPrefix', section?.creator?.id],
-		queryFn: () => {
-			return getUserFileUrlPrefix({ user_id: section!.creator!.id });
-		},
-		enabled: !!section?.creator?.id,
-	});
-
 	const onGetMarkdown = async () => {
 		if (!section || !section.md_file_name || !userInfo) return;
 		setMarkdownIsFetching(true);
@@ -84,16 +76,10 @@ const SectionMarkdown = ({ id }: { id: number }) => {
 	};
 
 	useEffect(() => {
-		if (
-			!section ||
-			!section.md_file_name ||
-			!userInfo ||
-			!userFileSystemDetail ||
-			!userRemoteFileUrlPrefix
-		)
+		if (!section || !section.md_file_name || !userInfo || !userFileSystemDetail)
 			return;
 		onGetMarkdown();
-	}, [section, userInfo, userRemoteFileUrlPrefix, userFileSystemDetail]);
+	}, [section, userInfo, userFileSystemDetail]);
 
 	return (
 		<>

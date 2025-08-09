@@ -158,7 +158,10 @@ def search_user_sections(db: Session,
                          label_ids: list[int] | None = None,
                          only_public: bool = False,
                          desc: bool = True):
+    print(111, start, limit, desc)
     query = db.query(models.section.Section)
+    query = query.filter(models.section.Section.delete_at == None,
+                         models.section.Section.creator_id == user_id)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -172,17 +175,15 @@ def search_user_sections(db: Session,
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
                              models.section.SectionLabel.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None,
-                         models.section.Section.creator_id == user_id)
     if desc:
         query = query.order_by(models.section.Section.id.desc())
     else:
         query = query.order_by(models.section.Section.id.asc())
     if start is not None:
         if desc:
-            query = query.filter(models.section.Section.id >= start)
-        else:
             query = query.filter(models.section.Section.id <= start)
+        else:
+            query = query.filter(models.section.Section.id >= start)
     query = query.distinct(models.section.Section.id)
     query = query.limit(limit)
     return query.all()

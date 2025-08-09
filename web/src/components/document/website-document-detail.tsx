@@ -83,6 +83,8 @@ const WebsiteDocumentDetail = ({
 			document.transform_task?.status < 2
 		) {
 			setDelay(1000);
+		} else {
+			setDelay(undefined);
 		}
 	}, [document?.transform_task?.status]);
 

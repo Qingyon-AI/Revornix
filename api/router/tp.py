@@ -102,9 +102,9 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
-                                                           title=f'{now.date()}总结',
+                                                           title=f'{now.date()} Summary',
                                                            public=False,
-                                                           description=f'这篇文档是{now.date()}的所有文档的总结')
+                                                           description=f'This document is the summary of all documents on{now.date()}')
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,
                                               user_id=user.id,

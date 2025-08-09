@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getSectionDetail } from '@/service/section';
 import SectionDocumentCard from './section-document-card';
 import { useTranslations } from 'next-intl';
+import { Button } from '../ui/button';
 
 const SectionDocument = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -22,10 +23,12 @@ const SectionDocument = ({ id }: { id: number }) => {
 
 	return (
 		<Sheet>
-			<SheetTrigger className='text-xs underline w-fit'>
-				{t('section_documents_summary', {
-					section_documents_count: section?.documents?.length || 0,
-				})}
+			<SheetTrigger asChild>
+				<Button variant={'secondary'} className='text-xs text-muted-foreground underline w-full rounded'>
+					{t('section_documents_summary', {
+						section_documents_count: section?.documents?.length || 0,
+					})}
+				</Button>
 			</SheetTrigger>
 			<SheetContent>
 				<SheetHeader>

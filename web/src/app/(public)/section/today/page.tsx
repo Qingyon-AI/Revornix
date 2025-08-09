@@ -88,7 +88,7 @@ const SectionDetailPage = () => {
 		)
 			return;
 		onGetMarkdown();
-	}, [section, userInfo]);
+	}, [section, userInfo, userFileSystemDetail]);
 
 	return (
 		<>
