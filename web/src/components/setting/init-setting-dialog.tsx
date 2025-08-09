@@ -42,7 +42,6 @@ const InitSettingDialog = () => {
 	const steps = [
 		{ title: 'Step 1', description: t('init_setting_quick_set_step_1') },
 		{ title: 'Step 2', description: t('init_setting_quick_set_step_2') },
-		{ title: 'Step 3', description: t('init_setting_quick_set_step_3') },
 	];
 
 	const [currentStep, setCurrentStep] = useState(0);
@@ -179,12 +178,7 @@ const InitSettingDialog = () => {
 								<InitMineModel />
 							</div>
 						)}
-						{currentStep === 1 && (
-							<div>
-								<InitEngine />
-							</div>
-						)}
-						{currentStep === 2 && <InitDefaultChoose />}
+						{currentStep === 1 && <InitDefaultChoose />}
 					</div>
 				</DrawerContent>
 			</Drawer>

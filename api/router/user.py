@@ -186,14 +186,23 @@ async def create_user_by_email_verify(email_user_create_verify_request: schemas.
                                 email=email_user_create_verify_request.email, 
                                 password=email_user_create_verify_request.password,
                                 nickname=email_user_create_verify_request.email)
-    # create the minio file bucket for the user because it's the default file system
+    # init the default file system for the user
     db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
                                                                     file_system_id=1,
                                                                     user_id=db_user.id,
                                                                     title="Default File System",
                                                                     description="The default file system for the user")
     db_user.default_user_file_system = db_user_file_system.id
+    # create the minio file bucket for the user because it's the default file system
     BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+    # init the default engine for the user
+    db_user_engine = crud.engine.create_user_engine(db=db,
+                                                    user_id=db_user.id,
+                                                    engine_id=1,
+                                                    title="Default Engine",
+                                                    description="The default engine for the user")
+    db_user.default_website_document_parse_user_engine_id = db_user_engine.id
+    db_user.default_file_document_parse_user_engine_id = db_user_engine.id
     db.commit()
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
