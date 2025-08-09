@@ -14,7 +14,6 @@ import {
 	CommandList,
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
-import { useGetSet } from 'react-use';
 
 export interface Option {
 	value: string | number;
@@ -471,7 +470,8 @@ const MultipleSelector = React.forwardRef<
 				filter={commandFilter()}>
 				<div
 					className={cn(
-						'min-h-10 rounded-md border border-input text-base md:text-sm ring-offset-background focus-within:ring-1 focus-within:ring-ring',
+						'placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 bg-transparent transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+						'min-h-10 rounded-md border border-input text-base md:text-sm ring-offset-background shadow-xs focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring',
 						{
 							'px-3 py-2': selected.length !== 0,
 							'cursor-text': !disabled && selected.length !== 0,
@@ -482,7 +482,7 @@ const MultipleSelector = React.forwardRef<
 						if (disabled) return;
 						inputRef?.current?.focus();
 					}}>
-					<div className='relative flex flex-wrap gap-1'>
+					<div className={cn('relative flex flex-wrap gap-1')}>
 						{selected.map((option) => {
 							return (
 								<Badge
@@ -563,7 +563,10 @@ const MultipleSelector = React.forwardRef<
 									selected.filter((s) => s.fixed).length === selected.length) &&
 									'hidden'
 							)}>
-							<CircleX size={15} className='text-muted-foreground hover:text-foreground' />
+							<CircleX
+								size={15}
+								className='text-muted-foreground hover:text-foreground'
+							/>
 						</button>
 					</div>
 				</div>

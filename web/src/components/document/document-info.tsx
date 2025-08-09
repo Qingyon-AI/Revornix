@@ -58,11 +58,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 						<div className='text-muted-foreground mb-3 px-5 flex flex-row gap-1 items-center text-xs'>
 							<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 								{t('document_from_plat') + ': '}
-								{data.from_plat === 'qingyun-web'
-									? t('document_from_plat_website')
-									: data.from_plat === 'api'
-									? t('document_from_plat_api')
-									: t('document_from_plat_others')}
+								{data.from_plat}
 							</div>
 							<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 								{t('document_category') + ': '}

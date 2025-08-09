@@ -61,13 +61,7 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 				<div className='text-muted-foreground px-2 flex flex-row gap-1 items-center text-xs mt-auto mb-2'>
 					<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 						{t('document_from_plat') + ': '}
-						{document.from_plat === 'qingyun-web'
-							? t('document_from_plat_website')
-							: document.from_plat === 'api'
-							? t('document_from_plat_api')
-							: document.from_plat === 'rss'
-							? t('document_from_plat_rss')
-							: t('document_from_plat_others')}
+						{document.from_plat}
 					</div>
 					<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 						{t('document_category') + ': '}
@@ -78,6 +72,13 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 							: document.category === 2
 							? t('document_category_quick_note')
 							: t('document_category_others')}
+					</div>
+				</div>
+				<div className='text-muted-foreground px-2 flex flex-row gap-1 items-center text-xs mt-auto'>
+					<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
+						{t('document_last_update') + ': '}
+						{document.update_time &&
+							format(new Date(document.update_time), 'MM-dd HH:mm')}
 					</div>
 					{document.transform_task && (
 						<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
@@ -91,13 +92,6 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 								: t('document_md_status_failed')}
 						</div>
 					)}
-				</div>
-				<div className='text-muted-foreground px-2 flex flex-row gap-1 items-center text-xs mt-auto'>
-					<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
-						{t('document_last_update') + ': '}
-						{document.update_time &&
-							format(new Date(document.update_time), 'MM-dd HH:mm')}
-					</div>
 				</div>
 			</div>
 		</Link>

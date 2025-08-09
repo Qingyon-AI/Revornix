@@ -258,7 +258,7 @@ const SectionConfiguration = ({ section_id }: { section_id: number }) => {
 								control={form.control}
 								render={({ field }) => {
 									return (
-										<FormItem className='flex flex-row justify-between items-center'>
+										<FormItem className='flex flex-row justify-between items-center border rounded p-5 dark:bg-input/30'>
 											<FormLabel>
 												{t('section_configuration_form_public')}
 											</FormLabel>
