@@ -65,9 +65,6 @@ const DocumentOperate = ({ id }: { id: number }) => {
 				status: !data?.is_read!,
 			}),
 		onMutate: async () => {
-			await queryClient.cancelQueries({
-				queryKey: ['getDocumentDetail', id],
-			});
 			const previousDocument = queryClient.getQueryData<DocumentDetailResponse>(
 				['getDocumentDetail', id]
 			);
@@ -88,7 +85,6 @@ const DocumentOperate = ({ id }: { id: number }) => {
 				);
 		},
 		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
 			queryClient.invalidateQueries({
 				predicate: (query) =>
 					query.queryKey.includes('searchUserUnreadDocument'),
@@ -127,7 +123,6 @@ const DocumentOperate = ({ id }: { id: number }) => {
 				);
 		},
 		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
 			queryClient.invalidateQueries({
 				predicate: (query) => query.queryKey.includes('searchMyStarDocument'),
 			});

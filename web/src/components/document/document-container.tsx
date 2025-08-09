@@ -13,12 +13,13 @@ import { DocumentDetailResponse } from '@/generated';
 import { useEffect } from 'react';
 
 const DocumentContainer = ({ id }: { id: number }) => {
+	const queryClient = getQueryClient();
+	const { userInfo } = useUserContext();
+
 	const { data: document } = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
-	const queryClient = getQueryClient();
-	const { userInfo } = useUserContext();
 	const mutateRead = useMutation({
 		mutationFn: () =>
 			readDocument({
@@ -49,7 +50,6 @@ const DocumentContainer = ({ id }: { id: number }) => {
 				);
 		},
 		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
 			queryClient.invalidateQueries({
 				predicate: (query) =>
 					query.queryKey.includes('searchUserUnreadDocument'),

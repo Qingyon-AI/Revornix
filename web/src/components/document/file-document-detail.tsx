@@ -68,19 +68,22 @@ const FileDocumentDetail = ({
 		enabled: !!document?.creator?.id,
 	});
 
-	const [delay, setDelay] = useState<number | undefined>(1000);
+	const [delay, setDelay] = useState<number>();
 	useInterval(() => {
-		if (
-			document &&
-			document?.transform_task &&
-			document?.transform_task?.status >= 2
-		) {
-			setDelay(undefined);
-		}
 		queryClient.invalidateQueries({
 			queryKey: ['getDocumentDetail', id],
 		});
 	}, delay);
+
+	useEffect(() => {
+		if (
+			document &&
+			document.transform_task &&
+			document.transform_task?.status < 2
+		) {
+			setDelay(1000);
+		}
+	}, [document?.transform_task?.status]);
 
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
@@ -100,7 +103,6 @@ const FileDocumentDetail = ({
 		}
 		setMarkdowningTransform(false);
 		toast.success(t('document_transform_again'));
-		setDelay(1000);
 	};
 
 	const onGetMarkdown = async () => {
