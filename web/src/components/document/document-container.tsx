@@ -20,6 +20,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
+
 	const mutateRead = useMutation({
 		mutationFn: () =>
 			readDocument({
@@ -62,11 +63,11 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	});
 
 	useEffect(() => {
-		if (!document || document.is_read) return;
+		if (!document || document.is_read || !userInfo) return;
 		if (userInfo?.default_read_mark_reason === 0) {
 			mutateRead.mutate();
 		}
-	}, [document, userInfo]);
+	}, [document?.id, userInfo]); // 注意此处依赖必须是document?.id，而不是document本身，因为有其他部分代码会修改document的状态，导致useEffect再次执行
 
 	const handleFinishRead = () => {
 		if (!document || document.is_read) return;

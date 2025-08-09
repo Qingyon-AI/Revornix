@@ -53,7 +53,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 	const [showDeleteDocumentDialog, setShowDeleteDocumentDialog] =
 		useState(false);
 
-	const { data, isPending, isError, error, isRefetching } = useQuery({
+	const { data } = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
