@@ -77,8 +77,9 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	};
 
 	return (
-		<div className='h-full grid grid-cols-12 gap-5 px-5 pb-5'>
-			<div className='col-span-8 h-full overflow-auto relative'>
+		<div className='px-5 pb-5 h-full w-full grid grid-cols-12 gap-5 relative'>
+			{/* 此处的min-h-0是因为父级的grid布局会导致子元素的h-full无法准确继承到父级的实际高度，导致其高度被内容撑开 */}
+			<div className='col-span-8 h-full relative min-h-0'>
 				{document?.category === 1 && (
 					<WebsiteDocumentDetail onFinishRead={handleFinishRead} id={id} />
 				)}

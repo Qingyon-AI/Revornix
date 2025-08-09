@@ -29,7 +29,7 @@ const UnReadDocumentBox = () => {
 				onClick={() => {
 					router.push('/document/unread');
 				}}>
-				<CardHeader>
+				<CardHeader className='flex-1'>
 					<CardTitle className='flex flex-row items-center'>
 						<span>{t('unread_documents_card_title')}</span>
 						<span className='ml-2 font-bold text-sm'>

@@ -33,6 +33,7 @@ const routers: RouteItem[] = [
 				title: '通知',
 				title_en: 'Notification',
 				path: '/notification',
+				unclickable: true,
 				children: [
 					{
 						title: '通知源管理',
@@ -97,7 +98,12 @@ const routers: RouteItem[] = [
 			{ title: '未读文档', title_en: 'Unread Document', path: '/unread' },
 			{ title: '最近阅读', title_en: 'Recently Read', path: '/recent' },
 			{ title: '星标文档', title_en: 'Starred Document', path: '/star' },
-			{ title: '文档详情', title_en: 'Document Detail', path: '/detail' },
+			{
+				title: '文档详情',
+				title_en: 'Document Detail',
+				path: '/detail',
+				unclickable: true
+			},
 			{ title: '新建文档', title_en: 'Create Document', path: '/create' },
 			{ title: '我的文档', title_en: 'My Document', path: '/mine' },
 		],
@@ -150,6 +156,7 @@ const routers: RouteItem[] = [
 				title: '专栏详情',
 				title_en: 'Section Detail',
 				path: '/detail',
+				unclickable: true
 			},
 		],
 	},

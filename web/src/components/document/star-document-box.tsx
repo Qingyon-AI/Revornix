@@ -29,7 +29,7 @@ const StarDocumentBox = () => {
 			onClick={() => {
 				router.push('/document/star');
 			}}>
-			<CardHeader>
+			<CardHeader className='flex-1'>
 				<CardTitle className='flex flex-row items-center'>
 					<span>{t('star_documents_card_title')}</span>
 					<span className='ml-2 font-bold text-sm'>

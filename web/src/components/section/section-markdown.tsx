@@ -15,7 +15,6 @@ import { toast } from 'sonner';
 import { FileService } from '@/lib/file';
 import {
 	getUserFileSystemDetail,
-	getUserFileUrlPrefix,
 } from '@/service/file-system';
 
 const SectionMarkdown = ({ id }: { id: number }) => {
@@ -86,8 +85,7 @@ const SectionMarkdown = ({ id }: { id: number }) => {
 			{isFetching ||
 				(markdownIsFetching && <Skeleton className='h-full w-full' />)}
 			<div
-				className='h-full w-full prose mx-auto dark:prose-invert overflow-auto'
-				style={{ flex: '1 1 0' }}>
+				className='h-full w-full prose mx-auto dark:prose-invert'>
 				{!isFetching &&
 					section &&
 					section.documents &&
@@ -119,7 +117,7 @@ const SectionMarkdown = ({ id }: { id: number }) => {
 							rehypePlugins={[rehypeKatex, rehypeRaw]}>
 							{markdown}
 						</Markdown>
-						<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
+						<p className='text-xs text-muted-foreground bg-muted rounded py-2'>
 							{t('section_ai_tips')}
 						</p>
 					</div>

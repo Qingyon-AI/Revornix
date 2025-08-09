@@ -1,7 +1,6 @@
 import { DocumentInfo } from '@/generated';
-import Image from 'next/image';
 import { useRouter } from 'nextjs-toploader/app';
-import React, { useState } from 'react';
+import React from 'react';
 import CustomImage from '../ui/custom-image';
 
 const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
@@ -30,10 +29,10 @@ const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 							}}>
 							<div className='flex flex-col gap-2 flex-1 mr-5'>
 								<div className='text-sm font-bold line-clamp-1'>
-									{document.title ? document.title : '未命名'}
+									{document.title ? document.title : 'Untitled'}
 								</div>
 								<div className='text-sm line-clamp-2 text-muted-foreground'>
-									{document.description ? document.description : '暂无描述'}
+									{document.description ? document.description : 'No description'}
 								</div>
 							</div>
 

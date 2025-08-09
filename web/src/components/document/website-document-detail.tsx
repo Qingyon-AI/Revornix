@@ -153,7 +153,8 @@ const WebsiteDocumentDetail = ({
 	}, [inView]);
 
 	return (
-		<div className={cn('h-full w-full relative', className)}>
+		<div
+			className={cn('h-full w-full relative', className)}>
 			{((isError && error) || markdownGetError) && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 					{error?.message ?? (
@@ -228,21 +229,23 @@ const WebsiteDocumentDetail = ({
 					<Skeleton className='h-full w-full rounded' />
 				)}
 			{markdown && !isError && !markdownGetError && (
-				<div className='flex w-full h-full flex-col'>
-					<div className='prose dark:prose-invert mx-auto w-full h-full flex-1 overflow-auto relative'>
-						<Markdown
-							components={{
-								img: (props) => {
-									return <img {...props} className='mx-auto' />;
-								},
-							}}
-							remarkPlugins={[remarkMath, remarkGfm]}
-							rehypePlugins={[rehypeKatex, rehypeRaw]}>
-							{markdown}
-						</Markdown>
-						<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
-							{t('document_ai_tips')}
-						</p>
+				<div className='w-full h-full flex flex-col'>
+					<div className='flex-1 overflow-auto relative'>
+						<div className='prose dark:prose-invert mx-auto'>
+							<Markdown
+								components={{
+									img: (props) => {
+										return <img {...props} className='mx-auto' />;
+									},
+								}}
+								remarkPlugins={[remarkMath, remarkGfm]}
+								rehypePlugins={[rehypeKatex, rehypeRaw]}>
+								{markdown}
+							</Markdown>
+							<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
+								{t('document_ai_tips')}
+							</p>
+						</div>
 						<div ref={bottomRef}></div>
 					</div>
 					<Separator className='mb-5' />
