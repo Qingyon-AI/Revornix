@@ -16,7 +16,6 @@ import {
 	DrawerTrigger,
 } from '@/components/ui/drawer';
 import InitMineModel from './init-mine-model';
-import InitEngine from './init-engine';
 import InitDefaultChoose from './init-default-choose';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
