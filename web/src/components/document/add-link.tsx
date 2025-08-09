@@ -229,6 +229,7 @@ const AddLink = () => {
 												<Sparkles size={15} />
 											</FormLabel>
 											<Switch
+												disabled={!userInfo?.default_document_reader_model_id}
 												checked={field.value}
 												onCheckedChange={(e) => {
 													field.onChange(e);
