@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createDocument, getLabels } from '@/service/document';
 import { useState } from 'react';
-import { AlertCircleIcon, Loader2, Sparkles } from 'lucide-react';
+import { AlertCircleIcon, Loader2, OctagonAlert, Sparkles } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
@@ -238,6 +238,14 @@ const AddLink = () => {
 										<FormDescription>
 											{t('document_create_ai_summary_description')}
 										</FormDescription>
+										{!userInfo?.default_document_reader_model_id && (
+											<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+												<OctagonAlert className='h-4 w-4 !text-destructive' />
+												<AlertDescription>
+													{t('document_create_ai_summary_engine_unset')}
+												</AlertDescription>
+											</Alert>
+										)}
 									</FormItem>
 								);
 							}}

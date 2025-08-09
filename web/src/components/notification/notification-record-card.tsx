@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { CardDescription } from '../ui/card';
 import { useTranslations } from 'next-intl';
 import { NotificationRecord } from '@/generated';
+import { Separator } from '../ui/separator';
 
 const NotificationRecordCard = ({
 	notification,
@@ -51,12 +52,16 @@ const NotificationRecordCard = ({
 	return (
 		<>
 			<Dialog open={showNotification} onOpenChange={setShowNotification}>
-				<DialogContent className='sm:max-w-[425px]'>
+				<DialogContent className='max-h-[80vh] overflow-auto flex flex-col'>
 					<DialogHeader>
 						<DialogTitle>{notification.title}</DialogTitle>
-						<CardDescription>{notification.content}</CardDescription>
 					</DialogHeader>
-					<DialogFooter className='flex flex-row items-center !justify-between w-full'>
+					<div className='flex-1 overflow-auto'>{notification.content}</div>
+					<Separator />
+					<DialogFooter className='flex !justify-between items-center'>
+						<div className='text-muted-foreground text-xs'>
+							{format(notification.create_time as Date, 'yyyy-MM-dd HH:mm:ss')}
+						</div>
 						{notification.read_at ? (
 							<Button
 								variant={'destructive'}
@@ -88,7 +93,9 @@ const NotificationRecordCard = ({
 				onClick={() => setShowNotification(true)}>
 				<div className='flex flex-col gap-2 w-full'>
 					<p className='font-bold'>{notification.title}</p>
-					<p className='text-sm font-semibold'>{notification.content}</p>
+					<p className='text-sm font-semibold line-clamp-3'>
+						{notification.content}
+					</p>
 					<div className='text-muted-foreground text-xs'>
 						{format(notification.create_time as Date, 'yyyy-MM-dd HH:mm:ss')}
 					</div>

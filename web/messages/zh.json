@@ -397,6 +397,7 @@
     "document_create_label_add": "增加标签",
     "document_create_ai_summary": "AI自动总结",
     "document_create_ai_summary_description": "启用后，AI会自动将文件整体内容总结成一段文本并保存到文档内，并且会结合文件的内容，更加合适的给文档命名以及描述。",
+    "document_create_ai_summary_engine_unset": "请先配置默认文档阅读器模型，否则无法生成摘要",
     "document_create_section_choose": "请选择要推送的专栏",
     "document_create_section_empty": "找不到相应专栏",
     "document_create_submit": "保存",

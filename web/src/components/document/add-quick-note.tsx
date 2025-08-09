@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createDocument, getLabels } from '@/service/document';
 import { useState } from 'react';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, OctagonAlert, Sparkles } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,9 +27,12 @@ import { useRouter } from 'nextjs-toploader/app';
 import { getAllMineSections } from '@/service/section';
 import { Textarea } from '../ui/textarea';
 import { useTranslations } from 'next-intl';
+import { useUserContext } from '@/provider/user-provider';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
-const AddQuickNote = (props: {}) => {
+const AddQuickNote = () => {
 	const t = useTranslations();
+	const { userInfo } = useUserContext();
 	const formSchema = z.object({
 		category: z.number(),
 		content: z.string(),
@@ -203,6 +206,7 @@ const AddQuickNote = (props: {}) => {
 												<Sparkles size={15} />
 											</FormLabel>
 											<Switch
+												disabled={!userInfo?.default_document_reader_model_id}
 												checked={field.value}
 												onCheckedChange={(e) => {
 													field.onChange(e);
@@ -212,6 +216,14 @@ const AddQuickNote = (props: {}) => {
 										<FormDescription>
 											{t('document_create_ai_summary_description')}
 										</FormDescription>
+										{!userInfo?.default_document_reader_model_id && (
+											<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+												<OctagonAlert className='h-4 w-4 !text-destructive' />
+												<AlertDescription>
+													{t('document_create_ai_summary_engine_unset')}
+												</AlertDescription>
+											</Alert>
+										)}
 									</FormItem>
 								);
 							}}

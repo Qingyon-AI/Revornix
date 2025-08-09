@@ -396,6 +396,7 @@
     "document_create_label_add": "Add Tag",
     "document_create_ai_summary": "AI Auto Summary",
     "document_create_ai_summary_description": "When enabled, AI will automatically summarize the entire file content into a paragraph and save it in the document, as well as intelligently generate a more suitable title and description based on the file content.",
+    "document_create_ai_summary_engine_unset": "Please configure the default document reader model first, otherwise the summary cannot be generated",
     "document_create_section_choose": "Please select the section to push to",
     "document_create_section_empty": "No matching sections found",
     "document_create_submit": "Save",
