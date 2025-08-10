@@ -81,6 +81,7 @@ async def addRssServer(add_rss_request: schemas.rss.AddRssServerRequest,
     db_rss_server = crud.rss.create_rss_server(db=db, 
                                                title=add_rss_request.title, 
                                                description=add_rss_request.description,
+                                               cover=add_rss_request.cover,
                                                address=add_rss_request.address,
                                                user_id=current_user.id)
     if add_rss_request.section_ids is not None:
@@ -120,6 +121,8 @@ async def updateRssServer(update_rss_request: schemas.rss.UpdateRssServerRequest
         db_rss_server.description = update_rss_request.description
     if update_rss_request.address is not None:
         db_rss_server.address = update_rss_request.address
+    if update_rss_request.cover is not None:
+        db_rss_server.cover = update_rss_request.cover
     db_rss_server.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()

@@ -63,6 +63,12 @@ export interface RssServerInfo {
      * @type {string}
      * @memberof RssServerInfo
      */
+    cover?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RssServerInfo
+     */
     address: string;
     /**
      * 
@@ -118,6 +124,7 @@ export function RssServerInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         'user_id': json['user_id'],
         'title': json['title'],
         'description': json['description'],
+        'cover': json['cover'] == null ? undefined : json['cover'],
         'address': json['address'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (new Date(json['update_time'])),
@@ -141,6 +148,7 @@ export function RssServerInfoToJSONTyped(value?: RssServerInfo | null, ignoreDis
         'user_id': value['user_id'],
         'title': value['title'],
         'description': value['description'],
+        'cover': value['cover'],
         'address': value['address'],
         'create_time': ((value['create_time']).toISOString()),
         'update_time': ((value['update_time']).toISOString()),

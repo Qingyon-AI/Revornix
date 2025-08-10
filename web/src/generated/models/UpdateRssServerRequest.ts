@@ -42,6 +42,12 @@ export interface UpdateRssServerRequest {
      * @type {string}
      * @memberof UpdateRssServerRequest
      */
+    cover?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateRssServerRequest
+     */
     address?: string | null;
     /**
      * 
@@ -72,6 +78,7 @@ export function UpdateRssServerRequestFromJSONTyped(json: any, ignoreDiscriminat
         'rss_id': json['rss_id'],
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
+        'cover': json['cover'] == null ? undefined : json['cover'],
         'address': json['address'] == null ? undefined : json['address'],
         'section_ids': json['section_ids'] == null ? undefined : json['section_ids'],
     };
@@ -91,6 +98,7 @@ export function UpdateRssServerRequestToJSONTyped(value?: UpdateRssServerRequest
         'rss_id': value['rss_id'],
         'title': value['title'],
         'description': value['description'],
+        'cover': value['cover'],
         'address': value['address'],
         'section_ids': value['section_ids'],
     };

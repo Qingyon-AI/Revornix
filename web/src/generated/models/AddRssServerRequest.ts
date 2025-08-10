@@ -30,7 +30,13 @@ export interface AddRssServerRequest {
      * @type {string}
      * @memberof AddRssServerRequest
      */
-    description: string;
+    description?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddRssServerRequest
+     */
+    cover?: string | null;
     /**
      * 
      * @type {string}
@@ -50,7 +56,6 @@ export interface AddRssServerRequest {
  */
 export function instanceOfAddRssServerRequest(value: object): value is AddRssServerRequest {
     if (!('title' in value) || value['title'] === undefined) return false;
-    if (!('description' in value) || value['description'] === undefined) return false;
     if (!('address' in value) || value['address'] === undefined) return false;
     if (!('section_ids' in value) || value['section_ids'] === undefined) return false;
     return true;
@@ -67,7 +72,8 @@ export function AddRssServerRequestFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'title': json['title'],
-        'description': json['description'],
+        'description': json['description'] == null ? undefined : json['description'],
+        'cover': json['cover'] == null ? undefined : json['cover'],
         'address': json['address'],
         'section_ids': json['section_ids'] == null ? null : json['section_ids'],
     };
@@ -86,6 +92,7 @@ export function AddRssServerRequestToJSONTyped(value?: AddRssServerRequest | nul
         
         'title': value['title'],
         'description': value['description'],
+        'cover': value['cover'],
         'address': value['address'],
         'section_ids': value['section_ids'],
     };

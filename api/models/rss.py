@@ -7,6 +7,7 @@ class RSSServer(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String(200), index=True)
     description = Column(String(2000))
+    cover = Column(String(500))
     address = Column(String(300), nullable=False)
     create_time = Column(DateTime(timezone=True))
     update_time = Column(DateTime(timezone=True))

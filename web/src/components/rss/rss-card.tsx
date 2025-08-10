@@ -65,6 +65,11 @@ const RssCard = ({ rss }: { rss: RssServerInfo }) => {
 							rss.documents.map((document, index) => {
 								return <RssDocumentCard key={index} document={document} />;
 							})}
+						{rss && rss.documents && rss.documents.length === 0 && (
+							<div className='bg-muted rounded p-5 flex justify-center items-center text-xs text-muted-foreground'>
+								暂无数据
+							</div>
+						)}
 					</div>
 				</SheetContent>
 			</Sheet>
@@ -79,13 +84,33 @@ const RssCard = ({ rss }: { rss: RssServerInfo }) => {
 							rss.sections.map((section, index) => {
 								return <RssSectionCard key={index} section={section} />;
 							})}
+						{rss && rss.sections && rss.sections.length === 0 && (
+							<div className='bg-muted rounded p-5 flex justify-center items-center text-xs text-muted-foreground'>
+								暂无数据
+							</div>
+						)}
 					</div>
 				</SheetContent>
 			</Sheet>
-			<Card>
+			<Card className='pt-0 overflow-hidden'>
+				{rss.cover ? (
+					<img
+						src={rss.cover}
+						alt={rss.title}
+						className='h-48 w-full object-cover'
+					/>
+				) : (
+					<img
+						src='https://source.unsplash.com/random/200x200'
+						alt={rss.title}
+						className='h-48 w-full object-cover'
+					/>
+				)}
 				<CardHeader className='flex-1'>
 					<CardTitle>{rss.title}</CardTitle>
-					<CardDescription>{rss.description}</CardDescription>
+					<CardDescription className='line-clamp-3'>
+						{rss.description}
+					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<div className='flex h-5 items-center space-x-4 text-sm'>

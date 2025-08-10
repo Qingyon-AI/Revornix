@@ -1,12 +1,13 @@
 import models
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, func, cast, Date
+from sqlalchemy import or_
 
-def create_rss_server(db: Session, title: str, description: str, address: str, user_id: int):
+def create_rss_server(db: Session, title: str, description: str, cover: str, address: str, user_id: int):
     now = datetime.now(timezone.utc)
     db_rss_server = models.rss.RSSServer(title=title, 
                                          description=description, 
+                                         cover=cover,
                                          address=address,
                                          create_time=now, 
                                          update_time=now,
