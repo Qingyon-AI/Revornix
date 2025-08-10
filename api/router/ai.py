@@ -271,12 +271,13 @@ async def update_ai_model_provider(model_provider_update_request: schemas.ai.Mod
     db.commit()
     return schemas.common.SuccessResponse()
 
-async def stream_ops_stream(user_id: int, ai_client: OpenAI, model: str, query: str, memory: List):
+async def stream_ops(user_id: int, ai_client: OpenAI, model: str, query: str, memory: List):
     db = SessionLocal()
-    tool_mapping = {}
-    all_tools = []
-    mcp_servers = crud.mcp.search_mcp_servers(db=db, user_id=user_id, keyword='')
-
+    mcp_servers = crud.mcp.search_mcp_servers(db=db, user_id=user_id)
+    for mcp_server in mcp_servers:
+        if not mcp_server.enable:
+            continue
+        
     try:
         async with AsyncExitStack() as stack:
             clients = []
@@ -289,7 +290,7 @@ async def stream_ops_stream(user_id: int, ai_client: OpenAI, model: str, query: 
                     client = await stack.enter_async_context(client)
                     clients.append(client)
                 if mcp_server.category == 1:
-                    stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
+                    stream_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
                     client = MCPClientWrapper(mcp_type='stream', base_url=stream_mcp_server.address)
                     client = await stack.enter_async_context(client)
                     clients.append(client)
@@ -348,7 +349,7 @@ async def stream_ops_stream(user_id: int, ai_client: OpenAI, model: str, query: 
         # 客户端主动断开连接时，GeneratorExit 会被抛出
         info_logger.info("Client disconnected during stream.")
     except Exception as e:
-        exception_logger.exception(f"Unexpected error in stream_ops_stream: {e}")
+        exception_logger.exception(f"Unexpected error in stream_ops: {e}")
         yield ResponseItem(status="Error", content=str(e)).model_dump_json()
     finally:
         db.close()
@@ -389,7 +390,7 @@ async def ask_ai(chat_messages: schemas.ai.ChatMessages,
             
             while depth <= max_depth:
                 try:
-                    async for chunk in stream_ops_stream(user_id=user.id, ai_client=ai_client, model=db_model.name, query=query, memory=messages):
+                    async for chunk in stream_ops(user_id=user.id, ai_client=ai_client, model=db_model.name, query=query, memory=messages):
                         chunk = json.loads(chunk)
                         status = chunk.get('status')
                         content = chunk.get('content')

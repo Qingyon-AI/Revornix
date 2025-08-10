@@ -33,10 +33,10 @@ export interface AliyunOSSPresignUploadURLResponse {
     file_path: string;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof AliyunOSSPresignUploadURLResponse
      */
-    fields: object;
+    fields: { [key: string]: any; };
     /**
      * 
      * @type {Date}

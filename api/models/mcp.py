@@ -18,17 +18,19 @@ class StdMCP(Base):
 
     id = Column(Integer, primary_key=True)
     cmd = Column(String(200))
-    args = Column(String(200))
+    args = Column(String(300))
+    env = Column(String(500))
     create_time = Column(DateTime(timezone=True))
     update_time = Column(DateTime(timezone=True))
     delete_at = Column(DateTime(timezone=True))
     server_id = Column(Integer, ForeignKey('mcp_server.id'))
     
-class StreamMCP(Base):
-    __tablename__ = 'stream_mcp'
+class HttpMCP(Base):
+    __tablename__ = 'http_mcp'
 
     id = Column(Integer, primary_key=True)
-    address = Column(String(200))
+    url = Column(String(200))
+    headers = Column(String(500))
     create_time = Column(DateTime(timezone=True))
     update_time = Column(DateTime(timezone=True))
     delete_at = Column(DateTime(timezone=True))

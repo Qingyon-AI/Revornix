@@ -22,11 +22,13 @@ def create_mcp_server_base(db: Session,
 def create_std_mcp(db: Session, 
                    cmd: str, 
                    args: str, 
+                   env: str,
                    server_id: int):
     now = datetime.now(timezone.utc)
     db_std_mcp = models.mcp.StdMCP(
         cmd=cmd,
         args=args,
+        env=env,
         create_time=now,
         update_time=now,
         server_id=server_id,
@@ -35,23 +37,25 @@ def create_std_mcp(db: Session,
     db.flush()
     return db_std_mcp
 
-def create_stream_mcp(db: Session, 
-                      address: str, 
-                      server_id: int):
+def create_http_mcp(db: Session, 
+                    url: str,
+                    headers: str,
+                    server_id: int):
     now = datetime.now(timezone.utc)
-    db_stream_mcp = models.mcp.StreamMCP(
-        address=address,
+    db_http_mcp = models.mcp.HttpMCP(
+        url=url,
+        headers=headers,
         create_time=now,
         update_time=now,
         server_id=server_id,
     )
-    db.add(db_stream_mcp)
+    db.add(db_http_mcp)
     db.flush()
-    return db_stream_mcp
+    return db_http_mcp
 
 def search_mcp_servers(db: Session,
                        user_id: int,
-                       keyword: str):
+                       keyword: str | None = None):
     query = db.query(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.user_id == user_id,
                          models.mcp.MCPServer.delete_at == None)
@@ -74,11 +78,11 @@ def get_std_mcp_server_by_id(db: Session,
                          models.mcp.StdMCP.delete_at == None)
     return query.first()
 
-def get_stream_mcp_server_by_id(db: Session,
-                                id: int):
-    query = db.query(models.mcp.StreamMCP)
-    query = query.filter(models.mcp.StreamMCP.id == id,
-                         models.mcp.StreamMCP.delete_at == None)
+def get_http_mcp_server_by_id(db: Session,
+                              id: int):
+    query = db.query(models.mcp.HttpMCP)
+    query = query.filter(models.mcp.HttpMCP.id == id,
+                         models.mcp.HttpMCP.delete_at == None)
     return query.first()
 
 def get_std_mcp_server_by_base_id(db: Session,
@@ -90,12 +94,12 @@ def get_std_mcp_server_by_base_id(db: Session,
                          models.mcp.MCPServer.delete_at == None)
     return query.first()
 
-def get_stream_mcp_server_by_base_id(db: Session,
-                                     base_id: int):
-    query = db.query(models.mcp.StreamMCP)
+def get_http_mcp_server_by_base_id(db: Session,
+                                   base_id: int):
+    query = db.query(models.mcp.HttpMCP)
     query = query.join(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.id == base_id,
-                         models.mcp.StreamMCP.delete_at == None, 
+                         models.mcp.HttpMCP.delete_at == None, 
                          models.mcp.MCPServer.delete_at == None)
     return query.first()
 
@@ -115,27 +119,27 @@ def delete_std_mcp_server_by_id(db: Session,
     query.update({models.mcp.StdMCP.delete_at: datetime.now(timezone.utc)})
     db.flush()
     
-def delete_stream_mcp_server_by_id(db: Session,
-                                   id: int):
-    query = db.query(models.mcp.StreamMCP)
-    query = query.filter(models.mcp.StreamMCP.id == id,
-                         models.mcp.StreamMCP.delete_at == None)
-    query.update({models.mcp.StreamMCP.delete_at: datetime.now(timezone.utc)})
+def delete_http_mcp_server_by_id(db: Session,
+                                 id: int):
+    query = db.query(models.mcp.HttpMCP)
+    query = query.filter(models.mcp.HttpMCP.id == id,
+                         models.mcp.HttpMCP.delete_at == None)
+    query.update({models.mcp.HttpMCP.delete_at: datetime.now(timezone.utc)})
     db.flush() 
  
-def delete_stream_mcp_server_by_base_id(db: Session,
-                                        base_id: int):
-    query = db.query(models.mcp.StreamMCP)
+def delete_http_mcp_server_by_base_id(db: Session,
+                                      base_id: int):
+    query = db.query(models.mcp.HttpMCP)
     query = query.join(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.id == base_id,
-                         models.mcp.StreamMCP.delete_at == None,
+                         models.mcp.HttpMCP.delete_at == None,
                          models.mcp.MCPServer.delete_at == None)
     
-    ids = [db_stream_mcp.id for db_stream_mcp in query.all()]
+    ids = [db_http_mcp.id for db_http_mcp in query.all()]
     
-    db.query(models.mcp.StreamMCP)\
-        .filter(models.mcp.StreamMCP.id.in_(ids))\
-            .update({models.mcp.StreamMCP.delete_at: datetime.now(timezone.utc)})
+    db.query(models.mcp.HttpMCP)\
+        .filter(models.mcp.HttpMCP.id.in_(ids))\
+            .update({models.mcp.HttpMCP.delete_at: datetime.now(timezone.utc)})
     
 def delete_std_mcp_server_by_base_id(db: Session,
                                      base_id: int):

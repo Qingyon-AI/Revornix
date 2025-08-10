@@ -6,18 +6,22 @@ class MCPServerDetailRequest(BaseModel):
 class MCPServerCreateRequest(BaseModel):
     name: str
     category: int
-    address: str | None = None
+    url: str | None = None
     cmd: str | None = None
     args: str | None = None
+    env: str | None = None
+    headers: str | None = None
     
 class MCPServerUpdateRequest(BaseModel):
     id: int
     category: int | None = None
     name: str | None = None
     enable: bool | None = None
-    address: str | None = None
+    url: str | None = None
     cmd: str | None = None
     args: str | None = None
+    headers: str | None = None
+    env: str | None = None
     
 class MCPServerDeleteRequest(BaseModel):
     id: int
@@ -27,9 +31,11 @@ class MCPServerInfo(BaseModel):
     name: str
     enable: bool
     category: int
-    address: str | None = None
+    url: str | None = None
     cmd: str | None = None
     args: str | None = None
+    env: str | None = None
+    headers: str | None = None
     
 class MCPServerSearchRequest(BaseModel):
     keyword: str | None = None

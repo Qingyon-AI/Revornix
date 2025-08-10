@@ -33,10 +33,10 @@ export interface S3PresignUploadURLResponse {
     file_path: string;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof S3PresignUploadURLResponse
      */
-    fields: object;
+    fields: { [key: string]: any; };
     /**
      * 
      * @type {Date}
