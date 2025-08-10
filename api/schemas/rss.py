@@ -38,6 +38,9 @@ class RssDocumentInfo(BaseModel):
     id: int
     title: str
     description: str
+    category: int
+    cover: str | None = None
+    from_plat: str
     create_time: datetime
     update_time: datetime
     class Config:
@@ -51,7 +54,7 @@ class RssServerInfo(BaseModel):
     address: str
     create_time: datetime
     update_time: datetime
-    documents: list[DocumentInfo] = []
+    documents: list[RssDocumentInfo] = []
     sections: list[SectionInfo] = []
     class Config:
         from_attributes = True

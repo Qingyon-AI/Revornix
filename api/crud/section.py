@@ -158,7 +158,6 @@ def search_user_sections(db: Session,
                          label_ids: list[int] | None = None,
                          only_public: bool = False,
                          desc: bool = True):
-    print(111, start, limit, desc)
     query = db.query(models.section.Section)
     query = query.filter(models.section.Section.delete_at == None,
                          models.section.Section.creator_id == user_id)

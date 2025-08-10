@@ -19,46 +19,24 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
-import { deleteRssServer, searchRssDocuments } from '@/service/rss';
+import { useMutation } from '@tanstack/react-query';
+import { deleteRssServer } from '@/service/rss';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useState } from 'react';
 import UpdateRss from './update-rss';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../ui/sheet';
+import RssDocumentCard from '../section/rss-document-card';
+import { Separator } from '../ui/separator';
+import RssSectionCard from '../section/rss-section-card';
 
 const RssCard = ({ rss }: { rss: RssServerInfo }) => {
 	const t = useTranslations();
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+	const [showDocuments, setShowDocuments] = useState(false);
+	const [showSections, setShowSections] = useState(false);
 	const queryClient = getQueryClient();
-
-	const {
-		data,
-		isFetchingNextPage,
-		isFetching,
-		isSuccess,
-		fetchNextPage,
-		isError,
-		hasNextPage,
-	} = useInfiniteQuery({
-		queryKey: ['searchRssDocument', rss.id],
-		queryFn: (pageParam) => searchRssDocuments({ ...pageParam.pageParam }),
-		initialPageParam: {
-			rss_id: rss.id,
-			keyword: '',
-			limit: 10,
-		},
-		getNextPageParam: (lastPage) => {
-			return lastPage.has_more
-				? {
-						rss_id: rss.id,
-						keyword: '',
-						start: lastPage.next_start,
-						limit: lastPage.limit,
-				  }
-				: undefined;
-		},
-	});
 
 	const mutateDeleteRssServer = useMutation({
 		mutationFn: deleteRssServer,
@@ -75,56 +53,95 @@ const RssCard = ({ rss }: { rss: RssServerInfo }) => {
 	});
 
 	return (
-		<Card>
-			<CardHeader className='flex-1'>
-				<CardTitle>{rss.title}</CardTitle>
-				<CardDescription>{rss.description}</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<p className='text-xs text-muted-foreground mb-1'>
-					{t('rss_documents_count', {
-						document_count: rss.documents?.length ?? 0,
-					})}
-				</p>
-				<p className='text-xs text-muted-foreground'>
-					{t('rss_sections_count', {
-						section_count: rss.sections?.length ?? 0,
-					})}
-				</p>
-			</CardContent>
-			<CardFooter className='flex justify-end gap-3'>
-				<UpdateRss rss_id={rss.id} />
-				<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-					<AlertDialogTrigger asChild>
-						<Button variant={'secondary'}>{t('delete')}</Button>
-					</AlertDialogTrigger>
-					<AlertDialogContent>
-						<AlertDialogHeader>
-							<AlertDialogTitle>{t('warning')}</AlertDialogTitle>
-							<AlertDialogDescription>
-								{t('rss_delete_warning')}
-							</AlertDialogDescription>
-						</AlertDialogHeader>
-						<AlertDialogFooter>
-							<AlertDialogCancel>{t('cancel')}ƒ</AlertDialogCancel>
-							<Button
-								variant='destructive'
-								disabled={mutateDeleteRssServer.isPending}
-								onClick={() => {
-									mutateDeleteRssServer.mutateAsync({
-										ids: [rss.id],
-									});
-								}}>
-								{t('confirm')}
-								{mutateDeleteRssServer.isPending && (
-									<Loader2 className='h-4 w-4 animate-spin' />
-								)}
-							</Button>
-						</AlertDialogFooter>
-					</AlertDialogContent>
-				</AlertDialog>
-			</CardFooter>
-		</Card>
+		<>
+			<Sheet open={showDocuments} onOpenChange={setShowDocuments}>
+				<SheetContent className='pb-5'>
+					<SheetHeader>
+						<SheetTitle>RSS —— {rss.title}</SheetTitle>
+					</SheetHeader>
+					<div className='px-5 flex flex-col gap-5 overflow-auto pb-5'>
+						{rss &&
+							rss.documents &&
+							rss.documents.map((document, index) => {
+								return <RssDocumentCard key={index} document={document} />;
+							})}
+					</div>
+				</SheetContent>
+			</Sheet>
+			<Sheet open={showSections} onOpenChange={setShowSections}>
+				<SheetContent className='pb-5'>
+					<SheetHeader>
+						<SheetTitle>RSS —— {rss.title}</SheetTitle>
+					</SheetHeader>
+					<div className='px-5 flex flex-col gap-5 overflow-auto pb-5'>
+						{rss &&
+							rss.sections &&
+							rss.sections.map((section, index) => {
+								return <RssSectionCard key={index} section={section} />;
+							})}
+					</div>
+				</SheetContent>
+			</Sheet>
+			<Card>
+				<CardHeader className='flex-1'>
+					<CardTitle>{rss.title}</CardTitle>
+					<CardDescription>{rss.description}</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<div className='flex h-5 items-center space-x-4 text-sm'>
+						<p
+							className='text-xs text-muted-foreground underline'
+							onClick={() => setShowDocuments(true)}>
+							{t('rss_documents_count', {
+								document_count: rss.documents?.length ?? 0,
+							})}
+						</p>
+						<Separator className='h-20 w-20' orientation={'vertical'} />
+						<p
+							className='text-xs text-muted-foreground underline'
+							onClick={() => setShowSections(true)}>
+							{t('rss_sections_count', {
+								section_count: rss.sections?.length ?? 0,
+							})}
+						</p>
+					</div>
+				</CardContent>
+				<CardFooter className='flex justify-end gap-3'>
+					<UpdateRss rss_id={rss.id} />
+					<AlertDialog
+						open={showDeleteDialog}
+						onOpenChange={setShowDeleteDialog}>
+						<AlertDialogTrigger asChild>
+							<Button variant={'secondary'}>{t('delete')}</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>{t('warning')}</AlertDialogTitle>
+								<AlertDialogDescription>
+									{t('rss_delete_warning')}
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+								<Button
+									variant='destructive'
+									disabled={mutateDeleteRssServer.isPending}
+									onClick={() => {
+										mutateDeleteRssServer.mutateAsync({
+											ids: [rss.id],
+										});
+									}}>
+									{t('confirm')}
+									{mutateDeleteRssServer.isPending && (
+										<Loader2 className='h-4 w-4 animate-spin' />
+									)}
+								</Button>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
+				</CardFooter>
+			</Card>
+		</>
 	);
 };
 

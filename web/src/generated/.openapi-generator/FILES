@@ -145,6 +145,7 @@ models/QuickNoteDocumentInfo.ts
 models/ReadNotificationRecordRequest.ts
 models/ReadRequest.ts
 models/ReferenceItem.ts
+models/RssDocumentInfo.ts
 models/RssServerInfo.ts
 models/S3PresignUploadURLRequest.ts
 models/S3PresignUploadURLResponse.ts

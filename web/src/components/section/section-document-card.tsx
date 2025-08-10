@@ -20,7 +20,7 @@ const SectionDocumentCard = ({
 						? document.title
 						: t('section_document_card_no_title')}
 				</div>
-				<div className='text-xs text-muted-foreground line-clamp-2'>
+				<div className='text-xs text-muted-foreground line-clamp-2 break-all'>
 					{document.description
 						? document.description
 						: t('section_document_card_no_description')}

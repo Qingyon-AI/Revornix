@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { RssDocumentInfo } from './RssDocumentInfo';
+import {
+    RssDocumentInfoFromJSON,
+    RssDocumentInfoFromJSONTyped,
+    RssDocumentInfoToJSON,
+    RssDocumentInfoToJSONTyped,
+} from './RssDocumentInfo';
 import type { SectionInfo } from './SectionInfo';
 import {
     SectionInfoFromJSON,
@@ -20,13 +27,6 @@ import {
     SectionInfoToJSON,
     SectionInfoToJSONTyped,
 } from './SectionInfo';
-import type { DocumentInfo } from './DocumentInfo';
-import {
-    DocumentInfoFromJSON,
-    DocumentInfoFromJSONTyped,
-    DocumentInfoToJSON,
-    DocumentInfoToJSONTyped,
-} from './DocumentInfo';
 
 /**
  * 
@@ -78,10 +78,10 @@ export interface RssServerInfo {
     update_time: Date;
     /**
      * 
-     * @type {Array<DocumentInfo>}
+     * @type {Array<RssDocumentInfo>}
      * @memberof RssServerInfo
      */
-    documents?: Array<DocumentInfo>;
+    documents?: Array<RssDocumentInfo>;
     /**
      * 
      * @type {Array<SectionInfo>}
@@ -121,7 +121,7 @@ export function RssServerInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         'address': json['address'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (new Date(json['update_time'])),
-        'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(DocumentInfoFromJSON)),
+        'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(RssDocumentInfoFromJSON)),
         'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SectionInfoFromJSON)),
     };
 }
@@ -144,7 +144,7 @@ export function RssServerInfoToJSONTyped(value?: RssServerInfo | null, ignoreDis
         'address': value['address'],
         'create_time': ((value['create_time']).toISOString()),
         'update_time': ((value['update_time']).toISOString()),
-        'documents': value['documents'] == null ? undefined : ((value['documents'] as Array<any>).map(DocumentInfoToJSON)),
+        'documents': value['documents'] == null ? undefined : ((value['documents'] as Array<any>).map(RssDocumentInfoToJSON)),
         'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SectionInfoToJSON)),
     };
 }

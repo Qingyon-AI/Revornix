@@ -151,7 +151,6 @@ const InitSettingDialog = () => {
 				</Alert>
 			)}
 			<Drawer open={showDialog} onOpenChange={setShowDialog}>
-				<DrawerTrigger asChild></DrawerTrigger>
 				<DrawerContent className='pb-5 min-h-[75vh]'>
 					<DrawerHeader>
 						<DrawerTitle>{t('init_setting_dialog_title')}</DrawerTitle>

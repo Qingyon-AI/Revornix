@@ -133,6 +133,7 @@ export * from './QuickNoteDocumentInfo';
 export * from './ReadNotificationRecordRequest';
 export * from './ReadRequest';
 export * from './ReferenceItem';
+export * from './RssDocumentInfo';
 export * from './RssServerInfo';
 export * from './S3PresignUploadURLRequest';
 export * from './S3PresignUploadURLResponse';
