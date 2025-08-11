@@ -130,15 +130,15 @@ async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRe
             if mcp_server_update_request.headers is not None:
                 db_std_mcp_server.env = mcp_server_update_request.env
         if db_base_mcp_server.category == 1:
-            db_stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db, 
-                                                                            base_id=mcp_server_update_request.id)
-            if db_stream_mcp_server is None:
+            db_http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db, 
+                                                                         base_id=mcp_server_update_request.id)
+            if db_http_mcp_server is None:
                 raise schemas.error.CustomException(message="mcp server not found", 
                                                     code=404)
             if mcp_server_update_request.url is not None:
-                db_stream_mcp_server.url = mcp_server_update_request.url
+                db_http_mcp_server.url = mcp_server_update_request.url
             if mcp_server_update_request.headers is not None:
-                db_stream_mcp_server.headers = mcp_server_update_request.headers
+                db_http_mcp_server.headers = mcp_server_update_request.headers
     else:
         if db_base_mcp_server.category == 0 and mcp_server_update_request.category == 1:
             crud.mcp.delete_std_mcp_server_by_base_id(db=db, base_id=db_base_mcp_server.id)
@@ -149,7 +149,7 @@ async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRe
                 server_id=db_base_mcp_server.id
             )
         elif db_base_mcp_server.category == 1 and mcp_server_update_request.category == 0:
-            crud.mcp.delete_stream_mcp_server_by_base_id(db=db, base_id=db_base_mcp_server.id)
+            crud.mcp.delete_http_mcp_server_by_base_id(db=db, base_id=db_base_mcp_server.id)
             db_new_std_mcp_server = crud.mcp.create_std_mcp(
                 db=db,
                 cmd=mcp_server_update_request.cmd,

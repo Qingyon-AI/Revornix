@@ -1,8 +1,10 @@
 import re
 import crud
+import json
 from pathlib import Path
 from common.hash import verify_password
 from common.sql import SessionLocal
+from langchain_core.messages import BaseMessage
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 
@@ -48,3 +50,24 @@ def get_user_remote_file_system(user_id: int):
             remote_file_service = AliyunOSSRemoteFileService()
     db.close()
     return remote_file_service
+
+def to_serializable(obj):
+    """把无法直接JSON化的对象转成可序列化形式"""
+    if isinstance(obj, (str, int, float, bool)) or obj is None:
+        return obj
+    elif isinstance(obj, dict):
+        return {k: to_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple, set)):
+        return [to_serializable(i) for i in obj]
+    elif hasattr(obj, "__dict__"):  # 普通类
+        return {k: to_serializable(v) for k, v in obj.__dict__.items()}
+    else:
+        return str(obj)
+
+def safe_json_loads(data, default):
+    if not data:
+        return default
+    try:
+        return json.loads(data)
+    except (ValueError, TypeError):
+        return default

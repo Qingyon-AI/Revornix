@@ -217,7 +217,7 @@ const MessageSendForm = () => {
 			buffer += decoder.decode(value, { stream: true }); // add data to the buffer
 			try {
 				// resove multiple lines JSON
-				const lines = buffer.split('\n'); // 后段按照\n分段
+				const lines = buffer.split('\n\n'); // 后段按照\n分段
 				buffer = lines.pop() || ''; // may json fragment, save back
 				for (const line of lines) {
 					if (!line.trim()) continue;
