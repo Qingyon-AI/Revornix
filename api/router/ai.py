@@ -14,6 +14,7 @@ from fastapi.responses import StreamingResponse
 from common.sql import SessionLocal
 from mcp_use import MCPClient, MCPAgent
 from langchain_openai import ChatOpenAI
+from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
 from common.common import to_serializable, safe_json_loads
 from dotenv import load_dotenv
 load_dotenv(override=True)
@@ -283,42 +284,45 @@ async def create_agent(user_id: int, enable_mcp: bool = False):
     db_user_model_provider = crud.model.get_user_ai_model_provider_by_id(db=db, 
                                                                          user_id=user.id, 
                                                                          provider_id=db_model.provider_id)
-    client = None
+    mcp_client = MCPClient()
     if enable_mcp:
         mcp_servers = crud.mcp.search_mcp_servers(db=db, user_id=user_id)
-        config = {
-            "mcpServers": {}
-        }
         for mcp_server in mcp_servers:
             if not mcp_server.enable:
                 continue
             else:
                 if mcp_server.category == 0:
                     stdio_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
-                    config["mcpServers"][mcp_server.name] = {
-                        "command": stdio_mcp_server.cmd,
-                        "args": safe_json_loads(stdio_mcp_server.args, []),
-                        "env": safe_json_loads(stdio_mcp_server.env, {})
-                    }
+                    mcp_client.add_server(name=mcp_server.name,
+                                          server_config={
+                                              "command": stdio_mcp_server.cmd,
+                                              "args": safe_json_loads(stdio_mcp_server.args, []),
+                                              "env": safe_json_loads(stdio_mcp_server.env, {})
+                                              }
+                                          )
                 if mcp_server.category == 1:
                     http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
-                    config["mcpServers"][mcp_server.name] = {
-                        "url": http_mcp_server.url,
-                        "headers": safe_json_loads(http_mcp_server.headers, {})
-                    }
-        client = MCPClient.from_dict(config)
-    else:
-        client = MCPClient()
+                    mcp_client.add_server(name=mcp_server.name,
+                                          server_config={
+                                              "url": http_mcp_server.url,
+                                              "headers": safe_json_loads(http_mcp_server.headers, {})
+                                              }
+                                          )
     llm = ChatOpenAI(
         model=db_model.name,
         api_key=db_user_model_provider.api_key,
         base_url=db_user_model_provider.api_url,
     )
     db.close()
-    return MCPAgent(llm=llm, client=client)
+    return MCPAgent(llm=llm, client=mcp_client)
 
 async def stream_ops(user_id: int, query: str, messages: list, enable_mcp: bool = False):
     agent = await create_agent(user_id=user_id, enable_mcp=enable_mcp)
+    for message in messages:
+        if message.role == "user":
+            agent.add_to_history(HumanMessage(content=message.content))
+        elif message.role == "assistant":
+            agent.add_to_history(AIMessage(content=message.content))
     async for event in agent.stream_events(
         query=f"{query}",
     ):
