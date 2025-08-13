@@ -316,8 +316,10 @@ async def create_agent(user_id: int, enable_mcp: bool = False):
     db.close()
     return MCPAgent(llm=llm, client=mcp_client)
 
-async def stream_ops(user_id: int, query: str, messages: list, enable_mcp: bool = False):
+async def stream_ops(user_id: int, messages: list, enable_mcp: bool = False):
     agent = await create_agent(user_id=user_id, enable_mcp=enable_mcp)
+    # 弹出最后一条消息并将其作为query
+    query = messages.pop().content
     for message in messages:
         if message.role == "user":
             agent.add_to_history(HumanMessage(content=message.content))
@@ -347,10 +349,8 @@ async def ask_ai(chat_messages: schemas.ai.ChatMessages,
     enable_mcp = chat_messages.enable_mcp
     messages = chat_messages.messages
     
-    query = chat_messages.messages[-1].content
-    
     return StreamingResponse(
-        stream_ops(user_id=user.id, query=query, messages=messages, enable_mcp=enable_mcp), 
+        stream_ops(user_id=user.id, messages=messages, enable_mcp=enable_mcp), 
         media_type="text/event-stream; charset=utf-8",
         headers={
             "Cache-Control": "no-cache",
