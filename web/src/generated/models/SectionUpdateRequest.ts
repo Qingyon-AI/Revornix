@@ -45,10 +45,10 @@ export interface SectionUpdateRequest {
     public?: boolean | null;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof SectionUpdateRequest
      */
-    cover_id?: number | null;
+    cover?: string | null;
     /**
      * 
      * @type {Array<number>}
@@ -85,7 +85,7 @@ export function SectionUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
         'public': json['public'] == null ? undefined : json['public'],
-        'cover_id': json['cover_id'] == null ? undefined : json['cover_id'],
+        'cover': json['cover'] == null ? undefined : json['cover'],
         'documents': json['documents'] == null ? undefined : json['documents'],
         'labels': json['labels'] == null ? undefined : json['labels'],
     };
@@ -106,7 +106,7 @@ export function SectionUpdateRequestToJSONTyped(value?: SectionUpdateRequest | n
         'title': value['title'],
         'description': value['description'],
         'public': value['public'],
-        'cover_id': value['cover_id'],
+        'cover': value['cover'],
         'documents': value['documents'],
         'labels': value['labels'],
     };

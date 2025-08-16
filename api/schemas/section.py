@@ -1,7 +1,6 @@
 from pydantic import BaseModel, field_validator, field_serializer
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
-from schemas.attachment import AttachmentInfo
 from schemas.user import UserPublicInfo
 
 class SearchSubscribedSectionRequest(BaseModel):
@@ -138,17 +137,14 @@ class SectionInfo(BaseModel):
     is_subscribed: bool | None = None
     md_file_name: str | None = None
     labels: list[Label] | None = None
-    cover: AttachmentInfo | None = None
+    cover: str | None = None
     documents: list[SectionDocumentInfo] | None = None
     @field_serializer("cover")
     def cover(self, v):
         if v is None:
             return None
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator.id)
-        return AttachmentInfo(
-            id=v.id,
-            name=f'{url_prefix}/{v.name}',
-        )
+        return f'{url_prefix}/{v.name}'
     @field_serializer("md_file_name")
     def md_file_name(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator.id)
@@ -200,7 +196,7 @@ class SectionCreateRequest(BaseModel):
     title: str
     description: str
     public: bool
-    cover_id: int | None = None
+    cover: str | None
     labels: list[int]
     
 class SectionCreateResponse(BaseModel):
@@ -211,6 +207,6 @@ class SectionUpdateRequest(BaseModel):
     title: str | None = None
     description: str | None = None
     public: bool | None = None
-    cover_id: int | None = None
+    cover: str | None = None
     documents: list[int] | None = None
     labels: list[int] | None = None

@@ -1,6 +1,5 @@
 from . import ai
 from . import api_key
-from . import attachment
 from . import celery
 from . import common
 from . import document

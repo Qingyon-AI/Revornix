@@ -2,7 +2,6 @@
 /* eslint-disable */
 export * from './AiApi';
 export * from './ApiKeyApi';
-export * from './AttachmentApi';
 export * from './DocumentApi';
 export * from './EngineApi';
 export * from './FileSystemApi';

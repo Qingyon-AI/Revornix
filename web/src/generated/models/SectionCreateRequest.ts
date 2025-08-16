@@ -39,10 +39,10 @@ export interface SectionCreateRequest {
     public: boolean;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof SectionCreateRequest
      */
-    cover_id?: number | null;
+    cover: string | null;
     /**
      * 
      * @type {Array<number>}
@@ -58,6 +58,7 @@ export function instanceOfSectionCreateRequest(value: object): value is SectionC
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('public' in value) || value['public'] === undefined) return false;
+    if (!('cover' in value) || value['cover'] === undefined) return false;
     if (!('labels' in value) || value['labels'] === undefined) return false;
     return true;
 }
@@ -75,7 +76,7 @@ export function SectionCreateRequestFromJSONTyped(json: any, ignoreDiscriminator
         'title': json['title'],
         'description': json['description'],
         'public': json['public'],
-        'cover_id': json['cover_id'] == null ? undefined : json['cover_id'],
+        'cover': json['cover'],
         'labels': json['labels'],
     };
 }
@@ -94,7 +95,7 @@ export function SectionCreateRequestToJSONTyped(value?: SectionCreateRequest | n
         'title': value['title'],
         'description': value['description'],
         'public': value['public'],
-        'cover_id': value['cover_id'],
+        'cover': value['cover'],
         'labels': value['labels'],
     };
 }

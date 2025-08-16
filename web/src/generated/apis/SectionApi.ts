@@ -155,12 +155,6 @@ export interface SearchMineSectionsSectionMineSearchPostRequest {
     xForwardedFor?: string | null;
 }
 
-export interface SearchPublicSectionsSectionPublicSearchPostRequest {
-    searchPublicSectionsRequest: SearchPublicSectionsRequest;
-    authorization?: string | null;
-    xForwardedFor?: string | null;
-}
-
 export interface SearchSectionCommentSectionCommentSearchPostRequest {
     sectionCommentSearchRequest: SectionCommentSearchRequest;
     authorization?: string | null;
@@ -169,6 +163,12 @@ export interface SearchSectionCommentSectionCommentSearchPostRequest {
 
 export interface SearchUserSectionsSectionUserSearchPostRequest {
     searchUserSectionsRequest: SearchUserSectionsRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface SearchpublicSectionsSectionPublicSearchPostRequest {
+    searchPublicSectionsRequest: SearchPublicSectionsRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -688,53 +688,6 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search Public Sections
-     */
-    async searchPublicSectionsSectionPublicSearchPostRaw(requestParameters: SearchPublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
-        if (requestParameters['searchPublicSectionsRequest'] == null) {
-            throw new runtime.RequiredError(
-                'searchPublicSectionsRequest',
-                'Required parameter "searchPublicSectionsRequest" was null or undefined when calling searchPublicSectionsSectionPublicSearchPost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
-
-        let urlPath = `/section/public/search`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: SearchPublicSectionsRequestToJSON(requestParameters['searchPublicSectionsRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
-    }
-
-    /**
-     * Search Public Sections
-     */
-    async searchPublicSectionsSectionPublicSearchPost(requestParameters: SearchPublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
-        const response = await this.searchPublicSectionsSectionPublicSearchPostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Search Section Comment
      */
     async searchSectionCommentSectionCommentSearchPostRaw(requestParameters: SearchSectionCommentSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionCommentInfo>> {
@@ -825,6 +778,53 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async searchUserSectionsSectionUserSearchPost(requestParameters: SearchUserSectionsSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
         const response = await this.searchUserSectionsSectionUserSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Searchpublic Sections
+     */
+    async searchpublicSectionsSectionPublicSearchPostRaw(requestParameters: SearchpublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+        if (requestParameters['searchPublicSectionsRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchPublicSectionsRequest',
+                'Required parameter "searchPublicSectionsRequest" was null or undefined when calling searchpublicSectionsSectionPublicSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/public/search`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchPublicSectionsRequestToJSON(requestParameters['searchPublicSectionsRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Searchpublic Sections
+     */
+    async searchpublicSectionsSectionPublicSearchPost(requestParameters: SearchpublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+        const response = await this.searchpublicSectionsSectionPublicSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

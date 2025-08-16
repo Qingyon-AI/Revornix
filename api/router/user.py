@@ -179,8 +179,8 @@ async def create_user_by_email_verify(email_user_create_verify_request: schemas.
         raise Exception("The email is already exists")
     db_user = crud.user.create_base_user(db=db, 
                                          default_read_mark_reason=0,
-                                         avatar_attachment_id=1, 
-                                         nickname=email_user_create_verify_request.email)
+                                         nickname=email_user_create_verify_request.email,
+                                         avatar="files/default_avatar.png")
     crud.user.create_email_user(db, 
                                 user_id=db_user.id, 
                                 email=email_user_create_verify_request.email, 
@@ -259,7 +259,6 @@ async def update_my_info(user_info_update_request: schemas.user.UserInfoUpdateRe
     crud.user.update_user_info(db=db, 
                                user_id=user.id, 
                                nickname=user_info_update_request.nickname, 
-                               avatar_attachment_id=user_info_update_request.avatar_attachment_id, 
                                slogan=user_info_update_request.slogan)
     db.commit()
     return schemas.common.SuccessResponse(message="The information of the user is updated successfully.")

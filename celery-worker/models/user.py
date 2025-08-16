@@ -21,7 +21,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String(100), index=True, nullable=False)
-    avatar_id = Column(ForeignKey('attachment.id'), nullable=False, index=True)
+    avatar = Column(String(500), nullable=False, index=True)
     nickname = Column(String(50), index=True, nullable=False)
     last_login_ip = Column(String(50))
     last_login_time = Column(DateTime(timezone=True))
@@ -37,5 +37,3 @@ class User(Base):
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True))
-    
-    avatar = relationship("Attachment", backref="avatar_users")

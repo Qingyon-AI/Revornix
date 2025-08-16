@@ -21,8 +21,7 @@ alembic_cfg_path = BASE_DIR / 'alembic.ini'
 alembic_cfg = Config(str(alembic_cfg_path))
 
 def is_data_initialized(db):
-    """检查 attachment 表是否已经有默认数据"""
-    result = db.query(models.attachment.Attachment).count()
+    result = db.query(models.engine.Engine).count()
     return result > 0  # 如果有记录，说明数据已经初始化
 
 if __name__ == '__main__':
@@ -37,9 +36,6 @@ if __name__ == '__main__':
     if not is_data_initialized(db):
         print("首次运行，初始化数据库数据...")
         try:
-            db_attachment = crud.attachment.create_attachment(db=db,
-                                                              name='images/default_avatar_1',
-                                                              description='default avatar 1')
             mineru_engine = MineruEngine()
             jina_engine = JinaEngine()
             markitdown_engine = MarkitdownEngine()

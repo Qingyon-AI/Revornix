@@ -30,7 +30,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String(100), index=True, nullable=False)
-    avatar_id = Column(ForeignKey('attachment.id'), nullable=False, index=True)
+    avatar = Column(String(500), nullable=False)
     nickname = Column(String(50), index=True, nullable=False)
     last_login_ip = Column(String(50))
     last_login_time = Column(DateTime(timezone=True))
@@ -47,8 +47,6 @@ class User(Base):
     default_website_document_parse_user_engine_id = Column(Integer)
     default_read_mark_reason = Column(Integer, comment='0: Request once, 1: Scroll to the bottom of the document, 2: Manually Mark')
     default_user_file_system = Column(Integer)
-    
-    avatar = relationship("Attachment", backref="avatar_users")
     
 class UserDefaultSettings(Base):
     __tablename__ = "user_default_settings"

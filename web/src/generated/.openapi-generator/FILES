@@ -1,6 +1,5 @@
 apis/AiApi.ts
 apis/ApiKeyApi.ts
-apis/AttachmentApi.ts
 apis/DocumentApi.ts
 apis/EngineApi.ts
 apis/FileSystemApi.ts
@@ -24,9 +23,6 @@ models/ApiKeyCreateRequest.ts
 models/ApiKeyCreateResponse.ts
 models/ApiKeyInfo.ts
 models/ApiKeysDeleteRequest.ts
-models/AttachmentCreateRequest.ts
-models/AttachmentCreateResponse.ts
-models/AttachmentInfo.ts
 models/BaseSectionInfo.ts
 models/BindEmailVerifyRequest.ts
 models/ChatItem.ts

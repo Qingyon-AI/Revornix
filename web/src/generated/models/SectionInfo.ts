@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { AttachmentInfo } from './AttachmentInfo';
-import {
-    AttachmentInfoFromJSON,
-    AttachmentInfoFromJSONTyped,
-    AttachmentInfoToJSON,
-    AttachmentInfoToJSONTyped,
-} from './AttachmentInfo';
 import type { Label } from './Label';
 import {
     LabelFromJSON,
@@ -122,10 +115,10 @@ export interface SectionInfo {
     labels?: Array<Label> | null;
     /**
      * 
-     * @type {AttachmentInfo}
+     * @type {string}
      * @memberof SectionInfo
      */
-    cover?: AttachmentInfo | null;
+    cover?: string | null;
     /**
      * 
      * @type {Array<SectionDocumentInfo>}
@@ -172,7 +165,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'is_subscribed': json['is_subscribed'] == null ? undefined : json['is_subscribed'],
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(LabelFromJSON)),
-        'cover': json['cover'] == null ? undefined : AttachmentInfoFromJSON(json['cover']),
+        'cover': json['cover'] == null ? undefined : json['cover'],
         'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(SectionDocumentInfoFromJSON)),
     };
 }
@@ -200,7 +193,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'is_subscribed': value['is_subscribed'],
         'md_file_name': value['md_file_name'],
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(LabelToJSON)),
-        'cover': AttachmentInfoToJSON(value['cover']),
+        'cover': value['cover'],
         'documents': value['documents'] == null ? undefined : ((value['documents'] as Array<any>).map(SectionDocumentInfoToJSON)),
     };
 }

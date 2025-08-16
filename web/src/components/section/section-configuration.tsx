@@ -260,7 +260,7 @@ const SectionConfiguration = ({ section_id }: { section_id: number }) => {
 									return (
 										<FormItem className='flex flex-row justify-between items-center border rounded p-5 dark:bg-input/30'>
 											<FormLabel>
-												{t('section_configuration_form_public')}
+												{t('section_configuration_formpublic')}
 											</FormLabel>
 											<Switch
 												checked={field.value}

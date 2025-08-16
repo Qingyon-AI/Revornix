@@ -20,7 +20,7 @@ async def create_section(section_create_request: schemas.section.SectionCreateRe
                          user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
     db_section = crud.section.create_section(db=db, 
                                              creator_id=user.id,
-                                             cover_attachment_id=section_create_request.cover_id,
+                                             cover=section_create_request.cover,
                                              title=section_create_request.title, 
                                              description=section_create_request.description,
                                              public=section_create_request.public)

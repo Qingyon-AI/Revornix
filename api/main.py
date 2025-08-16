@@ -27,7 +27,6 @@ from fastapi import status
 from router.user import user_router
 from router.mcp import mcp_router
 from router.document import document_router
-from router.attachment import attachment_router
 from router.ai import ai_router
 from router.notification import notification_router
 from router.section import section_router
@@ -95,7 +94,6 @@ app.add_middleware(
 )
 
 app.include_router(user_router, prefix="/user", tags=["user"])
-app.include_router(attachment_router, prefix="/attachment", tags=["attachment"])
 app.include_router(document_router, prefix="/document", tags=["document"])
 app.include_router(ai_router, prefix="/ai", tags=["ai"])
 app.include_router(notification_router, prefix="/notification", tags=["notification"])

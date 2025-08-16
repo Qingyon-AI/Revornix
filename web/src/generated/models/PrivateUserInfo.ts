@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { AttachmentInfo } from './AttachmentInfo';
-import {
-    AttachmentInfoFromJSON,
-    AttachmentInfoFromJSONTyped,
-    AttachmentInfoToJSON,
-    AttachmentInfoToJSONTyped,
-} from './AttachmentInfo';
 import type { EmailInfo } from './EmailInfo';
 import {
     EmailInfoFromJSON,
@@ -60,10 +53,10 @@ export interface PrivateUserInfo {
     follows?: number | null;
     /**
      * 
-     * @type {AttachmentInfo}
+     * @type {string}
      * @memberof PrivateUserInfo
      */
-    avatar?: AttachmentInfo | null;
+    avatar?: string | null;
     /**
      * 
      * @type {string}
@@ -143,7 +136,7 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'uuid': json['uuid'],
         'fans': json['fans'] == null ? undefined : json['fans'],
         'follows': json['follows'] == null ? undefined : json['follows'],
-        'avatar': json['avatar'] == null ? undefined : AttachmentInfoFromJSON(json['avatar']),
+        'avatar': json['avatar'] == null ? undefined : json['avatar'],
         'nickname': json['nickname'] == null ? undefined : json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'email_info': json['email_info'] == null ? undefined : EmailInfoFromJSON(json['email_info']),
@@ -171,7 +164,7 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'uuid': value['uuid'],
         'fans': value['fans'],
         'follows': value['follows'],
-        'avatar': AttachmentInfoToJSON(value['avatar']),
+        'avatar': value['avatar'],
         'nickname': value['nickname'],
         'slogan': value['slogan'],
         'email_info': EmailInfoToJSON(value['email_info']),

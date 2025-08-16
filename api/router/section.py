@@ -119,8 +119,8 @@ async def update_section(
         db_section.description = section_update_request.description
     if section_update_request.public is not None:
         db_section.public = section_update_request.public
-    if section_update_request.cover_id is not None:
-        db_section.cover_id = section_update_request.cover_id
+    if section_update_request.cover is not None:
+        db_section.cover = section_update_request.cover
     if section_update_request.labels is not None:
         exist_section_labels = crud.section.get_section_labels_by_section_id(db=db, 
                                                                              section_id=section_update_request.section_id)
@@ -136,17 +136,17 @@ async def update_section(
     return schemas.common.SuccessResponse(message="更新成功")
 
 @section_router.post('/public/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
-async def search_public_sections(search_public_sections_request: schemas.section.SearchPublicSectionsRequest,
+async def searchpublic_sections(searchpublic_sections_request: schemas.section.SearchPublicSectionsRequest,
                                  db: Session = Depends(get_db),
                                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     has_more = True
     next_start = None
-    db_sections = crud.section.search_public_sections(db=db, 
-                                                      start=search_public_sections_request.start,
-                                                      limit=search_public_sections_request.limit,
-                                                      keyword=search_public_sections_request.keyword,
-                                                      label_ids=search_public_sections_request.label_ids,
-                                                      desc=search_public_sections_request.desc)
+    db_sections = crud.section.searchpublic_sections(db=db, 
+                                                      start=searchpublic_sections_request.start,
+                                                      limit=searchpublic_sections_request.limit,
+                                                      keyword=searchpublic_sections_request.keyword,
+                                                      label_ids=searchpublic_sections_request.label_ids,
+                                                      desc=searchpublic_sections_request.desc)
     def get_section_info(section):
         documents_count = crud.section.count_section_documents_by_section_id(db=db, 
                                                                              section_id=section.id)
@@ -163,23 +163,23 @@ async def search_public_sections(search_public_sections_request: schemas.section
             subscribers_count=subscribers_count
         )
     db_sections = [get_section_info(section) for section in db_sections]
-    if len(db_sections) < search_public_sections_request.limit or len(db_sections) == 0:
+    if len(db_sections) < searchpublic_sections_request.limit or len(db_sections) == 0:
         has_more = False
-    if len(db_sections) == search_public_sections_request.limit:
-        next_section = crud.section.search_next_public_section(db=db, 
+    if len(db_sections) == searchpublic_sections_request.limit:
+        next_section = crud.section.search_nextpublic_section(db=db, 
                                                                section=db_sections[-1],
-                                                               keyword=search_public_sections_request.keyword,
-                                                               label_ids=search_public_sections_request.label_ids)
+                                                               keyword=searchpublic_sections_request.keyword,
+                                                               label_ids=searchpublic_sections_request.label_ids)
         has_more = next_section is not None
         next_start = next_section.id if has_more else None
-    total = crud.section.count_public_sections(db=db,
-                                               keyword=search_public_sections_request.keyword,
-                                               label_ids=search_public_sections_request.label_ids)
+    total = crud.section.countpublic_sections(db=db,
+                                               keyword=searchpublic_sections_request.keyword,
+                                               label_ids=searchpublic_sections_request.label_ids)
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,
         elements=db_sections,
-        start=search_public_sections_request.start,
-        limit=search_public_sections_request.limit,
+        start=searchpublic_sections_request.start,
+        limit=searchpublic_sections_request.limit,
         has_more=has_more,
         next_start=next_start
     )
@@ -202,7 +202,7 @@ async def search_user_sections(search_user_sections_request: schemas.section.Sea
                                                     start=search_user_sections_request.start,
                                                     limit=search_user_sections_request.limit,
                                                     keyword=search_user_sections_request.keyword,
-                                                    only_public=True if search_user_sections_request.user_id != user.id else False,
+                                                    onlypublic=True if search_user_sections_request.user_id != user.id else False,
                                                     label_ids=search_user_sections_request.label_ids,
                                                     desc=search_user_sections_request.desc)
     def get_section_info(section):
@@ -242,18 +242,18 @@ async def search_user_sections(search_user_sections_request: schemas.section.Sea
     )                                                                                    
                                                     
 @section_router.post('/mine/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
-async def search_mine_sections(search_public_sections_request: schemas.section.SearchMineSectionsRequest,
+async def search_mine_sections(searchpublic_sections_request: schemas.section.SearchMineSectionsRequest,
                                db: Session = Depends(get_db),
                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     has_more = True
     next_start = None
     db_sections = crud.section.search_user_sections(db=db, 
                                                     user_id=user.id,
-                                                    start=search_public_sections_request.start,
-                                                    limit=search_public_sections_request.limit,
-                                                    keyword=search_public_sections_request.keyword,
-                                                    label_ids=search_public_sections_request.label_ids,
-                                                    desc=search_public_sections_request.desc)
+                                                    start=searchpublic_sections_request.start,
+                                                    limit=searchpublic_sections_request.limit,
+                                                    keyword=searchpublic_sections_request.keyword,
+                                                    label_ids=searchpublic_sections_request.label_ids,
+                                                    desc=searchpublic_sections_request.desc)
     def get_section_info(section):
         documents_count = crud.section.count_section_documents_by_section_id(db=db, 
                                                                              section_id=section.id)
@@ -270,26 +270,26 @@ async def search_mine_sections(search_public_sections_request: schemas.section.S
             subscribers_count=subscribers_count
         )
     db_sections = [get_section_info(section) for section in db_sections]
-    if len(db_sections) < search_public_sections_request.limit or len(db_sections) == 0:
+    if len(db_sections) < searchpublic_sections_request.limit or len(db_sections) == 0:
         has_more = False
-    if len(db_sections) == search_public_sections_request.limit:
+    if len(db_sections) == searchpublic_sections_request.limit:
         next_notification = crud.section.search_next_user_section(db=db, 
                                                                   user_id=user.id,
                                                                   section=db_sections[-1],
-                                                                  keyword=search_public_sections_request.keyword,
-                                                                  label_ids=search_public_sections_request.label_ids,
-                                                                  desc=search_public_sections_request.desc)
+                                                                  keyword=searchpublic_sections_request.keyword,
+                                                                  label_ids=searchpublic_sections_request.label_ids,
+                                                                  desc=searchpublic_sections_request.desc)
         has_more = next_notification is not None
         next_start = next_notification.id if has_more else None
     total = crud.section.count_user_sections(db=db,
                                              user_id=user.id,
-                                             keyword=search_public_sections_request.keyword,
-                                             label_ids=search_public_sections_request.label_ids)
+                                             keyword=searchpublic_sections_request.keyword,
+                                             label_ids=searchpublic_sections_request.label_ids)
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,
         elements=db_sections,
-        start=search_public_sections_request.start,
-        limit=search_public_sections_request.limit,
+        start=searchpublic_sections_request.start,
+        limit=searchpublic_sections_request.limit,
         has_more=has_more,
         next_start=next_start
     )
@@ -344,7 +344,7 @@ async def create_section(section_create_request: schemas.section.SectionCreateRe
                          user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     db_section = crud.section.create_section(db=db, 
                                              creator_id=user.id,
-                                             cover_attachment_id=section_create_request.cover_id,
+                                             cover=section_create_request.cover,
                                              title=section_create_request.title, 
                                              description=section_create_request.description,
                                              public=section_create_request.public)

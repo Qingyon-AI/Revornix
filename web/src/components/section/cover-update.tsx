@@ -5,7 +5,6 @@ import { useRef, useState } from 'react';
 import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { createAttachment } from '@/service/attachment';
 import CustomImage from '../ui/custom-image';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
@@ -50,18 +49,8 @@ const CoverUpdate = () => {
 		const fileName = `files/${name}.${suffix}`;
 		await utils.sleep(2000);
 		await fileService.uploadFile(fileName, file);
-		const [res, err] = await utils.to(
-			createAttachment({
-				name: fileName,
-				description: '专栏封面',
-			})
-		);
-		if (err) {
-			toast.error('上传失败');
-			return;
-		}
 		setUploadingStatus('done');
-		form.setValue('cover', res);
+		form.setValue('cover', fileName);
 	};
 	return (
 		<FormField

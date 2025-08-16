@@ -17,7 +17,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { getQueryClient } from '@/lib/get-query-client';
-import { createAttachment } from '@/service/attachment';
 import { createSection, getMineLabels } from '@/service/section';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { utils } from '@kinda/utils';
@@ -37,7 +36,7 @@ const CreatePage = () => {
 		description: z
 			.string()
 			.min(1, { message: t('section_create_description_needed') }),
-		cover_id: z.optional(z.number()),
+		cover: z.string().nullable(),
 		public: z.boolean(),
 		labels: z.array(z.number()),
 	});
@@ -48,7 +47,7 @@ const CreatePage = () => {
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			cover_id: undefined,
+			cover: undefined,
 			title: '',
 			description: '',
 			labels: [],
@@ -87,7 +86,7 @@ const CreatePage = () => {
 			createSection({
 				title: values.title,
 				description: values.description,
-				cover_id: values.cover_id,
+				cover: values.cover,
 				public: values.public,
 				labels: values.labels,
 			})
@@ -123,20 +122,13 @@ const CreatePage = () => {
 				<form onSubmit={onSubmitForm}>
 					<FormField
 						control={form.control}
-						name='cover_id'
+						name='cover'
 						render={({ field }) => {
 							return (
 								<FormItem className='mb-5 w-full p-5 flex justify-center items-center'>
 									<ImageUpload
 										onSuccess={async (fileName) => {
-											const [res, err] = await utils.to(
-												createAttachment({ name: fileName, description: '' })
-											);
-											if (err || !res) {
-												toast.error(t('section_create_cover_upload_failed'));
-												return;
-											}
-											field.onChange(res.id);
+											field.onChange(fileName);
 										}}
 										onDelete={() => {
 											field.onChange(null);
@@ -234,7 +226,7 @@ const CreatePage = () => {
 								<FormItem className='mb-5'>
 									<div className='flex flex-row gap-1 items-center'>
 										<FormLabel className='flex flex-row gap-1 items-center'>
-											{t('section_create_form_public')}
+											{t('section_create_formpublic')}
 										</FormLabel>
 										<Switch
 											checked={field.value}
@@ -244,7 +236,7 @@ const CreatePage = () => {
 										/>
 									</div>
 									<FormDescription>
-										{t('section_create_form_public_description')}
+										{t('section_create_formpublic_description')}
 									</FormDescription>
 								</FormItem>
 							);
