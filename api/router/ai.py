@@ -318,6 +318,7 @@ async def create_agent(user_id: int, enable_mcp: bool = False):
 
 async def stream_ops(user_id: int, messages: list, enable_mcp: bool = False):
     agent = await create_agent(user_id=user_id, enable_mcp=enable_mcp)
+    agent.clear_conversation_history()
     # 弹出最后一条消息并将其作为query
     query = messages.pop().content
     for message in messages:
@@ -330,16 +331,21 @@ async def stream_ops(user_id: int, messages: list, enable_mcp: bool = False):
     ):
         event_type = event.get("event")
         data = event.get("data", {})
+        run_id = event.get("run_id")
+        parent_ids = event.get("parent_ids")
         sse_data = {
-            "type": event_type,
+            "parent_ids": parent_ids,
+            "run_id": run_id,
+            "event": event_type,
             "timestamp": time.time(),
-            "data": to_serializable(data)
+            "data": to_serializable(data),
         }
         yield f"{json.dumps(to_serializable(sse_data), ensure_ascii=False)}\n\n"
     sse_data = {
-        "type": "done",
+        "event": "done",
         "timestamp": time.time(),
-        "data": {}
+        "data": {},
+        "run_id": run_id,
     }
     yield f"{json.dumps(to_serializable(sse_data), ensure_ascii=False)}\n\n"
 

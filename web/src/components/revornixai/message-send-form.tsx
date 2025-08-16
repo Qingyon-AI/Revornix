@@ -73,53 +73,24 @@ const MessageSendForm = () => {
 		if (!currentSession) {
 			return;
 		}
+		const { event, data, run_id } = responseItem;
+		setAiStatus(event);
 
-		const content = responseItem.content || '';
-		const status = responseItem.status;
-
-		setAiStatus(status);
-
-		if (status === 'AI Answering') {
-			const messageResponse = JSON.parse(content) as Message;
+		if (event === 'on_chat_model_stream') {
 			const messageItem = tempMessages().find(
-				(item) => item.chat_id === messageResponse.chat_id
+				(item) => item.chat_id === run_id
 			);
 			if (!messageItem) {
 				const newMessageItem = {
-					chat_id: messageResponse.chat_id,
-					content: messageResponse.content,
-					role: messageResponse.role,
-					quote: messageResponse.quote,
-					reasoning_content: messageResponse.reasoning_content,
-					finish_reason: messageResponse.finish_reason,
-					references: messageResponse.references,
+					chat_id: run_id,
+					content: data.chunk.content,
+					role: 'assistant',
 				};
 				setTempMessages([...tempMessages(), newMessageItem]);
 			} else {
-				if (
-					messageResponse.content &&
-					messageResponse.content.length > 0 &&
-					!messageResponse.reasoning_content?.length
-				) {
-					aiStatus !== t('revornix_ai_responding') &&
-						setAiStatus(t('revornix_ai_responding'));
-					messageItem.content = messageItem.content + messageResponse.content;
+				if (data.chunk.content && data.chunk.content.length > 0) {
+					messageItem.content = messageItem.content + data.chunk.content;
 				}
-				if (
-					messageResponse.reasoning_content &&
-					messageResponse.reasoning_content.length > 0 &&
-					!messageResponse.content.length
-				) {
-					aiStatus !== t('revornix_ai_deep_thinking') &&
-						setAiStatus(t('revornix_ai_deep_thinking'));
-					messageItem.reasoning_content =
-						messageItem.reasoning_content + messageResponse.reasoning_content;
-				}
-				if (messageResponse.finish_reason === 'stop') {
-					setAiStatus('');
-					messageItem.quote = messageResponse.quote;
-				}
-				messageItem.finish_reason = messageResponse.finish_reason;
 				setTempMessages(
 					tempMessages().map((item) =>
 						item.chat_id === messageItem.chat_id ? messageItem : item
