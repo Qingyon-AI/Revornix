@@ -47,7 +47,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 								className='flex flex-row items-center px-5 mb-3'
 								onClick={() => router.push(`/user/detail/${data.creator!.id}`)}>
 								<CustomImage
-									src={data.creator!.avatar?.name}
+									src={data.creator!.avatar!}
 									className='w-5 h-5 rounded-full mr-2 object-cover'
 								/>
 								<p className='text-xs text-muted-foreground'>

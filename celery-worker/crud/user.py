@@ -1,5 +1,5 @@
 import models
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 
 def get_user_by_id(db: Session,
                    user_id: int):

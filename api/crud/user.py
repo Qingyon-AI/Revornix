@@ -202,7 +202,6 @@ def get_user_by_uuid(db: Session,
     query = db.query(models.user.User)
     query = query.filter(models.user.User.uuid == user_uuid, 
                          models.user.User.delete_at == None)
-    query = query.options(selectinload(models.user.User.avatar))
     return query.first()
 
 def get_email_user_by_email(db: Session,

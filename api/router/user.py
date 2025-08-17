@@ -259,7 +259,8 @@ async def update_my_info(user_info_update_request: schemas.user.UserInfoUpdateRe
     crud.user.update_user_info(db=db, 
                                user_id=user.id, 
                                nickname=user_info_update_request.nickname, 
-                               slogan=user_info_update_request.slogan)
+                               slogan=user_info_update_request.slogan,
+                               avatar=user_info_update_request.avatar)
     db.commit()
     return schemas.common.SuccessResponse(message="The information of the user is updated successfully.")
 
