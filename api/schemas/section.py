@@ -140,11 +140,11 @@ class SectionInfo(BaseModel):
     cover: str | None = None
     documents: list[SectionDocumentInfo] | None = None
     @field_serializer("cover")
-    def cover(self, v):
+    def cover(self, v: str) -> str | None:
         if v is None:
             return None
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator.id)
-        return f'{url_prefix}/{v.name}'
+        return f'{url_prefix}/{v}'
     @field_serializer("md_file_name")
     def md_file_name(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator.id)

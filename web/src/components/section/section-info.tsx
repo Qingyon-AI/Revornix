@@ -44,7 +44,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 			<div className='h-full overflow-auto pb-5'>
 				<div className='mb-5'>
 					<img
-						src={section?.cover?.name ? section.cover.name : '/images/cover.jpg'}
+						src={section?.cover ? section.cover : '/images/cover.jpg'}
 						alt='cover'
 						className='w-full h-64 object-cover'
 					/>
@@ -90,7 +90,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 						e.stopPropagation();
 					}}>
 					<CustomImage
-						src={section?.creator.avatar?.name}
+						src={section?.creator.avatar!}
 						alt='avatar'
 						className='rounded-full object-cover w-5 h-5'
 					/>

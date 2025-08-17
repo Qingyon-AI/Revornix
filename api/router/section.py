@@ -158,7 +158,6 @@ async def searchpublic_sections(searchpublic_sections_request: schemas.section.S
             **section.__dict__,
             creator=section.creator,
             labels=db_labels,
-            cover=section.cover,
             documents_count=documents_count,
             subscribers_count=subscribers_count
         )
@@ -264,7 +263,6 @@ async def search_mine_sections(searchpublic_sections_request: schemas.section.Se
         return schemas.section.SectionInfo(
             **section.__dict__,
             creator=section.creator,
-            cover=section.cover,
             labels=db_labels,
             documents_count=documents_count,
             subscribers_count=subscribers_count
@@ -329,7 +327,6 @@ async def get_section_detail(section_detail_request: schemas.section.SectionDeta
         documents_count=documents_count,
         subscribers_count=subscribers_count,
         creator=db_section.creator,
-        cover=db_section.cover,
     )
     
     if db_user_section is not None and db_user_section.authority == 2:

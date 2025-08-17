@@ -432,6 +432,8 @@
     "section_create_description_needed": "Please enter section description",
     "section_create_success": "Section created successfully",
     "section_create_failed": "Section creation failed",
+    "section_cover": "Section Cover",
+    "section_cover_upload_new": "Upload New Cover",
     "section_create_cover_upload_failed": "Section cover upload failed",
     "section_create_form_title": "Section Name",
     "section_create_form_title_placeholder": "Please enter section name",

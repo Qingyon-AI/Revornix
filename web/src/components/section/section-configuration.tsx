@@ -43,7 +43,7 @@ const SectionConfiguration = ({ section_id }: { section_id: number }) => {
 
 	const updateFormSchema = z.object({
 		section_id: z.number().int(),
-		cover: z.object({ id: z.number(), name: z.string() }).optional(),
+		cover: z.string().optional(),
 		title: z.string().min(1),
 		description: z.string().min(1),
 		public: z.boolean(),
@@ -119,7 +119,7 @@ const SectionConfiguration = ({ section_id }: { section_id: number }) => {
 		const [res, err] = await utils.to(
 			updateSection({
 				...values,
-				cover_id: values.cover?.id,
+				cover: values.cover,
 			})
 		);
 		if (err) {
