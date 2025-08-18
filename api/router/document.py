@@ -367,7 +367,16 @@ async def get_label_summary(db: Session = Depends(get_db),
                                                                                        name=label.name),
                                                      count=count))
     return schemas.document.LabelSummaryResponse(data=res)
-    
+
+@document_router.post('/label/delete', response_model=schemas.common.NormalResponse)
+async def delete_label(label_delete_request: schemas.document.LabelDeleteRequest,
+                       db: Session = Depends(get_db), 
+                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    crud.document.delete_labels_by_label_ids(db=db, 
+                                             label_ids=label_delete_request.label_ids,
+                                             user_id=user.id)
+    db.commit()
+    return schemas.common.NormalResponse(message="success")
 
 @document_router.post("/label/list", response_model=schemas.document.LabelListResponse)
 async def list_label(db: Session = Depends(get_db), 

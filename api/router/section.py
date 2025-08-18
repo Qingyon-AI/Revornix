@@ -22,6 +22,16 @@ def check_section_user_auth(db: Session,
                                                                            section_id=section_id)
     return section_user
 
+@section_router.post('/label/delete', response_model=schemas.common.NormalResponse)
+async def delete_label(label_delete_request: schemas.section.LabelDeleteRequest,
+                       db: Session = Depends(get_db), 
+                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    crud.document.delete_labels_by_label_ids(db=db, 
+                                             label_ids=label_delete_request.label_ids,
+                                             user_id=user.id)
+    db.commit()
+    return schemas.common.NormalResponse(message="success")
+
 @section_router.post("/label/list", response_model=schemas.section.LabelListResponse)
 async def list_label(db: Session = Depends(get_db), 
                      user: schemas.user.PrivateUserInfo = Depends(get_current_user)):

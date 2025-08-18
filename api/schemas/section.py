@@ -3,6 +3,9 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
 from schemas.user import UserPublicInfo
 
+class LabelDeleteRequest(BaseModel):
+    label_ids: list[int]
+
 class SearchSubscribedSectionRequest(BaseModel):
     user_id: int
     start: int | None = None
@@ -196,7 +199,7 @@ class SectionCreateRequest(BaseModel):
     title: str
     description: str
     public: bool
-    cover: str | None
+    cover: str | None = None
     labels: list[int]
     
 class SectionCreateResponse(BaseModel):

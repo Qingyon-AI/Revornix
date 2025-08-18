@@ -4,6 +4,9 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 from .user import UserPublicInfo
 from .task import DocumentTransformTask
 
+class LabelDeleteRequest(BaseModel):
+    label_ids: list[int]
+    
 class DocumentMarkdownTransformRequest(BaseModel):
     document_id: int
 
