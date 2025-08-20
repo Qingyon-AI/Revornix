@@ -7,7 +7,6 @@ class LabelDeleteRequest(BaseModel):
     label_ids: list[int]
 
 class SearchSubscribedSectionRequest(BaseModel):
-    user_id: int
     start: int | None = None
     limit: int = 10
     desc: bool | None = True
