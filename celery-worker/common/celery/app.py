@@ -17,6 +17,7 @@ from common.sql import SessionLocal
 from engine.markitdown import MarkitdownEngine
 from engine.jina import JinaEngine
 from engine.mineru import MineruEngine
+from engine.mineru_api import MineruApiEngine
 
 import tracemalloc
 import warnings
@@ -72,6 +73,8 @@ async def handle_init_file_document_info(document_id: int,
         with open(temp_file_path, 'wb') as f:
             f.write(file_content)
             
+        if file_extractor.engine_id == 4:
+            engine = MineruApiEngine()
         if file_extractor.engine_id == 3:
             engine = MarkitdownEngine()
         if file_extractor.engine_id == 2:
@@ -152,6 +155,8 @@ async def handle_init_website_document_info(document_id: int,
         
         website_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
                                                                           user_engine_id=default_website_document_parse_user_engine_id)
+        if website_extractor.engine_id == 4:
+            engine = MineruApiEngine()
         if website_extractor.engine_id == 3:
             engine = MarkitdownEngine()
         if website_extractor.engine_id == 2:
