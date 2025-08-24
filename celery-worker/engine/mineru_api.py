@@ -81,7 +81,8 @@ class MineruApiEngine(EngineProtocol):
             "files": files
         }
         
-        async with httpx.AsyncClient() as client:
+        # Some MinerU APIs only support requests from ip located in chain
+        async with httpx.AsyncClient(proxies=None) as client:
             response = await client.post(url, headers=headers, json=data)
             
             if response.status_code == 200:
@@ -130,11 +131,10 @@ class MineruApiEngine(EngineProtocol):
                                     
                                     if images_file_path.exists() and images_file_path.is_dir():
                                         for image_file in images_file_path.iterdir():
-                                            async with aiofiles.open(image_file, "rb") as img_f:
-                                                img_data = await img_f.read()
+                                            with open(image_file, "rb") as img_f:
                                                 await remote_file_service.upload_file_to_path(
                                                     file_path=f'images/{image_file.name}', 
-                                                    file=img_data, 
+                                                    file=img_f, 
                                                     content_type='image/png'
                                                 )
                                     
