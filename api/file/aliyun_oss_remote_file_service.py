@@ -4,7 +4,7 @@ import crud
 import json
 import boto3
 from common.sql import SessionLocal
-from protocol.remote_file_service import RemoteFileServiceProtocol
+from protocol.remote_file_service import RemoteFileServiceProtocol, RemoteFileServiceUUID
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 from botocore.config import Config
@@ -15,7 +15,7 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
     bucket: str = None
     
     def __init__(self):
-        super().__init__(file_service_uuid='41be24fa741f4716b8dc0ccef3980655',
+        super().__init__(file_service_uuid=RemoteFileServiceUUID.AliyunOSS.value,
                          file_service_name='Aliyun-OSS',
                          file_service_name_zh='阿里云OSS',
                          file_service_description='Aliyun OSS File System, Based on Aliyun official OSS, has strong stability and availability, but needs to be charged.',

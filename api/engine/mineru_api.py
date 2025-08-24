@@ -1,11 +1,11 @@
 # !!! There is no need for compeletion of this file as it is only for data reference !!!
 
-from protocol.engine import EngineProtocol
+from protocol.engine import EngineProtocol, EngineUUID
 
 class MineruApiEngine(EngineProtocol):
 
     def __init__(self):
-        super().__init__(engine_uuid='d90eabd6ce9e42da98ba6168cb189b70',
+        super().__init__(engine_uuid=EngineUUID.MinerU_API.value,
                          engine_name='MinerU API',
                          engine_name_zh='MinerU API',
                          engine_description='MinerU API is an AI-driven file parser provided by MinerU official, which can parse files such as webpages, PDFs, and images into Markdown format while retaining the original layout well.',

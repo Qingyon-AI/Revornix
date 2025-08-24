@@ -6,7 +6,7 @@ from common.file import download_file_to_temp, extract_files_to_temp_from_zip
 from pathlib import Path
 from config.base import BASE_DIR
 from common.common import get_user_remote_file_system, extract_title_and_summary
-from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
+from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo, EngineUUID
 from playwright.async_api import async_playwright
 import aiofiles
 from typing import Tuple
@@ -15,7 +15,7 @@ class MineruApiEngine(EngineProtocol):
 
     def __init__(self):
         super().__init__(
-            engine_uuid='d90eabd6ce9e42da98ba6168cb189b70',
+            engine_uuid=EngineUUID.MinerU_API.value,
             engine_name='MinerU API',
             engine_name_zh='MinerU API',
             engine_description='MinerU API is an AI-driven file parser provided by MinerU official, which can parse files such as webpages, PDFs, and images into Markdown format while retaining the original layout well.',

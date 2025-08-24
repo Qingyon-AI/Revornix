@@ -4,7 +4,7 @@ import shutil
 from bs4 import BeautifulSoup
 from pathlib import Path
 from config.base import BASE_DIR
-from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
+from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo, EngineUUID
 from playwright.async_api import async_playwright
 from common.common import get_user_remote_file_system
 from common.mineru import parse_doc
@@ -13,7 +13,7 @@ from common.common import is_dir_empty, extract_title_and_summary
 class MineruEngine(EngineProtocol):
 
     def __init__(self):
-        super().__init__(engine_uuid='c59151aa86784d9ab52f74c12c830b1f',
+        super().__init__(engine_uuid=EngineUUID.MinerU.value,
                          engine_name='MinerU',
                          engine_name_zh='MinerU',
                          engine_description='MinerU is an AI-driven file parser that can parse web pages, PDFs, images, etc. into Markdown format and retain the original layout well.',

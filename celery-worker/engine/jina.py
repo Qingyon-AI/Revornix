@@ -1,10 +1,10 @@
 import httpx
-from protocol.engine import EngineProtocol, WebsiteInfo
+from protocol.engine import EngineProtocol, WebsiteInfo, EngineUUID
 
 class JinaEngine(EngineProtocol):
     
     def __init__(self):
-        super().__init__(engine_uuid='e31849ffa7f84a2cb4e2fa2ea00f25d2',
+        super().__init__(engine_uuid=EngineUUID.Jina.value,
                          engine_name='Jina',
                          engine_name_zh='Jina',
                          engine_description='Jina is an AI-powered web scraping engine that can help you quickly find the information you want.',

@@ -5,7 +5,7 @@ import crud
 import json
 from common.sql import SessionLocal
 from botocore.client import Config
-from protocol.remote_file_service import RemoteFileServiceProtocol
+from protocol.remote_file_service import RemoteFileServiceProtocol, RemoteFileServiceUUID
 
 class AWSS3RemoteFileService(RemoteFileServiceProtocol):
     
@@ -13,7 +13,7 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
     bucket: str = None
 
     def __init__(self):
-        super().__init__(file_service_uuid='01eef562970243af8ba12f6f4ddad3b1',
+        super().__init__(file_service_uuid=RemoteFileServiceUUID.AWS_S3.value,
                          file_service_name='AWS-S3',
                          file_service_name_zh='亚马逊S3',
                          file_service_description="AWS S3, this amazon's paid oss service.",
