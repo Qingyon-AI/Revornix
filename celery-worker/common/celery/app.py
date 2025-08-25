@@ -13,6 +13,7 @@ from common.logger import log_exception, exception_logger
 from common.ai import summary_section_with_origin, summary_document, summary_section
 from common.vector import milvus_client, process_document
 from common.common import get_user_remote_file_system
+from protocol.engine import EngineUUID
 from common.sql import SessionLocal
 from engine.markitdown import MarkitdownEngine
 from engine.jina import JinaEngine
@@ -73,13 +74,15 @@ async def handle_init_file_document_info(document_id: int,
         with open(temp_file_path, 'wb') as f:
             f.write(file_content)
             
-        if file_extractor.engine_id == 4:
+        db_engine = crud.engine.get_engine_by_id(db=db, 
+                                                 id=file_extractor.engine_id)
+        if db_engine.uuid == EngineUUID.MinerU_API.value:
             engine = MineruApiEngine()
-        if file_extractor.engine_id == 3:
+        if db_engine.uuid == EngineUUID.MarkitDown.value:
             engine = MarkitdownEngine()
-        if file_extractor.engine_id == 2:
+        if db_engine.uuid == EngineUUID.Jina.value:
             engine = JinaEngine()
-        if file_extractor.engine_id == 1:
+        if db_engine.uuid == EngineUUID.MinerU.value:
             engine = MineruEngine()
             
         await engine.init_engine_config_by_user_engine_id(user_engine_id=default_file_document_parse_user_engine_id)
@@ -155,13 +158,15 @@ async def handle_init_website_document_info(document_id: int,
         
         website_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
                                                                           user_engine_id=default_website_document_parse_user_engine_id)
-        if website_extractor.engine_id == 4:
+        db_engine = crud.engine.get_engine_by_id(db=db,
+                                                 id=website_extractor.engine_id)
+        if db_engine.uuid == EngineUUID.MinerU_API.value:
             engine = MineruApiEngine()
-        if website_extractor.engine_id == 3:
+        if db_engine.uuid == EngineUUID.MarkitDown.value:
             engine = MarkitdownEngine()
-        if website_extractor.engine_id == 2:
+        if db_engine.uuid == EngineUUID.Jina.value:
             engine = JinaEngine()
-        if website_extractor.engine_id == 1:
+        if db_engine.uuid == EngineUUID.MinerU.value:
             engine = MineruEngine()
             
         await engine.init_engine_config_by_user_engine_id(user_engine_id=default_website_document_parse_user_engine_id)
