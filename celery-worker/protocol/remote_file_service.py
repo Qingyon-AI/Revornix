@@ -10,7 +10,7 @@ class RemoteFileServiceUUID(Enum):
     AWS_S3 = '01eef562970243af8ba12f6f4ddad3b1'
     Built_In = '3ea378364a2d4a65be25085a47835d80'
     Generic_S3 = '3e9993b6722244969db2c27670cefdac'
-    
+
 class RemoteFileServiceProtocol(Protocol):
     
     def __init__(self, 
@@ -45,21 +45,21 @@ class RemoteFileServiceProtocol(Protocol):
             
             if db_file_system is None:
                 raise Exception("File system is None")
-            if db_file_system.id == 1:
+            if db_file_system.uuid == RemoteFileServiceUUID.Built_In.value:
                 return f'{FILE_SYSTEM_SERVER_PUBLIC_URL if not private else FILE_SYSTEM_SERVER_PRIVATE_URL}/{db_user.uuid}'
-            elif db_file_system.id == 2:
+            elif db_file_system.uuid == RemoteFileServiceUUID.AliyunOSS.value:
                 config_str = db_user_file_system.config_json
                 if config_str is None:
                     raise Exception("User file system config is None")
                 config = json.loads(config_str)
                 return f'{config.get("url_prefix")}'
-            elif db_file_system.id == 3:
+            elif db_file_system.uuid == RemoteFileServiceUUID.AWS_S3.value:
                 config_str = db_user_file_system.config_json
                 if config_str is None:
                     raise Exception("User file system config is None")
                 config = json.loads(config_str)
                 return f'{config.get("url_prefix")}'
-            elif db_file_system.id == 4:
+            elif db_file_system.uuid == RemoteFileServiceUUID.Generic_S3.value:
                 config_str = db_user_file_system.config_json
                 if config_str is None:
                     raise Exception("User file system config is None")

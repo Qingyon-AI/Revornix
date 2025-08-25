@@ -12,7 +12,7 @@ from config.base import BASE_DIR
 from common.logger import log_exception, exception_logger
 from common.ai import summary_section_with_origin, summary_document, summary_section
 from common.vector import milvus_client, process_document
-from common.common import get_user_remote_file_system, truncate
+from common.common import get_user_remote_file_system
 from common.sql import SessionLocal
 from engine.markitdown import MarkitdownEngine
 from engine.jina import JinaEngine

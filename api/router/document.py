@@ -12,8 +12,7 @@ from common.dependencies import get_db
 from common.vector import milvus_client, process_query, hybrid_search
 from common.dependencies import get_db, get_current_user
 from common.logger import log_exception, exception_logger
-from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
-from file.built_in_remote_file_service import BuiltInRemoteFileService
+from common.common import get_user_remote_file_system
 from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, init_file_document_info
 
 document_router = APIRouter()
@@ -77,12 +76,7 @@ async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSumma
     if user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
-        db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                          user_file_system_id=user.default_user_file_system)
-        if db_user_file_system.file_system_id == 1:
-            remote_file_service = BuiltInRemoteFileService()
-        elif db_user_file_system.file_system_id == 2:
-            remote_file_service = AliyunOSSRemoteFileService()
+        remote_file_service = get_user_remote_file_system(user_id=user.id)
         await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=ai_summary_request.document_id)
@@ -117,12 +111,7 @@ async def transform_markdown(transform_markdown_request: schemas.document.Docume
     if user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
-        db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                          user_file_system_id=user.default_user_file_system)
-        if db_user_file_system.file_system_id == 1:
-            remote_file_service = BuiltInRemoteFileService()
-        elif db_user_file_system.file_system_id == 2:
-            remote_file_service = AliyunOSSRemoteFileService()
+        remote_file_service = get_user_remote_file_system(user_id=user.id)
         await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
         
     db_document = crud.document.get_document_by_document_id(db=db,
