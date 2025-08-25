@@ -10,9 +10,11 @@ from botocore.config import Config
 from common.dependencies import get_current_user, get_db
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
+from protocol.remote_file_service import RemoteFileServiceUUID
 from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL, FILE_SYSTEM_SERVER_PUBLIC_URL
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
+from common.common import get_remote_file_service_by_id
 
 file_system_router = APIRouter()
 
@@ -328,7 +330,8 @@ async def upload_file_system(file: UploadFile = File(...),
                                                                    user_file_system_id=current_user.default_user_file_system)
     if user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User File System not found")
-    if current_user.default_user_file_system != 4:
+    remote_file_service = get_remote_file_service_by_id(user_file_system_id=user_file_system.file_system_id)
+    if remote_file_service.uuid != RemoteFileServiceUUID.Generic_S3.value:
         raise schemas.error.CustomException(code=404, message="The default user file system is not Generic S3")
     generic_s3_remote_file_service = GenericS3RemoteFileService()
     await generic_s3_remote_file_service.init_client_by_user_file_system_id(user_file_system_id=current_user.default_user_file_system)
