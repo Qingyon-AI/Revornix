@@ -11,6 +11,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { getQueryClient } from '@/lib/get-query-client';
 import { DocumentDetailResponse } from '@/generated';
 import { useEffect } from 'react';
+import { DocumentCategory } from '@/enums/document';
 
 const DocumentContainer = ({ id }: { id: number }) => {
 	const queryClient = getQueryClient();
@@ -80,13 +81,13 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		<div className='px-5 pb-5 h-full w-full grid grid-cols-12 gap-5 relative'>
 			{/* 此处的min-h-0是因为父级的grid布局会导致子元素的h-full无法准确继承到父级的实际高度，导致其高度被内容撑开 */}
 			<div className='col-span-8 h-full relative min-h-0'>
-				{document?.category === 1 && (
+				{document?.category === DocumentCategory.WEBSITE && (
 					<WebsiteDocumentDetail onFinishRead={handleFinishRead} id={id} />
 				)}
-				{document?.category === 0 && (
+				{document?.category === DocumentCategory.FILE && (
 					<FileDocumentDetail onFinishRead={handleFinishRead} id={id} />
 				)}
-				{document?.category === 2 && (
+				{document?.category === DocumentCategory.QUICK_NOTE && (
 					<QuickDocumentDetail onFinishRead={handleFinishRead} id={id} />
 				)}
 			</div>

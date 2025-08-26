@@ -25,6 +25,7 @@ import {
 	getUserFileSystemDetail,
 	getUserFileUrlPrefix,
 } from '@/service/file-system';
+import { DocumentMdConvertStatus } from '@/enums/document';
 
 const WebsiteDocumentDetail = ({
 	id,
@@ -80,7 +81,7 @@ const WebsiteDocumentDetail = ({
 		if (
 			document &&
 			document.transform_task &&
-			document.transform_task?.status < 2
+			document.transform_task?.status < DocumentMdConvertStatus.SUCCESS
 		) {
 			setDelay(1000);
 		} else {
@@ -136,7 +137,7 @@ const WebsiteDocumentDetail = ({
 		if (
 			!document ||
 			!document.website_info?.md_file_name ||
-			document.transform_task?.status !== 2 ||
+			document.transform_task?.status !== DocumentMdConvertStatus.SUCCESS ||
 			!userInfo ||
 			!userFileSystemDetail ||
 			!userRemoteFileUrlPrefix
@@ -166,12 +167,12 @@ const WebsiteDocumentDetail = ({
 					)}
 				</div>
 			)}
-			{document && document.transform_task?.status === 1 && (
+			{document && document.transform_task?.status === DocumentMdConvertStatus.CONVERTING && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 					<p>{t('document_transform_to_markdown_doing')}</p>
 				</div>
 			)}
-			{document && document.transform_task?.status === 0 && (
+			{document && document.transform_task?.status === DocumentMdConvertStatus.WAIT_TO && (
 				<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 					<p className='flex flex-row items-center'>
 						<span className='mr-1'>
@@ -202,7 +203,7 @@ const WebsiteDocumentDetail = ({
 					<DocumentOperate id={id} />
 				</div>
 			)}
-			{document && document.transform_task?.status === 3 && (
+			{document && document.transform_task?.status === DocumentMdConvertStatus.FAILED && (
 				<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
 					<p>{t('document_transform_to_markdown_failed')}</p>
 					<Button
@@ -225,7 +226,7 @@ const WebsiteDocumentDetail = ({
 				!markdown &&
 				!isError &&
 				!markdownGetError &&
-				document.transform_task?.status === 2 && (
+				document.transform_task?.status === DocumentMdConvertStatus.SUCCESS && (
 					<Skeleton className='h-full w-full rounded' />
 				)}
 			{markdown && !isError && !markdownGetError && (

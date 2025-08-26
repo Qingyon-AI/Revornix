@@ -44,6 +44,7 @@ import {
 	SheetTrigger,
 } from '../ui/sheet';
 import DocumentNotes from './document-notes';
+import { DocumentCategory, DocumentMdConvertStatus } from '@/enums/document';
 
 const DocumentOperate = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -147,15 +148,15 @@ const DocumentOperate = ({ id }: { id: number }) => {
 	});
 
 	const handleAiSummarize = async () => {
-		if (data?.transform_task?.status === 3) {
+		if (data?.transform_task?.status === DocumentMdConvertStatus.FAILED) {
 			toast.error(t('ai_summary_failed_as_markdown_transform_failed'));
 			return;
 		}
-		if (data?.transform_task?.status === 1) {
+		if (data?.transform_task?.status === DocumentMdConvertStatus.CONVERTING) {
 			toast.error(t('ai_summary_failed_as_markdown_transform_doing'));
 			return;
 		}
-		if (data?.transform_task?.status === 0) {
+		if (data?.transform_task?.status === DocumentMdConvertStatus.WAIT_TO) {
 			toast.error(t('ai_summary_failed_as_markdown_transform_waiting'));
 			return;
 		}
@@ -176,7 +177,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 		<>
 			{data && (
 				<div className='w-full flex justify-between'>
-					{data.category === 1 && data.website_info && (
+					{data.category === DocumentCategory.WEBSITE && data.website_info && (
 						<Link
 							title={t('website_document_go_to_origin')}
 							href={data.website_info?.url ? data.website_info.url : ''}
@@ -188,7 +189,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 							</Button>
 						</Link>
 					)}
-					{data.category === 0 && data.file_info && (
+					{data.category === DocumentCategory.FILE && data.file_info && (
 						<Link
 							title={t('file_document_go_to_origin')}
 							target='_blank'

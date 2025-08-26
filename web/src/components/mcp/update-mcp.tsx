@@ -35,6 +35,7 @@ import { toast } from 'sonner';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getMCPServerDetail, updateMCPServer } from '@/service/mcp';
 import { Textarea } from '../ui/textarea';
+import { MCPCategory } from '@/enums/mcp';
 
 const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 	const t = useTranslations();
@@ -55,7 +56,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 		})
 		.refine(
 			(data) => {
-				if (data.category === 0) {
+				if (data.category === MCPCategory.STD) {
 					return data.cmd && data.cmd.trim() !== '';
 				}
 				return true;
@@ -67,7 +68,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 		)
 		.refine(
 			(data) => {
-				if (data.category === 0) {
+				if (data.category === MCPCategory.STD) {
 					return data.args && data.args.trim() !== '';
 				}
 				return true;
@@ -79,7 +80,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 		)
 		.refine(
 			(data) => {
-				if (data.category === 1) {
+				if (data.category === MCPCategory.HTTP) {
 					return data.url && data.url.trim() !== '';
 				}
 				return true;

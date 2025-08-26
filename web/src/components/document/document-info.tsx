@@ -9,6 +9,7 @@ import { Badge } from '../ui/badge';
 import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
 import CustomImage from '../ui/custom-image';
+import { DocumentCategory } from '@/enums/document';
 
 const DocumentInfo = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -62,11 +63,11 @@ const DocumentInfo = ({ id }: { id: number }) => {
 							</div>
 							<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 								{t('document_category') + ': '}
-								{data.category === 1
+								{data.category === DocumentCategory.WEBSITE
 									? t('document_category_link')
-									: data.category === 0
+									: data.category === DocumentCategory.FILE
 									? t('document_category_file')
-									: data.category === 2
+									: data.category === DocumentCategory.QUICK_NOTE
 									? t('document_category_quick_note')
 									: t('document_category_others')}
 							</div>

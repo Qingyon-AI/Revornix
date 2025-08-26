@@ -1,3 +1,4 @@
+import { DocumentCategory, DocumentMdConvertStatus } from '@/enums/document';
 import { SectionDocumentInfo } from '@/generated';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
@@ -28,23 +29,23 @@ const SectionDocumentCard = ({
 				<div className='flex flex-row items-center gap-2 overflow-auto'>
 					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
 						{t('document_category') + ': '}
-						{document.category === 1
+						{document.category === DocumentCategory.WEBSITE
 							? t('document_category_link')
-							: document.category === 0
+							: document.category === DocumentCategory.FILE
 							? t('document_category_file')
-							: document.category === 2
+							: document.category === DocumentCategory.QUICK_NOTE
 							? t('document_category_quick_note')
 							: t('document_category_others')}
 					</div>
 					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
 						{t('section_document_card_section_supplement') + ': '}
-						{document.status === 0
+						{document.status === DocumentMdConvertStatus.WAIT_TO
 							? t('section_document_card_section_supplement_todo')
-							: document.status === 1
+							: document.status === DocumentMdConvertStatus.CONVERTING
 							? t('section_document_card_section_supplement_doing')
-							: document.status === 2
+							: document.status === DocumentMdConvertStatus.SUCCESS
 							? t('section_document_card_section_supplement_done')
-							: document.status === 3
+							: document.status === DocumentMdConvertStatus.FAILED
 							? t('section_document_card_section_supplement_failed')
 							: t('section_document_card_section_supplement_unknown')}
 					</div>

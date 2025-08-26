@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import CreateMcp from '@/components/mcp/create-mcp';
 import UpdateMcp from '@/components/mcp/update-mcp';
+import { MCPCategory } from '@/enums/mcp';
 
 const MCPPage = () => {
 	const t = useTranslations();
@@ -129,23 +130,23 @@ const MCPPage = () => {
 										</TableCell>
 										<TableCell>
 											<Badge>
-												{mcp_server.category === 0 ? 'std' : 'stream'}
+												{mcp_server.category === MCPCategory.STD ? 'std' : 'stream'}
 											</Badge>
 										</TableCell>
 										<TableCell>
-											{mcp_server.category === 1 ? mcp_server.url : '-'}
+											{mcp_server.category === MCPCategory.HTTP ? mcp_server.url : '-'}
 										</TableCell>
 										<TableCell>
-											{mcp_server.category === 1 ? mcp_server.headers : '-'}
+											{mcp_server.category === MCPCategory.HTTP ? mcp_server.headers : '-'}
 										</TableCell>
 										<TableCell className='font-mono'>
-											{mcp_server.category === 0 ? mcp_server.cmd : '-'}
+											{mcp_server.category === MCPCategory.STD ? mcp_server.cmd : '-'}
 										</TableCell>
 										<TableCell className='font-mono'>
-											{mcp_server.category === 0 ? mcp_server.args : '-'}
+											{mcp_server.category === MCPCategory.STD ? mcp_server.args : '-'}
 										</TableCell>
 										<TableCell className='font-mono'>
-											{mcp_server.category === 0 ? mcp_server.env : '-'}
+											{mcp_server.category === MCPCategory.STD ? mcp_server.env : '-'}
 										</TableCell>
 										<TableCell>
 											<Switch

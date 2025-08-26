@@ -29,6 +29,7 @@ import {
 	SelectValue,
 } from '../ui/select';
 import { Textarea } from '../ui/textarea';
+import { MCPCategory } from '@/enums/mcp';
 
 const CreateMcp = () => {
 	const t = useTranslations();
@@ -48,7 +49,7 @@ const CreateMcp = () => {
 		})
 		.refine(
 			(data) => {
-				if (data.category === 0) {
+				if (data.category === MCPCategory.STD) {
 					return data.cmd && data.cmd.trim() !== '';
 				}
 				return true;
@@ -60,7 +61,7 @@ const CreateMcp = () => {
 		)
 		.refine(
 			(data) => {
-				if (data.category === 0) {
+				if (data.category === MCPCategory.STD) {
 					return data.args && data.args.trim() !== '';
 				}
 				return true;
@@ -72,7 +73,7 @@ const CreateMcp = () => {
 		)
 		.refine(
 			(data) => {
-				if (data.category === 1) {
+				if (data.category === MCPCategory.HTTP) {
 					return data.url && data.url.trim() !== '';
 				}
 				return true;
@@ -86,7 +87,7 @@ const CreateMcp = () => {
 		resolver: zodResolver(mcpCreateFormSchema),
 		defaultValues: {
 			name: '',
-			category: 0,
+			category: MCPCategory.STD,
 			url: '',
 			headers: '',
 			cmd: '',
