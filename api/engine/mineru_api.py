@@ -1,6 +1,7 @@
 # !!! There is no need for compeletion of this file as it is only for data reference !!!
 
-from protocol.engine import EngineProtocol, EngineUUID
+from protocol.engine import EngineProtocol
+from enums.engine import EngineUUID
 
 class MineruApiEngine(EngineProtocol):
 

@@ -1,5 +1,6 @@
 import io
-from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo, EngineUUID
+from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
+from enums.engine import EngineUUID
 from common.common import extract_title_and_summary
 from bs4 import BeautifulSoup
 from markitdown import MarkItDown

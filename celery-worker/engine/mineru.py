@@ -4,7 +4,8 @@ import shutil
 from bs4 import BeautifulSoup
 from pathlib import Path
 from config.base import BASE_DIR
-from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo, EngineUUID
+from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
+from enums.engine import EngineUUID
 from playwright.async_api import async_playwright
 from common.common import get_user_remote_file_system
 from common.mineru import parse_doc

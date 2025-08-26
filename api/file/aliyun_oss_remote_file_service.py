@@ -4,7 +4,8 @@ import crud
 import json
 import boto3
 from common.sql import SessionLocal
-from protocol.remote_file_service import RemoteFileServiceProtocol, RemoteFileServiceUUID
+from protocol.remote_file_service import RemoteFileServiceProtocol
+from enums.file import RemoteFileServiceUUID
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 from botocore.config import Config

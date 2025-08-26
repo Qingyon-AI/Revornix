@@ -16,6 +16,7 @@ from common.sql import SessionLocal
 from notification_template.daily_summary import DailySummaryNotificationTemplate
 from common.celery.app import add_embedding, update_sections, init_website_document_info
 from celery import chain, group
+from enums.document import DocumentMdConvertStatus
 
 scheduler = AsyncIOScheduler()
 
@@ -60,7 +61,7 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                                                                                     document_id=existing_doc.id)
                     db_document_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                                                       document_id=existing_doc.id)
-                    db_document_transform_task.status = 0
+                    db_document_transform_task.status = DocumentMdConvertStatus.WAIT_TO
                     db.commit()
                     first_task = init_website_document_info.si(existing_doc.id, rss_server.user_id)
                     second_tasks = [add_embedding.si(existing_doc.id, rss_server.user_id), update_sections.si([section.id for section in rss_server.sections], existing_doc.id, rss_server.user_id)]

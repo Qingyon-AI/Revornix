@@ -3,6 +3,7 @@ import schemas
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
 from common.dependencies import get_current_user, get_db
+from enums.mcp import MCPCategory
 
 mcp_router = APIRouter()
 
@@ -12,7 +13,7 @@ async def get_mcp_server_detail(mcp_server_detail_request: schemas.mcp.MCPServer
                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     mcp_server = crud.mcp.get_base_mcp_server_by_id(db=db, 
                                                     id=mcp_server_detail_request.id)
-    if mcp_server.category == 0:
+    if mcp_server.category == MCPCategory.STD:
         db_std_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, 
                                                                    base_id=mcp_server.id)
         return schemas.mcp.MCPServerInfo(
@@ -24,7 +25,7 @@ async def get_mcp_server_detail(mcp_server_detail_request: schemas.mcp.MCPServer
             args=db_std_mcp_server.args,
             env=db_std_mcp_server.env
         )
-    elif mcp_server.category == 1:
+    elif mcp_server.category == MCPCategory.HTTP:
         db_http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db,
                                                                      base_id=mcp_server.id)
         return schemas.mcp.MCPServerInfo(
@@ -47,7 +48,7 @@ async def get_mcp_server_list(mcp_server_search_request: schemas.mcp.MCPServerSe
                                               keyword=mcp_server_search_request.keyword)
     res = []
     for mcp_server in mcp_servers:
-        if mcp_server.category == 0:
+        if mcp_server.category == MCPCategory.STD:
             db_std_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, 
                                                                        base_id=mcp_server.id)
             res.append(schemas.mcp.MCPServerInfo(
@@ -59,7 +60,7 @@ async def get_mcp_server_list(mcp_server_search_request: schemas.mcp.MCPServerSe
                 args=db_std_mcp_server.args,
                 env=db_std_mcp_server.env
             ))
-        elif mcp_server.category == 1:
+        elif mcp_server.category == MCPCategory.HTTP:
             db_http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db,
                                                                          base_id=mcp_server.id)
             res.append(schemas.mcp.MCPServerInfo(
@@ -82,7 +83,7 @@ async def create_server(mcp_server_create_request: schemas.mcp.MCPServerCreateRe
         name=mcp_server_create_request.name,
         category=mcp_server_create_request.category
     )
-    if mcp_server_create_request.category == 0:
+    if mcp_server_create_request.category == MCPCategory.STD:
         db_std_mcp_server = crud.mcp.create_std_mcp(
             db=db,
             cmd=mcp_server_create_request.cmd,
@@ -90,7 +91,7 @@ async def create_server(mcp_server_create_request: schemas.mcp.MCPServerCreateRe
             env=mcp_server_create_request.env,
             server_id=db_base_mcp_server.id
         )
-    elif mcp_server_create_request.category == 1:
+    elif mcp_server_create_request.category == MCPCategory.HTTP:
         db_http_mcp_server = crud.mcp.create_http_mcp(
             db=db,
             url=mcp_server_create_request.url,
@@ -117,7 +118,7 @@ async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRe
     if mcp_server_update_request.enable is not None:
         db_base_mcp_server.enable = mcp_server_update_request.enable
     if db_base_mcp_server.category == mcp_server_update_request.category:
-        if db_base_mcp_server.category == 0:
+        if db_base_mcp_server.category == MCPCategory.STD:
             db_std_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, 
                                                                     base_id=mcp_server_update_request.id)
             if db_std_mcp_server is None:
@@ -129,7 +130,7 @@ async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRe
                 db_std_mcp_server.args = mcp_server_update_request.args
             if mcp_server_update_request.headers is not None:
                 db_std_mcp_server.env = mcp_server_update_request.env
-        if db_base_mcp_server.category == 1:
+        if db_base_mcp_server.category == MCPCategory.HTTP:
             db_http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db, 
                                                                          base_id=mcp_server_update_request.id)
             if db_http_mcp_server is None:
@@ -140,7 +141,7 @@ async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRe
             if mcp_server_update_request.headers is not None:
                 db_http_mcp_server.headers = mcp_server_update_request.headers
     else:
-        if db_base_mcp_server.category == 0 and mcp_server_update_request.category == 1:
+        if db_base_mcp_server.category == MCPCategory.STD and mcp_server_update_request.category == MCPCategory.HTTP:
             crud.mcp.delete_std_mcp_server_by_base_id(db=db, base_id=db_base_mcp_server.id)
             db_new_http_mcp_server = crud.mcp.create_http_mcp(
                 db=db,
@@ -148,7 +149,7 @@ async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRe
                 headers=mcp_server_update_request.headers,
                 server_id=db_base_mcp_server.id
             )
-        elif db_base_mcp_server.category == 1 and mcp_server_update_request.category == 0:
+        elif db_base_mcp_server.category == MCPCategory.HTTP and mcp_server_update_request.category == MCPCategory.STD:
             crud.mcp.delete_http_mcp_server_by_base_id(db=db, base_id=db_base_mcp_server.id)
             db_new_std_mcp_server = crud.mcp.create_std_mcp(
                 db=db,
@@ -175,7 +176,7 @@ async def delete_server(mcp_server_delete_request: schemas.mcp.MCPServerDeleteRe
         raise schemas.error.CustomException(message="permission denied", 
                                             code=400)
     category = db_base_mcp_server.category
-    if category == 0:
+    if category == MCPCategory.STD:
         db_std_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, 
                                                                    base_id=mcp_server_delete_request.id)
         if db_std_mcp_server is None:
@@ -183,7 +184,7 @@ async def delete_server(mcp_server_delete_request: schemas.mcp.MCPServerDeleteRe
                                                 code=404)
         crud.mcp.delete_std_mcp_server_by_base_id(db=db, 
                                                   base_id=mcp_server_delete_request.id)
-    elif category == 1:
+    elif category == MCPCategory.HTTP:
         db_http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db, 
                                                                      base_id=mcp_server_delete_request.id)
         if db_http_mcp_server is None:

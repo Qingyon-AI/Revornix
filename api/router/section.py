@@ -7,6 +7,7 @@ from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from common.dependencies import get_db, get_current_user
+from enums.section import UserSectionAuthority
 
 section_router = APIRouter()
 
@@ -121,7 +122,7 @@ async def update_section(
     section_user = check_section_user_auth(db=db, 
                                            user_id=user.id, 
                                            section_id=section_update_request.section_id)
-    if section_user is None or section_user.authority == 2:
+    if section_user is None or section_user.authority == UserSectionAuthority.READ_ONLY:
         raise Exception("You don't have the authority to update this section")
     if section_update_request.title is not None:
         db_section.title = section_update_request.title
@@ -339,7 +340,7 @@ async def get_section_detail(section_detail_request: schemas.section.SectionDeta
         creator=db_section.creator,
     )
     
-    if db_user_section is not None and db_user_section.authority == 2:
+    if db_user_section is not None and db_user_section.authority == UserSectionAuthority.READ_ONLY:
         if db_user_section.expire_time is None or db_user_section.expire_time > now:
             res.is_subscribed = True
         
@@ -401,7 +402,7 @@ async def delete_section(section_delete_request: schemas.section.SectionDeleteRe
     db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                               section_id=section_delete_request.section_id,    
                                                                               user_id=user.id)
-    if db_section_user is None or db_section_user.authority != 0:
+    if db_section_user is None or db_section_user.authority != UserSectionAuthority.FULL_ACCESS:
         raise Exception("You have no authority to delete this section")
     crud.section.delete_section_users_by_section_id(db=db, 
                                                     section_id=section_delete_request.section_id)

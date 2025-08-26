@@ -12,6 +12,7 @@ from common.dependencies import get_db, get_current_user_with_api_key
 from common.common import get_user_remote_file_system
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, File, UploadFile, Form
+from enums.document import DocumentCategory
 
 tp_router = APIRouter()
 
@@ -94,7 +95,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                           db: Session = Depends(get_db), 
                           user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
     now = datetime.now(timezone.utc)
-    if document_create_request.category == 1:
+    if document_create_request.category == DocumentCategory.WEBSITE:
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -146,7 +147,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             second_tasks.append(update_ai_summary.si(db_document.id, user.id))
         task_chain = chain(first_task, group(second_tasks))
         task_chain.apply_async()
-    elif document_create_request.category == 0:
+    elif document_create_request.category == DocumentCategory.FILE:
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -202,7 +203,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             second_tasks.append(update_ai_summary.si(db_document.id, user.id))
         task_chain = chain(first_task, group(second_tasks))
         task_chain.apply_async()
-    elif document_create_request.category == 2:
+    elif document_create_request.category == DocumentCategory.QUICK_NOTE:
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,

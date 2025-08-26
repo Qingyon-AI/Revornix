@@ -13,12 +13,14 @@ from common.logger import log_exception, exception_logger
 from common.ai import summary_section_with_origin, summary_document, summary_section
 from common.vector import milvus_client, process_document
 from common.common import get_user_remote_file_system
-from protocol.engine import EngineUUID
+from enums.engine import EngineUUID
 from common.sql import SessionLocal
 from engine.markitdown import MarkitdownEngine
 from engine.jina import JinaEngine
 from engine.mineru import MineruEngine
 from engine.mineru_api import MineruApiEngine
+from enums.document import DocumentCategory, DocumentMdConvertStatus
+from enums.section import UserSectionAuthority
 
 import tracemalloc
 import warnings
@@ -46,7 +48,7 @@ async def handle_init_file_document_info(document_id: int,
         if db_document is None:
             raise Exception("Document not found")
         
-        if db_document.category != 0:
+        if db_document.category != DocumentCategory.FILE:
             raise Exception("This task is only for file document")
         
         db_file_document = crud.document.get_file_document_by_document_id(db=db,
@@ -63,7 +65,7 @@ async def handle_init_file_document_info(document_id: int,
         if db_task is None:
             raise Exception("Document transform task not found")
         
-        db_task.status = 1
+        db_task.status = DocumentMdConvertStatus.CONVERTING
         db.commit()
         
         file_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
@@ -103,7 +105,7 @@ async def handle_init_file_document_info(document_id: int,
         crud.document.update_file_document_by_file_document_id(db=db,
                                                                file_document_id=db_file_document.id,
                                                                md_file_name=md_file_name)
-        db_task.status = 2
+        db_task.status = DocumentMdConvertStatus.SUCCESS
         db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while init file document info: {e}")
@@ -111,7 +113,7 @@ async def handle_init_file_document_info(document_id: int,
         db.rollback()
         db_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                        document_id=document_id)
-        db_task.status = 3
+        db_task.status = DocumentMdConvertStatus.FAILED
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
         db_document.title = f'Document Convert Error: {e}'
@@ -136,7 +138,7 @@ async def handle_init_website_document_info(document_id: int,
                                                                 document_id=document_id)
         if db_document is None:
             raise Exception("Document not found")
-        if db_document.category != 1:
+        if db_document.category != DocumentCategory.WEBSITE:
             raise Exception("This task is only for website document")
         
         db_website_document = crud.document.get_website_document_by_document_id(db=db,
@@ -153,7 +155,7 @@ async def handle_init_website_document_info(document_id: int,
         if db_task is None:
             raise Exception("Document transform task not found")
         
-        db_task.status = 1
+        db_task.status = DocumentMdConvertStatus.CONVERTING
         db.commit()
         
         website_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
@@ -186,7 +188,7 @@ async def handle_init_website_document_info(document_id: int,
         crud.document.update_website_document_by_website_document_id(db=db,
                                                                      website_document_id=db_website_document.id,
                                                                      md_file_name=md_file_name)
-        db_task.status = 2
+        db_task.status = DocumentMdConvertStatus.SUCCESS
         db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while init website document info: {e}")
@@ -194,7 +196,7 @@ async def handle_init_website_document_info(document_id: int,
         db.rollback()
         db_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                        document_id=document_id)
-        db_task.status = 3
+        db_task.status = DocumentMdConvertStatus.FAILED
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
         db_document.title = f'Document Convert Error: {e}'
@@ -242,7 +244,7 @@ async def handle_update_sections(sections: list[int],
             db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                                       section_id=section_id,
                                                                                       user_id=user_id)
-            if db_user_section is None or db_user_section.authority == 2:
+            if db_user_section is None or db_user_section.authority == UserSectionAuthority.READ_ONLY:
                 raise Exception("User does not have permission to modify this section")
             db_section = crud.section.get_section_by_section_id(db=db,
                                                                 section_id=section_id)
@@ -312,19 +314,19 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
                                                                 document_id=document_id)
         if db_document is None:
             raise Exception("Document not found")
-        if db_document.category == 1:
+        if db_document.category == DocumentCategory.WEBSITE:
             website_document = crud.document.get_website_document_by_document_id(db=db,
                                                                                  document_id=document_id)
             if website_document is None:
                 raise Exception("Website document not found")
             markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=website_document.md_file_name)
-        if db_document.category == 0:
+        if db_document.category == DocumentCategory.FILE:
             file_document = crud.document.get_file_document_by_document_id(db=db,
                                                                            document_id=document_id)
             if file_document is None:
                 raise Exception("Website document not found")
             markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=file_document.md_file_name)
-        if db_document.category == 2:
+        if db_document.category == DocumentCategory.QUICK_NOTE:
             quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
                                                                                        document_id=document_id)
             markdown_content = quick_note_document.content
@@ -378,7 +380,7 @@ async def handle_update_section_use_document(section_id: int,
                                                                                   user_id=db_user.id)
         if db_user_section is None:
             raise Exception("User does not have permission to modify this section")
-        if db_user_section.authority == 2:
+        if db_user_section.authority == UserSectionAuthority.READ_ONLY:
             raise Exception("User does not have permission to modify this section")
         db_section = crud.section.get_section_by_section_id(db=db,
                                                             section_id=section_id)

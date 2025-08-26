@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import selectinload
 from sqlalchemy import or_
+from enums.section import UserSectionAuthority
 
 def create_label(db: Session, 
                  name: str, 
@@ -145,7 +146,7 @@ def get_all_my_sections(db: Session,
     query = query.join(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.user_id == user_id,
                          models.section.SectionUser.delete_at == None,
-                         models.section.SectionUser.authority == 0)
+                         models.section.SectionUser.authority == UserSectionAuthority.FULL_ACCESS)
     query = query.filter(models.section.Section.delete_at == None)
     query = query.order_by(models.section.Section.create_time.desc())
     return query.all()
@@ -266,7 +267,7 @@ def search_user_subscribed_sections(db: Session,
     query = query.filter(models.section.Section.delete_at == None,
                          models.section.SectionUser.user_id == user_id,
                          models.section.SectionUser.delete_at == None,
-                         models.section.SectionUser.authority == 2)
+                         models.section.SectionUser.authority == UserSectionAuthority.READ_ONLY)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
                              models.section.SectionUser.expire_time == None))
     if desc:
@@ -303,7 +304,7 @@ def count_user_subscribed_sections(db: Session,
     query = query.filter(models.section.Section.delete_at == None,
                          models.section.SectionUser.user_id == user_id,
                          models.section.SectionUser.delete_at == None,
-                         models.section.SectionUser.authority == 2)
+                         models.section.SectionUser.authority == UserSectionAuthority.READ_ONLY)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
                              models.section.SectionUser.expire_time == None))
     query = query.distinct(models.section.Section.id)
@@ -321,7 +322,7 @@ def search_next_user_subscribed_section(db: Session,
     query = query.filter(models.section.Section.delete_at == None,
                          models.section.SectionUser.user_id == user_id,
                          models.section.SectionUser.delete_at == None,
-                         models.section.SectionUser.authority == 2)
+                         models.section.SectionUser.authority == UserSectionAuthority.READ_ONLY)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
                              models.section.SectionUser.expire_time == None))
     if keyword is not None and len(keyword) > 0:
@@ -482,7 +483,7 @@ def count_section_subscribers_by_section_id(db: Session,
     query = db.query(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.delete_at == None,
                          models.section.SectionUser.section_id == section_id,
-                         models.section.SectionUser.authority == 2)
+                         models.section.SectionUser.authority == UserSectionAuthority.READ_ONLY)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
                              models.section.SectionUser.expire_time == None))
     query = query.distinct(models.section.SectionUser.id)

@@ -14,6 +14,7 @@ from common.dependencies import get_db, get_current_user
 from common.logger import log_exception, exception_logger
 from common.common import get_user_remote_file_system
 from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, init_file_document_info
+from enums.document import DocumentCategory, DocumentMdConvertStatus
 
 document_router = APIRouter()
     
@@ -82,15 +83,15 @@ async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSumma
                                                             document_id=ai_summary_request.document_id)
     if db_document is None:
         raise Exception('The document you want to summary is not found')
-    if db_document.category == 1:
+    if db_document.category == DocumentCategory.WEBSITE:
         db_website_document = crud.document.get_website_document_by_document_id(db=db,
                                                                                 document_id=ai_summary_request.document_id)
         markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=db_website_document.md_file_name)
-    if db_document.category == 0:
+    if db_document.category == DocumentCategory.FILE:
         db_file_document = crud.document.get_file_document_by_document_id(db=db,
                                                                           document_id=ai_summary_request.document_id)
         markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=db_file_document.md_file_name)
-    if db_document.category == 2:
+    if db_document.category == DocumentCategory.QUICK_NOTE:
         db_quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
                                                                                       document_id=ai_summary_request.document_id)
         markdown_content = db_quick_note_document.content
@@ -125,14 +126,10 @@ async def transform_markdown(transform_markdown_request: schemas.document.Docume
     
     db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                              document_id=transform_markdown_request.document_id)
-    # if db_transform_task.status == 0:
-    #     raise Exception('The transform task is already in pending, please wait for a while')
-    # if db_transform_task.status == 1:
-    #     raise Exception('The document is being transformed, please wait')
-    if db_transform_task.status == 2:
+    if db_transform_task.status == DocumentMdConvertStatus.SUCCESS:
         raise Exception('The transform task is already finished, please refresh the page')
     try:
-        if db_document.category == 1:
+        if db_document.category == DocumentCategory.WEBSITE:
             db_website_document = crud.document.get_website_document_by_document_id(db=db,
                                                                                     document_id=transform_markdown_request.document_id)
             if db_website_document is None:
@@ -142,7 +139,7 @@ async def transform_markdown(transform_markdown_request: schemas.document.Docume
             second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(db_section_ids, db_document.id, user.id)]
             task_chain = chain(first_task, group(second_tasks))
             task_chain.apply_async()
-        elif db_document.category == 0:
+        elif db_document.category == DocumentCategory.FILE:
             db_file_document = crud.document.get_file_document_by_document_id(db=db,
                                                                               document_id=transform_markdown_request.document_id)
             if db_file_document is None:
@@ -151,7 +148,7 @@ async def transform_markdown(transform_markdown_request: schemas.document.Docume
             second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(db_section_ids, db_document.id, user.id)]
             task_chain = chain(first_task, group(second_tasks))
             task_chain.apply_async()
-        elif db_document.category == 2:
+        elif db_document.category == DocumentCategory.QUICK_NOTE:
             db_quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
                                                                                           document_id=transform_markdown_request.document_id)
             if db_quick_note_document is None:
@@ -165,7 +162,7 @@ async def transform_markdown(transform_markdown_request: schemas.document.Docume
         exception_logger.error(f"document transform request failed, error {e}")
         log_exception()
         db.rollback()
-        db_transform_task.status = 3
+        db_transform_task.status = DocumentMdConvertStatus.FAILED
     db.commit()
     return schemas.common.SuccessResponse()
         
@@ -183,7 +180,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                           db: Session = Depends(get_db), 
                           user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     now = datetime.now(timezone.utc)
-    if document_create_request.category == 1:
+    if document_create_request.category == DocumentCategory.WEBSITE:
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -235,7 +232,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             second_tasks.append(update_ai_summary.si(db_document.id, user.id))
         task_chain = chain(first_task, group(second_tasks))
         task_chain.apply_async()
-    elif document_create_request.category == 0:
+    elif document_create_request.category == DocumentCategory.FILE:
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -291,7 +288,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             second_tasks.append(update_ai_summary.si(db_document.id, user.id))
         task_chain = chain(first_task, group(second_tasks))
         task_chain.apply_async()
-    elif document_create_request.category == 2:
+    elif document_create_request.category == DocumentCategory.QUICK_NOTE:
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -529,19 +526,19 @@ async def get_document_detail(document_detail_request: schemas.document.Document
     transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                           document_id=document_detail_request.document_id)
     res.transform_task = transform_task
-    if document.category == 1:
+    if document.category == DocumentCategory.WEBSITE:
         website_document = crud.document.get_website_document_by_document_id(db=db, 
                                                                              document_id=document_detail_request.document_id)
         res.website_info = schemas.document.WebsiteDocumentInfo(creator_id=document.creator_id,
                                                                 url=website_document.url, 
                                                                 md_file_name=website_document.md_file_name)
-    elif document.category == 0:
+    elif document.category == DocumentCategory.FILE:
         file_document = crud.document.get_file_document_by_document_id(db=db, 
                                                                        document_id=document_detail_request.document_id)
         res.file_info = schemas.document.FileDocumentInfo(creator_id=document.creator_id,
                                                           file_name=file_document.file_name,
                                                           md_file_name=file_document.md_file_name)
-    elif document.category == 2:
+    elif document.category == DocumentCategory.QUICK_NOTE:
         quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db, 
                                                                                    document_id=document_detail_request.document_id)
         res.quick_note_info = schemas.document.QuickNoteDocumentInfo(content=quick_note_document.content)

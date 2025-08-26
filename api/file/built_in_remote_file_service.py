@@ -7,7 +7,8 @@ from common.sql import SessionLocal
 from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL 
 from botocore.client import Config
 from botocore.exceptions import ClientError
-from protocol.remote_file_service import RemoteFileServiceProtocol, RemoteFileServiceUUID
+from protocol.remote_file_service import RemoteFileServiceProtocol
+from enums.file import RemoteFileServiceUUID
 
 class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     

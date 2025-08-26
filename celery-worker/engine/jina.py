@@ -1,5 +1,6 @@
 import httpx
-from protocol.engine import EngineProtocol, WebsiteInfo, EngineUUID
+from protocol.engine import EngineProtocol, WebsiteInfo
+from enums.engine import EngineUUID
 
 class JinaEngine(EngineProtocol):
     

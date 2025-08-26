@@ -16,6 +16,7 @@ from mcp_use import MCPClient, MCPAgent
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
 from common.common import to_serializable, safe_json_loads
+from enums.mcp import MCPCategory
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
@@ -290,7 +291,7 @@ async def create_agent(user_id: int, enable_mcp: bool = False):
             if not mcp_server.enable:
                 continue
             else:
-                if mcp_server.category == 0:
+                if mcp_server.category == MCPCategory.STD:
                     stdio_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
                     mcp_client.add_server(name=mcp_server.name,
                                           server_config={
@@ -299,7 +300,7 @@ async def create_agent(user_id: int, enable_mcp: bool = False):
                                               "env": safe_json_loads(stdio_mcp_server.env, {})
                                               }
                                           )
-                if mcp_server.category == 1:
+                if mcp_server.category == MCPCategory.HTTP:
                     http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
                     mcp_client.add_server(name=mcp_server.name,
                                           server_config={

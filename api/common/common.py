@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from common.hash import verify_password
 from common.sql import SessionLocal
-from protocol.remote_file_service import RemoteFileServiceUUID
+from enums.file import RemoteFileServiceUUID
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.aws_s3_remote_file_service import AWSS3RemoteFileService

@@ -5,7 +5,8 @@ import crud
 import json
 from common.sql import SessionLocal
 from botocore.client import Config
-from protocol.remote_file_service import RemoteFileServiceProtocol, RemoteFileServiceUUID
+from protocol.remote_file_service import RemoteFileServiceProtocol
+from enums.file import RemoteFileServiceUUID
 
 class AWSS3RemoteFileService(RemoteFileServiceProtocol):
     
