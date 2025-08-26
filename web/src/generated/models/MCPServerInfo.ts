@@ -48,7 +48,7 @@ export interface MCPServerInfo {
      * @type {string}
      * @memberof MCPServerInfo
      */
-    address?: string | null;
+    url?: string | null;
     /**
      * 
      * @type {string}
@@ -61,6 +61,18 @@ export interface MCPServerInfo {
      * @memberof MCPServerInfo
      */
     args?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof MCPServerInfo
+     */
+    env?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof MCPServerInfo
+     */
+    headers?: string | null;
 }
 
 /**
@@ -88,9 +100,11 @@ export function MCPServerInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         'name': json['name'],
         'enable': json['enable'],
         'category': json['category'],
-        'address': json['address'] == null ? undefined : json['address'],
+        'url': json['url'] == null ? undefined : json['url'],
         'cmd': json['cmd'] == null ? undefined : json['cmd'],
         'args': json['args'] == null ? undefined : json['args'],
+        'env': json['env'] == null ? undefined : json['env'],
+        'headers': json['headers'] == null ? undefined : json['headers'],
     };
 }
 
@@ -109,9 +123,11 @@ export function MCPServerInfoToJSONTyped(value?: MCPServerInfo | null, ignoreDis
         'name': value['name'],
         'enable': value['enable'],
         'category': value['category'],
-        'address': value['address'],
+        'url': value['url'],
         'cmd': value['cmd'],
         'args': value['args'],
+        'env': value['env'],
+        'headers': value['headers'],
     };
 }
 

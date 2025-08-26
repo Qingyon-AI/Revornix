@@ -32,7 +32,6 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
 # from models.api_key import *
-# from models.attachment import *
 # from models.document import *
 # from models.notification import *
 # from models.section import *

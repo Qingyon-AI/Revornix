@@ -5,11 +5,13 @@ import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import rehypeRaw from 'rehype-raw';
-import KnowledgeRef from './knowledge-ref';
-import SearchResultsRef from './search-results-ref';
 import CustomImage from '../ui/custom-image';
+import { useAIChatContext } from '@/provider/ai-chat-provider';
+import { Loader2 } from 'lucide-react';
+import { Separator } from '../ui/separator';
 
 const MessageCard = ({ message }: { message: Message }) => {
+	const { aiStatus, tempMessages } = useAIChatContext();
 	return (
 		<div
 			className={cn('flex flex-row gap-5', {
@@ -17,11 +19,22 @@ const MessageCard = ({ message }: { message: Message }) => {
 			})}>
 			<div className='flex flex-col gap-2'>
 				<div className='rounded-lg p-3 w-fit bg-muted prose dark:prose-invert'>
-					{message.reasoning_content && (
-						<div className='text-muted-foreground text-sm pl-3 border-l-2 border-muted-foreground/50'>
-							<p className='text-sm/6 mt-0'>{message.reasoning_content}</p>
-						</div>
-					)}
+					{aiStatus &&
+						aiStatus !== 'done' &&
+						tempMessages().at(-1) &&
+						message.chat_id === tempMessages().at(-1)!.chat_id &&
+						message.role !== 'user' && (
+							<>
+								<div className='flex flex-row gap-2 items-center text-sm text-muted-foreground mb-2'>
+									<div>{aiStatus !== 'done' && aiStatus}</div>
+									<Loader2
+										className='animate-spin text-muted-foreground'
+										size={14}
+									/>
+								</div>
+								<Separator />
+							</>
+						)}
 					<Markdown
 						components={{
 							img: (props) => {
@@ -32,14 +45,6 @@ const MessageCard = ({ message }: { message: Message }) => {
 						rehypePlugins={[rehypeKatex, rehypeRaw]}>
 						{message.content}
 					</Markdown>
-					{message.references &&
-						message.references.length > 0 &&
-						message.finish_reason === 'stop' && (
-							<SearchResultsRef references={message.references} />
-						)}
-					{message.quote && message.quote.length > 0 && (
-						<KnowledgeRef knowledges={message.quote} />
-					)}
 				</div>
 			</div>
 		</div>

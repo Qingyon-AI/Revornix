@@ -7,7 +7,7 @@ from common.sql import SessionLocal
 from botocore.client import Config
 from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL
 from botocore.exceptions import ClientError
-from protocol.remote_file_service import RemoteFileServiceProtocol
+from protocol.remote_file_service import RemoteFileServiceProtocol, RemoteFileServiceUUID
 
 class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     
@@ -15,7 +15,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     bucket: str = None
 
     def __init__(self):
-        super().__init__(file_service_uuid='3ea378364a2d4a65be25085a47835d80',
+        super().__init__(file_service_uuid=RemoteFileServiceUUID.Built_In.value,
                          file_service_name='Built-In',
                          file_service_name_zh='内置文件系统',
                          file_service_description='Built-In file system, based on minio, free to use.',

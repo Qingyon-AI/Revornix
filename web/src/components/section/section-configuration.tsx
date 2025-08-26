@@ -43,7 +43,7 @@ const SectionConfiguration = ({ section_id }: { section_id: number }) => {
 
 	const updateFormSchema = z.object({
 		section_id: z.number().int(),
-		cover: z.object({ id: z.number(), name: z.string() }).optional(),
+		cover: z.string().optional(),
 		title: z.string().min(1),
 		description: z.string().min(1),
 		public: z.boolean(),
@@ -119,7 +119,7 @@ const SectionConfiguration = ({ section_id }: { section_id: number }) => {
 		const [res, err] = await utils.to(
 			updateSection({
 				...values,
-				cover_id: values.cover?.id,
+				cover: values.cover,
 			})
 		);
 		if (err) {
@@ -260,7 +260,7 @@ const SectionConfiguration = ({ section_id }: { section_id: number }) => {
 									return (
 										<FormItem className='flex flex-row justify-between items-center border rounded p-5 dark:bg-input/30'>
 											<FormLabel>
-												{t('section_configuration_form_public')}
+												{t('section_configuration_formpublic')}
 											</FormLabel>
 											<Switch
 												checked={field.value}

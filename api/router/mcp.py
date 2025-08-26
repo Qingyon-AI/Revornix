@@ -21,17 +21,19 @@ async def get_mcp_server_detail(mcp_server_detail_request: schemas.mcp.MCPServer
             name=mcp_server.name,
             category=mcp_server.category,
             cmd=db_std_mcp_server.cmd,
-            args=db_std_mcp_server.args
+            args=db_std_mcp_server.args,
+            env=db_std_mcp_server.env
         )
     elif mcp_server.category == 1:
-        db_stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db,
-                                                                         base_id=mcp_server.id)
+        db_http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db,
+                                                                     base_id=mcp_server.id)
         return schemas.mcp.MCPServerInfo(
             id=mcp_server.id,
             enable=mcp_server.enable,
             name=mcp_server.name,
             category=mcp_server.category,
-            address=db_stream_mcp_server.address
+            url=db_http_mcp_server.url,
+            headers=db_http_mcp_server.headers
         )
     else:
         raise schemas.error.CustomException(message="MCPServerCategoryError")
@@ -54,17 +56,19 @@ async def get_mcp_server_list(mcp_server_search_request: schemas.mcp.MCPServerSe
                 name=mcp_server.name,
                 category=mcp_server.category,
                 cmd=db_std_mcp_server.cmd,
-                args=db_std_mcp_server.args
+                args=db_std_mcp_server.args,
+                env=db_std_mcp_server.env
             ))
         elif mcp_server.category == 1:
-            db_stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db,
-                                                                             base_id=mcp_server.id)
+            db_http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db,
+                                                                         base_id=mcp_server.id)
             res.append(schemas.mcp.MCPServerInfo(
                 id=mcp_server.id,
                 enable=mcp_server.enable,
                 name=mcp_server.name,
                 category=mcp_server.category,
-                address=db_stream_mcp_server.address
+                url=db_http_mcp_server.url,
+                headers=db_http_mcp_server.headers
             ))
     return schemas.mcp.MCPServerSearchResponse(data=res)
 
@@ -83,12 +87,14 @@ async def create_server(mcp_server_create_request: schemas.mcp.MCPServerCreateRe
             db=db,
             cmd=mcp_server_create_request.cmd,
             args=mcp_server_create_request.args,
+            env=mcp_server_create_request.env,
             server_id=db_base_mcp_server.id
         )
     elif mcp_server_create_request.category == 1:
-        db_stream_mcp_server = crud.mcp.create_stream_mcp(
+        db_http_mcp_server = crud.mcp.create_http_mcp(
             db=db,
-            address=mcp_server_create_request.address,
+            url=mcp_server_create_request.url,
+            headers=mcp_server_create_request.headers,
             server_id=db_base_mcp_server.id
         )
     db.commit()
@@ -121,28 +127,34 @@ async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRe
                 db_std_mcp_server.cmd = mcp_server_update_request.cmd
             if mcp_server_update_request.args is not None:
                 db_std_mcp_server.args = mcp_server_update_request.args
+            if mcp_server_update_request.headers is not None:
+                db_std_mcp_server.env = mcp_server_update_request.env
         if db_base_mcp_server.category == 1:
-            db_stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db, 
-                                                                            base_id=mcp_server_update_request.id)
-            if db_stream_mcp_server is None:
+            db_http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db, 
+                                                                         base_id=mcp_server_update_request.id)
+            if db_http_mcp_server is None:
                 raise schemas.error.CustomException(message="mcp server not found", 
                                                     code=404)
-            if mcp_server_update_request.address is not None:
-                db_stream_mcp_server.address = mcp_server_update_request.address
+            if mcp_server_update_request.url is not None:
+                db_http_mcp_server.url = mcp_server_update_request.url
+            if mcp_server_update_request.headers is not None:
+                db_http_mcp_server.headers = mcp_server_update_request.headers
     else:
         if db_base_mcp_server.category == 0 and mcp_server_update_request.category == 1:
             crud.mcp.delete_std_mcp_server_by_base_id(db=db, base_id=db_base_mcp_server.id)
-            db_new_stream_mcp_server = crud.mcp.create_stream_mcp(
+            db_new_http_mcp_server = crud.mcp.create_http_mcp(
                 db=db,
-                address=mcp_server_update_request.address,
+                url=mcp_server_update_request.url,
+                headers=mcp_server_update_request.headers,
                 server_id=db_base_mcp_server.id
             )
         elif db_base_mcp_server.category == 1 and mcp_server_update_request.category == 0:
-            crud.mcp.delete_stream_mcp_server_by_base_id(db=db, base_id=db_base_mcp_server.id)
+            crud.mcp.delete_http_mcp_server_by_base_id(db=db, base_id=db_base_mcp_server.id)
             db_new_std_mcp_server = crud.mcp.create_std_mcp(
                 db=db,
                 cmd=mcp_server_update_request.cmd,
                 args=mcp_server_update_request.args,
+                env=mcp_server_update_request.env,
                 server_id=db_base_mcp_server.id
             )
         if mcp_server_update_request.category is not None:
@@ -172,13 +184,13 @@ async def delete_server(mcp_server_delete_request: schemas.mcp.MCPServerDeleteRe
         crud.mcp.delete_std_mcp_server_by_base_id(db=db, 
                                                   base_id=mcp_server_delete_request.id)
     elif category == 1:
-        db_stream_mcp_server = crud.mcp.get_stream_mcp_server_by_base_id(db=db, 
-                                                                         base_id=mcp_server_delete_request.id)
-        if db_stream_mcp_server is None:
+        db_http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db, 
+                                                                     base_id=mcp_server_delete_request.id)
+        if db_http_mcp_server is None:
             raise schemas.error.CustomException(message="mcp server not found", 
                                                 code=404)
-        crud.mcp.delete_stream_mcp_server_by_base_id(db=db, 
-                                                     base_id=mcp_server_delete_request.id)
+        crud.mcp.delete_http_mcp_server_by_base_id(db=db, 
+                                                   base_id=mcp_server_delete_request.id)
     crud.mcp.delete_base_mcp_server_by_id(db=db,
                                           id=mcp_server_delete_request.id)
     db.commit()

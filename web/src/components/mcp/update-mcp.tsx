@@ -33,8 +33,8 @@ import { Button } from '../ui/button';
 import { Loader2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { MCPServerInfo } from '@/generated';
 import { getMCPServerDetail, updateMCPServer } from '@/service/mcp';
+import { Textarea } from '../ui/textarea';
 
 const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 	const t = useTranslations();
@@ -46,9 +46,11 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 			id: z.number(),
 			name: z.string().min(1).max(20).optional().nullable(),
 			category: z.number().min(0).max(1).optional().nullable(),
-			args: z.string().optional().nullable(),
 			cmd: z.string().optional().nullable(),
-			address: z.string().optional().nullable(),
+			args: z.string().optional().nullable(),
+			env: z.string().optional().nullable(),
+			url: z.string().optional().nullable(),
+			headers: z.string().optional().nullable(),
 			enable: z.boolean().optional().nullable(),
 		})
 		.refine(
@@ -78,13 +80,13 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 		.refine(
 			(data) => {
 				if (data.category === 1) {
-					return data.address && data.address.trim() !== '';
+					return data.url && data.url.trim() !== '';
 				}
 				return true;
 			},
 			{
-				message: t('mcp_server_address_needed'),
-				path: ['address'],
+				message: t('mcp_server_url_needed'),
+				path: ['url'],
 			}
 		);
 
@@ -148,9 +150,11 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 			id: data.id,
 			name: data.name,
 			category: data.category,
-			args: data.args,
 			cmd: data.cmd,
-			address: data.address,
+			args: data.args,
+			env: data.env,
+			url: data.url,
+			headers: data.headers,
 			enable: data.enable,
 		});
 	}, [data]);
@@ -219,7 +223,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 																{t('mcp_server_update_form_category_std')}
 															</SelectItem>
 															<SelectItem value='1'>
-																{t('mcp_server_update_form_category_stream')}
+																{t('mcp_server_update_form_category_http')}
 															</SelectItem>
 														</SelectGroup>
 													</SelectContent>
@@ -230,27 +234,50 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 									}}
 								/>
 								{Number(mcpUpdateForm.watch('category')) === 1 && (
-									<FormField
-										name='address'
-										control={mcpUpdateForm.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<FormLabel>
-														{t('mcp_server_update_form_address')}
-													</FormLabel>
-													<Input
-														{...field}
-														value={field.value ?? ''}
-														placeholder={t(
-															'mcp_server_update_form_address_placeholder'
-														)}
-													/>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
+									<>
+										<FormField
+											name='url'
+											control={mcpUpdateForm.control}
+											render={({ field }) => {
+												return (
+													<FormItem>
+														<FormLabel>
+															{t('mcp_server_update_form_url')}
+														</FormLabel>
+														<Input
+															{...field}
+															value={field.value ?? ''}
+															placeholder={t(
+																'mcp_server_update_form_url_placeholder'
+															)}
+														/>
+														<FormMessage />
+													</FormItem>
+												);
+											}}
+										/>
+										<FormField
+											name='headers'
+											control={mcpUpdateForm.control}
+											render={({ field }) => {
+												return (
+													<FormItem>
+														<FormLabel>
+															{t('mcp_server_update_form_headers')}
+														</FormLabel>
+														<Textarea
+															{...field}
+															value={field.value ?? ''}
+															placeholder={t(
+																'mcp_server_update_form_headers_placeholder'
+															)}
+														/>
+														<FormMessage />
+													</FormItem>
+												);
+											}}
+										/>
+									</>
 								)}
 								{Number(mcpUpdateForm.watch('category')) === 0 && (
 									<>
@@ -289,6 +316,27 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 															value={field.value ?? ''}
 															placeholder={t(
 																'mcp_server_update_form_args_placeholder'
+															)}
+														/>
+														<FormMessage />
+													</FormItem>
+												);
+											}}
+										/>
+										<FormField
+											name='env'
+											control={mcpUpdateForm.control}
+											render={({ field }) => {
+												return (
+													<FormItem>
+														<FormLabel>
+															{t('mcp_server_update_form_env')}
+														</FormLabel>
+														<Textarea
+															{...field}
+															value={field.value ?? ''}
+															placeholder={t(
+																'mcp_server_update_form_env_placeholder'
 															)}
 														/>
 														<FormMessage />

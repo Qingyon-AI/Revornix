@@ -8,6 +8,7 @@ import MessageSendForm from './message-send-form';
 import CreateSessionButton from './create-session-button';
 import { useTranslations } from 'next-intl';
 import { Badge } from '../ui/badge';
+import { Loader2 } from 'lucide-react';
 
 const RevornixAI = () => {
 	const t = useTranslations();
@@ -41,7 +42,15 @@ const RevornixAI = () => {
 							<span className='font-bold text-xl'>
 								{t('revornix_ai_title')}
 							</span>
-							{aiStatus && <Badge variant={'secondary'}>{aiStatus}</Badge>}
+							{aiStatus && aiStatus !== 'done' && (
+								<>
+									<Badge variant={'secondary'}>{aiStatus}</Badge>
+									<Loader2
+										className='animate-spin text-muted-foreground'
+										size={14}
+									/>
+								</>
+							)}
 						</div>
 						<div className='text-xs text-muted-foreground'>
 							{t('revornix_ai_base_knowledge')}

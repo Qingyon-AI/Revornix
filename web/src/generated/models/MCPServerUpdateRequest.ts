@@ -48,7 +48,7 @@ export interface MCPServerUpdateRequest {
      * @type {string}
      * @memberof MCPServerUpdateRequest
      */
-    address?: string | null;
+    url?: string | null;
     /**
      * 
      * @type {string}
@@ -61,6 +61,18 @@ export interface MCPServerUpdateRequest {
      * @memberof MCPServerUpdateRequest
      */
     args?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof MCPServerUpdateRequest
+     */
+    headers?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof MCPServerUpdateRequest
+     */
+    env?: string | null;
 }
 
 /**
@@ -85,9 +97,11 @@ export function MCPServerUpdateRequestFromJSONTyped(json: any, ignoreDiscriminat
         'category': json['category'] == null ? undefined : json['category'],
         'name': json['name'] == null ? undefined : json['name'],
         'enable': json['enable'] == null ? undefined : json['enable'],
-        'address': json['address'] == null ? undefined : json['address'],
+        'url': json['url'] == null ? undefined : json['url'],
         'cmd': json['cmd'] == null ? undefined : json['cmd'],
         'args': json['args'] == null ? undefined : json['args'],
+        'headers': json['headers'] == null ? undefined : json['headers'],
+        'env': json['env'] == null ? undefined : json['env'],
     };
 }
 
@@ -106,9 +120,11 @@ export function MCPServerUpdateRequestToJSONTyped(value?: MCPServerUpdateRequest
         'category': value['category'],
         'name': value['name'],
         'enable': value['enable'],
-        'address': value['address'],
+        'url': value['url'],
         'cmd': value['cmd'],
         'args': value['args'],
+        'headers': value['headers'],
+        'env': value['env'],
     };
 }
 

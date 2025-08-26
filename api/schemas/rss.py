@@ -1,7 +1,6 @@
 from pydantic import BaseModel, field_serializer
 from .section import SectionInfo
 from datetime import datetime
-from schemas.attachment import AttachmentInfo
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
 class GetRssServerDocumentRequest(BaseModel):
@@ -31,7 +30,7 @@ class RssSectionInfo(BaseModel):
     id: int
     title: str
     description: str
-    cover: AttachmentInfo | None = None
+    cover: str | None = None
     create_time: datetime
     update_time: datetime
     class Config:

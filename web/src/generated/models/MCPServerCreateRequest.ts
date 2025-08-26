@@ -36,7 +36,7 @@ export interface MCPServerCreateRequest {
      * @type {string}
      * @memberof MCPServerCreateRequest
      */
-    address?: string | null;
+    url?: string | null;
     /**
      * 
      * @type {string}
@@ -49,6 +49,18 @@ export interface MCPServerCreateRequest {
      * @memberof MCPServerCreateRequest
      */
     args?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof MCPServerCreateRequest
+     */
+    env?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof MCPServerCreateRequest
+     */
+    headers?: string | null;
 }
 
 /**
@@ -72,9 +84,11 @@ export function MCPServerCreateRequestFromJSONTyped(json: any, ignoreDiscriminat
         
         'name': json['name'],
         'category': json['category'],
-        'address': json['address'] == null ? undefined : json['address'],
+        'url': json['url'] == null ? undefined : json['url'],
         'cmd': json['cmd'] == null ? undefined : json['cmd'],
         'args': json['args'] == null ? undefined : json['args'],
+        'env': json['env'] == null ? undefined : json['env'],
+        'headers': json['headers'] == null ? undefined : json['headers'],
     };
 }
 
@@ -91,9 +105,11 @@ export function MCPServerCreateRequestToJSONTyped(value?: MCPServerCreateRequest
         
         'name': value['name'],
         'category': value['category'],
-        'address': value['address'],
+        'url': value['url'],
         'cmd': value['cmd'],
         'args': value['args'],
+        'env': value['env'],
+        'headers': value['headers'],
     };
 }
 

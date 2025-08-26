@@ -1,5 +1,5 @@
 import io
-from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
+from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo, EngineUUID
 from common.common import extract_title_and_summary
 from bs4 import BeautifulSoup
 from markitdown import MarkItDown
@@ -9,7 +9,7 @@ from playwright.async_api import async_playwright
 class MarkitdownEngine(EngineProtocol):
     
     def __init__(self):
-        super().__init__(engine_uuid='9188ddca93ff4c2bb97fa252723c6c13',
+        super().__init__(engine_uuid=EngineUUID.MarkitDown.value,
                          engine_name="Markitdown",
                          engine_name_zh="Markitdown",
                          engine_description="Markitdown is a tool that converts file to Markdown.",
@@ -35,8 +35,6 @@ class MarkitdownEngine(EngineProtocol):
         normal_description = soup.find('meta', attrs={'name': 'description'})
         title = og_title_meta.attrs['content'] if og_title_meta is not None else normal_title if normal_title is not None else None
         description = og_description_meta.attrs['content'] if og_description_meta is not None else normal_description['content'] if normal_description is not None else None
-        og_cover_meta = soup.find('meta', property='og:image')
-        cover = og_cover_meta.attrs['content'] if og_cover_meta is not None else None
         keywords_meta = soup.find('meta', attrs={'name': 'keywords'})
         keywords = keywords_meta['content'] if keywords_meta else None
         return WebsiteInfo(
@@ -44,7 +42,7 @@ class MarkitdownEngine(EngineProtocol):
             title=title,
             description=description,
             content=content,
-            cover=cover,
+            cover=await self.get_website_cover_by_playwright(url),
             keywords=keywords
         )
         

@@ -18,12 +18,12 @@ def create_follow_user_record(db: Session,
     db.flush()
 
 def create_base_user(db: Session, 
-                     avatar_attachment_id: int, 
                      default_read_mark_reason: int,
-                     nickname: str) -> models.user.User:
-    db_user = models.user.User(avatar_id=avatar_attachment_id, 
-                               uuid=str(uuid.uuid4()),
+                     nickname: str,
+                     avatar: str | None = None) -> models.user.User:
+    db_user = models.user.User(uuid=str(uuid.uuid4()),
                                nickname=nickname,
+                               avatar=avatar,
                                default_read_mark_reason=default_read_mark_reason,
                                create_time=datetime.now(timezone.utc),
                                update_time=datetime.now(timezone.utc))
@@ -202,7 +202,6 @@ def get_user_by_uuid(db: Session,
     query = db.query(models.user.User)
     query = query.filter(models.user.User.uuid == user_uuid, 
                          models.user.User.delete_at == None)
-    query = query.options(selectinload(models.user.User.avatar))
     return query.first()
 
 def get_email_user_by_email(db: Session,
@@ -313,7 +312,7 @@ def update_user_default_mark_read_reason(db: Session,
 
 def update_user_info(db: Session,
                      user_id: int,
-                     avatar_attachment_id: int | None = None,
+                     avatar: str | None = None,
                      nickname: str | None = None,
                      slogan: str | None = None,
                      age: int | None = None,
@@ -324,8 +323,6 @@ def update_user_info(db: Session,
     db_user = db_user_query.first()
     if db_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
-    if avatar_attachment_id is not None:
-        db_user.avatar_id = avatar_attachment_id
     if nickname is not None:
         db_user.nickname = nickname
     if slogan is not None:
@@ -334,6 +331,8 @@ def update_user_info(db: Session,
         db_user.age = age
     if gender is not None:
         db_user.gender = gender
+    if avatar is not None:
+        db_user.avatar = avatar
     db.flush()
     return db_user
 

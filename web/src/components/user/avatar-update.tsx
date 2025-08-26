@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { ChangeEvent, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { createAttachment } from '@/service/attachment';
 import { updateUserInfo } from '@/service/user';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { utils } from '@kinda/utils';
@@ -31,7 +30,7 @@ const AvatarUpdate = () => {
 			userInfo?.default_user_file_system !== undefined,
 	});
 
-	const mutation = useMutation({
+	const mutationUpdateUserInfo = useMutation({
 		mutationFn: updateUserInfo,
 		onSuccess: async () => {
 			await utils.sleep(500);
@@ -56,21 +55,8 @@ const AvatarUpdate = () => {
 		const suffix = file.name.split('.').pop();
 		const fileName = `images/${name}.${suffix}`;
 		await fileService.uploadFile(fileName, file);
-		const [res_create_attachment, err_create_attachment] = await utils.to(
-			createAttachment({ name: fileName, description: 'avatar' })
-		);
-		if (err_create_attachment) {
-			toast.error(t('account_avatar_upload_success'));
-			setUploadingStatus(false);
-			return;
-		}
-		if (!res_create_attachment) {
-			toast.error(t('account_avatar_upload_failed'));
-			setUploadingStatus(false);
-			return;
-		}
-		mutation.mutateAsync({
-			avatar_attachment_id: res_create_attachment.id,
+		mutationUpdateUserInfo.mutateAsync({
+			avatar: fileName,
 		});
 		setUploadingStatus(false);
 	};
@@ -99,7 +85,7 @@ const AvatarUpdate = () => {
 				<>
 					<div className='flex flex-row'>
 						<CustomImage
-							src={userInfo.avatar.name}
+							src={userInfo.avatar}
 							className='mr-2 size-8 rounded object-cover'
 							alt='avatar'
 						/>

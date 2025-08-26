@@ -5,14 +5,14 @@ import { useRef, useState } from 'react';
 import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { createAttachment } from '@/service/attachment';
-import CustomImage from '../ui/custom-image';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
 import { useQuery } from '@tanstack/react-query';
 import { getUserFileSystemDetail } from '@/service/file-system';
+import { useTranslations } from 'next-intl';
 
 const CoverUpdate = () => {
+	const t = useTranslations();
 	const form = useFormContext();
 	const { userInfo } = useUserContext();
 	const [file, setFile] = useState<File | null>(null);
@@ -33,6 +33,7 @@ const CoverUpdate = () => {
 	const handleOnUploadFile = () => {
 		upload.current?.click();
 	};
+
 	const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) {
@@ -50,18 +51,8 @@ const CoverUpdate = () => {
 		const fileName = `files/${name}.${suffix}`;
 		await utils.sleep(2000);
 		await fileService.uploadFile(fileName, file);
-		const [res, err] = await utils.to(
-			createAttachment({
-				name: fileName,
-				description: '专栏封面',
-			})
-		);
-		if (err) {
-			toast.error('上传失败');
-			return;
-		}
 		setUploadingStatus('done');
-		form.setValue('cover', res);
+		form.setValue('cover', fileName);
 	};
 	return (
 		<FormField
@@ -71,14 +62,14 @@ const CoverUpdate = () => {
 				return (
 					<FormItem>
 						<div className='flex flex-row items-center justify-between'>
-							<FormLabel>专栏封面</FormLabel>
+							<FormLabel>{t('section_cover')}</FormLabel>
 							<Button
 								type='button'
 								variant={'link'}
 								className='text-xs'
 								disabled={uploadingStatus === 'uploading'}
 								onClick={handleOnUploadFile}>
-								上传新图
+								{t('section_cover_upload_new')}
 								{uploadingStatus === 'uploading' && (
 									<Loader2 className='animate-spin' />
 								)}
@@ -92,11 +83,23 @@ const CoverUpdate = () => {
 								onChange={handleUploadFile}
 							/>
 						</div>
-						<CustomImage
-							alt='cover'
-							src={field.value.name}
-							className='w-full object-cover rounded'
-						/>
+
+						{field.value && field.value.startsWith('http') && (
+							<img
+								alt='cover'
+								src={field.value}
+								className='w-full object-cover rounded'
+							/>
+						)}
+
+						{file && !field.value.startsWith('http') && (
+							<img
+								alt='cover'
+								src={URL.createObjectURL(file)}
+								className='w-full object-cover rounded'
+							/>
+						)}
+
 						<FormMessage />
 					</FormItem>
 				);

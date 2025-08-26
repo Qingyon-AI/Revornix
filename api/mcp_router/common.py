@@ -8,7 +8,7 @@ common_mcp_router = FastMCP(
 )
 
 @common_mcp_router.tool()
-def time_tool(input_timezone):
+def time_tool(input_timezone: str = None):
     "Provides the current time for a given city's timezone like Asia/Kolkata, America/New_York etc. If no timezone is provided, it returns the local time."
     current_time = datetime.datetime.now()    
     if input_timezone:

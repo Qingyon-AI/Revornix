@@ -18,15 +18,12 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info, Loader2, Pencil, PlusCircle, Trash2 } from 'lucide-react';
+import { Info, Loader2, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Switch } from '@/components/ui/switch';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
-import { MCPServerSearchRequest, MCPServerUpdateRequest } from '@/generated';
+import { MCPServerSearchRequest } from '@/generated';
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -111,9 +108,11 @@ const MCPPage = () => {
 						<TableRow>
 							<TableHead>{t('mcp_server_name')}</TableHead>
 							<TableHead>{t('mcp_server_category')}</TableHead>
-							<TableHead>{t('mcp_server_address')}</TableHead>
+							<TableHead>{t('mcp_server_url')}</TableHead>
+							<TableHead>{t('mcp_server_headers')}</TableHead>
 							<TableHead>{t('mcp_server_script')}</TableHead>
 							<TableHead>{t('mcp_server_args')}</TableHead>
+							<TableHead>{t('mcp_server_env')}</TableHead>
 							<TableHead>{t('mcp_server_enable')}</TableHead>
 							<TableHead>{t('mcp_server_action')}</TableHead>
 						</TableRow>
@@ -134,13 +133,19 @@ const MCPPage = () => {
 											</Badge>
 										</TableCell>
 										<TableCell>
-											{mcp_server.category === 1 ? mcp_server.address : '-'}
+											{mcp_server.category === 1 ? mcp_server.url : '-'}
 										</TableCell>
 										<TableCell>
+											{mcp_server.category === 1 ? mcp_server.headers : '-'}
+										</TableCell>
+										<TableCell className='font-mono'>
 											{mcp_server.category === 0 ? mcp_server.cmd : '-'}
 										</TableCell>
-										<TableCell>
+										<TableCell className='font-mono'>
 											{mcp_server.category === 0 ? mcp_server.args : '-'}
+										</TableCell>
+										<TableCell className='font-mono'>
+											{mcp_server.category === 0 ? mcp_server.env : '-'}
 										</TableCell>
 										<TableCell>
 											<Switch

@@ -28,6 +28,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
+import { Textarea } from '../ui/textarea';
 
 const CreateMcp = () => {
 	const t = useTranslations();
@@ -41,7 +42,9 @@ const CreateMcp = () => {
 			category: z.number().min(0).max(1),
 			args: z.string().optional(),
 			cmd: z.string().optional(),
-			address: z.string().optional(),
+			url: z.string().optional(),
+			headers: z.string().optional(),
+			env: z.string().optional(),
 		})
 		.refine(
 			(data) => {
@@ -70,13 +73,13 @@ const CreateMcp = () => {
 		.refine(
 			(data) => {
 				if (data.category === 1) {
-					return data.address && data.address.trim() !== '';
+					return data.url && data.url.trim() !== '';
 				}
 				return true;
 			},
 			{
-				message: t('mcp_server_address_needed'),
-				path: ['address'],
+				message: t('mcp_server_url_needed'),
+				path: ['url'],
 			}
 		);
 	const mcpCreateForm = useForm({
@@ -84,9 +87,11 @@ const CreateMcp = () => {
 		defaultValues: {
 			name: '',
 			category: 0,
-			address: '',
+			url: '',
+			headers: '',
 			cmd: '',
 			args: '',
+			env: '',
 		},
 	});
 	const mutateCreateMCPServer = useMutation({
@@ -95,7 +100,9 @@ const CreateMcp = () => {
 			category: number;
 			args?: string;
 			cmd?: string;
-			address?: string;
+			url?: string;
+			headers?: string;
+			env?: string;
 		}) => {
 			return createMCPServer(values);
 		},
@@ -197,7 +204,7 @@ const CreateMcp = () => {
 															{t('mcp_server_create_form_category_std')}
 														</SelectItem>
 														<SelectItem value='1'>
-															{t('mcp_server_create_form_category_stream')}
+															{t('mcp_server_create_form_category_http')}
 														</SelectItem>
 													</SelectGroup>
 												</SelectContent>
@@ -208,26 +215,48 @@ const CreateMcp = () => {
 								}}
 							/>
 							{mcpCreateForm.watch('category') === 1 && (
-								<FormField
-									name='address'
-									control={mcpCreateForm.control}
-									render={({ field }) => {
-										return (
-											<FormItem>
-												<FormLabel>
-													{t('mcp_server_create_form_address')}
-												</FormLabel>
-												<Input
-													{...field}
-													placeholder={t(
-														'mcp_server_create_form_address_placeholder'
-													)}
-												/>
-												<FormMessage />
-											</FormItem>
-										);
-									}}
-								/>
+								<>
+									<FormField
+										name='url'
+										control={mcpCreateForm.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t('mcp_server_create_form_url')}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'mcp_server_create_form_url_placeholder'
+														)}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormField
+										name='headers'
+										control={mcpCreateForm.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t('mcp_server_create_form_headers')}
+													</FormLabel>
+													<Textarea
+														{...field}
+														placeholder={t(
+															'mcp_server_create_form_headers_placeholder'
+														)}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+								</>
 							)}
 							{mcpCreateForm.watch('category') === 0 && (
 								<>
@@ -264,6 +293,26 @@ const CreateMcp = () => {
 														{...field}
 														placeholder={t(
 															'mcp_server_create_form_args_placeholder'
+														)}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormField
+										name='env'
+										control={mcpCreateForm.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t('mcp_server_create_form_env')}
+													</FormLabel>
+													<Textarea
+														{...field}
+														placeholder={t(
+															'mcp_server_create_form_env_placeholder'
 														)}
 													/>
 													<FormMessage />

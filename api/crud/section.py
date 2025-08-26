@@ -53,11 +53,11 @@ def create_section(db: Session,
                    title: str, 
                    description: str,
                    public: bool,
-                   cover_attachment_id: int | None = None):
+                   cover: str | None = None):
     now = datetime.now(timezone.utc)
     db_section = models.section.Section(title=title, 
                                         creator_id=creator_id,
-                                        cover_id=cover_attachment_id,
+                                        cover=cover,
                                         description=description,
                                         public=public,
                                         create_time=now,
@@ -156,7 +156,7 @@ def search_user_sections(db: Session,
                          limit: int = 10, 
                          keyword: str | None = None,
                          label_ids: list[int] | None = None,
-                         only_public: bool = False,
+                         onlypublic: bool = False,
                          desc: bool = True):
     query = db.query(models.section.Section)
     query = query.filter(models.section.Section.delete_at == None,
@@ -168,7 +168,7 @@ def search_user_sections(db: Session,
                 models.section.Section.description.like(f'%{keyword}%')
             )
         )
-    if only_public:
+    if onlypublic:
         query = query.filter(models.section.Section.public == True)
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
@@ -191,7 +191,7 @@ def count_user_sections(db: Session,
                         user_id: int, 
                         keyword: str | None = None,
                         label_ids: list[int] | None = None,
-                        only_public: bool = False):
+                        onlypublic: bool = False):
     query = db.query(models.section.Section)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
@@ -200,7 +200,7 @@ def count_user_sections(db: Session,
                 models.section.Section.description.like(f'%{keyword}%')
             )
         )
-    if only_public:
+    if onlypublic:
         query = query.filter(models.section.Section.public == True)
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
@@ -216,7 +216,7 @@ def search_next_user_section(db: Session,
                              section: models.section.Section, 
                              keyword: str | None = None,
                              label_ids: list[int] | None = None,
-                             only_public: bool = False,
+                             onlypublic: bool = False,
                              desc: bool = True):
     query = db.query(models.section.Section)
     query = query.filter(models.section.Section.delete_at == None,
@@ -228,7 +228,7 @@ def search_next_user_section(db: Session,
                 models.section.Section.description.like(f'%{keyword}%')
             )
         )
-    if only_public:
+    if onlypublic:
         query = query.filter(models.section.Section.public == True)
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
@@ -386,7 +386,7 @@ def search_next_parent_degree_section_comment(db: Session,
     query = query.filter(models.section.SectionComment.id < section_comment.id)
     return query.first()
 
-def search_public_sections(db: Session, 
+def searchpublic_sections(db: Session, 
                            start: int | None = None, 
                            limit: int = 10, 
                            label_ids: list[int] | None = None,
@@ -419,7 +419,7 @@ def search_public_sections(db: Session,
     query = query.limit(limit)
     return query.all()
 
-def count_public_sections(db: Session, 
+def countpublic_sections(db: Session, 
                           keyword: str | None = None,
                           label_ids: list[int] | None = None):
     query = db.query(models.section.Section)
@@ -439,7 +439,7 @@ def count_public_sections(db: Session,
     query = query.distinct(models.section.Section.id)
     return query.count()
 
-def search_next_public_section(db: Session, 
+def search_nextpublic_section(db: Session, 
                                section: models.section.Section, 
                                keyword: str | None = None,
                                label_ids: list[int] | None = None,

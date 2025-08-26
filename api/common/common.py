@@ -1,10 +1,14 @@
 import re
 import crud
+import json
 from pathlib import Path
 from common.hash import verify_password
 from common.sql import SessionLocal
+from protocol.remote_file_service import RemoteFileServiceUUID
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
+from file.aws_s3_remote_file_service import AWSS3RemoteFileService
+from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 
 def authenticate_user(db, 
                       user_uuid: str, 
@@ -36,15 +40,46 @@ def extract_title_and_summary(content: str):
 
 def get_user_remote_file_system(user_id: int):
     db = SessionLocal()
-    db_user = crud.user.get_user_by_id(db=db, user_id=user_id)   
+    db_user = crud.user.get_user_by_id(db=db, user_id=user_id) 
+    remote_file_service = None
     if db_user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
         db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db, 
                                                                           user_file_system_id=db_user.default_user_file_system)
-        if db_user_file_system.file_system_id == 1:
+        db_file_system = crud.file_system.get_file_system_by_id(db=db,
+                                                                file_system_id=db_user_file_system.file_system_id)
+        if db_file_system.uuid == RemoteFileServiceUUID.Built_In.value:
             remote_file_service = BuiltInRemoteFileService()
-        elif db_user_file_system.file_system_id == 2:
+        elif db_file_system.uuid == RemoteFileServiceUUID.AliyunOSS.value:
             remote_file_service = AliyunOSSRemoteFileService()
+        elif db_file_system.uuid == RemoteFileServiceUUID.Generic_S3.value:
+            remote_file_service = GenericS3RemoteFileService()
+        elif db_file_system.uuid == RemoteFileServiceUUID.AWS_S3.value:
+            remote_file_service = AWSS3RemoteFileService()
+        else:
+            raise Exception('Unknown file system.')
+            
     db.close()
     return remote_file_service
+
+def to_serializable(obj):
+    """把无法直接JSON化的对象转成可序列化形式"""
+    if isinstance(obj, (str, int, float, bool)) or obj is None:
+        return obj
+    elif isinstance(obj, dict):
+        return {k: to_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple, set)):
+        return [to_serializable(i) for i in obj]
+    elif hasattr(obj, "__dict__"):  # 普通类
+        return {k: to_serializable(v) for k, v in obj.__dict__.items()}
+    else:
+        return str(obj)
+
+def safe_json_loads(data, default):
+    if not data:
+        return default
+    try:
+        return json.loads(data)
+    except (ValueError, TypeError):
+        return default

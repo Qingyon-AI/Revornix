@@ -1,5 +1,4 @@
 from pydantic import BaseModel, field_serializer
-from .attachment import AttachmentInfo
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
 class DefaultFileSystemUpdateRequest(BaseModel):
@@ -60,8 +59,8 @@ class PasswordUpdateRequest(BaseModel):
 
 class UserInfoUpdateRequest(BaseModel):
     nickname: str | None = None
-    avatar_attachment_id: int | None = None
     slogan: str | None = None
+    avatar: str | None = None
     
 class UserLoginRequest(BaseModel):
     email: str
@@ -80,7 +79,7 @@ class PrivateUserInfo(BaseModel):
     uuid: str
     fans: int | None = None
     follows: int | None = None
-    avatar: AttachmentInfo | None = None
+    avatar: str | None = None
     nickname: str | None = None
     slogan: str | None = None
     email_info: EmailInfo | None = None
@@ -92,12 +91,9 @@ class PrivateUserInfo(BaseModel):
     default_file_document_parse_user_engine_id: int | None = None
     
     @field_serializer("avatar")
-    def serialize_avatar(self, v):
+    def serialize_avatar(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
-        return AttachmentInfo(
-            id=v.id,
-            name=f'{url_prefix}/{v.name}',
-        )
+        return f'{url_prefix}/{v}'
 
     class Config:
         from_attributes = True
@@ -108,19 +104,16 @@ class UserInfoRequest(BaseModel):
 class UserPublicInfo(BaseModel):
     id: int
     nickname: str | None = None
-    avatar: AttachmentInfo | None = None
+    avatar: str | None = None
     slogan: str | None = None
     is_followed: bool | None = None
     fans: int | None = None
     follows: int | None = None
     
     @field_serializer("avatar")
-    def serialize_avatar(self, v):
+    def serialize_avatar(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
-        return AttachmentInfo(
-            id=v.id,
-            name=f'{url_prefix}/{v.name}',
-        )
+        return f'{url_prefix}/{v}'
         
     class Config:
         from_attributes = True 

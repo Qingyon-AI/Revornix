@@ -9,10 +9,29 @@ from celery import group, chain
 from datetime import datetime, timezone
 from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, init_file_document_info
 from common.dependencies import get_db, get_current_user_with_api_key
+from common.common import get_user_remote_file_system
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile, Form
 
 tp_router = APIRouter()
+
+@tp_router.post('/file/upload', response_model=schemas.common.NormalResponse)
+async def upload_file_system(file: UploadFile = File(...),
+                             file_path: str = Form(...),
+                             content_type: str = Form(...),
+                             db: Session = Depends(get_db),
+                             user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
+    content = await file.read()
+    user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
+                                                                   user_file_system_id=user.default_user_file_system)
+    if user_file_system is None:
+        raise schemas.error.CustomException(code=404, message="User File System not found")
+    remote_file_service = get_user_remote_file_system(user.id)
+    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
+    await remote_file_service.upload_raw_content_to_path(file_path=file_path,
+                                                         content=content,
+                                                         content_type=content_type)
+    return schemas.common.SuccessResponse()
 
 @tp_router.post('/section/create', response_model=schemas.section.SectionCreateResponse)
 async def create_section(section_create_request: schemas.section.SectionCreateRequest,
@@ -20,7 +39,7 @@ async def create_section(section_create_request: schemas.section.SectionCreateRe
                          user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
     db_section = crud.section.create_section(db=db, 
                                              creator_id=user.id,
-                                             cover_attachment_id=section_create_request.cover_id,
+                                             cover=section_create_request.cover,
                                              title=section_create_request.title, 
                                              description=section_create_request.description,
                                              public=section_create_request.public)

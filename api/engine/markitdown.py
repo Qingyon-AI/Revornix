@@ -1,5 +1,5 @@
 import io
-from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
+from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo, EngineUUID
 from common.common import extract_title_and_summary
 from bs4 import BeautifulSoup
 from markitdown import MarkItDown
@@ -9,7 +9,7 @@ from playwright.async_api import async_playwright
 class MarkitdownEngine(EngineProtocol):
     
     def __init__(self):
-        super().__init__(engine_uuid='9188ddca93ff4c2bb97fa252723c6c13',
+        super().__init__(engine_uuid=EngineUUID.MarkitDown.value,
                          engine_name="Markitdown",
                          engine_name_zh="Markitdown",
                          engine_description="Markitdown is a tool that converts file to Markdown.",

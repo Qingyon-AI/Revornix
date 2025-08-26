@@ -53,14 +53,13 @@ class Section(Base):
     title = Column(String(500), index=True, nullable=False)
     public = Column(Boolean, nullable=False, index=True)
     creator_id = Column(Integer, ForeignKey("user.id"), index=True, nullable=False)
-    cover_id = Column(ForeignKey("attachment.id"))
+    cover = Column(String(500), comment='The path of the cover image which you uploaded to the file system')
     description = Column(String(500), index=True, nullable=False)
     md_file_name = Column(String(500), comment='The path of the markdown file which you uploaded to the file system')
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True))
     
-    cover = relationship("Attachment", backref="section_cover")
     creator = relationship("User", backref="created_sections")
 
 class Label(Base):

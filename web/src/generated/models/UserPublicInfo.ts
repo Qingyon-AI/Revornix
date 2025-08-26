@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { AttachmentInfo } from './AttachmentInfo';
-import {
-    AttachmentInfoFromJSON,
-    AttachmentInfoFromJSONTyped,
-    AttachmentInfoToJSON,
-    AttachmentInfoToJSONTyped,
-} from './AttachmentInfo';
-
 /**
  * 
  * @export
@@ -41,10 +33,10 @@ export interface UserPublicInfo {
     nickname?: string | null;
     /**
      * 
-     * @type {AttachmentInfo}
+     * @type {string}
      * @memberof UserPublicInfo
      */
-    avatar?: AttachmentInfo | null;
+    avatar?: string | null;
     /**
      * 
      * @type {string}
@@ -91,7 +83,7 @@ export function UserPublicInfoFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'id': json['id'],
         'nickname': json['nickname'] == null ? undefined : json['nickname'],
-        'avatar': json['avatar'] == null ? undefined : AttachmentInfoFromJSON(json['avatar']),
+        'avatar': json['avatar'] == null ? undefined : json['avatar'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'is_followed': json['is_followed'] == null ? undefined : json['is_followed'],
         'fans': json['fans'] == null ? undefined : json['fans'],
@@ -112,7 +104,7 @@ export function UserPublicInfoToJSONTyped(value?: UserPublicInfo | null, ignoreD
         
         'id': value['id'],
         'nickname': value['nickname'],
-        'avatar': AttachmentInfoToJSON(value['avatar']),
+        'avatar': value['avatar'],
         'slogan': value['slogan'],
         'is_followed': value['is_followed'],
         'fans': value['fans'],
