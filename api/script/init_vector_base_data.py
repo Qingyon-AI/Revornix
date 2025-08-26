@@ -4,6 +4,16 @@ load_dotenv(override=True)
 from pymilvus import DataType
 from common.vector import milvus_client
 
+def init_lightrag_database():
+     # Check if the database already exists
+    database_list = milvus_client.list_databases()
+    if "lightrag" in database_list:
+        print("Database 'lightrag' has already been created")
+        return
+    # Create database
+    milvus_client.create_database(db_name="lightrag")
+    print("Database 'lightrag' created successfully.")
+
 def init_document_collection():
     collection_name = "document"
     
@@ -49,3 +59,4 @@ def init_document_collection():
 
 if __name__ == '__main__':
     init_document_collection()
+    init_lightrag_database()
