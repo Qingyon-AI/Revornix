@@ -17,6 +17,7 @@ from notification_template.daily_summary import DailySummaryNotificationTemplate
 from common.celery.app import add_embedding, update_sections, init_website_document_info
 from celery import chain, group
 from enums.document import DocumentMdConvertStatus
+from enums.notification import NotificationContentType
 
 scheduler = AsyncIOScheduler()
 
@@ -117,15 +118,15 @@ async def send_notification(user_id:int,
                                                                                            notification_task_id=notification_task_id)
     if db_notification_task is None:
         raise schemas.error.CustomException(message="notification task not found", code=404)
-    if db_notification_task.notification_content_type == 0:
+    if db_notification_task.notification_content_type == NotificationContentType.CUSTOM:
         db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(db=db,
                                                                                                                         notification_task_id=notification_task_id)
         title = db_notification_content_custom.title
         content = db_notification_content_custom.content
-    elif db_notification_task.notification_content_type == 1:
+    elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
         db_notification_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(db=db,
                                                                                                                             notification_task_id=notification_task_id)
-        if db_notification_content_template.notification_template_id == 1:
+        if db_notification_content_template.notification_template_id == NotificationContentType.TEMPLATE:
             template = DailySummaryNotificationTemplate()
             template.init_user(user_id=user_id)
             generate_res = await template.generate()

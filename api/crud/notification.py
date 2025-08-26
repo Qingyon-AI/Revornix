@@ -178,12 +178,30 @@ def get_email_notification_target_by_notification_target_id(db: Session,
                          models.notification.NotificationTarget.delete_at == None)
     return query.first()
 
+def get_ios_notification_target_by_notification_target_id(db: Session, 
+                                                          notification_target_id: int):
+    query = db.query(models.notification.IOSNotificationTarget)
+    query = query.join(models.notification.NotificationTarget)
+    query = query.filter(models.notification.IOSNotificationTarget.notification_target_id == notification_target_id,
+                         models.notification.IOSNotificationTarget.delete_at == None,
+                         models.notification.NotificationTarget.delete_at == None)
+    return query.first()
+
 def get_email_notification_source_by_notification_source_id(db: Session, 
                                                             notification_source_id: int):
     query = db.query(models.notification.EmailNotificationSource)
     query = query.join(models.notification.NotificationSource)
     query = query.filter(models.notification.EmailNotificationSource.notification_source_id == notification_source_id,
                          models.notification.EmailNotificationSource.delete_at == None,
+                         models.notification.NotificationSource.delete_at == None)
+    return query.first()
+
+def get_ios_notification_source_by_notification_source_id(db: Session, 
+                                                          notification_source_id: int):
+    query = db.query(models.notification.IOSNotificationSource)
+    query = query.join(models.notification.NotificationSource)
+    query = query.filter(models.notification.IOSNotificationSource.notification_source_id == notification_source_id,
+                         models.notification.IOSNotificationSource.delete_at == None,
                          models.notification.NotificationSource.delete_at == None)
     return query.first()
 

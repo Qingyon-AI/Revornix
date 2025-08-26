@@ -57,6 +57,29 @@ class NotificationTarget(Base):
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     delete_at = Column(DateTime(timezone=True), index=True)
+    
+class IOSNotificationSource(Base):
+    __tablename__ = "ios_notification_source"
+
+    id = Column(Integer, primary_key=True)
+    notification_source_id = Column(Integer, ForeignKey("notification_source.id"), index=True)
+    team_id = Column(String(200), nullable=False)
+    key_id = Column(String(200), nullable=False)
+    private_key = Column(String(2000), nullable=False)
+    app_bundle_id = Column(String(200), nullable=False)
+    create_time = Column(DateTime(timezone=True), nullable=False)
+    update_time = Column(DateTime(timezone=True), nullable=False)
+    delete_at = Column(DateTime(timezone=True), index=True)
+    
+class IOSNotificationTarget(Base):
+    __tablename__ = "ios_notification_target"
+
+    id = Column(Integer, primary_key=True)
+    notification_target_id = Column(Integer, ForeignKey("notification_target.id"), index=True)
+    device_token = Column(String(200), nullable=False)
+    create_time = Column(DateTime(timezone=True), nullable=False)
+    update_time = Column(DateTime(timezone=True), nullable=False)
+    delete_at = Column(DateTime(timezone=True), index=True)
 
 class EmailNotificationTarget(Base):
     __tablename__ = "email_notification_target"

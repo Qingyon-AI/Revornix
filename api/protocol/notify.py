@@ -2,6 +2,7 @@ import schemas
 import crud
 from common.sql import SessionLocal
 from typing import Protocol
+from enums.notification import NotificationSourceCategory, NotificationTargetCategory
 
 class NotifyProtocol(Protocol):
     
@@ -31,7 +32,7 @@ class NotifyProtocol(Protocol):
         if db_notification_source is None or db_notification_target is None:
             raise schemas.error.CustomException(message="notification source or target not found", code=404)
         
-        if db_notification_source.category == 0:
+        if db_notification_source.category == NotificationSourceCategory.EMAIL:
             db_notification_email_source = crud.notification.get_email_notification_source_by_notification_source_id(db=db,
                                                                                                                      notification_source_id=db_notification_source.id)
             self.source = schemas.notification.NotificationSourceDetail(
@@ -47,7 +48,24 @@ class NotifyProtocol(Protocol):
                     server=db_notification_email_source.server,
                 )
             )
-        if db_notification_target.category == 0:
+        if db_notification_source.category == NotificationSourceCategory.IOS:
+            db_notification_ios_source = crud.notification.get_ios_notification_source_by_notification_source_id(db=db,
+                                                                                                                 notification_source_id=db_notification_source.id)  
+            self.source = schemas.notification.NotificationSourceDetail(
+                id=db_notification_source.id,
+                title=db_notification_source.title,
+                description=db_notification_source.description,
+                category=db_notification_source.category,
+                ios_notification_source=schemas.notification.IOSNotificationSource(
+                    id=db_notification_ios_source.id,
+                    team_id=db_notification_ios_source.team_id,
+                    key_id=db_notification_ios_source.key_id,
+                    private_key=db_notification_ios_source.private_key,
+                    app_bundle_id=db_notification_ios_source.app_bundle_id,
+                )
+            )
+            
+        if db_notification_target.category == NotificationTargetCategory.EMAIL:
             db_notification_email_target = crud.notification.get_email_notification_target_by_notification_target_id(db=db,
                                                                                                                      notification_target_id=db_notification_target.id)
             self.target = schemas.notification.NotificationTargetDetail(
@@ -58,6 +76,19 @@ class NotifyProtocol(Protocol):
                 email_notification_target=schemas.notification.EmailNotificationTarget(
                     id=db_notification_email_target.id,
                     email=db_notification_email_target.email,
+                )
+            )
+        if db_notification_target.category == NotificationTargetCategory.IOS:
+            db_notification_ios_target = crud.notification.get_ios_notification_target_by_notification_target_id(db=db,
+                                                                                                                 notification_target_id=db_notification_target.id)
+            self.target = schemas.notification.NotificationTargetDetail(
+                id=db_notification_target.id,
+                title=db_notification_target.title,
+                description=db_notification_target.description,
+                category=db_notification_target.category,
+                ios_notification_target=schemas.notification.IOSNotificationTarget(
+                    id=db_notification_ios_target.id,
+                    device_token=db_notification_ios_target.device_token,
                 )
             )
         

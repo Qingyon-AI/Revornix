@@ -10,6 +10,7 @@ from common.dependencies import get_current_user, get_current_user_with_websocke
 from datetime import datetime
 from common.apscheduler.app import send_notification
 from notification_template.daily_summary import DailySummaryNotificationTemplate
+from enums.notification import NotificationContentType, NotificationSourceCategory, NotificationTargetCategory
 
 notification_router = APIRouter()
     
@@ -55,12 +56,12 @@ async def add_notification_task(add_notification_task_request: schemas.notificat
                                                                       notification_target_id=add_notification_task_request.notification_target_id,
                                                                       notification_source_id=add_notification_task_request.notification_source_id,
                                                                       cron_expr=add_notification_task_request.cron_expr)
-    if add_notification_task_request.notification_content_type == 0:
+    if add_notification_task_request.notification_content_type == NotificationContentType.CUSTOM:
         crud.notification.bind_notification_task_content_custom_to_notification_task(db=db,
                                                                                      notification_task_id=db_notification_task.id,
                                                                                      title=add_notification_task_request.title,
                                                                                      content=add_notification_task_request.content)
-    elif add_notification_task_request.notification_content_type == 1:
+    elif add_notification_task_request.notification_content_type == NotificationContentType.TEMPLATE:
         crud.notification.bind_notification_task_content_template_to_notification_task(db=db,
                                                                                         notification_task_id=db_notification_task.id,
                                                                                         notification_template_id=add_notification_task_request.notification_template_id)
@@ -98,13 +99,13 @@ async def get_notification_task(get_notification_task_request: schemas.notificat
         enable=db_notification_task.enable,
     )
     
-    if db_notification_task.notification_content_type == 0:
+    if db_notification_task.notification_content_type == NotificationContentType.CUSTOM:
         db_notification_task_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(db=db,
                                                                                                                              notification_task_id=db_notification_task.id)
         if db_notification_task_content_custom is not None:
             res.title = db_notification_task_content_custom.title
             res.content = db_notification_task_content_custom.content
-    elif db_notification_task.notification_content_type == 1:
+    elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
         db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(db=db,
                                                                                                                                  notification_task_id=db_notification_task.id)
         if db_notification_task_content_template is not None:
@@ -165,7 +166,7 @@ async def update_notification_task(update_notification_task_request: schemas.not
     if update_notification_task_request.notification_content_type is not None:
         db_notification_task.notification_content_type = update_notification_task_request.notification_content_type
     
-    if update_notification_task_request.notification_content_type == 0:
+    if update_notification_task_request.notification_content_type == NotificationContentType.CUSTOM:
         db_notification_task_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(db=db,
                                                                                                                              notification_task_id=update_notification_task_request.notification_task_id)
         if db_notification_task_content_custom is None:
@@ -176,7 +177,7 @@ async def update_notification_task(update_notification_task_request: schemas.not
         else:
             db_notification_task_content_custom.title = update_notification_task_request.title
             db_notification_task_content_custom.content = update_notification_task_request.content
-    elif update_notification_task_request.notification_content_type == 1:
+    elif update_notification_task_request.notification_content_type == NotificationContentType.TEMPLATE:
         db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(db=db,
                                                                                                                                  notification_task_id=update_notification_task_request.notification_task_id)
         if db_notification_task_content_template is None:
@@ -226,13 +227,13 @@ async def get_mine_notification_task(db: Session = Depends(get_db),
                                                           notification_target_id=db_notification_task.notification_target_id,
                                                           create_time=db_notification_task.create_time,
                                                           update_time=db_notification_task.update_time)
-        if task_data.notification_content_type == 0:
+        if task_data.notification_content_type == NotificationContentType.CUSTOM:
             db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(db=db,
                                                                                                                             notification_task_id=task_data.id)
             if db_notification_content_custom is not None:
                 task_data.title = db_notification_content_custom.title
                 task_data.content = db_notification_content_custom.content
-        elif task_data.notification_content_type == 1:
+        elif task_data.notification_content_type == NotificationContentType.TEMPLATE:
             db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(db=db,
                                                                                                                                      notification_task_id=task_data.id)
             if db_notification_task_content_template is not None:
@@ -256,7 +257,7 @@ async def add_notification_target(add_notification_target_request: schemas.notif
                                                                           description=add_notification_target_request.description,
                                                                           creator_id=user.id,
                                                                           category=add_notification_target_request.category)
-    if add_notification_target_request.category == 0:
+    if add_notification_target_request.category == NotificationTargetCategory.EMAIL:
         db_email_notification_target = crud.notification.bind_email_info_to_notification_target(db=db,
                                                                                                 notification_target_id=db_notification_target.id,
                                                                                                 email=add_notification_target_request.email)
@@ -289,7 +290,7 @@ async def update_notification_target(update_notification_target_request: schemas
     if update_notification_target_request.description is not None:
         db_notification_target.description = update_notification_target_request.description
     
-    if db_notification_target.category == 0:
+    if db_notification_target.category == NotificationTargetCategory.EMAIL:
         db_email_notification_target = crud.notification.get_email_notification_target_by_notification_target_id(db=db,
                                                                                                                  notification_target_id=update_notification_target_request.notification_target_id)
         if db_email_notification_target is None:
@@ -343,7 +344,7 @@ async def update_email_source(update_notification_source_request: schemas.notifi
     if update_notification_source_request.description is not None:
         db_notification_source.description = update_notification_source_request.description
         
-    if db_notification_source.category == 0:
+    if db_notification_source.category == NotificationSourceCategory.EMAIL:
         db_email_notification_source = crud.notification.get_email_notification_source_by_notification_source_id(db=db,
                                                                                                                  notification_source_id=update_notification_source_request.notification_source_id)
         if db_email_notification_source is None:
@@ -378,7 +379,7 @@ async def get_notification_detail(notification_source_detail_request: schemas.no
     if notification_source.creator_id != user.id:
         raise schemas.error.CustomException(message="you don't have permission to access this notification source", code=403)
 
-    if notification_source.category == 0:
+    if notification_source.category == NotificationSourceCategory.EMAIL:
         email_notification_source = crud.notification.get_email_notification_source_by_notification_source_id(db=db,
                                                                                                               notification_source_id=notification_source_detail_request.notification_source_id)
         if email_notification_source is None:
@@ -389,7 +390,7 @@ async def get_notification_detail(notification_source_detail_request: schemas.no
                                                         description=notification_source.description,
                                                         category=notification_source.category)
     
-    if notification_source.category == 0:
+    if notification_source.category == NotificationSourceCategory.EMAIL:
         res.email_notification_source = schemas.notification.EmailNotificationSource(id=email_notification_source.id,
                                                                                      email=email_notification_source.email,
                                                                                      password=email_notification_source.password,
@@ -407,7 +408,7 @@ async def add_email_source(add_notification_source_request: schemas.notification
                                                                           title=add_notification_source_request.title,
                                                                           description=add_notification_source_request.description,
                                                                           category=add_notification_source_request.category)
-    if add_notification_source_request.category == 0:
+    if add_notification_source_request.category == NotificationSourceCategory.EMAIL:
         crud.notification.bind_email_info_to_notification_source(db=db,
                                                                  notification_source_id=db_notification_source.id,
                                                                  email=add_notification_source_request.email,

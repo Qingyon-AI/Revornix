@@ -51,12 +51,17 @@ class EmailNotificationTarget(BaseModel):
     id: int
     email: str
     
+class IOSNotificationTarget(BaseModel):
+    id: int
+    device_token: str
+    
 class NotificationTargetDetail(BaseModel):
     id: int
     title: str
     description: str
     category: int
     email_notification_target: EmailNotificationTarget | None = None
+    ios_notification_target: IOSNotificationTarget | None = None
 
 class UpdateNotificationSourceRequest(BaseModel):
     notification_source_id: int
@@ -82,6 +87,13 @@ class EmailNotificationSource(BaseModel):
     password: str
     server: str
     port: int
+    
+class IOSNotificationSource(BaseModel):
+    id: int
+    key_id: str
+    team_id: str
+    private_key: str
+    app_bundle_id: str
     
 class DeleteNotificationSourceRequest(BaseModel):
     notification_source_ids: list[int]
@@ -160,6 +172,7 @@ class NotificationSourceDetail(BaseModel):
     description: str
     category: int
     email_notification_source: EmailNotificationSource | None = None
+    ios_notification_source: IOSNotificationSource | None = None
 
 class NotificationTask(BaseResponseModel):
     id: int
