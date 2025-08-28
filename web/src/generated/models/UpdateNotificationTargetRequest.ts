@@ -43,6 +43,12 @@ export interface UpdateNotificationTargetRequest {
      * @memberof UpdateNotificationTargetRequest
      */
     email?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateNotificationTargetRequest
+     */
+    device_token?: string | null;
 }
 
 /**
@@ -67,6 +73,7 @@ export function UpdateNotificationTargetRequestFromJSONTyped(json: any, ignoreDi
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
         'email': json['email'] == null ? undefined : json['email'],
+        'device_token': json['device_token'] == null ? undefined : json['device_token'],
     };
 }
 
@@ -85,6 +92,7 @@ export function UpdateNotificationTargetRequestToJSONTyped(value?: UpdateNotific
         'title': value['title'],
         'description': value['description'],
         'email': value['email'],
+        'device_token': value['device_token'],
     };
 }
 

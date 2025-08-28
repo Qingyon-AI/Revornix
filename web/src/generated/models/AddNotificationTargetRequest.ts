@@ -43,6 +43,12 @@ export interface AddNotificationTargetRequest {
      * @memberof AddNotificationTargetRequest
      */
     email?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddNotificationTargetRequest
+     */
+    device_token?: string | null;
 }
 
 /**
@@ -68,6 +74,7 @@ export function AddNotificationTargetRequestFromJSONTyped(json: any, ignoreDiscr
         'title': json['title'],
         'description': json['description'] == null ? undefined : json['description'],
         'email': json['email'] == null ? undefined : json['email'],
+        'device_token': json['device_token'] == null ? undefined : json['device_token'],
     };
 }
 
@@ -86,6 +93,7 @@ export function AddNotificationTargetRequestToJSONTyped(value?: AddNotificationT
         'title': value['title'],
         'description': value['description'],
         'email': value['email'],
+        'device_token': value['device_token'],
     };
 }
 

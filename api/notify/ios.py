@@ -4,11 +4,10 @@ import time
 import uuid
 import json
 import jwt
-import os
 from jwcrypto.common import json
 from jwcrypto import jwk
 from protocol.notify import NotifyProtocol
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger
 
 APPLE_PUBLIC_KEYS_URL = "https://appleid.apple.com/auth/keys"
 
@@ -24,26 +23,26 @@ class IOSNotify(NotifyProtocol):
                          source_id=source_id, 
                          target_id=target_id)
     
-    def _create_apns_headers(self, teamId: str, keyId: str, privateKey: str, apnsTopic: str):
+    def _create_apns_headers(self, team_id: str, key_id: str, private_key: str, apns_topic: str):
         """
         动态生成 APNs 请求所需的 HTTP Headers，包括最新的 JWT Token。
         """
         token = jwt.encode(
             payload={
-                "iss": teamId,
+                "iss": team_id,
                 "iat": int(time.time()),
                 "exp": int(time.time()) + 3600  # 设置过期时间为1小时以内
             },
             algorithm="ES256",
             headers={
                 "alg": "ES256",
-                "kid": keyId
+                "kid": key_id
             },
-            key=privateKey
+            key=private_key
         )
         return {
             "authorization": "bearer " + token,
-            "apns-topic": apnsTopic,
+            "apns-topic": apns_topic,
             "apns-id": str(uuid.uuid4())
         }
     
@@ -116,16 +115,13 @@ class IOSNotify(NotifyProtocol):
 
         
     def send_notification(self, message: schemas.notification.Message) -> bool:
-        headers = self._create_apns_headers(teamId=self.source.ios_notification_source.team_id,
-                                            keyId=self.source.ios_notification_source.key_id,
-                                            privateKey=self.source.ios_notification_source.private_key,
-                                            apnsTopic=self.source.ios_notification_source.app_bundle_id)  # 每次生成新的 Header
+        headers = self._create_apns_headers(team_id=self.source.ios_notification_source.team_id,
+                                            key_id=self.source.ios_notification_source.key_id,
+                                            private_key=self.source.ios_notification_source.private_key,
+                                            apns_topic=self.source.ios_notification_source.app_bundle_id)  # 每次生成新的 Header
         device_token = self.target.ios_notification_target.device_token
-        if os.getenv('ENV') == 'production':
-            # url = f'https://api.push.apple.com/3/device/{device_token}'
-            url = f'https://api.sandbox.push.apple.com/3/device/{device_token}'
-        else:  
-            url = f'https://api.sandbox.push.apple.com/3/device/{device_token}'
+        # url = f'https://api.push.apple.com/3/device/{device_token}'
+        url = f'https://api.sandbox.push.apple.com/3/device/{device_token}'
         data = {
             "aps" : {
                 "alert" : {
@@ -142,9 +138,8 @@ class IOSNotify(NotifyProtocol):
         with httpx.Client(http2=True) as client:  # 使用上下文管理器
             try:
                 res = client.post(url=url, headers=headers, json=data)
-                if res.status_code == 200:
-                    info_logger.info("推送成功:", res, res.content)
-                else:
-                    exception_logger.error("推送失败:", res, res.content)
+                res.raise_for_status()
+                return True
             except Exception as e:
                 exception_logger.error("推送失败:", e)
+                return False

@@ -30,6 +30,7 @@ import type {
   InifiniteScrollPagnitionDocumentInfo,
   InifiniteScrollPagnitionDocumentNoteInfo,
   LabelAddRequest,
+  LabelDeleteRequest,
   LabelListResponse,
   LabelSummaryResponse,
   NormalResponse,
@@ -75,6 +76,8 @@ import {
     InifiniteScrollPagnitionDocumentNoteInfoToJSON,
     LabelAddRequestFromJSON,
     LabelAddRequestToJSON,
+    LabelDeleteRequestFromJSON,
+    LabelDeleteRequestToJSON,
     LabelListResponseFromJSON,
     LabelListResponseToJSON,
     LabelSummaryResponseFromJSON,
@@ -129,6 +132,12 @@ export interface CreateNoteDocumentNoteCreatePostRequest {
 
 export interface DeleteDocumentDocumentDeletePostRequest {
     documentDeleteRequest: DocumentDeleteRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface DeleteLabelDocumentLabelDeletePostRequest {
+    labelDeleteRequest: LabelDeleteRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -451,6 +460,53 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async deleteDocumentDocumentDeletePost(requestParameters: DeleteDocumentDocumentDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessResponse> {
         const response = await this.deleteDocumentDocumentDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Delete Label
+     */
+    async deleteLabelDocumentLabelDeletePostRaw(requestParameters: DeleteLabelDocumentLabelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['labelDeleteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'labelDeleteRequest',
+                'Required parameter "labelDeleteRequest" was null or undefined when calling deleteLabelDocumentLabelDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/document/label/delete`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LabelDeleteRequestToJSON(requestParameters['labelDeleteRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete Label
+     */
+    async deleteLabelDocumentLabelDeletePost(requestParameters: DeleteLabelDocumentLabelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteLabelDocumentLabelDeletePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

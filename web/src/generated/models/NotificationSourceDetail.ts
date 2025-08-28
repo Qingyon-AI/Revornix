@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { IOSNotificationSource } from './IOSNotificationSource';
+import {
+    IOSNotificationSourceFromJSON,
+    IOSNotificationSourceFromJSONTyped,
+    IOSNotificationSourceToJSON,
+    IOSNotificationSourceToJSONTyped,
+} from './IOSNotificationSource';
 import type { EmailNotificationSource } from './EmailNotificationSource';
 import {
     EmailNotificationSourceFromJSON,
@@ -57,6 +64,12 @@ export interface NotificationSourceDetail {
      * @memberof NotificationSourceDetail
      */
     email_notification_source?: EmailNotificationSource | null;
+    /**
+     * 
+     * @type {IOSNotificationSource}
+     * @memberof NotificationSourceDetail
+     */
+    ios_notification_source?: IOSNotificationSource | null;
 }
 
 /**
@@ -85,6 +98,7 @@ export function NotificationSourceDetailFromJSONTyped(json: any, ignoreDiscrimin
         'description': json['description'],
         'category': json['category'],
         'email_notification_source': json['email_notification_source'] == null ? undefined : EmailNotificationSourceFromJSON(json['email_notification_source']),
+        'ios_notification_source': json['ios_notification_source'] == null ? undefined : IOSNotificationSourceFromJSON(json['ios_notification_source']),
     };
 }
 
@@ -104,6 +118,7 @@ export function NotificationSourceDetailToJSONTyped(value?: NotificationSourceDe
         'description': value['description'],
         'category': value['category'],
         'email_notification_source': EmailNotificationSourceToJSON(value['email_notification_source']),
+        'ios_notification_source': IOSNotificationSourceToJSON(value['ios_notification_source']),
     };
 }
 

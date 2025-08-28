@@ -35,16 +35,39 @@ import {
 } from '../ui/select';
 import { useMutation } from '@tanstack/react-query';
 import { Loader2, PlusCircleIcon } from 'lucide-react';
+import { NotificationSourceCategory } from '@/enums/notification';
 
 const AddNotificationTarget = () => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const formSchema = z.object({
-		title: z.string(),
-		description: z.string(),
-		category: z.number(),
-		email: z.string().email().optional(),
-	});
+	const formSchema = z
+		.object({
+			title: z.string(),
+			description: z.string(),
+			category: z.number(),
+			email: z.string().email().optional(),
+			device_token: z.string().optional(),
+		})
+		.superRefine((data, ctx) => {
+			if (data.category === NotificationSourceCategory.EMAIL) {
+				if (!data.email) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['email'],
+						message: 'Email is required when category is 0',
+					});
+				}
+			}
+			if (data.category === NotificationSourceCategory.IOS) {
+				if (!data.device_token) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['device_token'],
+						message: 'Device token is required when category is 1',
+					});
+				}
+			}
+		});
 
 	const [showAddDialog, setShowAddDialog] = useState(false);
 	const form = useForm({
@@ -53,7 +76,7 @@ const AddNotificationTarget = () => {
 			title: '',
 			description: '',
 			category: 0,
-			email: '',
+			device_token: '',
 		},
 	});
 
@@ -177,6 +200,7 @@ const AddNotificationTarget = () => {
 												<SelectContent className='w-full'>
 													<SelectGroup>
 														<SelectItem value='0'>email</SelectItem>
+														<SelectItem value='1'>ios</SelectItem>
 													</SelectGroup>
 												</SelectContent>
 											</Select>
@@ -200,6 +224,32 @@ const AddNotificationTarget = () => {
 														{...field}
 														placeholder={t(
 															'setting_notification_target_manage_form_email_placeholder'
+														)}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+								</>
+							)}
+							{form.watch('category') === 1 && (
+								<>
+									<FormField
+										name='device_token'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t(
+															'setting_notification_target_manage_form_device_token'
+														)}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'setting_notification_target_manage_form_device_token_placeholder'
 														)}
 													/>
 													<FormMessage />

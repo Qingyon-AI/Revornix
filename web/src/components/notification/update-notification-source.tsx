@@ -31,6 +31,16 @@ import { Tooltip, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { Info, Loader2 } from 'lucide-react';
 import { TooltipContent } from '../ui/tooltip';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { NotificationSourceCategory } from '@/enums/notification';
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '../ui/select';
+import { Textarea } from '../ui/textarea';
 
 const UpdateNotificationSource = ({
 	notification_source_id,
@@ -48,15 +58,84 @@ const UpdateNotificationSource = ({
 
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const formSchema = z.object({
-		notification_source_id: z.number(),
-		title: z.string(),
-		description: z.string(),
-		email: z.string().email().optional(),
-		password: z.string().optional(),
-		server: z.string().optional(),
-		port: z.number().optional(),
-	});
+	const formSchema = z
+		.object({
+			notification_source_id: z.number(),
+			title: z.string(),
+			description: z.string(),
+			category: z.number(),
+			email: z.string().email().optional(),
+			password: z.string().optional(),
+			server: z.string().optional(),
+			port: z.number().optional(),
+			team_id: z.string().optional(),
+			private_key: z.string().optional(),
+			key_id: z.string().optional(),
+			app_bundle_id: z.string().optional(),
+		})
+		.superRefine((data, ctx) => {
+			if (data.category === NotificationSourceCategory.EMAIL) {
+				if (!data.email) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['email'],
+						message: 'Email is required when category is 0',
+					});
+				}
+				if (!data.password) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['password'],
+						message: 'Password is required when category is 0',
+					});
+				}
+				if (!data.server) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['server'],
+						message: 'Server is required when category is 0',
+					});
+				}
+				if (data.port === undefined) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['port'],
+						message: 'Port is required when category is 0',
+					});
+				}
+			}
+
+			if (data.category === NotificationSourceCategory.IOS) {
+				if (!data.team_id) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['team_id'],
+						message: 'Team ID is required when category is 1',
+					});
+				}
+				if (!data.private_key) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['private_key'],
+						message: 'Private key is required when category is 1',
+					});
+				}
+				if (!data.key_id) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['key_id'],
+						message: 'Key ID is required when category is 1',
+					});
+				}
+				if (!data.app_bundle_id) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['app_bundle_id'],
+						message: 'App Bundle ID is required when category is 1',
+					});
+				}
+			}
+		});
 
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
 	const form = useForm({
@@ -65,10 +144,14 @@ const UpdateNotificationSource = ({
 			notification_source_id,
 			title: '',
 			description: '',
-			email: '',
+			category: undefined,
 			password: '',
 			server: '',
 			port: undefined,
+			team_id: '',
+			private_key: '',
+			key_id: '',
+			app_bundle_id: '',
 		},
 	});
 
@@ -116,10 +199,15 @@ const UpdateNotificationSource = ({
 				notification_source_id,
 				title: data.title,
 				description: data.description,
-				email: data.email_notification_source?.email ?? '',
-				password: data.email_notification_source?.password ?? '',
-				server: data.email_notification_source?.server ?? '',
-				port: data.email_notification_source?.port ?? undefined,
+				category: data.category,
+				email: data.email_notification_source?.email,
+				password: data.email_notification_source?.password,
+				server: data.email_notification_source?.server,
+				port: data.email_notification_source?.port,
+				team_id: data.ios_notification_source?.team_id,
+				private_key: data.ios_notification_source?.private_key,
+				key_id: data.ios_notification_source?.key_id,
+				app_bundle_id: data.ios_notification_source?.app_bundle_id,
 			};
 			form.reset(defaultValues);
 		}
@@ -131,8 +219,10 @@ const UpdateNotificationSource = ({
 				{t('edit')}
 			</Button>
 			<Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
-				<DialogContent>
-					<DialogTitle>编辑源</DialogTitle>
+				<DialogContent className='max-h-[80vh] overflow-auto'>
+					<DialogTitle>
+						{t('setting_notification_source_manage_update_form_label')}
+					</DialogTitle>
 					<Form {...form}>
 						<form
 							onSubmit={onSubmitForm}
@@ -180,7 +270,36 @@ const UpdateNotificationSource = ({
 									);
 								}}
 							/>
-							{data?.category === 0 && (
+							<FormField
+								name='category'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>
+												{t('setting_notification_source_manage_form_category')}
+											</FormLabel>
+											<Select value={field.value.toString()} disabled>
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'setting_notification_source_manage_form_category_placeholder'
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent className='w-full'>
+													<SelectGroup>
+														<SelectItem value='0'>email</SelectItem>
+														<SelectItem value='1'>ios</SelectItem>
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
+							{form.watch('category') === 0 && (
 								<>
 									<FormField
 										name='email'
@@ -274,6 +393,98 @@ const UpdateNotificationSource = ({
 														}
 														placeholder={t(
 															'setting_notification_source_manage_form_port_placeholder'
+														)}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+								</>
+							)}
+							{form.watch('category') === 1 && (
+								<>
+									<FormField
+										name='team_id'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t(
+															'setting_notification_source_manage_form_team_id'
+														)}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'setting_notification_source_manage_form_team_id_placeholder'
+														)}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormField
+										name='key_id'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t(
+															'setting_notification_source_manage_form_key_id'
+														)}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'setting_notification_source_manage_form_key_id_placeholder'
+														)}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormField
+										name='app_bundle_id'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t(
+															'setting_notification_source_manage_form_app_bundle_id'
+														)}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'setting_notification_source_manage_form_app_bundle_id_placeholder'
+														)}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormField
+										name='private_key'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t(
+															'setting_notification_source_manage_form_private_key'
+														)}
+													</FormLabel>
+													<Textarea
+														{...field}
+														placeholder={t(
+															'setting_notification_source_manage_form_private_key_placeholder'
 														)}
 													/>
 													<FormMessage />

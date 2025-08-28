@@ -61,6 +61,30 @@ export interface AddNotificationSourceRequest {
      * @memberof AddNotificationSourceRequest
      */
     port?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddNotificationSourceRequest
+     */
+    key_id?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddNotificationSourceRequest
+     */
+    team_id?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddNotificationSourceRequest
+     */
+    private_key?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddNotificationSourceRequest
+     */
+    app_bundle_id?: string | null;
 }
 
 /**
@@ -90,6 +114,10 @@ export function AddNotificationSourceRequestFromJSONTyped(json: any, ignoreDiscr
         'password': json['password'] == null ? undefined : json['password'],
         'server': json['server'] == null ? undefined : json['server'],
         'port': json['port'] == null ? undefined : json['port'],
+        'key_id': json['key_id'] == null ? undefined : json['key_id'],
+        'team_id': json['team_id'] == null ? undefined : json['team_id'],
+        'private_key': json['private_key'] == null ? undefined : json['private_key'],
+        'app_bundle_id': json['app_bundle_id'] == null ? undefined : json['app_bundle_id'],
     };
 }
 
@@ -111,6 +139,10 @@ export function AddNotificationSourceRequestToJSONTyped(value?: AddNotificationS
         'password': value['password'],
         'server': value['server'],
         'port': value['port'],
+        'key_id': value['key_id'],
+        'team_id': value['team_id'],
+        'private_key': value['private_key'],
+        'app_bundle_id': value['app_bundle_id'],
     };
 }
 

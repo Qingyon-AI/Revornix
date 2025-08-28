@@ -22,6 +22,7 @@ import type {
   HTTPValidationError,
   LabelAddRequest,
   LabelListResponse,
+  NormalResponse,
   SectionCreateRequest,
   SectionCreateResponse,
 } from '../models/index';
@@ -40,6 +41,8 @@ import {
     LabelAddRequestToJSON,
     LabelListResponseFromJSON,
     LabelListResponseToJSON,
+    NormalResponseFromJSON,
+    NormalResponseToJSON,
     SectionCreateRequestFromJSON,
     SectionCreateRequestToJSON,
     SectionCreateResponseFromJSON,
@@ -71,6 +74,13 @@ export interface GetAllMineSectionsTpSectionMineAllPostRequest {
 }
 
 export interface ListLabelTpDocumentLabelListPostRequest {
+    apiKey?: string | null;
+}
+
+export interface UploadFileSystemTpFileUploadPostRequest {
+    file: Blob;
+    filePath: string;
+    contentType: string;
     apiKey?: string | null;
 }
 
@@ -314,6 +324,89 @@ export class TpApi extends runtime.BaseAPI {
      */
     async listLabelTpDocumentLabelListPost(requestParameters: ListLabelTpDocumentLabelListPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LabelListResponse> {
         const response = await this.listLabelTpDocumentLabelListPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Upload File System
+     */
+    async uploadFileSystemTpFileUploadPostRaw(requestParameters: UploadFileSystemTpFileUploadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['file'] == null) {
+            throw new runtime.RequiredError(
+                'file',
+                'Required parameter "file" was null or undefined when calling uploadFileSystemTpFileUploadPost().'
+            );
+        }
+
+        if (requestParameters['filePath'] == null) {
+            throw new runtime.RequiredError(
+                'filePath',
+                'Required parameter "filePath" was null or undefined when calling uploadFileSystemTpFileUploadPost().'
+            );
+        }
+
+        if (requestParameters['contentType'] == null) {
+            throw new runtime.RequiredError(
+                'contentType',
+                'Required parameter "contentType" was null or undefined when calling uploadFileSystemTpFileUploadPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['file'] != null) {
+            formParams.append('file', requestParameters['file'] as any);
+        }
+
+        if (requestParameters['filePath'] != null) {
+            formParams.append('file_path', requestParameters['filePath'] as any);
+        }
+
+        if (requestParameters['contentType'] != null) {
+            formParams.append('content_type', requestParameters['contentType'] as any);
+        }
+
+
+        let urlPath = `/tp/file/upload`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Upload File System
+     */
+    async uploadFileSystemTpFileUploadPost(requestParameters: UploadFileSystemTpFileUploadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.uploadFileSystemTpFileUploadPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -56,7 +56,7 @@ export interface PrivateUserInfo {
      * @type {string}
      * @memberof PrivateUserInfo
      */
-    avatar?: string | null;
+    avatar?: string;
     /**
      * 
      * @type {string}

@@ -79,6 +79,8 @@ models/GenericFileSystemUploadResponse.ts
 models/GetRssServerDetailRequest.ts
 models/GetRssServerDocumentRequest.ts
 models/HTTPValidationError.ts
+models/IOSNotificationSource.ts
+models/IOSNotificationTarget.ts
 models/InifiniteScrollPagnitionDocumentInfo.ts
 models/InifiniteScrollPagnitionDocumentNoteInfo.ts
 models/InifiniteScrollPagnitionNotificationRecord.ts
@@ -89,6 +91,7 @@ models/InifiniteScrollPagnitionUserPublicInfo.ts
 models/InitialPasswordResponse.ts
 models/Label.ts
 models/LabelAddRequest.ts
+models/LabelDeleteRequest.ts
 models/LabelListResponse.ts
 models/LabelSummaryItem.ts
 models/LabelSummaryResponse.ts

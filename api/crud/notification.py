@@ -58,6 +58,18 @@ def create_notification_target(db: Session,
     db.flush()
     return notification_target
 
+def bind_ios_info_to_notification_target(db: Session,
+                                         notification_target_id: int,
+                                         device_token: str):
+    now = datetime.now(timezone.utc)
+    ios_notification_target = models.notification.IOSNotificationTarget(notification_target_id=notification_target_id,
+                                                                        device_token=device_token,
+                                                                        create_time=now,
+                                                                        update_time=now)
+    db.add(ios_notification_target)
+    db.flush()
+    return ios_notification_target
+
 def bind_email_info_to_notification_target(db: Session,
                                            notification_target_id: int,
                                            email: str):
@@ -85,6 +97,24 @@ def create_notification_source(db: Session,
     db.add(notification_source)
     db.flush()
     return notification_source
+
+def bind_ios_info_to_notification_source(db: Session,
+                                         notification_source_id: int,
+                                         team_id: str,
+                                         key_id: str,
+                                         private_key: str,
+                                         app_bundle_id: str):
+    now = datetime.now(timezone.utc)
+    ios_notification_source = models.notification.IOSNotificationSource(notification_source_id=notification_source_id,
+                                                                        team_id=team_id,
+                                                                        key_id=key_id,
+                                                                        private_key=private_key,
+                                                                        app_bundle_id=app_bundle_id,
+                                                                        create_time=now,
+                                                                        update_time=now)
+    db.add(ios_notification_source)
+    db.flush()
+    return ios_notification_source
 
 def bind_email_info_to_notification_source(db: Session,
                                            notification_source_id: int,

@@ -24,12 +24,6 @@ export interface SearchSubscribedSectionRequest {
      * @type {number}
      * @memberof SearchSubscribedSectionRequest
      */
-    user_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SearchSubscribedSectionRequest
-     */
     start?: number | null;
     /**
      * 
@@ -61,7 +55,6 @@ export interface SearchSubscribedSectionRequest {
  * Check if a given object implements the SearchSubscribedSectionRequest interface.
  */
 export function instanceOfSearchSubscribedSectionRequest(value: object): value is SearchSubscribedSectionRequest {
-    if (!('user_id' in value) || value['user_id'] === undefined) return false;
     return true;
 }
 
@@ -75,7 +68,6 @@ export function SearchSubscribedSectionRequestFromJSONTyped(json: any, ignoreDis
     }
     return {
         
-        'user_id': json['user_id'],
         'start': json['start'] == null ? undefined : json['start'],
         'limit': json['limit'] == null ? undefined : json['limit'],
         'desc': json['desc'] == null ? undefined : json['desc'],
@@ -95,7 +87,6 @@ export function SearchSubscribedSectionRequestToJSONTyped(value?: SearchSubscrib
 
     return {
         
-        'user_id': value['user_id'],
         'start': value['start'],
         'limit': value['limit'],
         'desc': value['desc'],

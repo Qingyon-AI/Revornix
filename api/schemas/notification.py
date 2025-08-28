@@ -37,12 +37,14 @@ class AddNotificationTargetRequest(BaseModel):
     title: str
     description: str | None = None
     email: str | None = None
+    device_token: str | None = None
     
 class UpdateNotificationTargetRequest(BaseModel):
     notification_target_id: int
     title: str | None = None
     description: str | None = None
     email: str | None = None
+    device_token: str | None = None
     
 class DeleteNotificationTargetRequest(BaseModel):
     notification_target_ids: list[int]
@@ -71,6 +73,10 @@ class UpdateNotificationSourceRequest(BaseModel):
     password: str | None = None
     server: str | None = None
     port: int | None = None
+    key_id: str | None = None
+    team_id: str | None = None
+    private_key: str | None = None
+    app_bundle_id: str | None = None
 
 class AddNotificationSourceRequest(BaseModel):
     title: str
@@ -80,6 +86,10 @@ class AddNotificationSourceRequest(BaseModel):
     password: str | None = None
     server: str | None = None
     port: int | None = None
+    key_id: str | None = None
+    team_id: str | None = None
+    private_key: str | None = None
+    app_bundle_id: str | None = None
     
 class EmailNotificationSource(BaseModel):
     id: int

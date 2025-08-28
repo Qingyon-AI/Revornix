@@ -261,6 +261,10 @@ async def add_notification_target(add_notification_target_request: schemas.notif
         db_email_notification_target = crud.notification.bind_email_info_to_notification_target(db=db,
                                                                                                 notification_target_id=db_notification_target.id,
                                                                                                 email=add_notification_target_request.email)
+    if add_notification_target_request.category == NotificationTargetCategory.IOS:
+        db_ios_notification_target = crud.notification.bind_ios_info_to_notification_target(db=db,
+                                                                                             notification_target_id=db_notification_target.id,
+                                                                                             device_token=add_notification_target_request.device_token)
     db.commit()
     return schemas.common.NormalResponse(message="success")
 
@@ -298,6 +302,13 @@ async def update_notification_target(update_notification_target_request: schemas
         if update_notification_target_request.email is not None:
             db_email_notification_target.email = update_notification_target_request.email
     
+    if db_notification_target.category == NotificationTargetCategory.IOS:
+        db_ios_notification_target = crud.notification.get_ios_notification_target_by_notification_target_id(db=db,
+                                                                                                             notification_target_id=update_notification_target_request.notification_target_id)
+        if db_ios_notification_target is None:
+            raise schemas.error.CustomException(message="ios notification target not found", code=404)
+        if update_notification_target_request.device_token is not None:
+            db_ios_notification_target.device_token = update_notification_target_request.device_token
     db.commit()
     return schemas.common.NormalResponse(message="success")
         
@@ -320,11 +331,19 @@ async def get_notification_target_detail(notification_target_detail_request: sch
                                                         category=db_notification_target.category,
                                                         title=db_notification_target.title,
                                                         description=db_notification_target.description)
-    db_email_notification_target = crud.notification.get_email_notification_target_by_notification_target_id(db=db,
+    
+    if db_notification_target.category == NotificationTargetCategory.EMAIL:
+        db_email_notification_target = crud.notification.get_email_notification_target_by_notification_target_id(db=db,
+                                                                                                                notification_target_id=db_notification_target.id)
+        if db_email_notification_target is not None:
+            res.email_notification_target = schemas.notification.EmailNotificationTarget(id=db_email_notification_target.id,
+                                                                                        email=db_email_notification_target.email)
+    if db_notification_target.category == NotificationTargetCategory.IOS:
+        db_ios_notification_target = crud.notification.get_ios_notification_target_by_notification_target_id(db=db,
                                                                                                              notification_target_id=db_notification_target.id)
-    if db_email_notification_target is not None:
-        res.email_notification_target = schemas.notification.EmailNotificationTarget(id=db_email_notification_target.id,
-                                                                                     email=db_email_notification_target.email)
+        if db_ios_notification_target is not None:
+            res.ios_notification_target = schemas.notification.IOSNotificationTarget(id=db_ios_notification_target.id,
+                                                                                     device_token=db_ios_notification_target.device_token)
     return res
         
 @notification_router.post("/source/update", response_model=schemas.common.NormalResponse)
@@ -336,7 +355,7 @@ async def update_email_source(update_notification_source_request: schemas.notifi
     if db_notification_source is None:
         raise schemas.error.CustomException(message="notification source not found", code=404)
     
-    if db_notification_source.user_id != user.id:
+    if db_notification_source.creator_id != user.id:
         return schemas.error.CustomException(message="you don't have permission to update this notification source", code=403)
     
     if update_notification_source_request.title is not None:
@@ -357,6 +376,20 @@ async def update_email_source(update_notification_source_request: schemas.notifi
             db_email_notification_source.server = update_notification_source_request.server
         if update_notification_source_request.port is not None:
             db_email_notification_source.port = update_notification_source_request.port
+    
+    if db_notification_source.category == NotificationSourceCategory.IOS:
+        db_ios_notification_source = crud.notification.get_ios_notification_source_by_notification_source_id(db=db,
+                                                                                                             notification_source_id=update_notification_source_request.notification_source_id)
+        if db_ios_notification_source is None:
+            raise schemas.error.CustomException(message="ios notification source not found", code=404)
+        if update_notification_source_request.app_bundle_id is not None:
+            db_ios_notification_source.app_bundle_id = update_notification_source_request.app_bundle_id
+        if update_notification_source_request.team_id is not None:
+            db_ios_notification_source.team_id = update_notification_source_request.team_id
+        if update_notification_source_request.key_id is not None:
+            db_ios_notification_source.key_id = update_notification_source_request.key_id
+        if update_notification_source_request.private_key is not None:
+            db_ios_notification_source.private_key = update_notification_source_request.private_key
         
     db.commit()
     
@@ -378,12 +411,6 @@ async def get_notification_detail(notification_source_detail_request: schemas.no
         raise schemas.error.CustomException(message="notification source not found", code=404)
     if notification_source.creator_id != user.id:
         raise schemas.error.CustomException(message="you don't have permission to access this notification source", code=403)
-
-    if notification_source.category == NotificationSourceCategory.EMAIL:
-        email_notification_source = crud.notification.get_email_notification_source_by_notification_source_id(db=db,
-                                                                                                              notification_source_id=notification_source_detail_request.notification_source_id)
-        if email_notification_source is None:
-            raise schemas.error.CustomException(message="email notification source not found", code=404)
     
     res = schemas.notification.NotificationSourceDetail(id=notification_source.id,
                                                         title=notification_source.title,
@@ -391,11 +418,28 @@ async def get_notification_detail(notification_source_detail_request: schemas.no
                                                         category=notification_source.category)
     
     if notification_source.category == NotificationSourceCategory.EMAIL:
+        email_notification_source = crud.notification.get_email_notification_source_by_notification_source_id(db=db,
+                                                                                                              notification_source_id=notification_source_detail_request.notification_source_id)
+        if email_notification_source is None:
+            raise schemas.error.CustomException(message="email notification source not found", code=404)
+        
         res.email_notification_source = schemas.notification.EmailNotificationSource(id=email_notification_source.id,
                                                                                      email=email_notification_source.email,
                                                                                      password=email_notification_source.password,
                                                                                      server=email_notification_source.server,
                                                                                      port=email_notification_source.port)
+        
+    if notification_source.category == NotificationSourceCategory.IOS:
+        ios_notification_source = crud.notification.get_ios_notification_source_by_notification_source_id(db=db,
+                                                                                                          notification_source_id=notification_source_detail_request.notification_source_id)
+        if ios_notification_source is None:
+            raise schemas.error.CustomException(message="ios notification source not found", code=404)
+
+        res.ios_notification_source = schemas.notification.IOSNotificationSource(id=ios_notification_source.id,
+                                                                                 team_id=ios_notification_source.team_id,
+                                                                                 key_id=ios_notification_source.key_id,
+                                                                                 private_key=ios_notification_source.private_key,
+                                                                                 app_bundle_id=ios_notification_source.app_bundle_id,)
         
     return res
         
@@ -415,6 +459,13 @@ async def add_email_source(add_notification_source_request: schemas.notification
                                                                  password=add_notification_source_request.password,
                                                                  server=add_notification_source_request.server,
                                                                  port=add_notification_source_request.port)
+    if add_notification_source_request.category == NotificationSourceCategory.IOS:
+        crud.notification.bind_ios_info_to_notification_source(db=db,
+                                                               notification_source_id=db_notification_source.id, 
+                                                               team_id=add_notification_source_request.team_id,
+                                                               key_id=add_notification_source_request.key_id,
+                                                               private_key=add_notification_source_request.private_key,
+                                                               app_bundle_id=add_notification_source_request.app_bundle_id)
     db.commit()
     return schemas.common.NormalResponse(message="success")
 

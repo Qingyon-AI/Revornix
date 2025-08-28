@@ -20,6 +20,13 @@ import {
     EmailNotificationTargetToJSON,
     EmailNotificationTargetToJSONTyped,
 } from './EmailNotificationTarget';
+import type { IOSNotificationTarget } from './IOSNotificationTarget';
+import {
+    IOSNotificationTargetFromJSON,
+    IOSNotificationTargetFromJSONTyped,
+    IOSNotificationTargetToJSON,
+    IOSNotificationTargetToJSONTyped,
+} from './IOSNotificationTarget';
 
 /**
  * 
@@ -57,6 +64,12 @@ export interface NotificationTargetDetail {
      * @memberof NotificationTargetDetail
      */
     email_notification_target?: EmailNotificationTarget | null;
+    /**
+     * 
+     * @type {IOSNotificationTarget}
+     * @memberof NotificationTargetDetail
+     */
+    ios_notification_target?: IOSNotificationTarget | null;
 }
 
 /**
@@ -85,6 +98,7 @@ export function NotificationTargetDetailFromJSONTyped(json: any, ignoreDiscrimin
         'description': json['description'],
         'category': json['category'],
         'email_notification_target': json['email_notification_target'] == null ? undefined : EmailNotificationTargetFromJSON(json['email_notification_target']),
+        'ios_notification_target': json['ios_notification_target'] == null ? undefined : IOSNotificationTargetFromJSON(json['ios_notification_target']),
     };
 }
 
@@ -104,6 +118,7 @@ export function NotificationTargetDetailToJSONTyped(value?: NotificationTargetDe
         'description': value['description'],
         'category': value['category'],
         'email_notification_target': EmailNotificationTargetToJSON(value['email_notification_target']),
+        'ios_notification_target': IOSNotificationTargetToJSON(value['ios_notification_target']),
     };
 }
 

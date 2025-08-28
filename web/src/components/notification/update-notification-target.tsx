@@ -29,6 +29,15 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
+import { NotificationSourceCategory } from '@/enums/notification';
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '../ui/select';
 
 const UpdateNotificationTarget = ({
 	notification_target_id,
@@ -46,12 +55,35 @@ const UpdateNotificationTarget = ({
 
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const formSchema = z.object({
-		notification_target_id: z.number(),
-		title: z.string(),
-		description: z.string(),
-		email: z.string().email().optional(),
-	});
+	const formSchema = z
+		.object({
+			notification_target_id: z.number(),
+			title: z.string(),
+			description: z.string(),
+			category: z.number(),
+			email: z.string().email().optional(),
+			device_token: z.string().optional(),
+		})
+		.superRefine((data, ctx) => {
+			if (data.category === NotificationSourceCategory.EMAIL) {
+				if (!data.email) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['email'],
+						message: 'Email is required when category is 0',
+					});
+				}
+			}
+			if (data.category === NotificationSourceCategory.IOS) {
+				if (!data.device_token) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ['device_token'],
+						message: 'Device token is required when category is 1',
+					});
+				}
+			}
+		});
 
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
 	const form = useForm({
@@ -107,7 +139,9 @@ const UpdateNotificationTarget = ({
 				notification_target_id,
 				title: data.title,
 				description: data.description,
-				email: data.email_notification_target?.email ?? '',
+				category: data.category,
+				email: data.email_notification_target?.email,
+				device_token: data.ios_notification_target?.device_token,
 			};
 			form.reset(defaultValues);
 		}
@@ -170,7 +204,36 @@ const UpdateNotificationTarget = ({
 									);
 								}}
 							/>
-							{data?.category === 0 && (
+							<FormField
+								name='category'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>
+												{t('setting_notification_target_manage_form_category')}
+											</FormLabel>
+											<Select value={field.value.toString()} disabled>
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'setting_notification_target_manage_form_category_placeholder'
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent className='w-full'>
+													<SelectGroup>
+														<SelectItem value='0'>email</SelectItem>
+														<SelectItem value='1'>ios</SelectItem>
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
+							{form.watch('category') === 0 && (
 								<>
 									<FormField
 										name='email'
@@ -185,6 +248,32 @@ const UpdateNotificationTarget = ({
 														{...field}
 														placeholder={t(
 															'setting_notification_target_manage_form_email_placeholder'
+														)}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+								</>
+							)}
+							{form.watch('category') === 1 && (
+								<>
+									<FormField
+										name='device_token'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t(
+															'setting_notification_target_manage_form_device_token'
+														)}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'setting_notification_target_manage_form_device_token_placeholder'
 														)}
 													/>
 													<FormMessage />

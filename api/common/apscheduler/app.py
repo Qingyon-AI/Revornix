@@ -11,13 +11,14 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from apscheduler.triggers.cron import CronTrigger
 from notify.email import EmailNotify
+from notify.ios import IOSNotify
 from datetime import datetime, timezone
 from common.sql import SessionLocal
 from notification_template.daily_summary import DailySummaryNotificationTemplate
 from common.celery.app import add_embedding, update_sections, init_website_document_info
 from celery import chain, group
 from enums.document import DocumentMdConvertStatus
-from enums.notification import NotificationContentType
+from enums.notification import NotificationContentType, NotificationSourceCategory, NotificationTargetCategory
 
 scheduler = AsyncIOScheduler()
 
@@ -132,10 +133,21 @@ async def send_notification(user_id:int,
             generate_res = await template.generate()
             title = generate_res.title
             content = generate_res.content
-    email_notify = EmailNotify(source_id=db_notification_task.notification_source_id,
+    db_notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
+                                                                                                 notification_source_id=db_notification_task.notification_source_id)
+    db_notification_target = crud.notification.get_notification_target_by_notification_target_id(db=db,
+                                                                                                 notification_target_id=db_notification_task.notification_target_id)
+    send_res = None
+    if db_notification_source.category == NotificationSourceCategory.EMAIL:
+        email_notify = EmailNotify(source_id=db_notification_task.notification_source_id,
+                                   target_id=db_notification_task.notification_target_id)
+        send_res = email_notify.send_notification(message=schemas.notification.Message(title=title,
+                                                                                       content=markdown.markdown(content)))
+    if db_notification_source.category == NotificationSourceCategory.IOS:
+        ios_notify = IOSNotify(source_id=db_notification_task.notification_source_id,
                                target_id=db_notification_task.notification_target_id)
-    send_res = email_notify.send_notification(message=schemas.notification.Message(title=title,
-                                                                                   content=markdown.markdown(content)))
+        send_res = ios_notify.send_notification(message=schemas.notification.Message(title=title,
+                                                                                     content=content))
     if not send_res:
         raise schemas.error.CustomException(message="send notification failed", code=500)
     else:

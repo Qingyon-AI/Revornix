@@ -36,7 +36,7 @@ export interface UserPublicInfo {
      * @type {string}
      * @memberof UserPublicInfo
      */
-    avatar?: string | null;
+    avatar?: string;
     /**
      * 
      * @type {string}

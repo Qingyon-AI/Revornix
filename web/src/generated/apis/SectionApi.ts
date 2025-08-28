@@ -23,6 +23,7 @@ import type {
   InifiniteScrollPagnitionSectionCommentInfo,
   InifiniteScrollPagnitionSectionInfo,
   LabelAddRequest,
+  LabelDeleteRequest,
   LabelListResponse,
   NormalResponse,
   SearchMineSectionsRequest,
@@ -57,6 +58,8 @@ import {
     InifiniteScrollPagnitionSectionInfoToJSON,
     LabelAddRequestFromJSON,
     LabelAddRequestToJSON,
+    LabelDeleteRequestFromJSON,
+    LabelDeleteRequestToJSON,
     LabelListResponseFromJSON,
     LabelListResponseToJSON,
     NormalResponseFromJSON,
@@ -105,6 +108,12 @@ export interface CreateSectionCommentSectionCommentCreatePostRequest {
 
 export interface CreateSectionSectionCreatePostRequest {
     sectionCreateRequest: SectionCreateRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface DeleteLabelSectionLabelDeletePostRequest {
+    labelDeleteRequest: LabelDeleteRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -328,6 +337,53 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async createSectionSectionCreatePost(requestParameters: CreateSectionSectionCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SectionCreateResponse> {
         const response = await this.createSectionSectionCreatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Delete Label
+     */
+    async deleteLabelSectionLabelDeletePostRaw(requestParameters: DeleteLabelSectionLabelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['labelDeleteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'labelDeleteRequest',
+                'Required parameter "labelDeleteRequest" was null or undefined when calling deleteLabelSectionLabelDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/label/delete`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LabelDeleteRequestToJSON(requestParameters['labelDeleteRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete Label
+     */
+    async deleteLabelSectionLabelDeletePost(requestParameters: DeleteLabelSectionLabelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteLabelSectionLabelDeletePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
