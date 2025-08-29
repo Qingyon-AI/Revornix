@@ -56,7 +56,6 @@ const SubscribedSectionPage = () => {
 			labelIds,
 		],
 		queryFn: (pageParam) => {
-			// @ts-expect-error
 			return getMySubscribedSecitions({ ...pageParam.pageParam });
 		},
 		initialPageParam: {

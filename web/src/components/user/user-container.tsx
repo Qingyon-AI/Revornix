@@ -112,7 +112,7 @@ const UserContainer = ({ id }: { id: number }) => {
 						<div className='w-full flex flex-col items-center justify-center'>
 							{userInfo.avatar && (
 								<CustomImage
-									src={userInfo.avatar.name}
+									src={userInfo.avatar}
 									alt='avatar'
 									className='w-20 h-20 relative mb-2 rounded-full object-cover'
 								/>

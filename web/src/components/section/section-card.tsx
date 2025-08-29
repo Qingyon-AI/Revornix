@@ -20,7 +20,7 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 			<div className='relative w-full h-48 overflow-hidden'>
 				{section?.cover ? (
 					<CustomImage
-						src={section.cover.name}
+						src={section.cover}
 						alt='cover'
 						className='w-full h-full object-cover mb-2 group-hover:scale-105 transition-transform duration-300 ease-in-out'
 					/>
@@ -61,7 +61,7 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 							e.preventDefault();
 							e.stopPropagation();
 						}}
-						src={section.creator.avatar?.name}
+						src={section.creator.avatar}
 						alt='avatar'
 						className='rounded-full object-cover w-5 h-5'
 					/>

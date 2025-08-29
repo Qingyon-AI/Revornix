@@ -55,7 +55,7 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 				<div className='flex flex-row items-center gap-2 mb-2'>
 					<CustomImage
 						className='rounded w-12 h-12 object-cover'
-						src={user.avatar?.name}
+						src={user.avatar}
 						alt=''
 					/>
 					<div className='flex flex-col gap-1'>

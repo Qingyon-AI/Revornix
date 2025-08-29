@@ -1,6 +1,5 @@
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import { PhotoProvider, PhotoView } from 'react-photo-view';
 import SectionSubscribe from './section-subscribe';
 import { useRouter } from 'nextjs-toploader/app';
 import { useQuery } from '@tanstack/react-query';
@@ -22,7 +21,7 @@ const NeedPaySectionDialog = ({ id }: { id: number }) => {
 					<Card className='pt-0 w-[500px] overflow-auto gap-5'>
 						{section?.cover && (
 							<CustomImage
-								src={section.cover.name}
+								src={section.cover}
 								alt='cover'
 								className='w-full h-36 object-cover'
 							/>

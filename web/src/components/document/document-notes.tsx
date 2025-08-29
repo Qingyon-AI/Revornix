@@ -73,7 +73,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 										className='flex flex-row items-center'
 										onClick={() => router.push(`/user/detail/${note.user.id}`)}>
 										<CustomImage
-											src={note.user.avatar?.name}
+											src={note.user.avatar}
 											className='w-5 h-5 rounded-full mr-2 object-cover'
 										/>
 										<p className='text-xs text-muted-foreground'>

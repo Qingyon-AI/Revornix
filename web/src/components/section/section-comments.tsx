@@ -169,7 +169,7 @@ const SectionComments = ({ id }: { id: number }) => {
 											router.push(`/user/detail/${comment.creator.id}`)
 										}>
 										<CustomImage
-											src={comment.creator.avatar?.name}
+											src={comment.creator.avatar}
 											className='w-5 h-5 rounded-full mr-2 object-cover'
 										/>
 										<p className='text-xs text-muted-foreground'>
