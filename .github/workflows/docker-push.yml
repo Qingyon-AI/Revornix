@@ -1,0 +1,67 @@
+name: Build and Push Multi-Arch Docker Images
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*' # 当推送 tag 时，会生成对应版本镜像
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 拉取代码
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. 登录 Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 3. 启用 QEMU
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # 4. 启用 Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 5. 安装 yq（解析 docker-compose.yaml）
+      - name: Install yq
+        run: sudo apt-get install -y jq
+
+      # 6. 解析服务并构建
+      - name: Build and Push Multi-Arch Images
+        run: |
+          set -e
+          # 只提取有 build 配置的服务
+          services=$(yq -o=json '.services' docker-compose.yaml | jq -r 'to_entries[] | select(.value.build) | .key')
+
+          for service in $services; do
+            context=$(yq -o=json ".services.$service.build.context" docker-compose.yaml | jq -r '.')
+            image=$(yq -o=json ".services.$service.image" docker-compose.yaml | jq -r '.')
+
+            echo "构建服务: $service"
+            echo "构建上下文: $context"
+            echo "镜像名: $image"
+
+            TAGS="--tag ${image}:latest --tag ${image}:${GITHUB_SHA}"
+            if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+              VERSION_TAG="${GITHUB_REF_NAME}"
+              TAGS="$TAGS --tag ${image}:${VERSION_TAG}"
+            fi
+
+            docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              --push \
+              --file ${context}/Dockerfile \
+              ${TAGS} \
+              ${context} \
+              --cache-from=type=registry,ref=${image}:cache \
+              --cache-to=type=registry,ref=${image}:cache,mode=max
+          done

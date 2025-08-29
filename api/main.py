@@ -109,6 +109,10 @@ app.include_router(rss_router, prefix="/rss", tags=["rss"])
 app.mount("/mcp-server/common", common_mcp_router.streamable_http_app())
 app.mount("/mcp-server/document", document_mcp_router.streamable_http_app())
 
+@app.get('/health')
+async def health():
+    return {"status": "ok"}
+
 @app.get('/openapi.yaml', include_in_schema=False)
 @functools.lru_cache()
 def read_openapi_yaml() -> Response:
