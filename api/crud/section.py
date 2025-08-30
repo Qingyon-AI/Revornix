@@ -511,13 +511,6 @@ def get_section_user_by_section_id_and_user_id(db: Session,
                              models.section.SectionUser.expire_time == None))
     return query.first()
 
-def get_day_section_by_date(db: Session, 
-                            date: str):
-    query = db.query(models.section.DaySection)
-    query = query.filter(models.section.DaySection.date == date, 
-                         models.section.DaySection.delete_at == None)
-    return query.first()
-
 def get_section_by_user_and_date(db: Session,
                                  user_id: int, 
                                  date: str):

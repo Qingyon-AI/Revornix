@@ -101,11 +101,32 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
         db.close()
 
 async def fetch_all_rss_sources_and_update():
+    now = datetime.now(tz=timezone.utc)
     db = SessionLocal()
     db_rss_servers = crud.rss.get_all_rss_servers(db=db)
     for rss_server in db_rss_servers:
         rss_server_info = schemas.rss.RssServerInfo.model_validate(rss_server)
         rss_server_info.sections = []
+        
+        # get the section of the user on the current day
+        db_user_day_section = crud.section.get_section_by_user_and_date(db=db, 
+                                                                        user_id=rss_server.user_id,
+                                                                        date=datetime.now().date())
+        if db_user_day_section is None:
+            db_user_day_section = crud.section.create_section(db=db, 
+                                                              creator_id=rss_server.user_id,
+                                                              title=f'{now.date()} Summary',
+                                                              description=f"This document is the summary of all documents on {now.date()}.",
+                                                              public=False)
+            crud.section.bind_section_to_user(db=db,
+                                              section_id=db_user_day_section.id,
+                                              user_id=rss_server.user_id,
+                                              authority=0)
+            crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
+                                                                                 section_id=db_user_day_section.id,
+                                                                                 date=now.date())
+        rss_server_info.sections.append(schemas.rss.RssSectionInfo.model_validate(db_user_day_section))
+        
         db_rss_sections = crud.rss.get_sections_by_rss_id(db=db, rss_server_id=rss_server.id)
         for db_rss_section in db_rss_sections:
             rss_server_info.sections.append(schemas.rss.RssSectionInfo.model_validate(db_rss_section))
