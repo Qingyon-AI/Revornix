@@ -99,7 +99,12 @@ const ApiKeyPage = () => {
 					<Button
 						variant={'default'}
 						onClick={() => {
-							copy(row.original.api_key);
+							try {
+								copy(row.original.api_key);
+								toast.success(t('copy_successfully'));
+							} catch (e) {
+								toast.error(t('copy_failed'));
+							}
 						}}>
 						{t('copy')}
 					</Button>

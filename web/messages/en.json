@@ -30,6 +30,8 @@
     "go_back_home": "Go Back Home",
     "select_all": "Select All",
     "clear": "Clear All",
+    "copy_successfully": "Copy Successfully",
+    "copy_failed": "Copy Failed",
     "form_validate_failed": "Form validation failed",
     "upload_image": "Upload Image",
     "sidebar_add_document": "Add Document",

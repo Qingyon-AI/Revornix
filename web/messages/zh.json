@@ -30,6 +30,8 @@
     "go_back_home": "回到首页",
     "select_all": "全选",
     "clear": "清空",
+    "copy_successfully": "复制成功",
+    "copy_failed": "复制失败",
     "form_validate_failed": "表单校验失败",
     "upload_image": "上传图片",
     "sidebar_add_document": "增加文稿",
