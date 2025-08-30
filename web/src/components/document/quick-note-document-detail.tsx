@@ -60,21 +60,23 @@ const QuickDocumentDetail = ({
 			)}
 			{isFetching && !isRefetching && <Skeleton className='w-full h-full' />}
 			{!isError && (
-				<div className='flex w-full h-full flex-col'>
-					<div className='prose dark:prose-invert mx-auto w-full h-full flex-1 overflow-auto relative'>
-						<Markdown
-							components={{
-								img: (props) => {
-									return <img {...props} className='mx-auto' />;
-								},
-							}}
-							remarkPlugins={[remarkMath, remarkGfm]}
-							rehypePlugins={[rehypeKatex, rehypeRaw]}>
-							{document?.quick_note_info?.content}
-						</Markdown>
+				<div className='w-full h-full flex flex-col'>
+					<div className='flex-1 overflow-auto relative'>
+						<div className='prose dark:prose-invert mx-auto pb-5'>
+							<Markdown
+								components={{
+									img: (props) => {
+										return <img {...props} className='mx-auto' />;
+									},
+								}}
+								remarkPlugins={[remarkMath, remarkGfm]}
+								rehypePlugins={[rehypeKatex, rehypeRaw]}>
+								{document?.quick_note_info?.content}
+							</Markdown>
+						</div>
 						<div ref={bottomRef}></div>
 					</div>
-					<Separator className='my-5' />
+					<Separator className='mb-5' />
 					<DocumentOperate id={id} />
 				</div>
 			)}

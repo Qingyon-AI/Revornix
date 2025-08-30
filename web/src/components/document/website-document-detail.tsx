@@ -232,7 +232,7 @@ const WebsiteDocumentDetail = ({
 			{markdown && !isError && !markdownGetError && (
 				<div className='w-full h-full flex flex-col'>
 					<div className='flex-1 overflow-auto relative'>
-						<div className='prose dark:prose-invert mx-auto'>
+						<div className='prose dark:prose-invert mx-auto pb-5'>
 							<Markdown
 								components={{
 									img: (props) => {

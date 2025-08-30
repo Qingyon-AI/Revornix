@@ -167,61 +167,65 @@ const FileDocumentDetail = ({
 					)}
 				</div>
 			)}
-			{document && document.transform_task?.status === DocumentMdConvertStatus.CONVERTING && (
-				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
-					{t('document_transform_to_markdown_doing')}
-				</div>
-			)}
-			{document && document.transform_task?.status === DocumentMdConvertStatus.WAIT_TO && (
-				<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
-					<p className='flex flex-row items-center'>
-						<span className='mr-1'>
-							{t('document_transform_to_markdown_todo')}
-						</span>
-						<Tooltip>
-							<TooltipTrigger>
-								<Info size={15} />
-							</TooltipTrigger>
-							<TooltipContent>
-								{t('document_transform_to_markdown_todo_tips')}
-							</TooltipContent>
-						</Tooltip>
-					</p>
-					<Button
-						variant={'link'}
-						className='h-fit p-0 text-xs'
-						disabled={markdownTransforming}
-						onClick={() => {
-							handleTransformToMarkdown();
-						}}>
-						{t('retry')}
-						{markdownTransforming && (
-							<Loader2 className='size-4 animate-spin' />
-						)}
-					</Button>
-					<Separator />
-					<DocumentOperate id={id} />
-				</div>
-			)}
-			{document && document.transform_task?.status === DocumentMdConvertStatus.FAILED && (
-				<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
-					<p>{t('document_transform_to_markdown_failed')}</p>
-					<Button
-						variant={'link'}
-						className='h-fit p-0 text-xs'
-						disabled={markdownTransforming}
-						onClick={() => {
-							handleTransformToMarkdown();
-						}}>
-						{t('retry')}
-						{markdownTransforming && (
-							<Loader2 className='size-4 animate-spin' />
-						)}
-					</Button>
-					<Separator />
-					<DocumentOperate id={id} />
-				</div>
-			)}
+			{document &&
+				document.transform_task?.status ===
+					DocumentMdConvertStatus.CONVERTING && (
+					<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
+						{t('document_transform_to_markdown_doing')}
+					</div>
+				)}
+			{document &&
+				document.transform_task?.status === DocumentMdConvertStatus.WAIT_TO && (
+					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
+						<p className='flex flex-row items-center'>
+							<span className='mr-1'>
+								{t('document_transform_to_markdown_todo')}
+							</span>
+							<Tooltip>
+								<TooltipTrigger>
+									<Info size={15} />
+								</TooltipTrigger>
+								<TooltipContent>
+									{t('document_transform_to_markdown_todo_tips')}
+								</TooltipContent>
+							</Tooltip>
+						</p>
+						<Button
+							variant={'link'}
+							className='h-fit p-0 text-xs'
+							disabled={markdownTransforming}
+							onClick={() => {
+								handleTransformToMarkdown();
+							}}>
+							{t('retry')}
+							{markdownTransforming && (
+								<Loader2 className='size-4 animate-spin' />
+							)}
+						</Button>
+						<Separator />
+						<DocumentOperate id={id} />
+					</div>
+				)}
+			{document &&
+				document.transform_task?.status === DocumentMdConvertStatus.FAILED && (
+					<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
+						<p>{t('document_transform_to_markdown_failed')}</p>
+						<Button
+							variant={'link'}
+							className='h-fit p-0 text-xs'
+							disabled={markdownTransforming}
+							onClick={() => {
+								handleTransformToMarkdown();
+							}}>
+							{t('retry')}
+							{markdownTransforming && (
+								<Loader2 className='size-4 animate-spin' />
+							)}
+						</Button>
+						<Separator />
+						<DocumentOperate id={id} />
+					</div>
+				)}
 			{document &&
 				!markdown &&
 				!isError &&
@@ -230,21 +234,23 @@ const FileDocumentDetail = ({
 					<Skeleton className='h-full w-full' />
 				)}
 			{markdown && !isError && !markdownGetError && (
-				<div className='flex w-full h-full flex-col'>
-					<div className='prose dark:prose-invert mx-auto w-full h-full flex-1 overflow-auto relative'>
-						<Markdown
-							components={{
-								img: (props) => {
-									return <img {...props} className='mx-auto' />;
-								},
-							}}
-							remarkPlugins={[remarkMath, remarkGfm]}
-							rehypePlugins={[rehypeKatex, rehypeRaw]}>
-							{markdown}
-						</Markdown>
-						<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
-							{t('document_ai_tips')}
-						</p>
+				<div className='w-full h-full flex flex-col'>
+					<div className='flex-1 overflow-auto relative'>
+						<div className='prose dark:prose-invert mx-auto pb-5'>
+							<Markdown
+								components={{
+									img: (props) => {
+										return <img {...props} className='mx-auto' />;
+									},
+								}}
+								remarkPlugins={[remarkMath, remarkGfm]}
+								rehypePlugins={[rehypeKatex, rehypeRaw]}>
+								{markdown}
+							</Markdown>
+							<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
+								{t('document_ai_tips')}
+							</p>
+						</div>
 						<div ref={bottomRef}></div>
 					</div>
 					<Separator className='mb-5' />
