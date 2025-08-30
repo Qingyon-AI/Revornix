@@ -55,7 +55,7 @@ const AddLink = () => {
 			url: '',
 			category: 1,
 			auto_summary: false,
-			from_plat: 'qingyun-web',
+			from_plat: 'revornix-web',
 			labels: [],
 			sections: [],
 		},

@@ -54,7 +54,7 @@ const AddQuickNote = () => {
 			content: '',
 			category: 2,
 			auto_summary: false,
-			from_plat: 'qingyun-web',
+			from_plat: 'revornix-web',
 			labels: [],
 			sections: [],
 		},

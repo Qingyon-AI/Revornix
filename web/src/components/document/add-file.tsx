@@ -55,7 +55,7 @@ const AddFile = () => {
 			file_name: '',
 			category: 0,
 			auto_summary: false,
-			from_plat: 'qingyun-web',
+			from_plat: 'revornix-web',
 			labels: [],
 			sections: [],
 		},
