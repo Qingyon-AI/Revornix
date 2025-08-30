@@ -138,7 +138,7 @@ const FileDocumentDetail = ({
 		if (
 			!document ||
 			!document.file_info?.md_file_name ||
-			document.transform_task?.status !== DocumentMdConvertStatus.FAILED ||
+			document.transform_task?.status !== DocumentMdConvertStatus.SUCCESS ||
 			!userInfo ||
 			!userFileSystemDetail ||
 			!userRemoteFileUrlPrefix
