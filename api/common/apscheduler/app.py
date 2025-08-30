@@ -111,12 +111,12 @@ async def fetch_all_rss_sources_and_update():
         # get the section of the user on the current day
         db_user_day_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                         user_id=rss_server.user_id,
-                                                                        date=datetime.now().date())
+                                                                        date=datetime.now().date().isoformat())
         if db_user_day_section is None:
             db_user_day_section = crud.section.create_section(db=db, 
                                                               creator_id=rss_server.user_id,
-                                                              title=f'{now.date()} Summary',
-                                                              description=f"This document is the summary of all documents on {now.date()}.",
+                                                              title=f'{now.date().isoformat()} Summary',
+                                                              description=f"This document is the summary of all documents on {now.date().isoformat()}.",
                                                               public=False)
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_user_day_section.id,
@@ -124,7 +124,7 @@ async def fetch_all_rss_sources_and_update():
                                               authority=0)
             crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
                                                                                  section_id=db_user_day_section.id,
-                                                                                 date=now.date())
+                                                                                 date=now.date().isoformat())
         rss_server_info.sections.append(schemas.rss.RssSectionInfo.model_validate(db_user_day_section))
         
         db_rss_sections = crud.rss.get_sections_by_rss_id(db=db, rss_server_id=rss_server.id)

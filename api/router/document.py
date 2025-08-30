@@ -208,16 +208,16 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
-                                                           title=f'{now.date()} Summary',
+                                                           title=f'{now.date().isoformat()} Summary',
                                                            public=False,
-                                                           description=f"This document is the summary of all documents on {now.date()}.")
+                                                           description=f"This document is the summary of all documents on {now.date().isoformat()}.")
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,
                                               user_id=user.id,
                                               authority=0)
             crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
                                                                                  section_id=db_today_section.id,
-                                                                                 date=now.date())
+                                                                                 date=now.date().isoformat())
         document_create_request.sections.append(db_today_section.id)
         for section_id in document_create_request.sections:
             db_section_documents = crud.section.bind_document_to_section(db=db,
@@ -263,16 +263,16 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
-                                                           title=f'{now.date()} Summary',
+                                                           title=f'{now.date().isoformat()} Summary',
                                                            public=False,
-                                                           description=f'This document is the summary of all documents on {now.date()}.')
+                                                           description=f'This document is the summary of all documents on {now.date().isoformat()}.')
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,
                                               user_id=user.id,
                                               authority=0)
             crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
                                                                                  section_id=db_today_section.id,
-                                                                                 date=now.date())
+                                                                                 date=now.date().isoformat())
         document_create_request.sections.append(db_today_section.id)
         for section_id in document_create_request.sections:
             db_section_documents = crud.section.bind_document_to_section(db=db,
@@ -316,16 +316,16 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
-                                                           title=f'{now.date()} Summary',
+                                                           title=f'{now.date().isoformat()} Summary',
                                                            public=False,
-                                                           description=f'This document is the summary of all documents on {now.date()}.')
+                                                           description=f'This document is the summary of all documents on {now.date().isoformat()}.')
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,
                                               user_id=user.id,
                                               authority=0)
             crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
                                                                                  section_id=db_today_section.id,
-                                                                                 date=now.date())
+                                                                                 date=now.date().isoformat())
         document_create_request.sections.append(db_today_section.id)
         for section_id in document_create_request.sections:
             db_section_documents = crud.section.bind_document_to_section(db=db,
