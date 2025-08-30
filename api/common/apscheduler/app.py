@@ -38,10 +38,16 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
     try:
         for entry in parsed.entries:
             
+            description = entry.summary
+            
+            if len(description) > 500:
+                print(f"Warning: description is too long! Truncating to 500 characters.")
+                description = description[:500]
+            
             # 获取文档的最近更新时间
             entry_published = datetime.strptime(entry.published, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=timezone.utc) if hasattr(entry, "published") else None
             entry_updated = datetime.strptime(entry.updated, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=timezone.utc) if hasattr(entry, "updated") else None
-                
+
             existing_doc = crud.document.get_website_document_by_url(db=db, url=entry.link)
             if existing_doc:
                 if entry_updated and existing_doc.update_time >= entry_updated:
@@ -51,7 +57,7 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                 else:
                     existing_doc.update_time = datetime.now()
                     existing_doc.title = entry.title
-                    existing_doc.description = entry.summary
+                    existing_doc.description = description
                     db.commit()
                     db_website_document = crud.document.get_website_document_by_document_id(db=db, 
                                                                                             document_id=existing_doc.id)
@@ -73,7 +79,7 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                 db_base_document = crud.document.create_base_document(db=db,
                                                                       creator_id=rss_server.user_id,
                                                                       title=entry.title,
-                                                                      description=entry.summary,
+                                                                      description=description,
                                                                       category=1,
                                                                       from_plat='rss')
                 db_rss_document = crud.rss.bind_document_to_rss(db=db,
