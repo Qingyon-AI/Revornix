@@ -15,13 +15,11 @@ SQLAlchemy==2.0.41
 chonkie==1.1.2
 celery==5.5.3
 tiktoken==0.9.0
-torch==2.7.1
 apscheduler==3.11.0
 pyJWT==2.10.1
 python-jose==3.5.0
 opencv-python-headless==4.12.0.88
 playwright==1.54.0
-mcp==1.12.2
 markitdown==0.1.2
 boto3==1.39.4
 psycopg2-binary==2.9.10

@@ -34,21 +34,28 @@ jobs:
       # 5. 安装 yq（解析 docker-compose.yaml）
       - name: Install yq
         run: sudo apt-get install -y jq
+      
+      # 6. 检查 Docker 版本和配置
+      - name: Check Docker version
+        run: docker version
 
-      # 6. 解析服务并构建
+      # 7. 输出 Docker 相关信息
+      - name: Check Docker info
+        run: docker info
+
+      # 8. 解析服务并构建
       - name: Build and Push Multi-Arch Images
         run: |
           set -e
-          # 只提取有 build 配置的服务
           services=$(yq -o=json '.services' docker-compose.yaml | jq -r 'to_entries[] | select(.value.build) | .key')
 
           for service in $services; do
             context=$(yq -o=json ".services.$service.build.context" docker-compose.yaml | jq -r '.')
             image=$(yq -o=json ".services.$service.image" docker-compose.yaml | jq -r '.')
 
-            echo "构建服务: $service"
-            echo "构建上下文: $context"
-            echo "镜像名: $image"
+            echo "Building service: $service"
+            echo "Context: $context"
+            echo "Image: $image"
 
             TAGS="--tag ${image}:latest --tag ${image}:${GITHUB_SHA}"
             if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
@@ -56,6 +63,7 @@ jobs:
               TAGS="$TAGS --tag ${image}:${VERSION_TAG}"
             fi
 
+            # Build with limited parallelism to reduce memory usage
             docker buildx build \
               --platform linux/amd64,linux/arm64 \
               --push \
@@ -63,5 +71,6 @@ jobs:
               ${TAGS} \
               ${context} \
               --cache-from=type=registry,ref=${image}:cache \
-              --cache-to=type=registry,ref=${image}:cache,mode=max
+              --cache-to=type=registry,ref=${image}:cache,mode=max \
+              --parallel 1  # Limit parallelism
           done
