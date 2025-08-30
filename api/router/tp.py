@@ -27,7 +27,7 @@ async def upload_file_system(file: UploadFile = File(...),
                                                                    user_file_system_id=user.default_user_file_system)
     if user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User File System not found")
-    remote_file_service = get_user_remote_file_system(user.id)
+    remote_file_service = await get_user_remote_file_system(user.id)
     await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
     await remote_file_service.upload_raw_content_to_path(file_path=file_path,
                                                          content=content,

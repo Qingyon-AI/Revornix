@@ -41,6 +41,7 @@ async def handle_init_file_document_info(document_id: int,
         raise Exception("User not found")
     
     remote_file_service = await get_user_remote_file_system(user_id=user_id)
+    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
     
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
@@ -132,6 +133,7 @@ async def handle_init_website_document_info(document_id: int,
         raise Exception("User not found")
     
     remote_file_service = await get_user_remote_file_system(user_id=user_id)
+    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
     
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
@@ -233,6 +235,8 @@ async def handle_update_sections(sections: list[int],
     if db_user is None:
         raise Exception("User does not exist")
     remote_file_service = await get_user_remote_file_system(user_id=user_id)
+    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
+    
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=document_id)
     if db_document is None:
@@ -309,6 +313,8 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
     if db_user is None:
         raise Exception("User does not exist")
     remote_file_service = await get_user_remote_file_system(user_id=user_id)
+    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
+    
     try:
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
@@ -372,6 +378,8 @@ async def handle_update_section_use_document(section_id: int,
     if db_user is None:
         raise Exception("User does not exist")
     remote_file_service = await get_user_remote_file_system(user_id=user_id)
+    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
+    
     try:
         markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
                                                                      user_id=user_id)

@@ -38,7 +38,7 @@ def extract_title_and_summary(content: str):
 
     return title, summary
 
-def get_user_remote_file_system(user_id: int):
+async def get_user_remote_file_system(user_id: int):
     db = SessionLocal()
     db_user = crud.user.get_user_by_id(db=db, user_id=user_id) 
     remote_file_service = None

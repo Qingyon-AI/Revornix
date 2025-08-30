@@ -32,8 +32,8 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
                 content="No Summary Today"
             )
         md_file_name = db_section.md_file_name
-        remote_file_service = get_user_remote_file_system(user_id=self.user_id)
         db_user = crud.user.get_user_by_id(db=db, user_id=self.user_id)
+        remote_file_service = await get_user_remote_file_system(user_id=self.user_id)
         await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
         markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=md_file_name)
         db.close()

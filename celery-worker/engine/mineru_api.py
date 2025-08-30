@@ -2,6 +2,8 @@ import uuid
 import httpx
 import hashlib
 import asyncio
+import crud
+import aiofiles
 from common.file import download_file_to_temp, extract_files_to_temp_from_zip
 from pathlib import Path
 from config.base import BASE_DIR
@@ -9,8 +11,8 @@ from common.common import get_user_remote_file_system, extract_title_and_summary
 from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
 from enums.engine import EngineUUID
 from playwright.async_api import async_playwright
-import aiofiles
 from typing import Tuple
+from common.sql import SessionLocal
 
 class MineruApiEngine(EngineProtocol):
 
@@ -64,6 +66,7 @@ class MineruApiEngine(EngineProtocol):
         return back_checksum == computed_checksum
         
     async def _extract_files(self, file_paths: list[str]) -> list[Tuple[str, str, str]]:
+        db = SessionLocal()
         res_data = []
         token = self.get_engine_config().get('token')
         url = "https://mineru.net/api/v4/file-urls/batch"
@@ -128,7 +131,9 @@ class MineruApiEngine(EngineProtocol):
                                     
                                     # 上传图片到远程文件系统
                                     images_file_path = extracted_dir / 'images'
+                                    db_user = crud.user.get_user_by_id(db=db, user_id=self.user_id)
                                     remote_file_service = await get_user_remote_file_system(user_id=self.user_id)
+                                    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
                                     
                                     if images_file_path.exists() and images_file_path.is_dir():
                                         for image_file in images_file_path.iterdir():

@@ -77,8 +77,9 @@ async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSumma
     if user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
-        remote_file_service = get_user_remote_file_system(user_id=user.id)
+        remote_file_service = await get_user_remote_file_system(user_id=user.id)
         await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
+        
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=ai_summary_request.document_id)
     if db_document is None:
@@ -112,7 +113,7 @@ async def transform_markdown(transform_markdown_request: schemas.document.Docume
     if user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
-        remote_file_service = get_user_remote_file_system(user_id=user.id)
+        remote_file_service = await get_user_remote_file_system(user_id=user.id)
         await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
         
     db_document = crud.document.get_document_by_document_id(db=db,
