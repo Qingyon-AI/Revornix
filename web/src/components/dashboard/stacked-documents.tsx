@@ -27,7 +27,7 @@ const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 									1 - index * 0.05
 								})`,
 							}}>
-							<div className='flex flex-col gap-2 flex-1 mr-5'>
+							<div className='flex flex-col gap-2 flex-1 w-full'>
 								<div className='text-sm font-bold line-clamp-1'>
 									{document.title ? document.title : 'Untitled'}
 								</div>
@@ -38,7 +38,7 @@ const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 
 							{document.cover && (
 								<CustomImage
-									className='h-full aspect-square rounded object-cover'
+									className='ml-5 h-full aspect-square rounded object-cover'
 									src={document.cover}
 									alt='cover'
 								/>
