@@ -23,30 +23,29 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 3. 启用 QEMU
+      # 3. 设置 QEMU
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      # 4. 启用 Buildx
+      # 4. 设置 Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 5. 安装 yq（解析 docker-compose.yaml）
-      - name: Install yq
-        run: sudo apt-get install -y jq
-      
-      # 6. 检查 Docker 版本和配置
-      - name: Check Docker version
-        run: docker version
+      # 5. 安装 yq 和 jq（解析 docker-compose.yaml）
+      - name: Install yq & jq
+        run: sudo apt-get update && sudo apt-get install -y jq yq
 
-      # 7. 输出 Docker 相关信息
-      - name: Check Docker info
-        run: docker info
+      # 6. 清理 Docker 缓存，避免占用过多磁盘
+      - name: Cleanup Docker
+        run: |
+          docker system prune -af
+          docker builder prune -af
 
-      # 8. 解析服务并构建
+      # 7. 构建并推送镜像（串行，使用 registry cache）
       - name: Build and Push Multi-Arch Images
         run: |
           set -e
+
           services=$(yq -o=json '.services' docker-compose.yaml | jq -r 'to_entries[] | select(.value.build) | .key')
 
           for service in $services; do
@@ -63,7 +62,7 @@ jobs:
               TAGS="$TAGS --tag ${image}:${VERSION_TAG}"
             fi
 
-            # Build with limited parallelism to reduce memory usage
+            # Build 镜像
             docker buildx build \
               --platform linux/amd64,linux/arm64 \
               --push \
@@ -71,6 +70,8 @@ jobs:
               ${TAGS} \
               ${context} \
               --cache-from=type=registry,ref=${image}:cache \
-              --cache-to=type=registry,ref=${image}:cache,mode=max \
-              --parallel 1  # Limit parallelism
+              --cache-to=type=registry,ref=${image}:cache,mode=max
+
+            # 构建完成后清理本地 buildkit 临时层
+            docker builder prune -f
           done
