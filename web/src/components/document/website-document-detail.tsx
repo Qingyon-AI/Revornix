@@ -154,8 +154,7 @@ const WebsiteDocumentDetail = ({
 	}, [inView]);
 
 	return (
-		<div
-			className={cn('h-full w-full relative', className)}>
+		<div className={cn('h-full w-full relative', className)}>
 			{((isError && error) || markdownGetError) && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 					{error?.message ?? (
@@ -167,61 +166,81 @@ const WebsiteDocumentDetail = ({
 					)}
 				</div>
 			)}
-			{document && document.transform_task?.status === DocumentMdConvertStatus.CONVERTING && (
-				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
-					<p>{t('document_transform_to_markdown_doing')}</p>
-				</div>
-			)}
-			{document && document.transform_task?.status === DocumentMdConvertStatus.WAIT_TO && (
-				<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
-					<p className='flex flex-row items-center'>
-						<span className='mr-1'>
-							{t('document_transform_to_markdown_todo')}
-						</span>
-						<Tooltip>
-							<TooltipTrigger>
-								<Info size={15} />
-							</TooltipTrigger>
-							<TooltipContent>
-								{t('document_transform_to_markdown_todo_tips')}
-							</TooltipContent>
-						</Tooltip>
-					</p>
-					<Button
-						variant={'link'}
-						className='h-fit p-0 text-xs'
-						disabled={markdownTransforming}
-						onClick={() => {
-							handleTransformToMarkdown();
-						}}>
-						{t('retry')}
-						{markdownTransforming && (
-							<Loader2 className='size-4 animate-spin' />
-						)}
-					</Button>
-					<Separator />
-					<DocumentOperate id={id} />
-				</div>
-			)}
-			{document && document.transform_task?.status === DocumentMdConvertStatus.FAILED && (
-				<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
-					<p>{t('document_transform_to_markdown_failed')}</p>
-					<Button
-						variant={'link'}
-						className='h-fit p-0 text-xs'
-						disabled={markdownTransforming}
-						onClick={() => {
-							handleTransformToMarkdown();
-						}}>
-						{t('retry')}
-						{markdownTransforming && (
-							<Loader2 className='size-4 animate-spin' />
-						)}
-					</Button>
-					<Separator />
-					<DocumentOperate id={id} />
-				</div>
-			)}
+			{document &&
+				document.transform_task?.status ===
+					DocumentMdConvertStatus.CONVERTING && (
+					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
+						<p className='flex flex-row items-center'>
+							{t('document_transform_to_markdown_doing')}
+						</p>
+						<Button
+							variant={'link'}
+							className='h-fit p-0 text-xs'
+							disabled={markdownTransforming}
+							onClick={() => {
+								handleTransformToMarkdown();
+							}}>
+							{t('retry')}
+							{markdownTransforming && (
+								<Loader2 className='size-4 animate-spin' />
+							)}
+						</Button>
+						<Separator />
+						<DocumentOperate id={id} />
+					</div>
+				)}
+			{document &&
+				document.transform_task?.status === DocumentMdConvertStatus.WAIT_TO && (
+					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
+						<p className='flex flex-row items-center'>
+							<span className='mr-1'>
+								{t('document_transform_to_markdown_todo')}
+							</span>
+							<Tooltip>
+								<TooltipTrigger>
+									<Info size={15} />
+								</TooltipTrigger>
+								<TooltipContent>
+									{t('document_transform_to_markdown_todo_tips')}
+								</TooltipContent>
+							</Tooltip>
+						</p>
+						<Button
+							variant={'link'}
+							className='h-fit p-0 text-xs'
+							disabled={markdownTransforming}
+							onClick={() => {
+								handleTransformToMarkdown();
+							}}>
+							{t('retry')}
+							{markdownTransforming && (
+								<Loader2 className='size-4 animate-spin' />
+							)}
+						</Button>
+						<Separator />
+						<DocumentOperate id={id} />
+					</div>
+				)}
+			{document &&
+				document.transform_task?.status === DocumentMdConvertStatus.FAILED && (
+					<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
+						<p>{t('document_transform_to_markdown_failed')}</p>
+						<Button
+							variant={'link'}
+							className='h-fit p-0 text-xs'
+							disabled={markdownTransforming}
+							onClick={() => {
+								handleTransformToMarkdown();
+							}}>
+							{t('retry')}
+							{markdownTransforming && (
+								<Loader2 className='size-4 animate-spin' />
+							)}
+						</Button>
+						<Separator />
+						<DocumentOperate id={id} />
+					</div>
+				)}
 			{document &&
 				!markdown &&
 				!isError &&

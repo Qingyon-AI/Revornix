@@ -130,6 +130,7 @@ async def transform_markdown(transform_markdown_request: schemas.document.Docume
     if db_transform_task.status == DocumentMdConvertStatus.SUCCESS:
         raise Exception('The transform task is already finished, please refresh the page')
     try:
+        db_transform_task.status = DocumentMdConvertStatus.WAIT_TO
         if db_document.category == DocumentCategory.WEBSITE:
             db_website_document = crud.document.get_website_document_by_document_id(db=db,
                                                                                     document_id=transform_markdown_request.document_id)

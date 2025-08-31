@@ -86,7 +86,7 @@ class MineruApiEngine(EngineProtocol):
         }
         
         # Some MinerU APIs only support requests from ip located in chain
-        async with httpx.AsyncClient(proxies=None) as client:
+        async with httpx.AsyncClient(proxy=None) as client:
             response = await client.post(url, headers=headers, json=data)
             
             if response.status_code == 200:

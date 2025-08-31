@@ -170,8 +170,24 @@ const FileDocumentDetail = ({
 			{document &&
 				document.transform_task?.status ===
 					DocumentMdConvertStatus.CONVERTING && (
-					<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
-						{t('document_transform_to_markdown_doing')}
+					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
+						<p className='flex flex-row items-center'>
+							{t('document_transform_to_markdown_doing')}
+						</p>
+						<Button
+							variant={'link'}
+							className='h-fit p-0 text-xs'
+							disabled={markdownTransforming}
+							onClick={() => {
+								handleTransformToMarkdown();
+							}}>
+							{t('retry')}
+							{markdownTransforming && (
+								<Loader2 className='size-4 animate-spin' />
+							)}
+						</Button>
+						<Separator />
+						<DocumentOperate id={id} />
 					</div>
 				)}
 			{document &&
