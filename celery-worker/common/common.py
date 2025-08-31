@@ -42,7 +42,6 @@ async def get_user_remote_file_system(user_id: int):
     db = SessionLocal()
     db_user = crud.user.get_user_by_id(db=db, user_id=user_id) 
     remote_file_service = None
-    print(1111, db_user.default_user_file_system)
     if db_user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:

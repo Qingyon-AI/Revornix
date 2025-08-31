@@ -3,6 +3,7 @@ from config.milvus import MILVUS_TOKEN, MILVUS_CLUSTER_ENDPOINT
 from chonkie import TokenChunker
 from pymilvus.model import DefaultEmbeddingFunction
 from pymilvus.model.sparse import SpladeEmbeddingFunction
+
 dense_model = DefaultEmbeddingFunction()
 splade_model = SpladeEmbeddingFunction(batch_size=16)
 chunker = TokenChunker(chunk_size=4096)

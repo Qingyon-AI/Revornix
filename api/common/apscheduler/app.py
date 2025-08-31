@@ -49,7 +49,16 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
             entry_updated = datetime.strptime(entry.updated, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=timezone.utc) if hasattr(entry, "updated") else None
 
             existing_doc = crud.document.get_website_document_by_url(db=db, url=entry.link)
+            
             if existing_doc:
+                for section in rss_server.sections:
+                    db_exist_section_document = crud.section.get_section_document_by_section_id_and_document_id(db=db,
+                                                                                                                section_id=section.id,
+                                                                                                                document_id=existing_doc.id)
+                    if db_exist_section_document is None:
+                        crud.section.bind_document_to_section(db=db,
+                                                              document_id=existing_doc.id,
+                                                              section_id=section.id)
                 if entry_updated and existing_doc.update_time >= entry_updated:
                     continue
                 elif entry_published and existing_doc.update_time >= entry_published:
@@ -67,6 +76,10 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                     db_new_website_document = crud.document.create_website_document(db=db,
                                                                                     url=entry.link,
                                                                                     document_id=existing_doc.id)
+                    for section in db_website_document.sections:
+                        db_section_document = crud.section.bind_document_to_section(db=db,
+                                                                                    document_id=db_new_website_document.id,
+                                                                                    section_id=section.id)
                     db_document_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                                                       document_id=existing_doc.id)
                     db_document_transform_task.status = DocumentMdConvertStatus.WAIT_TO
@@ -92,6 +105,10 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                 db_website_document = crud.document.create_website_document(db=db, 
                                                                             url=entry.link, 
                                                                             document_id=db_base_document.id)
+                for section in rss_server.sections:
+                    db_section_document = crud.section.bind_document_to_section(db=db,
+                                                                                document_id=db_website_document.id,
+                                                                                section_id=section.id)
                 crud.task.create_document_transform_task(db=db,
                                                          user_id=rss_server.user_id,
                                                          document_id=db_base_document.id)
@@ -131,6 +148,7 @@ async def fetch_all_rss_sources_and_update():
             crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
                                                                                  section_id=db_user_day_section.id,
                                                                                  date=now.date().isoformat())
+            db.commit()
         rss_server_info.sections.append(schemas.rss.RssSectionInfo.model_validate(db_user_day_section))
         
         db_rss_sections = crud.rss.get_sections_by_rss_id(db=db, rss_server_id=rss_server.id)
