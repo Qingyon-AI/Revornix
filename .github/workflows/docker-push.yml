@@ -46,11 +46,12 @@ jobs:
         run: |
           set -e
 
-          services=$(yq -o=json '.services' docker-compose.yaml | jq -r 'to_entries[] | select(.value.build) | .key')
+          # 取所有有 build 配置的服务名
+          services=$(yq eval '.services | keys | .[]' docker-compose.yaml)
 
           for service in $services; do
-            context=$(yq -o=json ".services.$service.build.context" docker-compose.yaml | jq -r '.')
-            image=$(yq -o=json ".services.$service.image" docker-compose.yaml | jq -r '.')
+            context=$(yq eval ".services.$service.build.context" docker-compose.yaml)
+            image=$(yq eval ".services.$service.image" docker-compose.yaml)
 
             echo "Building service: $service"
             echo "Context: $context"
@@ -62,7 +63,6 @@ jobs:
               TAGS="$TAGS --tag ${image}:${VERSION_TAG}"
             fi
 
-            # Build 镜像
             docker buildx build \
               --platform linux/amd64,linux/arm64 \
               --push \
@@ -72,6 +72,5 @@ jobs:
               --cache-from=type=registry,ref=${image}:cache \
               --cache-to=type=registry,ref=${image}:cache,mode=max
 
-            # 构建完成后清理本地 buildkit 临时层
             docker builder prune -f
           done
