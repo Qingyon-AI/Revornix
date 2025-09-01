@@ -41,28 +41,23 @@ jobs:
           docker system prune -af
           docker builder prune -af
 
-      # 7. 构建并推送镜像（串行，使用 registry cache）
+      # 7. 构建并推送api镜像
       - name: Build and Push Multi-Arch Images
         run: |
           set -e
-
-          # 取所有有 build 配置的服务名
-          services=$(yq eval '.services | keys | .[]' docker-compose.yaml)
-
+          # 只提取有 build 配置的服务
+          services=$(yq '.services' docker-compose.yaml | jq -r 'to_entries[] | select(.value.build) | .key')
           for service in $services; do
-            context=$(yq eval ".services.$service.build.context" docker-compose.yaml)
-            image=$(yq eval ".services.$service.image" docker-compose.yaml)
-
-            echo "Building service: $service"
-            echo "Context: $context"
-            echo "Image: $image"
-
+            context=$(yq ".services[\"$service\"].build.context" docker-compose.yaml | jq -r '.')
+            image=$(yq ".services[\"$service\"].image" docker-compose.yaml | jq -r '.')
+            echo "构建服务: $service"
+            echo "构建上下文: $context"
+            echo "镜像名: $image"
             TAGS="--tag ${image}:latest --tag ${image}:${GITHUB_SHA}"
             if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
               VERSION_TAG="${GITHUB_REF_NAME}"
               TAGS="$TAGS --tag ${image}:${VERSION_TAG}"
             fi
-
             docker buildx build \
               --platform linux/amd64,linux/arm64 \
               --push \
@@ -71,6 +66,6 @@ jobs:
               ${context} \
               --cache-from=type=registry,ref=${image}:cache \
               --cache-to=type=registry,ref=${image}:cache,mode=max
-
+            # 清理构建缓存
             docker builder prune -f
           done
