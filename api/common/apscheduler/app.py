@@ -55,6 +55,7 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                     db_exist_section_document = crud.section.get_section_document_by_section_id_and_document_id(db=db,
                                                                                                                 section_id=section.id,
                                                                                                                 document_id=existing_doc.id)
+                    # 如果该文档在rss对应的专栏下不存在，那么就绑定
                     if db_exist_section_document is None:
                         crud.section.bind_document_to_section(db=db,
                                                               document_id=existing_doc.id,
@@ -70,16 +71,14 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                     db.commit()
                     db_website_document = crud.document.get_website_document_by_document_id(db=db, 
                                                                                             document_id=existing_doc.id)
+                    # 删除原文档的网页解析信息
                     crud.document.delete_website_document_by_website_document_id(db=db, 
                                                                                  user_id=existing_doc.creator_id,
                                                                                  website_document_id=db_website_document.id)
+                    # 创建新解析信息并且绑定到原文档
                     db_new_website_document = crud.document.create_website_document(db=db,
                                                                                     url=entry.link,
                                                                                     document_id=existing_doc.id)
-                    for section in db_website_document.sections:
-                        db_section_document = crud.section.bind_document_to_section(db=db,
-                                                                                    document_id=db_new_website_document.id,
-                                                                                    section_id=section.id)
                     db_document_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                                                       document_id=existing_doc.id)
                     db_document_transform_task.status = DocumentMdConvertStatus.WAIT_TO
@@ -107,7 +106,7 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                                                                             document_id=db_base_document.id)
                 for section in rss_server.sections:
                     db_section_document = crud.section.bind_document_to_section(db=db,
-                                                                                document_id=db_website_document.id,
+                                                                                document_id=db_base_document.id,
                                                                                 section_id=section.id)
                 crud.task.create_document_transform_task(db=db,
                                                          user_id=rss_server.user_id,

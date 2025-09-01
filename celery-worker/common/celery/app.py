@@ -300,7 +300,7 @@ async def handle_update_sections(sections: list[int],
                                                                                        status=3)
         db.commit()
     except Exception as e:
-        exception_logger.error(f"Something is error while getting the section: {e}")
+        exception_logger.error(f"Something is error while getting the section: {e}, parameter: {sections}, {document_id}, {user_id}")
         log_exception()
         db.rollback()
         raise e
