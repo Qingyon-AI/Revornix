@@ -75,6 +75,35 @@ def get_authorization_header(authorization: str | None = Header(default=None)) -
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authorization header format")
     return authorization.replace("Bearer ", "")
 
+def get_current_user_without_throw(authorization: str | None = Header(default=None),
+                                   db: Session = Depends(get_db),
+                                   ip: str = Depends(get_real_ip)):
+    now = datetime.now(timezone.utc)
+    authenticate_value = "Bearer"
+    if authorization is None or not authorization.startswith(authenticate_value):
+        return None
+    try:
+        token = authorization.replace('Bearer ', '')
+        payload = jwt.decode(token, OAUTH_SECRET_KEY, algorithms=['HS256'])
+        uuid: str = payload.get("sub")
+        if uuid is None:
+            return None
+    except Exception as e:
+        return None
+    user = crud.user.get_user_by_uuid(db, user_uuid=uuid)
+    if user is None:
+        return None
+    if user.is_forbidden:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are forbidden"
+        )
+    user.last_login_ip = ip
+    user.last_login_time = now
+    db.commit()
+    db.refresh(user)
+    return user
+
 def get_current_user(authorization: str | None = Header(default=None), 
                      db: Session = Depends(get_db), 
                      ip: str = Depends(get_real_ip)):
