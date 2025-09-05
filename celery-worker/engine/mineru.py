@@ -60,6 +60,7 @@ class MineruEngine(EngineProtocol):
         description = og_description_meta.attrs['content'] if og_description_meta is not None else normal_description['content'] if normal_description is not None else None
         keywords_meta = soup.find('meta', attrs={'name': 'keywords'})
         keywords = keywords_meta['content'] if keywords_meta else None
+        db.close()
         return WebsiteInfo(
             url=url,
             title=title,

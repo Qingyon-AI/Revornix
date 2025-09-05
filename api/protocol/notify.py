@@ -91,6 +91,7 @@ class NotifyProtocol(Protocol):
                     device_token=db_notification_ios_target.device_token,
                 )
             )
+        db.close()
         
         
     def send_notification(self, message: schemas.notification.Message) -> bool:

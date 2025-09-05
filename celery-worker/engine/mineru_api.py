@@ -147,6 +147,7 @@ class MineruApiEngine(EngineProtocol):
                                     res_data.append((title, description, content))
                                     
                                 elif status == "failed":
+                                    db.close()
                                     raise Exception(f'Extract failed, reason: {item.get("err_msg", "Unknown error")}')
                                 else:
                                     all_done = False
@@ -158,13 +159,17 @@ class MineruApiEngine(EngineProtocol):
                         await asyncio.sleep(2)  # 每2秒检查一次
                     
                     if attempt >= max_attempts:
+                        db.close()
                         raise Exception("Timeout waiting for extraction results")
                     
                     return res_data
                 else:
+                    db.close()
                     raise Exception(f'Apply upload url failed, reason: {result.get("msg", "Unknown error")}')
             else:
+                db.close()
                 raise Exception(f'Response not successful. Status: {response.status_code}, Result: {response.text}')
+        db.close()    
         
     async def analyse_website(self, url: str) -> WebsiteInfo:
         temp_dir_name = f'{uuid.uuid4()}'
