@@ -41,21 +41,29 @@ export const serverRequest = async <T>(url: string, initialOptions?: RequestOpti
     })
 }
 
-const parseResponse = async <T>(response: Response): Promise<T> => {
+
+async function parseResponse<T>(response: Response): Promise<T> {
     const contentType = response.headers.get('Content-Type');
     return contentType?.includes('application/json')
         ? response.json()
         : response.text() as Promise<T>;
 }
 
-const parseError = async (response: Response): Promise<Error> => {
+type ErrorResponse = {
+    success: boolean
+    message: string
+    code: number
+}
+
+async function parseError(response: Response): Promise<ErrorResponse> {
     const contentType = response.headers.get('Content-Type');
     const errorData = contentType?.includes('application/json')
         ? await response.json()
         : await response.text();
-    return new Error(
-        typeof errorData === 'object'
-            ? JSON.stringify(errorData)
-            : errorData
-    );
+    // 返回规范化的 ErrorResponse 对象
+    return {
+        success: false,
+        message: errorData.message || "Unknown error occurred",
+        code: response.status
+    };
 }

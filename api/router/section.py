@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
-from common.dependencies import get_db, get_current_user
+from common.dependencies import get_db, get_current_user, get_current_user_without_throw
 from enums.section import UserSectionAuthority
 
 section_router = APIRouter()
@@ -305,13 +305,17 @@ async def search_mine_sections(searchpublic_sections_request: schemas.section.Se
     
 @section_router.post('/detail', response_model=schemas.section.SectionInfo)
 async def get_section_detail(section_detail_request: schemas.section.SectionDetailRequest,
-                             user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                             user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw),
                              db: Session = Depends(get_db)):
     now = datetime.now(timezone.utc)
     db_section = crud.section.get_section_by_section_id(db=db,
                                                         section_id=section_detail_request.section_id)
     if db_section is None:
         raise Exception("Section not found")
+    
+    if db_section.public == False:
+        raise Exception("You don't have permission to access this section")
+    
     documents_count = crud.section.count_section_documents_by_section_id(db=db, 
                                                                          section_id=db_section.id)
     subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
@@ -324,12 +328,6 @@ async def get_section_detail(section_detail_request: schemas.section.SectionDeta
                  for document in db_documents]
     db_labels = crud.section.get_labels_by_section_id(db=db,
                                                       section_id=section_detail_request.section_id)
-    db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
-                                                                              section_id=db_section.id,
-                                                                              user_id=user.id)
-    # 判断用户是否具有该专栏的访问权限
-    if db_section.public == False and db_user_section is None:
-        raise Exception("You don't have permission to access this section")
     
     res = schemas.section.SectionInfo(
         **db_section.__dict__,
@@ -339,6 +337,16 @@ async def get_section_detail(section_detail_request: schemas.section.SectionDeta
         subscribers_count=subscribers_count,
         creator=db_section.creator,
     )
+     
+    if user is None:
+        return res
+           
+    db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                              section_id=db_section.id,
+                                                                              user_id=user.id)
+    # 判断用户是否具有该专栏的访问权限
+    if db_user_section is None:
+        raise Exception("You don't have permission to access this section")
     
     if db_user_section is not None and db_user_section.authority == UserSectionAuthority.READ_ONLY:
         if db_user_section.expire_time is None or db_user_section.expire_time > now:

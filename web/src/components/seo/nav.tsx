@@ -1,11 +1,10 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
+import NavUser from './nav-user';
 
-const Nav = () => {
-	const t = useTranslations();
+const Nav = async () => {
+	const t = await getTranslations();
 	return (
 		<header className='sticky top-0 w-full flex flex-row items-center justify-between px-5 md:px-12 h-16 z-10 backdrop-blur-xl'>
 			<Link href={'/'} className='font-bold text-2xl'>
@@ -15,9 +14,7 @@ const Nav = () => {
 				<Link href={'https://revornix.com'} target='_blank'>
 					<Button variant={'link'}>{t('seo_nav_docs')}</Button>
 				</Link>
-				<Link href={'/login'}>
-					<Button>{t('seo_nav_login_in')}</Button>
-				</Link>
+				<NavUser />
 			</div>
 		</header>
 	);
