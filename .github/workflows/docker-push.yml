@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [web, daily-hot, api, celery-worker]
+        service: [web, daily-hot, celery-worker, api]
         arch: [amd64, arm64]
     steps:
       - name: Checkout
@@ -26,26 +26,54 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 设置 QEMU 和 Buildx
-      - name: Set up QEMU
+      # 仅在 arm64 构建时设置 QEMU
+      - name: Set up QEMU for arm64
+        if: matrix.arch == 'arm64'
         uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Clean Docker builder cache
         run: docker builder prune -af
 
-      # 构建单架构镜像
+      - name: Check disk before build
+        run: |
+          echo "===== Disk Usage ====="
+          df -h
+
+          echo "===== Docker Disk Usage ====="
+          docker system df -v || true
+
+          echo "===== Docker Images ====="
+          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" || true
+
+      # 构建单架构镜像（使用传统 docker build）
       - name: Build and Push ${{ matrix.service }} (${{ matrix.arch }})
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ matrix.service }}
-          file: ${{ matrix.service }}/Dockerfile
-          platforms: ${{ matrix.arch }}
-          push: true
-          tags: |
-            revornix/${{ matrix.service }}:${{ matrix.arch }}-${{ github.sha }}
-          pull: true
+        run: |
+          docker build \
+            --rm \
+            --squash \
+            --platform ${{ matrix.arch }} \
+            -f ${{ matrix.service }}/Dockerfile \
+            -t revornix/${{ matrix.service }}:${{ matrix.arch }}-${{ github.sha }} \
+            ${{ matrix.service }}
+
+          docker push revornix/${{ matrix.service }}:${{ matrix.arch }}-${{ github.sha }}
+
+      - name: Check disk after build
+        run: |
+          echo "===== Disk Usage ====="
+          df -h
+
+          echo "===== Docker Disk Usage ====="
+          docker system df -v || true
+
+          echo "===== Docker Images ====="
+          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" || true
+      
+      # 7. 删除本地镜像，释放空间
+      - name: Remove local image to free space
+        run: |
+          docker rmi revornix/${{ matrix.service }}:${{ matrix.arch }}-${{ github.sha }} || true
+          docker builder prune -af
 
   # 合并多架构 manifest（每个服务一个）
   merge:
@@ -53,13 +81,16 @@ jobs:
     needs: build
     strategy:
       matrix:
-        service: [web, daily-hot, api, celery-worker]
+        service: [web, daily-hot, celery-worker, api]
     steps:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Clean Docker builder cache
+        run: docker builder prune -af
 
       # 创建并推送 manifest
       - name: Create and Push Multi-Arch Manifest for ${{ matrix.service }}
