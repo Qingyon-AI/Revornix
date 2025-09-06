@@ -10,7 +10,8 @@ RUN apt-get update -o Acquire::Check-Valid-Until=false && \
 COPY ./requirements.txt /app/requirements.txt
 
 # 安装依赖到 /install 目录，不用系统默认目录
-RUN pip install --no-cache-dir --prefix=/install -r /app/requirements.txt
+RUN pip wheel --wheel-dir=/wheels -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip install --no-cache /wheels/*.whl --target=/install
 
 COPY . /app
 

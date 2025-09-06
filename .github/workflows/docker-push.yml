@@ -41,119 +41,146 @@ jobs:
           docker system prune -af
           docker builder prune -af
 
-      # 7. 构建并推送api镜像
-      - name: Build and Push Multi-Arch Images
+      # 构建并推送web
+      - name: Build and Push web Image
         run: |
           set -e
-          # 只提取有 build 配置的服务
-          services=$(yq '.services' docker-compose.yaml | jq -r 'to_entries[] | select(.value.build) | .key')
-          for service in $services; do
-            context=$(yq ".services[\"$service\"].build.context" docker-compose.yaml | jq -r '.')
-            image=$(yq ".services[\"$service\"].image" docker-compose.yaml | jq -r '.')
-            echo "构建服务: $service"
-            echo "构建上下文: $context"
-            echo "镜像名: $image"
-            TAGS="--tag ${image}:latest --tag ${image}:${GITHUB_SHA}"
-            if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-              VERSION_TAG="${GITHUB_REF_NAME}"
-              TAGS="$TAGS --tag ${image}:${VERSION_TAG}"
-            fi
-            docker buildx build \
-              --platform linux/amd64,linux/arm64 \
-              --push \
-              --file ${context}/Dockerfile \
-              ${TAGS} \
-              ${context} \
-              --cache-from=type=registry,ref=${image}:cache \
-              --cache-to=type=registry,ref=${image}:cache,mode=max
-            # 清理构建缓存
-            docker builder prune -f
-          done
+          image="revornix/web"
+          context="web"
+          TAGS="-t ${image}:latest -t ${image}:${GITHUB_SHA}"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION_TAG="${GITHUB_REF_NAME}"
+            TAGS="$TAGS -t ${image}:${VERSION_TAG}"
+          fi
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --push \
+            --file ${context}/Dockerfile \
+            ${TAGS} \
+            ${context} \
+            --cache-from=type=registry,ref=${image}:cache \
+            --cache-to=type=registry,ref=${image}:cache,mode=max
+          # 清理构建缓存
+          docker builder prune -f
 
-      # # 构建并推送web
-      # - name: Build and Push web Image
-      #   run: |
-      #     set -e
-      #     image = "revornix/web"
-      #     content = "web"
-      #     TAGS="--tag ${image}:latest --tag ${image}:${GITHUB_SHA}"
-      #     if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-      #       VERSION_TAG="${GITHUB_REF_NAME}"
-      #       TAGS="$TAGS --tag ${image}:${VERSION_TAG}"
-      #     fi
-      #     docker buildx build \
-      #       --platform linux/amd64,linux/arm64 \
-      #       --push \
-      #       --file ${context}/Dockerfile \
-      #       ${TAGS} \
-      #       ${context} \
-      #       --cache-from=type=registry,ref=${image}:cache \
-      #       --cache-to=type=registry,ref=${image}:cache,mode=max
-      #     # 清理构建缓存
-      #     docker builder prune -f
+      # 构建并推送daily hot
+      - name: Build and Push daily-hot Image
+        run: |
+          set -e
+          image="revornix/daily-hot"
+          context="daily-hot"
+          TAGS="-t ${image}:latest -t ${image}:${GITHUB_SHA}"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION_TAG="${GITHUB_REF_NAME}"
+            TAGS="$TAGS -t ${image}:${VERSION_TAG}"
+          fi
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --push \
+            --file ${context}/Dockerfile \
+            ${TAGS} \
+            ${context} \
+            --cache-from=type=registry,ref=${image}:cache \
+            --cache-to=type=registry,ref=${image}:cache,mode=max
+          # 清理构建缓存
+          docker builder prune -f
 
-      # # 构建并推送daily hot
-      # - name: Build and Push daily-hot Image
-      #   run: |
-      #     set -e
-      #     image = "revornix/daily-hot"
-      #     content = "daily-hot"
-      #     TAGS="--tag ${image}:latest --tag ${image}:${GITHUB_SHA}"
-      #     if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-      #       VERSION_TAG="${GITHUB_REF_NAME}"
-      #       TAGS="$TAGS --tag ${image}:${VERSION_TAG}"
-      #     fi
-      #     docker buildx build \
-      #       --platform linux/amd64,linux/arm64 \
-      #       --push \
-      #       --file ${context}/Dockerfile \
-      #       ${TAGS} \
-      #       ${context} \
-      #       --cache-from=type=registry,ref=${image}:cache \
-      #       --cache-to=type=registry,ref=${image}:cache,mode=max
-      #     # 清理构建缓存
-      #     docker builder prune -f
+      # 构建并推送api
 
-      # # 构建并推送api
-      # - name: Build and Push api Image
-      #   run: |
-      #     set -e
-      #     image = "revornix/api"
-      #     content = "api"
-      #     TAGS="--tag ${image}:latest --tag ${image}:${GITHUB_SHA}"
-      #     if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-      #       VERSION_TAG="${GITHUB_REF_NAME}"
-      #       TAGS="$TAGS --tag ${image}:${VERSION_TAG}"
-      #     fi
-      #     docker buildx build \
-      #       --platform linux/amd64,linux/arm64 \
-      #       --push \
-      #       --file ${context}/Dockerfile \
-      #       ${TAGS} \
-      #       ${context} \
-      #       --cache-from=type=registry,ref=${image}:cache \
-      #       --cache-to=type=registry,ref=${image}:cache,mode=max
-      #     # 清理构建缓存
-      #     docker builder prune -f
+      - name: Build and Push api amd64 Image
+        run: |
+          set -e
+          image="revornix/api-amd64"
+          context="api"
+          TAGS="-t ${image}:latest -t ${image}:${GITHUB_SHA}"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION_TAG="${GITHUB_REF_NAME}"
+            TAGS="$TAGS -t ${image}:${VERSION_TAG}"
+          fi
+          docker build \
+            --platform linux/amd64 \
+            -f ${context}/Dockerfile \
+            ${TAGS} \
+            ${context}
+          # 推送镜像到仓库
+          docker push ${image}:latest
+          docker push ${image}:${GITHUB_SHA}
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            docker push ${image}:${VERSION_TAG}
+          fi
+          # 清理构建缓存
+          docker builder prune -f
 
-      # # 构建并推送celery-worker
-      # - name: Build and Push celery-worker Image
-      #   run: |
-      #     set -e
-      #     image = "revornix/celery-worker"
-      #     content = "celery-worker"
-      #     TAGS="--tag ${image}:latest --tag ${image}:${GITHUB_SHA}"
-      #     if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-      #       VERSION_TAG="${GITHUB_REF_NAME}"
-      #       TAGS="$TAGS --tag ${image}:${VERSION_TAG}"
-      #     fi
-      #     docker buildx build \
-      #       --platform linux/amd64,linux/arm64 \
-      #       --push \
-      #       --file ${context}/Dockerfile \
-      #       ${TAGS} \
-      #       ${context} \
-      #       --cache-from=type=registry,ref=${image}:cache \
-      #       --cache-to=type=registry,ref=${image}:cache,mode=max
-      #     # 清理构建缓存
-      #     docker builder prune -f
+      - name: Build and Push api arm64 Image
+        run: |
+          set -e
+          image="revornix/api-arm64"
+          context="api"
+          TAGS="-t ${image}:latest -t ${image}:${GITHUB_SHA}"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION_TAG="${GITHUB_REF_NAME}"
+            TAGS="$TAGS -t ${image}:${VERSION_TAG}"
+          fi
+          docker build \
+            --platform linux/arm64 \
+            -f ${context}/Dockerfile \
+            ${TAGS} \
+            ${context}
+          # 推送镜像到仓库
+          docker push ${image}:latest
+          docker push ${image}:${GITHUB_SHA}
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            docker push ${image}:${VERSION_TAG}
+          fi
+          # 清理构建缓存
+          docker builder prune -f
+
+      # 构建并推送celery-worker
+
+      - name: Build and Push celery-worker amd64 Image
+        run: |
+          set -e
+          image="revornix/celery-worker-amd64"
+          context="celery-worker"
+          TAGS="-t ${image}:latest -t ${image}:${GITHUB_SHA}"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION_TAG="${GITHUB_REF_NAME}"
+            TAGS="$TAGS -t ${image}:${VERSION_TAG}"
+          fi
+          docker build \
+            --platform linux/amd64 \
+            -f ${context}/Dockerfile \
+            ${TAGS} \
+            ${context}
+          # 推送镜像到仓库
+          docker push ${image}:latest
+          docker push ${image}:${GITHUB_SHA}
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            docker push ${image}:${VERSION_TAG}
+          fi
+          # 清理构建缓存
+          docker builder prune -f
+
+      - name: Build and Push celery-worker arm64 Image
+        run: |
+          set -e
+          image="revornix/celery-worker-arm64"
+          context="celery-worker"
+          TAGS="-t ${image}:latest -t ${image}:${GITHUB_SHA}"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION_TAG="${GITHUB_REF_NAME}"
+            TAGS="$TAGS -t ${image}:${VERSION_TAG}"
+          fi
+          docker build \
+            --platform linux/arm64 \
+            -f ${context}/Dockerfile \
+            ${TAGS} \
+            ${context}
+          # 推送镜像到仓库
+          docker push ${image}:latest
+          docker push ${image}:${GITHUB_SHA}
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            docker push ${image}:${VERSION_TAG}
+          fi
+          # 清理构建缓存
+          docker builder prune -f
