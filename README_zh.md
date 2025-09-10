@@ -58,6 +58,7 @@ cp .env.example .env
 #### docker 拉取必要仓库并启动
 
 ```shell
+docker compose pull
 docker compose up -d
 ```
 

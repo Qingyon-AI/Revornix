@@ -32,10 +32,11 @@ services:
       dockerfile: Dockerfile
 
   api:
+    image: revornix/api
     build:
       context: api
       dockerfile: Dockerfile
-    image: revornix/api
+    # TODO: Move the initialization process to the FastAPI application startup
     command: ["sh", "-c", "python -m script.init_vector_base_data && python -m script.init_sql_base_data && fastapi run main.py --proxy-headers --host 0.0.0.0 --port 8001"]
     volumes:
       - ./api:/app

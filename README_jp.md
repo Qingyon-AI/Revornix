@@ -58,6 +58,7 @@ cp .env.example .env
 #### dockerで必要なイメージを取得して起動
 
 ```shell
+docker compose pull
 docker compose up -d
 ```
 

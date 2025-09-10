@@ -52,6 +52,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         exception_logger.exception("❌ Redis 初始化失败")
         raise
+    # TODO: init the dataset and vector
     scheduler.start()
     async with AsyncExitStack() as stack:
         # ✅ 这些 session manager 会在 FastAPI 停止时统一退出

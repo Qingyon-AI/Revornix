@@ -58,6 +58,7 @@ Go to the corresponding environment variable files and configure them. For detai
 #### Pull Necessary Repositories and Start with Docker
 
 ```shell
+docker compose pull
 docker compose up -d
 ```
 
