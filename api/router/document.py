@@ -402,10 +402,13 @@ async def search_user_unread_documents(search_unread_list_request: schemas.docum
                                                             document_id=document.id)
         db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                                  document_id=document.id)
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(db=db,
+                                                                            document_id=document.id)
         return schemas.document.DocumentInfo(
             **document.__dict__,
             labels=db_labels,
-            transform_task=db_transform_task
+            transform_task=db_transform_task,
+            embedding_task=db_embedding_task
         )
     documents = [get_document_info(document) for document in documents]
     if len(documents) < search_unread_list_request.limit or len(documents) == 0:
@@ -464,9 +467,15 @@ async def recent_read_document(search_recent_read_request: schemas.document.Sear
     def get_document_info(document: models.document.Document): 
         db_labels = crud.document.get_labels_by_document_id(db=db,
                                                             document_id=document.id)
+        db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                                 document_id=document.id)
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(db=db,
+                                                                            document_id=document.id)
         return schemas.document.DocumentInfo(
             **document.__dict__,
-            labels=db_labels
+            labels=db_labels,
+            transform_task=db_transform_task,
+            embedding_task=db_embedding_task
         )
     documents = [get_document_info(document) for document in documents]
     if len(documents) < search_recent_read_request.limit or len(documents) == 0:
@@ -528,6 +537,9 @@ async def get_document_detail(document_detail_request: schemas.document.Document
     transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                           document_id=document_detail_request.document_id)
     res.transform_task = transform_task
+    embedding_task = crud.task.get_document_embedding_task_by_document_id(db=db,
+                                                                          document_id=document_detail_request.document_id)
+    res.embedding_task = embedding_task
     if document.category == DocumentCategory.WEBSITE:
         website_document = crud.document.get_website_document_by_document_id(db=db, 
                                                                              document_id=document_detail_request.document_id)
@@ -615,9 +627,15 @@ async def search_all_mine_documents(search_all_my_document_request: schemas.docu
     def get_document_info(document: models.document.Document): 
         db_labels = crud.document.get_labels_by_document_id(db=db,
                                                             document_id=document.id)
+        db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                                 document_id=document.id)
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(db=db,
+                                                                            document_id=document.id)
         return schemas.document.DocumentInfo(
             **document.__dict__,
-            labels=db_labels
+            labels=db_labels,
+            transform_task=db_transform_task,
+            embedding_task=db_embedding_task
         )
     documents = [get_document_info(document) for document in documents]
     if len(documents) < search_all_my_document_request.limit or len(documents) == 0:
@@ -660,9 +678,15 @@ async def search_my_star_documents(search_my_star_documents_request: schemas.doc
     def get_document_info(document: models.document.Document): 
         db_labels = crud.document.get_labels_by_document_id(db=db,
                                                             document_id=document.id)
+        db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                                 document_id=document.id)
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(db=db,
+                                                                            document_id=document.id)
         return schemas.document.DocumentInfo(
             **document.__dict__,
-            labels=db_labels
+            labels=db_labels,
+            transform_task=db_transform_task,
+            embedding_task=db_embedding_task
         )
     documents = [get_document_info(document) for document in documents]
     if len(documents) < search_my_star_documents_request.limit or len(documents) == 0:
