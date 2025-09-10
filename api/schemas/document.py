@@ -2,10 +2,13 @@ from pydantic import BaseModel, field_validator, field_serializer
 from datetime import datetime, timezone
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from .user import UserPublicInfo
-from .task import DocumentTransformTask
+from .task import DocumentTransformTask, DocumentEmbeddingTask
 
 class LabelDeleteRequest(BaseModel):
     label_ids: list[int]
+    
+class DocumentEmbeddingRequest(BaseModel):
+    document_id: int
     
 class DocumentMarkdownTransformRequest(BaseModel):
     document_id: int
@@ -141,6 +144,7 @@ class DocumentInfo(BaseModel):
     sections: list[BaseSectionInfo] | None = None
     users: list[UserPublicInfo] | None = None
     transform_task: DocumentTransformTask | None = None
+    embedding_task: DocumentEmbeddingTask | None = None
     
     @field_validator("create_time", mode="before")
     def ensure_create_timezone(cls, v: datetime) -> datetime:
@@ -203,6 +207,7 @@ class DocumentDetailResponse(BaseModel):
     file_info: FileDocumentInfo | None = None
     quick_note_info: QuickNoteDocumentInfo | None = None
     transform_task: DocumentTransformTask | None = None
+    embedding_task: DocumentEmbeddingTask | None = None
     
     @field_validator("create_time", mode="before")
     def ensure_create_timezone(cls, v: datetime) -> datetime:

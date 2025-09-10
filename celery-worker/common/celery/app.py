@@ -19,7 +19,7 @@ from engine.markitdown import MarkitdownEngine
 from engine.jina import JinaEngine
 from engine.mineru import MineruEngine
 from engine.mineru_api import MineruApiEngine
-from enums.document import DocumentCategory, DocumentMdConvertStatus
+from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus
 from enums.section import UserSectionAuthority
 
 import tracemalloc
@@ -213,15 +213,24 @@ async def handle_add_embedding(document_id: int,
     db = SessionLocal()
     db_document = crud.document.get_document_by_document_id(db=db,
                                                             document_id=document_id)
+    if db_document is None:
+        raise Exception("Document does not exist")
+    db_embedding_task = crud.task.create_document_embedding_task(db=db,
+                                                                 user_id=user_id,
+                                                                 document_id=document_id)
     try:
+        db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
         markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
                                                                      user_id=user_id)
+        
         data = process_document(document_id=document_id, 
                                 document_category=db_document.category, 
                                 document_content=markdown_content)
         milvus_client.insert(collection_name="document", 
                              data=data)
+        db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
     except Exception as e:
+        db_embedding_task.status = DocumentEmbeddingStatus.FAILED
         exception_logger.error(f"Something is error while embedding the document and write into the milvus cloud: {e}")
         log_exception()
     finally:

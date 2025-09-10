@@ -10,3 +10,9 @@ class DocumentMdConvertStatus(IntEnum):
     CONVERTING = 1
     SUCCESS = 2
     FAILED = 3
+    
+class DocumentEmbeddingStatus(IntEnum):
+    WAIT_TO = 0
+    EMBEDDING = 1
+    SUCCESS = 2
+    FAILED = 3

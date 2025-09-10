@@ -56,6 +56,7 @@ def hybrid_search(
 def process_document(document_id: int, 
                      document_category: int, 
                      document_content: str):
+    # TODO graph rag
     if document_content == "" or document_content is None:
         return []
     chunks = chunker(document_content)
