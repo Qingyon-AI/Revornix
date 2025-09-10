@@ -142,6 +142,7 @@ const AddQuickNote = () => {
 										<Textarea
 											{...field}
 											placeholder={t('document_create_note_placeholded')}
+											className='min-h-52'
 										/>
 										<FormMessage />
 									</FormItem>
