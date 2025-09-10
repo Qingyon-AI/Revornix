@@ -64,11 +64,11 @@ const DocumentLabelSummary = ({ className }: { className?: string }) => {
 				</CardDescription>
 			</CardHeader>
 			<CardContent className='flex-1 pb-0'>
-				{isFetching && <Skeleton className='w-full h-52' />}
+				{isFetching && <Skeleton className='w-full h-[250px]' />}
 				{!isFetching && data && (
 					<ChartContainer
 						config={chartConfig}
-						className='mx-auto aspect-square max-h-[250px]'>
+						className='mx-auto aspect-square h-[250px]'>
 						<PieChart>
 							<ChartTooltip
 								cursor={false}

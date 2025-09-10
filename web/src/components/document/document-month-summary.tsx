@@ -66,7 +66,7 @@ const DocumentMonthSummary = ({ className }: { className?: string }) => {
 			<CardContent>
 				{isFetching && <Skeleton className='w-full h-[250px]' />}
 				{!isFetching && data && (
-					<ChartContainer config={chartConfig} className='mx-auto max-h-[250px] w-full'>
+					<ChartContainer config={chartConfig} className='mx-auto w-full h-[250px]'>
 						<BarChart accessibilityLayer data={fillMissingDates}>
 							<CartesianGrid vertical={false} />
 							<XAxis
