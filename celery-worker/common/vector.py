@@ -3,6 +3,14 @@ from config.milvus import MILVUS_TOKEN, MILVUS_CLUSTER_ENDPOINT
 from chonkie import TokenChunker
 from pymilvus.model import DefaultEmbeddingFunction
 from pymilvus.model.sparse import SpladeEmbeddingFunction
+from lightrag import LightRAG, QueryParam
+from lightrag.llm.openai import openai_complete_if_cache
+from lightrag.kg.shared_storage import initialize_pipeline_status
+from lightrag.llm.ollama import ollama_embed
+from lightrag.utils import EmbeddingFunc
+from config.base import BASE_DIR
+
+WORKING_DIR = BASE_DIR / "myKG"
 
 dense_model = DefaultEmbeddingFunction()
 splade_model = SpladeEmbeddingFunction(batch_size=16)
@@ -14,6 +22,48 @@ milvus_client = MilvusClient(
 )
 
 document_collection_name = "document"
+
+async def llm_model_func(
+    prompt, system_prompt=None, history_messages=[], keyword_extraction=False, **kwargs
+) -> str:
+    return await openai_complete_if_cache(
+        "deepseek-chat",
+        prompt,
+        system_prompt=system_prompt,
+        history_messages=history_messages,
+        api_key="",
+        base_url="https://api.deepseek.com",
+        **kwargs,
+    )
+
+
+embedding_func = EmbeddingFunc(
+    embedding_dim=768,
+    max_token_size=512,
+    func=lambda texts: ollama_embed(
+        texts, embed_model="shaw/dmeta-embedding-zh", host="http://localhost:11434"
+    ),
+)
+
+
+async def initialize_rag():
+    rag = LightRAG(
+        working_dir=WORKING_DIR,
+        llm_model_func=llm_model_func,
+        summary_max_tokens=10000,
+        embedding_func=embedding_func,
+        chunk_token_size=512,
+        chunk_overlap_token_size=256,
+        kv_storage="RedisKVStorage",
+        graph_storage="Neo4JStorage",
+        vector_storage="MilvusVectorDBStorage",
+        doc_status_storage="RedisDocStatusStorage",
+    )
+
+    await rag.initialize_storages()
+    await initialize_pipeline_status()
+
+    return rag
 
 def hybrid_search(
     milvus_client: MilvusClient,
