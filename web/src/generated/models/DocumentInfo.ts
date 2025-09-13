@@ -20,6 +20,13 @@ import {
     BaseSectionInfoToJSON,
     BaseSectionInfoToJSONTyped,
 } from './BaseSectionInfo';
+import type { DocumentEmbeddingTask } from './DocumentEmbeddingTask';
+import {
+    DocumentEmbeddingTaskFromJSON,
+    DocumentEmbeddingTaskFromJSONTyped,
+    DocumentEmbeddingTaskToJSON,
+    DocumentEmbeddingTaskToJSONTyped,
+} from './DocumentEmbeddingTask';
 import type { DocumentTransformTask } from './DocumentTransformTask';
 import {
     DocumentTransformTaskFromJSON,
@@ -126,6 +133,12 @@ export interface DocumentInfo {
      * @memberof DocumentInfo
      */
     transform_task?: DocumentTransformTask | null;
+    /**
+     * 
+     * @type {DocumentEmbeddingTask}
+     * @memberof DocumentInfo
+     */
+    embedding_task?: DocumentEmbeddingTask | null;
 }
 
 /**
@@ -160,6 +173,7 @@ export function DocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(BaseSectionInfoFromJSON)),
         'users': json['users'] == null ? undefined : ((json['users'] as Array<any>).map(UserPublicInfoFromJSON)),
         'transform_task': json['transform_task'] == null ? undefined : DocumentTransformTaskFromJSON(json['transform_task']),
+        'embedding_task': json['embedding_task'] == null ? undefined : DocumentEmbeddingTaskFromJSON(json['embedding_task']),
     };
 }
 
@@ -187,6 +201,7 @@ export function DocumentInfoToJSONTyped(value?: DocumentInfo | null, ignoreDiscr
         'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(BaseSectionInfoToJSON)),
         'users': value['users'] == null ? undefined : ((value['users'] as Array<any>).map(UserPublicInfoToJSON)),
         'transform_task': DocumentTransformTaskToJSON(value['transform_task']),
+        'embedding_task': DocumentEmbeddingTaskToJSON(value['embedding_task']),
     };
 }
 

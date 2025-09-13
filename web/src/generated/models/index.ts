@@ -38,6 +38,7 @@ export * from './DocumentCreateResponse';
 export * from './DocumentDeleteRequest';
 export * from './DocumentDetailRequest';
 export * from './DocumentDetailResponse';
+export * from './DocumentEmbeddingTask';
 export * from './DocumentInfo';
 export * from './DocumentMarkdownTransformRequest';
 export * from './DocumentMonthSummaryResponse';

@@ -9,7 +9,7 @@ import { Badge } from '../ui/badge';
 import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
 import CustomImage from '../ui/custom-image';
-import { DocumentCategory } from '@/enums/document';
+import { DocumentCategory, DocumentEmbeddingConvertStatus, DocumentMdConvertStatus } from '@/enums/document';
 
 const DocumentInfo = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -93,6 +93,40 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										</Badge>
 									);
 								})}
+							</div>
+						)}
+						{data.embedding_task && (
+							<div className='text-muted-foreground px-5 flex flex-row gap-1 items-center text-xs mt-auto mb-2'>
+								<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
+									{t('document_embedding_status') + ': '}
+									{data.embedding_task?.status ===
+									DocumentEmbeddingConvertStatus.WAIT_TO
+										? t('document_md_status_todo')
+										: data.embedding_task?.status ===
+										  DocumentEmbeddingConvertStatus.Embedding
+										? t('document_md_status_doing')
+										: data.embedding_task?.status ===
+										  DocumentEmbeddingConvertStatus.SUCCESS
+										? t('document_md_status_success')
+										: t('document_md_status_failed')}
+								</div>
+							</div>
+						)}
+						{data.transform_task && (
+							<div className='text-muted-foreground px-5 flex flex-row gap-1 items-center text-xs mt-auto mb-2'>
+								<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
+									{t('document_md_status') + ': '}
+									{data.transform_task?.status ===
+									DocumentMdConvertStatus.WAIT_TO
+										? t('document_md_status_todo')
+										: data.transform_task?.status ===
+										  DocumentMdConvertStatus.CONVERTING
+										? t('document_md_status_doing')
+										: data.transform_task?.status ===
+										  DocumentMdConvertStatus.SUCCESS
+										? t('document_md_status_success')
+										: t('document_md_status_failed')}
+								</div>
 							</div>
 						)}
 						<div className='px-5 my-5'>

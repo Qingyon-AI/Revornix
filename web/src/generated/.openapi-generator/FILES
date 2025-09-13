@@ -1,5 +1,6 @@
 apis/AiApi.ts
 apis/ApiKeyApi.ts
+apis/DefaultApi.ts
 apis/DocumentApi.ts
 apis/EngineApi.ts
 apis/FileSystemApi.ts
@@ -49,6 +50,7 @@ models/DocumentCreateResponse.ts
 models/DocumentDeleteRequest.ts
 models/DocumentDetailRequest.ts
 models/DocumentDetailResponse.ts
+models/DocumentEmbeddingTask.ts
 models/DocumentInfo.ts
 models/DocumentMarkdownTransformRequest.ts
 models/DocumentMonthSummaryResponse.ts

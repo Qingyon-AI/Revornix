@@ -10,3 +10,10 @@ export enum DocumentMdConvertStatus {
     SUCCESS = 2,
     FAILED = 3,
 }
+
+export enum DocumentEmbeddingConvertStatus {
+    WAIT_TO = 0,
+    Embedding = 1,
+    SUCCESS = 2,
+    FAILED = 3,
+}

@@ -20,6 +20,13 @@ import {
     BaseSectionInfoToJSON,
     BaseSectionInfoToJSONTyped,
 } from './BaseSectionInfo';
+import type { DocumentEmbeddingTask } from './DocumentEmbeddingTask';
+import {
+    DocumentEmbeddingTaskFromJSON,
+    DocumentEmbeddingTaskFromJSONTyped,
+    DocumentEmbeddingTaskToJSON,
+    DocumentEmbeddingTaskToJSONTyped,
+} from './DocumentEmbeddingTask';
 import type { DocumentTransformTask } from './DocumentTransformTask';
 import {
     DocumentTransformTaskFromJSON,
@@ -183,6 +190,12 @@ export interface DocumentDetailResponse {
      * @memberof DocumentDetailResponse
      */
     transform_task?: DocumentTransformTask | null;
+    /**
+     * 
+     * @type {DocumentEmbeddingTask}
+     * @memberof DocumentDetailResponse
+     */
+    embedding_task?: DocumentEmbeddingTask | null;
 }
 
 /**
@@ -222,6 +235,7 @@ export function DocumentDetailResponseFromJSONTyped(json: any, ignoreDiscriminat
         'file_info': json['file_info'] == null ? undefined : FileDocumentInfoFromJSON(json['file_info']),
         'quick_note_info': json['quick_note_info'] == null ? undefined : QuickNoteDocumentInfoFromJSON(json['quick_note_info']),
         'transform_task': json['transform_task'] == null ? undefined : DocumentTransformTaskFromJSON(json['transform_task']),
+        'embedding_task': json['embedding_task'] == null ? undefined : DocumentEmbeddingTaskFromJSON(json['embedding_task']),
     };
 }
 
@@ -255,6 +269,7 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'file_info': FileDocumentInfoToJSON(value['file_info']),
         'quick_note_info': QuickNoteDocumentInfoToJSON(value['quick_note_info']),
         'transform_task': DocumentTransformTaskToJSON(value['transform_task']),
+        'embedding_task': DocumentEmbeddingTaskToJSON(value['embedding_task']),
     };
 }
 
