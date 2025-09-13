@@ -229,6 +229,7 @@ async def handle_add_embedding(document_id: int,
         milvus_client.insert(collection_name="document", 
                              data=data)
         db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+        db.commit()
     except Exception as e:
         db_embedding_task.status = DocumentEmbeddingStatus.FAILED
         exception_logger.error(f"Something is error while embedding the document and write into the milvus cloud: {e}")
