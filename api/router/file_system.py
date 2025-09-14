@@ -61,6 +61,11 @@ def get_built_in_presigned_url(s3_presign_upload_url_request: schemas.file_syste
         Fields={
             "Content-Type": s3_presign_upload_url_request.content_type
         },
+        Conditions=[
+            {"Content-Type": s3_presign_upload_url_request.content_type},
+            {"bucket": current_user.uuid},
+            ["eq", "$key", s3_presign_upload_url_request.file_path]
+        ],
         ExpiresIn=expires_in,
     )
     return schemas.file_system.S3PresignUploadURLResponse(
