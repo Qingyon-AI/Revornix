@@ -313,7 +313,7 @@ async def get_section_detail(section_detail_request: schemas.section.SectionDeta
     if db_section is None:
         raise Exception("Section not found")
     
-    if db_section.public == False:
+    if db_section.public == False and db_section.creator_id != user.id:
         raise Exception("You don't have permission to access this section")
     
     documents_count = crud.section.count_section_documents_by_section_id(db=db, 
