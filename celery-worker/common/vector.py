@@ -36,7 +36,6 @@ async def llm_model_func(
         **kwargs,
     )
 
-
 embedding_func = EmbeddingFunc(
     embedding_dim=768,
     max_token_size=512,
@@ -45,25 +44,22 @@ embedding_func = EmbeddingFunc(
     ),
 )
 
+rag = LightRAG(
+    working_dir=WORKING_DIR,
+    llm_model_func=llm_model_func,
+    summary_max_tokens=10000,
+    embedding_func=embedding_func,
+    chunk_token_size=512,
+    chunk_overlap_token_size=256,
+    kv_storage="RedisKVStorage",
+    graph_storage="Neo4JStorage",
+    vector_storage="MilvusVectorDBStorage",
+    doc_status_storage="RedisDocStatusStorage",
+)
 
-async def initialize_rag():
-    rag = LightRAG(
-        working_dir=WORKING_DIR,
-        llm_model_func=llm_model_func,
-        summary_max_tokens=10000,
-        embedding_func=embedding_func,
-        chunk_token_size=512,
-        chunk_overlap_token_size=256,
-        kv_storage="RedisKVStorage",
-        graph_storage="Neo4JStorage",
-        vector_storage="MilvusVectorDBStorage",
-        doc_status_storage="RedisDocStatusStorage",
-    )
-
-    await rag.initialize_storages()
-    await initialize_pipeline_status()
-
-    return rag
+# async def initialize_rag():
+#     await rag.initialize_storages()
+#     await initialize_pipeline_status()
 
 def hybrid_search(
     milvus_client: MilvusClient,
@@ -109,6 +105,7 @@ def process_document(document_id: int,
     # TODO graph rag
     if document_content == "" or document_content is None:
         return []
+    # rag.ainsert(document_content)
     chunks = chunker(document_content)
     # make a copy of the chunks and convert to a list of strings
     docs = [chunk.text.strip() for chunk in chunks if chunk.text.strip()]
