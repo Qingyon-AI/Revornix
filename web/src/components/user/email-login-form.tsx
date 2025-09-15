@@ -32,6 +32,8 @@ import { utils } from '@kinda/utils';
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import GoogleIcon from '../icons/google-icon';
+import { GOOGLE_CLIENT_ID } from '@/config/google';
 
 const EmailLoginForm = () => {
 	const t = useTranslations();
@@ -97,6 +99,12 @@ const EmailLoginForm = () => {
 		toast.error(t('form_validate_failed'));
 	};
 
+	const handleGoogleLogin = () => {
+		// redirect the user to github
+		const link = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${window.location.origin}/integrations/google/oauth2/create/callback&scope=openid email profile&response_type=code`;
+		window.location.assign(link);
+	};
+
 	return (
 		<Card>
 			<Form {...emailForm}>
@@ -141,17 +149,29 @@ const EmailLoginForm = () => {
 						/>
 					</CardContent>
 					<CardFooter className='flex flex-col gap-2'>
-						<Button disabled={submitLoading} type='submit' className='w-full'>
-							{submitLoading && (
-								<Loader2 className='mr-1 size-4 animate-spin' />
-							)}
-							{t('seo_login_submit')}
-						</Button>
-						<div className='mt-4 text-center text-sm'>
-							{t('seo_login_no_account')}
-							<Link href='/register' className='underline'>
-								{t('seo_login_go_to_register')}
-							</Link>
+						<div className='w-full'>
+							<Button disabled={submitLoading} type='submit' className='w-full'>
+								{submitLoading && (
+									<Loader2 className='mr-1 size-4 animate-spin' />
+								)}
+								{t('seo_login_submit')}
+							</Button>
+							<div className='mt-4 text-center text-sm'>
+								{t('seo_login_no_account')}
+								<Link href='/register' className='underline'>
+									{t('seo_login_go_to_register')}
+								</Link>
+							</div>
+						</div>
+						<div className='my-2 w-full relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border'>
+							<span className='relative z-10 bg-background px-2 text-muted-foreground'>
+								OR
+							</span>
+						</div>
+						<div className='w-full grid grid-cols-1 gap-2'>
+							<Button type='button' className='w-full' onClick={handleGoogleLogin}>
+								<GoogleIcon />
+							</Button>
 						</div>
 					</CardFooter>
 				</form>

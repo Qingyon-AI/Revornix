@@ -124,6 +124,7 @@ def get_current_user(authorization: str | None = Header(default=None),
     except Exception as e:
         raise credentials_exception
     user = crud.user.get_user_by_uuid(db, user_uuid=uuid)
+    from fastapi.encoders import jsonable_encoder
     if user is None:
         raise credentials_exception
     if user.is_forbidden:

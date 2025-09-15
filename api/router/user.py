@@ -367,12 +367,13 @@ async def create_user_by_google(user: schemas.user.GoogleUserCreate,
     token = getGoogleToken(google_client_id=os.environ.get('GOOGLE_CLIENT_ID'),
                            google_client_secret=os.environ.get('GOOGLE_CLIENT_SECRET'),
                            code=user.code, 
-                           redirect_uri='/integrations/google/oauth2/create/callback')
+                           redirect_uri='https://app.revornix.com/integrations/google/oauth2/create/callback')
     if token is None:
         raise Exception("something error while getting google account info")
-    
+
     idinfo = id_token.verify_oauth2_token(token.get('id_token'), requests.Request(), os.environ.get('GOOGLE_CLIENT_ID'))
-    db_google_user_exise = crud.user.get_user_by_google(db=db, google_id=idinfo.get('sub'))
+    db_google_user_exise = crud.user.get_google_user_by_google_id(db=db, 
+                                                                  google_user_id=idinfo.get('sub'))
     if db_google_user_exise is not None:
         access_token, refresh_token = create_token(db_google_user_exise)
         res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
@@ -385,6 +386,24 @@ async def create_user_by_google(user: schemas.user.GoogleUserCreate,
                                                   user_id=db_user.id, 
                                                   google_user_id=idinfo.get('sub'), 
                                                   google_user_name=idinfo.get('name'))
+    # init the default file system for the user
+    db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
+                                                                    file_system_id=1,
+                                                                    user_id=db_user.id,
+                                                                    title="Default File System",
+                                                                    description="The default file system for the user")
+    db_user.default_user_file_system = db_user_file_system.id
+    # create the minio file bucket for the user because it's the default file system
+    BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+    # init the default engine for the user
+    db_user_engine = crud.engine.create_user_engine(db=db,
+                                                    user_id=db_user.id,
+                                                    engine_id=1,
+                                                    title="Default Engine",
+                                                    description="The default engine for the user")
+    db_user.default_website_document_parse_user_engine_id = db_user_engine.id
+    db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    db.commit()
     access_token, refresh_token = create_token(db_user)
     res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
     return res
@@ -401,7 +420,7 @@ async def bind_google(bind_google: schemas.user.GoogleUserBind,
     token = getGoogleToken(google_client_id=os.environ.get('GOOGLE_CLIENT_ID'),
                            google_client_secret=os.environ.get('GOOGLE_CLIENT_SECRET'),
                            code=bind_google.code, 
-                           redirect_uri='/integrations/google/oauth2/bind/callback')
+                           redirect_uri='https://app.revornix.com/integrations/google/oauth2/bind/callback')
     if token is None:
         raise Exception("Something is error while getting google account info")
     
@@ -409,12 +428,13 @@ async def bind_google(bind_google: schemas.user.GoogleUserBind,
                                           requests.Request(), 
                                           os.environ.get('GOOGLE_CLIENT_ID'))
     
-    db_google_exise = crud.user.get_google_user_by_google_id(db=db, google_id=idinfo.get('sub'))
+    db_google_exise = crud.user.get_google_user_by_google_id(db=db, 
+                                                             google_id=idinfo.get('sub'))
     if db_google_exise is not None:
         raise Exception("The google account is already be binded")
     
     crud.user.create_google_user(db=db, user_id=user.id, google_id=idinfo.get('sub'))
-    
+    db.commit()
     return schemas.common.SuccessResponse()
 
 @user_router.post('/unbind/google', response_model=schemas.common.NormalResponse)
