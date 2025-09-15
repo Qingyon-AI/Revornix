@@ -1,6 +1,7 @@
 import crud
 import schemas
 import jwt
+import os
 from jwt.exceptions import ExpiredSignatureError
 from jose import jwt
 from fastapi import APIRouter, Depends, Depends
@@ -11,6 +12,9 @@ from common.dependencies import get_db
 from common.hash import verify_password
 from common.dependencies import get_current_user, get_db
 from config.oauth2 import OAUTH_SECRET_KEY
+from common.google_utils import getGoogleToken
+from google.oauth2 import id_token
+from google.auth.transport import requests
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 
 user_router = APIRouter()
@@ -356,3 +360,67 @@ async def delete_user(user: schemas.user.PrivateUserInfo = Depends(get_current_u
                                      user_id=user.id)
     db.commit()
     return schemas.common.SuccessResponse(message="The user is deleted successfully.")
+
+@user_router.post("/create/google", response_model=schemas.user.TokenResponse)
+async def create_user_by_google(user: schemas.user.GoogleUserCreate, 
+                                db: Session = Depends(get_db)):
+    token = getGoogleToken(google_client_id=os.environ.get('GOOGLE_CLIENT_ID'),
+                           google_client_secret=os.environ.get('GOOGLE_CLIENT_SECRET'),
+                           code=user.code, 
+                           redirect_uri='/integrations/google/oauth2/create/callback')
+    if token is None:
+        raise Exception("something error while getting google account info")
+    
+    idinfo = id_token.verify_oauth2_token(token.get('id_token'), requests.Request(), os.environ.get('GOOGLE_CLIENT_ID'))
+    db_google_user_exise = crud.user.get_user_by_google(db=db, google_id=idinfo.get('sub'))
+    if db_google_user_exise is not None:
+        access_token, refresh_token = create_token(db_google_user_exise)
+        res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
+        return res
+    db_user = crud.user.create_base_user(db=db,  
+                                         default_read_mark_reason=0,
+                                         avatar="files/default_avatar.png",
+                                         nickname=idinfo.get('name'))
+    db_google_user = crud.user.create_google_user(db=db, 
+                                                  user_id=db_user.id, 
+                                                  google_user_id=idinfo.get('sub'), 
+                                                  google_user_name=idinfo.get('name'))
+    access_token, refresh_token = create_token(db_user)
+    res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
+    return res
+
+@user_router.post("/bind/google", response_model=schemas.common.NormalResponse)
+async def bind_google(bind_google: schemas.user.GoogleUserBind, 
+                      user = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    db_google_user_exist = crud.user.get_google_user_by_user_id(db=db, 
+                                                                user_id=user.id)
+    if db_google_user_exist is not None:
+        raise Exception("The account is already binded")
+    
+    token = getGoogleToken(google_client_id=os.environ.get('GOOGLE_CLIENT_ID'),
+                           google_client_secret=os.environ.get('GOOGLE_CLIENT_SECRET'),
+                           code=bind_google.code, 
+                           redirect_uri='/integrations/google/oauth2/bind/callback')
+    if token is None:
+        raise Exception("Something is error while getting google account info")
+    
+    idinfo = id_token.verify_oauth2_token(token.get('id_token'), 
+                                          requests.Request(), 
+                                          os.environ.get('GOOGLE_CLIENT_ID'))
+    
+    db_google_exise = crud.user.get_google_user_by_google_id(db=db, google_id=idinfo.get('sub'))
+    if db_google_exise is not None:
+        raise Exception("The google account is already be binded")
+    
+    crud.user.create_google_user(db=db, user_id=user.id, google_id=idinfo.get('sub'))
+    
+    return schemas.common.SuccessResponse()
+
+@user_router.post('/unbind/google', response_model=schemas.common.NormalResponse)
+async def unbind_google(user = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    crud.user.delete_google_user_by_user_id(db=db, 
+                                            user_id=user.id)
+    db.commit()
+    return schemas.common.SuccessResponse(message="The google account is unbinded successfully.")

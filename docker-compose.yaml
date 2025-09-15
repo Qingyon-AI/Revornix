@@ -64,7 +64,8 @@ services:
       - FILE_SYSTEM_USER_NAME=${FILE_SYSTEM_USER_NAME}
       - FILE_SYSTEM_PASSWORD=${FILE_SYSTEM_PASSWORD}
       - HF_ENDPOINT=${HF_ENDPOINT}
-      - RUNNING_IN_DOCKER=1
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s
@@ -99,8 +100,6 @@ services:
       - FILE_SYSTEM_USER_NAME=${FILE_SYSTEM_USER_NAME}
       - FILE_SYSTEM_PASSWORD=${FILE_SYSTEM_PASSWORD}
       - HF_ENDPOINT=${HF_ENDPOINT}
-      - RUNNING_IN_DOCKER=1
-  
 
   file-backend:
     image: minio/minio

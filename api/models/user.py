@@ -1,6 +1,15 @@
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from common.sql import Base
+
+class GoogleUser(Base):
+    __tablename__ = 'google_user'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), index=True)
+    google_user_id = Column(String(100), index=True)
+    google_user_name = Column(String(100))
+    delete_at = Column(DateTime(timezone=True))
     
 class EmailUser(Base):
     __tablename__ = 'email_user'

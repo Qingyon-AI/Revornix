@@ -31,6 +31,25 @@ def create_base_user(db: Session,
     db.flush()
     return db_user
 
+def create_google_user(db: Session, 
+                       user_id: int, 
+                       google_user_id: str, 
+                       google_user_name: str):
+    query_get_base_user = db.query(models.user.User)
+    query_get_base_user = query_get_base_user.filter(models.user.User.id == user_id,
+                                                     models.user.User.delete_at == None)
+    db_user = query_get_base_user.first()
+    if db_user is None:
+        raise Exception("The base info of the google user you want to create is not exist")
+    
+    db_google_user = models.user.GoogleUser(user_id=user_id,
+                                            google_user_id=google_user_id,
+                                            google_user_name=google_user_name)
+    db.add(db_google_user)
+    db.flush()
+    return db_google_user
+                      
+
 def create_email_user(db: Session, 
                       user_id: int, 
                       email: str, 
@@ -158,6 +177,22 @@ def search_next_user_follow(db: Session,
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.create_time.desc())
     query = query.filter(models.user.User.create_time < user.create_time)
+    return query.first()
+
+def get_google_user_by_user_id(db: Session,
+                               user_id: int):
+    query = db.query(models.user.GoogleUser)
+    query = query.join(models.user.User)
+    query = query.filter(models.user.GoogleUser.user_id == user_id,
+                         models.user.GoogleUser.delete_at == None,
+                         models.user.User.delete_at == None)
+    return query.first()
+
+def get_google_user_by_google_id(db: Session, 
+                                 google_user_id: str): 
+    query = db.query(models.user.GoogleUser)
+    query = query.filter(models.user.GoogleUser.google_user_id == google_user_id,
+                         models.user.GoogleUser.delete_at == None)
     return query.first()
 
 def get_user_follow_by_to_user_id_and_from_user_id(db: Session,
@@ -368,4 +403,13 @@ def delete_follow_user_record(db: Session,
     if db_follow_user is None:
         raise Exception("The follow user record you want to delete is not exist")
     db_follow_user.delete_at = now
+    db.flush()
+    
+def delete_google_user_by_user_id(db: Session,
+                                  user_id: int):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.user.GoogleUser)
+    query = query.filter(models.user.GoogleUser.user_id == user_id,
+                         models.user.GoogleUser.delete_at == None)
+    query = query.update({"delete_at": now})
     db.flush()
