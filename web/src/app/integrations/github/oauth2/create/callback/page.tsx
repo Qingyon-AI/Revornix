@@ -6,8 +6,10 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
 import { utils } from '@kinda/utils';
+import { useUserContext } from '@/provider/user-provider';
 
 const GitHubCreatePage = () => {
+	const { refreshUserInfo } = useUserContext();
 	const searchParams = useSearchParams();
 	const router = useRouter();
 
@@ -26,6 +28,7 @@ const GitHubCreatePage = () => {
 		});
 		Cookies.set('refresh_token', res.refresh_token);
 		router.push('/dashboard');
+		refreshUserInfo();
 	};
 
 	useEffect(() => {
