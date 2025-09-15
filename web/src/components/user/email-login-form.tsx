@@ -171,26 +171,29 @@ const EmailLoginForm = () => {
 								</Link>
 							</div>
 						</div>
-						{/* TODO: 如果不是官方网站，那么其他方式的登陆不要显示 */}
-						<div className='my-2 w-full relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border'>
-							<span className='relative z-10 bg-background dark:bg-card px-2 text-muted-foreground'>
-								OR
-							</span>
-						</div>
-						<div className='w-full grid grid-cols-2 gap-2'>
-							<Button
-								type='button'
-								className='w-full'
-								onClick={handleGoogleLogin}>
-								<GoogleIcon />
-							</Button>
-							<Button
-								type='button'
-								className='w-full'
-								onClick={handleGitHubLogin}>
-								<GithubIcon />
-							</Button>
-						</div>
+						{process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH === 'true' && (
+							<>
+								<div className='my-2 w-full relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border'>
+									<span className='relative z-10 bg-background dark:bg-card px-2 text-muted-foreground'>
+										OR
+									</span>
+								</div>
+								<div className='w-full grid grid-cols-2 gap-2'>
+									<Button
+										type='button'
+										className='w-full'
+										onClick={handleGoogleLogin}>
+										<GoogleIcon />
+									</Button>
+									<Button
+										type='button'
+										className='w-full'
+										onClick={handleGitHubLogin}>
+										<GithubIcon />
+									</Button>
+								</div>
+							</>
+						)}
 					</CardFooter>
 				</form>
 			</Form>
