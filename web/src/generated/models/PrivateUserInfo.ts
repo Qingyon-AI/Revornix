@@ -20,6 +20,20 @@ import {
     EmailInfoToJSON,
     EmailInfoToJSONTyped,
 } from './EmailInfo';
+import type { GoogleInfo } from './GoogleInfo';
+import {
+    GoogleInfoFromJSON,
+    GoogleInfoFromJSONTyped,
+    GoogleInfoToJSON,
+    GoogleInfoToJSONTyped,
+} from './GoogleInfo';
+import type { GithubInfo } from './GithubInfo';
+import {
+    GithubInfoFromJSON,
+    GithubInfoFromJSONTyped,
+    GithubInfoToJSON,
+    GithubInfoToJSONTyped,
+} from './GithubInfo';
 
 /**
  * 
@@ -75,6 +89,18 @@ export interface PrivateUserInfo {
      * @memberof PrivateUserInfo
      */
     email_info?: EmailInfo | null;
+    /**
+     * 
+     * @type {GithubInfo}
+     * @memberof PrivateUserInfo
+     */
+    github_info?: GithubInfo | null;
+    /**
+     * 
+     * @type {GoogleInfo}
+     * @memberof PrivateUserInfo
+     */
+    google_info?: GoogleInfo | null;
     /**
      * 
      * @type {number}
@@ -140,6 +166,8 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'nickname': json['nickname'] == null ? undefined : json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'email_info': json['email_info'] == null ? undefined : EmailInfoFromJSON(json['email_info']),
+        'github_info': json['github_info'] == null ? undefined : GithubInfoFromJSON(json['github_info']),
+        'google_info': json['google_info'] == null ? undefined : GoogleInfoFromJSON(json['google_info']),
         'default_user_file_system': json['default_user_file_system'] == null ? undefined : json['default_user_file_system'],
         'default_read_mark_reason': json['default_read_mark_reason'] == null ? undefined : json['default_read_mark_reason'],
         'default_document_reader_model_id': json['default_document_reader_model_id'] == null ? undefined : json['default_document_reader_model_id'],
@@ -168,6 +196,8 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'nickname': value['nickname'],
         'slogan': value['slogan'],
         'email_info': EmailInfoToJSON(value['email_info']),
+        'github_info': GithubInfoToJSON(value['github_info']),
+        'google_info': GoogleInfoToJSON(value['google_info']),
         'default_user_file_system': value['default_user_file_system'],
         'default_read_mark_reason': value['default_read_mark_reason'],
         'default_document_reader_model_id': value['default_document_reader_model_id'],

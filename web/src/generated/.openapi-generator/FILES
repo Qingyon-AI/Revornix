@@ -80,8 +80,10 @@ models/FollowUserRequest.ts
 models/GenericFileSystemUploadResponse.ts
 models/GetRssServerDetailRequest.ts
 models/GetRssServerDocumentRequest.ts
+models/GithubInfo.ts
 models/GithubUserBind.ts
 models/GithubUserCreate.ts
+models/GoogleInfo.ts
 models/GoogleUserBind.ts
 models/GoogleUserCreate.ts
 models/HTTPValidationError.ts

@@ -299,12 +299,24 @@ async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user)
                                        default_file_document_parse_user_engine_id=user.default_file_document_parse_user_engine_id,
                                        default_read_mark_reason=user.default_read_mark_reason,
                                        default_user_file_system=user.default_user_file_system)
+    
     email_user = crud.user.get_email_user_by_user_id(db=db, 
                                                      user_id=user.id)
     if email_user is not None:
         res.email_info = schemas.user.EmailInfo(email=email_user.email,
                                                 is_initial_password=email_user.is_initial_password,
                                                 has_seen_initial_password=email_user.has_seen_initial_password)
+        
+    google_user = crud.user.get_google_user_by_user_id(db=db, 
+                                                       user_id=user.id)
+    if google_user is not None:
+        res.google_info = schemas.user.GoogleInfo(google_user_id=google_user.google_user_id)
+        
+    github_user = crud.user.get_github_user_by_user_id(db=db, 
+                                                       user_id=user.id)
+    if github_user is not None:
+        res.github_info = schemas.user.GithubInfo(github_user_id=github_user.github_user_id)
+        
     fans = crud.user.count_user_fans(db=db,
                                      user_id=user.id)
     follows = crud.user.count_user_follows(db=db,

@@ -13,10 +13,10 @@ class GithubUserBind(BaseModel):
     code: str
     
 class GoogleInfo(BaseModel):
-    google_id: str
+    google_user_id: str
     
 class GithubInfo(BaseModel):
-    github_id: str
+    github_user_id: str
 
 class DefaultFileSystemUpdateRequest(BaseModel):
     default_user_file_system: int | None = None
@@ -100,6 +100,8 @@ class PrivateUserInfo(BaseModel):
     nickname: str | None = None
     slogan: str | None = None
     email_info: EmailInfo | None = None
+    github_info: GithubInfo | None = None
+    google_info: GoogleInfo | None = None
     default_user_file_system: int | None = None
     default_read_mark_reason: int | None = None
     default_document_reader_model_id: int | None = None

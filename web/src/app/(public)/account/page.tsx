@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import UserUUID from '@/components/user/uuid';
+import GitHubBind from '@/components/user/github-bind';
+import GoogleBind from '@/components/user/google-bind';
 
 const AccountPage = async () => {
 	const t = await getTranslations();
@@ -78,6 +80,30 @@ const AccountPage = async () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<PassWordUpdate />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							GitHub
+							<div className='text-[0.8rem] text-muted-foreground'>
+								{t('account_github_description')}
+							</div>
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<GitHubBind />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							Google
+							<div className='text-[0.8rem] text-muted-foreground'>
+								{t('account_google_description')}
+							</div>
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<GoogleBind />
 						</div>
 					</div>
 				</CardContent>
