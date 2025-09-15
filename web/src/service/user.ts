@@ -103,3 +103,9 @@ export const createUserByGoogle = async (data: GoogleUserCreate): Promise<TokenR
         data
     })
 }
+
+export const createUserByGithub = async (data: GithubUserCreate): Promise<TokenResponse> => {
+    return await request(userApi.createUserByGithub, {
+        data
+    })
+}

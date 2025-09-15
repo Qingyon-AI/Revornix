@@ -34,6 +34,8 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import GoogleIcon from '../icons/google-icon';
 import { GOOGLE_CLIENT_ID } from '@/config/google';
+import GithubIcon from '../icons/github-icon';
+import { GITHUB_CLIENT_ID } from '@/config/github';
 
 const EmailLoginForm = () => {
 	const t = useTranslations();
@@ -105,6 +107,12 @@ const EmailLoginForm = () => {
 		window.location.assign(link);
 	};
 
+	const handleGitHubLogin = () => {
+		// redirect the user to github
+		const link = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&response_type=code&redirect_uri=${window.location.origin}/integrations/github/oauth2/create/callback`;
+		window.location.assign(link);
+	};
+
 	return (
 		<Card>
 			<Form {...emailForm}>
@@ -163,14 +171,24 @@ const EmailLoginForm = () => {
 								</Link>
 							</div>
 						</div>
+						{/* TODO: 如果不是官方网站，那么其他方式的登陆不要显示 */}
 						<div className='my-2 w-full relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border'>
-							<span className='relative z-10 bg-background px-2 text-muted-foreground'>
+							<span className='relative z-10 bg-background dark:bg-card px-2 text-muted-foreground'>
 								OR
 							</span>
 						</div>
-						<div className='w-full grid grid-cols-1 gap-2'>
-							<Button type='button' className='w-full' onClick={handleGoogleLogin}>
+						<div className='w-full grid grid-cols-2 gap-2'>
+							<Button
+								type='button'
+								className='w-full'
+								onClick={handleGoogleLogin}>
 								<GoogleIcon />
+							</Button>
+							<Button
+								type='button'
+								className='w-full'
+								onClick={handleGitHubLogin}>
+								<GithubIcon />
 							</Button>
 						</div>
 					</CardFooter>
