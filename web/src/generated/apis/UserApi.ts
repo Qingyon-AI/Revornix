@@ -22,6 +22,8 @@ import type {
   DefaultReadMarkReasonUpdateRequest,
   EmailUserCreateVerifyRequest,
   FollowUserRequest,
+  GoogleUserBind,
+  GoogleUserCreate,
   HTTPValidationError,
   InifiniteScrollPagnitionUserPublicInfo,
   InitialPasswordResponse,
@@ -52,6 +54,10 @@ import {
     EmailUserCreateVerifyRequestToJSON,
     FollowUserRequestFromJSON,
     FollowUserRequestToJSON,
+    GoogleUserBindFromJSON,
+    GoogleUserBindToJSON,
+    GoogleUserCreateFromJSON,
+    GoogleUserCreateToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     InifiniteScrollPagnitionUserPublicInfoFromJSON,
@@ -88,8 +94,18 @@ export interface BindEmailVerifyUserBindEmailVerifyPostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface BindGoogleUserBindGooglePostRequest {
+    googleUserBind: GoogleUserBind;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest {
     emailUserCreateVerifyRequest: EmailUserCreateVerifyRequest;
+}
+
+export interface CreateUserByGoogleUserCreateGooglePostRequest {
+    googleUserCreate: GoogleUserCreate;
 }
 
 export interface DeleteUserUserDeletePostRequest {
@@ -125,6 +141,11 @@ export interface SearchUserFansUserFansPostRequest {
 
 export interface SearchUserFollowsUserFollowsPostRequest {
     searchUserFollowsRequest: SearchUserFollowsRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UnbindGoogleUserUnbindGooglePostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -228,6 +249,53 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
+     * Bind Google
+     */
+    async bindGoogleUserBindGooglePostRaw(requestParameters: BindGoogleUserBindGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['googleUserBind'] == null) {
+            throw new runtime.RequiredError(
+                'googleUserBind',
+                'Required parameter "googleUserBind" was null or undefined when calling bindGoogleUserBindGooglePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/bind/google`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GoogleUserBindToJSON(requestParameters['googleUserBind']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Bind Google
+     */
+    async bindGoogleUserBindGooglePost(requestParameters: BindGoogleUserBindGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.bindGoogleUserBindGooglePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Create User By Email Verify
      */
     async createUserByEmailVerifyUserCreateEmailVerifyPostRaw(requestParameters: CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
@@ -263,6 +331,45 @@ export class UserApi extends runtime.BaseAPI {
      */
     async createUserByEmailVerifyUserCreateEmailVerifyPost(requestParameters: CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
         const response = await this.createUserByEmailVerifyUserCreateEmailVerifyPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Create User By Google
+     */
+    async createUserByGoogleUserCreateGooglePostRaw(requestParameters: CreateUserByGoogleUserCreateGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        if (requestParameters['googleUserCreate'] == null) {
+            throw new runtime.RequiredError(
+                'googleUserCreate',
+                'Required parameter "googleUserCreate" was null or undefined when calling createUserByGoogleUserCreateGooglePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/user/create/google`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GoogleUserCreateToJSON(requestParameters['googleUserCreate']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create User By Google
+     */
+    async createUserByGoogleUserCreateGooglePost(requestParameters: CreateUserByGoogleUserCreateGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.createUserByGoogleUserCreateGooglePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -554,6 +661,43 @@ export class UserApi extends runtime.BaseAPI {
      */
     async searchUserFollowsUserFollowsPost(requestParameters: SearchUserFollowsUserFollowsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionUserPublicInfo> {
         const response = await this.searchUserFollowsUserFollowsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Unbind Google
+     */
+    async unbindGoogleUserUnbindGooglePostRaw(requestParameters: UnbindGoogleUserUnbindGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/unbind/google`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Unbind Google
+     */
+    async unbindGoogleUserUnbindGooglePost(requestParameters: UnbindGoogleUserUnbindGooglePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.unbindGoogleUserUnbindGooglePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
