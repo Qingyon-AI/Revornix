@@ -449,6 +449,7 @@ async def bind_google(bind_google: schemas.user.GoogleUserBind,
         raise Exception("The google account is already be binded")
     
     crud.user.create_google_user(db=db, user_id=user.id, google_id=idinfo.get('sub'))
+    
     db.commit()
     return schemas.common.SuccessResponse()
 
@@ -527,14 +528,16 @@ async def bind_github(bind_github: schemas.user.GithubUserBind,
     github_user_info = getGithubUserInfo(token.get('access_token'))
     
     db_github_exist = crud.user.get_github_user_by_github_user_id(db=db, 
-                                                                  github_user_id=github_user_info.get('id'))
+                                                                  github_user_id=str(github_user_info.get('id')))
     if db_github_exist is not None:
         raise Exception("The github account has been bound by other user")
     
     crud.user.create_github_user(db=db, 
                                  user_id=user.id, 
-                                 github_user_id=github_user_info.get('id'),
+                                 github_user_id=str(github_user_info.get('id')),
                                  github_user_name=github_user_info.get('login'))
+    
+    db.commit()
     return schemas.common.SuccessResponse()
 
 @user_router.post('/unbind/github', response_model=schemas.common.NormalResponse)

@@ -1,5 +1,6 @@
 'use client';
 
+import { useUserContext } from '@/provider/user-provider';
 import { bindGitHub } from '@/service/user';
 import { utils } from '@kinda/utils';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -7,6 +8,7 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 const GitHubBindPage = () => {
+	const { refreshUserInfo } = useUserContext();
 	const searchParams = useSearchParams();
 	const router = useRouter();
 
@@ -21,6 +23,7 @@ const GitHubBindPage = () => {
 			return;
 		}
 		router.push('/account');
+		refreshUserInfo();
 	};
 
 	useEffect(() => {
