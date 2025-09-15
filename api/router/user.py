@@ -457,20 +457,20 @@ async def create_user_by_github(user: schemas.user.GithubUserCreate,
         raise Exception("some thing is error while getting github account info")
     github_user_info = getGithubUserInfo(token=token.get('access_token'))
     db_exist_github_user = crud.user.get_github_user_by_github_user_id(db=db, 
-                                                                       github_user_id=github_user_info.get('id'))
+                                                                       github_user_id=str(github_user_info.get('id')))
     if db_exist_github_user is not None:
         db_user = crud.user.get_github_user_by_github_user_id(db=db, 
-                                                              github_user_id=db_exist_github_user.github_id)
+                                                              github_user_id=db_exist_github_user.github_user_id)
         access_token, refresh_token = create_token(db_exist_github_user.user)
         res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
         return res
     db_user = crud.user.create_base_user(db=db,
-                                         username=github_user_info.get('login'),
-                                         email=github_user_info.get('email'),
-                                         password=github_user_info.get('login'))
+                                         default_read_mark_reason=0,
+                                         nickname=github_user_info.get('login'),
+                                         avatar="files/default_avatar.png")
     db_github_user = crud.user.create_github_user(db=db, 
                                                   user_id=db_user.id, 
-                                                  github_user_id=github_user_info.get('id'), 
+                                                  github_user_id=str(github_user_info.get('id')), 
                                                   github_user_name=github_user_info.get('login'))
     
     # init the default file system for the user

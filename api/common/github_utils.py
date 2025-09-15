@@ -39,5 +39,6 @@ def getGithubUserInfo(token: str):
     }
     # 获取github token
     github_user_info_res = httpx.get(url, headers=headers)
+    github_user_info_res.raise_for_status()
     github_user_info_res_json = github_user_info_res.json()
     return github_user_info_res_json

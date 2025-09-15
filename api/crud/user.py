@@ -31,7 +31,6 @@ def create_base_user(db: Session,
     db.flush()
     return db_user
 
-
 def create_github_user(db: Session, 
                        user_id: int, 
                        github_user_id: str, 
@@ -44,8 +43,8 @@ def create_github_user(db: Session,
         raise Exception("The base info of the github user you want to create is not exist")
     
     db_github = models.user.GithubUser(user_id=db_user.id, 
-                                       github_id=github_user_id,
-                                       github_name=github_user_name)
+                                       github_user_id=github_user_id,
+                                       github_user_name=github_user_name)
     db.add(db_github)
     db.flush()
     return db_github
