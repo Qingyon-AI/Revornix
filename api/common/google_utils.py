@@ -15,7 +15,6 @@ def getGoogleToken(google_client_id: str, google_client_secret: str, code: str, 
     }
     # 获取google token
     google_token_res = httpx.post(url, data=data, headers=headers)
-    print(1111, redirect_uri, google_token_res.json())
     google_token_res.raise_for_status()
     google_token_res_json = google_token_res.json()
     return google_token_res_json

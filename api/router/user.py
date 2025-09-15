@@ -373,10 +373,12 @@ async def create_user_by_google(user: schemas.user.GoogleUserCreate,
         raise Exception("something error while getting google account info")
 
     idinfo = id_token.verify_oauth2_token(token.get('id_token'), requests.Request(), os.environ.get('GOOGLE_CLIENT_ID'))
-    db_google_user_exise = crud.user.get_google_user_by_google_id(db=db, 
+    db_google_user_exist = crud.user.get_google_user_by_google_id(db=db, 
                                                                   google_user_id=idinfo.get('sub'))
-    if db_google_user_exise is not None:
-        access_token, refresh_token = create_token(db_google_user_exise)
+    if db_google_user_exist is not None:
+        db_user = crud.user.get_user_by_id(db=db,
+                                           user_id=db_google_user_exist.user_id)
+        access_token, refresh_token = create_token(db_user)
         res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
         return res
     db_user = crud.user.create_base_user(db=db,  
@@ -429,9 +431,9 @@ async def bind_google(bind_google: schemas.user.GoogleUserBind,
                                           requests.Request(), 
                                           os.environ.get('GOOGLE_CLIENT_ID'))
     
-    db_google_exise = crud.user.get_google_user_by_google_id(db=db, 
+    db_google_exist = crud.user.get_google_user_by_google_id(db=db, 
                                                              google_id=idinfo.get('sub'))
-    if db_google_exise is not None:
+    if db_google_exist is not None:
         raise Exception("The google account is already be binded")
     
     crud.user.create_google_user(db=db, user_id=user.id, google_id=idinfo.get('sub'))
@@ -459,9 +461,9 @@ async def create_user_by_github(user: schemas.user.GithubUserCreate,
     db_exist_github_user = crud.user.get_github_user_by_github_user_id(db=db, 
                                                                        github_user_id=str(github_user_info.get('id')))
     if db_exist_github_user is not None:
-        db_user = crud.user.get_github_user_by_github_user_id(db=db, 
-                                                              github_user_id=db_exist_github_user.github_user_id)
-        access_token, refresh_token = create_token(db_exist_github_user.user)
+        db_user = crud.user.get_user_by_id(db=db,
+                                           user_id=db_exist_github_user.user_id)
+        access_token, refresh_token = create_token(db_user)
         res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
         return res
     db_user = crud.user.create_base_user(db=db,
