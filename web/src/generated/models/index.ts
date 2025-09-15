@@ -68,6 +68,8 @@ export * from './FollowUserRequest';
 export * from './GenericFileSystemUploadResponse';
 export * from './GetRssServerDetailRequest';
 export * from './GetRssServerDocumentRequest';
+export * from './GithubUserBind';
+export * from './GithubUserCreate';
 export * from './GoogleUserBind';
 export * from './GoogleUserCreate';
 export * from './HTTPValidationError';

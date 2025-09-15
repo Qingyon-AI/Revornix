@@ -22,6 +22,8 @@ import type {
   DefaultReadMarkReasonUpdateRequest,
   EmailUserCreateVerifyRequest,
   FollowUserRequest,
+  GithubUserBind,
+  GithubUserCreate,
   GoogleUserBind,
   GoogleUserCreate,
   HTTPValidationError,
@@ -54,6 +56,10 @@ import {
     EmailUserCreateVerifyRequestToJSON,
     FollowUserRequestFromJSON,
     FollowUserRequestToJSON,
+    GithubUserBindFromJSON,
+    GithubUserBindToJSON,
+    GithubUserCreateFromJSON,
+    GithubUserCreateToJSON,
     GoogleUserBindFromJSON,
     GoogleUserBindToJSON,
     GoogleUserCreateFromJSON,
@@ -94,6 +100,12 @@ export interface BindEmailVerifyUserBindEmailVerifyPostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface BindGithubUserBindGithubPostRequest {
+    githubUserBind: GithubUserBind;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface BindGoogleUserBindGooglePostRequest {
     googleUserBind: GoogleUserBind;
     authorization?: string | null;
@@ -102,6 +114,10 @@ export interface BindGoogleUserBindGooglePostRequest {
 
 export interface CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest {
     emailUserCreateVerifyRequest: EmailUserCreateVerifyRequest;
+}
+
+export interface CreateUserByGithubUserCreateGithubPostRequest {
+    githubUserCreate: GithubUserCreate;
 }
 
 export interface CreateUserByGoogleUserCreateGooglePostRequest {
@@ -141,6 +157,11 @@ export interface SearchUserFansUserFansPostRequest {
 
 export interface SearchUserFollowsUserFollowsPostRequest {
     searchUserFollowsRequest: SearchUserFollowsRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UnbindGithubUserUnbindGithubPostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -249,6 +270,53 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
+     * Bind Github
+     */
+    async bindGithubUserBindGithubPostRaw(requestParameters: BindGithubUserBindGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['githubUserBind'] == null) {
+            throw new runtime.RequiredError(
+                'githubUserBind',
+                'Required parameter "githubUserBind" was null or undefined when calling bindGithubUserBindGithubPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/bind/github`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GithubUserBindToJSON(requestParameters['githubUserBind']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Bind Github
+     */
+    async bindGithubUserBindGithubPost(requestParameters: BindGithubUserBindGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.bindGithubUserBindGithubPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Bind Google
      */
     async bindGoogleUserBindGooglePostRaw(requestParameters: BindGoogleUserBindGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
@@ -331,6 +399,45 @@ export class UserApi extends runtime.BaseAPI {
      */
     async createUserByEmailVerifyUserCreateEmailVerifyPost(requestParameters: CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
         const response = await this.createUserByEmailVerifyUserCreateEmailVerifyPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Create User By Github
+     */
+    async createUserByGithubUserCreateGithubPostRaw(requestParameters: CreateUserByGithubUserCreateGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        if (requestParameters['githubUserCreate'] == null) {
+            throw new runtime.RequiredError(
+                'githubUserCreate',
+                'Required parameter "githubUserCreate" was null or undefined when calling createUserByGithubUserCreateGithubPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/user/create/github`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GithubUserCreateToJSON(requestParameters['githubUserCreate']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create User By Github
+     */
+    async createUserByGithubUserCreateGithubPost(requestParameters: CreateUserByGithubUserCreateGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.createUserByGithubUserCreateGithubPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -661,6 +768,43 @@ export class UserApi extends runtime.BaseAPI {
      */
     async searchUserFollowsUserFollowsPost(requestParameters: SearchUserFollowsUserFollowsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionUserPublicInfo> {
         const response = await this.searchUserFollowsUserFollowsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Unbind Github
+     */
+    async unbindGithubUserUnbindGithubPostRaw(requestParameters: UnbindGithubUserUnbindGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/unbind/github`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Unbind Github
+     */
+    async unbindGithubUserUnbindGithubPost(requestParameters: UnbindGithubUserUnbindGithubPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.unbindGithubUserUnbindGithubPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
