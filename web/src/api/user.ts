@@ -24,4 +24,8 @@ export default {
     updateDefaultFileSystem: API_PREFIX + '/user/default-file-system/update',
     createUserByGoogle: API_PREFIX + '/user/create/google',
     createUserByGithub: API_PREFIX + '/user/create/github',
+    bindGitHub: API_PREFIX + '/user/bind/github',
+    bindGoogle: API_PREFIX + '/user/bind/google',
+    unBindGitHub: API_PREFIX + '/user/unbind/github',
+    unBindGoogle: API_PREFIX + '/user/unbind/google'
 } 
