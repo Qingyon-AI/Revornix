@@ -10,6 +10,15 @@ class GoogleUser(Base):
     google_user_id = Column(String(100), index=True)
     google_user_name = Column(String(100))
     delete_at = Column(DateTime(timezone=True))
+
+class GithubUser(Base):
+    __tablename__ = 'github_user'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), index=True)
+    github_user_id = Column(String(100), index=True)
+    github_user_name = Column(String(100))
+    delete_at = Column(DateTime(timezone=True))
     
 class EmailUser(Base):
     __tablename__ = 'email_user'

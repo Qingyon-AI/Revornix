@@ -13,6 +13,7 @@ from common.hash import verify_password
 from common.dependencies import get_current_user, get_db
 from config.oauth2 import OAUTH_SECRET_KEY
 from common.google_utils import getGoogleToken
+from common.github_utils import getGithubToken, getGithubUserInfo, getGithubEmail
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from file.built_in_remote_file_service import BuiltInRemoteFileService
@@ -444,3 +445,88 @@ async def unbind_google(user = Depends(get_current_user),
                                             user_id=user.id)
     db.commit()
     return schemas.common.SuccessResponse(message="The google account is unbinded successfully.")
+
+@user_router.post("/create/github", response_model=schemas.user.TokenResponse)
+async def create_user_by_github(user: schemas.user.GithubUserCreate, 
+                                db: Session = Depends(get_db)):
+    token = getGithubToken(github_client_id=os.environ.get('GITHUB_CLIENT_ID'),
+                           github_client_secret=os.environ.get('GITHUB_CLIENT_SECRET'),
+                           code=user.code, 
+                           redirect_uri='https://app.revornix.com/integrations/github/oauth2/create/callback')
+    if token is None:
+        raise Exception("some thing is error while getting github account info")
+    github_user_info = getGithubUserInfo(token=token.get('access_token'))
+    db_exist_github_user = crud.user.get_github_user_by_github_user_id(db=db, 
+                                                                       github_user_id=github_user_info.get('id'))
+    if db_exist_github_user is not None:
+        db_user = crud.user.get_github_user_by_github_user_id(db=db, 
+                                                              github_user_id=db_exist_github_user.github_id)
+        access_token, refresh_token = create_token(db_exist_github_user.user)
+        res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
+        return res
+    db_user = crud.user.create_base_user(db=db,
+                                         username=github_user_info.get('login'),
+                                         email=github_user_info.get('email'),
+                                         password=github_user_info.get('login'))
+    db_github_user = crud.user.create_github_user(db=db, 
+                                                  user_id=db_user.id, 
+                                                  github_user_id=github_user_info.get('id'), 
+                                                  github_user_name=github_user_info.get('login'))
+    
+    # init the default file system for the user
+    db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
+                                                                    file_system_id=1,
+                                                                    user_id=db_user.id,
+                                                                    title="Default File System",
+                                                                    description="The default file system for the user")
+    db_user.default_user_file_system = db_user_file_system.id
+    # create the minio file bucket for the user because it's the default file system
+    BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+    # init the default engine for the user
+    db_user_engine = crud.engine.create_user_engine(db=db,
+                                                    user_id=db_user.id,
+                                                    engine_id=1,
+                                                    title="Default Engine",
+                                                    description="The default engine for the user")
+    db_user.default_website_document_parse_user_engine_id = db_user_engine.id
+    db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    db.commit()
+    access_token, refresh_token = create_token(db_user)
+    res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
+    return res
+
+@user_router.post("/bind/github", response_model=schemas.common.NormalResponse)
+async def bind_github(bind_github: schemas.user.GithubUserBind, 
+                      user = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    db_github_user_exist = crud.user.get_github_user_by_user_id(db=db, 
+                                                                user_id=user.id)
+    if db_github_user_exist is not None:
+        raise Exception("The account has already been bound")
+    
+    token = getGithubToken(github_client_id=os.environ.get('GITHUB_CLIENT_ID'),
+                           github_client_secret=os.environ.get('GITHUB_CLIENT_SECRET'),
+                           code=bind_github.code, 
+                           redirect_uri='https://app.revornix.com/integrations/github/oauth2/bind/callback')
+    if token is None:
+        raise Exception("some thing is error while getting github account info")
+    github_user_info = getGithubUserInfo(token.get('access_token'))
+    
+    db_github_exist = crud.user.get_github_user_by_github_user_id(db=db, 
+                                                                  github_user_id=github_user_info.get('id'))
+    if db_github_exist is not None:
+        raise Exception("The github account has been bound by other user")
+    
+    crud.user.create_github_user(db=db, 
+                                 user_id=user.id, 
+                                 github_user_id=github_user_info.get('id'),
+                                 github_user_name=github_user_info.get('login'))
+    return schemas.common.SuccessResponse()
+
+@user_router.post('/unbind/github', response_model=schemas.common.NormalResponse)
+async def unbind_github(user = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    crud.user.delete_github_user_by_user_id(db=db, 
+                                            user_id=user.id)
+    db.commit()
+    return schemas.common.SuccessResponse(message="The github account is unbinded successfully.")

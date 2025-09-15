@@ -1,11 +1,22 @@
 from pydantic import BaseModel, field_serializer
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
+class GoogleUserCreate(BaseModel):
+    code: str
+    
 class GoogleUserBind(BaseModel):
     code: str
 
-class GoogleUserCreate(BaseModel):
+class GithubUserCreate(BaseModel):
     code: str
+class GithubUserBind(BaseModel):
+    code: str
+    
+class GoogleInfo(BaseModel):
+    google_id: str
+    
+class GithubInfo(BaseModel):
+    github_id: str
 
 class DefaultFileSystemUpdateRequest(BaseModel):
     default_user_file_system: int | None = None

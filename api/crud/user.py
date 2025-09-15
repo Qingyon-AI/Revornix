@@ -31,6 +31,25 @@ def create_base_user(db: Session,
     db.flush()
     return db_user
 
+
+def create_github_user(db: Session, 
+                       user_id: int, 
+                       github_user_id: str, 
+                       github_user_name: str):
+    query = db.query(models.user.User)
+    query = query.filter(models.user.User.id == user_id,
+                         models.user.User.delete_at == None)
+    db_user = query.first()
+    if db_user is None:
+        raise Exception("The base info of the github user you want to create is not exist")
+    
+    db_github = models.user.GithubUser(user_id=db_user.id, 
+                                       github_id=github_user_id,
+                                       github_name=github_user_name)
+    db.add(db_github)
+    db.flush()
+    return db_github
+
 def create_google_user(db: Session, 
                        user_id: int, 
                        google_user_id: str, 
@@ -177,6 +196,22 @@ def search_next_user_follow(db: Session,
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.create_time.desc())
     query = query.filter(models.user.User.create_time < user.create_time)
+    return query.first()
+
+def get_github_user_by_user_id(db: Session,
+                               user_id: int):
+    query = db.query(models.user.GithubUser)
+    query = query.join(models.user.User)
+    query = query.filter(models.user.GithubUser.user_id == user_id,
+                         models.user.GithubUser.delete_at == None,
+                         models.user.User.delete_at == None)
+    return query.first()
+
+def get_github_user_by_github_user_id(db: Session,
+                                      github_user_id: str):
+    query = db.query(models.user.GithubUser)
+    query = query.filter(models.user.GithubUser.github_user_id == github_user_id,
+                         models.user.GithubUser.delete_at == None)
     return query.first()
 
 def get_google_user_by_user_id(db: Session,
@@ -413,3 +448,13 @@ def delete_google_user_by_user_id(db: Session,
                          models.user.GoogleUser.delete_at == None)
     query = query.update({"delete_at": now})
     db.flush()
+    
+def delete_github_user_by_user_id(db: Session,
+                                  user_id: int):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.user.GithubUser)
+    query = query.filter(models.user.GithubUser.user_id == user_id,
+                         models.user.GithubUser.delete_at == None)
+    query = query.update({"delete_at": now})
+    db.flush()
+    
