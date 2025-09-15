@@ -1,10 +1,10 @@
 import { NextResponse, NextRequest } from 'next/server'
 
-const whitelist = ['/login', '/register', '/.well-known/apple-app-site-association', '/']
+const whitelist = ['/login', '/register', '/.well-known/apple-app-site-association']
 
 const auth = (request: NextRequest) => {
     const { pathname } = request.nextUrl
-    if (whitelist.includes(pathname) || pathname.startsWith('/integrations')) {
+    if (whitelist.includes(pathname) || pathname.startsWith('/integrations') || (pathname.startsWith('/section/') && !pathname.startsWith('/section/detail/'))) {
         return true
     }
     if (!request.cookies.get('access_token')) {
