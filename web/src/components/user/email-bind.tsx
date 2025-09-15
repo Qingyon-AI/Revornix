@@ -80,6 +80,17 @@ const EmailBind = () => {
 
 	return (
 		<>
+			{userInfo && !userInfo.email_info && (
+				<Button
+					variant={'link'}
+					className='text-xs'
+					onClick={() => {
+						setShowBindEmailDialog(true);
+					}}>
+					{t('account_email_bind')}
+				</Button>
+			)}
+
 			{userInfo && userInfo.email_info && (
 				<>
 					<div className='flex flex-row items-center'>
@@ -99,9 +110,15 @@ const EmailBind = () => {
 			<Dialog open={showBindEmailDialog} onOpenChange={setShowBindEmailDialog}>
 				<DialogContent className='sm:max-w-md'>
 					<DialogHeader>
-						<DialogTitle>{t('account_email_update')}</DialogTitle>
+						<DialogTitle>
+							{userInfo?.email_info
+								? t('account_email_update')
+								: t('account_email_bind')}
+						</DialogTitle>
 						<DialogDescription>
-							{t('account_email_update_description')}
+							{userInfo?.email_info
+								? t('account_email_update_description')
+								: t('account_email_bind_description')}
 						</DialogDescription>
 					</DialogHeader>
 					<Form {...form}>
@@ -115,7 +132,11 @@ const EmailBind = () => {
 											<FormItem>
 												<FormControl>
 													<Input
-														placeholder={t('account_email_update_placeholder')}
+														placeholder={
+															userInfo?.email_info
+																? t('account_email_update_placeholder')
+																: t('account_email_bind_placeholder')
+														}
 														{...field}
 													/>
 												</FormControl>

@@ -235,12 +235,15 @@ async def update_password(password_update_request: schemas.user.PasswordUpdateRe
 async def bind_email_verify(bind_email_verify_request: schemas.user.BindEmailVerifyRequest,
                             user = Depends(get_current_user),
                             db: Session = Depends(get_db)):
+    db_exist_email_user = crud.user.get_email_user_by_email(db=db,
+                                                            email=bind_email_verify_request.email)
+    if db_exist_email_user is not None:
+        raise CustomException(message='The email is already exists.')
     db_user_email = crud.user.get_email_user_by_user_id(db=db,
                                                         user_id=user.id)
-    if db_user_email is None:
-        raise CustomException(message='The current user has no email info.')
-    crud.user.delete_email_user_by_user_id(db=db,
-                                           user_id=user.id)
+    if db_user_email is not None:
+        crud.user.delete_email_user_by_user_id(db=db,
+                                               user_id=user.id)
     crud.user.create_email_user(db=db, 
                                 user_id=user.id,
                                 email=bind_email_verify_request.email)
