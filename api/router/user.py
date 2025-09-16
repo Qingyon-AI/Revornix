@@ -589,13 +589,10 @@ async def create_user_by_sms_verify(sms_user_code_verify_request: schemas.user.S
     await cache.delete(sms_user_code_verify_request.phone)
     phone_user_exist = crud.user.get_phone_user_by_phone(db=db, 
                                                          phone=sms_user_code_verify_request.phone)
-    if phone_user_exist is None:
-        raise Exception("The phone number is not registered")
-    
-    user_exist = crud.user.get_user_by_id(db=db,
-                                          id=phone_user_exist.user_id)
-    if user_exist != None:
-        access_token, refresh_token = create_token(user_exist)
+    if phone_user_exist is not None:
+        db_user = crud.user.get_user_by_id(db=db,
+                                           user_id=phone_user_exist.user_id)
+        access_token, refresh_token = create_token(db_user)
         return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
     else:
         db_user = crud.user.create_base_user(db=db, 
