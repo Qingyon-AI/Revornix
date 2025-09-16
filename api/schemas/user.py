@@ -1,6 +1,15 @@
 from pydantic import BaseModel, field_serializer
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
+class WeChatInfo(BaseModel):
+    nickname: str
+    
+class WeChatUserBindRequest(BaseModel):
+    code: str
+
+class WeChatUserCreateRequest(BaseModel):
+    code: str
+
 class SmsUserCodeCreateRequest(BaseModel):
     phone: str
     
@@ -121,6 +130,7 @@ class PrivateUserInfo(BaseModel):
     email_info: EmailInfo | None = None
     github_info: GithubInfo | None = None
     google_info: GoogleInfo | None = None
+    wechat_info: WeChatInfo | None = None
     default_user_file_system: int | None = None
     default_read_mark_reason: int | None = None
     default_document_reader_model_id: int | None = None

@@ -4,7 +4,26 @@ import random
 import uuid
 from datetime import datetime, timezone
 from common.hash import hash_password
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
+
+def create_wechat_user(db: Session, 
+                       user_id: int, 
+                       wechat_user_open_id: str, 
+                       wechat_user_union_id: str, 
+                       wechat_user_name: str):
+    query = db.query(models.user.User)
+    query = query.filter(models.user.User.id == user_id,
+                         models.user.User.delete_at == None)
+    db_user = query.first()
+    if db_user is None:
+        raise Exception("The base info of the wechat user you want to create is not exist")
+    db_wechat_user = models.user.WechatUser(user_id=user_id,
+                                            wechat_open_id=wechat_user_open_id,
+                                            wechat_union_id=wechat_user_union_id,
+                                            wechat_name=wechat_user_name)
+    db.add(db_wechat_user)
+    db.flush()
+    return db_wechat_user
 
 def create_phone_user(db: Session, 
                       user_id: int, 
@@ -81,8 +100,7 @@ def create_google_user(db: Session,
                                             google_user_name=google_user_name)
     db.add(db_google_user)
     db.flush()
-    return db_google_user
-                      
+    return db_google_user     
 
 def create_email_user(db: Session, 
                       user_id: int, 
@@ -211,6 +229,29 @@ def search_next_user_follow(db: Session,
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.create_time.desc())
     query = query.filter(models.user.User.create_time < user.create_time)
+    return query.first()
+
+def get_wechat_user_by_user_id(db: Session,
+                               user_id: int):
+    query = db.query(models.user.WechatUser)
+    query = query.join(models.user.User)
+    query = query.filter(models.user.WechatUser.user_id == user_id,
+                         models.user.WechatUser.delete_at == None,
+                         models.user.User.delete_at == None)
+    return query.first()
+
+def get_wechat_user_by_wechat_open_id(db: Session,
+                                      wechat_user_open_id: str):
+    query = db.query(models.user.WechatUser)
+    query = query.filter(models.user.WechatUser.wechat_user_open_id == wechat_user_open_id,
+                         models.user.WechatUser.delete_at == None)
+    return query.first()
+
+def get_wechat_user_by_wechat_union_id(db: Session,
+                                       wechat_user_union_id: str):
+    query = db.query(models.user.WechatUser)
+    query = query.filter(models.user.WechatUser.wechat_user_union_id == wechat_user_union_id,
+                         models.user.WechatUser.delete_at == None)
     return query.first()
 
 def get_phone_user_by_phone(db: Session,
@@ -495,5 +536,14 @@ def delete_phone_user_by_user_id(db: Session,
     query = db.query(models.user.PhoneUser)
     query = query.filter(models.user.PhoneUser.user_id == user_id,
                          models.user.PhoneUser.delete_at == None)
+    query = query.update({"delete_at": now})
+    db.flush()
+
+def delete_wechat_user_by_user_id(db: Session,
+                                  user_id: int):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.user.WechatUser)
+    query = query.filter(models.user.WechatUser.user_id == user_id,
+                         models.user.WechatUser.delete_at == None)
     query = query.update({"delete_at": now})
     db.flush()
