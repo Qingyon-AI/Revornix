@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'nextjs-toploader/app';
 import Cookies from 'js-cookie';
 import {
-	Card,
 	CardContent,
 	CardDescription,
 	CardFooter,
@@ -21,7 +20,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,9 +32,10 @@ import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import GoogleIcon from '../icons/google-icon';
-import { GOOGLE_CLIENT_ID } from '@/config/google';
 import GithubIcon from '../icons/github-icon';
+import { GOOGLE_CLIENT_ID } from '@/config/google';
 import { GITHUB_CLIENT_ID } from '@/config/github';
+import { useLoginProvider } from '@/provider/login-provider';
 
 const EmailLoginForm = () => {
 	const t = useTranslations();
@@ -44,6 +44,8 @@ const EmailLoginForm = () => {
 		email: z.string().email(t('seo_login_email_format_error')),
 		password: z.string().min(8, t('seo_login_password_no_less_than')),
 	});
+
+	const { loginWay, setLoginWay } = useLoginProvider();
 
 	const searchParams = useSearchParams();
 	const redirect_page = searchParams.get('redirect_to') || '/dashboard';
@@ -114,90 +116,92 @@ const EmailLoginForm = () => {
 	};
 
 	return (
-		<Card>
-			<Form {...emailForm}>
-				<form onSubmit={onSubmitEmailForm} className='space-y-2 min-w-80'>
-					<CardHeader className='mb-5'>
-						<CardTitle className='text-2xl'>{t('seo_login')}</CardTitle>
-						<CardDescription>{t('seo_login_description')}</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<FormField
-							control={emailForm.control}
-							name='email'
-							render={({ field }) => (
-								<FormItem className='mb-5'>
-									<FormLabel>{t('seo_login_form_email')}</FormLabel>
-									<FormControl>
-										<Input
-											placeholder={t('seo_login_form_email_placeholder')}
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={emailForm.control}
-							name='password'
-							render={({ field }) => (
-								<FormItem className='mb-5'>
-									<FormLabel>{t('seo_login_form_password')}</FormLabel>
-									<FormControl>
-										<Input
-											type='password'
-											placeholder={t('seo_login_form_password_placeholder')}
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					</CardContent>
-					<CardFooter className='flex flex-col gap-2'>
-						<div className='w-full'>
-							<Button disabled={submitLoading} type='submit' className='w-full'>
-								{submitLoading && (
-									<Loader2 className='mr-1 size-4 animate-spin' />
-								)}
-								{t('seo_login_submit')}
-							</Button>
-							<div className='mt-4 text-center text-sm'>
-								{t('seo_login_no_account')}
-								<Link href='/register' className='underline'>
-									{t('seo_login_go_to_register')}
-								</Link>
-							</div>
-						</div>
-						{process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH === 'true' && (
-							<>
-								<div className='my-2 w-full relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border'>
-									<span className='relative z-10 bg-background dark:bg-card px-2 text-muted-foreground'>
-										OR
-									</span>
-								</div>
-								<div className='w-full grid grid-cols-2 gap-2'>
-									<Button
-										type='button'
-										className='w-full'
-										onClick={handleGoogleLogin}>
-										<GoogleIcon />
-									</Button>
-									<Button
-										type='button'
-										className='w-full'
-										onClick={handleGitHubLogin}>
-										<GithubIcon />
-									</Button>
-								</div>
-							</>
+		<Form {...emailForm}>
+			<form onSubmit={onSubmitEmailForm} className='space-y-2 min-w-100'>
+				<CardHeader className='mb-5'>
+					<CardTitle className='text-2xl'>{t('seo_login')}</CardTitle>
+					<CardDescription>{t('seo_login_description')}</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<FormField
+						control={emailForm.control}
+						name='email'
+						render={({ field }) => (
+							<FormItem className='mb-5'>
+								<FormLabel>{t('seo_login_form_email')}</FormLabel>
+								<FormControl>
+									<Input
+										placeholder={t('seo_login_form_email_placeholder')}
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
 						)}
-					</CardFooter>
-				</form>
-			</Form>
-		</Card>
+					/>
+					<FormField
+						control={emailForm.control}
+						name='password'
+						render={({ field }) => (
+							<FormItem className='mb-5'>
+								<FormLabel>{t('seo_login_form_password')}</FormLabel>
+								<FormControl>
+									<Input
+										type='password'
+										placeholder={t('seo_login_form_password_placeholder')}
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</CardContent>
+				<CardFooter className='flex flex-col gap-2'>
+					<Button disabled={submitLoading} type='submit' className='w-full'>
+						{submitLoading && <Loader2 className='mr-1 size-4 animate-spin' />}
+						{t('seo_login_submit')}
+					</Button>
+					{process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH === 'true' && (
+						<>
+							<div className='my-2 w-full relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border'>
+								<span className='relative z-10 bg-background px-2 text-muted-foreground'>
+									OR
+								</span>
+							</div>
+							<div className='w-full grid grid-cols-3 gap-2'>
+								<Button
+									type='button'
+									className='w-full'
+									onClick={handleGoogleLogin}>
+									<GoogleIcon />
+								</Button>
+								<Button
+									type='button'
+									className='w-full'
+									onClick={handleGitHubLogin}>
+									<GithubIcon />
+								</Button>
+								<Button
+									type='button'
+									className='w-full'
+									onClick={() => setLoginWay('phone')}>
+									<Phone />
+								</Button>
+							</div>
+						</>
+					)}
+					<div className='w-full'>
+						<div className='mt-4 text-center text-sm'>
+							<span className='mr-2'>{t('seo_login_no_account')}</span>
+							<Link href='/register' className='underline'>
+								{t('seo_login_go_to_register')}
+							</Link>
+						</div>
+					</div>
+				</CardFooter>
+			</form>
+		</Form>
 	);
 };
 
