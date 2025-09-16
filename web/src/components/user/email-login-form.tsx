@@ -36,6 +36,7 @@ import GithubIcon from '../icons/github-icon';
 import { GOOGLE_CLIENT_ID } from '@/config/google';
 import { GITHUB_CLIENT_ID } from '@/config/github';
 import { useLoginProvider } from '@/provider/login-provider';
+import WechatIcon from '../icons/wechat-icon';
 
 const EmailLoginForm = () => {
 	const t = useTranslations();
@@ -169,7 +170,17 @@ const EmailLoginForm = () => {
 									OR
 								</span>
 							</div>
-							<div className='w-full grid grid-cols-3 gap-2'>
+							<div className='w-full grid grid-cols-4 gap-2'>
+								<Link
+									href={`https://open.weixin.qq.com/connect/qrconnect?appid=${
+										process.env.NEXT_PUBLIC_WECHAT_APP_ID
+									}&redirect_uri=${encodeURIComponent(
+										`https://app.revornix.com/integrations/wechat/oauth/create/callback`
+									)}&response_type=code&scope=snsapi_login&state=ndkasnl#wechat_redirect`}>
+									<Button type='button' className='w-full'>
+										<WechatIcon />
+									</Button>
+								</Link>
 								<Button
 									type='button'
 									className='w-full'

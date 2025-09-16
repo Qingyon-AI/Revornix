@@ -618,6 +618,8 @@
     "account_phone_bind_form_code_placeholder": "请输入验证码",
     "account_phone_bind_form_send_code": "发送验证码",
     "account_phone_code_send_successfully": "验证码发送成功",
+    "account_wechat": "微信",
+    "account_wechat_description": "绑定微信后，即可通过微信扫码快速登录",
     "account_email": "邮箱",
     "account_email_description": "可作为登录方式",
     "account_email_format_error": "邮箱格式错误",

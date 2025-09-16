@@ -44,6 +44,8 @@ import type {
   UserInfoUpdateRequest,
   UserLoginRequest,
   UserPublicInfo,
+  WeChatUserBindRequest,
+  WeChatUserCreateRequest,
 } from '../models/index';
 import {
     BindEmailVerifyRequestFromJSON,
@@ -104,6 +106,10 @@ import {
     UserLoginRequestToJSON,
     UserPublicInfoFromJSON,
     UserPublicInfoToJSON,
+    WeChatUserBindRequestFromJSON,
+    WeChatUserBindRequestToJSON,
+    WeChatUserCreateRequestFromJSON,
+    WeChatUserCreateRequestToJSON,
 } from '../models/index';
 
 export interface BindEmailVerifyUserBindEmailVerifyPostRequest {
@@ -136,6 +142,12 @@ export interface BindPhoneVerifyUserBindPhoneVerifyPostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface BindWechatUserBindWechatPostRequest {
+    weChatUserBindRequest: WeChatUserBindRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest {
     emailUserCreateVerifyRequest: EmailUserCreateVerifyRequest;
 }
@@ -154,6 +166,10 @@ export interface CreateUserBySmsCodeUserCreateSmsCodePostRequest {
 
 export interface CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest {
     smsUserCodeVerifyCreate: SmsUserCodeVerifyCreate;
+}
+
+export interface CreateUserByWechatUserCreateWechatPostRequest {
+    weChatUserCreateRequest: WeChatUserCreateRequest;
 }
 
 export interface DeleteUserUserDeletePostRequest {
@@ -194,6 +210,11 @@ export interface SearchUserFollowsUserFollowsPostRequest {
 }
 
 export interface UnbindGithubUserUnbindGithubPostRequest {
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UnbindGithubUserUnbindWechatPostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -495,6 +516,53 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
+     * Bind Wechat
+     */
+    async bindWechatUserBindWechatPostRaw(requestParameters: BindWechatUserBindWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['weChatUserBindRequest'] == null) {
+            throw new runtime.RequiredError(
+                'weChatUserBindRequest',
+                'Required parameter "weChatUserBindRequest" was null or undefined when calling bindWechatUserBindWechatPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/bind/wechat`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: WeChatUserBindRequestToJSON(requestParameters['weChatUserBindRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Bind Wechat
+     */
+    async bindWechatUserBindWechatPost(requestParameters: BindWechatUserBindWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.bindWechatUserBindWechatPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Create User By Email Verify
      */
     async createUserByEmailVerifyUserCreateEmailVerifyPostRaw(requestParameters: CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
@@ -686,6 +754,45 @@ export class UserApi extends runtime.BaseAPI {
      */
     async createUserBySmsVerifyUserCreateSmsVerifyPost(requestParameters: CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
         const response = await this.createUserBySmsVerifyUserCreateSmsVerifyPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Create User By Wechat
+     */
+    async createUserByWechatUserCreateWechatPostRaw(requestParameters: CreateUserByWechatUserCreateWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        if (requestParameters['weChatUserCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'weChatUserCreateRequest',
+                'Required parameter "weChatUserCreateRequest" was null or undefined when calling createUserByWechatUserCreateWechatPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/user/create/wechat`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: WeChatUserCreateRequestToJSON(requestParameters['weChatUserCreateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create User By Wechat
+     */
+    async createUserByWechatUserCreateWechatPost(requestParameters: CreateUserByWechatUserCreateWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.createUserByWechatUserCreateWechatPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1014,6 +1121,43 @@ export class UserApi extends runtime.BaseAPI {
      */
     async unbindGithubUserUnbindGithubPost(requestParameters: UnbindGithubUserUnbindGithubPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.unbindGithubUserUnbindGithubPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Unbind Github
+     */
+    async unbindGithubUserUnbindWechatPostRaw(requestParameters: UnbindGithubUserUnbindWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/unbind/wechat`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Unbind Github
+     */
+    async unbindGithubUserUnbindWechatPost(requestParameters: UnbindGithubUserUnbindWechatPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.unbindGithubUserUnbindWechatPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

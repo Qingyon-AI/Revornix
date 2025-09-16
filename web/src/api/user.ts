@@ -33,4 +33,7 @@ export default {
     bindPhoneCode: API_PREFIX + '/user/bind/phone/code',
     bindPhoneVerify: API_PREFIX + '/user/bind/phone/verify',
     unBindPhone: API_PREFIX + '/user/unbind/phone',
+    createUserByWechat: API_PREFIX + '/user/create/wechat',
+    bindWeChat: API_PREFIX + '/user/bind/wechat',
+    unBindWeChat: API_PREFIX + '/user/unbind/wechat',
 } 

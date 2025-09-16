@@ -197,4 +197,7 @@ export * from './ValidationError';
 export * from './ValidationErrorLocInner';
 export * from './VectorSearchRequest';
 export * from './VectorSearchResponse';
+export * from './WeChatInfo';
+export * from './WeChatUserBindRequest';
+export * from './WeChatUserCreateRequest';
 export * from './WebsiteDocumentInfo';

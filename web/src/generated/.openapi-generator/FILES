@@ -209,6 +209,9 @@ models/ValidationError.ts
 models/ValidationErrorLocInner.ts
 models/VectorSearchRequest.ts
 models/VectorSearchResponse.ts
+models/WeChatInfo.ts
+models/WeChatUserBindRequest.ts
+models/WeChatUserCreateRequest.ts
 models/WebsiteDocumentInfo.ts
 models/index.ts
 runtime.ts
