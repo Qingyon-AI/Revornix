@@ -331,6 +331,11 @@ async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user)
     if phone_user is not None:
         res.phone_info = schemas.user.PhoneInfo(phone=phone_user.phone)
         
+    wechat_user = crud.user.get_wechat_user_by_user_id(db=db,
+                                                       user_id=user.id)
+    if wechat_user is not None:
+        res.wechat_info = schemas.user.WeChatInfo(nickname=wechat_user.wechat_user_name)
+        
     fans = crud.user.count_user_fans(db=db,
                                      user_id=user.id)
     follows = crud.user.count_user_follows(db=db,
