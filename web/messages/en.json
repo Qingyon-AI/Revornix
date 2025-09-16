@@ -642,6 +642,7 @@
     "account_github_description": "After binding your GitHub account, you can quickly log in with it",
     "account_google_description": "After binding your Google account, you can quickly log in with it",
     "account_password": "Password",
+    "account_password_without_email": "Please bind the email first",
     "account_password_origin_placeholder": "Please enter your current password",
     "account_password_new_placeholder": "Please enter your new password",
     "account_password_initial_password": "Initial Password",

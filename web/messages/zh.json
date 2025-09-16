@@ -638,6 +638,7 @@
     "account_github_description": "绑定GitHub账号后，即可通过GitHub账号快速登录此账号",
     "account_google_description": "绑定Google账号后，即可通过Google账号快速登录此账号",
     "account_password": "密码",
+    "account_password_without_email": "请先绑定邮箱",
     "account_password_origin_placeholder": "请输入你的原始密码",
     "account_password_new_placeholder": "请输入新密码",
     "account_password_initial_password": "初始密码",

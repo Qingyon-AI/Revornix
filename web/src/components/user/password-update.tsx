@@ -109,6 +109,9 @@ const PassWordUpdate = () => {
 
 	return (
 		<>
+			{userInfo && !userInfo.email_info && (
+				<p className='text-xs px-4'>{t('account_password_without_email')}</p>
+			)}
 			{userInfo && userInfo.email_info && (
 				<>
 					<Dialog
