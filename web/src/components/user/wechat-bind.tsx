@@ -47,7 +47,7 @@ const WeChatBind = () => {
 			{userInfo && !userInfo.wechat_info && (
 				<Link
 					href={`https://open.weixin.qq.com/connect/qrconnect?appid=${
-						process.env.NEXT_PUBLIC_WECHAT_WEBSITE_APP_ID
+						process.env.NEXT_PUBLIC_WECHAT_APP_ID
 					}&redirect_uri=${encodeURIComponent(
 						`https://app.revornix.com/integrations/wechat/oauth/bind/callback`
 					)}&response_type=code&scope=snsapi_login&state=ndkasnl#wechat_redirect`}>
