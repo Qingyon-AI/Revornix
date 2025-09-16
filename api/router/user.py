@@ -697,9 +697,9 @@ async def create_user_by_wechat(wechat_user_create_request: schemas.user.WeChatU
                                          nickname=nickname)
     db_wechat_user = crud.user.create_wechat_user(db=db, 
                                                   user_id=db_user.id, 
-                                                  wechat_open_id=openid, 
-                                                  wechat_union_id=union_id,
-                                                  wechat_name=nickname)
+                                                  wechat_user_open_id=openid, 
+                                                  wechat_user_union_id=union_id,
+                                                  wechat_user_name=nickname)
     # init the default file system for the user
     db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
                                                                     file_system_id=1,
@@ -745,9 +745,9 @@ async def bind_wechat(wechat_user_bind_request: schemas.user.WeChatUserBindReque
     nickname = response_user_info.get('nickname')
     db_wechat_user = crud.user.create_wechat_user(db=db, 
                                                   user_id=user.id, 
-                                                  wechat_open_id=openid, 
-                                                  wechat_union_id=union_id,
-                                                  wechat_name=nickname)
+                                                  wechat_user_open_id=openid, 
+                                                  wechat_user_union_id=union_id,
+                                                  wechat_user_name=nickname)
     db.commit()
     return schemas.common.SuccessResponse()
 

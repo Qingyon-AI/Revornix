@@ -18,9 +18,9 @@ def create_wechat_user(db: Session,
     if db_user is None:
         raise Exception("The base info of the wechat user you want to create is not exist")
     db_wechat_user = models.user.WechatUser(user_id=user_id,
-                                            wechat_open_id=wechat_user_open_id,
-                                            wechat_union_id=wechat_user_union_id,
-                                            wechat_name=wechat_user_name)
+                                            wechat_user_open_id=wechat_user_open_id,
+                                            wechat_user_union_id=wechat_user_union_id,
+                                            wechat_user_name=wechat_user_name)
     db.add(db_wechat_user)
     db.flush()
     return db_wechat_user
