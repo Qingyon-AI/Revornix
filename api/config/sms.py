@@ -1,0 +1,8 @@
+import os
+
+TENCENT_SECRET_ID = os.environ.get('TENCENT_SECRET_ID')
+TENCENT_SECRET_KEY = os.environ.get('TENCENT_SECRET_KEY')
+
+TENCENT_SMS_SDK_APP_ID = os.environ.get('TENCENT_SMS_SDK_APP_ID')
+TENCENT_SMS_APP_KEY = os.environ.get('TENCENT_SMS_APP_KEY')
+TENCENT_SMS_SIGN = os.environ.get('TENCENT_SMS_SIGN')

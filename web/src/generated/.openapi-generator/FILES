@@ -26,6 +26,8 @@ models/ApiKeyInfo.ts
 models/ApiKeysDeleteRequest.ts
 models/BaseSectionInfo.ts
 models/BindEmailVerifyRequest.ts
+models/BindPhoneCodeCreateRequest.ts
+models/BindPhoneCodeVerifyRequest.ts
 models/ChatItem.ts
 models/ChatMessages.ts
 models/CoverImage.ts
@@ -145,6 +147,7 @@ models/NotificationTemplate.ts
 models/NotificationTemplatesResponse.ts
 models/PaginationApiKeyInfo.ts
 models/PasswordUpdateRequest.ts
+models/PhoneInfo.ts
 models/PrivateUserInfo.ts
 models/ProvideEngineSearchResponse.ts
 models/ProvideFileSystemSearchResponse.ts
@@ -182,6 +185,8 @@ models/SectionDocumentInfo.ts
 models/SectionInfo.ts
 models/SectionSubscribeRequest.ts
 models/SectionUpdateRequest.ts
+models/SmsUserCodeCreateRequest.ts
+models/SmsUserCodeVerifyCreate.ts
 models/StarRequest.ts
 models/SuccessResponse.ts
 models/SummaryItem.ts

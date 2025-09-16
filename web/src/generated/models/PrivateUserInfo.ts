@@ -27,6 +27,13 @@ import {
     GoogleInfoToJSON,
     GoogleInfoToJSONTyped,
 } from './GoogleInfo';
+import type { PhoneInfo } from './PhoneInfo';
+import {
+    PhoneInfoFromJSON,
+    PhoneInfoFromJSONTyped,
+    PhoneInfoToJSON,
+    PhoneInfoToJSONTyped,
+} from './PhoneInfo';
 import type { GithubInfo } from './GithubInfo';
 import {
     GithubInfoFromJSON,
@@ -83,6 +90,12 @@ export interface PrivateUserInfo {
      * @memberof PrivateUserInfo
      */
     slogan?: string | null;
+    /**
+     * 
+     * @type {PhoneInfo}
+     * @memberof PrivateUserInfo
+     */
+    phone_info?: PhoneInfo | null;
     /**
      * 
      * @type {EmailInfo}
@@ -165,6 +178,7 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'avatar': json['avatar'] == null ? undefined : json['avatar'],
         'nickname': json['nickname'] == null ? undefined : json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
+        'phone_info': json['phone_info'] == null ? undefined : PhoneInfoFromJSON(json['phone_info']),
         'email_info': json['email_info'] == null ? undefined : EmailInfoFromJSON(json['email_info']),
         'github_info': json['github_info'] == null ? undefined : GithubInfoFromJSON(json['github_info']),
         'google_info': json['google_info'] == null ? undefined : GoogleInfoFromJSON(json['google_info']),
@@ -195,6 +209,7 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'avatar': value['avatar'],
         'nickname': value['nickname'],
         'slogan': value['slogan'],
+        'phone_info': PhoneInfoToJSON(value['phone_info']),
         'email_info': EmailInfoToJSON(value['email_info']),
         'github_info': GithubInfoToJSON(value['github_info']),
         'google_info': GoogleInfoToJSON(value['google_info']),

@@ -1,6 +1,13 @@
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
 from common.sql import Base
+
+class PhoneUser(Base):
+    __tablename__ = 'phone_user'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'), index=True)
+    phone = Column(String(20), index=True)
+    delete_at = Column(DateTime(timezone=True))
 
 class GoogleUser(Base):
     __tablename__ = 'google_user'

@@ -27,5 +27,10 @@ export default {
     bindGitHub: API_PREFIX + '/user/bind/github',
     bindGoogle: API_PREFIX + '/user/bind/google',
     unBindGitHub: API_PREFIX + '/user/unbind/github',
-    unBindGoogle: API_PREFIX + '/user/unbind/google'
+    unBindGoogle: API_PREFIX + '/user/unbind/google',
+    createSMSCode: API_PREFIX + '/user/create/sms/code',
+    createSMSUserVerify: API_PREFIX + '/user/create/sms/verify',
+    bindPhoneCode: API_PREFIX + '/user/bind/phone/code',
+    bindPhoneVerify: API_PREFIX + '/user/bind/phone/verify',
+    unBindPhone: API_PREFIX + '/user/unbind/phone',
 } 

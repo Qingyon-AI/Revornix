@@ -1,5 +1,5 @@
 import userApi from '@/api/user'
-import { BindEmailVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo } from '@/generated';
+import { BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo } from '@/generated';
 import { request } from '@/lib/request';
 
 export const getUserFans = async (data: SearchUserFansRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
@@ -128,4 +128,32 @@ export const unBindGitHub = async () => {
 
 export const unBindGoogle = async () => {
     return await request(userApi.unBindGoogle)
+}
+
+export const createUserSMSCode = async (data: SmsUserCodeCreateRequest): Promise<NormalResponse> => {
+    return await request(userApi.createSMSCode, {
+        data
+    })
+}
+
+export const createSMSUserVerify = async (data: SmsUserCodeVerifyCreate): Promise<TokenResponse> => {
+    return await request(userApi.createSMSUserVerify, {
+        data
+    })
+}
+
+export const bindPhoneCode = async (data: BindPhoneCodeCreateRequest): Promise<NormalResponse> => {
+    return await request(userApi.bindPhoneCode, {
+        data
+    })
+}
+
+export const bindPhoneVerify = async (data: BindPhoneCodeVerifyRequest): Promise<NormalResponse> => {
+    return await request(userApi.bindPhoneVerify, {
+        data
+    })
+}
+
+export const unBindPhone = async () => {
+    return await request(userApi.unBindPhone)
 }

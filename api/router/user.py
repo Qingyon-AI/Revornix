@@ -2,6 +2,9 @@ import crud
 import schemas
 import jwt
 import os
+import random
+import string
+from uuid import uuid4
 from jwt.exceptions import ExpiredSignatureError
 from jose import jwt
 from fastapi import APIRouter, Depends, Depends
@@ -10,12 +13,14 @@ from schemas.error import CustomException
 from common.jwt_utils import create_token
 from common.dependencies import get_db
 from common.hash import verify_password
-from common.dependencies import get_current_user, get_db
+from common.dependencies import get_current_user, get_db, get_cache
 from config.oauth2 import OAUTH_SECRET_KEY
-from common.google_utils import getGoogleToken
-from common.github_utils import getGithubToken, getGithubUserInfo, getGithubEmail
+from common.tp_auth.google_utils import getGoogleToken
+from redis import Redis
+from common.tp_auth.github_utils import getGithubToken, getGithubUserInfo
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from common.sms.tencent_sms import TencentSms
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 
 user_router = APIRouter()
@@ -320,6 +325,11 @@ async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user)
     if github_user is not None:
         res.github_info = schemas.user.GithubInfo(github_user_id=github_user.github_user_id)
         
+    phone_user = crud.user.get_phone_user_by_user_id(db=db, 
+                                                     user_id=user.id)
+    if phone_user is not None:
+        res.phone_info = schemas.user.PhoneInfo(phone=phone_user.phone)
+        
     fans = crud.user.count_user_fans(db=db,
                                      user_id=user.id)
     follows = crud.user.count_user_follows(db=db,
@@ -550,3 +560,112 @@ async def unbind_github(user = Depends(get_current_user),
                                             user_id=user.id)
     db.commit()
     return schemas.common.SuccessResponse(message="The github account is unbinded successfully.")
+
+@user_router.post('/create/sms/code', response_model=schemas.common.NormalResponse)
+async def create_user_by_sms_code(sms_user_code_create_request: schemas.user.SmsUserCodeCreateRequest,
+                                  db: Session = Depends(get_db),
+                                  cache: Redis = Depends(get_cache)):
+    code = "".join(random.sample(string.digits, 6))
+    await cache.set(sms_user_code_create_request.phone,
+                    code,
+                    600)
+    
+    sms_client = TencentSms.get_official_sms_client()
+    sms_client.send_register_msg(phone_numbers=[sms_user_code_create_request.phone],
+                                 code=code)
+    
+    res = schemas.common.SuccessResponse()
+    return res
+
+@user_router.post('/create/sms/verify', response_model=schemas.user.TokenResponse)
+async def create_user_by_sms_verify(sms_user_code_verify_request: schemas.user.SmsUserCodeVerifyCreate,
+                                    db: Session = Depends(get_db),
+                                    cache: Redis = Depends(get_cache)):
+    code = await cache.get(sms_user_code_verify_request.phone)
+    if code is None:
+        raise Exception("The code is expired")
+    if code != sms_user_code_verify_request.code:
+        raise Exception("The code is wrong")
+    await cache.delete(sms_user_code_verify_request.phone)
+    phone_user_exist = crud.user.get_phone_user_by_phone(db=db, 
+                                                         phone=sms_user_code_verify_request.phone)
+    if phone_user_exist is None:
+        raise Exception("The phone number is not registered")
+    
+    user_exist = crud.user.get_user_by_id(db=db,
+                                          id=phone_user_exist.user_id)
+    if user_exist != None:
+        access_token, refresh_token = create_token(user_exist)
+        return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
+    else:
+        db_user = crud.user.create_base_user(db=db, 
+                                             default_read_mark_reason=0,
+                                             nickname=f'Revornix User {uuid4().hex}',
+                                             avatar="files/default_avatar.png")
+        db_user_phone = crud.user.create_phone_user(db, 
+                                                    user_id=db_user.id, 
+                                                    phone=sms_user_code_verify_request.phone)
+         # init the default file system for the user
+        db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
+                                                                        file_system_id=1,
+                                                                        user_id=db_user.id,
+                                                                        title="Default File System",
+                                                                        description="The default file system for the user")
+        db_user.default_user_file_system = db_user_file_system.id
+        # create the minio file bucket for the user because it's the default file system
+        BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+        # init the default engine for the user
+        db_user_engine = crud.engine.create_user_engine(db=db,
+                                                        user_id=db_user.id,
+                                                        engine_id=1,
+                                                        title="Default Engine",
+                                                        description="The default engine for the user")
+        db_user.default_website_document_parse_user_engine_id = db_user_engine.id
+        db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+        db.commit()
+        access_token, refresh_token = create_token(db_user)
+        return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
+
+@user_router.post('/bind/phone/code', response_model=schemas.common.NormalResponse)
+async def bind_phone(bind_phone_code_create_request: schemas.user.BindPhoneCodeCreateRequest,
+                     user = Depends(get_current_user),
+                     cache: Redis = Depends(get_cache),
+                     db: Session = Depends(get_db)):
+    phone_exist = crud.user.get_phone_user_by_phone(db=db, phone=bind_phone_code_create_request.phone)
+    if phone_exist:
+        raise Exception('The phone number is already registered')
+    code = "".join(random.sample(string.digits, 6))
+    
+    sms_client = TencentSms.get_official_sms_client()
+    sms_client.send_register_msg(phone_numbers=[bind_phone_code_create_request.phone],
+                                 code=code)
+    
+    await cache.set(bind_phone_code_create_request.phone, 
+                    code, 
+                    600)
+    res = schemas.common.SuccessResponse()
+    return res
+
+@user_router.post('/bind/phone/verify', response_model=schemas.common.NormalResponse)
+async def bind_phone_verify(bind_phone_code_verify_request: schemas.user.BindPhoneCodeVerifyRequest,
+                            user = Depends(get_current_user),
+                            cache: Redis = Depends(get_cache),
+                            db: Session = Depends(get_db)):
+    code = await cache.get(bind_phone_code_verify_request.phone)
+    if code is None:
+        raise Exception('The code is expired')
+    if code != bind_phone_code_verify_request.code:
+        raise Exception('The code is wrong')
+    await cache.delete(bind_phone_code_verify_request.phone)
+    crud.user.create_phone_user(db=db, 
+                                user_id=user.id, 
+                                phone=bind_phone_code_verify_request.phone)
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+@user_router.post('/unbind/phone', response_model=schemas.common.NormalResponse)
+async def unbind_phone(user = Depends(get_current_user),
+                       db: Session = Depends(get_db)):
+    crud.user.delete_phone_user_by_user_id(db=db, user_id=user.id)
+    db.commit()
+    return schemas.common.SuccessResponse()

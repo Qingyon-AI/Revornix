@@ -16,6 +16,8 @@
 import * as runtime from '../runtime';
 import type {
   BindEmailVerifyRequest,
+  BindPhoneCodeCreateRequest,
+  BindPhoneCodeVerifyRequest,
   DefaultEngineUpdateRequest,
   DefaultFileSystemUpdateRequest,
   DefaultModelUpdateRequest,
@@ -34,6 +36,8 @@ import type {
   PrivateUserInfo,
   SearchUserFansRequest,
   SearchUserFollowsRequest,
+  SmsUserCodeCreateRequest,
+  SmsUserCodeVerifyCreate,
   TokenResponse,
   TokenUpdateRequest,
   UserInfoRequest,
@@ -44,6 +48,10 @@ import type {
 import {
     BindEmailVerifyRequestFromJSON,
     BindEmailVerifyRequestToJSON,
+    BindPhoneCodeCreateRequestFromJSON,
+    BindPhoneCodeCreateRequestToJSON,
+    BindPhoneCodeVerifyRequestFromJSON,
+    BindPhoneCodeVerifyRequestToJSON,
     DefaultEngineUpdateRequestFromJSON,
     DefaultEngineUpdateRequestToJSON,
     DefaultFileSystemUpdateRequestFromJSON,
@@ -80,6 +88,10 @@ import {
     SearchUserFansRequestToJSON,
     SearchUserFollowsRequestFromJSON,
     SearchUserFollowsRequestToJSON,
+    SmsUserCodeCreateRequestFromJSON,
+    SmsUserCodeCreateRequestToJSON,
+    SmsUserCodeVerifyCreateFromJSON,
+    SmsUserCodeVerifyCreateToJSON,
     TokenResponseFromJSON,
     TokenResponseToJSON,
     TokenUpdateRequestFromJSON,
@@ -112,6 +124,18 @@ export interface BindGoogleUserBindGooglePostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface BindPhoneUserBindPhoneCodePostRequest {
+    bindPhoneCodeCreateRequest: BindPhoneCodeCreateRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface BindPhoneVerifyUserBindPhoneVerifyPostRequest {
+    bindPhoneCodeVerifyRequest: BindPhoneCodeVerifyRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest {
     emailUserCreateVerifyRequest: EmailUserCreateVerifyRequest;
 }
@@ -122,6 +146,14 @@ export interface CreateUserByGithubUserCreateGithubPostRequest {
 
 export interface CreateUserByGoogleUserCreateGooglePostRequest {
     googleUserCreate: GoogleUserCreate;
+}
+
+export interface CreateUserBySmsCodeUserCreateSmsCodePostRequest {
+    smsUserCodeCreateRequest: SmsUserCodeCreateRequest;
+}
+
+export interface CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest {
+    smsUserCodeVerifyCreate: SmsUserCodeVerifyCreate;
 }
 
 export interface DeleteUserUserDeletePostRequest {
@@ -167,6 +199,11 @@ export interface UnbindGithubUserUnbindGithubPostRequest {
 }
 
 export interface UnbindGoogleUserUnbindGooglePostRequest {
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UnbindPhoneUserUnbindPhonePostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -364,6 +401,100 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
+     * Bind Phone
+     */
+    async bindPhoneUserBindPhoneCodePostRaw(requestParameters: BindPhoneUserBindPhoneCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['bindPhoneCodeCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'bindPhoneCodeCreateRequest',
+                'Required parameter "bindPhoneCodeCreateRequest" was null or undefined when calling bindPhoneUserBindPhoneCodePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/bind/phone/code`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: BindPhoneCodeCreateRequestToJSON(requestParameters['bindPhoneCodeCreateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Bind Phone
+     */
+    async bindPhoneUserBindPhoneCodePost(requestParameters: BindPhoneUserBindPhoneCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.bindPhoneUserBindPhoneCodePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Bind Phone Verify
+     */
+    async bindPhoneVerifyUserBindPhoneVerifyPostRaw(requestParameters: BindPhoneVerifyUserBindPhoneVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['bindPhoneCodeVerifyRequest'] == null) {
+            throw new runtime.RequiredError(
+                'bindPhoneCodeVerifyRequest',
+                'Required parameter "bindPhoneCodeVerifyRequest" was null or undefined when calling bindPhoneVerifyUserBindPhoneVerifyPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/bind/phone/verify`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: BindPhoneCodeVerifyRequestToJSON(requestParameters['bindPhoneCodeVerifyRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Bind Phone Verify
+     */
+    async bindPhoneVerifyUserBindPhoneVerifyPost(requestParameters: BindPhoneVerifyUserBindPhoneVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.bindPhoneVerifyUserBindPhoneVerifyPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Create User By Email Verify
      */
     async createUserByEmailVerifyUserCreateEmailVerifyPostRaw(requestParameters: CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
@@ -477,6 +608,84 @@ export class UserApi extends runtime.BaseAPI {
      */
     async createUserByGoogleUserCreateGooglePost(requestParameters: CreateUserByGoogleUserCreateGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
         const response = await this.createUserByGoogleUserCreateGooglePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Create User By Sms Code
+     */
+    async createUserBySmsCodeUserCreateSmsCodePostRaw(requestParameters: CreateUserBySmsCodeUserCreateSmsCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['smsUserCodeCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'smsUserCodeCreateRequest',
+                'Required parameter "smsUserCodeCreateRequest" was null or undefined when calling createUserBySmsCodeUserCreateSmsCodePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/user/create/sms/code`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SmsUserCodeCreateRequestToJSON(requestParameters['smsUserCodeCreateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create User By Sms Code
+     */
+    async createUserBySmsCodeUserCreateSmsCodePost(requestParameters: CreateUserBySmsCodeUserCreateSmsCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.createUserBySmsCodeUserCreateSmsCodePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Create User By Sms Verify
+     */
+    async createUserBySmsVerifyUserCreateSmsVerifyPostRaw(requestParameters: CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        if (requestParameters['smsUserCodeVerifyCreate'] == null) {
+            throw new runtime.RequiredError(
+                'smsUserCodeVerifyCreate',
+                'Required parameter "smsUserCodeVerifyCreate" was null or undefined when calling createUserBySmsVerifyUserCreateSmsVerifyPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/user/create/sms/verify`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SmsUserCodeVerifyCreateToJSON(requestParameters['smsUserCodeVerifyCreate']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create User By Sms Verify
+     */
+    async createUserBySmsVerifyUserCreateSmsVerifyPost(requestParameters: CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.createUserBySmsVerifyUserCreateSmsVerifyPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -842,6 +1051,43 @@ export class UserApi extends runtime.BaseAPI {
      */
     async unbindGoogleUserUnbindGooglePost(requestParameters: UnbindGoogleUserUnbindGooglePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.unbindGoogleUserUnbindGooglePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Unbind Phone
+     */
+    async unbindPhoneUserUnbindPhonePostRaw(requestParameters: UnbindPhoneUserUnbindPhonePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/unbind/phone`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Unbind Phone
+     */
+    async unbindPhoneUserUnbindPhonePost(requestParameters: UnbindPhoneUserUnbindPhonePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.unbindPhoneUserUnbindPhonePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

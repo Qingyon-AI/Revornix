@@ -13,6 +13,7 @@ import { getTranslations } from 'next-intl/server';
 import UserUUID from '@/components/user/uuid';
 import GitHubBind from '@/components/user/github-bind';
 import GoogleBind from '@/components/user/google-bind';
+import PhoneBind from '@/components/user/phone-bind';
 
 const AccountPage = async () => {
 	const t = await getTranslations();
@@ -80,6 +81,18 @@ const AccountPage = async () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<PassWordUpdate />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('account_phone_bind')}
+							<div className='text-[0.8rem] text-muted-foreground'>
+								{t('account_phone_bind_description')}
+							</div>
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<PhoneBind />
 						</div>
 					</div>
 					<Separator />

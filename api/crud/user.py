@@ -6,6 +6,22 @@ from datetime import datetime, timezone
 from common.hash import hash_password
 from sqlalchemy.orm import Session, selectinload
 
+def create_phone_user(db: Session, 
+                      user_id: int, 
+                      phone: str):
+    query = db.query(models.user.User)
+    query = query.filter(models.user.User.id == user_id,
+                         models.user.User.delete_at == None)
+    db_user = query.first()
+    if db_user is None:
+        raise Exception("The base info of the phone user you want to create is not exist")
+    
+    db_phone_user = models.user.PhoneUser(user_id=user_id, 
+                                          phone=phone)
+    db.add(db_phone_user)
+    db.flush()
+    return db_phone_user
+
 def create_follow_user_record(db: Session, 
                               from_user_id: int, 
                               to_user_id: int):
@@ -195,6 +211,22 @@ def search_next_user_follow(db: Session,
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.create_time.desc())
     query = query.filter(models.user.User.create_time < user.create_time)
+    return query.first()
+
+def get_phone_user_by_phone(db: Session,
+                            phone: str):
+    query = db.query(models.user.PhoneUser)
+    query = query.filter(models.user.PhoneUser.phone == phone,
+                         models.user.PhoneUser.delete_at == None)
+    return query.first()
+
+def get_phone_user_by_user_id(db: Session,
+                              user_id: int):
+    query = db.query(models.user.PhoneUser)
+    query = query.join(models.user.User)
+    query = query.filter(models.user.PhoneUser.user_id == user_id,
+                         models.user.PhoneUser.delete_at == None,
+                         models.user.User.delete_at == None)
     return query.first()
 
 def get_github_user_by_user_id(db: Session,
@@ -457,3 +489,11 @@ def delete_github_user_by_user_id(db: Session,
     query = query.update({"delete_at": now})
     db.flush()
     
+def delete_phone_user_by_user_id(db: Session,
+                                 user_id: int):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.user.PhoneUser)
+    query = query.filter(models.user.PhoneUser.user_id == user_id,
+                         models.user.PhoneUser.delete_at == None)
+    query = query.update({"delete_at": now})
+    db.flush()

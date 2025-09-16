@@ -1,6 +1,23 @@
 from pydantic import BaseModel, field_serializer
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
+class SmsUserCodeCreateRequest(BaseModel):
+    phone: str
+    
+class SmsUserCodeVerifyCreate(BaseModel):
+    phone: str
+    code: str
+    
+class BindPhoneCodeCreateRequest(BaseModel):
+    phone: str
+
+class BindPhoneCodeVerifyRequest(BaseModel):
+    phone: str
+    code: str
+
+class PhoneInfo(BaseModel):
+    phone: str
+    
 class GoogleUserCreate(BaseModel):
     code: str
     
@@ -9,6 +26,7 @@ class GoogleUserBind(BaseModel):
 
 class GithubUserCreate(BaseModel):
     code: str
+    
 class GithubUserBind(BaseModel):
     code: str
     
@@ -99,6 +117,7 @@ class PrivateUserInfo(BaseModel):
     avatar: str | None = None
     nickname: str | None = None
     slogan: str | None = None
+    phone_info: PhoneInfo | None = None
     email_info: EmailInfo | None = None
     github_info: GithubInfo | None = None
     google_info: GoogleInfo | None = None
