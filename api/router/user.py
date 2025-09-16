@@ -679,10 +679,12 @@ async def create_user_by_wechat(wechat_user_create_request: schemas.user.WeChatU
     openid = response_tokens.get('openid')
     if access_token is None or openid is None:
         raise CustomException('WeChat Login Failed', 401)
-    db_exist_user = crud.user.get_user_by_wechat_open_id(db=db, 
-                                                         wechat_open_id=openid)
-    if db_exist_user is not None:
-        access_token, refresh_token = create_token(db_exist_user)
+    db_exist_wechat_user = crud.user.get_wechat_user_by_wechat_open_id(db=db, 
+                                                                       wechat_user_open_id=openid)
+    if db_exist_wechat_user is not None:
+        db_user = crud.user.get_user_by_id(db=db, 
+                                           user_id=db_exist_wechat_user.user_id)
+        access_token, refresh_token = create_token(db_user)
         res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
         return res
     union_id = response_tokens.get('unionid')
