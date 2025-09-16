@@ -10,6 +10,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import Cookies from 'js-cookie';
 import {
 	SidebarMenu,
 	SidebarMenuButton,
@@ -40,33 +41,36 @@ export function NavUser() {
 		router.push('/login');
 	};
 
-	const notificationWebsocket = useWebSocket(NOTIFICATION_WS_API_PREFIX!, {
-		manual: true,
-		onMessage: (e) => {
-			const message = JSON.parse(e.data);
-			const notification = message.notification;
-			let action = null;
-			if (notification.link) {
-				action = {
-					label: t('notification_to_view'),
-					onClick: () => router.push(notification.link),
-				};
-			}
-			if (Notification.permission === 'granted') {
-				new Notification(t('notification_receive'), {
-					body: notification.content,
-					icon: 'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202504272029275.png',
+	const notificationWebsocket = useWebSocket(
+		`${NOTIFICATION_WS_API_PREFIX!}?access_token=${Cookies.get('access_token')}`,
+		{
+			manual: true,
+			onMessage: (e) => {
+				const message = JSON.parse(e.data);
+				const notification = message.notification;
+				let action = null;
+				if (notification.link) {
+					action = {
+						label: t('notification_to_view'),
+						onClick: () => router.push(notification.link),
+					};
+				}
+				if (Notification.permission === 'granted') {
+					new Notification(t('notification_receive'), {
+						body: notification.content,
+						icon: 'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202504272029275.png',
+					});
+				}
+				toast.info(t('notification_receive'), {
+					description: notification.content,
+					action: action,
 				});
-			}
-			toast.info(t('notification_receive'), {
-				description: notification.content,
-				action: action,
-			});
-			queryClient.invalidateQueries({
-				queryKey: ['searchMyNotifications', ''],
-			});
-		},
-	});
+				queryClient.invalidateQueries({
+					queryKey: ['searchMyNotifications', ''],
+				});
+			},
+		}
+	);
 
 	useEffect(() => {
 		if (userInfo) {

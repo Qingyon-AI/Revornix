@@ -1,24 +1,41 @@
 import crud
 import schemas
-import models
+from jose import jwt
 from sqlalchemy.orm import Session
 from fastapi import WebSocket, APIRouter, WebSocketDisconnect, Depends
 from common.apscheduler.app import scheduler
 from common.websocket import notificationManager
 from apscheduler.triggers.cron import CronTrigger
-from common.dependencies import get_current_user, get_current_user_with_websocket, get_db
+from common.dependencies import get_current_user, get_db
+from fastapi import status, WebSocketException
 from datetime import datetime
+from config.oauth2 import OAUTH_SECRET_KEY
 from common.apscheduler.app import send_notification
 from notification_template.daily_summary import DailySummaryNotificationTemplate
 from enums.notification import NotificationContentType, NotificationSourceCategory, NotificationTargetCategory
+from common.sql import SessionLocal
 
 notification_router = APIRouter()
     
 # 仅仅是前端用来接收消息的
-@notification_router.websocket("/")
-async def websocket_ask_ai(websocket: WebSocket, 
-                           current_user: models.user.User = Depends(get_current_user_with_websocket)):
-    websocket_id = current_user.uuid
+@notification_router.websocket("/ws")
+async def websocket_ask(websocket: WebSocket,
+                        db: Session = Depends(get_db)):
+    # 从 query 参数获取 token
+    token = websocket.query_params.get("access_token")
+    try:
+        payload = jwt.decode(token, OAUTH_SECRET_KEY, algorithms=['HS256'])
+        uuid: str = payload.get("sub")
+        if uuid is None:
+            raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+    except Exception as e:
+        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+    user = crud.user.get_user_by_uuid(db, user_uuid=uuid)
+    if user is None:
+        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+    if user.is_forbidden:
+         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+    websocket_id = user.uuid
     # 显式接受 WebSocket 连接
     await notificationManager.connect(id=websocket_id, 
                                       websocket=websocket)
@@ -29,6 +46,8 @@ async def websocket_ask_ai(websocket: WebSocket,
     except WebSocketDisconnect:
         notificationManager.disconnect(websocket_id)
         await notificationManager.broadcast(f"Client #{websocket} left the chat")
+    finally:
+        db.close()
         
 @notification_router.post('/template/all', response_model=schemas.notification.NotificationTemplatesResponse)
 async def get_notification_templates(user: schemas.user.PrivateUserInfo = Depends(get_current_user)):

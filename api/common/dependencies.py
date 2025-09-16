@@ -1,14 +1,12 @@
 import crud
-import schemas
 import models
 from jose import jwt
 from redis import Redis
-from typing import Annotated
 from sqlalchemy.orm import Session
 from common.sql import SessionLocal
 from datetime import datetime, timezone
 from config.oauth2 import OAUTH_SECRET_KEY
-from fastapi import Request, HTTPException, status, Depends, Header, Cookie, Query, WebSocketException
+from fastapi import Request, HTTPException, status, Depends, Header
 
 def get_db():
     db = SessionLocal()
@@ -22,28 +20,6 @@ def get_db():
 
 def get_cache(request: Request) -> Redis:
     return request.app.state.redis
-
-async def get_cookie_or_token(
-    access_token: Annotated[str | None, Cookie()] = None,
-    token: Annotated[str | None, Query()] = None,
-) -> str | None:
-    return access_token or token
-
-async def get_current_user_with_websocket(
-    token: Annotated[str | None, Depends(get_cookie_or_token)],
-    db: Session = Depends(get_db),
-) -> models.user.User:
-    if token is None:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    try:
-        payload = jwt.decode(token, OAUTH_SECRET_KEY, algorithms=['HS256'])
-        uuid: str = payload.get("sub")
-        if uuid is None:
-            raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    except Exception as e:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    user = crud.user.get_user_by_uuid(db, user_uuid=uuid)
-    return user
 
 def get_api_key(api_key: str | None = Header(default=None), 
                 db: Session = Depends(get_db)) -> models.api_key.ApiKey:
@@ -124,7 +100,6 @@ def get_current_user(authorization: str | None = Header(default=None),
     except Exception as e:
         raise credentials_exception
     user = crud.user.get_user_by_uuid(db, user_uuid=uuid)
-    from fastapi.encoders import jsonable_encoder
     if user is None:
         raise credentials_exception
     if user.is_forbidden:
