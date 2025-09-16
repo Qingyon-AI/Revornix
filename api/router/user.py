@@ -748,6 +748,10 @@ async def bind_wechat(wechat_user_bind_request: schemas.user.WeChatUserBindReque
     union_id = response_tokens.get('unionid')
     response_user_info = get_user_info(access_token, openid)
     nickname = response_user_info.get('nickname')
+    db_github_exist = crud.user.get_wechat_user_by_wechat_open_id(db=db, 
+                                                                  wechat_user_open_id=openid)
+    if db_github_exist is not None:
+        raise Exception("The wechat account has been bound by other user")
     db_wechat_user = crud.user.create_wechat_user(db=db, 
                                                   user_id=user.id, 
                                                   wechat_user_open_id=openid, 
