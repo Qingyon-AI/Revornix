@@ -90,7 +90,7 @@ const SectionMarkdown = ({
 
 	return (
 		<>
-			{((isFetching && !isFetched) || (markdownIsFetching && !isFetched)) && (
+			{((isFetching && !isFetched) || markdownIsFetching) && (
 				<Skeleton className='h-full w-full' />
 			)}
 
