@@ -133,18 +133,22 @@ const AddRss = () => {
 			}
 			form.setValue('cover', undefined);
 			setTempFile(undefined);
-			const parser = new Parser();
-			const [res, err] = await utils.to(
-				parser.parseURL(form.getValues('address'))
-			);
-			if (err || !res) {
-				toast.error(err);
-			} else {
-				const { title, description, image } = res;
-				title && form.setValue('title', title);
-				description && form.setValue('description', description);
-				image && form.setValue('cover', image.url);
+
+			const response = await fetch(form.getValues('address'));
+
+			if (!response.ok) {
+				toast.error(t('rss_test_failed'));
+				return;
 			}
+
+			const response_text = await response.text();
+			const parser = new Parser();
+			const res = await parser.parseString(response_text);
+
+			const { title, description, image } = res;
+			title && form.setValue('title', title);
+			description && form.setValue('description', description);
+			image && form.setValue('cover', image.url);
 		});
 	};
 
@@ -154,14 +158,11 @@ const AddRss = () => {
 			if (!isValidate) {
 				return;
 			}
-			const parser = new Parser();
-			const [res, err] = await utils.to(
-				parser.parseURL(form.getValues('address'))
-			);
-			if (err || !res) {
-				toast.error(t('rss_test_failed'));
-			} else {
+			const response = await fetch(form.getValues('address'));
+			if (response.ok) {
 				toast.success(t('rss_test_successful'));
+			} else {
+				toast.error(t('rss_test_failed'));
 			}
 		});
 	};
@@ -194,14 +195,17 @@ const AddRss = () => {
 					<PlusCircle />
 				</Button>
 			</DialogTrigger>
-			<DialogContent className='max-h-[80vh] overflow-auto'>
+			<DialogContent className='max-h-[80vh] flex flex-col'>
 				<DialogHeader>
 					<DialogTitle>{t('rss_add')}</DialogTitle>
 					<DialogDescription>{t('rss_add_tips')}</DialogDescription>
 				</DialogHeader>
 
 				<Form {...form}>
-					<form id='add-form' className='space-y-5' onSubmit={handleSubmit}>
+					<form
+						id='add-form'
+						className='space-y-5 flex-1 overflow-auto p-1'
+						onSubmit={handleSubmit}>
 						<FormField
 							name='address'
 							control={form.control}
@@ -376,6 +380,9 @@ const AddRss = () => {
 						)}
 					</form>
 				</Form>
+
+				<Separator />
+
 				<DialogFooter className='w-full flex flex-row !justify-between items-center'>
 					<div className='flex flex-row gap-3 items-center h-5'>
 						<Button
