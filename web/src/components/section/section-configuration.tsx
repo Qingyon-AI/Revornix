@@ -37,8 +37,15 @@ import MultipleSelector, { Option } from '../ui/multiple-selector';
 import { Skeleton } from '../ui/skeleton';
 import AddSectionLabelDialog from '../document/add-section-label-dialog';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
 
-const SectionConfiguration = ({ section_id }: { section_id: number }) => {
+const SectionConfiguration = ({
+	section_id,
+	className,
+}: {
+	section_id: number;
+	className?: string;
+}) => {
 	const t = useTranslations();
 
 	const updateFormSchema = z.object({
@@ -140,7 +147,9 @@ const SectionConfiguration = ({ section_id }: { section_id: number }) => {
 	return (
 		<Sheet>
 			<SheetTrigger asChild>
-				<Button className='text-xs'>{t('section_configuration_title')}</Button>
+				<Button className={cn('text-xs', className)} variant={'ghost'}>
+					{t('section_configuration_title')}
+				</Button>
 			</SheetTrigger>
 			<SheetContent onOpenAutoFocus={(e) => e.preventDefault()}>
 				<SheetHeader>

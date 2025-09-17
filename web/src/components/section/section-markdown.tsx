@@ -13,16 +13,24 @@ import CustomImage from '../ui/custom-image';
 import { useUserContext } from '@/provider/user-provider';
 import { toast } from 'sonner';
 import { FileService } from '@/lib/file';
-import {
-	getUserFileSystemDetail,
-} from '@/service/file-system';
+import { getUserFileSystemDetail } from '@/service/file-system';
+import { Separator } from '../ui/separator';
+import SectionOperate from './section-operate';
+import { cn } from '@/lib/utils';
 
-const SectionMarkdown = ({ id }: { id: number }) => {
+const SectionMarkdown = ({
+	id,
+	className,
+}: {
+	id: number;
+	className?: string;
+}) => {
 	const t = useTranslations();
 	const { userInfo } = useUserContext();
 	const {
 		data: section,
 		isFetching,
+		isFetched,
 		error,
 		isError,
 	} = useQuery({
@@ -82,44 +90,44 @@ const SectionMarkdown = ({ id }: { id: number }) => {
 
 	return (
 		<>
-			{isFetching ||
-				(markdownIsFetching && <Skeleton className='h-full w-full' />)}
-			<div
-				className='h-full w-full prose mx-auto dark:prose-invert'>
-				{!isFetching &&
-					section &&
-					section.documents &&
-					section.documents.length === 0 && (
-						<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
-							<div className='flex flex-col text-center gap-2'>
-								<p>{t('section_document_empty')}</p>
-							</div>
-						</div>
-					)}
+			{((isFetching && !isFetched) || (markdownIsFetching && !isFetched)) && (
+				<Skeleton className='h-full w-full' />
+			)}
+
+			<div className={cn('h-full w-full relative', className)}>
 				{((isError && error) || markdownGetError) && (
 					<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 						{error?.message ?? (
-							<div className='flex flex-col text-center gap-2'>
+							<div className='flex flex-col text-center gap-2 w-full'>
 								<p>{markdownGetError}</p>
+								<Separator />
+								<SectionOperate id={id} />
 							</div>
 						)}
 					</div>
 				)}
+
 				{markdown && !isError && !markdownGetError && (
-					<div className='prose dark:prose-invert mx-auto'>
-						<Markdown
-							components={{
-								img: (props) => {
-									return <CustomImage {...props} />;
-								},
-							}}
-							remarkPlugins={[remarkMath, remarkGfm]}
-							rehypePlugins={[rehypeKatex, rehypeRaw]}>
-							{markdown}
-						</Markdown>
-						<p className='text-xs text-muted-foreground bg-muted rounded py-2'>
-							{t('section_ai_tips')}
-						</p>
+					<div className='w-full h-full flex flex-col'>
+						<div className='flex-1 overflow-auto relative'>
+							<div className='prose dark:prose-invert mx-auto pb-5'>
+								<Markdown
+									components={{
+										img: (props) => {
+											return <CustomImage {...props} />;
+										},
+									}}
+									remarkPlugins={[remarkMath, remarkGfm]}
+									rehypePlugins={[rehypeKatex, rehypeRaw]}>
+									{markdown}
+								</Markdown>
+								<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
+									{t('section_ai_tips')}
+								</p>
+							</div>
+						</div>
+						<Separator className='mb-5' />
+						<SectionOperate id={id} />
 					</div>
 				)}
 			</div>

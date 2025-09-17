@@ -17,8 +17,15 @@ import { Loader2 } from 'lucide-react';
 import { deleteSection } from '@/service/section';
 import { useRouter } from 'nextjs-toploader/app';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
 
-const SectionDelete = ({ section_id }: { section_id: number }) => {
+const SectionDelete = ({
+	section_id,
+	className,
+}: {
+	section_id: number;
+	className?: string;
+}) => {
 	const t = useTranslations();
 	const router = useRouter();
 	const queryClient = getQueryClient();
@@ -52,7 +59,7 @@ const SectionDelete = ({ section_id }: { section_id: number }) => {
 		<>
 			<Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<DialogTrigger asChild>
-					<Button variant={'destructive'} className='text-xs'>
+					<Button variant={'ghost'} className={cn('text-xs', className)}>
 						{t('section_delete')}
 					</Button>
 				</DialogTrigger>

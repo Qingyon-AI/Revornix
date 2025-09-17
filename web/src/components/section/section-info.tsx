@@ -5,22 +5,21 @@ import { useQuery } from '@tanstack/react-query';
 import { formatDistance } from 'date-fns';
 import { Card } from '../ui/card';
 import { useUserContext } from '@/provider/user-provider';
-import SectionConfiguration from './section-configuration';
 import SectionDocument from './section-document';
 import { useRouter } from 'nextjs-toploader/app';
 import SectionComments from './section-comments';
-import SectionSubscribe from './section-subscribe';
-import SectionDelete from './section-delete';
 import { Badge } from '../ui/badge';
 import { useLocale, useTranslations } from 'next-intl';
 import CustomImage from '../ui/custom-image';
+import SectionOperate from './section-operate';
+import { Alert, AlertTitle } from '../ui/alert';
+import { ShieldAlert } from 'lucide-react';
 
 const SectionInfo = ({ id }: { id: number }) => {
 	const locale = useLocale();
 	const t = useTranslations();
 	const router = useRouter();
 
-	const { userInfo } = useUserContext();
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
@@ -30,17 +29,6 @@ const SectionInfo = ({ id }: { id: number }) => {
 
 	return (
 		<Card className='h-full overflow-auto flex py-0 col-span-4 gap-0 relative'>
-			<div className='z-10 flex flex-row gap-2 items-center absolute top-0 right-0 p-5 bg-linear-to-b from-white dark:from-black w-full justify-end'>
-				{section && userInfo?.id === section?.creator.id && (
-					<>
-						<SectionConfiguration section_id={id} />
-						<SectionDelete section_id={id} />
-					</>
-				)}
-				{section && userInfo?.id !== section?.creator.id && (
-					<SectionSubscribe section_id={id} />
-				)}
-			</div>
 			<div className='h-full overflow-auto pb-5'>
 				<div className='mb-5'>
 					<img
@@ -52,8 +40,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 				{section?.update_time && (
 					<div className='px-5 mb-3'>
 						<p className='text-xs text-muted-foreground'>
-							{t('section_updated_at')}
-							{' '}
+							{t('section_updated_at')}{' '}
 							{formatDistance(new Date(section.update_time), new Date(), {
 								addSuffix: true,
 								locale: locale === 'zh' ? zhCN : enUS,
