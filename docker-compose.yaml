@@ -77,6 +77,7 @@ services:
       - TENCENT_SMS_SIGN=${TENCENT_SMS_SIGN}
       - WECHAT_APP_ID=${WECHAT_APP_ID}
       - WECHAT_APP_SECRET=${WECHAT_APP_SECRET}
+      - APIKEY_ENCRYPT_KEY=${APIKEY_ENCRYPT_KEY}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s
@@ -111,6 +112,7 @@ services:
       - FILE_SYSTEM_USER_NAME=${FILE_SYSTEM_USER_NAME}
       - FILE_SYSTEM_PASSWORD=${FILE_SYSTEM_PASSWORD}
       - HF_ENDPOINT=${HF_ENDPOINT}
+      - APIKEY_ENCRYPT_KEY=${APIKEY_ENCRYPT_KEY}
 
   file-backend:
     image: minio/minio
