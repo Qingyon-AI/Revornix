@@ -84,54 +84,58 @@ const AccountPage = async () => {
 							<PassWordUpdate />
 						</div>
 					</div>
-					<Separator />
-					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>
-							{t('account_wechat')}
-							<div className='text-[0.8rem] text-muted-foreground'>
-								{t('account_wechat_description')}
+					{process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH === 'true' && (
+						<>
+							<Separator />
+							<div className='flex justify-between items-center'>
+								<Label className='flex flex-col gap-2 items-start'>
+									{t('account_wechat')}
+									<div className='text-[0.8rem] text-muted-foreground'>
+										{t('account_wechat_description')}
+									</div>
+								</Label>
+								<div className='flex flex-col gap-2'>
+									<WeChatBind />
+								</div>
 							</div>
-						</Label>
-						<div className='flex flex-col gap-2'>
-							<WeChatBind />
-						</div>
-					</div>
-					<Separator />
-					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>
-							{t('account_phone_bind')}
-							<div className='text-[0.8rem] text-muted-foreground'>
-								{t('account_phone_bind_description')}
+							<Separator />
+							<div className='flex justify-between items-center'>
+								<Label className='flex flex-col gap-2 items-start'>
+									{t('account_phone_bind')}
+									<div className='text-[0.8rem] text-muted-foreground'>
+										{t('account_phone_bind_description')}
+									</div>
+								</Label>
+								<div className='flex flex-col gap-2'>
+									<PhoneBind />
+								</div>
 							</div>
-						</Label>
-						<div className='flex flex-col gap-2'>
-							<PhoneBind />
-						</div>
-					</div>
-					<Separator />
-					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>
-							GitHub
-							<div className='text-[0.8rem] text-muted-foreground'>
-								{t('account_github_description')}
+							<Separator />
+							<div className='flex justify-between items-center'>
+								<Label className='flex flex-col gap-2 items-start'>
+									GitHub
+									<div className='text-[0.8rem] text-muted-foreground'>
+										{t('account_github_description')}
+									</div>
+								</Label>
+								<div className='flex flex-col gap-2'>
+									<GitHubBind />
+								</div>
 							</div>
-						</Label>
-						<div className='flex flex-col gap-2'>
-							<GitHubBind />
-						</div>
-					</div>
-					<Separator />
-					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>
-							Google
-							<div className='text-[0.8rem] text-muted-foreground'>
-								{t('account_google_description')}
+							<Separator />
+							<div className='flex justify-between items-center'>
+								<Label className='flex flex-col gap-2 items-start'>
+									Google
+									<div className='text-[0.8rem] text-muted-foreground'>
+										{t('account_google_description')}
+									</div>
+								</Label>
+								<div className='flex flex-col gap-2'>
+									<GoogleBind />
+								</div>
 							</div>
-						</Label>
-						<div className='flex flex-col gap-2'>
-							<GoogleBind />
-						</div>
-					</div>
+						</>
+					)}
 				</CardContent>
 			</Card>
 			<Card className='mb-5'>
