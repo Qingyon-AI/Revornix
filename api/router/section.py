@@ -344,9 +344,9 @@ async def get_section_detail(section_detail_request: schemas.section.SectionDeta
     db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                               section_id=db_section.id,
                                                                               user_id=user.id)
-    # 判断用户是否具有该专栏的访问权限
-    if db_user_section is None:
-        raise Exception("You don't have permission to access this section")
+    # 判断用户是否具有该专栏的访问权限 后续收费订阅制启动后取消注释
+    # if db_user_section is None:
+    #     raise Exception("You don't have permission to access this section")
     
     if db_user_section is not None and db_user_section.authority == UserSectionAuthority.READ_ONLY:
         if db_user_section.expire_time is None or db_user_section.expire_time > now:
