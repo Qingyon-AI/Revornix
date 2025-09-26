@@ -17,15 +17,17 @@ const SectionOperate = ({ id }: { id: number }) => {
 
 	return (
 		<div className='w-full flex justify-between'>
-			{section && <SectionShare section_id={id} />}
 			{section && userInfo?.id === section?.creator.id && (
 				<>
+					<SectionShare section_id={id} />
 					<SectionConfiguration section_id={id} className='flex-1 w-full' />
 					<SectionDelete section_id={id} className='flex-1 w-full' />
 				</>
 			)}
 			{section && userInfo?.id !== section?.creator.id && (
-				<SectionSubscribe section_id={id} />
+				<>
+					<SectionSubscribe section_id={id} className='flex-1 w-full' />
+				</>
 			)}
 		</div>
 	);

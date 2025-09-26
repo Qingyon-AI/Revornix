@@ -90,24 +90,24 @@ const SectionMarkdown = ({
 
 	return (
 		<>
-			{((isFetching && !isFetched) || markdownIsFetching) && (
+			{!markdown && !isError && !markdownGetError && (
 				<Skeleton className='h-full w-full' />
 			)}
 
-			<div className={cn('h-full w-full relative', className)}>
-				{((isError && error) || markdownGetError) && (
-					<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
-						{error?.message ?? (
-							<div className='flex flex-col text-center gap-2 w-full'>
-								<p>{markdownGetError}</p>
-								<Separator />
-								<SectionOperate id={id} />
-							</div>
-						)}
-					</div>
-				)}
+			{(isError || markdownGetError) && (
+				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs relative'>
+					{error?.message ?? (
+						<div className='flex flex-col text-center gap-2 w-full'>
+							<p>{markdownGetError}</p>
+							<Separator />
+							<SectionOperate id={id} />
+						</div>
+					)}
+				</div>
+			)}
 
-				{markdown && !isError && !markdownGetError && (
+			{markdown && !isError && !markdownGetError && (
+				<div className={cn('h-full w-full relative', className)}>
 					<div className='w-full h-full flex flex-col'>
 						<div className='flex-1 overflow-auto relative'>
 							<div className='prose dark:prose-invert mx-auto pb-5'>
@@ -129,8 +129,8 @@ const SectionMarkdown = ({
 						<Separator className='mb-5' />
 						<SectionOperate id={id} />
 					</div>
-				)}
-			</div>
+				</div>
+			)}
 		</>
 	);
 };

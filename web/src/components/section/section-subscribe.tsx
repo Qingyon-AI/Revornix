@@ -7,8 +7,15 @@ import { useState } from 'react';
 import { utils } from '@kinda/utils';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
 
-const SectionSubscribe = ({ section_id }: { section_id: number }) => {
+const SectionSubscribe = ({
+	section_id,
+	className,
+}: {
+	section_id: number;
+	className?: string;
+}) => {
 	const t = useTranslations();
 	const id = section_id;
 	const [subscribing, setSubscribing] = useState(false);
@@ -48,17 +55,16 @@ const SectionSubscribe = ({ section_id }: { section_id: number }) => {
 
 	return (
 		<>
-			<div>
-				<Button
-					className='shadow-none text-xs'
-					disabled={subscribing}
-					onClick={handleUpdateSubscribeStatue}>
-					{section?.is_subscribed
-						? t('section_unsubscribe')
-						: t('section_subscribe')}
-					{subscribing && <Loader2 className='animate-spin' />}
-				</Button>
-			</div>
+			<Button
+				className={cn('text-xs', className)}
+				variant={'ghost'}
+				disabled={subscribing}
+				onClick={handleUpdateSubscribeStatue}>
+				{section?.is_subscribed
+					? t('section_unsubscribe')
+					: t('section_subscribe')}
+				{subscribing && <Loader2 className='animate-spin' />}
+			</Button>
 		</>
 	);
 };
