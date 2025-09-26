@@ -140,8 +140,10 @@ services:
     environment:
       NEO4J_AUTH: ${NEO4J_AUTH}
       NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_allowlist: "apoc.*"
     volumes:
       - neo4j-data:/data
+      - ./neo4j/plugins:/plugins
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7474"]
       interval: 30s
