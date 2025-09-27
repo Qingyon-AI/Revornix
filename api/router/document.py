@@ -345,6 +345,56 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         task_chain.apply_async()
     return schemas.document.DocumentCreateResponse(document_id=db_document.id)
 
+@document_router.post('/update', response_model=schemas.common.NormalResponse)
+async def update_document(document_update_request: schemas.document.DocumentUpdateRequest,
+                          db: Session = Depends(get_db), 
+                          user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    now = datetime.now(tz=timezone.utc)
+    db_document = crud.document.get_document_by_document_id(db=db, 
+                                                            document_id=document_update_request.document_id)
+    if db_document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+    
+    if db_document.creator_id != user.id:
+        raise schemas.error.CustomException("You dont have permission to update this document", code=403)
+    
+    if document_update_request.title is not None:
+        db_document.title = document_update_request.title
+    if document_update_request.description is not None:
+        db_document.description = document_update_request.description
+    if document_update_request.cover is not None:
+        db_document.cover = document_update_request.cover
+    if document_update_request.labels is not None:
+        exist_document_labels = crud.document.get_document_labels_by_document_id(db=db, 
+                                                                                 document_id=document_update_request.document_id)
+        exist_document_label_ids = [label.id for label in exist_document_labels]
+        new_document_label_ids = [label_id for label_id in document_update_request.labels if label_id not in exist_document_label_ids]
+        crud.document.bind_labels_to_document(db=db, 
+                                              document_id=document_update_request.document_id, 
+                                              label_ids=new_document_label_ids)
+        labels_to_delete = [label.id for label in exist_document_labels if label.id not in document_update_request.labels]
+        crud.document.delete_document_labels_by_label_ids(db=db,
+                                                          label_ids=labels_to_delete)
+    if document_update_request.sections is not None:
+        exist_document_sections = crud.document.get_sections_by_document_id(db=db, 
+                                                                            document_id=document_update_request.document_id)
+        exist_document_section_ids = [section.id for section in exist_document_sections]
+        new_section_label_ids = [section_id for section_id in document_update_request.sections if section_id not in exist_document_section_ids]
+        for section_id in new_section_label_ids:
+            crud.section.bind_document_to_section(db=db, 
+                                                  section_id=section_id,
+                                                  document_id=document_update_request.document_id)
+        sections_to_delete = [section.id for section in exist_document_sections if section.id not in document_update_request.sections]
+        for section_id in sections_to_delete:
+            crud.section.unbind_document_from_section(db=db,
+                                                      section_id=section_id,
+                                                      document_id=document_update_request.document_id)
+        if sorted(exist_document_section_ids) != sorted(document_update_request.sections):
+            update_sections.delay(document_update_request.sections, db_document.id, user.id)
+    db_document.update_time = now
+    db.commit()
+    return schemas.common.NormalResponse()
+
 @document_router.post('/label/summary', response_model=schemas.document.LabelSummaryResponse)
 async def get_label_summary(db: Session = Depends(get_db),
                             user: schemas.user.PrivateUserInfo = Depends(get_current_user)):

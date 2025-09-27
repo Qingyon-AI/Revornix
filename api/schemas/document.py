@@ -4,6 +4,14 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 from .user import UserPublicInfo
 from .task import DocumentTransformTask, DocumentEmbeddingTask
 
+class DocumentUpdateRequest(BaseModel):
+    document_id: int
+    title: str | None = None
+    description: str | None = None
+    cover: str | None = None
+    labels: list[int] | None = None
+    sections: list[int] | None = None
+
 class LabelDeleteRequest(BaseModel):
     label_ids: list[int]
     

@@ -7,6 +7,7 @@ export default {
     searchUserUnreadDocument: API_PREFIX + '/document/unread/search',
     searchUserRecentReadDocument: API_PREFIX + '/document/recent/search',
     documentDetail: API_PREFIX + '/document/detail',
+    updateDocument: API_PREFIX + '/document/update',
     starDocument: API_PREFIX + '/document/star',
     readDocument: API_PREFIX + '/document/read',
     deleteDocument: API_PREFIX + '/document/delete',

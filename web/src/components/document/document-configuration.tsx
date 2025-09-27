@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl';
+import z from 'zod';
 import {
 	Form,
 	FormField,
@@ -7,10 +9,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Pencil } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
-import { Switch } from '../ui/switch';
-import CoverUpdate from './cover-update';
 import {
 	Sheet,
 	SheetContent,
@@ -24,73 +24,69 @@ import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { getQueryClient } from '@/lib/get-query-client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { utils } from '@kinda/utils';
 import {
-	getMineLabels,
-	getSectionDetail,
-	updateSection,
-} from '@/service/section';
+	getLabels,
+	getDocumentDetail,
+	updateDocument,
+} from '@/service/document';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import MultipleSelector, { Option } from '../ui/multiple-selector';
 import { Skeleton } from '../ui/skeleton';
-import AddSectionLabelDialog from './add-section-label-dialog';
-import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import AddDocumentLabelDialog from './add-document-label-dialog';
+import { getAllMineSections } from '@/service/section';
 
-const SectionConfiguration = ({
-	section_id,
+const DocumentConfiguration = ({
+	document_id,
 	className,
 }: {
-	section_id: number;
+	document_id: number;
 	className?: string;
 }) => {
 	const t = useTranslations();
 
 	const updateFormSchema = z.object({
-		section_id: z.number().int(),
+		document_id: z.number().int(),
 		cover: z.string().optional(),
 		title: z.string().min(1),
 		description: z.string().min(1),
-		public: z.boolean(),
 		labels: z.array(z.number()),
+		sections: z.array(z.number()),
 	});
-	const id = section_id;
+	const id = document_id;
 
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
 
 	const { data: labels } = useQuery({
-		queryKey: ['getSectionLabels'],
-		queryFn: getMineLabels,
+		queryKey: ['getDocumentLabels'],
+		queryFn: getLabels,
 	});
 
-	const { data: section } = useQuery({
-		queryKey: ['getSectionDetail', id],
+	const { data: sections } = useQuery({
+		queryKey: ['getMineDocumentSections'],
+		queryFn: getAllMineSections,
+	});
+
+	const { data: document } = useQuery({
+		queryKey: ['getDocumentDetail', id],
 		queryFn: async () => {
-			return getSectionDetail({ section_id: id });
+			return getDocumentDetail({ document_id: id });
 		},
 	});
 
 	const form = useForm({
 		defaultValues: {
-			section_id: id,
+			document_id: id,
 			title: '',
 			cover: undefined,
 			description: '',
-			public: false,
 			labels: [],
+			sections: [],
 		},
 		resolver: zodResolver(updateFormSchema),
 	});
-
-	useEffect(() => {
-		form.setValue('title', section?.title || '');
-		form.setValue('description', section?.description || '');
-		form.setValue('public', section?.public || false);
-		form.setValue('cover', section?.cover || undefined);
-		form.setValue('labels', section?.labels?.map((label) => label.id) || []);
-	}, [section]);
 
 	const getLabelByValue = (value: number): Option | undefined => {
 		if (!labels) return;
@@ -101,9 +97,29 @@ const SectionConfiguration = ({
 			.find((label) => label.value === value);
 	};
 
+	const getSectionByValue = (value: number): Option | undefined => {
+		if (!sections) return;
+		return sections.data
+			.map((section) => {
+				return { label: section.title, value: section.id };
+			})
+			.find((section) => section.value === value);
+	};
+
 	const [updating, setUpdating] = useState<boolean>(false);
 
 	const queryClient = getQueryClient();
+
+	useEffect(() => {
+		form.setValue('title', document?.title || '');
+		form.setValue('description', document?.description || '');
+		form.setValue('cover', document?.cover || undefined);
+		form.setValue('labels', document?.labels?.map((label) => label.id) || []);
+		form.setValue(
+			'sections',
+			document?.sections?.map((section) => section.id) || []
+		);
+	}, [document]);
 
 	const onSubmitUpdateForm = async (
 		event: React.FormEvent<HTMLFormElement>
@@ -124,19 +140,19 @@ const SectionConfiguration = ({
 	) => {
 		setUpdating(true);
 		const [res, err] = await utils.to(
-			updateSection({
+			updateDocument({
 				...values,
 				cover: values.cover,
 			})
 		);
 		if (err) {
-			toast.error(t('section_update_failed'));
+			toast.error(t('document_update_failed'));
 			setUpdating(false);
 			return;
 		}
-		toast.success(t('section_update_success'));
+		toast.success(t('document_update_success'));
 		setUpdating(false);
-		queryClient.invalidateQueries({ queryKey: ['getSectionDetail', id] });
+		queryClient.invalidateQueries({ queryKey: ['getDocumentetail', id] });
 	};
 
 	const onFormValidateError = (errors: any) => {
@@ -147,15 +163,15 @@ const SectionConfiguration = ({
 	return (
 		<Sheet>
 			<SheetTrigger asChild>
-				<Button className={cn('text-xs', className)} variant={'ghost'}>
-					{t('section_configuration_title')}
+				<Button className={cn('text-xs flex-1', className)} variant={'ghost'}>
+					<Pencil />
 				</Button>
 			</SheetTrigger>
 			<SheetContent onOpenAutoFocus={(e) => e.preventDefault()}>
 				<SheetHeader>
-					<SheetTitle>{t('section_configuration_title')}</SheetTitle>
+					<SheetTitle>{t('document_configuration_title')}</SheetTitle>
 					<SheetDescription>
-						{t('section_configuration_description')}
+						{t('document_configuration_description')}
 					</SheetDescription>
 				</SheetHeader>
 				<div className='px-5 flex flex-col gap-5 overflow-auto flex-1'>
@@ -164,7 +180,6 @@ const SectionConfiguration = ({
 							onSubmit={onSubmitUpdateForm}
 							id='update-form'
 							className='space-y-5'>
-							{section?.cover && <CoverUpdate />}
 							<FormField
 								name='title'
 								control={form.control}
@@ -172,12 +187,12 @@ const SectionConfiguration = ({
 									return (
 										<FormItem>
 											<FormLabel>
-												{t('section_configuration_form_title')}
+												{t('document_configuration_form_title')}
 											</FormLabel>
 											<Input
 												{...field}
 												placeholder={t(
-													'section_configuration_form_title_placeholder'
+													'document_configuration_form_title_placeholder'
 												)}
 											/>
 											<FormMessage />
@@ -192,12 +207,12 @@ const SectionConfiguration = ({
 									return (
 										<FormItem>
 											<FormLabel>
-												{t('section_configuration_form_description')}
+												{t('document_configuration_form_description')}
 											</FormLabel>
 											<Textarea
 												{...field}
 												placeholder={t(
-													'section_configuration_form_description_placeholder'
+													'document_configuration_form_description_placeholder'
 												)}
 											/>
 											<FormMessage />
@@ -211,12 +226,12 @@ const SectionConfiguration = ({
 								render={({ field }) => {
 									return (
 										<FormItem className='space-y-0 mb-5'>
-											<AddSectionLabelDialog
+											<AddDocumentLabelDialog
 												open={showAddLabelDialog}
 												onOpenChange={setShowAddLabelDialog}
 											/>
 											<FormLabel>
-												{t('section_configuration_form_labels')}
+												{t('document_configuration_form_labels')}
 											</FormLabel>
 											{labels ? (
 												<MultipleSelector
@@ -235,11 +250,11 @@ const SectionConfiguration = ({
 															.filter((option) => !!option)
 													}
 													placeholder={t(
-														'section_configuration_form_labels_placeholder'
+														'document_configuration_form_labels_placeholder'
 													)}
 													emptyIndicator={
 														<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-															{t('section_configuration_form_labels_empty')}
+															{t('document_configuration_form_labels_empty')}
 														</p>
 													}
 												/>
@@ -248,45 +263,72 @@ const SectionConfiguration = ({
 											)}
 											<div className='text-muted-foreground text-xs flex flex-row gap-0 items-center'>
 												<span>
-													{t('section_configuration_form_labels_empty_tips')}
+													{t('document_configuration_form_labels_empty_tips')}
 												</span>
 												<Button
 													type='button'
 													className='text-xs text-muted-foreground px-0 py-0 h-fit'
 													variant={'link'}
 													onClick={() => setShowAddLabelDialog(true)}>
-													{t('section_configuration_form_label_create')}
+													{t('document_configuration_form_label_create')}
 												</Button>
 											</div>
 										</FormItem>
 									);
 								}}
 							/>
-							<FormField
-								name='public'
-								control={form.control}
-								render={({ field }) => {
-									return (
-										<FormItem className='flex flex-row justify-between items-center border rounded p-5 dark:bg-input/30'>
-											<FormLabel>
-												{t('section_configuration_formpublic')}
-											</FormLabel>
-											<Switch
-												checked={field.value}
-												onCheckedChange={(e) => {
-													field.onChange(e);
-												}}
-											/>
-										</FormItem>
-									);
-								}}
-							/>
+							{sections ? (
+								<FormField
+									control={form.control}
+									name='sections'
+									render={({ field }) => {
+										return (
+											<FormItem className='space-y-0'>
+												<FormLabel>
+													{t('document_configuration_form_sections')}
+												</FormLabel>
+												{sections ? (
+													<MultipleSelector
+														defaultOptions={sections.data.map((section) => {
+															return {
+																label: section.title,
+																value: section.id,
+															};
+														})}
+														onChange={(value) => {
+															field.onChange(
+																value.map(({ label, value }) => value)
+															);
+														}}
+														value={
+															field.value &&
+															field.value
+																.map((id) => getSectionByValue(id))
+																.filter((option) => !!option)
+														}
+														placeholder={t('document_configuration_form_sections_placeholder')}
+														emptyIndicator={
+															<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
+																{t('document_configuration_form_sections_empty')}
+															</p>
+														}
+													/>
+												) : (
+													<Skeleton className='h-10' />
+												)}
+											</FormItem>
+										);
+									}}
+								/>
+							) : (
+								<Skeleton className='h-10' />
+							)}
 						</form>
 					</Form>
 				</div>
 				<SheetFooter>
 					<Button type='submit' form='update-form' disabled={updating}>
-						{t('section_configuration_form_submit')}
+						{t('document_configuration_form_submit')}
 						{updating && <Loader2 className='animate-spin' />}
 					</Button>
 				</SheetFooter>
@@ -295,4 +337,4 @@ const SectionConfiguration = ({
 	);
 };
 
-export default SectionConfiguration;
+export default DocumentConfiguration;

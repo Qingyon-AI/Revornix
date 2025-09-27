@@ -60,6 +60,7 @@ models/DocumentNoteCreateRequest.ts
 models/DocumentNoteDeleteRequest.ts
 models/DocumentNoteInfo.ts
 models/DocumentTransformTask.ts
+models/DocumentUpdateRequest.ts
 models/EmailInfo.ts
 models/EmailNotificationSource.ts
 models/EmailNotificationTarget.ts

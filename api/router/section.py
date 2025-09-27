@@ -143,6 +143,7 @@ async def update_section(
         labels_to_delete = [label.id for label in exist_section_labels if label.id not in section_update_request.labels]
         crud.section.delete_section_labels_by_label_ids(db=db,
                                                         label_ids=labels_to_delete)
+    db_section.update_time = now
     db.commit()
     return schemas.common.SuccessResponse(message="更新成功")
 

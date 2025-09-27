@@ -707,3 +707,13 @@ def delete_labels_by_section_id(db: Session,
     query = query.update({models.section.Label.delete_at: delete_time},
                          synchronize_session=False)
     db.flush()
+
+def unbind_document_from_section(db: Session,
+                                 section_id: int,
+                                 document_id: int):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.section.SectionDocument)
+    query = query.filter(models.section.SectionDocument.section_id == section_id,
+                         models.section.SectionDocument.document_id == document_id)
+    query.update({"delete_at": now})
+    db.flush()

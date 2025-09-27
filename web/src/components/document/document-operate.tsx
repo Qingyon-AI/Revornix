@@ -45,6 +45,7 @@ import {
 } from '../ui/sheet';
 import DocumentNotes from './document-notes';
 import { DocumentCategory, DocumentMdConvertStatus } from '@/enums/document';
+import DocumentConfiguration from './document-configuration';
 
 const DocumentOperate = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -304,6 +305,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 							</DialogFooter>
 						</DialogContent>
 					</Dialog>
+					<DocumentConfiguration document_id={id} />
 				</div>
 			)}
 		</>

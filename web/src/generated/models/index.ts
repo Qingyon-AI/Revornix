@@ -48,6 +48,7 @@ export * from './DocumentNoteCreateRequest';
 export * from './DocumentNoteDeleteRequest';
 export * from './DocumentNoteInfo';
 export * from './DocumentTransformTask';
+export * from './DocumentUpdateRequest';
 export * from './EmailInfo';
 export * from './EmailNotificationSource';
 export * from './EmailNotificationTarget';

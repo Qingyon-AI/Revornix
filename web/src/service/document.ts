@@ -1,5 +1,5 @@
 import documentApi from '@/api/document'
-import { InifiniteScrollPagnitionDocumentInfo, LabelListResponse, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, CreateLabelResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InifiniteScrollPagnitionDocumentNoteInfo, SearchDocumentNoteRequest, DocumentMarkdownTransformRequest, DocumentAiSummaryRequest, SearchUnreadListRequest, LabelSummaryResponse } from '@/generated'
+import { InifiniteScrollPagnitionDocumentInfo, LabelListResponse, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, CreateLabelResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InifiniteScrollPagnitionDocumentNoteInfo, SearchDocumentNoteRequest, DocumentMarkdownTransformRequest, DocumentAiSummaryRequest, SearchUnreadListRequest, LabelSummaryResponse, DocumentUpdateRequest } from '@/generated'
 import { request } from '@/lib/request'
 import { serverRequest } from '@/lib/request-server'
 
@@ -93,6 +93,12 @@ export const getDocumentDetail = async ({ document_id }: { document_id: number }
         data: {
             document_id
         }
+    })
+}
+
+export const updateDocument = async (data: DocumentUpdateRequest): Promise<NormalResponse> => {
+    return await request(documentApi.updateDocument, {
+        data
     })
 }
 

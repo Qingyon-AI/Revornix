@@ -1,6 +1,6 @@
 'use client';
 
-import AddSectionLabelDialog from '@/components/document/add-section-label-dialog';
+import AddSectionLabelDialog from '@/components/section/add-section-label-dialog';
 import { Button } from '@/components/ui/button';
 import {
 	Form,

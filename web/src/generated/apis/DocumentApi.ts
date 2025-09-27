@@ -26,6 +26,7 @@ import type {
   DocumentMonthSummaryResponse,
   DocumentNoteCreateRequest,
   DocumentNoteDeleteRequest,
+  DocumentUpdateRequest,
   HTTPValidationError,
   InifiniteScrollPagnitionDocumentInfo,
   InifiniteScrollPagnitionDocumentNoteInfo,
@@ -68,6 +69,8 @@ import {
     DocumentNoteCreateRequestToJSON,
     DocumentNoteDeleteRequestFromJSON,
     DocumentNoteDeleteRequestToJSON,
+    DocumentUpdateRequestFromJSON,
+    DocumentUpdateRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     InifiniteScrollPagnitionDocumentInfoFromJSON,
@@ -213,6 +216,12 @@ export interface StarDocumentDocumentStarPostRequest {
 
 export interface TransformMarkdownDocumentMarkdownTransformPostRequest {
     documentMarkdownTransformRequest: DocumentMarkdownTransformRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UpdateDocumentDocumentUpdatePostRequest {
+    documentUpdateRequest: DocumentUpdateRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -1088,6 +1097,53 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async transformMarkdownDocumentMarkdownTransformPost(requestParameters: TransformMarkdownDocumentMarkdownTransformPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.transformMarkdownDocumentMarkdownTransformPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update Document
+     */
+    async updateDocumentDocumentUpdatePostRaw(requestParameters: UpdateDocumentDocumentUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['documentUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentUpdateRequest',
+                'Required parameter "documentUpdateRequest" was null or undefined when calling updateDocumentDocumentUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/document/update`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentUpdateRequestToJSON(requestParameters['documentUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update Document
+     */
+    async updateDocumentDocumentUpdatePost(requestParameters: UpdateDocumentDocumentUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.updateDocumentDocumentUpdatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
