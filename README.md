@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/qingyon-ai-revornix-badge.png)](https://mseep.ai/app/qingyon-ai-revornix)
+
 ![logo](./images/logo.png)
 
 ![](https://img.shields.io/badge/free-pricing?logo=free&color=%20%23155EEF&label=pricing&labelColor=%20%23528bff)
