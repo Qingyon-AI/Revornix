@@ -14,3 +14,4 @@ volumes/*
 !.env.example
 !.env.*.example
 127.0.0.1
+neo4j/plugins/*
