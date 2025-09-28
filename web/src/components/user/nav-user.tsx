@@ -45,6 +45,9 @@ export function NavUser() {
 		`${NOTIFICATION_WS_API_PREFIX!}?access_token=${Cookies.get('access_token')}`,
 		{
 			manual: true,
+			onOpen(event, instance) {
+				console.log('websocket opened', event, instance);
+			},
 			onMessage: (e) => {
 				const message = JSON.parse(e.data);
 				const notification = message.notification;
@@ -68,6 +71,12 @@ export function NavUser() {
 				queryClient.invalidateQueries({
 					queryKey: ['searchMyNotifications', ''],
 				});
+			},
+			onClose(event, instance) {
+				console.log('websocket closed', event, instance);
+			},
+			onError(event, instance) {
+				console.log('websocket error', event, instance);
 			},
 		}
 	);
