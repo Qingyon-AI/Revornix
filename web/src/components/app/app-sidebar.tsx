@@ -5,6 +5,7 @@ import {
 	LayoutDashboard,
 	PlusCircle,
 	RssIcon,
+	ChartNetwork,
 	SatelliteDish,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -90,6 +91,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 										<RssIcon />
 										<Link href={'/rss'} className='w-full'>
 											RSS
+										</Link>
+									</div>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<SidebarMenuButton asChild>
+									<div className='w-full'>
+										<ChartNetwork />
+										<Link href={'/graph'} className='w-full'>
+											{t('sidebar_graph')}
 										</Link>
 									</div>
 								</SidebarMenuButton>

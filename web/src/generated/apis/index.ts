@@ -6,6 +6,7 @@ export * from './DefaultApi';
 export * from './DocumentApi';
 export * from './EngineApi';
 export * from './FileSystemApi';
+export * from './GraphApi';
 export * from './McpApi';
 export * from './NotificationApi';
 export * from './RssApi';

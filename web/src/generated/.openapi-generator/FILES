@@ -4,6 +4,7 @@ apis/DefaultApi.ts
 apis/DocumentApi.ts
 apis/EngineApi.ts
 apis/FileSystemApi.ts
+apis/GraphApi.ts
 apis/McpApi.ts
 apis/NotificationApi.ts
 apis/RssApi.ts
@@ -61,6 +62,7 @@ models/DocumentNoteDeleteRequest.ts
 models/DocumentNoteInfo.ts
 models/DocumentTransformTask.ts
 models/DocumentUpdateRequest.ts
+models/Edge.ts
 models/EmailInfo.ts
 models/EmailNotificationSource.ts
 models/EmailNotificationTarget.ts
@@ -89,6 +91,8 @@ models/GithubUserCreate.ts
 models/GoogleInfo.ts
 models/GoogleUserBind.ts
 models/GoogleUserCreate.ts
+models/GraphRequest.ts
+models/GraphResponse.ts
 models/HTTPValidationError.ts
 models/IOSNotificationSource.ts
 models/IOSNotificationTarget.ts
@@ -130,6 +134,7 @@ models/ModelRequest.ts
 models/ModelSearchRequest.ts
 models/ModelSearchResponse.ts
 models/ModelUpdateRequest.ts
+models/Node.ts
 models/NormalResponse.ts
 models/NotificationRecord.ts
 models/NotificationRecordDetailRequest.ts

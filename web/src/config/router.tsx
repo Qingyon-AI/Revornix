@@ -85,6 +85,11 @@ const routers: RouteItem[] = [
 		path: '/rss',
 	},
 	{
+		title: '知识图谱',
+		title_en: 'Graph',
+		path: '/graph',
+	},
+	{
 		title: 'Revornix AI',
 		title_en: 'Revornix AI',
 		path: '/revornix-ai',
@@ -102,7 +107,7 @@ const routers: RouteItem[] = [
 				title: '文档详情',
 				title_en: 'Document Detail',
 				path: '/detail',
-				unclickable: true
+				unclickable: true,
 			},
 			{ title: '新建文档', title_en: 'Create Document', path: '/create' },
 			{ title: '我的文档', title_en: 'My Document', path: '/mine' },
@@ -156,7 +161,7 @@ const routers: RouteItem[] = [
 				title: '专栏详情',
 				title_en: 'Section Detail',
 				path: '/detail',
-				unclickable: true
+				unclickable: true,
 			},
 		],
 	},
