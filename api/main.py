@@ -36,6 +36,7 @@ from router.api_key import api_key_router
 from router.task import task_router
 from router.tp import tp_router
 from router.rss import rss_router
+from router.graph import graph_router
 from mcp_router.common import common_mcp_router
 from mcp_router.document import document_mcp_router
 from common.logger import exception_logger, info_logger, exception_logger
@@ -106,6 +107,7 @@ app.include_router(mcp_router, prefix="/mcp", tags=["mcp"])
 app.include_router(engine_router, prefix="/engine", tags=["engine"])
 app.include_router(file_system_router, prefix="/file-system", tags=["file-system"])
 app.include_router(rss_router, prefix="/rss", tags=["rss"])
+app.include_router(graph_router, prefix="/graph", tags=["graph"])
 
 app.mount("/mcp-server/common", common_mcp_router.streamable_http_app())
 app.mount("/mcp-server/document", document_mcp_router.streamable_http_app())

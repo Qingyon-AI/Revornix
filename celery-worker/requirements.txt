@@ -33,3 +33,4 @@ lightrag-hku==1.4.7
 huggingface_hub[hf_xet]==0.34.1
 tencentcloud-sdk-python==3.0.1460
 tf-keras==2.20.1
+neo4j==5.28.2
