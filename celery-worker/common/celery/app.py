@@ -11,7 +11,7 @@ from config.redis import REDIS_PORT, REDIS_URL
 from config.base import BASE_DIR
 from common.logger import log_exception, exception_logger
 from common.ai import summary_section_with_origin, summary_document, summary_section
-from common.vector import milvus_client, process_document
+from data.common import process_document
 from common.common import get_user_remote_file_system
 from enums.engine import EngineUUID
 from common.sql import SessionLocal
@@ -222,12 +222,7 @@ async def handle_add_embedding(document_id: int,
         db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
         markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
                                                                      user_id=user_id)
-        
-        data = process_document(document_id=document_id, 
-                                document_category=db_document.category, 
-                                document_content=markdown_content)
-        milvus_client.insert(collection_name="document", 
-                             data=data)
+        await process_document(user_id=user_id, doc_id=document_id)
         db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
         db.commit()
     except Exception as e:

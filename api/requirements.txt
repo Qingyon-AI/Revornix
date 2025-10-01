@@ -32,3 +32,4 @@ langchain_openai==0.3.32
 lightrag-hku==1.4.7
 google-auth==2.40.3
 tencentcloud-sdk-python==3.0.1460
+sentence_transformers==5.1.1

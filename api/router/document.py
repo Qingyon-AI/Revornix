@@ -9,7 +9,8 @@ from fastapi import APIRouter, Depends
 from fastapi.encoders import jsonable_encoder
 from common.ai import summary_document
 from common.dependencies import get_db
-from common.vector import milvus_client, process_query, hybrid_search
+from data.milvus.search import naive_search
+from data.milvus.create import milvus_client
 from common.dependencies import get_db, get_current_user
 from common.logger import log_exception, exception_logger
 from common.common import get_user_remote_file_system
@@ -489,14 +490,10 @@ async def search_user_unread_documents(search_unread_list_request: schemas.docum
 async def search_knowledge_vector(vector_search_request: schemas.document.VectorSearchRequest, 
                                   db: Session = Depends(get_db), 
                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    query_dense_embedding, query_sparse_embedding = process_query(vector_search_request.query)
-    hybrid_results = hybrid_search(
-        milvus_client=milvus_client,
-        collection_name='document',
-        query_dense_embedding=query_dense_embedding,
-        query_sparse_embedding=query_sparse_embedding,
+    hybrid_results = naive_search(
+        search_text=vector_search_request.query
     )
-    document_ids = [doc.get('entity').get('document_id') for doc in hybrid_results]
+    document_ids = [doc.get('doc_id') for doc in hybrid_results]
     documents = [doc for doc in crud.document.get_documents_by_document_ids(db=db,
                                                                             document_ids=document_ids)]
     return schemas.document.VectorSearchResponse(documents=documents)
@@ -653,7 +650,7 @@ async def delete_document(documents_delete_request: schemas.document.DocumentDel
     crud.document.delete_user_documents_by_document_ids(db=db, 
                                                         document_ids=documents_delete_request.document_ids, 
                                                         user_id=user.id)
-    expr = f"document_id IN {documents_delete_request.document_ids}"
+    expr = f"doc_id IN {documents_delete_request.document_ids}"
     milvus_client.delete(
         "document",
         filter=expr,
