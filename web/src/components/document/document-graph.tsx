@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { searchGraph } from '@/service/graph';
 import { useQuery } from '@tanstack/react-query';
 import * as d3 from 'd3';
+import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef } from 'react';
 
@@ -48,6 +49,7 @@ const getColorVars = (theme: string) => {
 };
 
 const DocumentGraph = ({ document_id }: { document_id: number }) => {
+	const t = useTranslations();
 	const svgRef = useRef<SVGSVGElement | null>(null);
 
 	const { resolvedTheme } = useTheme();
@@ -217,12 +219,17 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 	}, [data, resolvedTheme]);
 
 	return (
-		<div className='w-full h-full flex justify-between items-center relative'>
+		<div className='w-full h-full flex justify-center items-center relative'>
 			{isError && <div className='text-red-500'>Error: {error.message}</div>}
 			{isLoading && <Skeleton className='w-full h-full' />}
 			{isFetched && (
 				<>
-					<svg ref={svgRef}></svg>
+					{!data?.edges.length && !data?.nodes.length && (
+						<div className='text-xs text-muted-foreground'>
+							{t('document_graph_empty')}
+						</div>
+					)}
+					{data?.nodes && data?.nodes.length > 0 && <svg ref={svgRef}></svg>}
 				</>
 			)}
 		</div>
