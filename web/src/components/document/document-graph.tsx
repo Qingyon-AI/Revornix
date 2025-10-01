@@ -47,14 +47,17 @@ const getColorVars = (theme: string) => {
 	}
 };
 
-const GraphPage = () => {
+const DocumentGraph = ({ document_id }: { document_id: number }) => {
 	const svgRef = useRef<SVGSVGElement | null>(null);
 
 	const { resolvedTheme } = useTheme();
 
 	const { data, isLoading, isError, error, isFetched } = useQuery({
-		queryKey: ['searchGraphData'],
-		queryFn: async () => searchGraph({}),
+		queryKey: ['searchGraphData', document_id],
+		queryFn: async () =>
+			searchGraph({
+				doc_id: document_id,
+			}),
 	});
 
 	useEffect(() => {
@@ -216,22 +219,14 @@ const GraphPage = () => {
 	return (
 		<div className='w-full h-full flex justify-between items-center relative'>
 			{isError && <div className='text-red-500'>Error: {error.message}</div>}
-			{isLoading && (
-				<div className='px-5 pb-5 w-full h-full'>
-					<Skeleton className='w-full h-full' />
-				</div>
-			)}
+			{isLoading && <Skeleton className='w-full h-full' />}
 			{isFetched && (
 				<>
 					<svg ref={svgRef}></svg>
-					{/* <div className='fixed bg-muted w-fit px-3 py-2 rounded right-5 bottom-5 text-xs text-muted-foreground flex justify-center items-center'>
-						当前共有节点数{data?.nodes.length ?? 0}个，边数
-						{data?.edges.length ?? 0}条
-					</div> */}
 				</>
 			)}
 		</div>
 	);
 };
 
-export default GraphPage;
+export default DocumentGraph;

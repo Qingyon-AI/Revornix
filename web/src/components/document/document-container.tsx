@@ -12,8 +12,21 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { DocumentDetailResponse } from '@/generated';
 import { useEffect } from 'react';
 import { DocumentCategory } from '@/enums/document';
+import DocumentGraph from './document-graph';
+import { Button } from '../ui/button';
+import { Expand } from 'lucide-react';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from '../ui/dialog';
+import { useTranslations } from 'next-intl';
 
 const DocumentContainer = ({ id }: { id: number }) => {
+	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const { userInfo } = useUserContext();
 
@@ -77,6 +90,8 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		}
 	};
 
+	const handleShowLargerGraph = () => {};
+
 	return (
 		<div className='px-5 pb-5 h-full w-full grid grid-cols-12 gap-5 relative'>
 			{/* 此处的min-h-0是因为父级的grid布局会导致子元素的h-full无法准确继承到父级的实际高度，导致其高度被内容撑开 */}
@@ -91,9 +106,35 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					<QuickDocumentDetail onFinishRead={handleFinishRead} id={id} />
 				)}
 			</div>
-			<Card className='col-span-4 py-0 overflow-hidden h-full'>
-				<DocumentInfo id={id} />
-			</Card>
+			<div className='col-span-4 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
+				<Card className='py-0 flex-2 overflow-auto relative'>
+					<DocumentInfo id={id} />
+				</Card>
+				<Card className='py-0 flex-1 relative'>
+					<Dialog>
+						<DialogTrigger asChild>
+							<Button
+								className='absolute top-2 left-2 z-10'
+								size={'icon'}
+								variant={'outline'}
+								onClick={handleShowLargerGraph}>
+								<Expand size={4} className='text-muted-foreground' />
+							</Button>
+						</DialogTrigger>
+						<DialogContent className='!max-w-[80vw] h-[80vh] max-h-[80vh]'>
+							<DialogHeader>
+								<DialogTitle>{t('document_graph')}</DialogTitle>
+								<DialogDescription>
+									{t('document_graph_description')}
+								</DialogDescription>
+							</DialogHeader>
+							<DocumentGraph document_id={id} />
+						</DialogContent>
+					</Dialog>
+
+					<DocumentGraph document_id={id} />
+				</Card>
+			</div>
 		</div>
 	);
 };

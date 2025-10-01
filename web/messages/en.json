@@ -617,6 +617,8 @@
     "document_md_status_todo": "Pending Conversion",
     "document_md_status_failed": "Failed",
     "document_transform_again": "Added to conversion queue again, please wait",
+    "document_graph": "Document Graph",
+    "document_graph_description": "Here you can view all the knowledge points of the document and the reference relationships between them",
     "account_avatar": "Avatar",
     "account_avatar_description": "This is your avatar!",
     "account_avatar_upload": "Upload Avatar",
