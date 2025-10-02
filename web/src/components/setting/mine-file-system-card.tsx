@@ -55,6 +55,7 @@ import {
 	SelectValue,
 } from '../ui/select';
 import { Alert, AlertDescription } from '../ui/alert';
+import { Separator } from '../ui/separator';
 
 const MineFileSystemCard = ({
 	user_file_system,
@@ -108,6 +109,7 @@ const MineFileSystemCard = ({
 			queryClient.invalidateQueries({
 				queryKey: ['mine-file-system'],
 			});
+			form.reset();
 			setConfigDialogOpen(false);
 		},
 		onError: (error) => {
@@ -162,7 +164,7 @@ const MineFileSystemCard = ({
 						</DialogTrigger>
 						<DialogContent
 							onOpenAutoFocus={(e) => e.preventDefault()}
-							className='max-h-[80vh] overflow-auto'>
+							className='max-h-[80vh] overflow-auto flex flex-col'>
 							<DialogHeader>
 								<DialogTitle>{t('config')}</DialogTitle>
 								<DialogDescription>
@@ -178,7 +180,7 @@ const MineFileSystemCard = ({
 								<form
 									onSubmit={handleSubmit}
 									id='update_form'
-									className='space-y-5'>
+									className='space-y-5 flex-1 overflow-auto'>
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
 											<FormLabel className='col-span-3'>
@@ -327,6 +329,7 @@ const MineFileSystemCard = ({
 									)}
 								</form>
 							</Form>
+							<Separator />
 							<DialogFooter>
 								<DialogClose asChild>
 									<Button type='button' variant={'secondary'}>
