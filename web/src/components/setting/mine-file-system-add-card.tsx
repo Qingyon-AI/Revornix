@@ -36,6 +36,7 @@ import {
 } from '../ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { InfoIcon } from 'lucide-react';
+import { Separator } from '../ui/separator';
 
 const MineFileSystemAddCard = ({}: {}) => {
 	const t = useTranslations();
@@ -75,6 +76,7 @@ const MineFileSystemAddCard = ({}: {}) => {
 				queryKey: ['mine-file-system'],
 			});
 			refreshUserInfo();
+			form.reset();
 			setShowMineFileSystemAddDialog(false);
 		},
 		onError: (error) => {
@@ -114,7 +116,7 @@ const MineFileSystemAddCard = ({}: {}) => {
 				open={showMineFileSystemAddDialog}
 				onOpenChange={setShowMineFileSystemAddDialog}>
 				<DialogContent
-					className='max-h-[80vh] overflow-auto'
+					className='max-h-[80vh] overflow-auto flex flex-col'
 					onOpenAutoFocus={(e) => e.preventDefault()}>
 					<DialogHeader>
 						<DialogTitle>
@@ -126,7 +128,7 @@ const MineFileSystemAddCard = ({}: {}) => {
 					</DialogHeader>
 					<Form {...form}>
 						<form
-							className='flex flex-col gap-5'
+							className='flex flex-col gap-5 flex-1 overflow-auto'
 							id='install_form'
 							onSubmit={handleSubmit}>
 							<FormField
@@ -288,6 +290,7 @@ const MineFileSystemAddCard = ({}: {}) => {
 							)}
 						</form>
 					</Form>
+					<Separator />
 					<DialogFooter>
 						<DialogClose asChild>
 							<Button type='button' variant={'secondary'}>
