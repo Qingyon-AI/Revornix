@@ -1,13 +1,8 @@
 import { utils } from "@kinda/utils";
-import { getAliyunOSSPresignUploadURL, getUserFileSystemDetail } from "./file-system";
+import { getAliyunOSSPresignUploadURL } from "./file-system";
 import { getMyInfo } from "./user";
-import OSS from 'ali-oss';
 
 export class OSSFileService implements FileServiceProtocol {
-
-    private client: OSS | null = null;
-    private sts_config: any = null;
-    private file_system_config_json: any = null;
 
     public async initFileSystemConfig() {
         const [res_user, err_user] = await utils.to(getMyInfo());

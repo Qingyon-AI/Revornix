@@ -3,6 +3,7 @@ load_dotenv(override=True)
 import crud
 import json
 import boto3
+from typing import Any
 from common.sql import SessionLocal
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from enums.file import RemoteFileServiceUUID
@@ -12,8 +13,8 @@ from botocore.config import Config
 
 class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
     
-    oss_client: AcsClient = None
-    bucket: str = None
+    oss_client: Any | None = None
+    bucket: str | None = None
     
     def __init__(self):
         super().__init__(file_service_uuid=RemoteFileServiceUUID.AliyunOSS.value,
@@ -53,14 +54,19 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
         sts_role_access_key_id = result.get('Credentials').get('AccessKeyId')
         sts_role_access_key_secret = result.get('Credentials').get('AccessKeySecret')
 
+        config = Config(
+            s3={"addressing_style": "virtual"},
+            signature_version='s3'
+        )
+        
         s3 = boto3.client(
             's3',
             aws_access_key_id=sts_role_access_key_id,
             aws_secret_access_key=sts_role_access_key_secret,
             aws_session_token=sts_role_session_token,
             endpoint_url=endpoint_url,
-            config=Config(s3={"addressing_style": "virtual"},
-                          signature_version='v4'))
+            config=config
+        )
         self.oss_client = s3
         db.close()
     
