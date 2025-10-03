@@ -8,7 +8,7 @@ from enums.file import RemoteFileServiceUUID
 class RemoteFileServiceProtocol(Protocol):
     
     def __init__(self, 
-                 file_service_uuid: int,
+                 file_service_uuid: str,
                  file_service_name: str | None = None, 
                  file_service_name_zh: str | None = None, 
                  file_service_description: str | None = None, 

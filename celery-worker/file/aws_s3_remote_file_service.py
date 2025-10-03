@@ -3,6 +3,7 @@ load_dotenv(override=True)
 import boto3
 import crud
 import json
+from typing import Any
 from common.sql import SessionLocal
 from botocore.client import Config
 from protocol.remote_file_service import RemoteFileServiceProtocol
@@ -10,8 +11,8 @@ from enums.file import RemoteFileServiceUUID
 
 class AWSS3RemoteFileService(RemoteFileServiceProtocol):
     
-    s3_client: any = None
-    bucket: str = None
+    s3_client: Any | None = None
+    bucket: str | None = None
 
     def __init__(self):
         super().__init__(file_service_uuid=RemoteFileServiceUUID.AWS_S3.value,
@@ -19,7 +20,7 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
                          file_service_name_zh='亚马逊S3',
                          file_service_description="AWS S3, this amazon's paid oss service.",
                          file_service_description_zh='AWS S3，亚马逊云付费存储服务。',
-                         file_service_demo_config='{"role_arn":"","user_access_key_id":"","user_access_key_secret":"","region_name":"","endpoint_url":"","bucket":"","url_prefix":""}')
+                         file_service_demo_config='{"role_arn":"","user_access_key_id":"","user_access_key_secret":"","region_name":"","bucket":"","url_prefix":""}')
 
     async def init_client_by_user_file_system_id(self, user_file_system_id: int):
         db = SessionLocal()
@@ -103,11 +104,9 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
         return res
         
     async def delete_file(self, file_path):
-        await self.auth()
         res = self.s3_client.delete_object(Bucket=self.bucket, Key=file_path)
         return res
     
     async def list_files(self):
-        await self.auth()
         res = self.s3_client.list_objects_v2(Bucket=self.bucket)
         return res

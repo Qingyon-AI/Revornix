@@ -55,7 +55,7 @@ const AvatarUpdate = () => {
 		const suffix = file.name.split('.').pop();
 		const fileName = `images/${name}.${suffix}`;
 		await fileService.uploadFile(fileName, file);
-		mutationUpdateUserInfo.mutateAsync({
+		await mutationUpdateUserInfo.mutateAsync({
 			avatar: fileName,
 		});
 		setUploadingStatus(false);

@@ -94,13 +94,11 @@ def get_aws_s3_presigned_url(s3_presign_upload_url_request: schemas.file_system.
     role_arn = config.get('role_arn')
     user_access_key_id = config.get('user_access_key_id')
     user_access_key_secret = config.get('user_access_key_secret')
-    region_name = config.get('region_id')
-    endpoint_url = config.get('endpoint_url')
+    region_name = config.get('region_name')
     bucket = config.get('bucket')
     
     sts = boto3.client(
         'sts',
-        endpoint_url=endpoint_url,
         aws_access_key_id=user_access_key_id,
         aws_secret_access_key=user_access_key_secret,
         config=Config(signature_version='s3v4'),
@@ -114,7 +112,6 @@ def get_aws_s3_presigned_url(s3_presign_upload_url_request: schemas.file_system.
     creds = resp['Credentials']
     s3 = boto3.client(
         's3',
-        endpoint_url=endpoint_url,
         aws_access_key_id=creds['AccessKeyId'],
         aws_secret_access_key=creds['SecretAccessKey'],
         aws_session_token=creds['SessionToken'],
@@ -223,21 +220,21 @@ async def get_file_system_info(file_system_info_request: schemas.file_system.Fil
     db_file_system = crud.file_system.get_file_system_by_id(db=db, 
                                                             file_system_id=file_system_info_request.file_system_id)
     if db_file_system is None:
-        raise Exception(status_code=404, detail="File System not found")
+        raise schemas.error.CustomException(code=404, message="File System not found")
     return schemas.file_system.FileSystemInfo.model_validate(db_file_system)
 
 @file_system_router.post('/user-file-system/detail', response_model=schemas.file_system.UserFileSystemInfo)
-async def get_file_system_info(user_file_system_info_request: schemas.file_system.UserFileSystemInfoRequest,
-                               db: Session = Depends(get_db),
-                               current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def get_user_file_system_info(user_file_system_info_request: schemas.file_system.UserFileSystemInfoRequest,
+                                    db: Session = Depends(get_db),
+                                    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db, 
                                                                       user_file_system_id=user_file_system_info_request.user_file_system_id)
     if db_user_file_system is None:
-        raise Exception(status_code=404, detail="User File System not found")
+        raise schemas.error.CustomException(code=404, message="User File System not found")
     db_file_system = crud.file_system.get_file_system_by_id(db=db, 
                                                             file_system_id=db_user_file_system.file_system_id)
     if db_file_system is None:
-        raise Exception(status_code=404, detail="File System not found")
+        raise schemas.error.CustomException(code=404, message="File System not found")
     res = schemas.file_system.UserFileSystemInfo(id=db_user_file_system.id,
                                                  file_system_id=db_user_file_system.file_system_id,
                                                  title=db_user_file_system.title,
@@ -335,7 +332,7 @@ async def upload_file_system(file: UploadFile = File(...),
                                                                    user_file_system_id=current_user.default_user_file_system)
     if user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User File System not found")
-    remote_file_service = await get_user_remote_file_system(user_file_system_id=user_file_system.file_system_id)
+    remote_file_service = await get_user_remote_file_system(user_id=current_user.id)
     if remote_file_service.uuid != RemoteFileServiceUUID.Generic_S3.value:
         raise schemas.error.CustomException(code=404, message="The default user file system is not Generic S3")
     generic_s3_remote_file_service = GenericS3RemoteFileService()
