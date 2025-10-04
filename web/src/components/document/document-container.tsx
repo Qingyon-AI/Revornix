@@ -121,14 +121,16 @@ const DocumentContainer = ({ id }: { id: number }) => {
 								<Expand size={4} className='text-muted-foreground' />
 							</Button>
 						</DialogTrigger>
-						<DialogContent className='!max-w-[80vw] h-[80vh] max-h-[80vh]'>
+						<DialogContent className='!max-w-[80vw] h-[80vh] flex flex-col'>
 							<DialogHeader>
 								<DialogTitle>{t('document_graph')}</DialogTitle>
 								<DialogDescription>
 									{t('document_graph_description')}
 								</DialogDescription>
 							</DialogHeader>
-							<DocumentGraph document_id={id} />
+							<div className='flex-1'>
+								<DocumentGraph document_id={id} />
+							</div>
 						</DialogContent>
 					</Dialog>
 

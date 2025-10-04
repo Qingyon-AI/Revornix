@@ -65,7 +65,7 @@ const DocumentLabelSummary = ({ className }: { className?: string }) => {
 			</CardHeader>
 			<CardContent className='flex-1 pb-0'>
 				{isFetching && <Skeleton className='w-full h-[250px]' />}
-				{!isFetching && data && (
+				{!isFetching && data && colorizedData.length > 0 && (
 					<ChartContainer
 						config={chartConfig}
 						className='mx-auto aspect-square h-[250px]'>
@@ -82,6 +82,11 @@ const DocumentLabelSummary = ({ className }: { className?: string }) => {
 								strokeWidth={5}></Pie>
 						</PieChart>
 					</ChartContainer>
+				)}
+				{!isFetching && data && colorizedData.length == 0 && (
+					<div className='flex flex-col items-center justify-center h-[250px]'>
+						{t('dashboard_document_label_summary_empty')}
+					</div>
 				)}
 			</CardContent>
 		</Card>

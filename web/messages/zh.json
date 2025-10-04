@@ -99,6 +99,7 @@
     "section_label_collection_title": "专栏标签集",
     "dashboard_bottom_slogan": "今天也是开开心心的一天呢！",
     "dashboard_document_label_summary": "文档标签总结",
+    "dashboard_document_label_summary_empty": "暂无标签",
     "dashboard_document_label_summary_tips": "这里会显示当前所有的标签对应的文档量。",
     "user_no_slogan": "暂无签名",
     "user_fans": "粉丝",
