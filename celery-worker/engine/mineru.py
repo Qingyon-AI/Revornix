@@ -36,7 +36,7 @@ class MineruEngine(EngineProtocol):
             await page.pdf(path=temp_shot_pdf_path)
             await browser.close()
         # 2. convert the image to markdown
-        parse_doc(path_list=[str(temp_shot_pdf_path)],
+        parse_doc(path_list=[temp_shot_pdf_path],
                   output_dir=str(BASE_DIR / 'temp' / temp_dir_name))
         with open(str(BASE_DIR / 'temp' / temp_dir_name / 'scene-snap' / 'auto' / f'scene-snap.md'), 'r', encoding='utf-8') as f:
             content = f.read()
@@ -81,7 +81,7 @@ class MineruEngine(EngineProtocol):
         shutil.copy(file_path, str(BASE_DIR / 'temp' / f'{temp_dir_name}{file_suffix}'))
 
         # 2. convert the file to markdown
-        parse_doc(path_list=[str(BASE_DIR / 'temp' / f'{temp_dir_name}{file_suffix}')],
+        parse_doc(path_list=[BASE_DIR / 'temp' / f'{temp_dir_name}{file_suffix}'],
                   output_dir=str(BASE_DIR / 'temp'))
         
         with open(str(BASE_DIR / 'temp' / temp_dir_name / 'auto' / f'{temp_dir_name}.md'), 'r', encoding='utf-8') as f:
