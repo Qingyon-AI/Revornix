@@ -31,6 +31,7 @@ import {
 	SelectValue,
 } from '../ui/select';
 import { getProvideEngines, installEngine } from '@/service/engine';
+import { Separator } from '../ui/separator';
 
 const MineEngineAddCard = ({}: {}) => {
 	const t = useTranslations();
@@ -68,6 +69,7 @@ const MineEngineAddCard = ({}: {}) => {
 				queryKey: ['mine-engine'],
 			});
 			refreshUserInfo();
+			form.reset();
 			setShowMineEngineAddDialog(false);
 		},
 		onError: (error) => {
@@ -107,7 +109,7 @@ const MineEngineAddCard = ({}: {}) => {
 				open={showMineEngineAddDialog}
 				onOpenChange={setShowMineEngineAddDialog}>
 				<DialogContent
-					className='max-h-[80vh] overflow-auto'
+					className='max-h-[80vh] flex flex-col'
 					onOpenAutoFocus={(e) => e.preventDefault()}>
 					<DialogHeader>
 						<DialogTitle>
@@ -119,7 +121,7 @@ const MineEngineAddCard = ({}: {}) => {
 					</DialogHeader>
 					<Form {...form}>
 						<form
-							className='flex flex-col gap-5'
+							className='flex flex-col gap-5 flex-1 overflow-auto'
 							id='install_form'
 							onSubmit={handleSubmit}>
 							<FormField
@@ -257,6 +259,7 @@ const MineEngineAddCard = ({}: {}) => {
 							)}
 						</form>
 					</Form>
+					<Separator />
 					<DialogFooter>
 						<DialogClose asChild>
 							<Button type='button' variant={'secondary'}>

@@ -156,7 +156,7 @@ const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 						<DialogTrigger asChild>
 							<Button className='text-xs shadow-none'>{t('config')}</Button>
 						</DialogTrigger>
-						<DialogContent>
+						<DialogContent className='max-h-[80vh] flex flex-col'>
 							<DialogHeader>
 								<DialogTitle>{t('config')}</DialogTitle>
 								<DialogDescription>
@@ -169,7 +169,7 @@ const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 								<form
 									onSubmit={handleSubmit}
 									id='update_form'
-									className='space-y-5'>
+									className='space-y-5 flex-1 overflow-auto'>
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
 											<FormLabel className='col-span-3'>
@@ -297,6 +297,7 @@ const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 									)}
 								</form>
 							</Form>
+							<Separator />
 							<DialogFooter>
 								<DialogClose asChild>
 									<Button type='button' variant={'secondary'}>
