@@ -85,8 +85,9 @@ class MineruApiEngine(EngineProtocol):
             "files": files
         }
         
-        # Some MinerU APIs only support requests from ip located in chain
-        async with httpx.AsyncClient(proxy=None) as client:
+        # Some MinerU APIs only support requests from ip located in china
+        # NOTE: If you are not located in China, you can remove the proxy=None and trust_env=False parameters. Besides, please use an IP proxy located in the China region
+        async with httpx.AsyncClient(proxy=None, trust_env=False) as client:
             response = await client.post(url, headers=headers, json=data)
             
             if response.status_code == 200:
