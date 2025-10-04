@@ -10,7 +10,7 @@ def init_document_collection():
     )
     schema.add_field(field_name="id", datatype=DataType.VARCHAR, is_primary=True, max_length=100)
     schema.add_field(field_name="embedding", datatype=DataType.FLOAT_VECTOR, dim=1024)
-    schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=4000, enable_analyzer=True)
+    schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=8000, enable_analyzer=True)
     schema.add_field(field_name="sparse", datatype=DataType.SPARSE_FLOAT_VECTOR)
     schema.add_field(field_name="doc_id", datatype=DataType.INT32)
     schema.add_field(field_name="idx", datatype=DataType.INT64)

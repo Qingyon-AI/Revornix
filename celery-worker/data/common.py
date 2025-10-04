@@ -80,7 +80,8 @@ async def chunk_document(doc_id: int) -> list[ChunkInfo]:
 def embedding_chunks(chunks: list[ChunkInfo]) -> list[ChunkInfo]:
     embedding_model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
     for chunk in chunks:
-        chunk.embedding = embedding_model.encode(chunk.text).tolist()
+        embedding = embedding_model.encode(chunk.text)
+        chunk.embedding = embedding.tolist()
     return chunks
 
 
