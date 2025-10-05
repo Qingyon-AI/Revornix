@@ -1,4 +1,5 @@
 from typing import List, Dict, Any
+from datetime import datetime
 from sentence_transformers import SentenceTransformer
 from data.custom_types.all import *
 from data.neo4j.base import neo4j_driver
@@ -6,6 +7,25 @@ from data.milvus.search import naive_search
 
 # 使用与你插入时相同的 embedding model（避免向量不一致）
 embedding_model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+
+def to_neo4j_datetime_str(iso: str) -> str:
+    return datetime.fromisoformat(iso).strftime("%Y-%m-%dT%H:%M:%S")
+
+def build_time_filter(time_start: str | None, time_end: str | None, param_prefix="") -> tuple[str, dict]:
+    """
+    构造 Neo4j Cypher 的时间范围 WHERE 子句和参数字典
+    """
+    clauses = []
+    params = {}
+    if time_start:
+        key = f"{param_prefix}time_start"
+        clauses.append(f"c.created_at >= datetime(${key})")
+        params[key] = to_neo4j_datetime_str(time_start)
+    if time_end:
+        key = f"{param_prefix}time_end"
+        clauses.append(f"c.created_at <= datetime(${key})")
+        params[key] = to_neo4j_datetime_str(time_end)
+    return (" AND " + " AND ".join(clauses)) if clauses else "", params
 
 # ===================== Local Search =====================
 def local_search_by_entity(entity_name: str, hops: int = 1, limit: int = 50) -> List[Dict[str, Any]]:
@@ -48,11 +68,16 @@ def local_search_by_entity(entity_name: str, hops: int = 1, limit: int = 50) -> 
     return out
 
 # ===================== Global Search =====================
-def global_search(search_text: str, top_k: int = 10, expand_limit: int = 50) -> Dict[str, Any]:
+def global_search(search_text: str, 
+                  top_k: int = 10, 
+                  expand_limit: int = 50, 
+                  time_start: str | None = None, 
+                  time_end: str | None = None) -> Dict[str, Any]:
     """
     全局检索流程：
     1) 在 Milvus 上做全局向量检索（得到 top_k chunk）
     2) 基于这些 chunk 扩展 Neo4j 子图（找出相关实体、其它 chunk、community）
+       可选：筛选实体的 updated_at 是否在时间范围内。
     返回结构化结果：{ "seed_chunks": [...], "expanded_chunks": [...], "entities": [...] }
     """
     seed_chunks = naive_search(search_text, top_k=top_k)
@@ -65,22 +90,37 @@ def global_search(search_text: str, top_k: int = 10, expand_limit: int = 50) -> 
         return {"seed_chunks": seed_chunks, "expanded_chunks": expanded_chunks, "entities": entities}
 
     with neo4j_driver.session() as sess:
-        # 基于 seed chunk 扩展：先找到直接提及的实体，再找这些实体的其它 chunk / 社区
-        records = sess.run(
-            """
-            UNWIND $ids AS cid
-            MATCH (c:Chunk {id: cid})
-            OPTIONAL MATCH (c)-[:MENTIONS]->(e:Entity)
-            OPTIONAL MATCH (e)<-[:MENTIONS]-(c2:Chunk)
-            OPTIONAL MATCH (e)-[:BELONGS_TO]->(com:Community)
-            RETURN DISTINCT e.id AS entity_id, e.text AS entity_text, e.entity_type AS entity_type,
-                   collect(DISTINCT c2.id)[0..$expand_limit] AS related_chunk_ids,
-                   collect(DISTINCT com.id)[0..$expand_limit] AS communities
-            """,
-            {"ids": chunk_ids, "expand_limit": expand_limit}
-        )
+        # 构造动态 WHERE 过滤条件
+        where_clauses = []
+        if time_start:
+            where_clauses.append("e.updated_at >= datetime($time_start)")
+        if time_end:
+            where_clauses.append("e.updated_at <= datetime($time_end)")
+        where_filter = "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
-        # 收集实体与相关 chunk ids / 社区
+        cypher = f"""
+        UNWIND $ids AS cid
+        MATCH (c:Chunk {{id: cid}})
+        OPTIONAL MATCH (c)-[:MENTIONS]->(e:Entity)
+        {where_filter}
+        OPTIONAL MATCH (e)<-[:MENTIONS]-(c2:Chunk)
+        OPTIONAL MATCH (e)-[:BELONGS_TO]->(com:Community)
+        RETURN DISTINCT e.id AS entity_id, e.text AS entity_text, e.entity_type AS entity_type,
+               collect(DISTINCT c2.id)[0..$expand_limit] AS related_chunk_ids,
+               collect(DISTINCT com.id)[0..$expand_limit] AS communities
+        """
+
+        params = {
+            "ids": chunk_ids,
+            "expand_limit": expand_limit,
+        }
+        if time_start:
+            params["time_start"] = time_start
+        if time_end:
+            params["time_end"] = time_end
+
+        records = sess.run(cypher, params)
+
         related_chunk_set = set()
         for r in records:
             eid = r["entity_id"]
@@ -95,7 +135,7 @@ def global_search(search_text: str, top_k: int = 10, expand_limit: int = 50) -> 
                 if cid:
                     related_chunk_set.add(cid)
 
-        # 把 related_chunk_set 转成列表并查询它们的文本
+        # 查相关 chunk
         if related_chunk_set:
             rows = sess.run(
                 """
