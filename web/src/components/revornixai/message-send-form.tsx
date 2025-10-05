@@ -30,6 +30,7 @@ import {
 	TooltipTrigger,
 } from '../ui/hybrid-tooltip';
 import { useRouter } from 'nextjs-toploader/app';
+import { isEmpty } from 'lodash-es';
 
 const MessageSendForm = () => {
 	const router = useRouter();
@@ -75,7 +76,9 @@ const MessageSendForm = () => {
 		}
 		const { event, data, run_id } = responseItem;
 		setAiStatus(event);
-
+		
+		if (isEmpty(data) || isEmpty(data?.chunk?.content)) return;
+		
 		if (event === 'on_chat_model_stream') {
 			const messageItem = tempMessages().find(
 				(item) => item.chat_id === run_id
