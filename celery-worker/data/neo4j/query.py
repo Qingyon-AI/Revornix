@@ -36,7 +36,8 @@ def get_query_result_summary_llm_client(user_id: int) -> openai.OpenAI:
 
 def global_query(user_id: int, query: str):
     # Perform search
-    results = global_search(query)
+    results = global_search(user_id=user_id,
+                            search_text=query)
     prompt = query_context_summary(query, str(results))
     llm_client = get_query_result_summary_llm_client(user_id=user_id)
     resp = llm_client.chat.completions.create(
@@ -49,7 +50,8 @@ def global_query(user_id: int, query: str):
 
 def naive_query(user_id: int, query: str):
     # Perform search
-    results = naive_search(query)
+    results = naive_search(user_id=user_id, 
+                           search_text=query)
     prompt = query_context_summary(query, str(results))
     llm_client = get_query_result_summary_llm_client(user_id=user_id)
     resp = llm_client.chat.completions.create(

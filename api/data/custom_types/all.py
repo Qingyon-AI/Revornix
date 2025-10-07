@@ -1,5 +1,13 @@
 from pydantic import BaseModel
 
+class DocumentInfo(BaseModel):
+    id: int
+    creator_id: int
+    title: str
+    description: str
+    updated_at: str
+    created_at: str
+
 class ChunkInfo(BaseModel):
     id: str
     embedding: list[float] | None = None

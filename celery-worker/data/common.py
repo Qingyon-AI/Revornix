@@ -13,7 +13,7 @@ from sentence_transformers import SentenceTransformer
 from data.custom_types.all import *
 from data.prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from data.milvus.insert import upsert_milvus
-from data.neo4j.insert import upsert_chunk_entity_relations, upsert_entities_neo4j, upsert_chunks_neo4j, upsert_relations_neo4j, create_communities_from_chunks, create_community_nodes_and_relationships_with_size, annotate_node_degrees
+from data.neo4j.insert import upsert_chunk_entity_relations, upsert_entities_neo4j, upsert_chunks_neo4j, upsert_relations_neo4j, create_communities_from_chunks, create_community_nodes_and_relationships_with_size, annotate_node_degrees, upsert_doc_chunk_relations, upsert_doc_neo4j
 
 def make_chunk_id(doc_id: int, idx: int, text: str) -> str:
     h = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
@@ -193,11 +193,25 @@ def get_extract_llm_client(user_id: int) -> openai.OpenAI:
     return llm_client
  
 async def process_document(user_id: int, doc_id: int):
+    db = SessionLocal()
     llm_client = get_extract_llm_client(user_id=user_id)
+    db_doc = crud.document.get_document_by_document_id(db=db,
+                                                       document_id=doc_id)
+    if db_doc is None:
+        raise Exception("Document not found")
+    
+    upsert_doc_neo4j(docs_info=[DocumentInfo(id=db_doc.id,
+                                             title=db_doc.title,
+                                             description=db_doc.description,
+                                             creator_id=db_doc.creator_id,
+                                             updated_at=db_doc.update_time,
+                                             created_at=db_doc.create_time)])
     chunks = await chunk_document(doc_id=doc_id)
     embedding_chunks(chunks)
-    upsert_milvus(chunks)
+    upsert_milvus(user_id=user_id,
+                  chunks_info=chunks)
     upsert_chunks_neo4j(chunks)
+    upsert_doc_chunk_relations()
     entities = []
     relations = []
     for chunk in chunks:

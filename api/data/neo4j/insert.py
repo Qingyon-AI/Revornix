@@ -1,11 +1,52 @@
 from rich import print
 from datetime import datetime, timezone
-from data.custom_types.all import ChunkInfo, RelationInfo, EntityInfo
+from data.custom_types.all import ChunkInfo, RelationInfo, EntityInfo, DocumentInfo
 from data.neo4j.base import neo4j_driver
 
 def now_str():
     return datetime.now(tz=timezone.utc).isoformat()
 
+# -----------------------------
+# 1) 批量 upsert Document节点
+# -----------------------------
+def upsert_doc_neo4j(docs_info: list[DocumentInfo]):
+    cypher = """
+    UNWIND $rows AS r
+    MERGE (d:Document {id: r.id})
+    SET d.title = r.title,
+        d.description = r.description,
+        d.creator_id = r.creator_id,
+        d.updated_at = datetime(r.updated_at),
+        d.created_at = coalesce(d.created_at, datetime(r.created_at))
+    RETURN count(*) AS updated
+    """
+    now = now_str()
+    rows = [
+        {
+            "id": d.id,
+            "creator_id": d.creator_id,
+            "title": d.title,
+            "description": d.description,
+            "created_at": now,
+            "updated_at": now
+        } for d in docs_info
+    ]
+    with neo4j_driver.session() as session:
+        session.run(cypher, rows=rows)
+
+# -----------------------------
+# 1.1) Neo4j：Document -> Chunk 关系
+# -----------------------------
+def upsert_doc_chunk_relations():
+    cypher = """
+    MATCH (c:Chunk)
+    WHERE c.doc_id IS NOT NULL
+    MATCH (d:Document {id: c.doc_id})
+    MERGE (d)-[:HAS_CHUNK]->(c)
+    """
+    with neo4j_driver.session() as session:
+        session.run(cypher)
+        
 # -----------------------------
 # 4) 批量 upsert Chunk 节点
 # -----------------------------

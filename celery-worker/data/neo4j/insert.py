@@ -1,9 +1,54 @@
 from rich import print
-from data.custom_types.all import ChunkInfo, RelationInfo, EntityInfo
+from datetime import datetime, timezone
+from data.custom_types.all import ChunkInfo, RelationInfo, EntityInfo, DocumentInfo
 from data.neo4j.base import neo4j_driver
 
+def now_str():
+    return datetime.now(tz=timezone.utc).isoformat()
+
 # -----------------------------
-# 4) Neo4j：批量创建/更新 Chunk 节点（UNWIND）
+# 1) 批量 upsert Document节点
+# -----------------------------
+def upsert_doc_neo4j(docs_info: list[DocumentInfo]):
+    cypher = """
+    UNWIND $rows AS r
+    MERGE (d:Document {id: r.id})
+    SET d.title = r.title,
+        d.description = r.description,
+        d.creator_id = r.creator_id,
+        d.updated_at = datetime(r.updated_at),
+        d.created_at = coalesce(d.created_at, datetime(r.created_at))
+    RETURN count(*) AS updated
+    """
+    now = now_str()
+    rows = [
+        {
+            "id": d.id,
+            "creator_id": d.creator_id,
+            "title": d.title,
+            "description": d.description,
+            "created_at": now,
+            "updated_at": now
+        } for d in docs_info
+    ]
+    with neo4j_driver.session() as session:
+        session.run(cypher, rows=rows)
+
+# -----------------------------
+# 1.1) Neo4j：Document -> Chunk 关系
+# -----------------------------
+def upsert_doc_chunk_relations():
+    cypher = """
+    MATCH (c:Chunk)
+    WHERE c.doc_id IS NOT NULL
+    MATCH (d:Document {id: c.doc_id})
+    MERGE (d)-[:HAS_CHUNK]->(c)
+    """
+    with neo4j_driver.session() as session:
+        session.run(cypher)
+        
+# -----------------------------
+# 4) 批量 upsert Chunk 节点
 # -----------------------------
 def upsert_chunks_neo4j(chunks_info: list[ChunkInfo]):
     cypher = """
@@ -12,43 +57,72 @@ def upsert_chunks_neo4j(chunks_info: list[ChunkInfo]):
     SET c.text = r.text,
         c.doc_id = r.doc_id,
         c.idx = r.idx,
-        c.id = r.id
+        c.updated_at = datetime(r.updated_at),
+        c.created_at = coalesce(c.created_at, datetime(r.created_at))
     RETURN count(*) AS updated
     """
-    rows = [c.model_dump() for c in chunks_info]
+    now = now_str()
+    rows = [
+        {
+            **c.model_dump(),
+            "created_at": now,
+            "updated_at": now
+        } for c in chunks_info
+    ]
     with neo4j_driver.session() as session:
         session.run(cypher, rows=rows)
 
 # -----------------------------
-# 7) Neo4j：批量创建/更新 Entity 节点（UNWIND）
+# 7) 批量 upsert Entity 节点
 # -----------------------------
 def upsert_entities_neo4j(entities_info: list[EntityInfo]):
     cypher = """
     UNWIND $rows AS r
-    MERGE (e:Entity {name: r.text})
-    SET e.id = r.id
-    SET e.text = r.text
-    SET e.entity_type = r.entity_type
-    SET e.chunks = r.chunks
+    MERGE (e:Entity {id: r.id})
+    SET e.text = r.text,
+        e.entity_type = r.entity_type,
+        e.chunks = r.chunks,
+        e.updated_at = datetime(r.updated_at),
+        e.created_at = coalesce(e.created_at, datetime(r.created_at))
     RETURN count(*) AS updated
     """
-    rows = [{"id": e.id, "text": e.text, "entity_type": e.entity_type, "chunks": e.chunks} for e in entities_info]
+    now = now_str()
+    rows = [
+        {
+            "id": e.id,
+            "text": e.text,
+            "entity_type": e.entity_type,
+            "chunks": e.chunks,
+            "created_at": now,
+            "updated_at": now
+        }
+        for e in entities_info
+    ]
     with neo4j_driver.session() as session:
         session.run(cypher, rows=rows)
 
 # -----------------------------
-# 8) Neo4j：批量创建/更新 Relation 节点（UNWIND）
+# 8) 批量 upsert Entity -> Entity 的关系
 # -----------------------------
 def upsert_relations_neo4j(relations_info: list[RelationInfo]):
     cypher = """
     UNWIND $rows AS r
     MERGE (a:Entity {id: r.src_node})
     MERGE (b:Entity {id: r.tgt_node})
-    WITH a, b, r
-    CALL apoc.merge.relationship(a, r.relation_type, {}, {created: datetime()}, b, {lastSeen: datetime()}) YIELD rel
+    CALL apoc.merge.relationship(a, r.relation_type, {}, {last_seen: datetime(r.last_seen)}, b, {})
+    YIELD rel
     RETURN count(*) AS created
     """
-    rows = [{"src_node":r.src_node, "tgt_node": r.tgt_node, "relation_type":r.relation_type} for r in relations_info]
+    now = now_str()
+    rows = [
+        {
+            "src_node": r.src_node,
+            "tgt_node": r.tgt_node,
+            "relation_type": r.relation_type,
+            "last_seen": now
+        }
+        for r in relations_info
+    ]
     with neo4j_driver.session() as session:
         session.run(cypher, rows=rows)
 
@@ -66,11 +140,10 @@ def upsert_chunk_entity_relations():
         session.run(cypher)
 
 # -----------------------------
-# 9) Community 聚类（基于 chunk embedding）
+# 9) 社区聚类（Louvain）
 # -----------------------------
 def create_communities_from_chunks():
     with neo4j_driver.session() as session:
-        # 创建图投影
         session.run("""
             CALL gds.graph.project(
                 'communityGraph',
@@ -78,7 +151,6 @@ def create_communities_from_chunks():
                 { RELATED_TO: {orientation: 'UNDIRECTED'} }
             )
         """)
-        # Louvain 聚类
         result = session.run("""
             CALL gds.louvain.write(
                 'communityGraph',
@@ -87,85 +159,62 @@ def create_communities_from_chunks():
         """)
         for record in result:
             print(record['communityCount'], record['modularity'])
-
-        # 查询节点的社区
-        nodes = session.run("MATCH (n:Entity) RETURN n.name, n.community")
-        for n in nodes:
-            print(n['n.name'], n['n.community'])
-
-        # 删除图投影
         session.run("CALL gds.graph.drop('communityGraph')")
 
 # -----------------------------
-# 10) Neo4j：创建 Community 节点，并关联 Entity 和 Chunk
+# 10) 创建 Community 节点 & 关联 Entity 和 Chunk
 # -----------------------------
 def create_community_nodes_and_relationships_with_size():
-    """
-    基于 entity 的 community 属性：
-    1. 创建 Community 节点
-    2. 关联 Entity 和 Chunk
-    3. 给 Community 节点增加 size 属性
-    """
+    now = now_str()
     with neo4j_driver.session() as session:
-        # 1️⃣ 创建 Community 节点（去重）
         session.run("""
             MATCH (e:Entity)
             WITH DISTINCT e.community AS comm_id
             WHERE comm_id IS NOT NULL
             MERGE (com:Community {id: comm_id})
-        """)
+            SET com.created_at = coalesce(com.created_at, datetime($now)),
+                com.updated_at = datetime($now)
+        """, {"now": now})
 
-        # 2️⃣ Entity -> Community
         session.run("""
             MATCH (e:Entity)
             MATCH (com:Community {id: e.community})
             MERGE (e)-[:BELONGS_TO]->(com)
         """)
 
-        # 3️⃣ Chunk -> Community（继承实体的 community）
         session.run("""
             MATCH (c:Chunk)-[:MENTIONS]->(e:Entity)
             MATCH (com:Community {id: e.community})
             MERGE (c)-[:BELONGS_TO]->(com)
         """)
 
-        # 4️⃣ 可选优化：记录社区成员数量
         session.run("""
             MATCH (com:Community)<-[:BELONGS_TO]-(n)
             WITH com, count(n) AS member_count
             SET com.size = member_count
         """)
 
-        # 5️⃣ 查询检查
         communities = session.run("MATCH (com:Community) RETURN com.id, com.size")
         for record in communities:
             print(f"Community {record['com.id']} has {record['com.size']} members")
-            
+
 # -----------------------------
-# 11) Neo4j：为所有节点设置 degree 属性（连接数）
+# 11) 所有节点 degree 标注
 # -----------------------------
 def annotate_node_degrees():
     with neo4j_driver.session() as session:
-        # 设置 Entity 节点的 degree
         session.run("""
             MATCH (n:Entity)
             WITH n, COUNT { (n)--() } AS deg
             SET n.degree = deg
         """)
-
-        # 设置 Chunk 节点的 degree
         session.run("""
             MATCH (n:Chunk)
             WITH n, COUNT { (n)--() } AS deg
             SET n.degree = deg
         """)
-
-        # 设置 Community 节点的 degree
         session.run("""
             MATCH (n:Community)
             WITH n, COUNT { (n)--() } AS deg
             SET n.degree = deg
         """)
-    
-if __name__ == "__main__":
-    annotate_node_degrees()

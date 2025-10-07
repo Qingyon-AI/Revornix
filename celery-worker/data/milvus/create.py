@@ -14,6 +14,7 @@ def init_document_collection():
     schema.add_field(field_name="sparse", datatype=DataType.SPARSE_FLOAT_VECTOR)
     schema.add_field(field_name="doc_id", datatype=DataType.INT32)
     schema.add_field(field_name="idx", datatype=DataType.INT64)
+    schema.add_field(field_name="creator_id", datatype=DataType.INT8, max_length=100)
     
     bm25_function = Function(
         name="text_bm25_emb", # Function name
