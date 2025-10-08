@@ -109,6 +109,7 @@ def upsert_relations_neo4j(relations_info: list[RelationInfo]):
     UNWIND $rows AS r
     MERGE (a:Entity {id: r.src_node})
     MERGE (b:Entity {id: r.tgt_node})
+    WITH a, b, r
     CALL apoc.merge.relationship(a, r.relation_type, {}, {last_seen: datetime(r.last_seen)}, b, {})
     YIELD rel
     RETURN count(*) AS created

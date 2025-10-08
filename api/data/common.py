@@ -2,6 +2,8 @@ import crud
 import hashlib
 import openai
 import json
+import asyncio
+import torch
 from typing import cast
 from chonkie.chunker import SemanticChunker
 from chonkie.types import Chunk
@@ -14,6 +16,7 @@ from data.custom_types.all import *
 from data.prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from data.milvus.insert import upsert_milvus
 from data.neo4j.insert import upsert_chunk_entity_relations, upsert_entities_neo4j, upsert_chunks_neo4j, upsert_relations_neo4j, create_communities_from_chunks, create_community_nodes_and_relationships_with_size, annotate_node_degrees, upsert_doc_chunk_relations, upsert_doc_neo4j
+from typing import AsyncGenerator
 
 def make_chunk_id(doc_id: int, idx: int, text: str) -> str:
     h = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
@@ -21,57 +24,102 @@ def make_chunk_id(doc_id: int, idx: int, text: str) -> str:
 
 # -----------------------------
 # 1) chunking：把长文本按语义切成 chunk（带 overlap），注意此处文本必须为一篇完整的文章，否则idx会乱
-# TODO：考虑优化，毕竟如果文本太大，一次性加载会占用过大的内存
 # -----------------------------
-# 如果text是个字符串数组，那么返回的会是二维数组，如果是个字符串，那返回的就是一个一维数组
-async def chunk_document(doc_id: int) -> list[ChunkInfo]:
+async def stream_chunk_document(doc_id: int) -> AsyncGenerator[ChunkInfo, None]:
+    """
+    以流式方式生成 ChunkInfo，避免一次性 embedding 占用大量内存
+    """
     db = SessionLocal()
-    db_document = crud.document.get_document_by_document_id(db=db,
-                                                            document_id=doc_id)
-    if db_document is None:
-        raise Exception("Document not found")
-    db_user = crud.user.get_user_by_id(db=db, 
-                                       user_id=db_document.creator_id)
-    if db_user is None:
-        raise Exception("User does not exist")
-    remote_file_service = await get_user_remote_file_system(user_id=db_user.id)
-    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
-    
-    if db_document.category == DocumentCategory.WEBSITE:
-        website_document = crud.document.get_website_document_by_document_id(db=db,
-                                                                            document_id=doc_id)
-        if website_document is None:
-            raise Exception("Website document not found")
-        markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=website_document.md_file_name)
-    if db_document.category == DocumentCategory.FILE:
-        file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                    document_id=doc_id)
-        if file_document is None:
-            raise Exception("Website document not found")
-        markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=file_document.md_file_name)
-    if db_document.category == DocumentCategory.QUICK_NOTE:
-        quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
-                                                                                   document_id=doc_id)
-        markdown_content = quick_note_document.content
-        
+    try:
+        # 1️⃣ 获取文档与用户
+        db_document = crud.document.get_document_by_document_id(db=db, document_id=doc_id)
+        if db_document is None:
+            raise ValueError("Document not found")
+        db_user = crud.user.get_user_by_id(db=db, user_id=db_document.creator_id)
+        if db_user is None:
+            raise ValueError("User not found")
+
+        # 2️⃣ 初始化文件系统
+        remote_file_service = await get_user_remote_file_system(user_id=db_user.id)
+        await remote_file_service.init_client_by_user_file_system_id(db_user.default_user_file_system)
+
+        # 3️⃣ 获取 Markdown 内容
+        markdown_content = await _load_markdown_content(db, db_document, remote_file_service)
+        if not markdown_content.strip():
+            raise ValueError("Document content is empty")
+
+        # 4️⃣ 初始化嵌入模型 + chunker（控制 batch）
+        embedding_model = AutoEmbeddings.get_embeddings("Qwen/Qwen3-Embedding-0.6B")
+        chunker = SemanticChunker(
+            embedding_model=embedding_model,
+            threshold=0.8,
+            chunk_size=1024,
+            similarity_window=3,
+            skip_window=2
+        )
+
+        # 5️⃣ 按段切大文本，分步生成 chunk
+        segment_size = 200_000  # 每次处理约 20 万字符
+        segments = [
+            markdown_content[i:i + segment_size]
+            for i in range(0, len(markdown_content), segment_size)
+        ]
+
+        global_idx = 0
+        for seg_idx, segment in enumerate(segments):
+            # ✅ 在后台线程中执行 CPU 密集的 chunking
+            loop = asyncio.get_event_loop()
+            chunks: list[Chunk] = await loop.run_in_executor(
+                None, lambda: cast(list[Chunk], chunker(segment))
+            )
+
+            for idx, chunk in enumerate(chunks):
+                chunk_info = ChunkInfo(
+                    id=make_chunk_id(doc_id=doc_id, idx=global_idx, text=chunk.text),
+                    text=chunk.text,
+                    idx=global_idx,
+                    doc_id=doc_id,
+                )
+                yield chunk_info
+                global_idx += 1
+
+            # ✅ 每批后释放 GPU 显存
+            if torch.backends.mps.is_available():
+                torch.mps.empty_cache()
+            elif torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+    finally:
+        db.close()
+
+
+# -----------------------------
+# 工具函数：加载 Markdown 内容
+# -----------------------------
+async def _load_markdown_content(db, db_document, remote_file_service) -> str:
+    """根据文档类型加载内容"""
+    cat = db_document.category
+    if cat == DocumentCategory.WEBSITE:
+        site = crud.document.get_website_document_by_document_id(db=db, document_id=db_document.id)
+        return await remote_file_service.get_file_content_by_file_path(site.md_file_name)
+    elif cat == DocumentCategory.FILE:
+        file_doc = crud.document.get_file_document_by_document_id(db=db, document_id=db_document.id)
+        return await remote_file_service.get_file_content_by_file_path(file_doc.md_file_name)
+    elif cat == DocumentCategory.QUICK_NOTE:
+        note = crud.document.get_quick_note_document_by_document_id(db=db, document_id=db_document.id)
+        return note.content or ""
+    else:
+        raise ValueError(f"Unsupported document category: {cat}")
+
+
+# -----------------------------
+# 入口函数：将流式生成器结果转为列表（兼容旧逻辑）
+# -----------------------------
+async def chunk_document(doc_id: int) -> list[ChunkInfo]:
+    """保留旧接口兼容性"""
     chunk_infos: list[ChunkInfo] = []
-    embedding_model = AutoEmbeddings.get_embeddings("Qwen/Qwen3-Embedding-0.6B")
-    chunker = SemanticChunker(embedding_model=embedding_model,
-                              threshold=0.8,
-                              chunk_size=1024,
-                              similarity_window=3,
-                              skip_window=2)
-    chunks = cast(list[Chunk], chunker(markdown_content))
-    for idx, chunk in enumerate(chunks):
-        chunk_info: ChunkInfo = ChunkInfo(id=chunk.id, 
-                                          text=chunk.text, 
-                                          idx=idx, 
-                                          doc_id=doc_id)
-        chunk_info.id = make_chunk_id(doc_id=doc_id, idx=idx, text=chunk.text)
-        chunk_info.idx = idx
-        chunk_info.doc_id = doc_id
+    async for chunk_info in stream_chunk_document(doc_id):
         chunk_infos.append(chunk_info)
-    db.close()
     return chunk_infos
 
 # -----------------------------
@@ -204,8 +252,8 @@ async def process_document(user_id: int, doc_id: int):
                                              title=db_doc.title,
                                              description=db_doc.description,
                                              creator_id=db_doc.creator_id,
-                                             updated_at=db_doc.update_time,
-                                             created_at=db_doc.create_time)])
+                                             updated_at=db_doc.update_time.isoformat(),
+                                             created_at=db_doc.create_time.isoformat())])
     chunks = await chunk_document(doc_id=doc_id)
     embedding_chunks(chunks)
     upsert_milvus(user_id=user_id,
