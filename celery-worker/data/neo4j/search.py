@@ -95,7 +95,9 @@ def global_search(user_id: int,
     1) 在 Milvus 上做全局向量检索（得到 top_k chunk）
     2) 在 Neo4j 中扩展：找到与用户相关的 Entity / Chunk / Community
     """
-    seed_chunks = naive_search(search_text, top_k=top_k)
+    seed_chunks = naive_search(user_id=user_id,
+                               search_text=search_text, 
+                               top_k=top_k)
     chunk_ids = [c["chunk_id"] for c in seed_chunks]
 
     expanded_chunks = []
@@ -201,7 +203,9 @@ def hybrid_search(user_id: int,
                                           limit=50)
     if local_chunks:
         # 若 local 有结果，则也同时拿 naive 做补充
-        naive_chunks = naive_search(search_text, top_k=naive_k)
+        naive_chunks = naive_search(user_id=user_id,
+                                    search_text=search_text, 
+                                    top_k=naive_k)
         # 做简单合并（保序且去重）
         seen = set()
         merged = []

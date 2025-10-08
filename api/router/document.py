@@ -491,6 +491,7 @@ async def search_knowledge_vector(vector_search_request: schemas.document.Vector
                                   db: Session = Depends(get_db), 
                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     hybrid_results = naive_search(
+        user_id=user.id,
         search_text=vector_search_request.query
     )
     document_ids = [doc.get('doc_id') for doc in hybrid_results]
