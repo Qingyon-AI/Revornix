@@ -7,6 +7,7 @@
 ![](https://img.shields.io/github/v/release/Qingyon-AI/Revornix)
 ![GitHub Release Date](https://img.shields.io/github/release-date-pre/Qingyon-AI/Revornix)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Qingyon-AI/Revornix)
+[![MseeP.ai Security Assessment Badge](https://img.shields.io/badge/MseeP.ai-Security-blue)](https://mseep.ai/app/qingyon-ai-revornix)
 
 [English](./README.md) | [中文文档](/README_zh.md) | 日本語ドキュメント
 
