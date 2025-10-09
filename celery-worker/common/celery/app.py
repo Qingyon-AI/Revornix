@@ -43,6 +43,8 @@ async def handle_process_document(document_id: int,
                                                                       user_id=user_id,
                                                                       document_id=document_id)
     db.commit()
+    db_document_process_task.status = DocumentProcessStatus.PROCESSING.value
+    db.commit()
     db_user = crud.user.get_user_by_id(db=db, 
                                        user_id=user_id)
     if db_user is None:
@@ -143,8 +145,7 @@ async def handle_process_document(document_id: int,
             db.commit()
         
         # embedding
-        await handle_add_embedding(db=db,
-                                   document=db_document,
+        await handle_add_embedding(document_id=db_document.id,
                                    user_id=user_id)
         
         # 更新对应专栏section
@@ -155,8 +156,7 @@ async def handle_process_document(document_id: int,
                                      user_id=user_id)
         
         if auto_summary:
-            await handle_update_ai_summary(db=db,
-                                           document=db_document,
+            await handle_update_ai_summary(document_id=db_document.id,
                                            user_id=user_id)
         db_document_process_task.status = DocumentProcessStatus.SUCCESS.value
         db.commit()
@@ -177,15 +177,15 @@ async def handle_process_document(document_id: int,
     finally:
         db.close()
 
-async def handle_add_embedding(db: Session,
-                               document: models.document.Document, 
+async def handle_add_embedding(document_id: int, 
                                user_id: int):
+    db = SessionLocal()
     db_embedding_task = crud.task.create_document_embedding_task(db=db,
                                                                  user_id=user_id,
-                                                                 document_id=document.id)
+                                                                 document_id=document_id)
     try:
         db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
-        await process_document(user_id=user_id, doc_id=document.id)
+        await process_document(user_id=user_id, doc_id=document_id)
         db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
         db.commit()
     except Exception as e:
@@ -312,18 +312,21 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
         db.close()
     return markdown_content
         
-async def handle_update_ai_summary(db: Session,
-                                   document: models.document.Document, 
+async def handle_update_ai_summary(document_id: int, 
                                    user_id: int):
+    db = SessionLocal()
     try:
-        markdown_content = await get_markdown_content_by_document_id(document_id=document.id,
+        db_document = crud.document.get_document_by_document_id(db=db,
+                                                                document_id=document_id)
+        markdown_content = await get_markdown_content_by_document_id(document_id=db_document.id,
                                                                      user_id=user_id)
-        model_id = crud.user.get_user_by_id(db=db, user_id=user_id).default_document_reader_model_id
+        db_user = crud.user.get_user_by_id(db=db, 
+                                           user_id=user_id)
         ai_summary_result = summary_document(user_id=user_id, 
-                                             model_id=model_id, 
+                                             model_id=db_user.default_document_reader_model_id, 
                                              markdown_content=markdown_content)
         crud.document.update_document_by_document_id(db=db,
-                                                     document_id=document.id,
+                                                     document_id=db_document.id,
                                                      title=ai_summary_result.get('title'),
                                                      description=ai_summary_result.get('description'),
                                                      ai_summary=ai_summary_result.get('summary'))

@@ -196,8 +196,6 @@ def create_community_nodes_and_relationships_with_size():
         """)
 
         communities = session.run("MATCH (com:Community) RETURN com.id, com.size")
-        for record in communities:
-            print(f"Community {record['com.id']} has {record['com.size']} members")
 
 # -----------------------------
 # 11) 所有节点 degree 标注
