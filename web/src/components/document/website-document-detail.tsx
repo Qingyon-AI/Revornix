@@ -131,6 +131,7 @@ const WebsiteDocumentDetail = ({
 		}
 		setMarkdowningTransform(false);
 		toast.success(t('document_transform_again'));
+		setDelay(1000);
 	};
 
 	useEffect(() => {
