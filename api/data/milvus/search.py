@@ -2,6 +2,7 @@ from typing import cast, Any
 from pymilvus.client.search_result import SearchResult
 from sentence_transformers import SentenceTransformer
 from data.milvus.base import milvus_client, MILVUS_COLLECTION
+from pymilvus import AnnSearchRequest, WeightedRanker
 
 # 使用与你插入时相同的 embedding model（用于稠密向量）
 embedding_model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
@@ -64,4 +65,35 @@ def full_text_search(user_id: int, search_text: str, top_k: int = 5) -> list[dic
         search_params=search_params,
         output_fields=["id", "text", "doc_id", "idx", "creator_id"]
     ))
+    return _parse_results(results)
+
+def hybrid_search(user_id: int, search_text: str, top_k: int = 5, alpha: float = 0.2) -> list[dict[str, Any]]:
+    # 1. 计算 dense 向量
+    qvec = embedding_model.encode(search_text).tolist()
+
+    # 2. 构造两条搜索请求
+    dense_req = AnnSearchRequest(
+        data=[qvec],
+        anns_field="embedding",
+        param={"metric_type": "IP", "params": {"nprobe": 10}},
+        limit=top_k,
+        expr=f"creator_id == {user_id}"
+    )
+    sparse_req = AnnSearchRequest(
+        data=[search_text],  # Milvus 内部会把 text -> sparse embedding (BM25)
+        anns_field="sparse",
+        param={"metric_type": "BM25", "params": {}},
+        limit=top_k,
+        expr=f"creator_id == {user_id}"
+    )
+
+    # 3. 统一调用 hybrid_search
+    results = cast(SearchResult, milvus_client.hybrid_search(
+        collection_name=MILVUS_COLLECTION,
+        reqs=[dense_req, sparse_req],
+        ranker=WeightedRanker(alpha, 1 - alpha),
+        limit=top_k,
+        output_fields=["id", "text", "doc_id", "idx", "creator_id"]
+    ))
+
     return _parse_results(results)
