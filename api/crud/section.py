@@ -5,6 +5,16 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy import or_
 from enums.section import UserSectionAuthority
 
+def get_document_sections_by_document_id(db: Session,
+                                         document_id: int):
+    query = db.query(models.section.Section)
+    query = query.join(models.section.SectionDocument)
+    query = query.filter(models.section.SectionDocument.document_id == document_id,
+                         models.section.SectionDocument.delete_at == None)
+    query = query.filter(models.section.Section.delete_at == None)
+    query = query.order_by(models.section.Section.update_time.desc())
+    return query.all()
+
 def create_label(db: Session, 
                  name: str, 
                  user_id: int):
@@ -92,18 +102,6 @@ def bind_section_to_user(db: Session,
     db.add(db_section_user)
     db.flush()
     return db_section_user
-
-def create_label(db: Session, 
-                 name: str, 
-                 user_id: int):
-    now = datetime.now(timezone.utc)
-    db_label = models.section.Label(name=name, 
-                                    user_id=user_id,
-                                    create_time=now,
-                                    update_time=now)
-    db.add(db_label)
-    db.flush()
-    return db_label
 
 def bind_document_to_section(db: Session,
                              section_id: int,

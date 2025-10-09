@@ -1,7 +1,6 @@
 import crud
 import models
 import schemas
-from celery import chain, group
 from datetime import datetime, timezone
 from schemas.common import SuccessResponse
 from sqlalchemy.orm import Session
@@ -14,7 +13,7 @@ from data.milvus.create import milvus_client
 from common.dependencies import get_db, get_current_user
 from common.logger import log_exception, exception_logger
 from common.common import get_user_remote_file_system
-from common.celery.app import update_ai_summary, add_embedding, init_website_document_info, update_sections, init_file_document_info
+from common.celery.app import start_process_document, update_sections
 from enums.document import DocumentCategory, DocumentMdConvertStatus
 
 document_router = APIRouter()
@@ -122,50 +121,17 @@ async def transform_markdown(transform_markdown_request: schemas.document.Docume
     if db_document is None:
         raise Exception('The document you want to transform is not found')
     
-    db_sections = crud.section.get_section_documents_by_document_id(db=db,
-                                                                    document_id=transform_markdown_request.document_id)
-    db_section_ids = [db_section.section_id for db_section in db_sections]
-    
     db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                              document_id=transform_markdown_request.document_id)
     if db_transform_task.status == DocumentMdConvertStatus.SUCCESS:
         raise Exception('The transform task is already finished, please refresh the page')
     try:
         db_transform_task.status = DocumentMdConvertStatus.WAIT_TO
-        if db_document.category == DocumentCategory.WEBSITE:
-            db_website_document = crud.document.get_website_document_by_document_id(db=db,
-                                                                                    document_id=transform_markdown_request.document_id)
-            if db_website_document is None:
-                raise Exception('The website info of the document you want to transform is not found, please connect the administrator')
-            
-            first_task = init_website_document_info.si(db_document.id, user.id)
-            second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(db_section_ids, db_document.id, user.id)]
-            task_chain = chain(first_task, group(second_tasks))
-            task_chain.apply_async()
-        elif db_document.category == DocumentCategory.FILE:
-            db_file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                              document_id=transform_markdown_request.document_id)
-            if db_file_document is None:
-                raise Exception('The file info of the document you want to transform is not found, please connect the administrator')
-            first_task = init_file_document_info.si(db_document.id, user.id)
-            second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(db_section_ids, db_document.id, user.id)]
-            task_chain = chain(first_task, group(second_tasks))
-            task_chain.apply_async()
-        elif db_document.category == DocumentCategory.QUICK_NOTE:
-            db_quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
-                                                                                          document_id=transform_markdown_request.document_id)
-            if db_quick_note_document is None:
-                raise Exception('The quick note info of the document you want to transform is not found, please connect the administrator')
-            first_task = [add_embedding.si(db_document.id, user.id), update_sections.si(db_section_ids, db_document.id, user.id)]
-            second_tasks = []
-            task_chain = chain(group(first_task), group(second_tasks))
-            task_chain.apply_async()
-            
+        start_process_document.delay(db_document.id, user.id)
     except Exception as e:
         exception_logger.error(f"document transform request failed, error {e}")
         log_exception()
         db.rollback()
-        db_transform_task.status = DocumentMdConvertStatus.FAILED
     db.commit()
     return schemas.common.SuccessResponse()
         
@@ -228,13 +194,6 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         crud.task.create_document_transform_task(db=db,
                                                  user_id=user.id,
                                                  document_id=db_document.id)
-        db.commit()
-        first_task = init_website_document_info.si(db_document.id, user.id)
-        second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(document_create_request.sections, db_document.id, user.id)]
-        if document_create_request.auto_summary:
-            second_tasks.append(update_ai_summary.si(db_document.id, user.id))
-        task_chain = chain(first_task, group(second_tasks))
-        task_chain.apply_async()
     elif document_create_request.category == DocumentCategory.FILE:
         db_document = crud.document.create_base_document(
             db=db,
@@ -284,13 +243,6 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                               section_id=db_today_section.id,
                                               document_id=db_document.id,
                                               status=0)
-        db.commit()
-        first_task = init_file_document_info.si(db_document.id, user.id)
-        second_tasks = [add_embedding.si(db_document.id, user.id), update_sections.si(document_create_request.sections, db_document.id, user.id)]
-        if document_create_request.auto_summary:
-            second_tasks.append(update_ai_summary.si(db_document.id, user.id))
-        task_chain = chain(first_task, group(second_tasks))
-        task_chain.apply_async()
     elif document_create_request.category == DocumentCategory.QUICK_NOTE:
         db_document = crud.document.create_base_document(
             db=db,
@@ -337,13 +289,8 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                               section_id=db_today_section.id,
                                               document_id=db_document.id,
                                               status=0)
-        db.commit()
-        first_task = [add_embedding.si(db_document.id, user.id), update_sections.si(document_create_request.sections, db_document.id, user.id)]
-        second_tasks = []
-        if document_create_request.auto_summary:
-            second_tasks.append(update_ai_summary.si(db_document.id, user.id))
-        task_chain = chain(group(first_task), group(second_tasks))
-        task_chain.apply_async()
+    db.commit()
+    start_process_document.delay(db_document.id, user.id, document_create_request.auto_summary)
     return schemas.document.DocumentCreateResponse(document_id=db_document.id)
 
 @document_router.post('/update', response_model=schemas.common.NormalResponse)
@@ -391,7 +338,7 @@ async def update_document(document_update_request: schemas.document.DocumentUpda
                                                       section_id=section_id,
                                                       document_id=document_update_request.document_id)
         if sorted(exist_document_section_ids) != sorted(document_update_request.sections):
-            update_sections.delay(document_update_request.sections, db_document.id, user.id)
+            update_sections.delay(db_document.id, user.id)
     db_document.update_time = now
     db.commit()
     return schemas.common.NormalResponse()

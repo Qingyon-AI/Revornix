@@ -15,10 +15,9 @@ from notify.ios import IOSNotify
 from datetime import datetime, timezone
 from common.sql import SessionLocal
 from notification_template.daily_summary import DailySummaryNotificationTemplate
-from common.celery.app import add_embedding, update_sections, init_website_document_info
-from celery import chain, group
+from common.celery.app import start_process_document
 from enums.document import DocumentMdConvertStatus
-from enums.notification import NotificationContentType, NotificationSourceCategory, NotificationTargetCategory
+from enums.notification import NotificationContentType, NotificationSourceCategory
 
 scheduler = AsyncIOScheduler()
 
@@ -83,10 +82,7 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                                                                                                       document_id=existing_doc.id)
                     db_document_transform_task.status = DocumentMdConvertStatus.WAIT_TO
                     db.commit()
-                    first_task = init_website_document_info.si(existing_doc.id, rss_server.user_id)
-                    second_tasks = [add_embedding.si(existing_doc.id, rss_server.user_id), update_sections.si([section.id for section in rss_server.sections], existing_doc.id, rss_server.user_id)]
-                    task_chain = chain(first_task, group(second_tasks))
-                    task_chain.apply_async()
+                    start_process_document.delay(existing_doc.id, rss_server.user_id)
             else:
                 db_base_document = crud.document.create_base_document(db=db,
                                                                       creator_id=rss_server.user_id,
@@ -112,10 +108,7 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                                                          user_id=rss_server.user_id,
                                                          document_id=db_base_document.id)
                 db.commit()
-                first_task = init_website_document_info.si(db_base_document.id, rss_server.user_id)
-                second_tasks = [add_embedding.si(db_base_document.id, rss_server.user_id), update_sections.si([section.id for section in rss_server.sections], db_base_document.id, rss_server.user_id)]
-                task_chain = chain(first_task, group(second_tasks))
-                task_chain.apply_async()
+                start_process_document.delay(db_base_document.id, rss_server.user_id)
     except Exception as e:
         exception_logger.error(f'Error while fetching and saving rss server {rss_server.id}: {e}')
         db.rollback()

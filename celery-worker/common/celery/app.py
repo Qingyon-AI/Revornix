@@ -4,9 +4,11 @@ if os.environ.get('ENV') == 'dev':
     load_dotenv(override=True)
 
 import uuid
+import models
 import crud
 import asyncio
 from celery import Celery
+from sqlalchemy.orm import Session
 from config.redis import REDIS_PORT, REDIS_URL
 from config.base import BASE_DIR
 from common.logger import log_exception, exception_logger
@@ -32,8 +34,9 @@ celery_app = Celery('worker',
                     broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0',
                     backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
-async def handle_init_file_document_info(document_id: int, 
-                                         user_id: int):
+async def handle_process_document(document_id: int, 
+                                  user_id: int,
+                                  auto_summary: bool = False):
     db = SessionLocal()
     db_user = crud.user.get_user_by_id(db=db, 
                                        user_id=user_id)
@@ -48,37 +51,27 @@ async def handle_init_file_document_info(document_id: int,
                                                                 document_id=document_id)
         if db_document is None:
             raise Exception("Document not found")
-        
-        if db_document.category != DocumentCategory.FILE:
-            raise Exception("This task is only for file document")
-        
-        db_file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                        document_id=document_id)
-        if db_file_document is None:
-            raise Exception("File document not found")
-        
-        default_file_document_parse_user_engine_id = db_user.default_file_document_parse_user_engine_id
-        if default_file_document_parse_user_engine_id is None:
-            raise Exception("User does not have default document parsing engine")
-        
+            
         db_task = crud.task.get_document_transform_task_by_document_id(db=db,
-                                                                    document_id=document_id)
+                                                                       document_id=document_id)
         if db_task is None:
             raise Exception("Document transform task not found")
         
         db_task.status = DocumentMdConvertStatus.CONVERTING
         db.commit()
-        
-        file_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
-                                                                       user_engine_id=default_file_document_parse_user_engine_id)
-        # download the file to the temp dir
-        file_content = await remote_file_service.get_file_content_by_file_path(file_path=db_file_document.file_name)
-        temp_file_path = f'{str(BASE_DIR)}/temp/{db_file_document.file_name.replace("files/", "")}'
-        with open(temp_file_path, 'wb') as f:
-            f.write(file_content)
             
+        md_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
+                                                                     user_engine_id=db_user.default_file_document_parse_user_engine_id)
+        
+        if md_extractor is None:
+            raise Exception("User engine not found")
+        
         db_engine = crud.engine.get_engine_by_id(db=db, 
-                                                 id=file_extractor.engine_id)
+                                                 id=md_extractor.engine_id)
+        
+        if db_engine is None:
+            raise Exception("Engine not found")
+        
         if db_engine.uuid == EngineUUID.MinerU_API.value:
             engine = MineruApiEngine()
         if db_engine.uuid == EngineUUID.MarkitDown.value:
@@ -88,28 +81,76 @@ async def handle_init_file_document_info(document_id: int,
         if db_engine.uuid == EngineUUID.MinerU.value:
             engine = MineruEngine()
             
-        await engine.init_engine_config_by_user_engine_id(user_engine_id=default_file_document_parse_user_engine_id)
+        await engine.init_engine_config_by_user_engine_id(user_engine_id=db_user.default_file_document_parse_user_engine_id)
         
-        file_info = await engine.analyse_file(file_path=temp_file_path)
+        if db_document.category == DocumentCategory.FILE:
+            # 处理文件文档
+            db_file_document = crud.document.get_file_document_by_document_id(db=db,
+                                                                              document_id=document_id)
+            if db_file_document is None:
+                raise Exception("File document not found")
+            
+            # download the file to the temp dir
+            file_content = await remote_file_service.get_file_content_by_file_path(file_path=db_file_document.file_name)
+            temp_file_path = f'{str(BASE_DIR)}/temp/{db_file_document.file_name.replace("files/", "")}'
+            with open(temp_file_path, 'wb') as f:
+                f.write(file_content)
+                
+            file_info = await engine.analyse_file(file_path=temp_file_path)
 
-        db_document.title = file_info.title
-        db_document.description = file_info.description
-        db_document.cover = file_info.cover
-        db.commit()
+            db_document.title = file_info.title
+            db_document.description = file_info.description
+            db_document.cover = file_info.cover
+            db.commit()
+
+            md_file_name = f"markdown/{uuid.uuid4().hex}.md"
+            await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
+                                                                 content=file_info.content,
+                                                                 content_type="text/plain")
+            crud.document.update_file_document_by_file_document_id(db=db,
+                                                                   file_document_id=db_file_document.id,
+                                                                   md_file_name=md_file_name)
+            db_task.status = DocumentMdConvertStatus.SUCCESS
+            db.commit()
+            
+        if db_document.category == DocumentCategory.WEBSITE:
+            # 处理网页文档
+            db_website_document = crud.document.get_website_document_by_document_id(db=db,
+                                                                                    document_id=document_id)
+            if db_website_document is None:
+                raise Exception("Website document not found")
+            
+            web_info = await engine.analyse_website(url=db_website_document.url)
+            
+            db_document.title = web_info.title
+            db_document.description = web_info.description
+            db_document.cover = web_info.cover
+            db.commit()
+            
+            md_file_name = f"markdown/{uuid.uuid4().hex}.md"
+            await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
+                                                                 content=web_info.content, 
+                                                                 content_type='text/plain')
+            crud.document.update_website_document_by_website_document_id(db=db,
+                                                                         website_document_id=db_website_document.id,
+                                                                         md_file_name=md_file_name)
+            db_task.status = DocumentMdConvertStatus.SUCCESS
+            db.commit()
         
-        db_file_document = crud.document.get_file_document_by_document_id(db=db, 
-                                                                          document_id=document_id)
-        md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-        await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
-                                                             content=file_info.content,
-                                                             content_type="text/plain")
-        crud.document.update_file_document_by_file_document_id(db=db,
-                                                               file_document_id=db_file_document.id,
-                                                               md_file_name=md_file_name)
-        db_task.status = DocumentMdConvertStatus.SUCCESS
-        db.commit()
+        # embedding
+        await handle_add_embedding(db=db,
+                                   document=db_document,
+                                   user_id=user_id)
+        
+        # 更新对应专栏section
+        sections = crud.section.get_document_sections_by_document_id(db=db, document_id=document_id)
+        sections_ids = [sec.id for sec in sections]
+        await handle_update_sections(sections=sections_ids, 
+                                     document_id=document_id, 
+                                     user_id=user_id)
+
     except Exception as e:
-        exception_logger.error(f"Something is error while init file document info: {e}")
+        exception_logger.error(f"Something is error while process document info: {e}")
         log_exception()
         db.rollback()
         db_task = crud.task.get_document_transform_task_by_document_id(db=db,
@@ -124,110 +165,20 @@ async def handle_init_file_document_info(document_id: int,
     finally:
         db.close()
 
-async def handle_init_website_document_info(document_id: int, 
-                                            user_id: int):
-    db = SessionLocal()
-    db_user = crud.user.get_user_by_id(db=db, 
-                                       user_id=user_id)
-    if db_user is None:
-        raise Exception("User not found")
-    
-    remote_file_service = await get_user_remote_file_system(user_id=user_id)
-    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
-    
-    try:
-        db_document = crud.document.get_document_by_document_id(db=db,
-                                                                document_id=document_id)
-        if db_document is None:
-            raise Exception("Document not found")
-        if db_document.category != DocumentCategory.WEBSITE:
-            raise Exception("This task is only for website document")
-        
-        db_website_document = crud.document.get_website_document_by_document_id(db=db,
-                                                                                document_id=document_id)
-        if db_website_document is None:
-            raise Exception("Website document not found")
-        
-        default_website_document_parse_user_engine_id = db_user.default_website_document_parse_user_engine_id
-        if default_website_document_parse_user_engine_id is None:
-            raise Exception("User does not have default website document parse engine")
-        
-        db_task = crud.task.get_document_transform_task_by_document_id(db=db,
-                                                                       document_id=document_id)
-        if db_task is None:
-            raise Exception("Document transform task not found")
-        
-        db_task.status = DocumentMdConvertStatus.CONVERTING
-        db.commit()
-        
-        website_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
-                                                                          user_engine_id=default_website_document_parse_user_engine_id)
-        db_engine = crud.engine.get_engine_by_id(db=db,
-                                                 id=website_extractor.engine_id)
-        if db_engine.uuid == EngineUUID.MinerU_API.value:
-            engine = MineruApiEngine()
-        if db_engine.uuid == EngineUUID.MarkitDown.value:
-            engine = MarkitdownEngine()
-        if db_engine.uuid == EngineUUID.Jina.value:
-            engine = JinaEngine()
-        if db_engine.uuid == EngineUUID.MinerU.value:
-            engine = MineruEngine()
-            
-        await engine.init_engine_config_by_user_engine_id(user_engine_id=default_website_document_parse_user_engine_id)
-        
-        web_info = await engine.analyse_website(url=db_website_document.url)
-        db_document.title = web_info.title
-        db_document.description = web_info.description
-        db_document.cover = web_info.cover
-        db.commit()
-
-        db_website_document = crud.document.get_website_document_by_document_id(db=db, 
-                                                                                document_id=document_id)
-        md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-        await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
-                                                             content=web_info.content, 
-                                                             content_type='text/plain')
-        crud.document.update_website_document_by_website_document_id(db=db,
-                                                                     website_document_id=db_website_document.id,
-                                                                     md_file_name=md_file_name)
-        db_task.status = DocumentMdConvertStatus.SUCCESS
-        db.commit()
-    except Exception as e:
-        exception_logger.error(f"Something is error while init website document info: {e}")
-        log_exception()
-        db.rollback()
-        db_task = crud.task.get_document_transform_task_by_document_id(db=db,
-                                                                       document_id=document_id)
-        db_task.status = DocumentMdConvertStatus.FAILED
-        db_document = crud.document.get_document_by_document_id(db=db,
-                                                                document_id=document_id)
-        db_document.title = f'Document Convert Error: {e}'
-        db_document.description = f'Document Convert Error: {e}'
-        db.commit()
-        raise e
-    finally:
-        db.close()
-
-async def handle_add_embedding(document_id: int, 
+async def handle_add_embedding(db: Session,
+                               document: models.document.Document, 
                                user_id: int):
-    db = SessionLocal()
-    db_document = crud.document.get_document_by_document_id(db=db,
-                                                            document_id=document_id)
-    if db_document is None:
-        raise Exception("Document does not exist")
     db_embedding_task = crud.task.create_document_embedding_task(db=db,
                                                                  user_id=user_id,
-                                                                 document_id=document_id)
+                                                                 document_id=document.id)
     try:
         db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
-        markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
-                                                                     user_id=user_id)
-        await process_document(user_id=user_id, doc_id=document_id)
+        await process_document(user_id=user_id, doc_id=document.id)
         db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
         db.commit()
     except Exception as e:
         db_embedding_task.status = DocumentEmbeddingStatus.FAILED
-        exception_logger.error(f"Something is error while embedding the document and write into the milvus cloud: {e}")
+        exception_logger.error(f"Something is error while embedding the document and write into the milvus: {e}")
         log_exception()
     finally:
         db.close()
@@ -348,7 +299,6 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
     finally:
         db.close()
     return markdown_content
-
         
 async def handle_update_ai_summary(document_id: int, 
                                    user_id: int):
@@ -446,40 +396,18 @@ async def handle_update_section_use_document(section_id: int,
         db.close()
         
 @celery_app.task
-def init_website_document_info(document_id: int, 
-                               user_id: int):
-    asyncio.run(handle_init_website_document_info(document_id=document_id, user_id=user_id))
-
-@celery_app.task
-def init_file_document_info(document_id: int, 
-                            user_id: int):
-    asyncio.run(handle_init_file_document_info(document_id=document_id,
-                                               user_id=user_id))
-
-@celery_app.task
-def update_ai_summary(document_id: int, 
-                      user_id: int):
-    asyncio.run(handle_update_ai_summary(document_id=document_id,
-                                         user_id=user_id))
+def start_process_document(document_id: int,
+                           user_id: int,
+                           auto_summary: bool = False):
+    asyncio.run(handle_process_document(document_id=document_id, user_id=user_id, auto_summary=auto_summary))
     
 @celery_app.task
-def add_embedding(document_id: int, 
-                  user_id: int):
-    asyncio.run(handle_add_embedding(document_id=document_id, 
-                                     user_id=user_id))
-        
-@celery_app.task
-def update_sections(sections: list[int],
-                    document_id: int,
+def update_sections(document_id: int,
                     user_id: int):
-    asyncio.run(handle_update_sections(sections=sections,
-                                       document_id=document_id,
+    db = SessionLocal()
+    sections = crud.section.get_document_sections_by_document_id(db=db, document_id=document_id)
+    section_ids = [section.id for section in sections]
+    asyncio.run(handle_update_sections(sections=section_ids,
+                                       document_id=document_id, 
                                        user_id=user_id))
-
-@celery_app.task
-def update_section_use_document(section_id: int,
-                                document_id: int,
-                                user_id: int):
-    asyncio.run(handle_update_section_use_document(section_id=section_id,
-                                                   document_id=document_id,
-                                                   user_id=user_id))
+    db.close()

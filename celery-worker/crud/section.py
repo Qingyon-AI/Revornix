@@ -3,6 +3,16 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
+def get_document_sections_by_document_id(db: Session,
+                                         document_id: int):
+    query = db.query(models.section.Section)
+    query = query.join(models.section.SectionDocument)
+    query = query.filter(models.section.SectionDocument.document_id == document_id,
+                         models.section.SectionDocument.delete_at == None)
+    query = query.filter(models.section.Section.delete_at == None)
+    query = query.order_by(models.section.Section.update_time.desc())
+    return query.all()
+
 def get_section_user_by_section_id_and_user_id(db: Session, 
                                                section_id: int, 
                                                user_id: int):
