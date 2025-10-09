@@ -17,3 +17,17 @@ export enum DocumentEmbeddingConvertStatus {
     SUCCESS = 2,
     FAILED = 3,
 }
+
+export enum DocumentProcessStatus {
+    WAIT_TO = 0,
+    PROCESSING = 1,
+    SUCCESS = 2,
+    FAILED = 3,
+}
+
+export enum DocumentGraphStatus {
+    WAIT_TO = 0,
+    BUILDING = 1,
+    SUCCESS = 2,
+    FAILED = 3
+}

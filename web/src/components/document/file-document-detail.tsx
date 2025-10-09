@@ -26,7 +26,10 @@ import {
 	getUserFileSystemDetail,
 	getUserFileUrlPrefix,
 } from '@/service/file-system';
-import { DocumentMdConvertStatus } from '@/enums/document';
+import {
+	DocumentProcessStatus,
+	DocumentMdConvertStatus,
+} from '@/enums/document';
 
 const FileDocumentDetail = ({
 	id,
@@ -79,14 +82,14 @@ const FileDocumentDetail = ({
 	useEffect(() => {
 		if (
 			document &&
-			document.transform_task &&
-			document.transform_task?.status < DocumentMdConvertStatus.SUCCESS
+			document.process_task &&
+			document.process_task?.status < DocumentProcessStatus.SUCCESS
 		) {
 			setDelay(1000);
 		} else {
 			setDelay(undefined);
 		}
-	}, [document?.transform_task?.status]);
+	}, [document?.process_task?.status]);
 
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
@@ -169,8 +172,7 @@ const FileDocumentDetail = ({
 				</div>
 			)}
 			{document &&
-				document.transform_task?.status ===
-					DocumentMdConvertStatus.CONVERTING && (
+				document.transform_task?.status === DocumentMdConvertStatus.CONVERTING && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
 							{t('document_transform_to_markdown_doing')}

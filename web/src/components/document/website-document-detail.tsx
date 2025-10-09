@@ -25,7 +25,7 @@ import {
 	getUserFileSystemDetail,
 	getUserFileUrlPrefix,
 } from '@/service/file-system';
-import { DocumentMdConvertStatus } from '@/enums/document';
+import { DocumentProcessStatus, DocumentMdConvertStatus } from '@/enums/document';
 
 const WebsiteDocumentDetail = ({
 	id,
@@ -80,14 +80,14 @@ const WebsiteDocumentDetail = ({
 	useEffect(() => {
 		if (
 			document &&
-			document.transform_task &&
-			document.transform_task?.status < DocumentMdConvertStatus.SUCCESS
+			document.process_task &&
+			document.process_task?.status < DocumentProcessStatus.SUCCESS
 		) {
 			setDelay(1000);
 		} else {
 			setDelay(undefined);
 		}
-	}, [document?.transform_task?.status]);
+	}, [document?.process_task?.status]);
 
 	const [markdown, setMarkdown] = useState<string>();
 	const onGetMarkdown = async () => {
@@ -138,7 +138,7 @@ const WebsiteDocumentDetail = ({
 		if (
 			!document ||
 			!document.website_info?.md_file_name ||
-			document.transform_task?.status !== DocumentMdConvertStatus.SUCCESS ||
+			document.transform_task?.status !== DocumentProcessStatus.SUCCESS ||
 			!userInfo ||
 			!userFileSystemDetail ||
 			!userRemoteFileUrlPrefix
@@ -246,7 +246,7 @@ const WebsiteDocumentDetail = ({
 				!markdown &&
 				!isError &&
 				!markdownGetError &&
-				document.transform_task?.status === DocumentMdConvertStatus.SUCCESS && (
+				document.process_task?.status === DocumentMdConvertStatus.SUCCESS && (
 					<Skeleton className='h-full w-full rounded' />
 				)}
 			{markdown && !isError && !markdownGetError && (
