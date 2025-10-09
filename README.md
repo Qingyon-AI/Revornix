@@ -1,5 +1,3 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/qingyon-ai-revornix-badge.png)](https://mseep.ai/app/qingyon-ai-revornix)
-
 ![logo](./images/logo.png)
 
 ![](https://img.shields.io/badge/free-pricing?logo=free&color=%20%23155EEF&label=pricing&labelColor=%20%23528bff)
@@ -9,6 +7,7 @@
 ![](https://img.shields.io/github/v/release/Qingyon-AI/Revornix)
 ![GitHub Release Date](https://img.shields.io/github/release-date-pre/Qingyon-AI/Revornix)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Qingyon-AI/Revornix)
+[![MseeP.ai Security Assessment Badge](https://img.shields.io/badge/MseeP.ai-Security-blue)](https://mseep.ai/app/qingyon-ai-revornix)
 
 English | [中文文档](./README_zh.md) | [日本語ドキュメント](./README_jp.md)
 
