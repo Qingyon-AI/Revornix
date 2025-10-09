@@ -59,7 +59,7 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 
 	const { resolvedTheme } = useTheme();
 
-	const { data, isLoading, isError, error, isFetched } = useQuery({
+	const { data, isLoading, isError, error, isFetched, refetch } = useQuery({
 		queryKey: ['searchGraphData', document_id],
 		queryFn: async () =>
 			searchGraph({
@@ -228,19 +228,18 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 		return () => window.removeEventListener('resize', resize);
 	}, [data, resolvedTheme, document?.graph_task?.status]);
 
+	useEffect(() => {
+		if (document?.graph_task?.status === DocumentGraphStatus.SUCCESS) {
+			refetch();
+		}
+	}, [document?.graph_task?.status]);
+
 	return (
 		<div className='w-full h-full flex justify-center items-center relative'>
 			{isError && <div className='text-red-500'>Error: {error.message}</div>}
 			{isLoading && <Skeleton className='w-full h-full' />}
 			{isFetched && (
 				<>
-					{document?.graph_task?.status === DocumentGraphStatus.SUCCESS &&
-						!data?.edges.length &&
-						!data?.nodes.length && (
-							<div className='text-xs text-muted-foreground'>
-								{t('document_graph_empty')}
-							</div>
-						)}
 					{document?.graph_task?.status === DocumentGraphStatus.BUILDING && (
 						<div className='text-xs text-muted-foreground'>
 							{t('document_graph_building')}
@@ -251,6 +250,13 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 							{t('document_graph_failed')}
 						</div>
 					)}
+					{document?.graph_task?.status === DocumentGraphStatus.SUCCESS &&
+						!data?.edges.length &&
+						!data?.nodes.length && (
+							<div className='text-xs text-muted-foreground'>
+								{t('document_graph_empty')}
+							</div>
+						)}
 					{document?.graph_task?.status === DocumentGraphStatus.SUCCESS &&
 						data?.nodes &&
 						data?.nodes.length > 0 && <svg ref={svgRef}></svg>}
