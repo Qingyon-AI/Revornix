@@ -1,6 +1,8 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
+import { DocumentEmbeddingConvertStatus } from '@/enums/document';
+import { getDocumentDetail } from '@/service/document';
 import { searchGraph } from '@/service/graph';
 import { useQuery } from '@tanstack/react-query';
 import * as d3 from 'd3';
@@ -60,6 +62,11 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 			searchGraph({
 				doc_id: document_id,
 			}),
+	});
+
+	const { data: document } = useQuery({
+		queryKey: ['getDocumentDetail', document_id],
+		queryFn: () => getDocumentDetail({ document_id: document_id }),
 	});
 
 	useEffect(() => {
