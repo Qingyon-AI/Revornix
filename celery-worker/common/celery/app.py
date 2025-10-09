@@ -9,6 +9,7 @@ import crud
 import asyncio
 from celery import Celery
 from sqlalchemy.orm import Session
+from enums.document import DocumentProcessStatus
 from config.redis import REDIS_PORT, REDIS_URL
 from config.base import BASE_DIR
 from common.logger import log_exception, exception_logger
@@ -38,6 +39,10 @@ async def handle_process_document(document_id: int,
                                   user_id: int,
                                   auto_summary: bool = False):
     db = SessionLocal()
+    db_document_process_task = crud.task.create_document_process_task(db=db,
+                                                                      user_id=user_id,
+                                                                      document_id=document_id)
+    db.commit()
     db_user = crud.user.get_user_by_id(db=db, 
                                        user_id=user_id)
     if db_user is None:
@@ -148,6 +153,13 @@ async def handle_process_document(document_id: int,
         await handle_update_sections(sections=sections_ids, 
                                      document_id=document_id, 
                                      user_id=user_id)
+        
+        if auto_summary:
+            await handle_update_ai_summary(db=db,
+                                           document=db_document,
+                                           user_id=user_id)
+        db_document_process_task.status = DocumentProcessStatus.SUCCESS.value
+        db.commit()
 
     except Exception as e:
         exception_logger.error(f"Something is error while process document info: {e}")
@@ -300,20 +312,18 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
         db.close()
     return markdown_content
         
-async def handle_update_ai_summary(document_id: int, 
+async def handle_update_ai_summary(db: Session,
+                                   document: models.document.Document, 
                                    user_id: int):
-    db = SessionLocal()
     try:
-        db_document = crud.document.get_document_by_document_id(db=db,
-                                                                document_id=document_id)
-        if db_document is None:
-            raise Exception("Document not found")
-        markdown_content = await get_markdown_content_by_document_id(document_id=document_id,
+        markdown_content = await get_markdown_content_by_document_id(document_id=document.id,
                                                                      user_id=user_id)
         model_id = crud.user.get_user_by_id(db=db, user_id=user_id).default_document_reader_model_id
-        ai_summary_result = summary_document(user_id=user_id, model_id=model_id, markdown_content=markdown_content)
+        ai_summary_result = summary_document(user_id=user_id, 
+                                             model_id=model_id, 
+                                             markdown_content=markdown_content)
         crud.document.update_document_by_document_id(db=db,
-                                                     document_id=document_id,
+                                                     document_id=document.id,
                                                      title=ai_summary_result.get('title'),
                                                      description=ai_summary_result.get('description'),
                                                      ai_summary=ai_summary_result.get('summary'))

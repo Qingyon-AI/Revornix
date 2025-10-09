@@ -20,6 +20,13 @@ import {
     BaseSectionInfoToJSON,
     BaseSectionInfoToJSONTyped,
 } from './BaseSectionInfo';
+import type { DocumentGraphTask } from './DocumentGraphTask';
+import {
+    DocumentGraphTaskFromJSON,
+    DocumentGraphTaskFromJSONTyped,
+    DocumentGraphTaskToJSON,
+    DocumentGraphTaskToJSONTyped,
+} from './DocumentGraphTask';
 import type { DocumentEmbeddingTask } from './DocumentEmbeddingTask';
 import {
     DocumentEmbeddingTaskFromJSON,
@@ -41,6 +48,13 @@ import {
     LabelToJSON,
     LabelToJSONTyped,
 } from './Label';
+import type { DocumentProcessTask } from './DocumentProcessTask';
+import {
+    DocumentProcessTaskFromJSON,
+    DocumentProcessTaskFromJSONTyped,
+    DocumentProcessTaskToJSON,
+    DocumentProcessTaskToJSONTyped,
+} from './DocumentProcessTask';
 import type { UserPublicInfo } from './UserPublicInfo';
 import {
     UserPublicInfoFromJSON,
@@ -139,6 +153,18 @@ export interface DocumentInfo {
      * @memberof DocumentInfo
      */
     embedding_task?: DocumentEmbeddingTask | null;
+    /**
+     * 
+     * @type {DocumentGraphTask}
+     * @memberof DocumentInfo
+     */
+    graph_task?: DocumentGraphTask | null;
+    /**
+     * 
+     * @type {DocumentProcessTask}
+     * @memberof DocumentInfo
+     */
+    process_task?: DocumentProcessTask | null;
 }
 
 /**
@@ -174,6 +200,8 @@ export function DocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'users': json['users'] == null ? undefined : ((json['users'] as Array<any>).map(UserPublicInfoFromJSON)),
         'transform_task': json['transform_task'] == null ? undefined : DocumentTransformTaskFromJSON(json['transform_task']),
         'embedding_task': json['embedding_task'] == null ? undefined : DocumentEmbeddingTaskFromJSON(json['embedding_task']),
+        'graph_task': json['graph_task'] == null ? undefined : DocumentGraphTaskFromJSON(json['graph_task']),
+        'process_task': json['process_task'] == null ? undefined : DocumentProcessTaskFromJSON(json['process_task']),
     };
 }
 
@@ -202,6 +230,8 @@ export function DocumentInfoToJSONTyped(value?: DocumentInfo | null, ignoreDiscr
         'users': value['users'] == null ? undefined : ((value['users'] as Array<any>).map(UserPublicInfoToJSON)),
         'transform_task': DocumentTransformTaskToJSON(value['transform_task']),
         'embedding_task': DocumentEmbeddingTaskToJSON(value['embedding_task']),
+        'graph_task': DocumentGraphTaskToJSON(value['graph_task']),
+        'process_task': DocumentProcessTaskToJSON(value['process_task']),
     };
 }
 

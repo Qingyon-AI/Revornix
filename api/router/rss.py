@@ -46,10 +46,19 @@ async def getRssServerDocument(get_rss_server_document_request: schemas.rss.GetR
                                                             document_id=db_document.id)
         db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                                  document_id=db_document.id)
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(db=db,
+                                                                                 document_id=db_document.id)
+        db_process_task = crud.task.get_document_process_task_by_document_id(db=db,
+                                                                             document_id=document.id)
+        db_graph_task = crud.task.get_document_graph_task_by_document_id(db=db,
+                                                                         document_id=document.id)
         return schemas.document.DocumentInfo(
             **db_document.__dict__,
             labels=db_labels,
-            transform_task=db_transform_task
+            transform_task=db_transform_task,
+            process_task=db_process_task,
+            graph_task=db_graph_task,
+            embedding_task=db_embedding_task
         )
     documents = [get_document_info(db_document) for db_document in db_documents]
     if len(documents) < get_rss_server_document_request.limit or len(documents) == 0:

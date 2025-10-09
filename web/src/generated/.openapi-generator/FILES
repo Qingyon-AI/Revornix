@@ -54,12 +54,14 @@ models/DocumentDeleteRequest.ts
 models/DocumentDetailRequest.ts
 models/DocumentDetailResponse.ts
 models/DocumentEmbeddingTask.ts
+models/DocumentGraphTask.ts
 models/DocumentInfo.ts
 models/DocumentMarkdownTransformRequest.ts
 models/DocumentMonthSummaryResponse.ts
 models/DocumentNoteCreateRequest.ts
 models/DocumentNoteDeleteRequest.ts
 models/DocumentNoteInfo.ts
+models/DocumentProcessTask.ts
 models/DocumentTransformTask.ts
 models/DocumentUpdateRequest.ts
 models/Edge.ts

@@ -20,6 +20,13 @@ import {
     BaseSectionInfoToJSON,
     BaseSectionInfoToJSONTyped,
 } from './BaseSectionInfo';
+import type { DocumentGraphTask } from './DocumentGraphTask';
+import {
+    DocumentGraphTaskFromJSON,
+    DocumentGraphTaskFromJSONTyped,
+    DocumentGraphTaskToJSON,
+    DocumentGraphTaskToJSONTyped,
+} from './DocumentGraphTask';
 import type { DocumentEmbeddingTask } from './DocumentEmbeddingTask';
 import {
     DocumentEmbeddingTaskFromJSON,
@@ -41,6 +48,13 @@ import {
     LabelToJSON,
     LabelToJSONTyped,
 } from './Label';
+import type { DocumentProcessTask } from './DocumentProcessTask';
+import {
+    DocumentProcessTaskFromJSON,
+    DocumentProcessTaskFromJSONTyped,
+    DocumentProcessTaskToJSON,
+    DocumentProcessTaskToJSONTyped,
+} from './DocumentProcessTask';
 import type { UserPublicInfo } from './UserPublicInfo';
 import {
     UserPublicInfoFromJSON,
@@ -196,6 +210,18 @@ export interface DocumentDetailResponse {
      * @memberof DocumentDetailResponse
      */
     embedding_task?: DocumentEmbeddingTask | null;
+    /**
+     * 
+     * @type {DocumentGraphTask}
+     * @memberof DocumentDetailResponse
+     */
+    graph_task?: DocumentGraphTask | null;
+    /**
+     * 
+     * @type {DocumentProcessTask}
+     * @memberof DocumentDetailResponse
+     */
+    process_task?: DocumentProcessTask | null;
 }
 
 /**
@@ -236,6 +262,8 @@ export function DocumentDetailResponseFromJSONTyped(json: any, ignoreDiscriminat
         'quick_note_info': json['quick_note_info'] == null ? undefined : QuickNoteDocumentInfoFromJSON(json['quick_note_info']),
         'transform_task': json['transform_task'] == null ? undefined : DocumentTransformTaskFromJSON(json['transform_task']),
         'embedding_task': json['embedding_task'] == null ? undefined : DocumentEmbeddingTaskFromJSON(json['embedding_task']),
+        'graph_task': json['graph_task'] == null ? undefined : DocumentGraphTaskFromJSON(json['graph_task']),
+        'process_task': json['process_task'] == null ? undefined : DocumentProcessTaskFromJSON(json['process_task']),
     };
 }
 
@@ -270,6 +298,8 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'quick_note_info': QuickNoteDocumentInfoToJSON(value['quick_note_info']),
         'transform_task': DocumentTransformTaskToJSON(value['transform_task']),
         'embedding_task': DocumentEmbeddingTaskToJSON(value['embedding_task']),
+        'graph_task': DocumentGraphTaskToJSON(value['graph_task']),
+        'process_task': DocumentProcessTaskToJSON(value['process_task']),
     };
 }
 

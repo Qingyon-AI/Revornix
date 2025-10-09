@@ -5,6 +5,7 @@ import json
 import asyncio
 import torch
 from typing import cast
+from enums.document import DocumentGraphStatus
 from chonkie.chunker import SemanticChunker
 from chonkie.types import Chunk
 from chonkie.embeddings import AutoEmbeddings
@@ -247,30 +248,44 @@ async def process_document(user_id: int, doc_id: int):
                                                        document_id=doc_id)
     if db_doc is None:
         raise Exception("Document not found")
-    
-    upsert_doc_neo4j(docs_info=[DocumentInfo(id=db_doc.id,
-                                             title=db_doc.title,
-                                             description=db_doc.description,
-                                             creator_id=db_doc.creator_id,
-                                             updated_at=db_doc.update_time.isoformat(),
-                                             created_at=db_doc.create_time.isoformat())])
-    chunks = await chunk_document(doc_id=doc_id)
-    embedding_chunks(chunks)
-    upsert_milvus(user_id=user_id,
-                  chunks_info=chunks)
-    upsert_chunks_neo4j(chunks)
-    upsert_doc_chunk_relations()
-    entities = []
-    relations = []
-    for chunk in chunks:
-        sub_entities, sub_relations = extract_entities_relations(llm_client=llm_client, 
-                                                                 chunk=chunk)
-        entities.extend(sub_entities)
-        relations.extend(sub_relations)
-    entities, relations = merge_entitys_and_relations(entities, relations)
-    upsert_entities_neo4j(entities)
-    upsert_relations_neo4j(relations)
-    upsert_chunk_entity_relations()
-    create_communities_from_chunks()
-    create_community_nodes_and_relationships_with_size()
-    annotate_node_degrees()
+    db_graph_task_id = crud.task.create_document_graph_task(db=db,
+                                                            user_id=user_id,
+                                                            document_id=doc_id)
+    db.commit()
+    try:
+        db_graph_task_id.status = DocumentGraphStatus.BUILDING.value
+        db.commit()
+        upsert_doc_neo4j(docs_info=[DocumentInfo(id=db_doc.id,
+                                                title=db_doc.title,
+                                                description=db_doc.description,
+                                                creator_id=db_doc.creator_id,
+                                                updated_at=db_doc.update_time.isoformat(),
+                                                created_at=db_doc.create_time.isoformat())])
+        chunks = await chunk_document(doc_id=doc_id)
+        embedding_chunks(chunks)
+        upsert_milvus(user_id=user_id,
+                    chunks_info=chunks)
+        upsert_chunks_neo4j(chunks)
+        upsert_doc_chunk_relations()
+        entities = []
+        relations = []
+        for chunk in chunks:
+            sub_entities, sub_relations = extract_entities_relations(llm_client=llm_client, 
+                                                                    chunk=chunk)
+            entities.extend(sub_entities)
+            relations.extend(sub_relations)
+        entities, relations = merge_entitys_and_relations(entities, relations)
+        upsert_entities_neo4j(entities)
+        upsert_relations_neo4j(relations)
+        upsert_chunk_entity_relations()
+        create_communities_from_chunks()
+        create_community_nodes_and_relationships_with_size()
+        annotate_node_degrees()
+        db_graph_task_id.status = DocumentGraphStatus.SUCCESS.value
+        db.commit()
+    except Exception as e:
+        db_graph_task_id.status = DocumentGraphStatus.FAILED.value
+        db.commit()
+        raise e
+    finally:
+        db.close()
