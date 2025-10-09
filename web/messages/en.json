@@ -623,6 +623,8 @@
     "document_graph": "Document Graph",
     "document_graph_description": "Here you can view all the knowledge points of the document and the reference relationships between them",
     "document_graph_empty": "There are no knowledge points in this document",
+    "document_graph_building": "The knowledge graph of this document is being built",
+    "document_graph_failed": "The knowledge graph of this document failed to build",
     "account_avatar": "Avatar",
     "account_avatar_description": "This is your avatar!",
     "account_avatar_upload": "Upload Avatar",

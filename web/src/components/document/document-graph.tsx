@@ -1,7 +1,10 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { DocumentEmbeddingConvertStatus } from '@/enums/document';
+import {
+	DocumentEmbeddingConvertStatus,
+	DocumentGraphStatus,
+} from '@/enums/document';
 import { getDocumentDetail } from '@/service/document';
 import { searchGraph } from '@/service/graph';
 import { useQuery } from '@tanstack/react-query';
@@ -223,7 +226,7 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 		// Re-render graph on window resize
 		window.addEventListener('resize', resize);
 		return () => window.removeEventListener('resize', resize);
-	}, [data, resolvedTheme]);
+	}, [data, resolvedTheme, document?.graph_task?.status]);
 
 	return (
 		<div className='w-full h-full flex justify-center items-center relative'>
@@ -231,12 +234,26 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 			{isLoading && <Skeleton className='w-full h-full' />}
 			{isFetched && (
 				<>
-					{!data?.edges.length && !data?.nodes.length && (
+					{document?.graph_task?.status === DocumentGraphStatus.SUCCESS &&
+						!data?.edges.length &&
+						!data?.nodes.length && (
+							<div className='text-xs text-muted-foreground'>
+								{t('document_graph_empty')}
+							</div>
+						)}
+					{document?.graph_task?.status === DocumentGraphStatus.BUILDING && (
 						<div className='text-xs text-muted-foreground'>
-							{t('document_graph_empty')}
+							{t('document_graph_building')}
 						</div>
 					)}
-					{data?.nodes && data?.nodes.length > 0 && <svg ref={svgRef}></svg>}
+					{document?.graph_task?.status === DocumentGraphStatus.FAILED && (
+						<div className='text-xs text-muted-foreground'>
+							{t('document_graph_failed')}
+						</div>
+					)}
+					{document?.graph_task?.status === DocumentGraphStatus.SUCCESS &&
+						data?.nodes &&
+						data?.nodes.length > 0 && <svg ref={svgRef}></svg>}
 				</>
 			)}
 		</div>

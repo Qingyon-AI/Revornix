@@ -619,6 +619,8 @@
     "document_graph": "文档知识图谱",
     "document_graph_description": "在这里你可以查看该文档所有的知识点以及互相之间的引用关系",
     "document_graph_empty": "该文档暂无知识图谱",
+    "document_graph_building": "该文档知识图谱正在构建中",
+    "document_graph_failed": "该文档知识图谱构建失败",
     "account_avatar": "头像",
     "account_avatar_description": "这可是你的头像哦",
     "account_avatar_upload": "上传头像",
