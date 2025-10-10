@@ -240,6 +240,16 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 			{isLoading && <Skeleton className='w-full h-full' />}
 			{isFetched && (
 				<>
+					{!document?.graph_task && (
+						<div className='text-xs text-muted-foreground'>
+							{t('document_graph_empty')}
+						</div>
+					)}
+					{document?.graph_task?.status === DocumentGraphStatus.WAIT_TO && (
+						<div className='text-xs text-muted-foreground'>
+							{t('document_graph_wait_to')}
+						</div>
+					)}
 					{document?.graph_task?.status === DocumentGraphStatus.BUILDING && (
 						<div className='text-xs text-muted-foreground'>
 							{t('document_graph_building')}
@@ -254,7 +264,7 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 						!data?.edges.length &&
 						!data?.nodes.length && (
 							<div className='text-xs text-muted-foreground'>
-								{t('document_graph_empty')}
+								{t('document_graph_data_empty')}
 							</div>
 						)}
 					{document?.graph_task?.status === DocumentGraphStatus.SUCCESS &&
