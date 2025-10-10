@@ -81,8 +81,8 @@ class DocumentMonthSummaryResponse(BaseModel):
 class DocumentCreateRequest(BaseModel):
     category: int
     from_plat: str
-    sections: list[int]
     auto_summary: bool = False
+    sections: list[int] | None = []
     labels: list[int] | None = None
     title: str | None = None
     description: str | None = None

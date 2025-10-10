@@ -37,7 +37,7 @@ celery_app = Celery('worker',
 async def handle_process_document(document_id: int, 
                                   user_id: int,
                                   auto_summary: bool = False,
-                                  override: DocumentOverrideProperty | None = None):
+                                  override: dict | None = None):
     db = SessionLocal()
     db_document_process_task = crud.task.create_document_process_task(db=db,
                                                                       user_id=user_id,
@@ -145,12 +145,12 @@ async def handle_process_document(document_id: int,
             db.commit()
             
         if override is not None:
-            if override.cover is not None:
-                db_document.cover = override.cover
-            if override.title is not None:
-                db_document.title = override.title
-            if override.description is not None:
-                db_document.description = override.description
+            if override.get('cover') is not None:
+                db_document.cover = override.get('cover')
+            if override.get('title') is not None:
+                db_document.title = override.get('title')
+            if override.get('description') is not None:
+                db_document.description = override.get('description')
             db.commit()
         
         # embedding
