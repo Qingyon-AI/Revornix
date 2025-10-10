@@ -75,7 +75,7 @@ const RecentReadDocumentPage = () => {
 
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
-	}, [inView]);
+	}, [inView, isFetching, hasNextPage]);
 
 	return (
 		<>
