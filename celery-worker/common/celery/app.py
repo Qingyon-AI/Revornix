@@ -58,14 +58,16 @@ async def handle_process_document(document_id: int,
                                                                 document_id=document_id)
         if db_document is None:
             raise Exception("Document not found")
-            
-        db_task = crud.task.get_document_transform_task_by_document_id(db=db,
-                                                                       document_id=document_id)
-        if db_task is None:
-            raise Exception("Document transform task not found")
         
-        db_task.status = DocumentMdConvertStatus.CONVERTING
-        db.commit()
+        # 如果是速记，就不需要转化流程，所以此处不用寻找转化记录
+        if db_document.category != DocumentCategory.QUICK_NOTE:
+            db_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                        document_id=document_id)
+            if db_task is None:
+                raise Exception("Document transform task not found")
+            
+            db_task.status = DocumentMdConvertStatus.CONVERTING
+            db.commit()
             
         md_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
                                                                      user_engine_id=db_user.default_file_document_parse_user_engine_id)
@@ -174,9 +176,11 @@ async def handle_process_document(document_id: int,
         exception_logger.error(f"Something is error while process document info: {e}")
         log_exception()
         db.rollback()
-        db_task = crud.task.get_document_transform_task_by_document_id(db=db,
-                                                                       document_id=document_id)
-        db_task.status = DocumentMdConvertStatus.FAILED
+        # 同样的 如果是速记，不需要查找和修改转化记录
+        if db_document.category != DocumentCategory.QUICK_NOTE:
+            db_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                        document_id=document_id)
+            db_task.status = DocumentMdConvertStatus.FAILED
         db_document = crud.document.get_document_by_document_id(db=db,
                                                                 document_id=document_id)
         db_document.title = f'Document Convert Error: {e}'
