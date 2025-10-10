@@ -4,11 +4,10 @@ if os.environ.get('ENV') == 'dev':
     load_dotenv(override=True)
 
 import uuid
-import models
 import crud
 import asyncio
 from celery import Celery
-from sqlalchemy.orm import Session
+from schemas.task import DocumentOverrideProperty
 from enums.document import DocumentProcessStatus
 from config.redis import REDIS_PORT, REDIS_URL
 from config.base import BASE_DIR
@@ -37,7 +36,8 @@ celery_app = Celery('worker',
 
 async def handle_process_document(document_id: int, 
                                   user_id: int,
-                                  auto_summary: bool = False):
+                                  auto_summary: bool = False,
+                                  override: DocumentOverrideProperty | None = None):
     db = SessionLocal()
     db_document_process_task = crud.task.create_document_process_task(db=db,
                                                                       user_id=user_id,
@@ -142,6 +142,15 @@ async def handle_process_document(document_id: int,
                                                                          website_document_id=db_website_document.id,
                                                                          md_file_name=md_file_name)
             db_task.status = DocumentMdConvertStatus.SUCCESS
+            db.commit()
+            
+        if override is not None:
+            if override.cover is not None:
+                db_document.cover = override.cover
+            if override.title is not None:
+                db_document.title = override.title
+            if override.description is not None:
+                db_document.description = override.description
             db.commit()
         
         # embedding
@@ -411,8 +420,9 @@ async def handle_update_section_use_document(section_id: int,
 @celery_app.task
 def start_process_document(document_id: int,
                            user_id: int,
-                           auto_summary: bool = False):
-    asyncio.run(handle_process_document(document_id=document_id, user_id=user_id, auto_summary=auto_summary))
+                           auto_summary: bool = False,
+                           override: DocumentOverrideProperty | None = None):
+    asyncio.run(handle_process_document(document_id=document_id, user_id=user_id, auto_summary=auto_summary, override=override))
     
 @celery_app.task
 def update_sections(document_id: int,

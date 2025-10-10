@@ -237,5 +237,10 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                               document_id=db_document.id,
                                               status=0)
         db.commit()
-    start_process_document.delay(db_document.id, user.id, document_create_request.auto_summary)
+    start_process_document.delay(db_document.id, 
+                                 user.id, 
+                                 document_create_request.auto_summary, 
+                                 schemas.task.DocumentOverrideProperty(title=document_create_request.title, 
+                                                                       description=document_create_request.description, 
+                                                                       cover=document_create_request.cover))
     return schemas.document.DocumentCreateResponse(document_id=db_document.id)
