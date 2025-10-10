@@ -75,7 +75,7 @@ const UnReadDocumentPage = () => {
 
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
-	}, [inView]);
+	}, [inView, isFetching, hasNextPage]);
 
 	return (
 		<>
