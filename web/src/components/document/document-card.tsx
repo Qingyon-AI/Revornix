@@ -85,14 +85,14 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 							{t('document_embedding_status') + ': '}
 							{document.embedding_task?.status ===
 							DocumentEmbeddingConvertStatus.WAIT_TO
-								? t('document_md_status_todo')
+								? t('document_embedding_status_todo')
 								: document.embedding_task?.status ===
 								  DocumentEmbeddingConvertStatus.Embedding
-								? t('document_md_status_doing')
+								? t('document_embedding_status_doing')
 								: document.embedding_task?.status ===
 								  DocumentEmbeddingConvertStatus.SUCCESS
-								? t('document_md_status_success')
-								: t('document_md_status_failed')}
+								? t('document_embedding_status_success')
+								: t('document_embedding_status_failed')}
 						</div>
 					</div>
 				)}
