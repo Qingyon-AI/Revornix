@@ -232,6 +232,8 @@
     "setting_file_system_delete_success": "文件系统删除成功",
     "setting_file_system_page_current_user_file_system": "当前我的默认文件系统",
     "setting_file_system_page_current_user_file_system_select": "请选择默认的文件系统",
+    "setting_file_system_confirm_switch_file_system_title": "文件系统切换警告",
+    "setting_file_system_confirm_switch_file_system_description": "切换文件系统后，原文件系统中的文件（你的所有文档和专栏的原文件/markdown文件/静态图片文件等）将不会自动迁移到新文件系统中，请手动迁移文件，确认切换吗？",
     "setting_file_system_page_current_file_system_update_successfully": "默认文件系统更新成功",
     "setting_file_system_page_alert": "注意不同的文件系统间的数据不会互通，如果你修改文件系统后，所有文件默认仍然保留在原有系统中，请手动迁移文件。新建文件系统不会对原有的系统造成任何影响。",
     "setting_file_system_page_file_system_form_file_system_id": "文件系统类型",
