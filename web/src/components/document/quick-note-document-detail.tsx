@@ -12,6 +12,10 @@ import { Separator } from '../ui/separator';
 import DocumentOperate from './document-operate';
 import { useInView } from 'react-intersection-observer';
 import { useEffect, useState } from 'react';
+import { DocumentProcessStatus } from '@/enums/document';
+import { getQueryClient } from '@/lib/get-query-client';
+import { useInterval } from 'ahooks';
+import { useUserContext } from '@/provider/user-provider';
 
 const QuickDocumentDetail = ({
 	id,
@@ -22,6 +26,8 @@ const QuickDocumentDetail = ({
 	className?: string;
 	onFinishRead?: () => void;
 }) => {
+	const queryClient = getQueryClient();
+	const { userInfo } = useUserContext();
 	const {
 		isFetching,
 		data: document,
@@ -33,14 +39,34 @@ const QuickDocumentDetail = ({
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
 
+	const [delay, setDelay] = useState<number>();
+
+	useInterval(() => {
+		queryClient.invalidateQueries({
+			queryKey: ['getDocumentDetail', id],
+		});
+	}, delay);
+
 	const [markdownRendered, setMarkdownRendered] = useState(false);
 
 	const { ref: bottomRef, inView } = useInView();
 
 	useEffect(() => {
+		if (
+			document &&
+			document.process_task &&
+			document.process_task?.status < DocumentProcessStatus.SUCCESS
+		) {
+			setDelay(1000);
+		} else {
+			setDelay(undefined);
+		}
+	}, [document?.process_task?.status]);
+
+	useEffect(() => {
 		if (!document || !document.quick_note_info) return;
 		setMarkdownRendered(true);
-	}, [document]);
+	}, [document, userInfo]);
 
 	useEffect(() => {
 		if (!markdownRendered || !inView) return;
