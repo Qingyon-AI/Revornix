@@ -232,6 +232,8 @@
     "setting_file_system_delete_success": "File system deleted successfully",
     "setting_file_system_page_current_user_file_system": "My Current Default File System",
     "setting_file_system_page_current_user_file_system_select": "Please select the default file system",
+    "setting_file_system_confirm_switch_file_system_title": "Switch File System Warning",
+    "setting_file_system_confirm_switch_file_system_description": "Switching file systems will not automatically migrate files (your original documents and columns/markdown files/static image files, etc.) from the original file system to the new file system. Please manually migrate files and confirm the switch. Are you sure you want to switch?",
     "setting_file_system_page_current_file_system_update_successfully": "Default file system updated successfully",
     "setting_file_system_page_alert": "Data is not shared between different file systems. If you switch file systems, all files will remain in the original system by default. Please migrate files manually if needed. Creating a new file system will not affect any existing systems.",
     "setting_file_system_page_file_system_form_file_system_id": "File System Type",
