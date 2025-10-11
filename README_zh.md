@@ -21,7 +21,7 @@
 
 AI时代的资讯管理工具。Revornix可以帮助你便捷整合所有可见资讯，并在特定时间给你一份完整的报告。
 
-![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202507292035718.png)
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251011141251012.png)
 
 ## 功能特性
 
