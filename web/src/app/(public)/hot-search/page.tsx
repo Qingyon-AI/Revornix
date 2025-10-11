@@ -18,7 +18,7 @@ export interface Website {
 	data: HotItem[];
 }
 
-interface HotItem {
+export interface HotItem {
 	id: string;
 	title: string;
 	timestamp: number;

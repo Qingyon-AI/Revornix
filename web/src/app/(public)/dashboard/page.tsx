@@ -8,11 +8,17 @@ import SectionLabelsBox from '@/components/document/section-labels-box';
 import { useTranslations } from 'next-intl';
 import InitSettingDialog from '@/components/setting/init-setting-dialog';
 import DocumentLabelSummary from '@/components/dashboard/document-label-summary';
+import TodaySummary from '@/components/dashboard/today-summary';
+import TodayNews from '@/components/dashboard/today-news';
 
 const DashboardPage = () => {
 	const t = useTranslations();
 	return (
 		<div className='flex flex-col px-5 gap-5 pb-5 w-full'>
+			<div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+				<TodaySummary />
+				<TodayNews />
+			</div>
 			<InitSettingDialog />
 			<div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
 				<UnReadDocumentBox />
