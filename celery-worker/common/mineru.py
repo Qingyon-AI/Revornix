@@ -30,15 +30,6 @@ def generate_checksum(uid: str, seed: str, content: str) -> str:
     # 返回十六进制格式的哈希值
     return sha256_hash.hexdigest()
 
-def get_remote_mineru_task_status(task_id: str):
-    url = f'https://mineru.net/api/v4/extract/task/{task_id}'
-    header = {
-        'Content-Type': 'application/json',
-        "Authorization": f"Bearer {os.environ.get('MINERU_API_TOKEN')}"
-    }
-    res = httpx.get(url, headers=header)
-    return res.json()
-
 def verify_callback(uid: str, back_checksum: str, seed: str, content: any):
     computed_checksum = generate_checksum(uid=uid, 
                                           seed=seed,
