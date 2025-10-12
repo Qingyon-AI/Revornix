@@ -19,55 +19,115 @@ English | [中文文档](./README_zh.md) | [日本語ドキュメント](./READM
 
 ❤️ Join our community: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
 
-Revornix is an information management tool for the AI era. It helps you conveniently integrate all visible information and provides you with a comprehensive report at a specific time.
+Revornix is an information management tool built for the AI era. It helps you consolidate every visible source with ease and delivers a full report at the time you choose.
 
 ![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251011141251012.png)
 
-## Features
+## Key Features
 
-- Cross-platform availability: Currently supports web; iOS app and WeChat Mini Program support coming soon.
-- All-in-one content aggregation: Centralized content collection, including news, blogs, forums, and more.
-- Document Transformation & Vectorized Storage: Powered by multimodal large models, files are converted to Markdown and embedded before being stored in the industry-leading Milvus.
-- Native Multi-Tenancy: Designed as a multi-tenant system, it supports concurrent usage by multiple users, each with their own independent document repository.
-- Localization & Open Source: Open-source code with all data stored locally—no concerns about data leakage.
-- Smart Assistant & Built-in MCP: An AI assistant powered by built-in MCP that can interact with your documents and tools, supporting multi-model switching.
-- Seamless LLM integration: Built-in model integration support—freely configure and choose the LLM you want (OpenAI-compatible required).
-- Multilingual & Responsive: Whether you're a Chinese or English user, on mobile or desktop, you'll enjoy a great experience.
+- Flexible input sources: Currently supports RSS, web pages, PDF, Word, Excel, PowerPoint, manual text entry, APIs, PyPI packages, Node.js packages, and more integrations are on the way.
+- Advanced text conversion: Powered by MinerU and other state-of-the-art Markdown conversion engines, delivering industry-leading parsing quality with custom engine support.
+- Vector storage & knowledge graph: Personalized GraphRAG combined with embeddings turns every input into searchable vectors and knowledge graphs, improving retrieval and context accuracy.
+- Built-in sharing: Share selected knowledge bases or explore public collections to collaborate and exchange insights effortlessly.
+- Local-first & open source: Fully open source. With self-hosted deployment, your data stays on your infrastructure—no leakage concerns.
+- Smart assistant & MCP: Bundled MCP client and server let you expose tools to others or let the assistant call local and third-party MCP services.
+- Seamless LLM integration: Bring any model you like. Each feature can rely on its own model configuration.
+- Multilingual & responsive: Great experience in both Chinese and English, across desktop and mobile.
 
 ## Quick Start
 
-### Docker Method (Recommended)
+The current architecture is still evolving and our Docker packaging has known issues. We therefore recommend following the manual deployment steps below for now.
 
-#### Clone the Repository Locally
+> [!NOTE]
+> We highly recommend creating separate Python virtual environments for each service via Conda. Different services depend on different Python packages and may conflict with each other. Feel free to use another environment manager if you prefer.
+
+### Clone the repository
 
 ```shell
 git clone git@github.com:Qingyon-AI/Revornix.git
 cd Revornix
 ```
 
-#### Environment Variables Configuration
+### Install and start the core infrastructure
+
+> [!NOTE]
+> If you do not have PostgreSQL, Redis, Neo4j, MinIO, Milvus, RSSHub, or Browserless on your machine, install them first and configure their environment variables according to each service’s requirements and the [Revornix environment guide](https://revornix.com/docs/environment).
+>
+> To make this easier, we provide `docker-compose-local.yaml` and `.env.local.example`. You can spin up the dependencies with that compose file and copy the example environment variables directly.
+
+> [!WARNING]
+> If any of the services above are already running locally, disable the corresponding entries in `docker-compose-local.yaml` to avoid unexpected conflicts.
+
+Copy the provided example file and adjust the values with the help of the [environment guide](https://revornix.com/docs/environment). In most cases you only need to change `OAUTH_SECRET_KEY`.
 
 ```shell
-cp .env.example .env
+cp .env.local.example .env.local
 ```
 
-Go to the corresponding environment variable files and configure them. For details, refer to [Environment Variables Configuration](https://revornix.com/en/docs/environment).
-
-> [!TIP]
-> In most cases, you only need to configure the `OAUTH_SECRET_KEY` parameter for the user authentication mechanism, and leave the other parameters as default. Note that the `OAUTH_SECRET_KEY` must be consistent across different services; otherwise, the user authentication systems will not be interoperable.
-
-#### Pull Necessary Repositories and Start with Docker
+Start PostgreSQL, Redis, Neo4j, MinIO, Milvus, RSSHub, and Browserless:
 
 ```shell
-docker compose pull
-docker compose up -d
+docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 ```
 
-Once all services are started, you can visit http://localhost to view the front-end page. Note that due to the back-end services taking longer to start, the front-end may need to wait for some time (usually around 10-15 minutes) before it can make successful requests. You can check the core back-end service status with docker compose logs api.
+### Configure service-specific environment variables
 
-### Manual Deployment Method
+```shell
+cp ./web/.env.example ./web/.env
+cp ./api/.env.example ./api/.env
+cp ./celery-worker/.env.example ./celery-worker/.env
+```
 
-For detail, please refer to [official documentation manual deployment method](https://revornix.com/en/docs/start#manual-deployment-method)
+Fill each file according to the [environment variables guide](https://revornix.com/docs/environment).
+
+> [!WARNING]
+> When deploying manually, keep the `SECRET_KEY` (or `OAUTH_SECRET_KEY`) identical across services. Otherwise, authentication states cannot be shared.
+
+### Initialize required seed data
+
+```shell
+cd api
+python -m script.init_vector_base_data
+python -m script.init_sql_base_data
+```
+
+### Launch the core backend
+
+```shell
+cd api
+conda create -n api python=3.11 -y
+pip install -r ./requirements.txt
+fastapi run --port 8001
+```
+
+### Launch the Daily Hot service
+
+```shell
+cd daily-hot
+pnpm build
+pnpm start
+```
+
+### Launch the Celery worker queue
+
+Currently only `pool=solo` (single-process mode) is supported. Multi-process support is on the roadmap.
+
+```shell
+cd celery-worker
+conda create -n celery-worker python=3.11 -y
+pip install -r ./requirements.txt
+celery -A common.celery.app.celery_app worker --pool=solo
+```
+
+### Launch the frontend
+
+```shell
+cd web
+pnpm build
+pnpm start
+```
+
+After all services are running, open http://localhost:3000 to access the web app.
 
 ## Contributors
 
