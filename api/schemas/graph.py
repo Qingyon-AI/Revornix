@@ -13,5 +13,8 @@ class GraphResponse(BaseModel):
     nodes: list[Node]
     edges: list[Edge]
     
-class GraphRequest(BaseModel):
-    doc_id: int | None = None
+class DocumentGraphRequest(BaseModel):
+    document_id: int
+
+class SectionGraphRequest(BaseModel):
+    section_id: int
