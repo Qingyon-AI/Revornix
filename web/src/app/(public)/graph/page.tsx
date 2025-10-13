@@ -106,7 +106,7 @@ const GraphPage = () => {
 
 			const simulation = d3
 				.forceSimulation<Node, Link>(nodes) // 明确类型
-				.force('charge', d3.forceManyBody().strength(-200))
+				.force('charge', d3.forceManyBody().strength(-100))
 				.force('center', d3.forceCenter(width / 2, height / 2));
 
 			const dragHandler = (simulation: d3.Simulation<Node, Link>) => {
@@ -204,7 +204,7 @@ const GraphPage = () => {
 				d3
 					.forceLink<Node, Link>(edges)
 					.id((d) => d.id)
-					.distance(80) // 距离设小一点
+					.distance(30) // 距离设小一点
 					.strength(0.5) // 增强边的吸引力
 			);
 		};
