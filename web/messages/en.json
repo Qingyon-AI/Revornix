@@ -472,6 +472,8 @@
     "document_configuration_form_submit": "Save",
     "document_update_success": "Document updated successfully",
     "document_update_failed": "Document update failed",
+    "section_graph": "Section Knowledege Graph",
+    "section_graph_description": "You can view all the documents associated with this section here.",
     "section_create_title_needed": "Please enter section title",
     "section_create_description_needed": "Please enter section description",
     "section_create_success": "Section created successfully",

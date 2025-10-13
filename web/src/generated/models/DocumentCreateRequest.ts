@@ -33,16 +33,16 @@ export interface DocumentCreateRequest {
     from_plat: string;
     /**
      * 
-     * @type {Array<number>}
-     * @memberof DocumentCreateRequest
-     */
-    sections: Array<number>;
-    /**
-     * 
      * @type {boolean}
      * @memberof DocumentCreateRequest
      */
     auto_summary?: boolean;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof DocumentCreateRequest
+     */
+    sections?: Array<number> | null;
     /**
      * 
      * @type {Array<number>}
@@ -93,7 +93,6 @@ export interface DocumentCreateRequest {
 export function instanceOfDocumentCreateRequest(value: object): value is DocumentCreateRequest {
     if (!('category' in value) || value['category'] === undefined) return false;
     if (!('from_plat' in value) || value['from_plat'] === undefined) return false;
-    if (!('sections' in value) || value['sections'] === undefined) return false;
     return true;
 }
 
@@ -109,8 +108,8 @@ export function DocumentCreateRequestFromJSONTyped(json: any, ignoreDiscriminato
         
         'category': json['category'],
         'from_plat': json['from_plat'],
-        'sections': json['sections'],
         'auto_summary': json['auto_summary'] == null ? undefined : json['auto_summary'],
+        'sections': json['sections'] == null ? undefined : json['sections'],
         'labels': json['labels'] == null ? undefined : json['labels'],
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
@@ -134,8 +133,8 @@ export function DocumentCreateRequestToJSONTyped(value?: DocumentCreateRequest |
         
         'category': value['category'],
         'from_plat': value['from_plat'],
-        'sections': value['sections'],
         'auto_summary': value['auto_summary'],
+        'sections': value['sections'],
         'labels': value['labels'],
         'title': value['title'],
         'description': value['description'],
