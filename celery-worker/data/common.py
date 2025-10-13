@@ -14,7 +14,7 @@ from common.common import get_user_remote_file_system
 from common.sql import SessionLocal
 from sentence_transformers import SentenceTransformer
 from data.custom_types.all import *
-from data.prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
+from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from data.milvus.insert import upsert_milvus
 from data.neo4j.insert import upsert_chunk_entity_relations, upsert_entities_neo4j, upsert_chunks_neo4j, upsert_relations_neo4j, create_communities_from_chunks, create_community_nodes_and_relationships_with_size, annotate_node_degrees, upsert_doc_chunk_relations, upsert_doc_neo4j
 from typing import AsyncGenerator

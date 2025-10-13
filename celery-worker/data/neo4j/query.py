@@ -2,7 +2,7 @@ import openai
 import crud
 from common.sql import SessionLocal
 from data.neo4j.search import *
-from data.prompts.query import query_context_summary
+from prompts.query import query_context_summary
 
 def get_query_result_summary_llm_client(user_id: int) -> openai.OpenAI:
     db = SessionLocal()
