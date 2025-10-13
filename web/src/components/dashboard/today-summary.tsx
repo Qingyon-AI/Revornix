@@ -98,8 +98,8 @@ const TodaySummary = () => {
 					</Button>
 				</Link>
 			</CardHeader>
-			<CardContent>
-				{isFetching && <Skeleton className='h-24 w-full' />}
+			<CardContent className='flex-1'>
+				{isFetching && <Skeleton className='h-full w-full' />}
 				{((isError && error) || markdownGetError) && (
 					<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 						{error?.message ?? (

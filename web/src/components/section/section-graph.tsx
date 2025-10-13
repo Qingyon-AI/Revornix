@@ -1,7 +1,8 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { searchGraph } from '@/service/graph';
+import { searchSectionGraph } from '@/service/graph';
+import { getSectionDetail } from '@/service/section';
 import { useQuery } from '@tanstack/react-query';
 import * as d3 from 'd3';
 import { useTranslations } from 'next-intl';
@@ -48,15 +49,23 @@ const getColorVars = (theme: string) => {
 	}
 };
 
-const GraphPage = () => {
+const SectionGraph = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
 	const svgRef = useRef<SVGSVGElement | null>(null);
 
 	const { resolvedTheme } = useTheme();
 
-	const { data, isLoading, isError, error, isFetched } = useQuery({
-		queryKey: ['searchGraphData'],
-		queryFn: async () => searchGraph(),
+	const { data, isLoading, isError, error, isFetched, refetch } = useQuery({
+		queryKey: ['searchDocumentGraph', section_id],
+		queryFn: async () =>
+			searchSectionGraph({
+				section_id: section_id,
+			}),
+	});
+
+	const { data: section } = useQuery({
+		queryKey: ['getSectionDetail', section_id],
+		queryFn: () => getSectionDetail({ section_id: section_id }),
 	});
 
 	useEffect(() => {
@@ -218,29 +227,12 @@ const GraphPage = () => {
 	return (
 		<div className='w-full h-full flex justify-center items-center relative'>
 			{isError && <div className='text-red-500'>Error: {error.message}</div>}
-			{isLoading && (
-				<div className='px-5 pb-5 w-full h-full'>
-					<Skeleton className='w-full h-full' />
-				</div>
-			)}
+			{isLoading && <Skeleton className='w-full h-full' />}
 			{isFetched && (
-				<>
-					{!data?.edges.length && !data?.nodes.length && (
-						<div className='text-xs text-muted-foreground'>
-							{t('graph_empty')}
-						</div>
-					)}
-					{data?.nodes && data?.nodes.length > 0 && <svg ref={svgRef}></svg>}
-					<div className='fixed bg-muted w-fit px-3 py-2 rounded right-5 bottom-5 text-xs text-muted-foreground flex justify-center items-center'>
-						{t('graph_data', {
-							node_count: data?.nodes.length ?? 0,
-							edge_count: data?.edges.length ?? 0,
-						})}
-					</div>
-				</>
+				<>{data?.nodes && data?.nodes.length > 0 && <svg ref={svgRef}></svg>}</>
 			)}
 		</div>
 	);
 };
 
-export default GraphPage;
+export default SectionGraph;

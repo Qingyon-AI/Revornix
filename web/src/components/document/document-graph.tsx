@@ -1,12 +1,9 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-	DocumentEmbeddingConvertStatus,
-	DocumentGraphStatus,
-} from '@/enums/document';
+import { DocumentGraphStatus } from '@/enums/document';
 import { getDocumentDetail } from '@/service/document';
-import { searchGraph } from '@/service/graph';
+import { searchDocumentGraph } from '@/service/graph';
 import { useQuery } from '@tanstack/react-query';
 import * as d3 from 'd3';
 import { useTranslations } from 'next-intl';
@@ -60,10 +57,10 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 	const { resolvedTheme } = useTheme();
 
 	const { data, isLoading, isError, error, isFetched, refetch } = useQuery({
-		queryKey: ['searchGraphData', document_id],
+		queryKey: ['searchDocumentGraphData', document_id],
 		queryFn: async () =>
-			searchGraph({
-				doc_id: document_id,
+			searchDocumentGraph({
+				document_id: document_id,
 			}),
 	});
 

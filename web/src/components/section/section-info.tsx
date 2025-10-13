@@ -29,81 +29,79 @@ const SectionInfo = ({ id }: { id: number }) => {
 	});
 
 	return (
-		<Card className='h-full overflow-auto flex py-0 col-span-4 gap-0 relative'>
-			<div className='h-full overflow-auto pb-5'>
-				<div className='mb-5'>
-					<img
-						src={section?.cover ? section.cover : '/images/cover.jpg'}
-						alt='cover'
-						className='w-full h-64 object-cover'
-					/>
+		<div className='h-full overflow-auto pb-5'>
+			<div className='mb-5'>
+				<img
+					src={section?.cover ? section.cover : '/images/cover.jpg'}
+					alt='cover'
+					className='w-full h-64 object-cover'
+				/>
+			</div>
+
+			{isFetching && !isFetched && (
+				<div className='px-5 mb-3'>
+					<Skeleton className='w-full h-40' />
 				</div>
+			)}
 
-				{isFetching && !isFetched && (
-					<div className='px-5 mb-3'>
-						<Skeleton className='w-full h-40' />
-					</div>
-				)}
-
-				{isFetched && (
-					<>
-						{section?.update_time && (
-							<div className='px-5 mb-3'>
-								<p className='text-xs text-muted-foreground'>
-									{t('section_updated_at')}{' '}
-									{formatDistance(new Date(section.update_time), new Date(), {
-										addSuffix: true,
-										locale: locale === 'zh' ? zhCN : enUS,
-									})}
-								</p>
-							</div>
-						)}
-						<div className='flex flex-row justify-between items-center px-5 mb-3'>
-							<div className='font-bold text-lg'>
-								{section?.title ? section?.title : t('section_title_empty')}
-							</div>
-						</div>
-						<div className='text-sm text-muted-foreground mb-3 px-5'>
-							{section?.description
-								? section?.description
-								: t('section_description_empty')}
-						</div>
-						{section?.labels && section.labels.length > 0 && (
-							<div className='flex flex-row gap-2 items-center px-5 mb-3 flex-wrap'>
-								{section.labels.map((label) => {
-									return (
-										<Badge key={label.id} variant={'secondary'}>
-											{label.name}
-										</Badge>
-									);
-								})}
-							</div>
-						)}
-						<div
-							className='flex flex-row items-center gap-1 px-5 mb-3'
-							onClick={(e) => {
-								router.push(`/user/detail/${section?.creator.id}`);
-								e.preventDefault();
-								e.stopPropagation();
-							}}>
-							<CustomImage
-								src={section?.creator.avatar!}
-								alt='avatar'
-								className='rounded-full object-cover w-5 h-5'
-							/>
+			{isFetched && (
+				<>
+					{section?.update_time && (
+						<div className='px-5 mb-3'>
 							<p className='text-xs text-muted-foreground'>
-								{section?.creator.nickname}
+								{t('section_updated_at')}{' '}
+								{formatDistance(new Date(section.update_time), new Date(), {
+									addSuffix: true,
+									locale: locale === 'zh' ? zhCN : enUS,
+								})}
 							</p>
 						</div>
-					</>
-				)}
-				
-				<div className='px-5 mb-3'>
-					<SectionDocument id={id} />
-				</div>
-				<SectionComments id={id} />
+					)}
+					<div className='flex flex-row justify-between items-center px-5 mb-3'>
+						<div className='font-bold text-lg'>
+							{section?.title ? section?.title : t('section_title_empty')}
+						</div>
+					</div>
+					<div className='text-sm text-muted-foreground mb-3 px-5'>
+						{section?.description
+							? section?.description
+							: t('section_description_empty')}
+					</div>
+					{section?.labels && section.labels.length > 0 && (
+						<div className='flex flex-row gap-2 items-center px-5 mb-3 flex-wrap'>
+							{section.labels.map((label) => {
+								return (
+									<Badge key={label.id} variant={'secondary'}>
+										{label.name}
+									</Badge>
+								);
+							})}
+						</div>
+					)}
+					<div
+						className='flex flex-row items-center gap-1 px-5 mb-3'
+						onClick={(e) => {
+							router.push(`/user/detail/${section?.creator.id}`);
+							e.preventDefault();
+							e.stopPropagation();
+						}}>
+						<CustomImage
+							src={section?.creator.avatar!}
+							alt='avatar'
+							className='rounded-full object-cover w-5 h-5'
+						/>
+						<p className='text-xs text-muted-foreground'>
+							{section?.creator.nickname}
+						</p>
+					</div>
+				</>
+			)}
+
+			<div className='px-5 mb-3'>
+				<SectionDocument id={id} />
 			</div>
-		</Card>
+			<SectionComments id={id} />
+		</div>
 	);
 };
 
