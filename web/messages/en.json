@@ -104,6 +104,8 @@
     "dashboard_today_hot_search_description": "This part will display the top 01 hot search from various platforms today.",
     "dashboard_today_hot_search_full": "View All Hot Search",
     "dashboard_today_hot_search_empty": "No hot search today for now",
+    "dashboard_today_hot_search_error_no_data": "No hot search data available",
+    "dashboard_today_hot_search_error_network": "Network error occurred while fetching hot search data",
     "dashboard_bottom_slogan": "Today is another happy day!",
     "dashboard_document_label_summary": "Document Label Summary",
     "dashboard_document_label_summary_empty": "No documents labels yet",
