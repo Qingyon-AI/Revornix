@@ -5,11 +5,14 @@ import { useQuery } from '@tanstack/react-query';
 import { getDocumentDetail } from '@/service/document';
 import { useRouter } from 'nextjs-toploader/app';
 import Link from 'next/link';
-import { Badge } from '../ui/badge';
 import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
 import CustomImage from '../ui/custom-image';
-import { DocumentCategory, DocumentEmbeddingConvertStatus, DocumentMdConvertStatus } from '@/enums/document';
+import {
+	DocumentCategory,
+	DocumentEmbeddingConvertStatus,
+	DocumentMdConvertStatus,
+} from '@/enums/document';
 
 const DocumentInfo = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -85,12 +88,14 @@ const DocumentInfo = ({ id }: { id: number }) => {
 							})}
 						</div>
 						{data.labels && data.labels?.length > 0 && (
-							<div className='flex flex-row items-center w-full overflow-auto px-5 gap-5 mb-3'>
+							<div className='flex flex-row items-center w-full overflow-auto px-5 gap-1 mb-3'>
 								{data.labels?.map((label) => {
 									return (
-										<Badge variant={'outline'} key={label.id}>
+										<div
+											key={label.id}
+											className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5 text-xs text-muted-foreground'>
 											{`# ${label.name}`}
-										</Badge>
+										</div>
 									);
 								})}
 							</div>
