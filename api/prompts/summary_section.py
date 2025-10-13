@@ -57,11 +57,11 @@ A 2–4 sentence overview explaining the topic’s relevance, purpose, and impor
 Your output must be valid JSON — no extra commentary or explanation.
 
 ```json
-{
+{{
   "title": "Concise, meaningful title related to the document",
   "description": "Brief overview highlighting the topic’s relevance",
   "summary": "Full markdown-formatted summary report"
-}
+}}
 ```
 
 ---

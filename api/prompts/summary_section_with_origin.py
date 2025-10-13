@@ -62,11 +62,11 @@ Explain *why* the topic matters and *what value* this report provides to the rea
 You must return a valid JSON object with the following structure:
 
 ```json
-{
+{{
   "title": "Concise and meaningful title",
   "description": "Brief introduction highlighting the topic’s relevance",
   "summary": "Full markdown-formatted updated summary report"
-}
+}}
 ```
 
 ---
