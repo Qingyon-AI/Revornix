@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import UnReadDocumentBox from '@/components/document/unread-documents-box';
-import StarDocumentBox from '@/components/document/star-document-box';
-import RecentReadDocumentBox from '@/components/document/recent-read-document-box';
-import DocumentLabelsBox from '@/components/document/document-labels-box';
-import DocumentMonthSummary from '@/components/document/document-month-summary';
-import SectionLabelsBox from '@/components/document/section-labels-box';
+import UnReadDocumentBox from '@/components/dashboard/unread-documents-box';
+import StarDocumentBox from '@/components/dashboard/star-document-box';
+import RecentReadDocumentBox from '@/components/dashboard/recent-read-document-box';
+import DocumentLabelsBox from '@/components/dashboard/document-labels-box';
+import DocumentMonthSummary from '@/components/dashboard/document-month-summary';
+import SectionLabelsBox from '@/components/dashboard/section-labels-box';
 import { useTranslations } from 'next-intl';
 import InitSettingDialog from '@/components/setting/init-setting-dialog';
 import DocumentLabelSummary from '@/components/dashboard/document-label-summary';
