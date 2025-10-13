@@ -51,38 +51,52 @@ const TodayNews = () => {
 
 	const [websites, setWebsites] = useState<Website[]>([]);
 	const [refreshStatus, setRefreshStatus] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
 	const handleInitData = useCallback(async () => {
 		setRefreshStatus(true);
-		const promises = websites_to_craw.map(async (website) => {
-			const response = await fetch(baseUrl + `/${website}`, {
-				cache: 'no-cache',
+		setError(null);
+		try {
+			const promises = websites_to_craw.map(async (website) => {
+				try {
+					const response = await fetch(`${baseUrl}/${website}`, {
+						cache: 'no-cache',
+					});
+					if (response.ok) {
+						return (await response.json()) as Website;
+					}
+					// 如果响应非 200，也抛出异常
+					throw new Error(`Request failed: ${response.status}`);
+				} catch (err) {
+					console.warn(`Failed to fetch ${website}`, err);
+					return null; // 返回 null 表示该站点获取失败
+				}
 			});
-			if (response.status === 200) {
-				return (await response.json()) as Website;
-			} else {
-				return {
-					code: response.status,
-					name: website,
-					title: website,
-					type: '',
-					link: '',
-					total: 0,
-					fromCache: false,
-					updateTime: '',
-					data: [],
-				} as Website;
-			}
-		});
 
-		const results = await Promise.all(promises);
-		setWebsites(results.filter((w) => w?.data?.length > 0));
-		setRefreshStatus(false);
-	}, [baseUrl]);
+			const results = await Promise.all(promises);
+			const valid = results.filter(
+				(w): w is Website => !!w && w.data?.length > 0
+			);
+			setWebsites(valid);
+
+			if (valid.length === 0) {
+				setError(
+					t('dashboard_today_hot_search_error_no_data') ?? 'No data available'
+				);
+			}
+		} catch (err: any) {
+			console.error('Fetch error:', err);
+			setError(
+				t('dashboard_today_hot_search_error_network') ?? 'Failed to load data'
+			);
+		} finally {
+			setRefreshStatus(false);
+		}
+	}, [baseUrl, t]);
 
 	useEffect(() => {
 		handleInitData();
-	}, [handleInitData]);
+	}, []);
 
 	return (
 		<Card>
@@ -100,29 +114,27 @@ const TodayNews = () => {
 					</Button>
 				</Link>
 			</CardHeader>
-			<CardContent>
+			<CardContent className='flex-1'>
 				{refreshStatus ? (
-					<Skeleton className='w-full h-[140px]' /> // 3*28
+					<Skeleton className='w-full h-[140px]' />
+				) : error ? (
+					<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
+						{error}
+					</div>
 				) : (
 					<AutoScrollList visibleCount={5} itemHeight={28} gap={1}>
-						{websites.map((website, index) =>
-							website?.data?.[0] ? (
-								<Link
-									key={index}
-									href={website.data[0].url}
-									target='_blank'
-									className='flex w-full text-sm hover:text-primary transition-colors items-center justify-between p-1 hover:bg-muted'>
-									<div className='truncate flex-1'>{website.data[0].title}</div>
-									<div className='text-muted-foreground shrink-0 text-xs'>
-										{website.title}
-									</div>
-								</Link>
-							) : (
-								<div key={index} className='text-muted-foreground text-sm'>
-									{t('dashboard_today_hot_search_empty')}
+						{websites.map((website, index) => (
+							<Link
+								key={index}
+								href={website.data[0].url}
+								target='_blank'
+								className='flex w-full text-sm hover:text-primary transition-colors items-center justify-between p-1 hover:bg-muted'>
+								<div className='truncate flex-1'>{website.data[0].title}</div>
+								<div className='text-muted-foreground shrink-0 text-xs'>
+									{website.title}
 								</div>
-							)
-						)}
+							</Link>
+						))}
 					</AutoScrollList>
 				)}
 			</CardContent>
