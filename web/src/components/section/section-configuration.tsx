@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PencilIcon } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import CoverUpdate from './cover-update';
@@ -148,6 +148,7 @@ const SectionConfiguration = ({
 		<Sheet>
 			<SheetTrigger asChild>
 				<Button className={cn('text-xs', className)} variant={'ghost'}>
+					<PencilIcon />
 					{t('section_configuration_title')}
 				</Button>
 			</SheetTrigger>

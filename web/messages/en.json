@@ -554,6 +554,7 @@
     "section_comment_submit_failed": "Failed to submit comment",
     "section_comment_submit_success": "Comment submitted successfully",
     "section_comments": "Comments",
+    "section_comments_description": "You can leave comments here to discuss the content of the section with other users. Your comments will be displayed here for others to see.",
     "section_comments_empty": "No comments",
     "section_search_placeholder": "Please enter your search content",
     "section_search_order_from_new": "From Newest to Oldest",

@@ -5,8 +5,11 @@ import SectionConfiguration from './section-configuration';
 import SectionDelete from './section-delete';
 import SectionSubscribe from './section-subscribe';
 import SectionShare from './section-share';
+import { useTranslations } from 'next-intl';
+import SectionOperateComment from './section-operate-comment';
 
 const SectionOperate = ({ id }: { id: number }) => {
+	const t = useTranslations();
 	const { userInfo } = useUserContext();
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
@@ -21,6 +24,7 @@ const SectionOperate = ({ id }: { id: number }) => {
 				<>
 					<SectionShare section_id={id} />
 					<SectionConfiguration section_id={id} className='flex-1 w-full' />
+					<SectionOperateComment section_id={id} />
 					<SectionDelete section_id={id} className='flex-1 w-full' />
 				</>
 			)}

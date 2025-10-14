@@ -555,6 +555,7 @@
     "section_comment_submit_failed": "提交评论失败",
     "section_comment_submit_success": "提交评论成功",
     "section_comments": "评论",
+    "section_comments_description": "这里会显示该专栏相关的评论",
     "section_comments_empty": "暂无评论",
     "section_search_placeholder": "请输入你的搜索内容",
     "section_search_order_from_new": "从新到旧",

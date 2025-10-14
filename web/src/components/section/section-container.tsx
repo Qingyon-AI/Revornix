@@ -15,6 +15,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
 import { Expand } from 'lucide-react';
+import SectionComments from './section-comments';
 
 const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -25,8 +26,10 @@ const SectionContainer = ({ id }: { id: number }) => {
 			</div>
 
 			<div className='col-span-4 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
-				<Card className='py-0 flex-2 overflow-auto relative'>
-					<SectionInfo id={id} />
+				<Card className='py-0 flex-1 overflow-auto relative pb-5'>
+					<div>
+						<SectionInfo id={id} />
+					</div>
 				</Card>
 				<Card className='py-0 flex-1 relative'>
 					<Dialog>

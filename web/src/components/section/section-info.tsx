@@ -7,7 +7,6 @@ import { useQuery } from '@tanstack/react-query';
 import { formatDistance } from 'date-fns';
 import SectionDocument from './section-document';
 import { useRouter } from 'nextjs-toploader/app';
-import SectionComments from './section-comments';
 import { Badge } from '../ui/badge';
 import { useLocale, useTranslations } from 'next-intl';
 import CustomImage from '../ui/custom-image';
@@ -30,12 +29,12 @@ const SectionInfo = ({ id }: { id: number }) => {
 	});
 
 	return (
-		<div className='h-full overflow-auto pb-5'>
+		<>
 			<div className='mb-5'>
 				<img
 					src={section?.cover ? section.cover : '/images/cover.jpg'}
 					alt='cover'
-					className='w-full h-64 object-cover'
+					className='w-full h-52 object-cover'
 				/>
 			</div>
 
@@ -98,11 +97,10 @@ const SectionInfo = ({ id }: { id: number }) => {
 				</>
 			)}
 
-			<div className='px-5 mb-3'>
+			<div className='px-5'>
 				<SectionDocument id={id} />
 			</div>
-			<SectionComments id={id} />
-		</div>
+		</>
 	);
 };
 

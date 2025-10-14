@@ -24,8 +24,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Expand } from 'lucide-react';
 import SectionGraphSEO from '@/components/section/section-graph-seo';
+import { Alert, AlertTitle } from '@/components/ui/alert';
+import SectionComments from '@/components/section/section-comments';
 import SectionInfo from '@/components/section/section-info';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -123,24 +124,11 @@ const SEOSectionDetail = async (props: {
 	return (
 		<div className='px-5 p-5 w-full grid grid-cols-12 gap-5 relative h-[calc(100vh-theme(spacing.16))]'>
 			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
-				<Card className='py-0 flex-2 overflow-auto relative shadow-none'>
-					<SectionInfo id={Number(id)} />
+				<Card className='py-0 pb-5 flex-1 relative shadow-none overflow-auto'>
+					<div>
+						<SectionInfo id={Number(id)} />
+					</div>
 				</Card>
-			</div>
-			<div className='col-span-6 h-full relative min-h-0 overflow-auto'>
-				<div className='prose dark:prose-invert mx-auto'>
-					<Alert className='bg-blue-500/10 dark:bg-blue-600/20 text-blue-500 dark:text-blue-400 border-blue-400/50 dark:border-blue-600/60 mb-5'>
-						<AlertTitle>{t('section_ai_tips')}</AlertTitle>
-					</Alert>
-					<Markdown
-						components={{}}
-						remarkPlugins={[remarkMath, remarkGfm]}
-						rehypePlugins={[rehypeKatex, rehypeRaw]}>
-						{markdown}
-					</Markdown>
-				</div>
-			</div>
-			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
 				<Card className='py-0 flex-1 relative shadow-none'>
 					<Dialog>
 						<DialogTrigger asChild>
@@ -163,8 +151,25 @@ const SEOSectionDetail = async (props: {
 							</div>
 						</DialogContent>
 					</Dialog>
-
 					<SectionGraphSEO section_id={Number(id)} />
+				</Card>
+			</div>
+			<div className='col-span-6 h-full relative min-h-0 overflow-auto'>
+				<div className='prose dark:prose-invert mx-auto'>
+					<Alert className='bg-blue-500/10 dark:bg-blue-600/20 text-blue-500 dark:text-blue-400 border-blue-400/50 dark:border-blue-600/60 mb-5'>
+						<AlertTitle>{t('section_ai_tips')}</AlertTitle>
+					</Alert>
+					<Markdown
+						components={{}}
+						remarkPlugins={[remarkMath, remarkGfm]}
+						rehypePlugins={[rehypeKatex, rehypeRaw]}>
+						{markdown}
+					</Markdown>
+				</div>
+			</div>
+			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
+				<Card className='p-5 flex-2 overflow-auto relative shadow-none'>
+					<SectionComments id={Number(id)} />
 				</Card>
 			</div>
 		</div>

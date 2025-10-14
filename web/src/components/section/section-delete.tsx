@@ -13,7 +13,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '../ui/dialog';
-import { Loader2 } from 'lucide-react';
+import { Loader2, TrashIcon } from 'lucide-react';
 import { deleteSection } from '@/service/section';
 import { useRouter } from 'nextjs-toploader/app';
 import { useTranslations } from 'next-intl';
@@ -60,6 +60,7 @@ const SectionDelete = ({
 			<Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<DialogTrigger asChild>
 					<Button variant={'ghost'} className={cn('text-xs', className)}>
+						<TrashIcon />
 						{t('section_delete')}
 					</Button>
 				</DialogTrigger>
