@@ -15,7 +15,6 @@ import {
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
 import { Expand } from 'lucide-react';
-import SectionComments from './section-comments';
 
 const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
