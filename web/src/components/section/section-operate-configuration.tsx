@@ -39,7 +39,7 @@ import AddSectionLabelDialog from './add-section-label-dialog';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
-const SectionConfiguration = ({
+const SectionOperateConfiguration = ({
 	section_id,
 	className,
 }: {
@@ -296,4 +296,4 @@ const SectionConfiguration = ({
 	);
 };
 
-export default SectionConfiguration;
+export default SectionOperateConfiguration;

@@ -1,7 +1,6 @@
 import { Button } from '../ui/button';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getSectionDetail, updateSection } from '@/service/section';
-import { useUserContext } from '@/provider/user-provider';
 import { Badge } from '../ui/badge';
 import {
 	Dialog,
@@ -23,7 +22,7 @@ import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
 import { SectionInfo } from '@/generated';
 
-const SectionShare = ({ section_id }: { section_id: number }) => {
+const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 
@@ -143,4 +142,4 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 	);
 };
 
-export default SectionShare;
+export default SectionOperateShare;
