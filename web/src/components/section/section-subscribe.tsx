@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useState } from 'react';
 import { utils } from '@kinda/utils';
-import { BellPlusIcon, Loader2 } from 'lucide-react';
+import { BellOffIcon, BellPlusIcon, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
@@ -60,10 +60,17 @@ const SectionSubscribe = ({
 				variant={'ghost'}
 				disabled={subscribing}
 				onClick={handleUpdateSubscribeStatue}>
-				<BellPlusIcon />
-				{section?.is_subscribed
-					? t('section_unsubscribe')
-					: t('section_subscribe')}
+				{section?.is_subscribed ? (
+					<>
+						<BellOffIcon />
+						{t('section_unsubscribe')}
+					</>
+				) : (
+					<>
+						<BellPlusIcon />
+						{t('section_subscribe')}
+					</>
+				)}
 				{subscribing && <Loader2 className='animate-spin' />}
 			</Button>
 		</>
