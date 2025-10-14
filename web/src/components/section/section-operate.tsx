@@ -20,11 +20,11 @@ const SectionOperate = ({ id }: { id: number }) => {
 
 	return (
 		<div className='w-full flex justify-between'>
+			<SectionOperateComment section_id={id} />
 			{section && userInfo?.id === section?.creator.id && (
 				<>
 					<SectionShare section_id={id} />
 					<SectionConfiguration section_id={id} className='flex-1 w-full' />
-					<SectionOperateComment section_id={id} />
 					<SectionDelete section_id={id} className='flex-1 w-full' />
 				</>
 			)}
