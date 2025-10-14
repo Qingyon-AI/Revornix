@@ -1,6 +1,6 @@
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import SectionSubscribe from './section-subscribe';
+import SectionOperateSubscribe from './section-operate-subscribe';
 import { useRouter } from 'nextjs-toploader/app';
 import { useQuery } from '@tanstack/react-query';
 import { getSectionDetail } from '@/service/section';
@@ -54,7 +54,7 @@ const NeedPaySectionDialog = ({ id }: { id: number }) => {
 								onClick={() => router.back()}>
 								返回上级
 							</Button>
-							<SectionSubscribe section_id={section.id} />
+							<SectionOperateSubscribe section_id={section.id} />
 						</div>
 					</Card>
 				</div>

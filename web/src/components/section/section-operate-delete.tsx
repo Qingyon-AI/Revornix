@@ -19,7 +19,7 @@ import { useRouter } from 'nextjs-toploader/app';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
-const SectionDelete = ({
+const SectionOperateDelete = ({
 	section_id,
 	className,
 }: {
@@ -91,4 +91,4 @@ const SectionDelete = ({
 	);
 };
 
-export default SectionDelete;
+export default SectionOperateDelete;

@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useUserContext } from '@/provider/user-provider';
 import { getSectionDetail } from '@/service/section';
-import SectionConfiguration from './section-configuration';
-import SectionDelete from './section-delete';
-import SectionSubscribe from './section-subscribe';
-import SectionShare from './section-share';
+import SectionOperateConfiguration from './section-operate-configuration';
+import SectionOperateDelete from './section-operate-delete';
+import SectionOperateSubscribe from './section-operate-subscribe';
+import SectionOperateShare from './section-operate-share';
 import SectionOperateComment from './section-operate-comment';
 
 const SectionOperate = ({ id }: { id: number }) => {
@@ -21,14 +21,17 @@ const SectionOperate = ({ id }: { id: number }) => {
 			<SectionOperateComment section_id={id} />
 			{section && userInfo?.id === section?.creator.id && (
 				<>
-					<SectionShare section_id={id} />
-					<SectionConfiguration section_id={id} className='flex-1 w-full' />
-					<SectionDelete section_id={id} className='flex-1 w-full' />
+					<SectionOperateShare section_id={id} />
+					<SectionOperateConfiguration
+						section_id={id}
+						className='flex-1 w-full'
+					/>
+					<SectionOperateDelete section_id={id} className='flex-1 w-full' />
 				</>
 			)}
 			{section && userInfo?.id !== section?.creator.id && (
 				<>
-					<SectionSubscribe section_id={id} className='flex-1 w-full' />
+					<SectionOperateSubscribe section_id={id} className='flex-1 w-full' />
 				</>
 			)}
 		</div>
