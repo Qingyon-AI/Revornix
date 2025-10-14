@@ -1,12 +1,6 @@
 import { useTranslations } from 'next-intl';
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-	SheetTrigger,
-} from '../ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '../ui/sheet';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Button } from '../ui/button';
 import SectionComments from './section-comments';
 import { MessageCircleMore } from 'lucide-react';
@@ -24,15 +18,12 @@ const SectionOperateComment = ({ section_id }: { section_id: number }) => {
 					{t('section_comments')}
 				</Button>
 			</SheetTrigger>
-			<SheetContent>
-				<SheetHeader>
+			<SheetContent className='pt-5'>
+				<VisuallyHidden>
 					<SheetTitle>{t('section_comments')}</SheetTitle>
-					<SheetDescription>
-						{t('section_comments_description')}
-					</SheetDescription>
-				</SheetHeader>
+				</VisuallyHidden>
 				<div className='px-5'>
-					<SectionComments id={section_id} />
+					<SectionComments section_id={section_id} />
 				</div>
 			</SheetContent>
 		</Sheet>
