@@ -168,8 +168,8 @@ const SEOSectionDetail = async (props: {
 				</div>
 			</div>
 			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
-				<Card className='p-5 flex-2 overflow-auto relative shadow-none'>
-					<SectionComments id={Number(id)} />
+				<Card className='p-5 overflow-auto relative shadow-none h-full'>
+					<SectionComments section_id={Number(id)} />
 				</Card>
 			</div>
 		</div>

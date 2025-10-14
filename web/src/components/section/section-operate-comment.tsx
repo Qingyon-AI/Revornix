@@ -18,11 +18,11 @@ const SectionOperateComment = ({ section_id }: { section_id: number }) => {
 					{t('section_comments')}
 				</Button>
 			</SheetTrigger>
-			<SheetContent className='pt-5'>
+			<SheetContent className='pt-5 h-full'>
 				<VisuallyHidden>
 					<SheetTitle>{t('section_comments')}</SheetTitle>
 				</VisuallyHidden>
-				<div className='px-5'>
+				<div className='px-5 h-full'>
 					<SectionComments section_id={section_id} />
 				</div>
 			</SheetContent>
