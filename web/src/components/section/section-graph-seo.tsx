@@ -1,7 +1,7 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { searchSectionGraphSEO } from '@/service/graph';
+import { searchSectionGraph } from '@/service/graph';
 import { getSectionDetail } from '@/service/section';
 import { useQuery } from '@tanstack/react-query';
 import * as d3 from 'd3';
@@ -58,7 +58,7 @@ const SectionGraphSEO = ({ section_id }: { section_id: number }) => {
 	const { data, isLoading, isError, error, isFetched, refetch } = useQuery({
 		queryKey: ['searchDocumentGraph', section_id],
 		queryFn: async () =>
-			searchSectionGraphSEO({
+			searchSectionGraph({
 				section_id: section_id,
 			}),
 	});
