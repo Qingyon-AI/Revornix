@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DAILY_HOT_API_PREFIX } from '@/config/api';
-import { Website } from '@/app/(public)/hot-search/page';
+import { Website } from '@/app/(private)/hot-search/page';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';

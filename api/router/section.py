@@ -441,7 +441,7 @@ async def create_section_comment(section_comment_create_request: schemas.section
 @section_router.post('/comment/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionCommentInfo])
 async def search_section_comment(section_comment_search_request: schemas.section.SectionCommentSearchRequest,
                                  db: Session = Depends(get_db), 
-                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)):
     has_more = True
     next_start = None
     db_section_parent_degree_comments = crud.section.search_parent_degree_section_comments(db=db,

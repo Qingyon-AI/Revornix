@@ -1,9 +1,10 @@
+'use client';
+
 import { zhCN } from 'date-fns/locale/zh-CN';
 import { enUS } from 'date-fns/locale/en-US';
 import { getSectionDetail } from '@/service/section';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistance } from 'date-fns';
-import { Card } from '../ui/card';
 import SectionDocument from './section-document';
 import { useRouter } from 'nextjs-toploader/app';
 import SectionComments from './section-comments';

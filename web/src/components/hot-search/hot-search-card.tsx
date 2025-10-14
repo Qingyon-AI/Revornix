@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { formatDistance } from 'date-fns';
 import { zhCN } from 'date-fns/locale/zh-CN';
 import { enUS } from 'date-fns/locale/en-US';
-import { Website } from '@/app/(public)/hot-search/page';
+import { Website } from '@/app/(private)/hot-search/page';
 import {
 	Dialog,
 	DialogHeader,

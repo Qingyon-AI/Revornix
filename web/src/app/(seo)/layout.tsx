@@ -1,4 +1,3 @@
-import Footer from '@/components/seo/footer';
 import Nav from '@/components/seo/nav';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -6,7 +5,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 		<>
 			<Nav />
 			<main className='w-full'>{children}</main>
-			<Footer />
 		</>
 	);
 };
