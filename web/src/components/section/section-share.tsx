@@ -17,7 +17,7 @@ import { useTranslations } from 'next-intl';
 import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
 import { Input } from '../ui/input';
-import { CopyIcon } from 'lucide-react';
+import { CopyIcon, ShareIcon } from 'lucide-react';
 import { useCopyToClipboard } from 'react-use';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -85,6 +85,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 			<Dialog>
 				<DialogTrigger asChild>
 					<Button className='flex-1 w-full text-xs' variant={'ghost'}>
+						<ShareIcon />
 						{t('section_share')}
 						{section?.public && (
 							<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>

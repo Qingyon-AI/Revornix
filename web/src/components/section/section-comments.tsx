@@ -1,3 +1,5 @@
+'use client';
+
 import { Form, FormField, FormItem, FormMessage } from '../ui/form';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
@@ -119,7 +121,7 @@ const SectionComments = ({ id }: { id: number }) => {
 	}, [inView]);
 
 	return (
-		<div className='rounded flex flex-col bg-black/5 dark:bg-white/5  p-5 mx-5'>
+		<div className='rounded flex flex-col'>
 			<p className='font-bold text-lg mb-3'>{t('section_comments')}</p>
 			<Form {...form}>
 				<form onSubmit={handleSubmitComment}>
