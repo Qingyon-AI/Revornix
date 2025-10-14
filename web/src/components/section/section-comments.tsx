@@ -40,11 +40,13 @@ const SectionComments = ({ section_id }: { section_id: number }) => {
 	}, [inView]);
 
 	return (
-		<div className='rounded flex flex-col'>
+		<div className='rounded flex flex-col h-full'>
 			<p className='font-bold text-lg mb-3'>{t('section_comments')}</p>
-			<SectionCommentForm section_id={section_id} />
+			<div className='flex-1 overflow-auto'>
+				<SectionCommentsList section_id={section_id} />
+			</div>
 			<Separator className='mb-3' />
-			<SectionCommentsList section_id={section_id} />
+			<SectionCommentForm section_id={section_id} />
 			<div ref={bottomRef}></div>
 		</div>
 	);
