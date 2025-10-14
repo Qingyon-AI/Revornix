@@ -1,15 +1,26 @@
 import { SectionDetailRequest, SectionInfo } from '@/generated';
 import { serverRequest } from '@/lib/request-server';
 import sectionApi from '@/api/section';
-import { format } from 'date-fns';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { utils } from '@kinda/utils';
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Expand } from 'lucide-react';
+import SectionGraphSEO from '@/components/section/section-graph-seo';
 
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -50,6 +61,7 @@ const SEOSectionDetail = async (props: {
 	params: Params;
 	searchParams: SearchParams;
 }) => {
+	const t = await getTranslations();
 	const params = await props.params;
 	const id = params.id;
 
@@ -104,29 +116,9 @@ const SEOSectionDetail = async (props: {
 	}
 
 	return (
-		<div className='px-5 py-5'>
-			{section && (
+		<div className='px-5 pb-5 h-full w-full grid grid-cols-12 gap-5 relative'>
+			<div className='col-span-8 h-full relative min-h-0'>
 				<div className='prose dark:prose-invert mx-auto'>
-					<div className='font-bold text-5xl mb-5'>{section.title}</div>
-					<div className='flex flex-row gap-3 items-center text-muted-foreground text-xs mb-5'>
-						<img
-							src={section.creator.avatar}
-							alt='avatar'
-							className='rounded-full size-6 object-cover'
-						/>
-						<div className='flex flex-col gap-1'>
-							<div>{section.creator.nickname}</div>
-							<div>
-								Last updated at{' '}
-								{format(section.update_time as Date, 'yyyy-MM-dd HH:mm')}
-							</div>
-						</div>
-					</div>
-					<Card>
-						<CardContent className='text-sm text-primary/80'>
-							{section.description}
-						</CardContent>
-					</Card>
 					<Markdown
 						components={{}}
 						remarkPlugins={[remarkMath, remarkGfm]}
@@ -134,7 +126,34 @@ const SEOSectionDetail = async (props: {
 						{markdown}
 					</Markdown>
 				</div>
-			)}
+			</div>
+			<div className='col-span-4 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
+				<Card className='py-0 flex-1 relative'>
+					<Dialog>
+						<DialogTrigger asChild>
+							<Button
+								className='absolute top-2 left-2 z-10'
+								size={'icon'}
+								variant={'outline'}>
+								<Expand size={4} className='text-muted-foreground' />
+							</Button>
+						</DialogTrigger>
+						<DialogContent className='!max-w-[80vw] h-[80vh] flex flex-col'>
+							<DialogHeader>
+								<DialogTitle>{t('section_graph')}</DialogTitle>
+								<DialogDescription>
+									{t('section_graph_description')}
+								</DialogDescription>
+							</DialogHeader>
+							<div className='flex-1'>
+								<SectionGraphSEO section_id={Number(id)} />
+							</div>
+						</DialogContent>
+					</Dialog>
+
+					<SectionGraphSEO section_id={Number(id)} />
+				</Card>
+			</div>
 		</div>
 	);
 };

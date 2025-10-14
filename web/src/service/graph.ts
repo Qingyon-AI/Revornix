@@ -17,3 +17,9 @@ export const searchSectionGraph = async (data: SectionGraphRequest): Promise<Gra
         data
     })
 }
+
+export const searchSectionGraphSEO = async (data: SectionGraphRequest): Promise<GraphResponse> => {
+    return await request(graphApi.searchSectionGraphSEO, {
+        data
+    })
+}
