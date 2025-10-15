@@ -164,7 +164,7 @@ const GraphPage = () => {
 				.join('text')
 				.text((node) => node.label)
 				.attr('fill', textColor)
-				.attr('font-size', 12)
+				.attr('font-size', 10)
 				.attr('dx', 15)
 				.attr('dy', 4);
 
@@ -204,7 +204,7 @@ const GraphPage = () => {
 				d3
 					.forceLink<Node, Link>(edges)
 					.id((d) => d.id)
-					.distance(30) // 距离设小一点
+					.distance(100) // 距离设小一点
 					.strength(0.5) // 增强边的吸引力
 			);
 		};
