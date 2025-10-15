@@ -11,9 +11,9 @@ from enums.section import UserSectionAuthority
 
 section_router = APIRouter()
 
-def check_section_user_auth(db: Session, 
-                            user_id: int, 
-                            section_id: int):
+def get_section_user(db: Session, 
+                     user_id: int, 
+                     section_id: int):
     section = crud.section.get_section_by_section_id(db=db, 
                                                      section_id=section_id)
     if section is None:
@@ -22,6 +22,61 @@ def check_section_user_auth(db: Session,
                                                                            user_id=user_id, 
                                                                            section_id=section_id)
     return section_user
+
+@section_router.post('/user/add', response_model=schemas.common.NormalResponse)
+async def share_section_request(section_share_request: schemas.section.SectionUserAddRequest,
+                                db: Session = Depends(get_db), 
+                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    section_user = get_section_user(db=db,
+                                    user_id=user.id,
+                                    section_id=section_share_request.section_id)
+    if section_user is None:
+        raise Exception("You are forbidden to share this section")
+    if section_user.authority != UserSectionAuthority.FULL_ACCESS:
+        raise Exception("You are forbidden to share this section")
+    db_new_user_section = crud.section.create_section_user(db=db,
+                                                           section_id=section_share_request.section_id,
+                                                           user_id=section_share_request.user_id,
+                                                           authority=section_share_request.authority)
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+@section_router.post('/user/modify', response_model=schemas.common.NormalResponse)
+async def share_section_request(section_share_request: schemas.section.SectionUserModifyRequest,
+                                db: Session = Depends(get_db), 
+                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    section_user = get_section_user(db=db,
+                                    user_id=user.id,
+                                    section_id=section_share_request.section_id)
+    if section_user is None:
+        raise Exception("You are forbidden to share this section")
+    if section_user.authority != UserSectionAuthority.FULL_ACCESS:
+        raise Exception("You are forbidden to share this section")
+    origin_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                                  user_id=section_share_request.user_id,
+                                                                                  section_id=section_share_request.section_id)
+    if origin_section_user is None:
+        raise Exception("The user is not in this section")
+    origin_section_user.authority = section_share_request.authority
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+@section_router.post('/user/delete', response_model=schemas.common.NormalResponse)
+async def delete_section_user(section_user_delete_request: schemas.section.SectionUserDeleteRequest,
+                              db: Session = Depends(get_db), 
+                              user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    section_user = get_section_user(db=db,
+                                    user_id=user.id,
+                                    section_id=section_user_delete_request.section_id)
+    if section_user is None:
+        raise Exception("You are forbidden to share this section")
+    if section_user.authority != UserSectionAuthority.FULL_ACCESS:
+        raise Exception("You are forbidden to share this section")
+    crud.section.delete_section_user_by_section_id_and_user_id(db=db,
+                                                               section_id=section_user_delete_request.section_id,
+                                                               user_id=section_user_delete_request.user_id)
+    db.commit()
+    return schemas.common.SuccessResponse()
 
 @section_router.post('/label/delete', response_model=schemas.common.NormalResponse)
 async def delete_label(label_delete_request: schemas.section.LabelDeleteRequest,
@@ -119,9 +174,9 @@ async def update_section(
     original_section = copy.deepcopy(db_section)
     if db_section is None:
         raise Exception("The section is not exist")
-    section_user = check_section_user_auth(db=db, 
-                                           user_id=user.id, 
-                                           section_id=section_update_request.section_id)
+    section_user = get_section_user(db=db, 
+                                    user_id=user.id, 
+                                    section_id=section_update_request.section_id)
     if section_user is None or section_user.authority == UserSectionAuthority.READ_ONLY:
         raise Exception("You don't have the authority to update this section")
     if section_update_request.title is not None:
