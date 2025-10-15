@@ -118,6 +118,44 @@ const SectionGraph = ({ section_id }: { section_id: number }) => {
 				.force('charge', d3.forceManyBody().strength(-100))
 				.force('center', d3.forceCenter(width / 2, height / 2));
 
+			// ✅ 高亮逻辑开始
+			function highlightNode(selectedNode: Node | null) {
+				if (!selectedNode) {
+					nodeElements.transition().duration(100).style('opacity', 1);
+					textElements.transition().duration(100).style('opacity', 1);
+					linkElements.transition().duration(100).style('opacity', 1);
+					return;
+				}
+
+				const connectedIds = new Set<string>();
+				edges.forEach((edge) => {
+					const src = isNode(edge.source) ? edge.source.id : edge.source;
+					const tgt = isNode(edge.target) ? edge.target.id : edge.target;
+					if (src === selectedNode.id) connectedIds.add(tgt);
+					if (tgt === selectedNode.id) connectedIds.add(src);
+				});
+				connectedIds.add(selectedNode.id);
+
+				// ✅ 一次性选出相关节点和边
+				const connectedNodes = nodeElements.filter((d) =>
+					connectedIds.has(d.id)
+				);
+				const connectedLinks = linkElements.filter((d) => {
+					const src = isNode(d.source) ? d.source.id : d.source;
+					const tgt = isNode(d.target) ? d.target.id : d.target;
+					return src === selectedNode.id || tgt === selectedNode.id;
+				});
+
+				// ✅ 批量控制
+				nodeElements.style('opacity', 0.1);
+				linkElements.style('opacity', 0.1);
+				textElements.style('opacity', 0.1);
+
+				connectedNodes.style('opacity', 1);
+				connectedLinks.style('opacity', 1);
+				textElements.filter((d) => connectedIds.has(d.id)).style('opacity', 1);
+			}
+
 			const dragHandler = (simulation: d3.Simulation<Node, Link>) => {
 				function dragstarted(
 					event: d3.D3DragEvent<SVGCircleElement, Node, Node>
@@ -125,18 +163,27 @@ const SectionGraph = ({ section_id }: { section_id: number }) => {
 					if (!event.active) simulation.alphaTarget(0.3).restart();
 					event.subject.fx = event.subject.x;
 					event.subject.fy = event.subject.y;
+
+					// ✅ 按下时立即高亮相连节点
+					highlightNode(event.subject);
 				}
+
 				function dragged(event: d3.D3DragEvent<SVGCircleElement, Node, Node>) {
 					event.subject.fx = event.x;
 					event.subject.fy = event.y;
 				}
+
 				function dragended(
 					event: d3.D3DragEvent<SVGCircleElement, Node, Node>
 				) {
 					if (!event.active) simulation.alphaTarget(0);
 					event.subject.fx = null;
 					event.subject.fy = null;
+
+					// ✅ 拖动结束后恢复透明度
+					highlightNode(null);
 				}
+
 				return d3
 					.drag<SVGCircleElement, Node>()
 					.on('start', dragstarted)
