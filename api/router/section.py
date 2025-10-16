@@ -1,13 +1,11 @@
 import schemas
 import crud
 import models
-import copy
 from fastapi import APIRouter, Depends
-from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from common.dependencies import get_db, get_current_user, get_current_user_without_throw
-from enums.section import UserSectionAuthority
+from enums.section import UserSectionAuthority, UserSectionRole
 
 section_router = APIRouter()
 
@@ -18,35 +16,41 @@ async def section_user_add_request(section_share_request: schemas.section.Sectio
     section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                            user_id=user.id,
                                                                            section_id=section_share_request.section_id)
-    if section_user is None:
+    if section_user is None or section_user.role not in [UserSectionRole.CREATOR, UserSectionRole.MEMBER]:
         raise Exception("You are forbidden to share this section")
-    if section_user.authority != UserSectionAuthority.FULL_ACCESS:
-        raise Exception("You are forbidden to share this section")
+    
     db_new_user_section = crud.section.create_section_user(db=db,
                                                            section_id=section_share_request.section_id,
                                                            user_id=section_share_request.user_id,
+                                                           role=UserSectionRole.MEMBER,
                                                            authority=section_share_request.authority)
     db.commit()
+    
     return schemas.common.SuccessResponse()
 
 @section_router.post('/user/modify', response_model=schemas.common.NormalResponse)
-async def section_user_modify_request(section_share_request: schemas.section.SectionUserModifyRequest,
+async def section_user_modify_request(section_user_modify_request: schemas.section.SectionUserModifyRequest,
                                       db: Session = Depends(get_db), 
                                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                            user_id=user.id,
-                                                                           section_id=section_share_request.section_id)
-    if section_user is None:
-        raise Exception("You are forbidden to share this section")
-    if section_user.authority != UserSectionAuthority.FULL_ACCESS:
-        raise Exception("You are forbidden to share this section")
+                                                                           section_id=section_user_modify_request.section_id)
+    if section_user is None or section_user.role not in [UserSectionRole.CREATOR]:
+        raise Exception("You are forbidden to modify member' authority")
+    
     origin_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
-                                                                                  user_id=section_share_request.user_id,
-                                                                                  section_id=section_share_request.section_id)
+                                                                                  user_id=section_user_modify_request.user_id,
+                                                                                  section_id=section_user_modify_request.section_id)
     if origin_section_user is None:
-        raise Exception("The user is not in this section")
-    origin_section_user.authority = section_share_request.authority
+        raise Exception("The user is not a member of this section")
+    
+    if section_user_modify_request.authority is not None:
+        origin_section_user.authority = section_user_modify_request.authority
+    if section_user_modify_request.role is not None:
+        origin_section_user.role = section_user_modify_request.role
+        
     db.commit()
+    
     return schemas.common.SuccessResponse()
 
 @section_router.post('/user/delete', response_model=schemas.common.NormalResponse)
@@ -56,33 +60,14 @@ async def delete_section_user(section_user_delete_request: schemas.section.Secti
     section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                            user_id=user.id,
                                                                            section_id=section_user_delete_request.section_id)
-    if section_user is None:
-        raise Exception("You are forbidden to share this section")
-    if section_user.authority != UserSectionAuthority.FULL_ACCESS:
-        raise Exception("You are forbidden to share this section")
+    if section_user is None or section_user.role not in [UserSectionRole.CREATOR]:
+        raise Exception("You are forbidden to delete user from this section")
+    
     crud.section.delete_section_user_by_section_id_and_user_id(db=db,
                                                                section_id=section_user_delete_request.section_id,
                                                                user_id=section_user_delete_request.user_id)
     db.commit()
     return schemas.common.SuccessResponse()
-
-@section_router.post('/label/delete', response_model=schemas.common.NormalResponse)
-async def delete_label(label_delete_request: schemas.section.LabelDeleteRequest,
-                       db: Session = Depends(get_db), 
-                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    crud.document.delete_labels_by_label_ids(db=db, 
-                                             label_ids=label_delete_request.label_ids,
-                                             user_id=user.id)
-    db.commit()
-    return schemas.common.NormalResponse(message="success")
-
-@section_router.post("/label/list", response_model=schemas.section.LabelListResponse)
-async def list_label(db: Session = Depends(get_db), 
-                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    labels = crud.section.get_user_labels_by_user_id(db=db, 
-                                                     user_id=user.id)
-    labels = jsonable_encoder(labels)
-    return schemas.section.LabelListResponse(data=labels)
 
 @section_router.post('/label/create', response_model=schemas.section.CreateLabelResponse)
 async def add_label(label_add_request: schemas.section.LabelAddRequest,
@@ -92,13 +77,31 @@ async def add_label(label_add_request: schemas.section.LabelAddRequest,
                                          name=label_add_request.name, 
                                          user_id=user.id)
     db.commit()
-    return schemas.section.CreateLabelResponse(id=db_label.id, name=db_label.name)
+    return schemas.section.CreateLabelResponse(id=db_label.id, 
+                                               name=db_label.name)
+
+@section_router.post("/label/list", response_model=schemas.section.LabelListResponse)
+async def list_label(db: Session = Depends(get_db), 
+                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    labels = crud.section.get_user_labels_by_user_id(db=db, 
+                                                     user_id=user.id)
+    return schemas.section.LabelListResponse(data=labels)
+
+@section_router.post('/label/delete', response_model=schemas.common.NormalResponse)
+async def delete_label(label_delete_request: schemas.section.LabelDeleteRequest,
+                       db: Session = Depends(get_db), 
+                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    crud.document.delete_labels_by_label_ids(db=db, 
+                                             label_ids=label_delete_request.label_ids,
+                                             user_id=user.id)
+    db.commit()
+    return schemas.common.SuccessResponse()
 
 @section_router.post("/subscribed", response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
 async def get_my_subscribed_sections(
     search_subscribed_section_request: schemas.section.SearchSubscribedSectionRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user),
+    user: models.user.User = Depends(get_current_user)
 ):
     has_more = True
     next_start = None
@@ -116,11 +119,15 @@ async def get_my_subscribed_sections(
                                                                                  section_id=section.id)
         db_labels = crud.section.get_labels_by_section_id(db=db,
                                                           section_id=section.id)
+        db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                                  section_id=section.id,
+                                                                                  user_id=user.id)
         return schemas.section.SectionInfo(
             **section.__dict__,
             creator=section.creator,
             cover=section.cover,
             labels=db_labels,
+            authority=db_user_section.authority if db_user_section else None,
             documents_count=documents_count,
             subscribers_count=subscribers_count
         )
@@ -156,17 +163,18 @@ async def update_section(
     user: models.user.User = Depends(get_current_user),
 ):
     now = datetime.now(timezone.utc)
-    db_section = crud.section.get_section_by_section_id(db=db, section_id=section_update_request.section_id)
-    db_user_sections = crud.section.get_section_users_by_section_id(db=db,
-                                                                    section_id=section_update_request.section_id)
-    original_section = copy.deepcopy(db_section)
+    
+    db_section = crud.section.get_section_by_section_id(db=db, 
+                                                        section_id=section_update_request.section_id)
     if db_section is None:
         raise Exception("The section is not exist")
+    
     section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db, 
                                                                            user_id=user.id, 
                                                                            section_id=section_update_request.section_id)
-    if section_user is None or section_user.authority == UserSectionAuthority.READ_ONLY:
-        raise Exception("You don't have the authority to update this section")
+    if section_user is None or section_user.authority not in [UserSectionAuthority.READ_AND_WRITE, UserSectionAuthority.FULL_ACCESS]:
+        raise Exception("You are forbidden to modify this section")
+    
     if section_update_request.title is not None:
         db_section.title = section_update_request.title
     if section_update_request.description is not None:
@@ -188,12 +196,14 @@ async def update_section(
                                                         label_ids=labels_to_delete)
     db_section.update_time = now
     db.commit()
-    return schemas.common.SuccessResponse(message="更新成功")
+    return schemas.common.SuccessResponse()
 
 @section_router.post('/public/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
-async def search_public_sections(search_public_sections_request: schemas.section.SearchPublicSectionsRequest,
-                                db: Session = Depends(get_db),
-                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def search_public_sections(
+    search_public_sections_request: schemas.section.SearchPublicSectionsRequest,
+    db: Session = Depends(get_db),
+    user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)
+):
     has_more = True
     next_start = None
     db_sections = crud.section.search_public_sections(db=db, 
@@ -202,6 +212,7 @@ async def search_public_sections(search_public_sections_request: schemas.section
                                                       keyword=search_public_sections_request.keyword,
                                                       label_ids=search_public_sections_request.label_ids,
                                                       desc=search_public_sections_request.desc)
+    
     def get_section_info(section):
         documents_count = crud.section.count_section_documents_by_section_id(db=db, 
                                                                              section_id=section.id)
@@ -209,14 +220,25 @@ async def search_public_sections(search_public_sections_request: schemas.section
                                                                                  section_id=section.id)
         db_labels = crud.section.get_labels_by_section_id(db=db,
                                                           section_id=section.id)
-        return schemas.section.SectionInfo(
+        section = schemas.section.SectionInfo(
             **section.__dict__,
             creator=section.creator,
             labels=db_labels,
             documents_count=documents_count,
             subscribers_count=subscribers_count
         )
+        
+        if user is not None:
+            db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                                      section_id=section.id,
+                                                                                      user_id=user.id)
+            if db_section_user is not None:
+                section.authority = db_section_user.authority
+                
+        return section
+    
     db_sections = [get_section_info(section) for section in db_sections]
+    
     if len(db_sections) < search_public_sections_request.limit or len(db_sections) == 0:
         has_more = False
     if len(db_sections) == search_public_sections_request.limit:
@@ -270,18 +292,24 @@ async def search_user_sections(search_user_sections_request: schemas.section.Sea
                                                     only_public=True if search_user_sections_request.user_id != user.id else False,
                                                     label_ids=search_user_sections_request.label_ids,
                                                     desc=search_user_sections_request.desc)
+    
     def get_section_info(section):
         documents_count = crud.section.count_section_documents_by_section_id(db=db, 
                                                                              section_id=section.id)
         subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
                                                                                  section_id=section.id)
+        db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                                  section_id=section.id,
+                                                                                  user_id=user.id)
         return schemas.section.SectionInfo(
             **section.__dict__,
             creator=section.creator,
+            authority=db_section_user.authority if db_section_user else None,
             cover=section.cover,
             documents_count=documents_count,
             subscribers_count=subscribers_count
         )
+        
     db_sections = [get_section_info(section) for section in db_sections]
     if len(db_sections) < search_user_sections_request.limit or len(db_sections) == 0:
         has_more = False
@@ -331,8 +359,8 @@ async def search_mine_sections(search_mine_sections_request: schemas.section.Sea
                                                                                   section_id=section.id)
         return schemas.section.SectionInfo(
             **section.__dict__,
-            authority=db_user_section.authority,
             creator=section.creator,
+            authority=db_user_section.authority if db_user_section else None,
             labels=db_labels,
             documents_count=documents_count,
             subscribers_count=subscribers_count
@@ -363,10 +391,11 @@ async def search_mine_sections(search_mine_sections_request: schemas.section.Sea
     )
     
 @section_router.post('/detail', response_model=schemas.section.SectionInfo)
-async def get_section_detail(section_detail_request: schemas.section.SectionDetailRequest,
-                             user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw),
-                             db: Session = Depends(get_db)):
-    now = datetime.now(timezone.utc)
+async def get_section_detail(
+    section_detail_request: schemas.section.SectionDetailRequest,
+    user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw),
+    db: Session = Depends(get_db)
+):
     db_section = crud.section.get_section_by_section_id(db=db,
                                                         section_id=section_detail_request.section_id)
     if db_section is None:
@@ -384,10 +413,19 @@ async def get_section_detail(section_detail_request: schemas.section.SectionDeta
                                                                                  section_id=db_section.id)
         db_documents = crud.section.get_documents_by_section_id(db=db,
                                                                 section_id=section_detail_request.section_id)
-        documents = [schemas.section.SectionDocumentInfo.model_validate({**document.__dict__, 
-                                                                        'title': document.title if document.title is not None else '未命名',
-                                                                        'status': crud.section.get_section_document_by_section_id_and_document_id(db=db, section_id=db_section.id, document_id=document.id).status}) 
-                    for document in db_documents]
+        section_docs = crud.section.get_section_documents_by_section_id(db=db, 
+                                                                        section_id=db_section.id)
+        status_map = {sd.document_id: sd.status for sd in section_docs}
+
+        # 生成结果列表
+        documents = [
+            schemas.section.SectionDocumentInfo.model_validate({
+                **document.__dict__,
+                'title': document.title or 'Unnamed document',
+                'status': status_map.get(document.id)
+            })
+            for document in db_documents
+        ]
         db_labels = crud.section.get_labels_by_section_id(db=db,
                                                           section_id=section_detail_request.section_id)
         
@@ -419,10 +457,20 @@ async def get_section_detail(section_detail_request: schemas.section.SectionDeta
                                                                                     section_id=db_section.id)
             db_documents = crud.section.get_documents_by_section_id(db=db,
                                                                     section_id=section_detail_request.section_id)
-            documents = [schemas.section.SectionDocumentInfo.model_validate({**document.__dict__, 
-                                                                            'title': document.title if document.title is not None else '未命名',
-                                                                            'status': crud.section.get_section_document_by_section_id_and_document_id(db=db, section_id=db_section.id, document_id=document.id).status}) 
-                        for document in db_documents]
+            section_docs = crud.section.get_section_documents_by_section_id(db=db, 
+                                                                            section_id=db_section.id)
+            status_map = {sd.document_id: sd.status for sd in section_docs}
+
+            # 生成结果列表
+            documents = [
+                schemas.section.SectionDocumentInfo.model_validate({
+                    **document.__dict__,
+                    'title': document.title or 'Unnamed document',
+                    'status': status_map.get(document.id)
+                })
+                for document in db_documents
+            ]
+            
             db_labels = crud.section.get_labels_by_section_id(db=db,
                                                             section_id=section_detail_request.section_id)
             
@@ -444,10 +492,52 @@ async def get_section_detail(section_detail_request: schemas.section.SectionDeta
         
     return res
 
+@section_router.post('/date', response_model=schemas.section.DaySectionResponse)
+async def get_date_section_info(
+    day_section_request: schemas.section.DaySectionRequest,
+    db: Session = Depends(get_db), 
+    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
+    db_section = crud.section.get_section_by_user_and_date(db=db, 
+                                                           user_id=user.id,
+                                                           date=day_section_request.date)
+    if db_section is None:
+        raise schemas.error.CustomException(code=404, message="The summary section of this day is not created yet")
+    
+    db_documents = crud.section.get_documents_by_section_id(db=db, 
+                                                            section_id=db_section.id)
+    section_docs = crud.section.get_section_documents_by_section_id(db=db, 
+                                                                    section_id=db_section.id)
+    status_map = {sd.document_id: sd.status for sd in section_docs}
+
+    # 生成结果列表
+    documents = [
+        schemas.section.SectionDocumentInfo.model_validate({
+            **document.__dict__,
+            'title': document.title or 'Unnamed document',
+            'status': status_map.get(document.id)
+        })
+        for document in db_documents
+    ]
+    
+    res = schemas.section.DaySectionResponse(
+        creator=db_section.creator,
+        create_time=db_section.create_time,
+        update_time=db_section.update_time,
+        date=day_section_request.date,
+        title=db_section.title,
+        description=db_section.description,
+        md_file_name=db_section.md_file_name,
+        documents=documents
+    )
+    return res
+
 @section_router.post('/create', response_model=schemas.section.SectionCreateResponse)
-async def create_section(section_create_request: schemas.section.SectionCreateRequest,
-                         db: Session = Depends(get_db), 
-                         user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def create_section(
+    section_create_request: schemas.section.SectionCreateRequest,
+    db: Session = Depends(get_db), 
+    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
     db_section = crud.section.create_section(db=db, 
                                              creator_id=user.id,
                                              cover=section_create_request.cover,
@@ -455,71 +545,85 @@ async def create_section(section_create_request: schemas.section.SectionCreateRe
                                              description=section_create_request.description,
                                              public=section_create_request.public)
     if section_create_request.labels:
-            crud.section.bind_labels_to_section(db=db, 
-                                                section_id=db_section.id, 
-                                                label_ids=section_create_request.labels)
-    db_user_section = crud.section.bind_section_to_user(db=db,
-                                                        section_id=db_section.id,
-                                                        user_id=user.id,
-                                                        authority=0)
+        crud.section.bind_labels_to_section(db=db, 
+                                            section_id=db_section.id, 
+                                            label_ids=section_create_request.labels)
+    db_user_section = crud.section.create_section_user(db=db,
+                                                       section_id=db_section.id,
+                                                       user_id=user.id,
+                                                       role=UserSectionRole.CREATOR,
+                                                       authority=UserSectionAuthority.FULL_ACCESS)
     db.commit()
     return schemas.section.SectionCreateResponse(id=db_section.id)
 
 # 可免费订阅的专栏直接在这里处理，付费专栏订阅放到java微服务中去处理，注意付费专栏的取消订阅这部分逻辑还是在这里处理的
 @section_router.post('/subscribe', response_model=schemas.common.NormalResponse)
-async def subscribe_section(section_subscribe_request: schemas.section.SectionSubscribeRequest,
-                            db: Session = Depends(get_db), 
-                            user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def subscribe_section(
+    section_subscribe_request: schemas.section.SectionSubscribeRequest,
+    db: Session = Depends(get_db), 
+    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
     db_section = crud.section.get_section_by_section_id(db=db,
                                                         section_id=section_subscribe_request.section_id)
     if db_section is None:
         raise Exception("Section not found")
+    
     db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                               section_id=section_subscribe_request.section_id,
                                                                               user_id=user.id)
+    
     if db_user_section is None:
         if section_subscribe_request.status:
             # 免费专栏仅需要订阅一次即可永久生效，TODO：用户如果修改专栏的免费状态，则使其免费订阅失效，需要重新订阅
             crud.section.create_section_user(db=db,
                                              section_id=section_subscribe_request.section_id,
                                              user_id=user.id,
-                                             authority=2)
+                                             role=UserSectionRole.SUBSCRIBER,
+                                             authority=UserSectionAuthority.READ_ONLY)
     else: 
         if not section_subscribe_request.status:
             crud.section.delete_section_user_by_section_id_and_user_id(db=db, 
                                                                        section_id=section_subscribe_request.section_id,
                                                                        user_id=user.id)
     db.commit()
-    return schemas.common.SuccessResponse()
-        
+    return schemas.common.SuccessResponse()    
 
 @section_router.post('/delete', response_model=schemas.common.NormalResponse)
-async def delete_section(section_delete_request: schemas.section.SectionDeleteRequest,
-                         db: Session = Depends(get_db), 
-                         user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def delete_section(
+    section_delete_request: schemas.section.SectionDeleteRequest,
+    db: Session = Depends(get_db), 
+    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
     db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                               section_id=section_delete_request.section_id,    
                                                                               user_id=user.id)
-    if db_section_user is None or db_section_user.authority != UserSectionAuthority.FULL_ACCESS:
-        raise Exception("You have no authority to delete this section")
+    if db_section_user is None or db_section_user.role not in [UserSectionRole.CREATOR]:
+        raise Exception("You are forbidden to delete this section")
+
     crud.section.delete_section_users_by_section_id(db=db, 
                                                     section_id=section_delete_request.section_id)
     db_section_documents = crud.section.get_documents_by_section_id(db=db,
                                                                     section_id=section_delete_request.section_id)
-    if db_section_documents:
-        document_ids = [document.id for document in db_section_documents]
-        crud.section.delete_section_documents_by_document_ids(db=db,
-                                                              document_ids=document_ids)
+    crud.section.delete_section_documents_by_section_id(db=db,
+                                                        section_id=section_delete_request.section_id)
     crud.section.delete_section_by_section_id(db=db, 
                                               section_id=section_delete_request.section_id)
     db.commit()
-    # TODO 完善通知订阅用户，专栏已删除
+    # TODO 完善通知订阅用户以及参与共建的用户，专栏已删除
+    # db_section_users = crud.section.get_section_users_by_section_id(db=db,
+    #                                                                 section_id=section_delete_request.section_id)
+    # for db_section_user in db_section_users:
+    #     if db_section_user.user_id != user.id:
+    #         # TODO 通知用户
+    #         pass
     return schemas.common.SuccessResponse()
     
 @section_router.post('/comment/create', response_model=schemas.common.NormalResponse)
-async def create_section_comment(section_comment_create_request: schemas.section.SectionCommentCreateRequest,
-                                 db: Session = Depends(get_db), 
-                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def create_section_comment(
+    section_comment_create_request: schemas.section.SectionCommentCreateRequest,
+    db: Session = Depends(get_db), 
+    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
     crud.section.create_section_comment(db=db,
                                         section_id=section_comment_create_request.section_id,
                                         creator_id=user.id,
@@ -528,9 +632,11 @@ async def create_section_comment(section_comment_create_request: schemas.section
     return schemas.common.SuccessResponse()
 
 @section_router.post('/comment/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionCommentInfo])
-async def search_section_comment(section_comment_search_request: schemas.section.SectionCommentSearchRequest,
-                                 db: Session = Depends(get_db), 
-                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)):
+async def search_section_comment(
+    section_comment_search_request: schemas.section.SectionCommentSearchRequest,
+    db: Session = Depends(get_db), 
+    user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)
+):
     has_more = True
     next_start = None
     db_section_parent_degree_comments = crud.section.search_parent_degree_section_comments(db=db,
@@ -562,34 +668,14 @@ async def search_section_comment(section_comment_search_request: schemas.section
 async def delete_section_comment(section_comment_delete_request: schemas.section.SectionCommentDeleteRequest,
                                  db: Session = Depends(get_db), 
                                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                              section_id=section_comment_delete_request.section_id,
+                                                                              user_id=user.id)
+    if db_user_section is None or db_user_section.authority not in [UserSectionAuthority.FULL_ACCESS, UserSectionAuthority.READ_AND_WRITE]:
+        raise Exception('You are forbidden to delete this comment')
+    
     crud.section.delete_section_comments_by_section_comment_ids(db=db,
                                                                 section_comment_ids=section_comment_delete_request.section_comment_ids)
     db.commit()
+    
     return schemas.common.SuccessResponse()
-
-@section_router.post('/date', response_model=schemas.section.DaySectionResponse)
-async def get_date_section_info(day_section_request: schemas.section.DaySectionRequest,
-                                db: Session = Depends(get_db), 
-                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_section = crud.section.get_section_by_user_and_date(db=db, 
-                                                           user_id=user.id,
-                                                           date=day_section_request.date)
-    if db_section is None:
-        raise Exception("The summary section of this day is not created yet")
-    db_documents = crud.section.get_documents_by_section_id(db=db, 
-                                                            section_id=db_section.id)
-    documents = [schemas.section.SectionDocumentInfo.model_validate({**document.__dict__, 
-                                                                     'title': document.title if document.title is not None else '未命名',
-                                                                     'status': crud.section.get_section_document_by_section_id_and_document_id(db=db, section_id=db_section.id, document_id=document.id).status}) 
-                 for document in db_documents]
-    res = schemas.section.DaySectionResponse(
-        creator=db_section.creator,
-        create_time=db_section.create_time,
-        update_time=db_section.update_time,
-        date=day_section_request.date,
-        title=db_section.title,
-        description=db_section.description,
-        md_file_name=db_section.md_file_name,
-        documents=documents
-    )
-    return res
