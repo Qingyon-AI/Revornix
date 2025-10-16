@@ -144,7 +144,12 @@ def get_all_my_sections(db: Session,
     query = query.join(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.user_id == user_id,
                          models.section.SectionUser.delete_at == None,
-                         models.section.SectionUser.authority == UserSectionAuthority.FULL_ACCESS)
+                         models.section.SectionUser.authority.in_([
+                             UserSectionAuthority.FULL_ACCESS,
+                             UserSectionAuthority.READ_AND_WRITE,
+                             UserSectionAuthority.READ_ONLY
+                            ])
+                         )
     query = query.filter(models.section.Section.delete_at == None)
     query = query.order_by(models.section.Section.create_time.desc())
     return query.all()
@@ -155,7 +160,7 @@ def search_user_sections(db: Session,
                          limit: int = 10, 
                          keyword: str | None = None,
                          label_ids: list[int] | None = None,
-                         onlypublic: bool = False,
+                         only_public: bool = False,
                          desc: bool = True):
     query = db.query(models.section.Section)
     query = query.filter(models.section.Section.delete_at == None,
@@ -167,7 +172,7 @@ def search_user_sections(db: Session,
                 models.section.Section.description.like(f'%{keyword}%')
             )
         )
-    if onlypublic:
+    if only_public:
         query = query.filter(models.section.Section.public == True)
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
@@ -190,7 +195,7 @@ def count_user_sections(db: Session,
                         user_id: int, 
                         keyword: str | None = None,
                         label_ids: list[int] | None = None,
-                        onlypublic: bool = False):
+                        only_public: bool = False):
     query = db.query(models.section.Section)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
@@ -199,7 +204,7 @@ def count_user_sections(db: Session,
                 models.section.Section.description.like(f'%{keyword}%')
             )
         )
-    if onlypublic:
+    if only_public:
         query = query.filter(models.section.Section.public == True)
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
@@ -215,7 +220,7 @@ def search_next_user_section(db: Session,
                              section: models.section.Section, 
                              keyword: str | None = None,
                              label_ids: list[int] | None = None,
-                             onlypublic: bool = False,
+                             only_public: bool = False,
                              desc: bool = True):
     query = db.query(models.section.Section)
     query = query.filter(models.section.Section.delete_at == None,
@@ -227,7 +232,7 @@ def search_next_user_section(db: Session,
                 models.section.Section.description.like(f'%{keyword}%')
             )
         )
-    if onlypublic:
+    if only_public:
         query = query.filter(models.section.Section.public == True)
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
@@ -385,7 +390,7 @@ def search_next_parent_degree_section_comment(db: Session,
     query = query.filter(models.section.SectionComment.id < section_comment.id)
     return query.first()
 
-def searchpublic_sections(db: Session, 
+def search_public_sections(db: Session, 
                            start: int | None = None, 
                            limit: int = 10, 
                            label_ids: list[int] | None = None,
@@ -438,7 +443,7 @@ def countpublic_sections(db: Session,
     query = query.distinct(models.section.Section.id)
     return query.count()
 
-def search_nextpublic_section(db: Session, 
+def search_next_public_section(db: Session, 
                                section: models.section.Section, 
                                keyword: str | None = None,
                                label_ids: list[int] | None = None,

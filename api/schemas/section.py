@@ -78,6 +78,7 @@ class BaseSectionInfo(BaseModel):
     id: int
     title: str
     description: str
+    authority: int
     class Config:
         from_attributes = True 
 
@@ -150,6 +151,7 @@ class SectionInfo(BaseModel):
     subscribers_count: int
     create_time: datetime
     update_time: datetime
+    authority: int
     is_subscribed: bool | None = None
     md_file_name: str | None = None
     labels: list[Label] | None = None
