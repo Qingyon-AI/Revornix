@@ -545,9 +545,16 @@ def get_section_labels_by_section_id(db: Session,
                          models.section.SectionLabel.delete_at == None)
     return query.all()
 
+def get_section_documents_by_section_id(db: Session,
+                                        section_id: int):
+    query = db.query(models.section.SectionDocument)
+    query = query.filter(models.section.SectionDocument.section_id == section_id,
+                         models.section.SectionDocument.delete_at == None)
+    return query.all()
+
 def get_section_document_by_section_id_and_document_id(db: Session,
-                                                        section_id: int,
-                                                        document_id: int):
+                                                       section_id: int,
+                                                       document_id: int):
     query = db.query(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
                          models.section.SectionDocument.document_id == document_id,
@@ -614,6 +621,15 @@ def delete_section_users_by_section_id(db: Session,
                                                                    models.section.SectionUser.delete_at == None).all()
     for db_section_user in db_section_users:
         db_section_user.delete_at = now
+        db.flush()
+        
+def delete_section_documents_by_section_id(db: Session,
+                                           section_id: int):
+    now = datetime.now(timezone.utc)
+    db_section_documents = db.query(models.section.SectionDocument).filter(models.section.SectionDocument.section_id == section_id,
+                                                                           models.section.SectionDocument.delete_at == None).all()
+    for db_section_document in db_section_documents:
+        db_section_document.delete_at = now
         db.flush()
         
 def delete_section_documents_by_document_ids(db: Session, 

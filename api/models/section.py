@@ -9,6 +9,7 @@ class SectionUser(Base):
     section_id = Column(Integer, ForeignKey("section.id"), index=True)
     user_id = Column(Integer, ForeignKey("user.id"), index=True)
     role = Column(Integer, nullable=False, index=True, comment='0: creator 1: member 2: subscriber')
+    # full access相比于w&r多了一个邀请的权限，注意 除了所有者 任何人都不具备删除的权限，同时，除了所有者 任何人都不能修改他人的权限
     authority = Column(Integer, nullable=False, index=True, comment='0: full access 1: w&r 2: r')
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)

@@ -2,6 +2,7 @@ from pydantic import BaseModel, field_validator, field_serializer
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
 from schemas.user import UserPublicInfo
+from enums.section import UserSectionRole
 
 class SectionUserDeleteRequest(BaseModel):
     section_id: int
@@ -16,6 +17,12 @@ class SectionUserModifyRequest(BaseModel):
     section_id: int
     user_id: int
     authority: int
+    role: int
+    @field_validator("role")
+    def check_role_not_invalid(cls, v):
+        if v == UserSectionRole.CREATOR:
+            raise ValueError("You can't change the user's role to CREATOR because there is only one creator in a section")
+        return v
     
 class LabelDeleteRequest(BaseModel):
     label_ids: list[int]
