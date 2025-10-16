@@ -8,7 +8,8 @@ class SectionUser(Base):
     id = Column(Integer, primary_key=True)
     section_id = Column(Integer, ForeignKey("section.id"), index=True)
     user_id = Column(Integer, ForeignKey("user.id"), index=True)
-    authority = Column(Integer, nullable=False, index=True, comment='0: full access 1: w/r 2: r')
+    role = Column(Integer, nullable=False, index=True, comment='0: creator 1: member 2: subscriber')
+    authority = Column(Integer, nullable=False, index=True, comment='0: full access 1: w&r 2: r')
     create_time = Column(DateTime(timezone=True), nullable=False)
     update_time = Column(DateTime(timezone=True), nullable=False)
     # expire_time is null means the time is infinite

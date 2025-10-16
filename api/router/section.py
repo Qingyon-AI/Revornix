@@ -400,25 +400,47 @@ async def get_section_detail(section_detail_request: schemas.section.SectionDeta
             creator=db_section.creator,
         )
         
+        if user is not None:
+            db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                                      section_id=section_detail_request.section_id,
+                                                                                      user_id=user.id)
+            if db_section_user is not None:
+                res.authority = db_section_user.authority
+        
     else:
         if user is None:
-            raise Exception("This section is private")
-        elif user.id not in [db_section_user.user_id for db_section_user in db_section_users] and user.id != db_section.creator_id:
+            raise Exception("This section is private, anonymous user can't access it")
+        elif user.id not in [db_section_user.user_id for db_section_user in db_section_users]:
             raise Exception("You don't have permission to access this section")
         else:
-            pass
-    
-     
-    if user is None:
-        return res
-           
-    db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
-                                                                              section_id=section_detail_request.section_id,
-                                                                              user_id=user.id)
-    
-    if db_user_section is not None:
-        if db_user_section.expire_time is None or db_user_section.expire_time > now:
-            res.is_subscribed = True
+            documents_count = crud.section.count_section_documents_by_section_id(db=db, 
+                                                                                 section_id=db_section.id)
+            subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
+                                                                                    section_id=db_section.id)
+            db_documents = crud.section.get_documents_by_section_id(db=db,
+                                                                    section_id=section_detail_request.section_id)
+            documents = [schemas.section.SectionDocumentInfo.model_validate({**document.__dict__, 
+                                                                            'title': document.title if document.title is not None else '未命名',
+                                                                            'status': crud.section.get_section_document_by_section_id_and_document_id(db=db, section_id=db_section.id, document_id=document.id).status}) 
+                        for document in db_documents]
+            db_labels = crud.section.get_labels_by_section_id(db=db,
+                                                            section_id=section_detail_request.section_id)
+            
+            res = schemas.section.SectionInfo(
+                **db_section.__dict__,
+                documents=documents,
+                labels=db_labels,
+                documents_count=documents_count,
+                subscribers_count=subscribers_count,
+                creator=db_section.creator,
+            )
+            
+            db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                                      section_id=section_detail_request.section_id,
+                                                                                      user_id=user.id)
+            
+            if db_section_user is not None:
+                res.authority = db_section_user.authority
         
     return res
 
