@@ -186,6 +186,8 @@ export * from './SectionUpdateRequest';
 export * from './SectionUserAddRequest';
 export * from './SectionUserDeleteRequest';
 export * from './SectionUserModifyRequest';
+export * from './SectionUserRequest';
+export * from './SectionUserResponse';
 export * from './SmsUserCodeCreateRequest';
 export * from './SmsUserCodeVerifyCreate';
 export * from './StarRequest';

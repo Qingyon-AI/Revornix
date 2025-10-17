@@ -29,9 +29,9 @@ class RemoteFileServiceProtocol(Protocol):
         db = SessionLocal()
         try:
             db_user = crud.user.get_user_by_id(db=db, 
-                                            user_id=user_id)
+                                               user_id=user_id)
             db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                            user_file_system_id=db_user.default_user_file_system)
+                                                                              user_file_system_id=db_user.default_user_file_system)
             if db_user_file_system is None:
                 raise Exception("User file system is None")
             db_file_system = crud.file_system.get_file_system_by_id(db=db,
