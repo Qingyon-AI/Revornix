@@ -9,6 +9,29 @@ from enums.section import UserSectionAuthority, UserSectionRole
 
 section_router = APIRouter()
 
+@section_router.post('/user', response_model=schemas.section.SectionUserResponse)
+async def section_user_request(section_user_request: schemas.section.SectionUserRequest,
+                               db: Session = Depends(get_db), 
+                               user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_section = crud.section.get_section_by_section_id(db=db,
+                                                        section_id=section_user_request.section_id)
+    if db_section is None:
+        raise Exception("Section not found")
+    if db_section.public:
+        pass
+    else:
+        # check if the user is in the section
+        db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                                  user_id=user.id,
+                                                                                  section_id=section_user_request.section_id)
+        if db_section_user is None or db_section_user.role not in [UserSectionRole.CREATOR, UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER]:
+            raise Exception("You are forbidden to get the users' info about this section")
+    db_section_users = crud.section.get_users_and_section_users_by_section_id(db=db, 
+                                                                              section_id=section_user_request.section_id,
+                                                                              filter_role=section_user_request.filter_role)
+    db_users = [db_user for db_user, _ in db_section_users]
+    return schemas.section.SectionUserResponse(users=db_users)
+
 @section_router.post('/user/add', response_model=schemas.common.NormalResponse)
 async def section_user_add_request(section_share_request: schemas.section.SectionUserAddRequest,
                                    db: Session = Depends(get_db), 
@@ -445,16 +468,6 @@ async def get_section_detail(
             if db_section_user is not None:
                 res.authority = db_section_user.authority
         
-        db_user_and_section_users = crud.section.get_users_and_section_users_by_section_id(db=db,
-                                                                                           section_id=section_detail_request.section_id)
-        participants = [
-            schemas.user.UserPublicBaseInfo.model_validate({
-                **db_user.__dict__,
-            })
-            for (db_user, db_user_section) in db_user_and_section_users
-        ]
-        res.participants = participants
-        
     else:
         if user is None:
             raise Exception("This section is private, anonymous user can't access it")
@@ -502,14 +515,7 @@ async def get_section_detail(
             
             db_user_and_section_users = crud.section.get_users_and_section_users_by_section_id(db=db,
                                                                                                section_id=section_detail_request.section_id)
-            participants = [
-                schemas.user.UserPublicBaseInfo.model_validate({
-                    **db_user.__dict__,
-                })
-                for (db_user, db_user_section) in db_user_and_section_users
-            ]
-            res.participants = participants
-        
+            
     return res
 
 @section_router.post('/date', response_model=schemas.section.DaySectionResponse)

@@ -481,7 +481,8 @@ def count_section_subscribers_by_section_id(db: Session,
     return query.count()
 
 def get_users_and_section_users_by_section_id(db: Session,
-                                              section_id: int):
+                                              section_id: int,
+                                              filter_role: int | None = None):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User, models.section.SectionUser)
     query = query.filter(models.section.SectionUser.delete_at == None,
@@ -490,25 +491,33 @@ def get_users_and_section_users_by_section_id(db: Session,
                              models.section.SectionUser.expire_time == None))
     query = query.join(models.user.User)
     query = query.filter(models.user.User.delete_at == None)
+    if filter_role is not None:
+        query = query.filter(models.section.SectionUser.role == filter_role)
     return query.all()
 
 def get_users_by_section_id(db: Session,
-                            section_id: int):
+                            section_id: int,
+                            filter_role: int | None = None):
     query = db.query(models.user.User)
     query = query.join(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.delete_at == None,
                          models.section.SectionUser.section_id == section_id)
     query = query.filter(models.user.User.delete_at == None)
+    if filter_role is not None:
+        query = query.filter(models.section.SectionUser.role == filter_role)
     return query.all()
 
 def get_section_users_by_section_id(db: Session,
-                                    section_id: int):
+                                    section_id: int,
+                                    filter_role: int | None = None):
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.delete_at == None,
                          models.section.SectionUser.section_id == section_id)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
                              models.section.SectionUser.expire_time == None))
+    if filter_role is not None:
+        query = query.filter(models.section.SectionUser.role == filter_role)
     return query.all()
 
 def get_section_user_by_section_id_and_user_id(db: Session, 

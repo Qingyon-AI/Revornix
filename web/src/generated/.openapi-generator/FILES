@@ -199,6 +199,8 @@ models/SectionUpdateRequest.ts
 models/SectionUserAddRequest.ts
 models/SectionUserDeleteRequest.ts
 models/SectionUserModifyRequest.ts
+models/SectionUserRequest.ts
+models/SectionUserResponse.ts
 models/SmsUserCodeCreateRequest.ts
 models/SmsUserCodeVerifyCreate.ts
 models/StarRequest.ts

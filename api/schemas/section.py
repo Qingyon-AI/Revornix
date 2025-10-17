@@ -4,6 +4,13 @@ from datetime import datetime, timezone
 from schemas.user import UserPublicInfo, UserPublicBaseInfo
 from enums.section import UserSectionRole
 
+class SectionUserRequest(BaseModel):
+    section_id: int
+    filter_role: int | None = None
+    
+class SectionUserResponse(BaseModel):
+    users: list[UserPublicBaseInfo]
+
 class SectionUserDeleteRequest(BaseModel):
     section_id: int
     user_id: int
@@ -164,7 +171,6 @@ class SectionInfo(BaseModel):
     labels: list[Label] | None = None
     cover: str | None = None
     documents: list[SectionDocumentInfo] | None = None
-    participants: list[UserPublicBaseInfo] | None = None
     @field_serializer("cover")
     def cover(self, v: str) -> str | None:
         if v is None:

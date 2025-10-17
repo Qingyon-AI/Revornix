@@ -43,6 +43,8 @@ import type {
   SectionUserAddRequest,
   SectionUserDeleteRequest,
   SectionUserModifyRequest,
+  SectionUserRequest,
+  SectionUserResponse,
 } from '../models/index';
 import {
     AllMySectionsResponseFromJSON,
@@ -101,6 +103,10 @@ import {
     SectionUserDeleteRequestToJSON,
     SectionUserModifyRequestFromJSON,
     SectionUserModifyRequestToJSON,
+    SectionUserRequestFromJSON,
+    SectionUserRequestToJSON,
+    SectionUserResponseFromJSON,
+    SectionUserResponseToJSON,
 } from '../models/index';
 
 export interface AddLabelSectionLabelCreatePostRequest {
@@ -205,6 +211,12 @@ export interface SectionUserAddRequestSectionUserAddPostRequest {
 
 export interface SectionUserModifyRequestSectionUserModifyPostRequest {
     sectionUserModifyRequest: SectionUserModifyRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface SectionUserRequestSectionUserPostRequest {
+    sectionUserRequest: SectionUserRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -1049,6 +1061,53 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async sectionUserModifyRequestSectionUserModifyPost(requestParameters: SectionUserModifyRequestSectionUserModifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.sectionUserModifyRequestSectionUserModifyPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Section User Request
+     */
+    async sectionUserRequestSectionUserPostRaw(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionUserResponse>> {
+        if (requestParameters['sectionUserRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionUserRequest',
+                'Required parameter "sectionUserRequest" was null or undefined when calling sectionUserRequestSectionUserPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/user`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionUserRequestToJSON(requestParameters['sectionUserRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SectionUserResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Section User Request
+     */
+    async sectionUserRequestSectionUserPost(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SectionUserResponse> {
+        const response = await this.sectionUserRequestSectionUserPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

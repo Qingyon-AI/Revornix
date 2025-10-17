@@ -34,13 +34,6 @@ import {
     UserPublicInfoToJSON,
     UserPublicInfoToJSONTyped,
 } from './UserPublicInfo';
-import type { UserPublicBaseInfo } from './UserPublicBaseInfo';
-import {
-    UserPublicBaseInfoFromJSON,
-    UserPublicBaseInfoFromJSONTyped,
-    UserPublicBaseInfoToJSON,
-    UserPublicBaseInfoToJSONTyped,
-} from './UserPublicBaseInfo';
 
 /**
  * 
@@ -138,12 +131,6 @@ export interface SectionInfo {
      * @memberof SectionInfo
      */
     documents?: Array<SectionDocumentInfo> | null;
-    /**
-     * 
-     * @type {Array<UserPublicBaseInfo>}
-     * @memberof SectionInfo
-     */
-    participants?: Array<UserPublicBaseInfo> | null;
 }
 
 /**
@@ -187,7 +174,6 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(LabelFromJSON)),
         'cover': json['cover'] == null ? undefined : json['cover'],
         'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(SectionDocumentInfoFromJSON)),
-        'participants': json['participants'] == null ? undefined : ((json['participants'] as Array<any>).map(UserPublicBaseInfoFromJSON)),
     };
 }
 
@@ -217,7 +203,6 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(LabelToJSON)),
         'cover': value['cover'],
         'documents': value['documents'] == null ? undefined : ((value['documents'] as Array<any>).map(SectionDocumentInfoToJSON)),
-        'participants': value['participants'] == null ? undefined : ((value['participants'] as Array<any>).map(UserPublicBaseInfoToJSON)),
     };
 }
 

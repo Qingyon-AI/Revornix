@@ -17,4 +17,8 @@ export default {
     mySubscribedSecitions: API_PREFIX + "/section/subscribed",
     createLabel: API_PREFIX + "/section/label/create",
     getMineLabels: API_PREFIX + "/section/label/list",
+    addSectionUser: API_PREFIX + "/section/user/add",
+    deleteSectionUser: API_PREFIX + "/section/user/delete",
+    modifySectionUser: API_PREFIX + "/section/user/modify",
+    getSectionUser: API_PREFIX + "/section/user",
 }

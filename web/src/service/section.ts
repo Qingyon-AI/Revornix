@@ -1,5 +1,5 @@
 import sectionApi from '@/api/section'
-import { AllMySectionsResponse, CreateLabelResponse, DaySectionRequest, DaySectionResponse, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionInfo, LabelAddRequest, LabelListResponse, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionInfo, SectionSubscribeRequest, SectionUpdateRequest } from '@/generated';
+import { AllMySectionsResponse, CreateLabelResponse, DaySectionRequest, DaySectionResponse, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionInfo, LabelAddRequest, LabelListResponse, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionInfo, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserResponse } from '@/generated';
 import { request } from '@/lib/request';
 
 export const getMineLabels = async (): Promise<LabelListResponse> => {
@@ -94,71 +94,26 @@ export const getMySubscribedSecitions = async (data: SearchSubscribedSectionRequ
     })
 }
 
-// export const addSection = async (title: string, description: string, labels: number[], documents: number[]) => {
-//     const [res, err] = await utils.to(request(sectionApi.addSection, 'POST', {
-//         title,
-//         description,
-//         labels,
-//         documents
-//     }))
-//     return [res, err]
-// }
+export const addSectionUser = async (data: SectionUserAddRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.addSectionUser, {
+        data
+    })
+}
 
-// export const getLabels = async () => {
-//     const [res, err] = await utils.to(request(sectionApi.getSectionLabels, 'POST'))
-//     return [res, err]
-// }
+export const modifySectionUser = async (data: SectionUserModifyRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.modifySectionUser, {
+        data
+    })
+}
 
-// export const deleteLabels = async (ids: number[]) => {
-//     const [res, err] = await utils.to(request(sectionApi.deleteSectionLabels, 'POST', {
-//         ids
-//     }))
-//     return [res, err]
-// }
+export const deleteSectionUser = async (data: SectionUserDeleteRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.deleteSectionUser, {
+        data
+    })
+}
 
-// export const updateLabel = async (id: number, name: string) => {
-//     const [res, err] = await utils.to(request(sectionApi.updateSectionLabel, 'POST', {
-//         id,
-//         name
-//     }))
-//     return [res, err]
-// }
-
-// export const deleteSection = async (id: string) => {
-//     const [res, err] = await utils.to(request(sectionApi.deleteSection, 'POST', {
-//         id
-//     }))
-//     return [res, err]
-// }
-
-// export const searchMySection = async (keyword: string, pageNum: number, pageSize: number) => {
-//     const [res, err] = await utils.to(request(sectionApi.searchMySection, 'POST', {
-//         keyword,
-//         page_num: pageNum,
-//         page_size: pageSize
-//     }))
-//     return [res, err]
-// }
-
-// export const searchSection = async (keyword: string, pageNum: number, pageSize: number) => {
-//     const [res, err] = await utils.to(request(sectionApi.searchSection, 'POST', {
-//         keyword,
-//         page_num: pageNum,
-//         page_size: pageSize
-//     }))
-//     return [res, err]
-// }
-
-// export const getDaySection = async (date: string) => {
-//     const [res, err] = await utils.to(request(sectionApi.getDaySection, 'POST', {
-//         date
-//     }))
-//     return [res, err]
-// }
-
-// export const getSectionDetail = async (id: number) => {
-//     const [res, err] = await utils.to(request(sectionApi.getSectionDetail, 'POST', {
-//         id
-//     }))
-//     return [res, err]
-// }
+export const getSectionUser = async (data: SectionUserRequest): Promise<SectionUserResponse> => {
+    return await request(sectionApi.getSectionUser, {
+        data
+    })
+}

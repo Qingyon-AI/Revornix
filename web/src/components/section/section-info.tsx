@@ -2,15 +2,16 @@
 
 import { zhCN } from 'date-fns/locale/zh-CN';
 import { enUS } from 'date-fns/locale/en-US';
-import { getSectionDetail } from '@/service/section';
+import { getSectionDetail, getSectionUser } from '@/service/section';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistance } from 'date-fns';
 import SectionDocument from './section-document';
 import { useRouter } from 'nextjs-toploader/app';
 import { Badge } from '../ui/badge';
 import { useLocale, useTranslations } from 'next-intl';
-import CustomImage from '../ui/custom-image';
 import { Skeleton } from '../ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { UserSectionRole } from '@/enums/section';
 
 const SectionInfo = ({ id }: { id: number }) => {
 	const locale = useLocale();
@@ -27,6 +28,27 @@ const SectionInfo = ({ id }: { id: number }) => {
 			return getSectionDetail({ section_id: id });
 		},
 	});
+
+	const { data: sectionMembers, isLoading: isLoadingMembers } = useQuery({
+		queryKey: ['getSectionMembers', id],
+		queryFn: async () => {
+			return getSectionUser({
+				section_id: id,
+				filter_role: UserSectionRole.MEMBER,
+			});
+		},
+	});
+
+	const { data: sectionSubscribers, isLoading: isLoadingSubscribers } =
+		useQuery({
+			queryKey: ['getSectionSubscribers', id],
+			queryFn: async () => {
+				return getSectionUser({
+					section_id: id,
+					filter_role: UserSectionRole.SUBSCRIBER,
+				});
+			},
+		});
 
 	return (
 		<>
@@ -78,21 +100,91 @@ const SectionInfo = ({ id }: { id: number }) => {
 							})}
 						</div>
 					)}
-					<div
-						className='flex flex-row items-center gap-1 px-5 mb-3'
-						onClick={(e) => {
-							router.push(`/user/detail/${section?.creator.id}`);
-							e.preventDefault();
-							e.stopPropagation();
-						}}>
-						<CustomImage
-							src={section?.creator.avatar!}
-							alt='avatar'
-							className='rounded-full object-cover w-5 h-5'
-						/>
-						<p className='text-xs text-muted-foreground'>
-							{section?.creator.nickname}
-						</p>
+					<div className='grid grid-cols-12 px-5 mb-3 text-xs text-muted-foreground gap-5'>
+						<div className='col-span-2'>{t('section_creator')}</div>
+						<div className='flex flex-row items-center gap-1 col-span-10'>
+							<Avatar
+								className='size-5'
+								title={section?.creator.nickname ?? ''}
+								onClick={(e) => {
+									router.push(`/user/detail/${section?.creator.id}`);
+									e.preventDefault();
+									e.stopPropagation();
+								}}>
+								<AvatarImage src={section?.creator.avatar} alt='avatar' />
+								<AvatarFallback>{section?.creator.nickname}</AvatarFallback>
+							</Avatar>
+							<p
+								onClick={(e) => {
+									router.push(`/user/detail/${section?.creator.id}`);
+									e.preventDefault();
+									e.stopPropagation();
+								}}>
+								{section?.creator.nickname}
+							</p>
+						</div>
+					</div>
+					<div className='grid grid-cols-12 px-5 mb-3 text-xs text-muted-foreground gap-5'>
+						<div className='col-span-2'>{t('section_participants')}</div>
+						<div className='flex flex-row items-center gap-1 col-span-10'>
+							{isLoadingMembers && <Skeleton className='w-full h-5' />}
+							{!isLoadingMembers && sectionMembers && (
+								<div className='*:data-[slot=avatar]:ring-background flex -space-x-1 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale'>
+									{sectionMembers?.users &&
+										sectionMembers?.users.length > 0 &&
+										sectionMembers.users.map((member) => {
+											return (
+												<Avatar
+													className='size-5'
+													title={member?.nickname ?? ''}
+													onClick={(e) => {
+														router.push(`/user/detail/${member?.id}`);
+														e.preventDefault();
+														e.stopPropagation();
+													}}>
+													<AvatarImage src={member.avatar} alt='avatar' />
+													<AvatarFallback>{member.nickname}</AvatarFallback>
+												</Avatar>
+											);
+										})}
+									{sectionMembers?.users &&
+										sectionMembers?.users.length === 0 && (
+											<p>{t('section_participants_empty')}</p>
+										)}
+								</div>
+							)}
+						</div>
+					</div>
+					<div className='grid grid-cols-12 px-5 mb-3 text-xs text-muted-foreground gap-5'>
+						<div className='col-span-2'>{t('section_subscribers')}</div>
+						<div className='flex flex-row items-center gap-1 col-span-10'>
+							{isLoadingSubscribers && <Skeleton className='w-full h-5' />}
+							{!isLoadingSubscribers && sectionSubscribers && (
+								<div className='*:data-[slot=avatar]:ring-background flex -space-x-1 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale'>
+									{sectionSubscribers?.users &&
+										sectionSubscribers?.users.length > 0 &&
+										sectionSubscribers?.users?.map((subscriber) => {
+											return (
+												<Avatar
+													className='size-5'
+													title={subscriber?.nickname ?? ''}
+													onClick={(e) => {
+														router.push(`/user/detail/${subscriber?.id}`);
+														e.preventDefault();
+														e.stopPropagation();
+													}}>
+													<AvatarImage src={subscriber.avatar} alt='avatar' />
+													<AvatarFallback>{subscriber.nickname}</AvatarFallback>
+												</Avatar>
+											);
+										})}
+									{sectionSubscribers?.users &&
+										sectionSubscribers?.users.length === 0 && (
+											<p>{t('section_subscribers_empty')}</p>
+										)}
+								</div>
+							)}
+						</div>
 					</div>
 				</>
 			)}
