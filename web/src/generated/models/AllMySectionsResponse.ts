@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BaseSectionInfo } from './BaseSectionInfo';
+import type { SchemasSectionBaseSectionInfo } from './SchemasSectionBaseSectionInfo';
 import {
-    BaseSectionInfoFromJSON,
-    BaseSectionInfoFromJSONTyped,
-    BaseSectionInfoToJSON,
-    BaseSectionInfoToJSONTyped,
-} from './BaseSectionInfo';
+    SchemasSectionBaseSectionInfoFromJSON,
+    SchemasSectionBaseSectionInfoFromJSONTyped,
+    SchemasSectionBaseSectionInfoToJSON,
+    SchemasSectionBaseSectionInfoToJSONTyped,
+} from './SchemasSectionBaseSectionInfo';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface AllMySectionsResponse {
     /**
      * 
-     * @type {Array<BaseSectionInfo>}
+     * @type {Array<SchemasSectionBaseSectionInfo>}
      * @memberof AllMySectionsResponse
      */
-    data: Array<BaseSectionInfo>;
+    data: Array<SchemasSectionBaseSectionInfo>;
 }
 
 /**
@@ -53,7 +53,7 @@ export function AllMySectionsResponseFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'data': ((json['data'] as Array<any>).map(BaseSectionInfoFromJSON)),
+        'data': ((json['data'] as Array<any>).map(SchemasSectionBaseSectionInfoFromJSON)),
     };
 }
 
@@ -68,7 +68,7 @@ export function AllMySectionsResponseToJSONTyped(value?: AllMySectionsResponse |
 
     return {
         
-        'data': ((value['data'] as Array<any>).map(BaseSectionInfoToJSON)),
+        'data': ((value['data'] as Array<any>).map(SchemasSectionBaseSectionInfoToJSON)),
     };
 }
 

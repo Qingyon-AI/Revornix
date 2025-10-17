@@ -480,6 +480,27 @@ def count_section_subscribers_by_section_id(db: Session,
     query = query.distinct(models.section.SectionUser.id)
     return query.count()
 
+def get_users_and_section_users_by_section_id(db: Session,
+                                              section_id: int):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.user.User, models.section.SectionUser)
+    query = query.filter(models.section.SectionUser.delete_at == None,
+                         models.section.SectionUser.section_id == section_id)
+    query = query.filter(or_(models.section.SectionUser.expire_time > now,
+                             models.section.SectionUser.expire_time == None))
+    query = query.join(models.user.User)
+    query = query.filter(models.user.User.delete_at == None)
+    return query.all()
+
+def get_users_by_section_id(db: Session,
+                            section_id: int):
+    query = db.query(models.user.User)
+    query = query.join(models.section.SectionUser)
+    query = query.filter(models.section.SectionUser.delete_at == None,
+                         models.section.SectionUser.section_id == section_id)
+    query = query.filter(models.user.User.delete_at == None)
+    return query.all()
+
 def get_section_users_by_section_id(db: Session,
                                     section_id: int):
     now = datetime.now(timezone.utc)

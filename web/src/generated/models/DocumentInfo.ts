@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BaseSectionInfo } from './BaseSectionInfo';
-import {
-    BaseSectionInfoFromJSON,
-    BaseSectionInfoFromJSONTyped,
-    BaseSectionInfoToJSON,
-    BaseSectionInfoToJSONTyped,
-} from './BaseSectionInfo';
 import type { DocumentGraphTask } from './DocumentGraphTask';
 import {
     DocumentGraphTaskFromJSON,
@@ -62,6 +55,13 @@ import {
     UserPublicInfoToJSON,
     UserPublicInfoToJSONTyped,
 } from './UserPublicInfo';
+import type { SchemasDocumentBaseSectionInfo } from './SchemasDocumentBaseSectionInfo';
+import {
+    SchemasDocumentBaseSectionInfoFromJSON,
+    SchemasDocumentBaseSectionInfoFromJSONTyped,
+    SchemasDocumentBaseSectionInfoToJSON,
+    SchemasDocumentBaseSectionInfoToJSONTyped,
+} from './SchemasDocumentBaseSectionInfo';
 
 /**
  * 
@@ -131,10 +131,10 @@ export interface DocumentInfo {
     labels?: Array<Label> | null;
     /**
      * 
-     * @type {Array<BaseSectionInfo>}
+     * @type {Array<SchemasDocumentBaseSectionInfo>}
      * @memberof DocumentInfo
      */
-    sections?: Array<BaseSectionInfo> | null;
+    sections?: Array<SchemasDocumentBaseSectionInfo> | null;
     /**
      * 
      * @type {Array<UserPublicInfo>}
@@ -196,7 +196,7 @@ export function DocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(LabelFromJSON)),
-        'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(BaseSectionInfoFromJSON)),
+        'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SchemasDocumentBaseSectionInfoFromJSON)),
         'users': json['users'] == null ? undefined : ((json['users'] as Array<any>).map(UserPublicInfoFromJSON)),
         'transform_task': json['transform_task'] == null ? undefined : DocumentTransformTaskFromJSON(json['transform_task']),
         'embedding_task': json['embedding_task'] == null ? undefined : DocumentEmbeddingTaskFromJSON(json['embedding_task']),
@@ -223,10 +223,10 @@ export function DocumentInfoToJSONTyped(value?: DocumentInfo | null, ignoreDiscr
         'cover': value['cover'],
         'description': value['description'],
         'from_plat': value['from_plat'],
-        'create_time': value['create_time'] === null ? null : ((value['create_time'] as any)?.toISOString()),
-        'update_time': value['update_time'] === null ? null : ((value['update_time'] as any)?.toISOString()),
+        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(LabelToJSON)),
-        'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(BaseSectionInfoToJSON)),
+        'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SchemasDocumentBaseSectionInfoToJSON)),
         'users': value['users'] == null ? undefined : ((value['users'] as Array<any>).map(UserPublicInfoToJSON)),
         'transform_task': DocumentTransformTaskToJSON(value['transform_task']),
         'embedding_task': DocumentEmbeddingTaskToJSON(value['embedding_task']),

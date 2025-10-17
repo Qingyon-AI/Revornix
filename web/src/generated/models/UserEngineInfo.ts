@@ -127,8 +127,8 @@ export function UserEngineInfoToJSONTyped(value?: UserEngineInfo | null, ignoreD
         'demo_config': value['demo_config'],
         'enable': value['enable'],
         'config_json': value['config_json'],
-        'create_time': ((value['create_time']).toISOString()),
-        'update_time': ((value['update_time']).toISOString()),
+        'create_time': value['create_time'].toISOString(),
+        'update_time': value['update_time'].toISOString(),
     };
 }
 

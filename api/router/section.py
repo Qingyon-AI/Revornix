@@ -445,6 +445,16 @@ async def get_section_detail(
             if db_section_user is not None:
                 res.authority = db_section_user.authority
         
+        db_user_and_section_users = crud.section.get_users_and_section_users_by_section_id(db=db,
+                                                                                           section_id=section_detail_request.section_id)
+        participants = [
+            schemas.user.UserPublicBaseInfo.model_validate({
+                **db_user.__dict__,
+            })
+            for (db_user, db_user_section) in db_user_and_section_users
+        ]
+        res.participants = participants
+        
     else:
         if user is None:
             raise Exception("This section is private, anonymous user can't access it")
@@ -489,6 +499,16 @@ async def get_section_detail(
             
             if db_section_user is not None:
                 res.authority = db_section_user.authority
+            
+            db_user_and_section_users = crud.section.get_users_and_section_users_by_section_id(db=db,
+                                                                                               section_id=section_detail_request.section_id)
+            participants = [
+                schemas.user.UserPublicBaseInfo.model_validate({
+                    **db_user.__dict__,
+                })
+                for (db_user, db_user_section) in db_user_and_section_users
+            ]
+            res.participants = participants
         
     return res
 

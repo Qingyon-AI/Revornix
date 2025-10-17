@@ -25,7 +25,6 @@ models/ApiKeyCreateRequest.ts
 models/ApiKeyCreateResponse.ts
 models/ApiKeyInfo.ts
 models/ApiKeysDeleteRequest.ts
-models/BaseSectionInfo.ts
 models/BindEmailVerifyRequest.ts
 models/BindPhoneCodeCreateRequest.ts
 models/BindPhoneCodeVerifyRequest.ts
@@ -167,6 +166,8 @@ models/RssDocumentInfo.ts
 models/RssServerInfo.ts
 models/S3PresignUploadURLRequest.ts
 models/S3PresignUploadURLResponse.ts
+models/SchemasDocumentBaseSectionInfo.ts
+models/SchemasSectionBaseSectionInfo.ts
 models/SearchAllMyDocumentsRequest.ts
 models/SearchApiKeysRequest.ts
 models/SearchDocumentNoteRequest.ts
@@ -180,6 +181,7 @@ models/SearchSubscribedSectionRequest.ts
 models/SearchUnreadListRequest.ts
 models/SearchUserFansRequest.ts
 models/SearchUserFollowsRequest.ts
+models/SearchUserRequest.ts
 models/SearchUserSectionsRequest.ts
 models/SectionCommentCreateRequest.ts
 models/SectionCommentDeleteRequest.ts
@@ -194,6 +196,9 @@ models/SectionGraphRequest.ts
 models/SectionInfo.ts
 models/SectionSubscribeRequest.ts
 models/SectionUpdateRequest.ts
+models/SectionUserAddRequest.ts
+models/SectionUserDeleteRequest.ts
+models/SectionUserModifyRequest.ts
 models/SmsUserCodeCreateRequest.ts
 models/SmsUserCodeVerifyCreate.ts
 models/StarRequest.ts
@@ -213,6 +218,7 @@ models/UserFileSystemUpdateRequest.ts
 models/UserInfoRequest.ts
 models/UserInfoUpdateRequest.ts
 models/UserLoginRequest.ts
+models/UserPublicBaseInfo.ts
 models/UserPublicInfo.ts
 models/ValidationError.ts
 models/ValidationErrorLocInner.ts

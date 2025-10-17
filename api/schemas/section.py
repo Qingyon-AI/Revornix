@@ -1,7 +1,7 @@
 from pydantic import BaseModel, field_validator, field_serializer
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
-from schemas.user import UserPublicInfo
+from schemas.user import UserPublicInfo, UserPublicBaseInfo
 from enums.section import UserSectionRole
 
 class SectionUserDeleteRequest(BaseModel):
@@ -164,6 +164,7 @@ class SectionInfo(BaseModel):
     labels: list[Label] | None = None
     cover: str | None = None
     documents: list[SectionDocumentInfo] | None = None
+    participants: list[UserPublicBaseInfo] | None = None
     @field_serializer("cover")
     def cover(self, v: str) -> str | None:
         if v is None:

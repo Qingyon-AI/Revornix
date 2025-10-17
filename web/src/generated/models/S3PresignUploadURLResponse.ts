@@ -87,7 +87,7 @@ export function S3PresignUploadURLResponseToJSONTyped(value?: S3PresignUploadURL
         'upload_url': value['upload_url'],
         'file_path': value['file_path'],
         'fields': value['fields'],
-        'expiration': ((value['expiration']).toISOString()),
+        'expiration': value['expiration'].toISOString(),
     };
 }
 

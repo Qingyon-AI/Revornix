@@ -94,8 +94,8 @@ export function ApiKeyInfoToJSONTyped(value?: ApiKeyInfo | null, ignoreDiscrimin
         'id': value['id'],
         'api_key': value['api_key'],
         'description': value['description'],
-        'create_time': ((value['create_time']).toISOString()),
-        'last_used_time': value['last_used_time'] === null ? null : ((value['last_used_time'] as any)?.toISOString()),
+        'create_time': value['create_time'].toISOString(),
+        'last_used_time': value['last_used_time'] == null ? value['last_used_time'] : value['last_used_time'].toISOString(),
     };
 }
 
