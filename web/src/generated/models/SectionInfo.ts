@@ -34,6 +34,13 @@ import {
     UserPublicInfoToJSON,
     UserPublicInfoToJSONTyped,
 } from './UserPublicInfo';
+import type { UserPublicBaseInfo } from './UserPublicBaseInfo';
+import {
+    UserPublicBaseInfoFromJSON,
+    UserPublicBaseInfoFromJSONTyped,
+    UserPublicBaseInfoToJSON,
+    UserPublicBaseInfoToJSONTyped,
+} from './UserPublicBaseInfo';
 
 /**
  * 
@@ -97,6 +104,12 @@ export interface SectionInfo {
     update_time: Date;
     /**
      * 
+     * @type {number}
+     * @memberof SectionInfo
+     */
+    authority?: number | null;
+    /**
+     * 
      * @type {boolean}
      * @memberof SectionInfo
      */
@@ -125,6 +138,12 @@ export interface SectionInfo {
      * @memberof SectionInfo
      */
     documents?: Array<SectionDocumentInfo> | null;
+    /**
+     * 
+     * @type {Array<UserPublicBaseInfo>}
+     * @memberof SectionInfo
+     */
+    participants?: Array<UserPublicBaseInfo> | null;
 }
 
 /**
@@ -162,11 +181,13 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'subscribers_count': json['subscribers_count'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (new Date(json['update_time'])),
+        'authority': json['authority'] == null ? undefined : json['authority'],
         'is_subscribed': json['is_subscribed'] == null ? undefined : json['is_subscribed'],
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(LabelFromJSON)),
         'cover': json['cover'] == null ? undefined : json['cover'],
         'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(SectionDocumentInfoFromJSON)),
+        'participants': json['participants'] == null ? undefined : ((json['participants'] as Array<any>).map(UserPublicBaseInfoFromJSON)),
     };
 }
 
@@ -188,13 +209,15 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'public': value['public'],
         'documents_count': value['documents_count'],
         'subscribers_count': value['subscribers_count'],
-        'create_time': ((value['create_time']).toISOString()),
-        'update_time': ((value['update_time']).toISOString()),
+        'create_time': value['create_time'].toISOString(),
+        'update_time': value['update_time'].toISOString(),
+        'authority': value['authority'],
         'is_subscribed': value['is_subscribed'],
         'md_file_name': value['md_file_name'],
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(LabelToJSON)),
         'cover': value['cover'],
         'documents': value['documents'] == null ? undefined : ((value['documents'] as Array<any>).map(SectionDocumentInfoToJSON)),
+        'participants': value['participants'] == null ? undefined : ((value['participants'] as Array<any>).map(UserPublicBaseInfoToJSON)),
     };
 }
 

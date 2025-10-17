@@ -118,8 +118,8 @@ export function UserFileSystemInfoToJSONTyped(value?: UserFileSystemInfo | null,
         'description': value['description'],
         'demo_config': value['demo_config'],
         'config_json': value['config_json'],
-        'create_time': ((value['create_time']).toISOString()),
-        'update_time': ((value['update_time']).toISOString()),
+        'create_time': value['create_time'].toISOString(),
+        'update_time': value['update_time'].toISOString(),
     };
 }
 

@@ -102,8 +102,8 @@ export function SectionCommentInfoToJSONTyped(value?: SectionCommentInfo | null,
         
         'id': value['id'],
         'content': value['content'],
-        'create_time': ((value['create_time']).toISOString()),
-        'update_time': ((value['update_time']).toISOString()),
+        'create_time': value['create_time'].toISOString(),
+        'update_time': value['update_time'].toISOString(),
         'creator': UserPublicInfoToJSON(value['creator']),
     };
 }

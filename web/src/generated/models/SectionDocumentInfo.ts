@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BaseSectionInfo } from './BaseSectionInfo';
-import {
-    BaseSectionInfoFromJSON,
-    BaseSectionInfoFromJSONTyped,
-    BaseSectionInfoToJSON,
-    BaseSectionInfoToJSONTyped,
-} from './BaseSectionInfo';
 import type { Label } from './Label';
 import {
     LabelFromJSON,
@@ -27,6 +20,13 @@ import {
     LabelToJSON,
     LabelToJSONTyped,
 } from './Label';
+import type { SchemasSectionBaseSectionInfo } from './SchemasSectionBaseSectionInfo';
+import {
+    SchemasSectionBaseSectionInfoFromJSON,
+    SchemasSectionBaseSectionInfoFromJSONTyped,
+    SchemasSectionBaseSectionInfoToJSON,
+    SchemasSectionBaseSectionInfoToJSONTyped,
+} from './SchemasSectionBaseSectionInfo';
 import type { UserPublicInfo } from './UserPublicInfo';
 import {
     UserPublicInfoFromJSON,
@@ -91,10 +91,10 @@ export interface SectionDocumentInfo {
     labels?: Array<Label> | null;
     /**
      * 
-     * @type {Array<BaseSectionInfo>}
+     * @type {Array<SchemasSectionBaseSectionInfo>}
      * @memberof SectionDocumentInfo
      */
-    sections?: Array<BaseSectionInfo> | null;
+    sections?: Array<SchemasSectionBaseSectionInfo> | null;
     /**
      * 
      * @type {Array<UserPublicInfo>}
@@ -146,7 +146,7 @@ export function SectionDocumentInfoFromJSONTyped(json: any, ignoreDiscriminator:
         'description': json['description'] == null ? undefined : json['description'],
         'from_plat': json['from_plat'] == null ? undefined : json['from_plat'],
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(LabelFromJSON)),
-        'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(BaseSectionInfoFromJSON)),
+        'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SchemasSectionBaseSectionInfoFromJSON)),
         'users': json['users'] == null ? undefined : ((json['users'] as Array<any>).map(UserPublicInfoFromJSON)),
         'create_time': (new Date(json['create_time'])),
         'update_time': (new Date(json['update_time'])),
@@ -172,10 +172,10 @@ export function SectionDocumentInfoToJSONTyped(value?: SectionDocumentInfo | nul
         'description': value['description'],
         'from_plat': value['from_plat'],
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(LabelToJSON)),
-        'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(BaseSectionInfoToJSON)),
+        'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SchemasSectionBaseSectionInfoToJSON)),
         'users': value['users'] == null ? undefined : ((value['users'] as Array<any>).map(UserPublicInfoToJSON)),
-        'create_time': ((value['create_time']).toISOString()),
-        'update_time': ((value['update_time']).toISOString()),
+        'create_time': value['create_time'].toISOString(),
+        'update_time': value['update_time'].toISOString(),
     };
 }
 

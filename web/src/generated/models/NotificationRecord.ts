@@ -100,9 +100,9 @@ export function NotificationRecordToJSONTyped(value?: NotificationRecord | null,
         'id': value['id'],
         'title': value['title'],
         'content': value['content'],
-        'read_at': value['read_at'] === null ? null : ((value['read_at'] as any)?.toISOString()),
-        'create_time': value['create_time'] === null ? null : ((value['create_time'] as any)?.toISOString()),
-        'update_time': value['update_time'] === null ? null : ((value['update_time'] as any)?.toISOString()),
+        'read_at': value['read_at'] == null ? value['read_at'] : value['read_at'].toISOString(),
+        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
 

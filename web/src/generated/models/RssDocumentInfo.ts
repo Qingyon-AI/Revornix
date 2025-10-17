@@ -121,8 +121,8 @@ export function RssDocumentInfoToJSONTyped(value?: RssDocumentInfo | null, ignor
         'category': value['category'],
         'cover': value['cover'],
         'from_plat': value['from_plat'],
-        'create_time': ((value['create_time']).toISOString()),
-        'update_time': ((value['update_time']).toISOString()),
+        'create_time': value['create_time'].toISOString(),
+        'update_time': value['update_time'].toISOString(),
     };
 }
 

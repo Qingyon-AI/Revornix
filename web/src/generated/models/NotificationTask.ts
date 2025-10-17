@@ -175,8 +175,8 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
         'notification_template_id': value['notification_template_id'],
         'notification_source': NotificationSourceToJSON(value['notification_source']),
         'notification_target': NotificationTargetToJSON(value['notification_target']),
-        'create_time': value['create_time'] === null ? null : ((value['create_time'] as any)?.toISOString()),
-        'update_time': value['update_time'] === null ? null : ((value['update_time'] as any)?.toISOString()),
+        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
 

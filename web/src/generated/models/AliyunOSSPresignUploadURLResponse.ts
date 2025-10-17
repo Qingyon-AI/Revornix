@@ -87,7 +87,7 @@ export function AliyunOSSPresignUploadURLResponseToJSONTyped(value?: AliyunOSSPr
         'upload_url': value['upload_url'],
         'file_path': value['file_path'],
         'fields': value['fields'],
-        'expiration': ((value['expiration']).toISOString()),
+        'expiration': value['expiration'].toISOString(),
     };
 }
 

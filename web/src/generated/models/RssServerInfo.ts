@@ -150,8 +150,8 @@ export function RssServerInfoToJSONTyped(value?: RssServerInfo | null, ignoreDis
         'description': value['description'],
         'cover': value['cover'],
         'address': value['address'],
-        'create_time': ((value['create_time']).toISOString()),
-        'update_time': ((value['update_time']).toISOString()),
+        'create_time': value['create_time'].toISOString(),
+        'update_time': value['update_time'].toISOString(),
         'documents': value['documents'] == null ? undefined : ((value['documents'] as Array<any>).map(RssDocumentInfoToJSON)),
         'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SectionInfoToJSON)),
     };

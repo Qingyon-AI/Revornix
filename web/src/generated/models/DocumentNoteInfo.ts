@@ -103,8 +103,8 @@ export function DocumentNoteInfoToJSONTyped(value?: DocumentNoteInfo | null, ign
         'id': value['id'],
         'content': value['content'],
         'user': UserPublicInfoToJSON(value['user']),
-        'create_time': ((value['create_time']).toISOString()),
-        'update_time': ((value['update_time']).toISOString()),
+        'create_time': value['create_time'].toISOString(),
+        'update_time': value['update_time'].toISOString(),
     };
 }
 

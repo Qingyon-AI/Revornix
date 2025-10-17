@@ -40,6 +40,9 @@ import type {
   SectionInfo,
   SectionSubscribeRequest,
   SectionUpdateRequest,
+  SectionUserAddRequest,
+  SectionUserDeleteRequest,
+  SectionUserModifyRequest,
 } from '../models/index';
 import {
     AllMySectionsResponseFromJSON,
@@ -92,6 +95,12 @@ import {
     SectionSubscribeRequestToJSON,
     SectionUpdateRequestFromJSON,
     SectionUpdateRequestToJSON,
+    SectionUserAddRequestFromJSON,
+    SectionUserAddRequestToJSON,
+    SectionUserDeleteRequestFromJSON,
+    SectionUserDeleteRequestToJSON,
+    SectionUserModifyRequestFromJSON,
+    SectionUserModifyRequestToJSON,
 } from '../models/index';
 
 export interface AddLabelSectionLabelCreatePostRequest {
@@ -130,6 +139,12 @@ export interface DeleteSectionSectionDeletePostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface DeleteSectionUserSectionUserDeletePostRequest {
+    sectionUserDeleteRequest: SectionUserDeleteRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface GetAllMineSectionsSectionMineAllPostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
@@ -164,6 +179,12 @@ export interface SearchMineSectionsSectionMineSearchPostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface SearchPublicSectionsSectionPublicSearchPostRequest {
+    searchPublicSectionsRequest: SearchPublicSectionsRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface SearchSectionCommentSectionCommentSearchPostRequest {
     sectionCommentSearchRequest: SectionCommentSearchRequest;
     authorization?: string | null;
@@ -176,8 +197,14 @@ export interface SearchUserSectionsSectionUserSearchPostRequest {
     xForwardedFor?: string | null;
 }
 
-export interface SearchpublicSectionsSectionPublicSearchPostRequest {
-    searchPublicSectionsRequest: SearchPublicSectionsRequest;
+export interface SectionUserAddRequestSectionUserAddPostRequest {
+    sectionUserAddRequest: SectionUserAddRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface SectionUserModifyRequestSectionUserModifyPostRequest {
+    sectionUserModifyRequest: SectionUserModifyRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -482,6 +509,53 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
+     * Delete Section User
+     */
+    async deleteSectionUserSectionUserDeletePostRaw(requestParameters: DeleteSectionUserSectionUserDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['sectionUserDeleteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionUserDeleteRequest',
+                'Required parameter "sectionUserDeleteRequest" was null or undefined when calling deleteSectionUserSectionUserDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/user/delete`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionUserDeleteRequestToJSON(requestParameters['sectionUserDeleteRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete Section User
+     */
+    async deleteSectionUserSectionUserDeletePost(requestParameters: DeleteSectionUserSectionUserDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteSectionUserSectionUserDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get All Mine Sections
      */
     async getAllMineSectionsSectionMineAllPostRaw(requestParameters: GetAllMineSectionsSectionMineAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AllMySectionsResponse>> {
@@ -744,6 +818,53 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
+     * Search Public Sections
+     */
+    async searchPublicSectionsSectionPublicSearchPostRaw(requestParameters: SearchPublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+        if (requestParameters['searchPublicSectionsRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchPublicSectionsRequest',
+                'Required parameter "searchPublicSectionsRequest" was null or undefined when calling searchPublicSectionsSectionPublicSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/public/search`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchPublicSectionsRequestToJSON(requestParameters['searchPublicSectionsRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Public Sections
+     */
+    async searchPublicSectionsSectionPublicSearchPost(requestParameters: SearchPublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+        const response = await this.searchPublicSectionsSectionPublicSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Search Section Comment
      */
     async searchSectionCommentSectionCommentSearchPostRaw(requestParameters: SearchSectionCommentSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionCommentInfo>> {
@@ -838,13 +959,13 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Searchpublic Sections
+     * Section User Add Request
      */
-    async searchpublicSectionsSectionPublicSearchPostRaw(requestParameters: SearchpublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
-        if (requestParameters['searchPublicSectionsRequest'] == null) {
+    async sectionUserAddRequestSectionUserAddPostRaw(requestParameters: SectionUserAddRequestSectionUserAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['sectionUserAddRequest'] == null) {
             throw new runtime.RequiredError(
-                'searchPublicSectionsRequest',
-                'Required parameter "searchPublicSectionsRequest" was null or undefined when calling searchpublicSectionsSectionPublicSearchPost().'
+                'sectionUserAddRequest',
+                'Required parameter "sectionUserAddRequest" was null or undefined when calling sectionUserAddRequestSectionUserAddPost().'
             );
         }
 
@@ -863,24 +984,71 @@ export class SectionApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/section/public/search`;
+        let urlPath = `/section/user/add`;
 
         const response = await this.request({
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: SearchPublicSectionsRequestToJSON(requestParameters['searchPublicSectionsRequest']),
+            body: SectionUserAddRequestToJSON(requestParameters['sectionUserAddRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
 
     /**
-     * Searchpublic Sections
+     * Section User Add Request
      */
-    async searchpublicSectionsSectionPublicSearchPost(requestParameters: SearchpublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
-        const response = await this.searchpublicSectionsSectionPublicSearchPostRaw(requestParameters, initOverrides);
+    async sectionUserAddRequestSectionUserAddPost(requestParameters: SectionUserAddRequestSectionUserAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.sectionUserAddRequestSectionUserAddPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Section User Modify Request
+     */
+    async sectionUserModifyRequestSectionUserModifyPostRaw(requestParameters: SectionUserModifyRequestSectionUserModifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['sectionUserModifyRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionUserModifyRequest',
+                'Required parameter "sectionUserModifyRequest" was null or undefined when calling sectionUserModifyRequestSectionUserModifyPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/user/modify`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionUserModifyRequestToJSON(requestParameters['sectionUserModifyRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Section User Modify Request
+     */
+    async sectionUserModifyRequestSectionUserModifyPost(requestParameters: SectionUserModifyRequestSectionUserModifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.sectionUserModifyRequestSectionUserModifyPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

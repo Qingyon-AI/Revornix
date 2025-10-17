@@ -36,6 +36,7 @@ import type {
   PrivateUserInfo,
   SearchUserFansRequest,
   SearchUserFollowsRequest,
+  SearchUserRequest,
   SmsUserCodeCreateRequest,
   SmsUserCodeVerifyCreate,
   TokenResponse,
@@ -90,6 +91,8 @@ import {
     SearchUserFansRequestToJSON,
     SearchUserFollowsRequestFromJSON,
     SearchUserFollowsRequestToJSON,
+    SearchUserRequestFromJSON,
+    SearchUserRequestToJSON,
     SmsUserCodeCreateRequestFromJSON,
     SmsUserCodeCreateRequestToJSON,
     SmsUserCodeVerifyCreateFromJSON,
@@ -205,6 +208,12 @@ export interface SearchUserFansUserFansPostRequest {
 
 export interface SearchUserFollowsUserFollowsPostRequest {
     searchUserFollowsRequest: SearchUserFollowsRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface SearchUserUserSearchPostRequest {
+    searchUserRequest: SearchUserRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -1084,6 +1093,53 @@ export class UserApi extends runtime.BaseAPI {
      */
     async searchUserFollowsUserFollowsPost(requestParameters: SearchUserFollowsUserFollowsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionUserPublicInfo> {
         const response = await this.searchUserFollowsUserFollowsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search User
+     */
+    async searchUserUserSearchPostRaw(requestParameters: SearchUserUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionUserPublicInfo>> {
+        if (requestParameters['searchUserRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchUserRequest',
+                'Required parameter "searchUserRequest" was null or undefined when calling searchUserUserSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/search`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchUserRequestToJSON(requestParameters['searchUserRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionUserPublicInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search User
+     */
+    async searchUserUserSearchPost(requestParameters: SearchUserUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionUserPublicInfo> {
+        const response = await this.searchUserUserSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
