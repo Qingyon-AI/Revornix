@@ -143,6 +143,90 @@ def create_email_user(db: Session,
     db.flush()
     return db_email_user
 
+def search_user_by_email_like(db: Session, keyword: str, start: int, limit: int):
+    query = db.query(models.user.User)
+    query = query.join(models.user.EmailUser, models.user.User.id == models.user.EmailUser.user_id)
+    query = query.filter(models.user.EmailUser.delete_at == None,
+                         models.user.User.delete_at == None)
+    if len(keyword) > 0:
+        query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
+    query = query.order_by(models.user.User.id.desc())
+    query = query.filter(models.user.User.id <= start)
+    query = query.limit(limit)
+    return query.all()
+
+def search_next_user_by_email_like(db: Session, email_user: models.user.EmailUser, keyword: str):
+    query = db.query(models.user.User)
+    query = query.join(models.user.EmailUser, models.user.User.id == models.user.EmailUser.user_id)
+    query = query.filter(models.user.EmailUser.delete_at == None,
+                         models.user.User.delete_at == None)
+    if len(keyword) > 0:
+        query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
+    query = query.order_by(models.user.User.id.desc())
+    query = query.filter(models.user.User.id < email_user.id)
+    return query.first()
+
+def count_user_by_email_like(db: Session, keyword: str):
+    query = db.query(models.user.User)
+    query = query.join(models.user.EmailUser, models.user.User.id == models.user.EmailUser.user_id)
+    query = query.filter(models.user.EmailUser.delete_at == None,
+                         models.user.User.delete_at == None)
+    if len(keyword) > 0:
+        query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
+    return query.count()
+
+def search_user_by_nickname_like(db: Session, keyword: str, start: int, limit: int):
+    query = db.query(models.user.User)
+    query = query.filter(models.user.User.delete_at == None)
+    if len(keyword) > 0:
+        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+    query = query.order_by(models.user.User.create_time.desc())
+    query = query.filter(models.user.User.id <= start)
+    query = query.limit(limit)
+    return query.all()
+    
+def search_next_user_by_nickname_like(db: Session, user: models.user.User, keyword: str):
+    query = db.query(models.user.User)
+    query = query.filter(models.user.User.delete_at == None)
+    if len(keyword) > 0:
+        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+    query = query.order_by(models.user.User.create_time.desc())
+    query = query.filter(models.user.User.id < user.id)
+    return query.first()
+
+def count_user_by_nickname_like(db: Session, keyword: str):
+    query = db.query(models.user.User)
+    query = query.filter(models.user.User.delete_at == None)
+    if len(keyword) > 0:
+        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+    return query.count()
+
+def search_user_by_uuid_like(db: Session, keyword: str, start: int, limit: int):
+    query = db.query(models.user.User)
+    query = query.filter(models.user.User.delete_at == None)
+    if len(keyword) > 0:
+        query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
+    query = query.order_by(models.user.User.id.desc())
+    query = query.filter(models.user.User.id <= start)
+    query = query.limit(limit)
+    return query.all()
+
+def search_next_user_by_uuid_like(db: Session, user: models.user.User, keyword: str):
+    query = db.query(models.user.User)
+    query = query.filter(models.user.User.delete_at == None)
+    if len(keyword) > 0:
+        query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
+    query = query.order_by(models.user.User.id.desc())
+    query = query.filter(models.user.User.id < user.id)
+    return query.first()
+
+def count_user_by_uuid_like(db: Session, keyword: str):
+    query = db.query(models.user.User)
+    query = query.filter(models.user.User.delete_at == None)
+    if len(keyword) > 0:
+        query = query.filter(models.user.User.uuid.like(f"%{keyword}%"))
+    return query.count()
+
 def search_user_fans(db: Session,
                      user_id: int,
                      limit: int = 10,
@@ -155,7 +239,7 @@ def search_user_fans(db: Session,
                          models.user.User.delete_at == None)
     if keyword is not None:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
-    query = query.order_by(models.user.User.create_time.desc())
+    query = query.order_by(models.user.User.id.desc())
     if start is not None:
         query = query.filter(models.user.User.id <= start)
     query = query.limit(limit)
@@ -183,8 +267,8 @@ def search_next_user_fan(db: Session,
                          models.user.User.delete_at == None)
     if keyword is not None:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
-    query = query.order_by(models.user.User.create_time.desc())
-    query = query.filter(models.user.User.create_time < user.create_time)
+    query = query.order_by(models.user.User.id.desc())
+    query = query.filter(models.user.User.id < user.id)
     return query.first()
 
 def search_user_follows(db: Session,
@@ -199,7 +283,7 @@ def search_user_follows(db: Session,
                          models.user.User.delete_at == None)
     if keyword is not None:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
-    query = query.order_by(models.user.User.create_time.desc())
+    query = query.order_by(models.user.User.id.desc())
     if start is not None:
         query = query.filter(models.user.User.id <= start)
     query = query.limit(limit)
@@ -227,8 +311,8 @@ def search_next_user_follow(db: Session,
                          models.user.User.delete_at == None)
     if keyword is not None:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
-    query = query.order_by(models.user.User.create_time.desc())
-    query = query.filter(models.user.User.create_time < user.create_time)
+    query = query.order_by(models.user.User.id.desc())
+    query = query.filter(models.user.User.id < user.id)
     return query.first()
 
 def get_wechat_user_by_user_id(db: Session,
