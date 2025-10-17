@@ -26,6 +26,78 @@ from file.built_in_remote_file_service import BuiltInRemoteFileService
 
 user_router = APIRouter()
 
+@user_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
+async def search_user(search_user_request: schemas.user.SearchUserRequest,
+                      current_user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    has_more = True
+    next_start = None
+    users = []
+    db_users = []
+    db_next_user = None
+    if search_user_request.filter_name == 'email':
+        db_users = crud.user.search_user_by_email_like(db=db, 
+                                                       keyword=search_user_request.filter_value, 
+                                                       start=search_user_request.start, 
+                                                       limit=search_user_request.limit)
+        total = crud.user.count_user_by_email_like(db=db, 
+                                                   keyword=search_user_request.filter_value)
+        if len(db_users) < search_user_request.limit or len(db_users) == 0:
+            has_more = False
+        if len(db_users) == search_user_request.limit:
+            db_next_user = crud.user.search_next_user_by_email_like(db=db,
+                                                                    email_user=db_users[-1],
+                                                                    keyword=search_user_request.filter_value)
+    if search_user_request.filter_name == 'nickname':
+        db_users = crud.user.search_user_by_nickname_like(db=db, 
+                                                          keyword=search_user_request.filter_value,
+                                                          start=search_user_request.start,
+                                                          limit=search_user_request.limit)
+        total = crud.user.count_user_by_nickname_like(db=db,
+                                                      keyword=search_user_request.filter_value)
+        if len(db_users) < search_user_request.limit or len(db_users) == 0:
+            has_more = False
+        if len(db_users) == search_user_request.limit:
+            db_next_user = crud.user.search_next_user_by_nickname_like(db=db,
+                                                                    user=db_users[-1],
+                                                                    keyword=search_user_request.filter_value)
+    if search_user_request.filter_name == 'uuid':
+        db_users = crud.user.search_user_by_uuid_like(db=db, 
+                                                      keyword=search_user_request.filter_value,
+                                                      start=search_user_request.start,
+                                                      limit=search_user_request.limit)
+        total = crud.user.count_user_by_uuid_like(db=db,
+                                                  keyword=search_user_request.filter_value)
+        if len(db_users) < search_user_request.limit or len(db_users) == 0:
+            has_more = False
+        if len(db_users) == search_user_request.limit:
+            db_next_user = crud.user.search_next_user_by_uuid_like(db=db,
+                                                                   user=db_users[-1],
+                                                                   keyword=search_user_request.filter_value)
+    for db_user in db_users:
+        user_item = schemas.user.UserPublicInfo.model_validate(db_user)
+        user_item.fans = crud.user.count_user_fans(db=db, 
+                                                   user_id=db_user.id)
+        user_item.follows = crud.user.count_user_follows(db=db,
+                                                         user_id=db_user.id)
+        user_follow = crud.user.get_user_follow_by_to_user_id_and_from_user_id(db=db,
+                                                                               to_user_id=db_user.id,
+                                                                               from_user_id=current_user.id)
+        if user_follow is not None and user_follow.delete_at is None:
+            user_item.is_followed = True
+        users.append(user_item)
+        
+    has_more = db_next_user is not None
+    next_start = db_next_user.id if has_more else None
+        
+    res = schemas.pagination.InifiniteScrollPagnition(total=total,
+                                                      start=search_user_request.start,
+                                                      limit=search_user_request.limit,
+                                                      has_more=has_more,
+                                                      next_start=next_start,
+                                                      elements=users)
+    return res
+
 @user_router.post('/default-file-system/update', response_model=schemas.common.NormalResponse)
 async def update_default_file_system(default_file_system_update_request: schemas.user.DefaultFileSystemUpdateRequest,
                                      user: schemas.user.PrivateUserInfo = Depends(get_current_user),

@@ -1,5 +1,17 @@
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, field_validator
 from protocol.remote_file_service import RemoteFileServiceProtocol
+
+class SearchUserRequest(BaseModel):
+    filter_name: str
+    filter_value: str
+    start: int
+    limit: int
+    
+    @field_validator('filter_name')
+    def filter_name_validator(cls, v):
+        if v not in ['nickname', 'email', 'uuid']:
+            raise ValueError('filter_name must be name or email')
+        return v
 
 class WeChatInfo(BaseModel):
     nickname: str
