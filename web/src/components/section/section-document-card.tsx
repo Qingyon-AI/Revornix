@@ -1,3 +1,5 @@
+'use client';
+
 import { DocumentCategory, DocumentMdConvertStatus } from '@/enums/document';
 import { SectionDocumentInfo } from '@/generated';
 import { format } from 'date-fns';

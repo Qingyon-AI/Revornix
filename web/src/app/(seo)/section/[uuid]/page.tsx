@@ -9,7 +9,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { utils } from '@kinda/utils';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -27,6 +27,11 @@ import SectionGraphSEO from '@/components/section/section-graph-seo';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import SectionComments from '@/components/section/section-comments';
 import SectionInfo from '@/components/section/section-info';
+import SectionDocument from '@/components/section/section-document';
+import SectionDocumentCard from '@/components/section/section-document-card';
+import SectionCommentsList from '@/components/section/section-comments-list';
+import SectionCommentForm from '@/components/section/section-comment-form';
+import { Separator } from '@/components/ui/separator';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -153,7 +158,7 @@ const SEOSectionDetail = async (props: {
 				</Card>
 			</div>
 			<div className='col-span-6 h-full relative min-h-0 overflow-auto'>
-				<div className='prose dark:prose-invert mx-auto'>
+				<div className='prose dark:prose-invert mx-auto mb-5'>
 					<Alert className='bg-blue-500/10 dark:bg-blue-600/20 text-blue-500 dark:text-blue-400 border-blue-400/50 dark:border-blue-600/60 mb-5'>
 						<AlertTitle>{t('section_ai_tips')}</AlertTitle>
 					</Alert>
@@ -164,10 +169,32 @@ const SEOSectionDetail = async (props: {
 						{markdown}
 					</Markdown>
 				</div>
+				<div className='max-w-prose mx-auto'>
+					<Separator className='mb-5' />
+					{section?.id && (
+						<>
+							<h1 className='font-bold text-3xl mb-5'>
+								{t('section_comments')}
+							</h1>
+							<SectionCommentForm section_id={section.id} />
+							<SectionCommentsList section_id={section.id} />
+						</>
+					)}
+				</div>
 			</div>
-			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
-				<Card className='p-5 overflow-auto relative shadow-none h-full'>
-					{section && <SectionComments section_id={section.id} />}
+			<div className='col-span-3 py-0 h-full flex flex-col min-h-0 relative'>
+				<Card className='relative shadow-none h-full flex flex-col !gap-0'>
+					<CardHeader className='mb-5'>
+						<CardTitle>{t('section_documents')}</CardTitle>
+						<CardDescription>{t('section_documents_description')}</CardDescription>
+					</CardHeader>
+					<CardContent className='flex-1 overflow-auto flex flex-col gap-5'>
+						{section &&
+							section.documents &&
+							section.documents.map((document, index) => {
+								return <SectionDocumentCard key={index} document={document} />;
+							})}
+					</CardContent>
 				</Card>
 			</div>
 		</div>
