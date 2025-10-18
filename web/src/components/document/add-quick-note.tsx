@@ -28,9 +28,12 @@ import { getAllMineSections } from '@/service/section';
 import { Textarea } from '../ui/textarea';
 import { useTranslations } from 'next-intl';
 import { useUserContext } from '@/provider/user-provider';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Alert, AlertDescription } from '../ui/alert';
+import { useSearchParams } from 'next/navigation';
 
 const AddQuickNote = () => {
+	const searchParams = useSearchParams();
+	const sectionId = searchParams.get('section_id');
 	const t = useTranslations();
 	const { userInfo } = useUserContext();
 	const formSchema = z.object({
@@ -56,7 +59,7 @@ const AddQuickNote = () => {
 			auto_summary: false,
 			from_plat: 'revornix-web',
 			labels: [],
-			sections: [],
+			sections: sectionId ? [Number(sectionId)] : [],
 		},
 	});
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
