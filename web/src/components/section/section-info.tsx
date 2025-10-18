@@ -5,7 +5,6 @@ import { enUS } from 'date-fns/locale/en-US';
 import { getSectionDetail, getSectionUser } from '@/service/section';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistance } from 'date-fns';
-import SectionDocument from './section-document';
 import { useRouter } from 'nextjs-toploader/app';
 import { Badge } from '../ui/badge';
 import { useLocale, useTranslations } from 'next-intl';
@@ -158,7 +157,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 							)}
 						</div>
 					</div>
-					<div className='grid grid-cols-12 px-5 mb-3 text-xs text-muted-foreground gap-5'>
+					<div className='grid grid-cols-12 px-5 text-xs text-muted-foreground gap-5'>
 						<div className='col-span-2'>{t('section_subscribers')}</div>
 						<div className='flex flex-row items-center gap-1 col-span-10'>
 							{isLoadingSubscribers && <Skeleton className='w-full h-5' />}
@@ -192,10 +191,6 @@ const SectionInfo = ({ id }: { id: number }) => {
 					</div>
 				</>
 			)}
-
-			<div className='px-5'>
-				<SectionDocument id={id} />
-			</div>
 		</>
 	);
 };

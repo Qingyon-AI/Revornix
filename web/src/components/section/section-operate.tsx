@@ -6,6 +6,7 @@ import SectionOperateDelete from './section-operate-delete';
 import SectionOperateSubscribe from './section-operate-subscribe';
 import SectionOperateShare from './section-operate-share';
 import SectionOperateComment from './section-operate-comment';
+import SectionDocument from './section-document';
 
 const SectionOperate = ({ id }: { id: number }) => {
 	const { userInfo } = useUserContext();
@@ -19,6 +20,7 @@ const SectionOperate = ({ id }: { id: number }) => {
 	return (
 		<div className='w-full flex justify-between'>
 			<SectionOperateComment section_id={id} />
+			<SectionDocument section_id={id} />
 			{section && userInfo?.id === section?.creator.id && (
 				<>
 					<SectionOperateShare section_id={id} />
