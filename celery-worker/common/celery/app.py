@@ -23,6 +23,7 @@ from engine.mineru import MineruEngine
 from engine.mineru_api import MineruApiEngine
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus
 from enums.section import UserSectionAuthority
+from enums.section import SectionDocumentIntegration
 
 import tracemalloc
 import warnings
@@ -270,7 +271,7 @@ async def handle_update_sections(sections: list[int],
                 crud.section.update_section_document_by_section_id_and_document_id(db=db,
                                                                                    document_id=document_id,
                                                                                    section_id=db_section.id,
-                                                                                   status=2)
+                                                                                   status=SectionDocumentIntegration.SUCCESS)
             except Exception as e:
                     log_exception()
                     exception_logger.error(f"Something is error while updating the section: {e}")
@@ -278,7 +279,7 @@ async def handle_update_sections(sections: list[int],
                     crud.section.update_section_document_by_section_id_and_document_id(db=db,
                                                                                        document_id=document_id,
                                                                                        section_id=db_section.id,
-                                                                                       status=3)
+                                                                                       status=SectionDocumentIntegration.FAILED)
         db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while getting the section: {e}, parameter: {sections}, {document_id}, {user_id}")
@@ -408,7 +409,7 @@ async def handle_update_section_use_document(section_id: int,
         crud.section.update_section_document_by_section_id_and_document_id(db=db,
                                                                            document_id=document_id,
                                                                            section_id=db_section.id,
-                                                                           status=2)
+                                                                           status=SectionDocumentIntegration.SUCCESS)
     except Exception as e:
         log_exception()
         exception_logger.error(f"Something is error while updating the section: {e}")
@@ -416,7 +417,7 @@ async def handle_update_section_use_document(section_id: int,
         crud.section.update_section_document_by_section_id_and_document_id(db=db,
                                                                             document_id=document_id,
                                                                             section_id=db_section.id,
-                                                                            status=3)
+                                                                            status=SectionDocumentIntegration.FAILED)
         raise e
     finally:
         db.close()

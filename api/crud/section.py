@@ -91,6 +91,26 @@ def bind_labels_to_section(db: Session,
     db.flush()
     return db_document_labels
 
+def create_or_update_section_document(db: Session,
+                                      section_id: int,
+                                      document_id: int,
+                                      status: int):
+    now = datetime.now(timezone.utc)
+    db_section_document = db.query(models.section.SectionDocument).filter_by(section_id=section_id,
+                                                                             document_id=document_id).one_or_none()
+    if db_section_document is None:
+        db_section_document = models.section.SectionDocument(section_id=section_id,
+                                                             document_id=document_id,
+                                                             create_time=now,
+                                                             update_time=now,
+                                                             status=status)
+        db.add(db_section_document)
+    else:
+        db_section_document.status = status
+        db_section_document.update_time = now
+    db.flush()
+    return db_section_document
+
 def bind_document_to_section(db: Session,
                              section_id: int,
                              document_id: int,
