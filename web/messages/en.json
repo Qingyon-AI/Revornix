@@ -509,6 +509,7 @@
     "section_label_empty": "No tags for section",
     "section_documents": "Documents",
     "section_documents_description": "Here you can view all the documents associated with this article.",
+    "section_documents_add": "Add Document",
     "section_updated_at": "Updated on",
     "section_ai_tips": "This article was identified by AI from a website. Please verify the information accordingly.",
     "section_document_empty": "No associated documents",

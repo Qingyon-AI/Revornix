@@ -30,8 +30,11 @@ import { useTranslations } from 'next-intl';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { useUserContext } from '@/provider/user-provider';
+import { useSearchParams } from 'next/navigation';
 
 const AddFile = () => {
+	const searchParams = useSearchParams();
+	const sectionId = searchParams.get('section_id');
 	const t = useTranslations();
 	const { userInfo } = useUserContext();
 	const formSchema = z.object({
@@ -57,7 +60,7 @@ const AddFile = () => {
 			auto_summary: false,
 			from_plat: 'revornix-web',
 			labels: [],
-			sections: [],
+			sections: sectionId ? [Number(sectionId)] : [],
 		},
 	});
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);

@@ -510,6 +510,7 @@
     "section_label_empty": "暂无专栏标签",
     "section_documents": "文档",
     "section_documents_description": "这里可以查看本文章关联的所有文档。",
+    "section_documents_add": "添加文档",
     "section_updated_at": "更新于",
     "section_ai_tips": "本文由AI识别网站而来，请酌情识别信息。",
     "section_document_empty": "暂无关联文档",
