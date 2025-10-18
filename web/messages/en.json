@@ -566,6 +566,7 @@
     "section_document_card_section_supplement_done": "Supplemented",
     "section_document_card_section_supplement_failed": "Supplement Failed",
     "section_document_card_section_supplement_unknown": "Unknown",
+    "section_comment_content_placeholder": "Let's say something...",
     "section_comment_content_needed": "Comment content cannot be empty",
     "section_comment_content_no_more_than": "Comment must not exceed 1000 characters",
     "section_comment_submit": "Submit",

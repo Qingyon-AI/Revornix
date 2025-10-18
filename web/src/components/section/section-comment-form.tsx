@@ -1,3 +1,5 @@
+'use client';
+
 import { Form, FormField, FormItem, FormMessage } from '../ui/form';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
@@ -88,22 +90,38 @@ const SectionCommentForm = ({ section_id }: { section_id: number }) => {
 					control={form.control}
 					render={({ field }) => {
 						return (
-							<FormItem>
-								<Textarea
-									{...field}
-									className='bg-white shadow-none dark:bg-black'></Textarea>
-								<FormMessage />
-								<div className='flex flex-row items-center justify-between mb-3'>
-									<Button
-										size={'sm'}
-										type='submit'
-										className='text-xs ml-auto'
-										disabled={commentSubmitting}>
-										{t('section_comment_submit')}
-										<SendIcon />
-										{commentSubmitting && <Loader2 className='animate-spin' />}
-									</Button>
+							<FormItem className='mb-5'>
+								<div className='bg-input/50 p-3 rounded-lg'>
+									<Textarea
+										className='dark:bg-transparent shadow-none p-0 border-none outline-none ring-0 focus-visible:ring-0 mb-2'
+										placeholder={t('section_comment_content_placeholder')}
+										{...field}
+										onKeyDown={(e) => {
+											if (e.metaKey && e.key === 'Enter') {
+												e.preventDefault(); // 阻止换行
+												form.handleSubmit(
+													onFormValidateSuccess,
+													onFormValidateError
+												)();
+											}
+										}}
+									/>
+									<div className='flex flex-row items-center justify-between'>
+										<Button
+											size={'sm'}
+											type='submit'
+											className='text-xs ml-auto'
+											disabled={commentSubmitting}>
+											{t('section_comment_submit')}
+											<SendIcon />
+											{commentSubmitting && (
+												<Loader2 className='animate-spin' />
+											)}
+										</Button>
+									</div>
 								</div>
+
+								<FormMessage />
 							</FormItem>
 						);
 					}}

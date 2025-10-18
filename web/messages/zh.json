@@ -567,6 +567,7 @@
     "section_document_card_section_supplement_done": "已补充",
     "section_document_card_section_supplement_failed": "补充失败",
     "section_document_card_section_supplement_unknown": "未知",
+    "section_comment_content_placeholder": "说点儿什么吧...",
     "section_comment_content_needed": "评论内容不能为空",
     "section_comment_content_no_more_than": "评论字数不得多于1000字",
     "section_comment_submit": "提交",

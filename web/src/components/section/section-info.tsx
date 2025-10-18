@@ -100,9 +100,9 @@ const SectionInfo = ({ id }: { id: number }) => {
 						</div>
 					)}
 					<div className='grid grid-cols-12 px-5 mb-3 text-xs text-muted-foreground gap-5'>
-						<div className='col-span-2'>{t('section_creator')}</div>
+						<div className='col-span-3'>{t('section_creator')}</div>
 						{section?.creator && (
-							<div className='flex flex-row items-center gap-1 col-span-10'>
+							<div className='flex flex-row items-center gap-1 col-span-9'>
 								<Avatar
 									className='size-5'
 									title={section?.creator.nickname ?? ''}
@@ -126,8 +126,8 @@ const SectionInfo = ({ id }: { id: number }) => {
 						)}
 					</div>
 					<div className='grid grid-cols-12 px-5 mb-3 text-xs text-muted-foreground gap-5'>
-						<div className='col-span-2'>{t('section_participants')}</div>
-						<div className='flex flex-row items-center gap-1 col-span-10'>
+						<div className='col-span-3'>{t('section_participants')}</div>
+						<div className='flex flex-row items-center gap-1 col-span-9'>
 							{isLoadingMembers && <Skeleton className='w-full h-5' />}
 							{!isLoadingMembers && sectionMembers && (
 								<div className='*:data-[slot=avatar]:ring-background flex -space-x-1 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale'>
@@ -158,8 +158,8 @@ const SectionInfo = ({ id }: { id: number }) => {
 						</div>
 					</div>
 					<div className='grid grid-cols-12 px-5 text-xs text-muted-foreground gap-5'>
-						<div className='col-span-2'>{t('section_subscribers')}</div>
-						<div className='flex flex-row items-center gap-1 col-span-10'>
+						<div className='col-span-3'>{t('section_subscribers')}</div>
+						<div className='flex flex-row items-center gap-1 col-span-9'>
 							{isLoadingSubscribers && <Skeleton className='w-full h-5' />}
 							{!isLoadingSubscribers && sectionSubscribers && (
 								<div className='*:data-[slot=avatar]:ring-background flex -space-x-1 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale'>
