@@ -1,4 +1,5 @@
 import {
+	SectionDocumentInfo,
 	SectionInfo as SectionInfoType,
 	SectionSeoDetailRequest,
 } from '@/generated';
@@ -9,7 +10,13 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
 import { utils } from '@kinda/utils';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -30,6 +37,8 @@ import SectionDocumentCard from '@/components/section/section-document-card';
 import SectionCommentsList from '@/components/section/section-comments-list';
 import SectionCommentForm from '@/components/section/section-comment-form';
 import { Separator } from '@/components/ui/separator';
+import { searchSectionDocuments } from '@/service/section';
+import SectionDocumentsList from '@/components/section/section-documents-list';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -184,14 +193,12 @@ const SEOSectionDetail = async (props: {
 				<Card className='relative shadow-none h-full flex flex-col !gap-0'>
 					<CardHeader className='mb-5'>
 						<CardTitle>{t('section_documents')}</CardTitle>
-						<CardDescription>{t('section_documents_description')}</CardDescription>
+						<CardDescription>
+							{t('section_documents_description')}
+						</CardDescription>
 					</CardHeader>
 					<CardContent className='flex-1 overflow-auto flex flex-col gap-5'>
-						{section &&
-							section.documents &&
-							section.documents.map((document, index) => {
-								return <SectionDocumentCard key={index} document={document} />;
-							})}
+						{section && <SectionDocumentsList section_id={section.id} />}
 					</CardContent>
 				</Card>
 			</div>
