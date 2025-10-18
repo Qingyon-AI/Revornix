@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2, PencilIcon } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
-import { Switch } from '../ui/switch';
 import CoverUpdate from './cover-update';
 import {
 	Sheet,
@@ -259,25 +258,6 @@ const SectionOperateConfiguration = ({
 													{t('section_configuration_form_label_create')}
 												</Button>
 											</div>
-										</FormItem>
-									);
-								}}
-							/>
-							<FormField
-								name='public'
-								control={form.control}
-								render={({ field }) => {
-									return (
-										<FormItem className='flex flex-row justify-between items-center border rounded p-5 dark:bg-input/30'>
-											<FormLabel>
-												{t('section_configuration_formpublic')}
-											</FormLabel>
-											<Switch
-												checked={field.value}
-												onCheckedChange={(e) => {
-													field.onChange(e);
-												}}
-											/>
 										</FormItem>
 									);
 								}}
