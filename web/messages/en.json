@@ -552,7 +552,7 @@
     "section_delete_alert_detail": "Are you sure you want to delete this section? All subscribed users will be removed automatically! This action cannot be undone!",
     "section_delete_cancel": "Cancel",
     "section_delete_confirm": "Confirm Deletion",
-    "section_subscribe": "Subscribe to Section",
+    "section_subscribe": "Subscribe",
     "section_subscribe_success": "Subscribed successfully. You will receive notifications when the section is updated.",
     "section_unsubscribe": "Unsubscribe",
     "section_unsubscribe_success": "Unsubscribed successfully",

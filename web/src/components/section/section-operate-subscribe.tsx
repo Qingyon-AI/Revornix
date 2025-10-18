@@ -8,6 +8,7 @@ import { utils } from '@kinda/utils';
 import { BellOffIcon, BellPlusIcon, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { useUserContext } from '@/provider/user-provider';
 
 const SectionOperateSubscribe = ({
 	section_id,
@@ -18,6 +19,9 @@ const SectionOperateSubscribe = ({
 }) => {
 	const t = useTranslations();
 	const id = section_id;
+
+	const { userInfo } = useUserContext();
+
 	const [subscribing, setSubscribing] = useState(false);
 
 	const queryClient = getQueryClient();
@@ -50,7 +54,17 @@ const SectionOperateSubscribe = ({
 		}
 		section.is_subscribed = !section.is_subscribed;
 		setSubscribing(false);
-		queryClient.invalidateQueries({ queryKey: ['getSectionDetail', id] });
+		queryClient.invalidateQueries({
+			queryKey: ['getSectionDetail', id],
+		});
+		queryClient.invalidateQueries({
+			queryKey: ['getSectionSubscribers', id],
+		});
+		queryClient.invalidateQueries({
+			predicate(query) {
+				return query.queryKey.includes('searchMySubscribedSection');
+			},
+		});
 	};
 
 	return (

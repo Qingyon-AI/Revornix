@@ -12,9 +12,12 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
 import { SectionUserPublicInfo } from '@/generated';
 import { useMutation } from '@tanstack/react-query';
-import { modifySectionUser } from '@/service/section';
+import { deleteSectionUser, modifySectionUser } from '@/service/section';
 import { toast } from 'sonner';
 import { cloneDeep } from 'lodash';
+import { Button } from '../ui/button';
+import { Loader2, XCircleIcon } from 'lucide-react';
+import { getQueryClient } from '@/lib/get-query-client';
 
 const SectionMemberItem = ({
 	user,
@@ -25,6 +28,7 @@ const SectionMemberItem = ({
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
+	const queryClient = getQueryClient();
 
 	const mutateModifySectionUser = useMutation({
 		mutationFn: modifySectionUser,
@@ -42,6 +46,26 @@ const SectionMemberItem = ({
 		},
 	});
 
+	const mutateDeleteSectionUser = useMutation({
+		mutationFn: deleteSectionUser,
+		onError(error, variables, context) {
+			console.error(error, variables, context);
+			toast.error(error.message);
+		},
+		onSuccess(data, variables, onMutateResult, context) {
+			queryClient.invalidateQueries({
+				queryKey: ['getSectionMembers', section_id],
+			});
+		},
+	});
+
+	const handleDeleteSectionUser = () => {
+		mutateDeleteSectionUser.mutate({
+			section_id: section_id,
+			user_id: user.id,
+		});
+	};
+
 	return (
 		<div className='flex items-center justify-between'>
 			<div className='flex flex-row gap-2 items-center'>
@@ -58,35 +82,47 @@ const SectionMemberItem = ({
 				</Avatar>
 				<p>{user.nickname}</p>
 			</div>
-			<Select
-				value={user.authority?.toString()}
-				onValueChange={(e) => {
-					mutateModifySectionUser.mutate({
-						section_id: section_id,
-						user_id: user.id,
-						authority: Number(e),
-						role: UserSectionRole.MEMBER,
-					});
-				}}>
-				<SelectTrigger
-					className='h-6 px-2 text-xs w-[140px] flex-shrink-0'
-					size={'sm'}>
-					<SelectValue placeholder='请设置该用户的权限' />
-				</SelectTrigger>
-				<SelectContent className='text-xs'>
-					<SelectGroup>
-						<SelectItem value='0'>
-							{t('section_share_user_authority_full_access')}
-						</SelectItem>
-						<SelectItem value='1'>
-							{t('section_share_user_authority_w_and_r')}
-						</SelectItem>
-						<SelectItem value='2'>
-							{t('section_share_user_authority_r_only')}
-						</SelectItem>
-					</SelectGroup>
-				</SelectContent>
-			</Select>
+			<div className='flex flex-row gap-2 items-center'>
+				<Select
+					value={user.authority?.toString()}
+					onValueChange={(e) => {
+						mutateModifySectionUser.mutate({
+							section_id: section_id,
+							user_id: user.id,
+							authority: Number(e),
+							role: UserSectionRole.MEMBER,
+						});
+					}}>
+					<SelectTrigger
+						className='h-6 px-2 text-xs w-[140px] flex-shrink-0'
+						size={'sm'}>
+						<SelectValue placeholder='请设置该用户的权限' />
+					</SelectTrigger>
+					<SelectContent className='text-xs'>
+						<SelectGroup>
+							<SelectItem value='0'>
+								{t('section_share_user_authority_full_access')}
+							</SelectItem>
+							<SelectItem value='1'>
+								{t('section_share_user_authority_w_and_r')}
+							</SelectItem>
+							<SelectItem value='2'>
+								{t('section_share_user_authority_r_only')}
+							</SelectItem>
+						</SelectGroup>
+					</SelectContent>
+				</Select>
+				<Button
+					size={'icon'}
+					variant={'secondary'}
+					disabled={mutateDeleteSectionUser.isPending}
+					onClick={handleDeleteSectionUser}>
+					<XCircleIcon />
+					{mutateDeleteSectionUser.isPending && (
+						<Loader2 className='animate-spin' />
+					)}
+				</Button>
+			</div>
 		</div>
 	);
 };
