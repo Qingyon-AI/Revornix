@@ -102,6 +102,7 @@ models/InifiniteScrollPagnitionDocumentNoteInfo.ts
 models/InifiniteScrollPagnitionNotificationRecord.ts
 models/InifiniteScrollPagnitionRssServerInfo.ts
 models/InifiniteScrollPagnitionSectionCommentInfo.ts
+models/InifiniteScrollPagnitionSectionDocumentInfo.ts
 models/InifiniteScrollPagnitionSectionInfo.ts
 models/InifiniteScrollPagnitionUserPublicInfo.ts
 models/InitialPasswordResponse.ts

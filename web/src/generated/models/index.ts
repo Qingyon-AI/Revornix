@@ -89,6 +89,7 @@ export * from './InifiniteScrollPagnitionDocumentNoteInfo';
 export * from './InifiniteScrollPagnitionNotificationRecord';
 export * from './InifiniteScrollPagnitionRssServerInfo';
 export * from './InifiniteScrollPagnitionSectionCommentInfo';
+export * from './InifiniteScrollPagnitionSectionDocumentInfo';
 export * from './InifiniteScrollPagnitionSectionInfo';
 export * from './InifiniteScrollPagnitionUserPublicInfo';
 export * from './InitialPasswordResponse';

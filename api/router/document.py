@@ -15,6 +15,7 @@ from common.logger import log_exception, exception_logger
 from common.common import get_user_remote_file_system
 from common.celery.app import start_process_document, update_sections
 from enums.document import DocumentCategory, DocumentMdConvertStatus
+from enums.section import UserSectionRole, UserSectionAuthority
 
 document_router = APIRouter()
     
@@ -178,10 +179,11 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                            creator_id=user.id,
                                                            title=f'{now.date().isoformat()} Summary',
                                                            description=f"This document is the summary of all documents on {now.date().isoformat()}.")
-            crud.section.bind_section_to_user(db=db,
-                                              section_id=db_today_section.id,
+            crud.section.create_section_user(db=db,
+                                             section_id=db_today_section.id,
                                               user_id=user.id,
-                                              authority=0)
+                                             role=UserSectionRole.CREATOR,
+                                             authority=UserSectionAuthority.FULL_ACCESS)
             crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
                                                                                  section_id=db_today_section.id,
                                                                                  date=now.date().isoformat())
@@ -225,10 +227,11 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                            creator_id=user.id,
                                                            title=f'{now.date().isoformat()} Summary',
                                                            description=f'This document is the summary of all documents on {now.date().isoformat()}.')
-            crud.section.bind_section_to_user(db=db,
-                                              section_id=db_today_section.id,
-                                              user_id=user.id,
-                                              authority=0)
+            crud.section.create_section_user(db=db,
+                                             section_id=db_today_section.id,
+                                             user_id=user.id,
+                                             role=UserSectionRole.CREATOR,
+                                             authority=UserSectionAuthority.FULL_ACCESS)
             crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
                                                                                  section_id=db_today_section.id,
                                                                                  date=now.date().isoformat())
@@ -270,10 +273,11 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                            creator_id=user.id,
                                                            title=f'{now.date().isoformat()} Summary',
                                                            description=f'This document is the summary of all documents on {now.date().isoformat()}.')
-            crud.section.bind_section_to_user(db=db,
-                                              section_id=db_today_section.id,
-                                              user_id=user.id,
-                                              authority=0)
+            crud.section.create_section_user(db=db,
+                                             section_id=db_today_section.id,
+                                             user_id=user.id,
+                                             authority=UserSectionAuthority.FULL_ACCESS,
+                                             role=UserSectionRole.CREATOR)
             crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
                                                                                  section_id=db_today_section.id,
                                                                                  date=now.date().isoformat())

@@ -238,6 +238,7 @@ class DaySectionRequest(BaseModel):
     date: str
 
 class DaySectionResponse(BaseModel):
+    section_id: int
     creator: UserPublicInfo
     date: str
     title: str

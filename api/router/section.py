@@ -10,7 +10,7 @@ from enums.section import UserSectionAuthority, UserSectionRole
 
 section_router = APIRouter()
 
-@section_router.post('/documents', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
+@section_router.post('/documents', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionDocumentInfo])
 async def section_document_request(section_document_request: schemas.section.SectionDocumentRequest,
                                    db: Session = Depends(get_db),
                                    user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)):
@@ -28,26 +28,19 @@ async def section_document_request(section_document_request: schemas.section.Sec
                                                           keyword=section_document_request.keyword,
                                                           desc=section_document_request.desc)
     
-    def get_document_info(document: models.document.Document): 
+    def get_section_document_info(document: models.document.Document): 
         db_labels = crud.document.get_labels_by_document_id(db=db,
                                                             document_id=document.id)
-        db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
-                                                                                 document_id=document.id)
-        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(db=db,
-                                                                                 document_id=document.id)
-        db_process_task = crud.task.get_document_process_task_by_document_id(db=db,
-                                                                             document_id=document.id)
-        db_graph_task = crud.task.get_document_graph_task_by_document_id(db=db,
-                                                                         document_id=document.id)
-        return schemas.document.DocumentInfo(
+        db_section_document = crud.section.get_section_document_by_section_id_and_document_id(db=db,
+                                                                                              section_id=section_document_request.section_id,
+                                                                                              document_id=document.id)
+        return schemas.section.SectionDocumentInfo.model_validate({
             **document.__dict__,
-            labels=db_labels,
-            transform_task=db_transform_task,
-            embedding_task=db_embedding_task,
-            graph_task=db_graph_task,
-            process_task=db_process_task
-        )
-    documents = [get_document_info(document) for document in db_documents]
+            'title': document.title or 'Unnamed document',
+            'status': db_section_document.status,
+            'labels': db_labels,
+        })
+    documents = [get_section_document_info(document) for document in db_documents]
     if len(documents) < section_document_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == section_document_request.limit:
@@ -751,6 +744,7 @@ async def get_date_section_info(
     ]
     
     res = schemas.section.DaySectionResponse(
+        section_id=db_section.id,
         creator=db_section.creator,
         create_time=db_section.create_time,
         update_time=db_section.update_time,

@@ -5,6 +5,7 @@ import httpx
 import schemas
 import markdown
 import feedparser
+from enums.section import UserSectionRole, UserSectionAuthority
 from common.sql import SessionLocal
 from common.logger import info_logger, exception_logger
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -132,10 +133,11 @@ async def fetch_all_rss_sources_and_update():
                                                               creator_id=rss_server.user_id,
                                                               title=f'{now.date().isoformat()} Summary',
                                                               description=f"This document is the summary of all documents on {now.date().isoformat()}.")
-            crud.section.bind_section_to_user(db=db,
-                                              section_id=db_user_day_section.id,
-                                              user_id=rss_server.user_id,
-                                              authority=0)
+            crud.section.create_section_user(db=db,
+                                             section_id=db_user_day_section.id,
+                                             user_id=rss_server.user_id,
+                                             role=UserSectionRole.CREATOR,
+                                             authority=UserSectionAuthority.FULL_ACCESS)
             crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
                                                                                  section_id=db_user_day_section.id,
                                                                                  date=now.date().isoformat())

@@ -6,8 +6,8 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from '@/components/ui/sheet';
-import { useQuery } from '@tanstack/react-query';
-import { getSectionDetail, getSectionUser } from '@/service/section';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { getSectionUser, searchSectionDocuments } from '@/service/section';
 import SectionDocumentCard from './section-document-card';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
@@ -15,19 +15,15 @@ import { PlusCircleIcon, TableOfContentsIcon } from 'lucide-react';
 import { useRouter } from 'nextjs-toploader/app';
 import { UserSectionRole } from '@/enums/section';
 import { useUserContext } from '@/provider/user-provider';
+import { useInView } from 'react-intersection-observer';
+import { useEffect } from 'react';
+import { Skeleton } from '../ui/skeleton';
 
 const SectionDocument = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
 	const router = useRouter();
 
 	const { userInfo } = useUserContext();
-
-	const { data: section } = useQuery({
-		queryKey: ['getSectionDetail', section_id],
-		queryFn: async () => {
-			return getSectionDetail({ section_id: section_id });
-		},
-	});
 
 	const { data: sectionUsers, isLoading: isLoadingMembers } = useQuery({
 		queryKey: ['getSectionMembers', section_id],
@@ -45,6 +41,41 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 		});
 		router.push(`/document/create?${params.toString()}`);
 	};
+
+	const { ref: bottomRef, inView } = useInView();
+	const {
+		data,
+		isFetchingNextPage,
+		isFetching,
+		isSuccess,
+		fetchNextPage,
+		hasNextPage,
+	} = useInfiniteQuery({
+		queryKey: ['searchSectionDocument', ''],
+		queryFn: (pageParam) => searchSectionDocuments({ ...pageParam.pageParam }),
+		initialPageParam: {
+			limit: 10,
+			section_id: section_id,
+			keyword: '',
+			desc: true,
+		},
+		getNextPageParam: (lastPage) => {
+			return lastPage.has_more
+				? {
+						start: lastPage.next_start,
+						limit: lastPage.limit,
+						section_id: section_id,
+						keyword: '',
+						desc: true,
+				  }
+				: undefined;
+		},
+	});
+	const documents = data?.pages.flatMap((page) => page.elements) || [];
+
+	useEffect(() => {
+		inView && !isFetching && hasNextPage && fetchNextPage();
+	}, [inView, isFetching, hasNextPage]);
 
 	return (
 		<Sheet>
@@ -65,11 +96,26 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 					</SheetDescription>
 				</SheetHeader>
 				<div className='px-5 flex flex-col gap-5 overflow-auto pb-5 flex-1'>
-					{section &&
-						section.documents &&
-						section.documents.map((document, index) => {
+					{isSuccess &&
+						documents &&
+						documents.map((document, index) => {
 							return <SectionDocumentCard key={index} document={document} />;
 						})}
+					{isFetching && !data && (
+						<>
+							{[...Array(10)].map((number, index) => {
+								return <Skeleton className='h-40 w-full' key={index} />;
+							})}
+						</>
+					)}
+					{isFetchingNextPage && data && (
+						<>
+							{[...Array(10)].map((number, index) => {
+								return <Skeleton className='h-40 w-full' key={index} />;
+							})}
+						</>
+					)}
+					<div ref={bottomRef}></div>
 				</div>
 				{userInfo &&
 					sectionUsers?.users.find((user) => {

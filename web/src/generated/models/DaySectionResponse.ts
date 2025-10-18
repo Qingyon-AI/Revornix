@@ -36,6 +36,12 @@ import {
 export interface DaySectionResponse {
     /**
      * 
+     * @type {number}
+     * @memberof DaySectionResponse
+     */
+    section_id: number;
+    /**
+     * 
      * @type {UserPublicInfo}
      * @memberof DaySectionResponse
      */
@@ -88,6 +94,7 @@ export interface DaySectionResponse {
  * Check if a given object implements the DaySectionResponse interface.
  */
 export function instanceOfDaySectionResponse(value: object): value is DaySectionResponse {
+    if (!('section_id' in value) || value['section_id'] === undefined) return false;
     if (!('creator' in value) || value['creator'] === undefined) return false;
     if (!('date' in value) || value['date'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
@@ -108,6 +115,7 @@ export function DaySectionResponseFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
+        'section_id': json['section_id'],
         'creator': UserPublicInfoFromJSON(json['creator']),
         'date': json['date'],
         'title': json['title'],
@@ -130,6 +138,7 @@ export function DaySectionResponseToJSONTyped(value?: DaySectionResponse | null,
 
     return {
         
+        'section_id': value['section_id'],
         'creator': UserPublicInfoToJSON(value['creator']),
         'date': value['date'],
         'title': value['title'],

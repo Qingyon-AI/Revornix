@@ -20,8 +20,8 @@ import type {
   DaySectionRequest,
   DaySectionResponse,
   HTTPValidationError,
-  InifiniteScrollPagnitionDocumentInfo,
   InifiniteScrollPagnitionSectionCommentInfo,
+  InifiniteScrollPagnitionSectionDocumentInfo,
   InifiniteScrollPagnitionSectionInfo,
   LabelAddRequest,
   LabelDeleteRequest,
@@ -64,10 +64,10 @@ import {
     DaySectionResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
-    InifiniteScrollPagnitionDocumentInfoFromJSON,
-    InifiniteScrollPagnitionDocumentInfoToJSON,
     InifiniteScrollPagnitionSectionCommentInfoFromJSON,
     InifiniteScrollPagnitionSectionCommentInfoToJSON,
+    InifiniteScrollPagnitionSectionDocumentInfoFromJSON,
+    InifiniteScrollPagnitionSectionDocumentInfoToJSON,
     InifiniteScrollPagnitionSectionInfoFromJSON,
     InifiniteScrollPagnitionSectionInfoToJSON,
     LabelAddRequestFromJSON,
@@ -1024,7 +1024,7 @@ export class SectionApi extends runtime.BaseAPI {
     /**
      * Section Document Request
      */
-    async sectionDocumentRequestSectionDocumentsPostRaw(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async sectionDocumentRequestSectionDocumentsPostRaw(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionDocumentInfo>> {
         if (requestParameters['sectionDocumentRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionDocumentRequest',
@@ -1057,13 +1057,13 @@ export class SectionApi extends runtime.BaseAPI {
             body: SectionDocumentRequestToJSON(requestParameters['sectionDocumentRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Section Document Request
      */
-    async sectionDocumentRequestSectionDocumentsPost(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+    async sectionDocumentRequestSectionDocumentsPost(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionDocumentInfo> {
         const response = await this.sectionDocumentRequestSectionDocumentsPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
