@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from enums.document import DocumentCategory
 from enums.section import UserSectionAuthority, UserSectionRole
+from enums.section import SectionDocumentIntegration
 
 tp_router = APIRouter()
 
@@ -134,9 +135,10 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                                                  date=now.date().isoformat())
         document_create_request.sections.append(db_today_section.id)
         for section_id in document_create_request.sections:
-            db_section_documents = crud.section.bind_document_to_section(db=db,
-                                                                         document_id=db_document.id,
-                                                                         section_id=section_id)
+            db_section_documents = crud.section.create_or_update_section_document(db=db,
+                                                                                  document_id=db_document.id,
+                                                                                  section_id=section_id,
+                                                                                  status=SectionDocumentIntegration.WAIT_TO)
         crud.task.create_document_transform_task(db=db,
                                                  user_id=user.id,
                                                  document_id=db_document.id)
@@ -183,13 +185,14 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                                                  date=now.date().isoformat())
         document_create_request.sections.append(db_today_section.id)
         for section_id in document_create_request.sections:
-            db_section_documents = crud.section.bind_document_to_section(db=db,
-                                                                         document_id=db_document.id,
-                                                                         section_id=section_id)
-        crud.section.bind_document_to_section(db=db,
-                                              section_id=db_today_section.id,
-                                              document_id=db_document.id,
-                                              status=0)
+            db_section_documents = crud.section.create_or_update_section_document(db=db,
+                                                                                  document_id=db_document.id,
+                                                                                  section_id=section_id,
+                                                                                  status=SectionDocumentIntegration.WAIT_TO)
+        crud.section.create_or_update_section_document(db=db,
+                                                       section_id=db_today_section.id,
+                                                       document_id=db_document.id,
+                                                       status=SectionDocumentIntegration.WAIT_TO)
         db.commit()
     elif document_create_request.category == DocumentCategory.QUICK_NOTE:
         db_document = crud.document.create_base_document(
@@ -230,13 +233,14 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                                                  date=now.date().isoformat())
         document_create_request.sections.append(db_today_section.id)
         for section_id in document_create_request.sections:
-            db_section_documents = crud.section.bind_document_to_section(db=db,
-                                                                         document_id=db_document.id,
-                                                                         section_id=section_id)
-        crud.section.bind_document_to_section(db=db,
-                                              section_id=db_today_section.id,
-                                              document_id=db_document.id,
-                                              status=0)
+            db_section_documents = crud.section.create_or_update_section_document(db=db,
+                                                                                  document_id=db_document.id,
+                                                                                  section_id=section_id,
+                                                                                  status=SectionDocumentIntegration.WAIT_TO)
+        crud.section.create_or_update_section_document(db=db,
+                                                       section_id=db_today_section.id,
+                                                       document_id=db_document.id,
+                                                       status=SectionDocumentIntegration.WAIT_TO)
         db.commit()
     start_process_document.delay(db_document.id, 
                                  user.id, 

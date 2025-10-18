@@ -9,3 +9,9 @@ class UserSectionRole(IntEnum):
     CREATOR = 0
     MEMBER = 1
     SUBSCRIBER = 2
+    
+class SectionDocumentIntegration(IntEnum):
+    WAIT_TO = 0
+    SUPPLEMENTING = 1
+    SUCCESS = 2
+    FAILED = 3

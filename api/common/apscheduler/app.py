@@ -19,6 +19,7 @@ from notification_template.daily_summary import DailySummaryNotificationTemplate
 from common.celery.app import start_process_document
 from enums.document import DocumentMdConvertStatus
 from enums.notification import NotificationContentType, NotificationSourceCategory
+from enums.section import SectionDocumentIntegration
 
 scheduler = AsyncIOScheduler()
 
@@ -57,9 +58,10 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                                                                                                                 document_id=existing_doc.id)
                     # 如果该文档在rss对应的专栏下不存在，那么就绑定
                     if db_exist_section_document is None:
-                        crud.section.bind_document_to_section(db=db,
-                                                              document_id=existing_doc.id,
-                                                              section_id=section.id)
+                        crud.section.create_or_update_section_document(db=db,
+                                                                       document_id=existing_doc.id,
+                                                                       section_id=section.id,
+                                                                       status=SectionDocumentIntegration.WAIT_TO)
                 if entry_updated and existing_doc.update_time >= entry_updated:
                     continue
                 elif entry_published and existing_doc.update_time >= entry_published:
@@ -102,9 +104,10 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                                                                             url=entry.link, 
                                                                             document_id=db_base_document.id)
                 for section in rss_server.sections:
-                    db_section_document = crud.section.bind_document_to_section(db=db,
-                                                                                document_id=db_base_document.id,
-                                                                                section_id=section.id)
+                    db_section_document = crud.section.create_or_update_section_document(db=db,
+                                                                                         document_id=db_base_document.id,
+                                                                                         section_id=section.id,
+                                                                                         status=SectionDocumentIntegration.WAIT_TO)
                 crud.task.create_document_transform_task(db=db,
                                                          user_id=rss_server.user_id,
                                                          document_id=db_base_document.id)
