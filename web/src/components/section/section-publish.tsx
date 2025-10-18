@@ -91,10 +91,10 @@ const SectionPublish = ({ section_id }: { section_id: number }) => {
 					<Button
 						size={'icon'}
 						onClick={() => {
-							section &&
-								section.public &&
+							sectionPublish &&
+								sectionPublish.uuid &&
 								copy(
-									`https://app.revornix.com/section/${sectionPublish?.uuid}`
+									`${process.env.NEXT_PUBLIC_HOST}/section/${sectionPublish?.uuid}`
 								);
 							toast.success(t('copied'));
 						}}>
