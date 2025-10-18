@@ -11,23 +11,26 @@ import { getSectionDetail } from '@/service/section';
 import SectionDocumentCard from './section-document-card';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
+import { TableOfContentsIcon } from 'lucide-react';
 
-const SectionDocument = ({ id }: { id: number }) => {
+const SectionDocument = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
 	const { data: section } = useQuery({
-		queryKey: ['getSectionDetail', id],
+		queryKey: ['getSectionDetail', section_id],
 		queryFn: async () => {
-			return getSectionDetail({ section_id: id });
+			return getSectionDetail({ section_id: section_id });
 		},
 	});
 
 	return (
 		<Sheet>
 			<SheetTrigger asChild>
-				<Button variant={'secondary'} className='text-xs text-muted-foreground underline w-full rounded'>
-					{t('section_documents_summary', {
-						section_documents_count: section?.documents?.length || 0,
-					})}
+				<Button
+					title={t('section_documents')}
+					variant={'ghost'}
+					className='flex-1 text-xs w-full'>
+					<TableOfContentsIcon />
+					{t('section_documents')}
 				</Button>
 			</SheetTrigger>
 			<SheetContent>
