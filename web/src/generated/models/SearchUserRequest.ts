@@ -36,13 +36,13 @@ export interface SearchUserRequest {
      * @type {number}
      * @memberof SearchUserRequest
      */
-    start: number;
+    start?: number | null;
     /**
      * 
      * @type {number}
      * @memberof SearchUserRequest
      */
-    limit: number;
+    limit?: number | null;
 }
 
 /**
@@ -51,8 +51,6 @@ export interface SearchUserRequest {
 export function instanceOfSearchUserRequest(value: object): value is SearchUserRequest {
     if (!('filter_name' in value) || value['filter_name'] === undefined) return false;
     if (!('filter_value' in value) || value['filter_value'] === undefined) return false;
-    if (!('start' in value) || value['start'] === undefined) return false;
-    if (!('limit' in value) || value['limit'] === undefined) return false;
     return true;
 }
 
@@ -68,8 +66,8 @@ export function SearchUserRequestFromJSONTyped(json: any, ignoreDiscriminator: b
         
         'filter_name': json['filter_name'],
         'filter_value': json['filter_value'],
-        'start': json['start'],
-        'limit': json['limit'],
+        'start': json['start'] == null ? undefined : json['start'],
+        'limit': json['limit'] == null ? undefined : json['limit'],
     };
 }
 

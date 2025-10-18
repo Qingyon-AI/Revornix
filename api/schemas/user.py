@@ -1,11 +1,12 @@
 from pydantic import BaseModel, field_serializer, field_validator
 from protocol.remote_file_service import RemoteFileServiceProtocol
+from datetime import datetime, timezone
 
 class SearchUserRequest(BaseModel):
     filter_name: str
     filter_value: str
-    start: int
-    limit: int
+    start: int | None = None
+    limit: int | None = None
     
     @field_validator('filter_name')
     def filter_name_validator(cls, v):
@@ -161,11 +162,25 @@ class PrivateUserInfo(BaseModel):
 class UserInfoRequest(BaseModel):
     user_id: int
     
-class UserPublicBaseInfo(BaseModel):
+class SectionUserPublicInfo(BaseModel):
     id: int
     nickname: str | None = None
     avatar: str | None = None
     slogan: str | None = None
+    authority: int | None = None
+    role: int | None = None
+    create_time: datetime
+    update_time: datetime
+    @field_validator("create_time", mode="before")
+    def ensure_create_timezone(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    @field_validator("update_time", mode="before")
+    def ensure_update_timezone(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
     @field_serializer("avatar")
     def serialize_avatar(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)

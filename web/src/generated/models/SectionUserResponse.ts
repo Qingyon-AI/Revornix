@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { UserPublicBaseInfo } from './UserPublicBaseInfo';
+import type { SectionUserPublicInfo } from './SectionUserPublicInfo';
 import {
-    UserPublicBaseInfoFromJSON,
-    UserPublicBaseInfoFromJSONTyped,
-    UserPublicBaseInfoToJSON,
-    UserPublicBaseInfoToJSONTyped,
-} from './UserPublicBaseInfo';
+    SectionUserPublicInfoFromJSON,
+    SectionUserPublicInfoFromJSONTyped,
+    SectionUserPublicInfoToJSON,
+    SectionUserPublicInfoToJSONTyped,
+} from './SectionUserPublicInfo';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface SectionUserResponse {
     /**
      * 
-     * @type {Array<UserPublicBaseInfo>}
+     * @type {Array<SectionUserPublicInfo>}
      * @memberof SectionUserResponse
      */
-    users: Array<UserPublicBaseInfo>;
+    users: Array<SectionUserPublicInfo>;
 }
 
 /**
@@ -53,7 +53,7 @@ export function SectionUserResponseFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'users': ((json['users'] as Array<any>).map(UserPublicBaseInfoFromJSON)),
+        'users': ((json['users'] as Array<any>).map(SectionUserPublicInfoFromJSON)),
     };
 }
 
@@ -68,7 +68,7 @@ export function SectionUserResponseToJSONTyped(value?: SectionUserResponse | nul
 
     return {
         
-        'users': ((value['users'] as Array<any>).map(UserPublicBaseInfoToJSON)),
+        'users': ((value['users'] as Array<any>).map(SectionUserPublicInfoToJSON)),
     };
 }
 

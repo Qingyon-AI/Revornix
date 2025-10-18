@@ -1,7 +1,7 @@
 from pydantic import BaseModel, field_validator, field_serializer
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
-from schemas.user import UserPublicInfo, UserPublicBaseInfo
+from schemas.user import UserPublicInfo, SectionUserPublicInfo
 from enums.section import UserSectionRole
 
 class SectionUserRequest(BaseModel):
@@ -9,7 +9,7 @@ class SectionUserRequest(BaseModel):
     filter_role: int | None = None
     
 class SectionUserResponse(BaseModel):
-    users: list[UserPublicBaseInfo]
+    users: list[SectionUserPublicInfo]
 
 class SectionUserDeleteRequest(BaseModel):
     section_id: int

@@ -30,7 +30,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 	});
 
 	const { data: sectionMembers, isLoading: isLoadingMembers } = useQuery({
-		queryKey: ['getSectionMembers', id],
+		queryKey: ['getSectionMembers', id, UserSectionRole.MEMBER],
 		queryFn: async () => {
 			return getSectionUser({
 				section_id: id,
@@ -132,9 +132,10 @@ const SectionInfo = ({ id }: { id: number }) => {
 								<div className='*:data-[slot=avatar]:ring-background flex -space-x-1 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale'>
 									{sectionMembers?.users &&
 										sectionMembers?.users.length > 0 &&
-										sectionMembers.users.map((member) => {
+										sectionMembers.users.map((member, index) => {
 											return (
 												<Avatar
+													key={index}
 													className='size-5'
 													title={member?.nickname ?? ''}
 													onClick={(e) => {
@@ -163,9 +164,10 @@ const SectionInfo = ({ id }: { id: number }) => {
 								<div className='*:data-[slot=avatar]:ring-background flex -space-x-1 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale'>
 									{sectionSubscribers?.users &&
 										sectionSubscribers?.users.length > 0 &&
-										sectionSubscribers?.users?.map((subscriber) => {
+										sectionSubscribers?.users?.map((subscriber, index) => {
 											return (
 												<Avatar
+													key={index}
 													className='size-5'
 													title={subscriber?.nickname ?? ''}
 													onClick={(e) => {

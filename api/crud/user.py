@@ -143,7 +143,7 @@ def create_email_user(db: Session,
     db.flush()
     return db_email_user
 
-def search_user_by_email_like(db: Session, keyword: str, start: int, limit: int):
+def search_user_by_email_like(db: Session, keyword: str, start: int | None = None, limit: int | None = None):
     query = db.query(models.user.User)
     query = query.join(models.user.EmailUser, models.user.User.id == models.user.EmailUser.user_id)
     query = query.filter(models.user.EmailUser.delete_at == None,
@@ -151,8 +151,10 @@ def search_user_by_email_like(db: Session, keyword: str, start: int, limit: int)
     if len(keyword) > 0:
         query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
-    query = query.filter(models.user.User.id <= start)
-    query = query.limit(limit)
+    if start is not None:
+        query = query.filter(models.user.User.id <= start)
+    if limit is not None:
+        query = query.limit(limit)
     return query.all()
 
 def search_next_user_by_email_like(db: Session, email_user: models.user.EmailUser, keyword: str):
@@ -175,14 +177,16 @@ def count_user_by_email_like(db: Session, keyword: str):
         query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
     return query.count()
 
-def search_user_by_nickname_like(db: Session, keyword: str, start: int, limit: int):
+def search_user_by_nickname_like(db: Session, keyword: str, start: int | None = None, limit: int | None = None):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at == None)
     if len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.create_time.desc())
-    query = query.filter(models.user.User.id <= start)
-    query = query.limit(limit)
+    if start is not None:
+        query = query.filter(models.user.User.id <= start)
+    if limit is not None:
+        query = query.limit(limit)
     return query.all()
     
 def search_next_user_by_nickname_like(db: Session, user: models.user.User, keyword: str):
@@ -201,14 +205,16 @@ def count_user_by_nickname_like(db: Session, keyword: str):
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     return query.count()
 
-def search_user_by_uuid_like(db: Session, keyword: str, start: int, limit: int):
+def search_user_by_uuid_like(db: Session, keyword: str, start: int | None = None, limit: int | None = None):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at == None)
     if len(keyword) > 0:
         query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
     query = query.order_by(models.user.User.id.desc())
-    query = query.filter(models.user.User.id <= start)
-    query = query.limit(limit)
+    if start is not None:
+        query = query.filter(models.user.User.id <= start)
+    if limit is not None:
+        query = query.limit(limit)
     return query.all()
 
 def search_next_user_by_uuid_like(db: Session, user: models.user.User, keyword: str):

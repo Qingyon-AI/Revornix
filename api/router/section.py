@@ -26,11 +26,15 @@ async def section_user_request(section_user_request: schemas.section.SectionUser
                                                                                   section_id=section_user_request.section_id)
         if db_section_user is None or db_section_user.role not in [UserSectionRole.CREATOR, UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER]:
             raise Exception("You are forbidden to get the users' info about this section")
+    users = []
     db_section_users = crud.section.get_users_and_section_users_by_section_id(db=db, 
                                                                               section_id=section_user_request.section_id,
                                                                               filter_role=section_user_request.filter_role)
-    db_users = [db_user for db_user, _ in db_section_users]
-    return schemas.section.SectionUserResponse(users=db_users)
+    for db_user, db_user_section in db_section_users:
+        users.append(schemas.section.SectionUserPublicInfo(**db_user.__dict__,
+                                                            authority=db_user_section.authority,
+                                                            role=db_user_section.role))
+    return schemas.section.SectionUserResponse(users=users)
 
 @section_router.post('/user/add', response_model=schemas.common.NormalResponse)
 async def section_user_add_request(section_share_request: schemas.section.SectionUserAddRequest,
@@ -41,6 +45,13 @@ async def section_user_add_request(section_share_request: schemas.section.Sectio
                                                                            section_id=section_share_request.section_id)
     if section_user is None or section_user.role not in [UserSectionRole.CREATOR, UserSectionRole.MEMBER]:
         raise Exception("You are forbidden to share this section")
+    
+    db_exist_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                                    user_id=section_share_request.user_id,
+                                                                                    section_id=section_share_request.section_id)
+    
+    if db_exist_user_section is not None:
+        raise Exception("The user is already in this section")
     
     db_new_user_section = crud.section.create_section_user(db=db,
                                                            section_id=section_share_request.section_id,
@@ -55,6 +66,10 @@ async def section_user_add_request(section_share_request: schemas.section.Sectio
 async def section_user_modify_request(section_user_modify_request: schemas.section.SectionUserModifyRequest,
                                       db: Session = Depends(get_db), 
                                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    
+    if user.id == section_user_modify_request.user_id:
+        raise Exception("You can't modify your own authority")
+    
     section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                            user_id=user.id,
                                                                            section_id=section_user_modify_request.section_id)
