@@ -179,6 +179,7 @@ export * from './SectionCreateResponse';
 export * from './SectionDeleteRequest';
 export * from './SectionDetailRequest';
 export * from './SectionDocumentInfo';
+export * from './SectionDocumentRequest';
 export * from './SectionGraphRequest';
 export * from './SectionInfo';
 export * from './SectionPublishGetRequest';

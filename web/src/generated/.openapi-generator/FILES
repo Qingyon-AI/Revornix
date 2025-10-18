@@ -192,6 +192,7 @@ models/SectionCreateResponse.ts
 models/SectionDeleteRequest.ts
 models/SectionDetailRequest.ts
 models/SectionDocumentInfo.ts
+models/SectionDocumentRequest.ts
 models/SectionGraphRequest.ts
 models/SectionInfo.ts
 models/SectionPublishGetRequest.ts

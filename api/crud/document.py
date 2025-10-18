@@ -145,6 +145,64 @@ def get_document_summary_by_user_id(db: Session,
     query = query.order_by(cast(models.document.Document.create_time, Date))  # 按日期升序
     return query.all()
 
+def search_section_documents(db: Session,
+                             section_id: int,
+                             start: int | None = None, 
+                             limit: int = 10, 
+                             keyword: str | None = None,
+                             desc: bool | None = True):
+    query = db.query(models.document.Document)
+    query = query.join(models.section.SectionDocument, models.document.Document.id == models.section.SectionDocument.document_id)
+    query = query.filter(models.section.SectionDocument.section_id == section_id,
+                         models.section.SectionDocument.delete_at == None)
+    query = query.filter(models.document.Document.delete_at == None)
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
+    if desc is True:
+        query = query.order_by(models.document.Document.id.desc())
+    else:
+        query = query.order_by(models.document.Document.id.asc())
+    if start is not None:
+        if desc:
+            query = query.filter(models.document.Document.id <= start)
+        else:
+            query = query.filter(models.document.Document.id >= start)
+    query = query.options(selectinload(models.document.Document.creator))
+    query = query.limit(limit)
+    return query.all()
+
+def search_next_section_document(db: Session,
+                                 section_id: int,
+                                 document: models.document.Document, 
+                                 keyword: str | None = None,
+                                 desc: bool | None = True):
+    query = db.query(models.document.Document)
+    query = query.join(models.section.SectionDocument, models.document.Document.id == models.section.SectionDocument.document_id)
+    query = query.filter(models.section.SectionDocument.section_id == section_id,
+                         models.section.SectionDocument.delete_at == None)
+    query = query.filter(models.document.Document.delete_at == None)
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
+    if desc is True:
+        query = query.order_by(models.document.Document.id.desc())
+        query = query.filter(models.document.Document.id < document.id)
+    else:
+        query = query.order_by(models.document.Document.id.asc())
+        query = query.filter(models.document.Document.id > document.id)
+    return query.first()
+
+def count_section_documents(db: Session,
+                            section_id: int,
+                            keyword: str | None = None):
+    query = db.query(func.count(models.document.Document.id))
+    query = query.join(models.section.SectionDocument, models.document.Document.id == models.section.SectionDocument.document_id)
+    query = query.filter(models.section.SectionDocument.section_id == section_id,
+                         models.section.SectionDocument.delete_at == None)
+    query = query.filter(models.document.Document.delete_at == None)
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
+    return query.count()
+
 def search_next_user_document(db: Session, 
                               user_id: int, 
                               document: models.document.Document, 

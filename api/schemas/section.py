@@ -4,6 +4,13 @@ from datetime import datetime, timezone
 from schemas.user import UserPublicInfo, SectionUserPublicInfo
 from enums.section import UserSectionRole
 
+class SectionDocumentRequest(BaseModel):
+    section_id: int
+    start: int | None = None
+    limit: int = 10
+    desc: bool | None = True
+    keyword: str | None = None
+    
 class SectionSeoDetailRequest(BaseModel):
     uuid: str
 

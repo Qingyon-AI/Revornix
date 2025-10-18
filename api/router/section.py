@@ -10,6 +10,66 @@ from enums.section import UserSectionAuthority, UserSectionRole
 
 section_router = APIRouter()
 
+@section_router.post('/documents', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
+async def section_document_request(section_document_request: schemas.section.SectionDocumentRequest,
+                                   db: Session = Depends(get_db),
+                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)):
+    db_section = crud.section.get_section_by_section_id(db=db,
+                                                        section_id=section_document_request.section_id)
+    if db_section is None:
+        raise Exception("Section not found")
+    
+    has_more = True
+    next_start = None
+    db_documents = crud.document.search_section_documents(db=db, 
+                                                          section_id=section_document_request.section_id,
+                                                          start=section_document_request.start,
+                                                          limit=section_document_request.limit,
+                                                          keyword=section_document_request.keyword,
+                                                          desc=section_document_request.desc)
+    
+    def get_document_info(document: models.document.Document): 
+        db_labels = crud.document.get_labels_by_document_id(db=db,
+                                                            document_id=document.id)
+        db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                                                                                 document_id=document.id)
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(db=db,
+                                                                                 document_id=document.id)
+        db_process_task = crud.task.get_document_process_task_by_document_id(db=db,
+                                                                             document_id=document.id)
+        db_graph_task = crud.task.get_document_graph_task_by_document_id(db=db,
+                                                                         document_id=document.id)
+        return schemas.document.DocumentInfo(
+            **document.__dict__,
+            labels=db_labels,
+            transform_task=db_transform_task,
+            embedding_task=db_embedding_task,
+            graph_task=db_graph_task,
+            process_task=db_process_task
+        )
+    documents = [get_document_info(document) for document in db_documents]
+    if len(documents) < section_document_request.limit or len(documents) == 0:
+        has_more = False
+    if len(documents) == section_document_request.limit:
+        next_document = crud.document.search_next_section_document(db=db, 
+                                                                   section_id=section_document_request.section_id,
+                                                                   document=db_documents[-1],
+                                                                   keyword=section_document_request.keyword,
+                                                                   desc=section_document_request.desc)
+        has_more = next_document is not None
+        next_start = next_document.id if has_more else None
+    total = crud.document.count_section_documents(db=db,
+                                                  section_id=section_document_request.section_id,
+                                                  keyword=section_document_request.keyword,)
+    return schemas.pagination.InifiniteScrollPagnition(
+        total=total,
+        elements=documents,
+        start=section_document_request.start,
+        limit=section_document_request.limit,
+        has_more=has_more,
+        next_start=next_start
+    )
+    
 @section_router.post('/detail/seo', response_model=schemas.section.SectionInfo)
 async def section_seo_detail_request(section_seo_detail_request: schemas.section.SectionSeoDetailRequest,
                                      db: Session = Depends(get_db),
@@ -65,7 +125,6 @@ async def section_seo_detail_request(section_seo_detail_request: schemas.section
             res.authority = db_section_user.authority
     
     return res
-
 
 @section_router.post('/publish', response_model=schemas.common.NormalResponse)
 async def section_publish_request(section_publish_request: schemas.section.SectionPublishRequest,
