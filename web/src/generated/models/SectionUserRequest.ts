@@ -27,10 +27,10 @@ export interface SectionUserRequest {
     section_id: number;
     /**
      * 
-     * @type {number}
+     * @type {Array<number>}
      * @memberof SectionUserRequest
      */
-    filter_role?: number | null;
+    filter_roles?: Array<number> | null;
 }
 
 /**
@@ -52,7 +52,7 @@ export function SectionUserRequestFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'section_id': json['section_id'],
-        'filter_role': json['filter_role'] == null ? undefined : json['filter_role'],
+        'filter_roles': json['filter_roles'] == null ? undefined : json['filter_roles'],
     };
 }
 
@@ -68,7 +68,7 @@ export function SectionUserRequestToJSONTyped(value?: SectionUserRequest | null,
     return {
         
         'section_id': value['section_id'],
-        'filter_role': value['filter_role'],
+        'filter_roles': value['filter_roles'],
     };
 }
 

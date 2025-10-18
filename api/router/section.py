@@ -26,9 +26,6 @@ async def section_seo_detail_request(section_seo_detail_request: schemas.section
     if db_section is None:
         raise Exception("Section not found")
     
-    db_section_users = crud.section.get_section_users_by_section_id(db=db,
-                                                                    section_id=db_section_publish.section_id)
-    
     documents_count = crud.section.count_section_documents_by_section_id(db=db, 
                                                                             section_id=db_section.id)
     subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
@@ -153,12 +150,12 @@ async def section_user_request(section_user_request: schemas.section.SectionUser
         db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                                   user_id=user.id,
                                                                                   section_id=section_user_request.section_id)
-        if db_section_user is None or db_section_user.role not in [UserSectionRole.CREATOR, UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER]:
+        if db_section_user is None or db_section_user.role not in [UserSectionRole.CREATOR, UserSectionRole.MEMBER]:
             raise Exception("You are forbidden to get the users' info about this section")
     users = []
     db_section_users = crud.section.get_users_and_section_users_by_section_id(db=db, 
                                                                               section_id=section_user_request.section_id,
-                                                                              filter_role=section_user_request.filter_role)
+                                                                              filter_roles=section_user_request.filter_roles)
     for db_user, db_user_section in db_section_users:
         users.append(schemas.section.SectionUserPublicInfo(**db_user.__dict__,
                                                             authority=db_user_section.authority,
@@ -569,7 +566,8 @@ async def get_section_detail(
         raise Exception("Section not found")
     
     db_section_users = crud.section.get_section_users_by_section_id(db=db,
-                                                                    section_id=section_detail_request.section_id)
+                                                                    section_id=section_detail_request.section_id,
+                                                                    filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR])
     
     res = None
     

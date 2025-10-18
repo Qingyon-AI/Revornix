@@ -37,7 +37,7 @@ class SectionPublishRequest(BaseModel):
 
 class SectionUserRequest(BaseModel):
     section_id: int
-    filter_role: int | None = None
+    filter_roles: list[int] | None = None
     
 class SectionUserResponse(BaseModel):
     users: list[SectionUserPublicInfo]

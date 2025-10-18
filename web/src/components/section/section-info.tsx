@@ -34,7 +34,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 		queryFn: async () => {
 			return getSectionUser({
 				section_id: id,
-				filter_role: UserSectionRole.MEMBER,
+				filter_roles: [UserSectionRole.MEMBER],
 			});
 		},
 	});
@@ -45,7 +45,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 			queryFn: async () => {
 				return getSectionUser({
 					section_id: id,
-					filter_role: UserSectionRole.SUBSCRIBER,
+					filter_roles: [UserSectionRole.SUBSCRIBER],
 				});
 			},
 		});
@@ -102,27 +102,29 @@ const SectionInfo = ({ id }: { id: number }) => {
 					)}
 					<div className='grid grid-cols-12 px-5 mb-3 text-xs text-muted-foreground gap-5'>
 						<div className='col-span-2'>{t('section_creator')}</div>
-						<div className='flex flex-row items-center gap-1 col-span-10'>
-							<Avatar
-								className='size-5'
-								title={section?.creator.nickname ?? ''}
-								onClick={(e) => {
-									router.push(`/user/detail/${section?.creator.id}`);
-									e.preventDefault();
-									e.stopPropagation();
-								}}>
-								<AvatarImage src={section?.creator.avatar} alt='avatar' />
-								<AvatarFallback>{section?.creator.nickname}</AvatarFallback>
-							</Avatar>
-							<p
-								onClick={(e) => {
-									router.push(`/user/detail/${section?.creator.id}`);
-									e.preventDefault();
-									e.stopPropagation();
-								}}>
-								{section?.creator.nickname}
-							</p>
-						</div>
+						{section?.creator && (
+							<div className='flex flex-row items-center gap-1 col-span-10'>
+								<Avatar
+									className='size-5'
+									title={section?.creator.nickname ?? ''}
+									onClick={(e) => {
+										router.push(`/user/detail/${section?.creator.id}`);
+										e.preventDefault();
+										e.stopPropagation();
+									}}>
+									<AvatarImage src={section?.creator.avatar} alt='avatar' />
+									<AvatarFallback>{section?.creator.nickname}</AvatarFallback>
+								</Avatar>
+								<p
+									onClick={(e) => {
+										router.push(`/user/detail/${section?.creator.id}`);
+										e.preventDefault();
+										e.stopPropagation();
+									}}>
+									{section?.creator.nickname}
+								</p>
+							</div>
+						)}
 					</div>
 					<div className='grid grid-cols-12 px-5 mb-3 text-xs text-muted-foreground gap-5'>
 						<div className='col-span-2'>{t('section_participants')}</div>
