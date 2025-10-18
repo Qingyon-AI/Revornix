@@ -28,7 +28,9 @@ async def section_graph(section_graph_request: schemas.graph.SectionGraphRequest
     document_ids = [document.id for document in documents]
     
     # 如果专栏是公开的 直接返回所有节点
-    if section.public:
+    db_section_publish = crud.section.get_publish_section_by_section_id(db=db,
+                                                                        section_id=section_id)
+    if db_section_publish is not None:
         with neo4j_driver.session() as session:
             entity_query = """
                 UNWIND $doc_ids AS doc_id

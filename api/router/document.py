@@ -177,7 +177,6 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
                                                            title=f'{now.date().isoformat()} Summary',
-                                                           public=False,
                                                            description=f"This document is the summary of all documents on {now.date().isoformat()}.")
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,
@@ -225,7 +224,6 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
                                                            title=f'{now.date().isoformat()} Summary',
-                                                           public=False,
                                                            description=f'This document is the summary of all documents on {now.date().isoformat()}.')
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,
@@ -271,7 +269,6 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
                                                            title=f'{now.date().isoformat()} Summary',
-                                                           public=False,
                                                            description=f'This document is the summary of all documents on {now.date().isoformat()}.')
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,

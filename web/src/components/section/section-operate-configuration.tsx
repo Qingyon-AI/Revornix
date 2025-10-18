@@ -52,7 +52,6 @@ const SectionOperateConfiguration = ({
 		cover: z.string().optional(),
 		title: z.string().min(1),
 		description: z.string().min(1),
-		public: z.boolean(),
 		labels: z.array(z.number()),
 	});
 	const id = section_id;
@@ -77,7 +76,6 @@ const SectionOperateConfiguration = ({
 			title: '',
 			cover: undefined,
 			description: '',
-			public: false,
 			labels: [],
 		},
 		resolver: zodResolver(updateFormSchema),
@@ -86,7 +84,6 @@ const SectionOperateConfiguration = ({
 	useEffect(() => {
 		form.setValue('title', section?.title || '');
 		form.setValue('description', section?.description || '');
-		form.setValue('public', section?.public || false);
 		form.setValue('cover', section?.cover || undefined);
 		form.setValue('labels', section?.labels?.map((label) => label.id) || []);
 	}, [section]);

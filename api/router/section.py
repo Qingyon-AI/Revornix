@@ -16,104 +16,57 @@ async def section_seo_detail_request(section_seo_detail_request: schemas.section
                                      user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)):
     db_section_publish = crud.section.get_publish_sections_by_uuid(db=db,
                                                                    uuid=section_seo_detail_request.uuid)
+    
     if db_section_publish is None:
-        raise Exception("Section not found")
+        raise Exception("Section is not published")
     
     db_section = crud.section.get_section_by_section_id(db=db,
                                                         section_id=db_section_publish.section_id)
     
+    if db_section is None:
+        raise Exception("Section not found")
+    
     db_section_users = crud.section.get_section_users_by_section_id(db=db,
                                                                     section_id=db_section_publish.section_id)
     
-    res = None
-    
-    if db_section.public:
-        documents_count = crud.section.count_section_documents_by_section_id(db=db, 
-                                                                             section_id=db_section.id)
-        subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
-                                                                                 section_id=db_section.id)
-        db_documents = crud.section.get_documents_by_section_id(db=db,
-                                                                section_id=db_section.id)
-        section_docs = crud.section.get_section_documents_by_section_id(db=db, 
-                                                                        section_id=db_section.id)
-        status_map = {sd.document_id: sd.status for sd in section_docs}
-
-        # 生成结果列表
-        documents = [
-            schemas.section.SectionDocumentInfo.model_validate({
-                **document.__dict__,
-                'title': document.title or 'Unnamed document',
-                'status': status_map.get(document.id)
-            })
-            for document in db_documents
-        ]
-        db_labels = crud.section.get_labels_by_section_id(db=db,
-                                                          section_id=db_section.id)
-        
-        res = schemas.section.SectionInfo(
-            **db_section.__dict__,
-            documents=documents,
-            labels=db_labels,
-            documents_count=documents_count,
-            subscribers_count=subscribers_count,
-            creator=db_section.creator,
-        )
-        
-        if user is not None:
-            db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
-                                                                                      section_id=db_section.id,
-                                                                                      user_id=user.id)
-            if db_section_user is not None:
-                res.authority = db_section_user.authority
-        
-    else:
-        if user is None:
-            raise Exception("This section is private, anonymous user can't access it")
-        elif user.id not in [db_section_user.user_id for db_section_user in db_section_users]:
-            raise Exception("You don't have permission to access this section")
-        else:
-            documents_count = crud.section.count_section_documents_by_section_id(db=db, 
-                                                                                 section_id=db_section.id)
-            subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
-                                                                                     section_id=db_section.id)
-            db_documents = crud.section.get_documents_by_section_id(db=db,
-                                                                    section_id=db_section.id)
-            section_docs = crud.section.get_section_documents_by_section_id(db=db, 
+    documents_count = crud.section.count_section_documents_by_section_id(db=db, 
                                                                             section_id=db_section.id)
-            status_map = {sd.document_id: sd.status for sd in section_docs}
+    subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
+                                                                                section_id=db_section.id)
+    db_documents = crud.section.get_documents_by_section_id(db=db,
+                                                            section_id=db_section.id)
+    section_docs = crud.section.get_section_documents_by_section_id(db=db, 
+                                                                    section_id=db_section.id)
+    status_map = {sd.document_id: sd.status for sd in section_docs}
 
-            # 生成结果列表
-            documents = [
-                schemas.section.SectionDocumentInfo.model_validate({
-                    **document.__dict__,
-                    'title': document.title or 'Unnamed document',
-                    'status': status_map.get(document.id)
-                })
-                for document in db_documents
-            ]
-            
-            db_labels = crud.section.get_labels_by_section_id(db=db,
-                                                              section_id=db_section.id)
-            
-            res = schemas.section.SectionInfo(
-                **db_section.__dict__,
-                documents=documents,
-                labels=db_labels,
-                documents_count=documents_count,
-                subscribers_count=subscribers_count,
-                creator=db_section.creator,
-            )
-            
-            db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
-                                                                                      section_id=db_section.id,
-                                                                                      user_id=user.id)
-            
-            if db_section_user is not None:
-                res.authority = db_section_user.authority
-            
-            db_user_and_section_users = crud.section.get_users_and_section_users_by_section_id(db=db,
-                                                                                               section_id=db_section.id)
-            
+    # 生成结果列表
+    documents = [
+        schemas.section.SectionDocumentInfo.model_validate({
+            **document.__dict__,
+            'title': document.title or 'Unnamed document',
+            'status': status_map.get(document.id)
+        })
+        for document in db_documents
+    ]
+    db_labels = crud.section.get_labels_by_section_id(db=db,
+                                                        section_id=db_section.id)
+    
+    res = schemas.section.SectionInfo(
+        **db_section.__dict__,
+        documents=documents,
+        labels=db_labels,
+        documents_count=documents_count,
+        subscribers_count=subscribers_count,
+        creator=db_section.creator,
+    )
+    
+    if user is not None:
+        db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                                    section_id=db_section.id,
+                                                                                    user_id=user.id)
+        if db_section_user is not None:
+            res.authority = db_section_user.authority
+    
     return res
 
 
@@ -191,7 +144,9 @@ async def section_user_request(section_user_request: schemas.section.SectionUser
                                                         section_id=section_user_request.section_id)
     if db_section is None:
         raise Exception("Section not found")
-    if db_section.public:
+    db_publish_section = crud.section.get_publish_section_by_section_id(db=db,
+                                                                        section_id=section_user_request.section_id)
+    if db_publish_section is not None:
         pass
     else:
         # check if the user is in the section
@@ -391,8 +346,6 @@ async def update_section(
         db_section.title = section_update_request.title
     if section_update_request.description is not None:
         db_section.description = section_update_request.description
-    if section_update_request.public is not None:
-        db_section.public = section_update_request.public
     if section_update_request.cover is not None:
         db_section.cover = section_update_request.cover
     if section_update_request.labels is not None:
@@ -618,7 +571,9 @@ async def get_section_detail(
     
     res = None
     
-    if db_section.public:
+    db_publish_section = crud.section.get_publish_section_by_section_id(db=db,
+                                                                        section_id=section_detail_request.section_id)
+    if db_publish_section is not None:
         documents_count = crud.section.count_section_documents_by_section_id(db=db, 
                                                                              section_id=db_section.id)
         subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
@@ -757,8 +712,7 @@ async def create_section(
                                              creator_id=user.id,
                                              cover=section_create_request.cover,
                                              title=section_create_request.title, 
-                                             description=section_create_request.description,
-                                             public=section_create_request.public)
+                                             description=section_create_request.description)
     if section_create_request.labels:
         crud.section.bind_labels_to_section(db=db, 
                                             section_id=db_section.id, 
@@ -768,6 +722,9 @@ async def create_section(
                                                        user_id=user.id,
                                                        role=UserSectionRole.CREATOR,
                                                        authority=UserSectionAuthority.FULL_ACCESS)
+    if section_create_request.auto_publish:
+        crud.section.create_publish_section(db=db, 
+                                            section_id=db_section.id)
     db.commit()
     return schemas.section.SectionCreateResponse(id=db_section.id)
 

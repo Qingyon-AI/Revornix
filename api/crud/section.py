@@ -67,14 +67,12 @@ def create_section(db: Session,
                    creator_id: int,
                    title: str, 
                    description: str,
-                   public: bool,
                    cover: str | None = None):
     now = datetime.now(timezone.utc)
     db_section = models.section.Section(title=title, 
                                         creator_id=creator_id,
                                         cover=cover,
                                         description=description,
-                                        public=public,
                                         create_time=now,
                                         update_time=now)
     db.add(db_section)
@@ -187,7 +185,8 @@ def search_user_sections(db: Session,
             )
         )
     if only_public:
-        query = query.filter(models.section.Section.public == True)
+        query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
+        query = query.filter(models.section.PublishSection.delete_at == None)
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
@@ -219,7 +218,8 @@ def count_user_sections(db: Session,
             )
         )
     if only_public:
-        query = query.filter(models.section.Section.public == True)
+        query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
+        query = query.filter(models.section.PublishSection.delete_at == None)
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
@@ -247,7 +247,8 @@ def search_next_user_section(db: Session,
             )
         )
     if only_public:
-        query = query.filter(models.section.Section.public == True)
+        query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
+        query = query.filter(models.section.PublishSection.delete_at == None)
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
@@ -422,8 +423,9 @@ def search_public_sections(db: Session,
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
                              models.section.SectionLabel.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None,
-                         models.section.Section.public == True)
+    query = query.filter(models.section.Section.delete_at == None)
+    query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
+    query = query.filter(models.section.PublishSection.delete_at == None)
     if desc:
         query = query.order_by(models.section.Section.id.desc())
     else:
@@ -452,8 +454,9 @@ def countpublic_sections(db: Session,
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
                              models.section.SectionLabel.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None,
-                         models.section.Section.public == True)
+    query = query.filter(models.section.Section.delete_at == None)
+    query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
+    query = query.filter(models.section.PublishSection.delete_at == None)
     query = query.distinct(models.section.Section.id)
     return query.count()
 
@@ -463,8 +466,9 @@ def search_next_public_section(db: Session,
                                label_ids: list[int] | None = None,
                                desc: bool | None = True):
     query = db.query(models.section.Section)
-    query = query.filter(models.section.Section.delete_at == None,
-                         models.section.Section.public == True)
+    query = query.filter(models.section.Section.delete_at == None)
+    query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
+    query = query.filter(models.section.PublishSection.delete_at == None)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
