@@ -38,6 +38,10 @@ import type {
   SectionDeleteRequest,
   SectionDetailRequest,
   SectionInfo,
+  SectionPublishGetRequest,
+  SectionPublishGetResponse,
+  SectionPublishRequest,
+  SectionRePublishRequest,
   SectionSubscribeRequest,
   SectionUpdateRequest,
   SectionUserAddRequest,
@@ -93,6 +97,14 @@ import {
     SectionDetailRequestToJSON,
     SectionInfoFromJSON,
     SectionInfoToJSON,
+    SectionPublishGetRequestFromJSON,
+    SectionPublishGetRequestToJSON,
+    SectionPublishGetResponseFromJSON,
+    SectionPublishGetResponseToJSON,
+    SectionPublishRequestFromJSON,
+    SectionPublishRequestToJSON,
+    SectionRePublishRequestFromJSON,
+    SectionRePublishRequestToJSON,
     SectionSubscribeRequestFromJSON,
     SectionSubscribeRequestToJSON,
     SectionUpdateRequestFromJSON,
@@ -199,6 +211,24 @@ export interface SearchSectionCommentSectionCommentSearchPostRequest {
 
 export interface SearchUserSectionsSectionUserSearchPostRequest {
     searchUserSectionsRequest: SearchUserSectionsRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface SectionPublishGetRequestSectionPublishGetPostRequest {
+    sectionPublishGetRequest: SectionPublishGetRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface SectionPublishRequestSectionPublishPostRequest {
+    sectionPublishRequest: SectionPublishRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface SectionRepublishSectionRepublishPostRequest {
+    sectionRePublishRequest: SectionRePublishRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -967,6 +997,147 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async searchUserSectionsSectionUserSearchPost(requestParameters: SearchUserSectionsSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
         const response = await this.searchUserSectionsSectionUserSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Section Publish Get Request
+     */
+    async sectionPublishGetRequestSectionPublishGetPostRaw(requestParameters: SectionPublishGetRequestSectionPublishGetPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionPublishGetResponse>> {
+        if (requestParameters['sectionPublishGetRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionPublishGetRequest',
+                'Required parameter "sectionPublishGetRequest" was null or undefined when calling sectionPublishGetRequestSectionPublishGetPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/publish/get`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionPublishGetRequestToJSON(requestParameters['sectionPublishGetRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SectionPublishGetResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Section Publish Get Request
+     */
+    async sectionPublishGetRequestSectionPublishGetPost(requestParameters: SectionPublishGetRequestSectionPublishGetPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SectionPublishGetResponse> {
+        const response = await this.sectionPublishGetRequestSectionPublishGetPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Section Publish Request
+     */
+    async sectionPublishRequestSectionPublishPostRaw(requestParameters: SectionPublishRequestSectionPublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['sectionPublishRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionPublishRequest',
+                'Required parameter "sectionPublishRequest" was null or undefined when calling sectionPublishRequestSectionPublishPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/publish`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionPublishRequestToJSON(requestParameters['sectionPublishRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Section Publish Request
+     */
+    async sectionPublishRequestSectionPublishPost(requestParameters: SectionPublishRequestSectionPublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.sectionPublishRequestSectionPublishPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Section Republish
+     */
+    async sectionRepublishSectionRepublishPostRaw(requestParameters: SectionRepublishSectionRepublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['sectionRePublishRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionRePublishRequest',
+                'Required parameter "sectionRePublishRequest" was null or undefined when calling sectionRepublishSectionRepublishPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/republish`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionRePublishRequestToJSON(requestParameters['sectionRePublishRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Section Republish
+     */
+    async sectionRepublishSectionRepublishPost(requestParameters: SectionRepublishSectionRepublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.sectionRepublishSectionRepublishPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

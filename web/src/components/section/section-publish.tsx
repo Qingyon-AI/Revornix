@@ -4,12 +4,16 @@ import { Switch } from '../ui/switch';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
-import { CopyIcon } from 'lucide-react';
+import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
 import { useCopyToClipboard } from 'react-use';
 import { getQueryClient } from '@/lib/get-query-client';
-import { SectionInfo } from '@/generated';
+import {
+	getSectionDetail,
+	getSectionPublish,
+	publishSection,
+	republishSection,
+} from '@/service/section';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { getSectionDetail, updateSection } from '@/service/section';
 
 const SectionPublish = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
@@ -25,73 +29,84 @@ const SectionPublish = ({ section_id }: { section_id: number }) => {
 		},
 	});
 
-	const mutateUpdate = useMutation({
-		mutationFn: async (newStatus: boolean) => {
-			return await updateSection({
-				section_id, // ⚡️用 props，而不是 section?.id
-				public: newStatus,
-			});
+	const { data: sectionPublish } = useQuery({
+		queryKey: ['getSectionPublish', section_id],
+		queryFn: async () => {
+			return getSectionPublish({ section_id: section_id });
 		},
-		onMutate: async (newStatus: boolean) => {
-			await queryClient.cancelQueries({
-				queryKey: ['getSectionDetail', section_id],
-			});
+	});
 
-			const previousData = queryClient.getQueryData<SectionInfo>([
-				'getSectionDetail',
-				section_id,
-			]);
-
-			queryClient.setQueryData(
-				['getSectionDetail', section_id],
-				(old?: SectionInfo) => (old ? { ...old, public: newStatus } : old)
-			);
-
-			return { previousData };
+	const mutatePublish = useMutation({
+		mutationFn: async (e: boolean) => {
+			return await publishSection({ section_id: section_id, status: e });
 		},
-		onError: (error, newStatus, context) => {
-			toast.error((error as Error).message);
-			if (context?.previousData) {
-				queryClient.setQueryData(
-					['getSectionDetail', section_id],
-					context.previousData
-				);
-			}
-		},
-		onSettled: () => {
+		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['getSectionDetail', section_id],
+				queryKey: ['getSectionPublish', section_id],
 			});
+		},
+		onError(error, variables, onMutateResult, context) {
+			toast.error(error.message);
+		},
+	});
+
+	const mutateRepublish = useMutation({
+		mutationFn: async () => {
+			return await republishSection({ section_id: section_id });
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['getSectionPublish', section_id],
+			});
+		},
+		onError(error, variables, onMutateResult, context) {
+			toast.error(error.message);
 		},
 	});
 
 	const handleUpdateTheShareStatus = (e: boolean) => {
-		mutateUpdate.mutate(e);
+		mutatePublish.mutate(e);
 	};
+
+	const handleRePublish = () => {
+		mutateRepublish.mutate();
+	};
+
 	return (
 		<>
 			<div className='w-full flex items-center gap-2 justify-between'>
 				<Label>{t('section_publish_on')}</Label>
 				<Switch
-					checked={section?.public}
+					checked={sectionPublish?.uuid ? true : false}
 					onCheckedChange={handleUpdateTheShareStatus}
 				/>
 			</div>
-			{section?.public && (
-				<div className='w-full flex items-center gap-2'>
+			{sectionPublish?.uuid && (
+				<div className='w-full flex items-center gap-2 overflow-hidden'>
 					<Input
 						disabled
-						value={`https://app.revornix.com/section/${section?.id}`}
+						className='truncate'
+						value={`${process.env.NEXT_PUBLIC_HOST}/section/${sectionPublish.uuid}`}
 					/>
 					<Button
 						size={'icon'}
 						onClick={() => {
 							section &&
 								section.public &&
-								copy(`https://app.revornix.com/section/${section?.id}`);
+								copy(
+									`https://app.revornix.com/section/${sectionPublish?.uuid}`
+								);
 							toast.success(t('copied'));
 						}}>
 						<CopyIcon />
+					</Button>
+					<Button
+						size={'icon'}
+						variant={'outline'}
+						onClick={() => {
+							handleRePublish();
+						}}>
+						<RefreshCcwIcon />
 					</Button>
 				</div>
 			)}

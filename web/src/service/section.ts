@@ -1,5 +1,5 @@
 import sectionApi from '@/api/section'
-import { AllMySectionsResponse, CreateLabelResponse, DaySectionRequest, DaySectionResponse, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionInfo, LabelAddRequest, LabelListResponse, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionInfo, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserResponse } from '@/generated';
+import { AllMySectionsResponse, CreateLabelResponse, DaySectionRequest, DaySectionResponse, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionInfo, LabelAddRequest, LabelListResponse, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserResponse } from '@/generated';
 import { request } from '@/lib/request';
 
 export const getMineLabels = async (): Promise<LabelListResponse> => {
@@ -114,6 +114,24 @@ export const deleteSectionUser = async (data: SectionUserDeleteRequest): Promise
 
 export const getSectionUser = async (data: SectionUserRequest): Promise<SectionUserResponse> => {
     return await request(sectionApi.getSectionUser, {
+        data
+    })
+}
+
+export const publishSection = async (data: SectionPublishRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.publishSection, {
+        data
+    })
+}
+
+export const republishSection = async (data: SectionRePublishRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.republishSection, {
+        data
+    })
+}
+
+export const getSectionPublish = async (data: SectionPublishGetRequest): Promise<SectionPublishGetResponse> => {
+    return await request(sectionApi.getSectionPublish, {
         data
     })
 }

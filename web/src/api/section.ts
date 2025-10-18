@@ -21,4 +21,7 @@ export default {
     deleteSectionUser: API_PREFIX + "/section/user/delete",
     modifySectionUser: API_PREFIX + "/section/user/modify",
     getSectionUser: API_PREFIX + "/section/user",
+    publishSection: API_PREFIX + "/section/publish",
+    republishSection: API_PREFIX + "/section/republish",
+    getSectionPublish: API_PREFIX + "/section/publish/get",
 }
