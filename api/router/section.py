@@ -83,27 +83,11 @@ async def section_seo_detail_request(section_seo_detail_request: schemas.section
                                                                             section_id=db_section.id)
     subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
                                                                                 section_id=db_section.id)
-    db_documents = crud.section.get_documents_by_section_id(db=db,
-                                                            section_id=db_section.id)
-    section_docs = crud.section.get_section_documents_by_section_id(db=db, 
-                                                                    section_id=db_section.id)
-    status_map = {sd.document_id: sd.status for sd in section_docs}
-
-    # 生成结果列表
-    documents = [
-        schemas.section.SectionDocumentInfo.model_validate({
-            **document.__dict__,
-            'title': document.title or 'Unnamed document',
-            'status': status_map.get(document.id)
-        })
-        for document in db_documents
-    ]
     db_labels = crud.section.get_labels_by_section_id(db=db,
                                                         section_id=db_section.id)
     
     res = schemas.section.SectionInfo(
         **db_section.__dict__,
-        documents=documents,
         labels=db_labels,
         documents_count=documents_count,
         subscribers_count=subscribers_count,
@@ -636,21 +620,11 @@ async def get_section_detail(
                                                                         section_id=db_section.id)
         status_map = {sd.document_id: sd.status for sd in section_docs}
 
-        # 生成结果列表
-        documents = [
-            schemas.section.SectionDocumentInfo.model_validate({
-                **document.__dict__,
-                'title': document.title or 'Unnamed document',
-                'status': status_map.get(document.id)
-            })
-            for document in db_documents
-        ]
         db_labels = crud.section.get_labels_by_section_id(db=db,
                                                           section_id=section_detail_request.section_id)
         
         res = schemas.section.SectionInfo(
             **db_section.__dict__,
-            documents=documents,
             labels=db_labels,
             documents_count=documents_count,
             subscribers_count=subscribers_count,
@@ -676,28 +650,13 @@ async def get_section_detail(
                                                                                  section_id=db_section.id)
             subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
                                                                                     section_id=db_section.id)
-            db_documents = crud.section.get_documents_by_section_id(db=db,
-                                                                    section_id=section_detail_request.section_id)
             section_docs = crud.section.get_section_documents_by_section_id(db=db, 
                                                                             section_id=db_section.id)
-            status_map = {sd.document_id: sd.status for sd in section_docs}
-
-            # 生成结果列表
-            documents = [
-                schemas.section.SectionDocumentInfo.model_validate({
-                    **document.__dict__,
-                    'title': document.title or 'Unnamed document',
-                    'status': status_map.get(document.id)
-                })
-                for document in db_documents
-            ]
-            
             db_labels = crud.section.get_labels_by_section_id(db=db,
                                                             section_id=section_detail_request.section_id)
             
             res = schemas.section.SectionInfo(
                 **db_section.__dict__,
-                documents=documents,
                 labels=db_labels,
                 documents_count=documents_count,
                 subscribers_count=subscribers_count,

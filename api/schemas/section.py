@@ -207,7 +207,6 @@ class SectionInfo(BaseModel):
     md_file_name: str | None = None
     labels: list[Label] | None = None
     cover: str | None = None
-    documents: list[SectionDocumentInfo] | None = None
     @field_serializer("cover")
     def cover(self, v: str) -> str | None:
         if v is None:
