@@ -10,6 +10,113 @@ from enums.section import UserSectionAuthority, UserSectionRole
 
 section_router = APIRouter()
 
+@section_router.post('/detail/seo', response_model=schemas.section.SectionInfo)
+async def section_seo_detail_request(section_seo_detail_request: schemas.section.SectionSeoDetailRequest,
+                                     db: Session = Depends(get_db),
+                                     user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)):
+    db_section_publish = crud.section.get_publish_sections_by_uuid(db=db,
+                                                                   uuid=section_seo_detail_request.uuid)
+    if db_section_publish is None:
+        raise Exception("Section not found")
+    
+    db_section = crud.section.get_section_by_section_id(db=db,
+                                                        section_id=db_section_publish.section_id)
+    
+    db_section_users = crud.section.get_section_users_by_section_id(db=db,
+                                                                    section_id=db_section_publish.section_id)
+    
+    res = None
+    
+    if db_section.public:
+        documents_count = crud.section.count_section_documents_by_section_id(db=db, 
+                                                                             section_id=db_section.id)
+        subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
+                                                                                 section_id=db_section.id)
+        db_documents = crud.section.get_documents_by_section_id(db=db,
+                                                                section_id=db_section.id)
+        section_docs = crud.section.get_section_documents_by_section_id(db=db, 
+                                                                        section_id=db_section.id)
+        status_map = {sd.document_id: sd.status for sd in section_docs}
+
+        # 生成结果列表
+        documents = [
+            schemas.section.SectionDocumentInfo.model_validate({
+                **document.__dict__,
+                'title': document.title or 'Unnamed document',
+                'status': status_map.get(document.id)
+            })
+            for document in db_documents
+        ]
+        db_labels = crud.section.get_labels_by_section_id(db=db,
+                                                          section_id=db_section.id)
+        
+        res = schemas.section.SectionInfo(
+            **db_section.__dict__,
+            documents=documents,
+            labels=db_labels,
+            documents_count=documents_count,
+            subscribers_count=subscribers_count,
+            creator=db_section.creator,
+        )
+        
+        if user is not None:
+            db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                                      section_id=db_section.id,
+                                                                                      user_id=user.id)
+            if db_section_user is not None:
+                res.authority = db_section_user.authority
+        
+    else:
+        if user is None:
+            raise Exception("This section is private, anonymous user can't access it")
+        elif user.id not in [db_section_user.user_id for db_section_user in db_section_users]:
+            raise Exception("You don't have permission to access this section")
+        else:
+            documents_count = crud.section.count_section_documents_by_section_id(db=db, 
+                                                                                 section_id=db_section.id)
+            subscribers_count = crud.section.count_section_subscribers_by_section_id(db=db,
+                                                                                     section_id=db_section.id)
+            db_documents = crud.section.get_documents_by_section_id(db=db,
+                                                                    section_id=db_section.id)
+            section_docs = crud.section.get_section_documents_by_section_id(db=db, 
+                                                                            section_id=db_section.id)
+            status_map = {sd.document_id: sd.status for sd in section_docs}
+
+            # 生成结果列表
+            documents = [
+                schemas.section.SectionDocumentInfo.model_validate({
+                    **document.__dict__,
+                    'title': document.title or 'Unnamed document',
+                    'status': status_map.get(document.id)
+                })
+                for document in db_documents
+            ]
+            
+            db_labels = crud.section.get_labels_by_section_id(db=db,
+                                                              section_id=db_section.id)
+            
+            res = schemas.section.SectionInfo(
+                **db_section.__dict__,
+                documents=documents,
+                labels=db_labels,
+                documents_count=documents_count,
+                subscribers_count=subscribers_count,
+                creator=db_section.creator,
+            )
+            
+            db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
+                                                                                      section_id=db_section.id,
+                                                                                      user_id=user.id)
+            
+            if db_section_user is not None:
+                res.authority = db_section_user.authority
+            
+            db_user_and_section_users = crud.section.get_users_and_section_users_by_section_id(db=db,
+                                                                                               section_id=db_section.id)
+            
+    return res
+
+
 @section_router.post('/publish', response_model=schemas.common.NormalResponse)
 async def section_publish_request(section_publish_request: schemas.section.SectionPublishRequest,
                                   db: Session = Depends(get_db),

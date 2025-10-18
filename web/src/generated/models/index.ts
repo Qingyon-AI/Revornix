@@ -185,6 +185,7 @@ export * from './SectionPublishGetRequest';
 export * from './SectionPublishGetResponse';
 export * from './SectionPublishRequest';
 export * from './SectionRePublishRequest';
+export * from './SectionSeoDetailRequest';
 export * from './SectionSubscribeRequest';
 export * from './SectionUpdateRequest';
 export * from './SectionUserAddRequest';
