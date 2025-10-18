@@ -20,6 +20,7 @@ import type {
   DaySectionRequest,
   DaySectionResponse,
   HTTPValidationError,
+  InifiniteScrollPagnitionDocumentInfo,
   InifiniteScrollPagnitionSectionCommentInfo,
   InifiniteScrollPagnitionSectionInfo,
   LabelAddRequest,
@@ -37,6 +38,7 @@ import type {
   SectionCreateResponse,
   SectionDeleteRequest,
   SectionDetailRequest,
+  SectionDocumentRequest,
   SectionInfo,
   SectionPublishGetRequest,
   SectionPublishGetResponse,
@@ -62,6 +64,8 @@ import {
     DaySectionResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    InifiniteScrollPagnitionDocumentInfoFromJSON,
+    InifiniteScrollPagnitionDocumentInfoToJSON,
     InifiniteScrollPagnitionSectionCommentInfoFromJSON,
     InifiniteScrollPagnitionSectionCommentInfoToJSON,
     InifiniteScrollPagnitionSectionInfoFromJSON,
@@ -96,6 +100,8 @@ import {
     SectionDeleteRequestToJSON,
     SectionDetailRequestFromJSON,
     SectionDetailRequestToJSON,
+    SectionDocumentRequestFromJSON,
+    SectionDocumentRequestToJSON,
     SectionInfoFromJSON,
     SectionInfoToJSON,
     SectionPublishGetRequestFromJSON,
@@ -214,6 +220,12 @@ export interface SearchSectionCommentSectionCommentSearchPostRequest {
 
 export interface SearchUserSectionsSectionUserSearchPostRequest {
     searchUserSectionsRequest: SearchUserSectionsRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface SectionDocumentRequestSectionDocumentsPostRequest {
+    sectionDocumentRequest: SectionDocumentRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -1006,6 +1018,53 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async searchUserSectionsSectionUserSearchPost(requestParameters: SearchUserSectionsSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
         const response = await this.searchUserSectionsSectionUserSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Section Document Request
+     */
+    async sectionDocumentRequestSectionDocumentsPostRaw(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+        if (requestParameters['sectionDocumentRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionDocumentRequest',
+                'Required parameter "sectionDocumentRequest" was null or undefined when calling sectionDocumentRequestSectionDocumentsPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/documents`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionDocumentRequestToJSON(requestParameters['sectionDocumentRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Section Document Request
+     */
+    async sectionDocumentRequestSectionDocumentsPost(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+        const response = await this.sectionDocumentRequestSectionDocumentsPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
