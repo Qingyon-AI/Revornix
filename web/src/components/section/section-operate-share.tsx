@@ -1,32 +1,25 @@
 import { Button } from '../ui/button';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { getSectionDetail, updateSection } from '@/service/section';
+import { useQuery } from '@tanstack/react-query';
+import { getSectionDetail } from '@/service/section';
 import { Badge } from '../ui/badge';
 import {
 	Dialog,
 	DialogClose,
 	DialogContent,
-	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
 } from '../ui/dialog';
 import { useTranslations } from 'next-intl';
-import { Label } from '../ui/label';
-import { Switch } from '../ui/switch';
-import { Input } from '../ui/input';
-import { CopyIcon, ShareIcon } from 'lucide-react';
-import { useCopyToClipboard } from 'react-use';
-import { toast } from 'sonner';
-import { getQueryClient } from '@/lib/get-query-client';
-import { SectionInfo } from '@/generated';
+import { InfoIcon, ShareIcon } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '../ui/alert';
+import SectionPublish from './section-publish';
+import SectionShare from './section-share';
 
 const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
-	const queryClient = getQueryClient();
-
-	const [copiedText, copy] = useCopyToClipboard();
 
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', section_id],
@@ -34,50 +27,6 @@ const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 			return getSectionDetail({ section_id: section_id });
 		},
 	});
-
-	const mutateUpdate = useMutation({
-		mutationFn: async (newStatus: boolean) => {
-			return await updateSection({
-				section_id, // ⚡️用 props，而不是 section?.id
-				public: newStatus,
-			});
-		},
-		onMutate: async (newStatus: boolean) => {
-			await queryClient.cancelQueries({
-				queryKey: ['getSectionDetail', section_id],
-			});
-
-			const previousData = queryClient.getQueryData<SectionInfo>([
-				'getSectionDetail',
-				section_id,
-			]);
-
-			queryClient.setQueryData(
-				['getSectionDetail', section_id],
-				(old?: SectionInfo) => (old ? { ...old, public: newStatus } : old)
-			);
-
-			return { previousData };
-		},
-		onError: (error, newStatus, context) => {
-			toast.error((error as Error).message);
-			if (context?.previousData) {
-				queryClient.setQueryData(
-					['getSectionDetail', section_id],
-					context.previousData
-				);
-			}
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({
-				queryKey: ['getSectionDetail', section_id],
-			});
-		},
-	});
-
-	const handleUpdateTheShareStatus = (e: boolean) => {
-		mutateUpdate.mutate(e);
-	};
 
 	return (
 		<>
@@ -92,45 +41,41 @@ const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 									<span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75'></span>
 									<span className='relative inline-flex size-2 rounded-full bg-amber-500'></span>
 								</span>
-								{t('section_share_status_on')}
+								{t('section_publish_status_on')}
 							</Badge>
 						)}
 					</Button>
 				</DialogTrigger>
-				<DialogContent>
+				<DialogContent className='flex flex-col'>
 					<DialogHeader>
 						<DialogTitle>{t('section_share')}</DialogTitle>
-						<DialogDescription>
-							{t('section_share_description')}
-						</DialogDescription>
 					</DialogHeader>
-					<div className='flex flex-col gap-5'>
-						<div className='w-full flex items-center gap-2 justify-between'>
-							<Label>{t('section_share_on')}</Label>
-							<Switch
-								checked={section?.public}
-								onCheckedChange={handleUpdateTheShareStatus}
-							/>
-						</div>
-						{section?.public && (
-							<div className='w-full flex items-center gap-2'>
-								<Input
-									disabled
-									value={`https://app.revornix.com/section/${section?.id}`}
-								/>
-								<Button
-									size={'icon'}
-									onClick={() => {
-										section &&
-											section.public &&
-											copy(`https://app.revornix.com/section/${section?.id}`);
-										toast.success(t('copied'));
-									}}>
-									<CopyIcon />
-								</Button>
+					<Tabs defaultValue='account'>
+						<TabsList className='w-full'>
+							<TabsTrigger value='share'>{t('section_share')}</TabsTrigger>
+							<TabsTrigger value='publish'>{t('section_publish')}</TabsTrigger>
+						</TabsList>
+						<TabsContent value='share'>
+							<Alert className='bg-emerald-600/10 dark:bg-emerald-600/15 text-emerald-500 border-emerald-500/50 dark:border-emerald-600/50 mb-5'>
+								<InfoIcon />
+								<AlertDescription>
+									{t('section_share_description')}
+								</AlertDescription>
+							</Alert>
+							<SectionShare section_id={section_id} />
+						</TabsContent>
+						<TabsContent value='publish'>
+							<Alert className='bg-emerald-600/10 dark:bg-emerald-600/15 text-emerald-500 border-emerald-500/50 dark:border-emerald-600/50 mb-5'>
+								<InfoIcon />
+								<AlertDescription>
+									{t('section_publish_description')}
+								</AlertDescription>
+							</Alert>
+							<div className='flex flex-col gap-5'>
+								<SectionPublish section_id={section_id} />
 							</div>
-						)}
-					</div>
+						</TabsContent>
+					</Tabs>
 					<DialogFooter>
 						<DialogClose asChild>
 							<Button variant='outline'>{t('cancel')}</Button>

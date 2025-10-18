@@ -1,6 +1,7 @@
 import { API_PREFIX } from "@/config/api"
 
 export default {
+    searchUser: API_PREFIX + '/user/search',
     getUserFans: API_PREFIX + '/user/fans',
     getUserFollows: API_PREFIX + '/user/follows',
     createEmailCode: API_PREFIX + '/user/create/email/code',

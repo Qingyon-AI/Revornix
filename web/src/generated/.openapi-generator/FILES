@@ -199,6 +199,7 @@ models/SectionUpdateRequest.ts
 models/SectionUserAddRequest.ts
 models/SectionUserDeleteRequest.ts
 models/SectionUserModifyRequest.ts
+models/SectionUserPublicInfo.ts
 models/SectionUserRequest.ts
 models/SectionUserResponse.ts
 models/SmsUserCodeCreateRequest.ts
@@ -220,7 +221,6 @@ models/UserFileSystemUpdateRequest.ts
 models/UserInfoRequest.ts
 models/UserInfoUpdateRequest.ts
 models/UserLoginRequest.ts
-models/UserPublicBaseInfo.ts
 models/UserPublicInfo.ts
 models/ValidationError.ts
 models/ValidationErrorLocInner.ts
