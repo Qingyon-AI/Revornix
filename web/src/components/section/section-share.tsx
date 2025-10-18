@@ -1,4 +1,4 @@
-import { UserSectionAuthority } from '@/enums/section';
+import { UserSectionAuthority, UserSectionRole } from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
 import {
 	addSectionUser,
@@ -71,6 +71,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 		queryFn: async () => {
 			return getSectionUser({
 				section_id: section_id,
+				filter_roles: [UserSectionRole.MEMBER],
 			});
 		},
 	});

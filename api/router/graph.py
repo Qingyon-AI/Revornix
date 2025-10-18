@@ -5,6 +5,7 @@ from common.dependencies import get_current_user, get_db, get_current_user_witho
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from data.neo4j.base import neo4j_driver
+from enums.section import UserSectionRole
 
 graph_router = APIRouter()
 
@@ -72,7 +73,8 @@ async def section_graph(section_graph_request: schemas.graph.SectionGraphRequest
             raise Exception("You are not authorized to view this section")
         
         section_users = crud.section.get_section_users_by_section_id(db=db,
-                                                                     section_id=section_id)
+                                                                     section_id=section_id,
+                                                                     filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR])
         
         if user.id not in [section_user.user_id for section_user in section_users]:
             raise Exception("You are not authorized to view this section")
