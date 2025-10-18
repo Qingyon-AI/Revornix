@@ -69,10 +69,10 @@ async def section_graph(section_graph_request: schemas.graph.SectionGraphRequest
         if user is None:
             raise Exception("You are not authorized to view this section")
         
-        section_user = crud.section.get_section_users_by_section_id(db=db, 
-                                                                    section_id=section_id)
+        section_users = crud.section.get_section_users_by_section_id(db=db,
+                                                                     section_id=section_id)
         
-        if user.id not in [user.id for user in section_user]:
+        if user.id not in [section_user.user_id for section_user in section_users]:
             raise Exception("You are not authorized to view this section")
         else:
             with neo4j_driver.session() as session:
