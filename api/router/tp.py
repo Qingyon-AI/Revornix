@@ -41,8 +41,7 @@ async def create_section(section_create_request: schemas.section.SectionCreateRe
                                              creator_id=user.id,
                                              cover=section_create_request.cover,
                                              title=section_create_request.title, 
-                                             description=section_create_request.description,
-                                             public=section_create_request.public)
+                                             description=section_create_request.description)
     if section_create_request.labels:
             crud.section.bind_labels_to_section(db=db, 
                                                 section_id=db_section.id, 
@@ -122,7 +121,6 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
                                                            title=f'{now.date().isoformat()} Summary',
-                                                           public=False,
                                                            description=f'This document is the summary of all documents on{now.date()}')
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,
@@ -171,7 +169,6 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
                                                            title=f'{now.date()} Summary',
-                                                           public=False,
                                                            description=f'This document is the summary of all documents on {now.date().isoformat()}.')
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,
@@ -218,7 +215,6 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
                                                            title=f'{now.date().isoformat()} Summary',
-                                                           public=False,
                                                            description=f'This document is the summary of all documents on {now.date().isoformat()}.')
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_today_section.id,

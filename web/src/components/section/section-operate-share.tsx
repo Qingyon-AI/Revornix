@@ -1,6 +1,6 @@
 import { Button } from '../ui/button';
 import { useQuery } from '@tanstack/react-query';
-import { getSectionDetail } from '@/service/section';
+import { getSectionDetail, getSectionPublish } from '@/service/section';
 import { Badge } from '../ui/badge';
 import {
 	Dialog,
@@ -28,6 +28,13 @@ const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 		},
 	});
 
+	const { data: sectionPublish } = useQuery({
+		queryKey: ['getSectionPublish', section_id],
+		queryFn: async () => {
+			return getSectionPublish({ section_id: section_id });
+		},
+	});
+
 	return (
 		<>
 			<Dialog>
@@ -35,7 +42,7 @@ const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 					<Button className='flex-1 w-full text-xs' variant={'ghost'}>
 						<ShareIcon />
 						{t('section_share')}
-						{section?.public && (
+						{sectionPublish && sectionPublish.status && (
 							<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
 								<span className='relative flex size-2'>
 									<span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75'></span>

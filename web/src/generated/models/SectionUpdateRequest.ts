@@ -39,12 +39,6 @@ export interface SectionUpdateRequest {
     description?: string | null;
     /**
      * 
-     * @type {boolean}
-     * @memberof SectionUpdateRequest
-     */
-    public?: boolean | null;
-    /**
-     * 
      * @type {string}
      * @memberof SectionUpdateRequest
      */
@@ -84,7 +78,6 @@ export function SectionUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator
         'section_id': json['section_id'],
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
-        'public': json['public'] == null ? undefined : json['public'],
         'cover': json['cover'] == null ? undefined : json['cover'],
         'documents': json['documents'] == null ? undefined : json['documents'],
         'labels': json['labels'] == null ? undefined : json['labels'],
@@ -105,7 +98,6 @@ export function SectionUpdateRequestToJSONTyped(value?: SectionUpdateRequest | n
         'section_id': value['section_id'],
         'title': value['title'],
         'description': value['description'],
-        'public': value['public'],
         'cover': value['cover'],
         'documents': value['documents'],
         'labels': value['labels'],

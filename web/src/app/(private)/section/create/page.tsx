@@ -36,8 +36,8 @@ const CreatePage = () => {
 		description: z
 			.string()
 			.min(1, { message: t('section_create_description_needed') }),
+		auto_publish: z.boolean(),
 		cover: z.string().nullable(),
-		public: z.boolean(),
 		labels: z.array(z.number()),
 	});
 
@@ -51,7 +51,7 @@ const CreatePage = () => {
 			title: '',
 			description: '',
 			labels: [],
-			public: false,
+			auto_publish: false,
 		},
 	});
 
@@ -87,8 +87,8 @@ const CreatePage = () => {
 				title: values.title,
 				description: values.description,
 				cover: values.cover,
-				public: values.public,
 				labels: values.labels,
+				auto_publish: values.auto_publish,
 			})
 		);
 		if (err || !res) {
@@ -219,14 +219,14 @@ const CreatePage = () => {
 						}}
 					/>
 					<FormField
-						name='public'
+						name='auto_publish'
 						control={form.control}
 						render={({ field }) => {
 							return (
 								<FormItem className='mb-5'>
 									<div className='flex flex-row gap-1 items-center'>
 										<FormLabel className='flex flex-row gap-1 items-center'>
-											{t('section_create_formpublic')}
+											{t('section_create_form_auto_publish')}
 										</FormLabel>
 										<Switch
 											checked={field.value}
@@ -236,7 +236,7 @@ const CreatePage = () => {
 										/>
 									</div>
 									<FormDescription>
-										{t('section_create_formpublic_description')}
+										{t('section_create_form_auto_publish_description')}
 									</FormDescription>
 								</FormItem>
 							);

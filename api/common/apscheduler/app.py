@@ -131,8 +131,7 @@ async def fetch_all_rss_sources_and_update():
             db_user_day_section = crud.section.create_section(db=db, 
                                                               creator_id=rss_server.user_id,
                                                               title=f'{now.date().isoformat()} Summary',
-                                                              description=f"This document is the summary of all documents on {now.date().isoformat()}.",
-                                                              public=False)
+                                                              description=f"This document is the summary of all documents on {now.date().isoformat()}.")
             crud.section.bind_section_to_user(db=db,
                                               section_id=db_user_day_section.id,
                                               user_id=rss_server.user_id,

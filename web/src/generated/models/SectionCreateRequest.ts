@@ -33,12 +33,6 @@ export interface SectionCreateRequest {
     description: string;
     /**
      * 
-     * @type {boolean}
-     * @memberof SectionCreateRequest
-     */
-    public: boolean;
-    /**
-     * 
      * @type {string}
      * @memberof SectionCreateRequest
      */
@@ -49,6 +43,12 @@ export interface SectionCreateRequest {
      * @memberof SectionCreateRequest
      */
     labels: Array<number>;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SectionCreateRequest
+     */
+    auto_publish?: boolean;
 }
 
 /**
@@ -57,7 +57,6 @@ export interface SectionCreateRequest {
 export function instanceOfSectionCreateRequest(value: object): value is SectionCreateRequest {
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('public' in value) || value['public'] === undefined) return false;
     if (!('labels' in value) || value['labels'] === undefined) return false;
     return true;
 }
@@ -74,9 +73,9 @@ export function SectionCreateRequestFromJSONTyped(json: any, ignoreDiscriminator
         
         'title': json['title'],
         'description': json['description'],
-        'public': json['public'],
         'cover': json['cover'] == null ? undefined : json['cover'],
         'labels': json['labels'],
+        'auto_publish': json['auto_publish'] == null ? undefined : json['auto_publish'],
     };
 }
 
@@ -93,9 +92,9 @@ export function SectionCreateRequestToJSONTyped(value?: SectionCreateRequest | n
         
         'title': value['title'],
         'description': value['description'],
-        'public': value['public'],
         'cover': value['cover'],
         'labels': value['labels'],
+        'auto_publish': value['auto_publish'],
     };
 }
 

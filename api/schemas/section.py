@@ -191,7 +191,6 @@ class SectionInfo(BaseModel):
     title: str
     creator: UserPublicInfo
     description: str
-    public: bool
     documents_count: int 
     subscribers_count: int
     create_time: datetime
@@ -258,9 +257,9 @@ class DaySectionResponse(BaseModel):
 class SectionCreateRequest(BaseModel):
     title: str
     description: str
-    public: bool
     cover: str | None = None
     labels: list[int]
+    auto_publish: bool = False
     
 class SectionCreateResponse(BaseModel):
     id: int
@@ -269,7 +268,6 @@ class SectionUpdateRequest(BaseModel):
     section_id: int
     title: str | None = None
     description: str | None = None
-    public: bool | None = None
     cover: str | None = None
     documents: list[int] | None = None
     labels: list[int] | None = None

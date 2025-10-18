@@ -63,7 +63,6 @@ class Section(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String(500), index=True, nullable=False)
-    public = Column(Boolean, nullable=False, index=True)
     creator_id = Column(Integer, ForeignKey("user.id"), index=True, nullable=False)
     cover = Column(String(500), comment='The path of the cover image which you uploaded to the file system')
     description = Column(String(500), index=True, nullable=False)
