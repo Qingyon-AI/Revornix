@@ -4,6 +4,9 @@ from datetime import datetime, timezone
 from schemas.user import UserPublicInfo, SectionUserPublicInfo
 from enums.section import UserSectionRole
 
+class SectionSeoDetailRequest(BaseModel):
+    uuid: str
+
 class SectionPublishGetRequest(BaseModel):
     section_id: int
 

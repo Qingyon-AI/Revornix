@@ -42,6 +42,7 @@ import type {
   SectionPublishGetResponse,
   SectionPublishRequest,
   SectionRePublishRequest,
+  SectionSeoDetailRequest,
   SectionSubscribeRequest,
   SectionUpdateRequest,
   SectionUserAddRequest,
@@ -105,6 +106,8 @@ import {
     SectionPublishRequestToJSON,
     SectionRePublishRequestFromJSON,
     SectionRePublishRequestToJSON,
+    SectionSeoDetailRequestFromJSON,
+    SectionSeoDetailRequestToJSON,
     SectionSubscribeRequestFromJSON,
     SectionSubscribeRequestToJSON,
     SectionUpdateRequestFromJSON,
@@ -229,6 +232,12 @@ export interface SectionPublishRequestSectionPublishPostRequest {
 
 export interface SectionRepublishSectionRepublishPostRequest {
     sectionRePublishRequest: SectionRePublishRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface SectionSeoDetailRequestSectionDetailSeoPostRequest {
+    sectionSeoDetailRequest: SectionSeoDetailRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -1138,6 +1147,53 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async sectionRepublishSectionRepublishPost(requestParameters: SectionRepublishSectionRepublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.sectionRepublishSectionRepublishPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Section Seo Detail Request
+     */
+    async sectionSeoDetailRequestSectionDetailSeoPostRaw(requestParameters: SectionSeoDetailRequestSectionDetailSeoPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionInfo>> {
+        if (requestParameters['sectionSeoDetailRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionSeoDetailRequest',
+                'Required parameter "sectionSeoDetailRequest" was null or undefined when calling sectionSeoDetailRequestSectionDetailSeoPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/detail/seo`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionSeoDetailRequestToJSON(requestParameters['sectionSeoDetailRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SectionInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Section Seo Detail Request
+     */
+    async sectionSeoDetailRequestSectionDetailSeoPost(requestParameters: SectionSeoDetailRequestSectionDetailSeoPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SectionInfo> {
+        const response = await this.sectionSeoDetailRequestSectionDetailSeoPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

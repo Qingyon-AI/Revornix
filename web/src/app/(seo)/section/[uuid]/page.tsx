@@ -1,6 +1,6 @@
 import {
-	SectionDetailRequest,
 	SectionInfo as SectionInfoType,
+	SectionSeoDetailRequest,
 } from '@/generated';
 import { serverRequest } from '@/lib/request-server';
 import sectionApi from '@/api/section';
@@ -28,13 +28,13 @@ import { Alert, AlertTitle } from '@/components/ui/alert';
 import SectionComments from '@/components/section/section-comments';
 import SectionInfo from '@/components/section/section-info';
 
-type Params = Promise<{ id: string }>;
+type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 const getSectionDetail = async (
-	data: SectionDetailRequest
+	data: SectionSeoDetailRequest
 ): Promise<SectionInfoType> => {
-	return await serverRequest(sectionApi.getSectionDetail, {
+	return await serverRequest(sectionApi.getSEOSectionDetail, {
 		data,
 	});
 };
@@ -44,11 +44,11 @@ export async function generateMetadata(props: {
 	searchParams: SearchParams;
 }): Promise<Metadata | undefined> {
 	// read route params
-	const { id } = await props.params;
+	const { uuid } = await props.params;
 
 	// fetch data
 	const [section_res, section_err] = await utils.to(
-		getSectionDetail({ section_id: Number(id) })
+		getSectionDetail({ uuid: uuid })
 	);
 
 	if (section_err) {
@@ -69,7 +69,7 @@ const SEOSectionDetail = async (props: {
 }) => {
 	const t = await getTranslations();
 	const params = await props.params;
-	const id = params.id;
+	const uuid = params.uuid;
 
 	let markdown = null;
 	let section = null;
@@ -103,7 +103,7 @@ const SEOSectionDetail = async (props: {
 	};
 
 	const [section_res, section_err] = await utils.to(
-		getSectionDetail({ section_id: Number(id) })
+		getSectionDetail({ uuid: uuid })
 	);
 
 	if (section_err) {
@@ -125,9 +125,7 @@ const SEOSectionDetail = async (props: {
 		<div className='px-5 p-5 w-full grid grid-cols-12 gap-5 relative h-[calc(100vh-theme(spacing.16))]'>
 			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
 				<Card className='py-0 pb-5 flex-1 relative shadow-none overflow-auto'>
-					<div>
-						<SectionInfo id={Number(id)} />
-					</div>
+					<div>{section && <SectionInfo id={Number(section.id)} />}</div>
 				</Card>
 				<Card className='py-0 flex-1 relative shadow-none'>
 					<Dialog>
@@ -147,11 +145,11 @@ const SEOSectionDetail = async (props: {
 								</DialogDescription>
 							</DialogHeader>
 							<div className='flex-1'>
-								<SectionGraphSEO section_id={Number(id)} />
+								{section && <SectionGraphSEO section_id={section.id} />}
 							</div>
 						</DialogContent>
 					</Dialog>
-					<SectionGraphSEO section_id={Number(id)} />
+					{section && <SectionGraphSEO section_id={section.id} />}
 				</Card>
 			</div>
 			<div className='col-span-6 h-full relative min-h-0 overflow-auto'>
@@ -169,7 +167,7 @@ const SEOSectionDetail = async (props: {
 			</div>
 			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
 				<Card className='p-5 overflow-auto relative shadow-none h-full'>
-					<SectionComments section_id={Number(id)} />
+					{section && <SectionComments section_id={section.id} />}
 				</Card>
 			</div>
 		</div>
