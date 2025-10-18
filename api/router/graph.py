@@ -81,21 +81,19 @@ async def section_graph(section_graph_request: schemas.graph.SectionGraphRequest
                 entity_query = """
                     UNWIND $doc_ids AS doc_id
                     MATCH (d:Document {id: doc_id})
-                    WHERE d.creator_id = $user_id
                     MATCH (d)-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
                     RETURN DISTINCT e.id AS id, e.text AS text, e.degree AS degree
                 """
                 edge_query = """
                     UNWIND $doc_ids AS doc_id
                     MATCH (d:Document {id: doc_id})
-                    WHERE d.creator_id = $user_id
                     MATCH (d)-[:HAS_CHUNK]->(c1:Chunk)-[:MENTIONS]->(e1:Entity)
                     MATCH (d)-[:HAS_CHUNK]->(c2:Chunk)-[:MENTIONS]->(e2:Entity)
                     MATCH (e1)-[r]->(e2)
                     RETURN DISTINCT e1.id AS src_id, e2.id AS tgt_id
                 """
-                entities_result = session.run(entity_query, doc_ids=document_ids, user_id=user.id)
-                relations_result = session.run(edge_query, doc_ids=document_ids, user_id=user.id)
+                entities_result = session.run(entity_query, doc_ids=document_ids)
+                relations_result = session.run(edge_query, doc_ids=document_ids)
 
                 unique_nodes = {}
                 for record in entities_result:
@@ -126,20 +124,18 @@ async def document_graph(document_graph_request: schemas.graph.DocumentGraphRequ
     with neo4j_driver.session() as session:
         entity_query = """
             MATCH (d:Document {id: $doc_id})
-            WHERE d.creator_id = $user_id
             MATCH (d)-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
             RETURN DISTINCT e.id AS id, e.text AS text, e.degree AS degree
         """
         edge_query = """
             MATCH (d:Document {id: $doc_id})
-            WHERE d.creator_id = $user_id
             MATCH (d)-[:HAS_CHUNK]->(c1:Chunk)-[:MENTIONS]->(e1:Entity)
             MATCH (d)-[:HAS_CHUNK]->(c2:Chunk)-[:MENTIONS]->(e2:Entity)
             MATCH (e1)-[r]->(e2)
             RETURN DISTINCT e1.id AS src_id, e2.id AS tgt_id
         """
-        entities_result = session.run(entity_query, doc_id=doc_id, user_id=user.id)
-        relations_result = session.run(edge_query, doc_id=doc_id, user_id=user.id)
+        entities_result = session.run(entity_query, doc_id=doc_id)
+        relations_result = session.run(edge_query, doc_id=doc_id)
         
         # 🧱 构造节点
         for record in entities_result:

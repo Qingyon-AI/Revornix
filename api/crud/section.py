@@ -175,8 +175,15 @@ def search_user_sections(db: Session,
                          only_public: bool = False,
                          desc: bool = True):
     query = db.query(models.section.Section)
-    query = query.filter(models.section.Section.delete_at == None,
-                         models.section.Section.creator_id == user_id)
+    query = query.filter(models.section.Section.delete_at == None)
+    query = query.join(models.section.SectionUser)
+    query = query.filter(models.section.SectionUser.user_id == user_id,
+                         models.section.SectionUser.delete_at == None,
+                         models.section.SectionUser.role.in_([
+                             UserSectionRole.CREATOR,
+                             UserSectionRole.MEMBER
+                            ])
+                         )
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -552,7 +559,8 @@ def get_section_users_by_section_id(db: Session,
 
 def get_section_user_by_section_id_and_user_id(db: Session, 
                                                section_id: int, 
-                                               user_id: int):
+                                               user_id: int,
+                                               filter_role: int | None = None):
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.section_id == section_id,
@@ -560,6 +568,8 @@ def get_section_user_by_section_id_and_user_id(db: Session,
                          models.section.SectionUser.delete_at == None)
     query = query.filter(or_(models.section.SectionUser.expire_time > now, 
                              models.section.SectionUser.expire_time == None))
+    if filter_role is not None:
+        query = query.filter(models.section.SectionUser.role == filter_role)
     return query.one_or_none()
 
 def get_section_by_user_and_date(db: Session,

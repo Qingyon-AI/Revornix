@@ -62,8 +62,8 @@ async def section_seo_detail_request(section_seo_detail_request: schemas.section
     
     if user is not None:
         db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
-                                                                                    section_id=db_section.id,
-                                                                                    user_id=user.id)
+                                                                                  section_id=db_section.id,
+                                                                                  user_id=user.id)
         if db_section_user is not None:
             res.authority = db_section_user.authority
     
@@ -230,6 +230,9 @@ async def delete_section_user(section_user_delete_request: schemas.section.Secti
     if section_user is None or section_user.role not in [UserSectionRole.CREATOR]:
         raise Exception("You are forbidden to delete user from this section")
     
+    if user.id == section_user_delete_request.user_id:
+        raise Exception("As the creator of the section, you can't delete yourself")
+    
     crud.section.delete_section_user_by_section_id_and_user_id(db=db,
                                                                section_id=section_user_delete_request.section_id,
                                                                user_id=section_user_delete_request.user_id)
@@ -292,7 +295,6 @@ async def get_my_subscribed_sections(
         return schemas.section.SectionInfo(
             **section.__dict__,
             creator=section.creator,
-            cover=section.cover,
             labels=db_labels,
             authority=db_user_section.authority if db_user_section else None,
             documents_count=documents_count,
@@ -611,6 +613,8 @@ async def get_section_detail(
                                                                                       user_id=user.id)
             if db_section_user is not None:
                 res.authority = db_section_user.authority
+                if db_section_user.role == UserSectionRole.SUBSCRIBER:
+                    res.is_subscribed = True
         
     else:
         if user is None:
@@ -656,9 +660,8 @@ async def get_section_detail(
             
             if db_section_user is not None:
                 res.authority = db_section_user.authority
-            
-            db_user_and_section_users = crud.section.get_users_and_section_users_by_section_id(db=db,
-                                                                                               section_id=section_detail_request.section_id)
+                if db_section_user.role == UserSectionRole.SUBSCRIBER:
+                    res.is_subscribed = True
             
     return res
 
@@ -744,7 +747,17 @@ async def subscribe_section(
                                                                               section_id=section_subscribe_request.section_id,
                                                                               user_id=user.id)
     
-    if db_user_section is None:
+    if db_user_section is not None:
+        if db_user_section.role == UserSectionRole.MEMBER:
+            raise Exception("You are already a member of this section, so you don't need to subscribe again")
+        elif db_user_section.role == UserSectionRole.SUBSCRIBER:
+            if section_subscribe_request.status:
+                raise Exception("You are already a subscriber of this section, so you don't need to subscribe again")
+            else:
+                crud.section.delete_section_user_by_section_id_and_user_id(db=db, 
+                                                                           section_id=section_subscribe_request.section_id,
+                                                                           user_id=user.id)
+    else:
         if section_subscribe_request.status:
             # 免费专栏仅需要订阅一次即可永久生效，TODO：用户如果修改专栏的免费状态，则使其免费订阅失效，需要重新订阅
             crud.section.create_section_user(db=db,
@@ -752,11 +765,6 @@ async def subscribe_section(
                                              user_id=user.id,
                                              role=UserSectionRole.SUBSCRIBER,
                                              authority=UserSectionAuthority.READ_ONLY)
-    else: 
-        if not section_subscribe_request.status:
-            crud.section.delete_section_user_by_section_id_and_user_id(db=db, 
-                                                                       section_id=section_subscribe_request.section_id,
-                                                                       user_id=user.id)
     db.commit()
     return schemas.common.SuccessResponse()    
 
