@@ -3,11 +3,78 @@ import crud
 import models
 from fastapi import APIRouter, Depends
 from datetime import datetime, timezone
+from uuid import uuid4
 from sqlalchemy.orm import Session
 from common.dependencies import get_db, get_current_user, get_current_user_without_throw
 from enums.section import UserSectionAuthority, UserSectionRole
 
 section_router = APIRouter()
+
+@section_router.post('/publish', response_model=schemas.common.NormalResponse)
+async def section_publish_request(section_publish_request: schemas.section.SectionPublishRequest,
+                                  db: Session = Depends(get_db),
+                                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_section = crud.section.get_section_by_section_id(db=db,
+                                                        section_id=section_publish_request.section_id)
+    if db_section is None:
+        raise Exception("Section not found")
+    if db_section.creator_id != user.id:
+        raise Exception("You are forbidden to publish this section")
+    
+    db_exist_publish_section = crud.section.get_publish_section_by_section_id(db=db,
+                                                                              section_id=section_publish_request.section_id)
+    if section_publish_request.status and db_exist_publish_section is None:
+        db_publish_section = crud.section.create_publish_section(db=db,
+                                                                 section_id=section_publish_request.section_id)
+    else:
+        crud.section.delete_publish_section_by_section_id(db=db,
+                                                          section_id=section_publish_request.section_id)
+
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+@section_router.post('/republish', response_model=schemas.common.NormalResponse)
+async def section_republish(section_republish_request: schemas.section.SectionRePublishRequest,
+                            db: Session = Depends(get_db),
+                            user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    now = datetime.now(timezone.utc)
+    db_section = crud.section.get_section_by_section_id(db=db,
+                                                        section_id=section_republish_request.section_id)
+    if db_section is None:
+        raise Exception("Section not found")
+    if db_section.creator_id != user.id:
+        raise Exception("You are forbidden to publish this section")
+
+    db_publish_section = crud.section.get_publish_section_by_section_id(db=db,
+                                                                        section_id=section_republish_request.section_id)
+    if db_publish_section is None:
+        raise Exception("Section not published yet")
+    
+    db_publish_section.uuid = uuid4().hex
+    db_publish_section.update_time = now
+    
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+@section_router.post('/publish/get', response_model=schemas.section.SectionPublishGetResponse)
+async def section_publish_get_request(section_publish_get_request: schemas.section.SectionPublishGetRequest,
+                                      db: Session = Depends(get_db),
+                                      user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    db_section = crud.section.get_section_by_section_id(db=db,
+                                                        section_id=section_publish_get_request.section_id)
+    if db_section is None:
+        raise Exception("Section not found")
+    if db_section.creator_id != user.id:
+        raise Exception("You are forbidden to get the publish info of this section")
+    db_publish_section = crud.section.get_publish_section_by_section_id(db=db,
+                                                                        section_id=section_publish_get_request.section_id)
+    if db_publish_section is None:
+        return schemas.section.SectionPublishGetResponse(status=False)
+    return schemas.section.SectionPublishGetResponse(status=True,
+                                                     uuid=db_publish_section.uuid,
+                                                     update_time=db_publish_section.update_time,
+                                                     create_time=db_publish_section.create_time)
+
 
 @section_router.post('/user', response_model=schemas.section.SectionUserResponse)
 async def section_user_request(section_user_request: schemas.section.SectionUserRequest,

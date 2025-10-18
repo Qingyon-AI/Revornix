@@ -4,6 +4,34 @@ from datetime import datetime, timezone
 from schemas.user import UserPublicInfo, SectionUserPublicInfo
 from enums.section import UserSectionRole
 
+class SectionPublishGetRequest(BaseModel):
+    section_id: int
+
+class SectionPublishGetResponse(BaseModel):
+    status: bool
+    uuid: str | None = None
+    create_time: datetime | None = None
+    update_time: datetime | None = None
+    @field_validator("create_time", mode="before")
+    def ensure_create_timezone(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    @field_validator("update_time", mode="before")
+    def ensure_update_timezone(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    class Config:
+        from_attributes = True
+
+class SectionRePublishRequest(BaseModel):
+    section_id: int
+
+class SectionPublishRequest(BaseModel):
+    section_id: int
+    status: bool
+
 class SectionUserRequest(BaseModel):
     section_id: int
     filter_role: int | None = None

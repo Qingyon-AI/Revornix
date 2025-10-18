@@ -1,19 +1,21 @@
 import models
+from uuid import uuid4
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import selectinload
 from sqlalchemy import or_
 from enums.section import UserSectionRole
 
-def get_document_sections_by_document_id(db: Session,
-                                         document_id: int):
-    query = db.query(models.section.Section)
-    query = query.join(models.section.SectionDocument)
-    query = query.filter(models.section.SectionDocument.document_id == document_id,
-                         models.section.SectionDocument.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None)
-    query = query.order_by(models.section.Section.update_time.desc())
-    return query.all()
+def create_publish_section(db: Session,
+                           section_id: int):
+    now = datetime.now(timezone.utc)
+    db_publish_section = models.section.PublishSection(section_id=section_id,
+                                                       uuid=uuid4().hex,
+                                                       create_time=now,
+                                                       update_time=now)
+    db.add(db_publish_section)
+    db.flush()
+    return db_publish_section
 
 def create_label(db: Session, 
                  name: str, 
@@ -126,6 +128,16 @@ def get_label_by_label_id(db: Session,
                          models.section.Label.user_id == user_id)
     return query.one_or_none()
 
+def get_document_sections_by_document_id(db: Session,
+                                         document_id: int):
+    query = db.query(models.section.Section)
+    query = query.join(models.section.SectionDocument)
+    query = query.filter(models.section.SectionDocument.document_id == document_id,
+                         models.section.SectionDocument.delete_at == None)
+    query = query.filter(models.section.Section.delete_at == None)
+    query = query.order_by(models.section.Section.update_time.desc())
+    return query.all()
+
 # 只返回用户是创建者或者成员的section
 def get_all_my_sections(db: Session, 
                         user_id: int):
@@ -141,6 +153,20 @@ def get_all_my_sections(db: Session,
     query = query.filter(models.section.Section.delete_at == None)
     query = query.order_by(models.section.Section.create_time.desc())
     return query.all()
+
+def get_publish_section_by_section_id(db: Session, 
+                                      section_id: int):
+    query = db.query(models.section.PublishSection)
+    query = query.filter(models.section.PublishSection.section_id == section_id,
+                         models.section.PublishSection.delete_at == None)
+    return query.first()
+
+def get_publish_sections_by_uuid(db: Session,
+                                 uuid: str):
+    query = db.query(models.section.PublishSection)
+    query = query.filter(models.section.PublishSection.uuid == uuid,
+                         models.section.PublishSection.delete_at == None)
+    return query.first()
 
 def search_user_sections(db: Session, 
                          user_id: int, 
@@ -745,3 +771,20 @@ def unbind_document_from_section(db: Session,
                          models.section.SectionDocument.document_id == document_id)
     query.update({"delete_at": now})
     db.flush()
+    
+def delete_publish_section_by_section_id(db: Session,
+                                         section_id: int):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.section.PublishSection)
+    query = query.filter(models.section.PublishSection.section_id == section_id)
+    query.update({"delete_at": now})
+    db.flush()
+    
+def delete_section_user_by_uuid(db: Session,
+                                uuid: str):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.section.PublishSection)
+    query = query.filter(models.section.PublishSection.uuid == uuid)
+    query.update({"delete_at": now})
+    db.flush()
+    

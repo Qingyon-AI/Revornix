@@ -2,6 +2,16 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from common.sql import Base
 
+class PublishSection(Base):
+    __tablename__ = "publish_section"
+
+    id = Column(Integer, primary_key=True)
+    section_id = Column(Integer, ForeignKey("section.id"), index=True)
+    uuid = Column(String(32), nullable=False, index=True)
+    create_time = Column(DateTime(timezone=True), nullable=False)
+    update_time = Column(DateTime(timezone=True), nullable=False)
+    delete_at = Column(DateTime(timezone=True))
+
 class SectionUser(Base):
     __tablename__ = "section_user"
 
