@@ -1,5 +1,5 @@
 import sectionApi from '@/api/section'
-import { AllMySectionsResponse, CreateLabelResponse, DaySectionRequest, DaySectionResponse, GetSectionDetailSectionDetailPostRequest, InifiniteScrollPagnitionDocumentInfo, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionInfo, LabelAddRequest, LabelListResponse, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserResponse } from '@/generated';
+import { AllMySectionsResponse, CreateLabelResponse, DaySectionRequest, DaySectionResponse, GetSectionDetailSectionDetailPostRequest, InifiniteScrollPagnitionDocumentInfo, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionDocumentInfo, InifiniteScrollPagnitionSectionInfo, LabelAddRequest, LabelListResponse, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserResponse } from '@/generated';
 import { request } from '@/lib/request';
 
 export const getMineLabels = async (): Promise<LabelListResponse> => {
@@ -142,7 +142,7 @@ export const getSectionPublish = async (data: SectionPublishGetRequest): Promise
     })
 }
 
-export const searchSectionDocuments = async (data: SectionDocumentRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
+export const searchSectionDocuments = async (data: SectionDocumentRequest): Promise<InifiniteScrollPagnitionSectionDocumentInfo> => {
     return await request(sectionApi.searchSectionDocuments, {
         data
     })
