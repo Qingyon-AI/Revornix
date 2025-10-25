@@ -7,7 +7,7 @@ alibabacloud-oss-v2==1.2.0
 beautifulsoup4==4.14.2
 httpx==0.28.1
 openai==1.109.1
-pydantic==2.11.9
+pydantic==2.11.10
 pymilvus[model]==2.6.2
 python-dotenv==1.1.1
 redis==6.4.0
@@ -34,4 +34,4 @@ google-auth==2.41.1
 tencentcloud-sdk-python==3.0.1470
 sentence_transformers==5.1.1
 neo4j==6.0.2
-mcp==1.18.0
+fastmcp==2.12.5
