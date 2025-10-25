@@ -1,5 +1,5 @@
 from zoneinfo import ZoneInfo
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 import datetime
 import random
 import uuid
