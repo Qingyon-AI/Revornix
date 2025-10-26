@@ -15,6 +15,7 @@ class OAuth2Client(Base):
     __tablename__ = "oauth2_client"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    creator_id: Mapped[int | None] = mapped_column(ForeignKey("user.id"), index=True, nullable=True)
     name: Mapped[str | None] = mapped_column(String(200))
     description: Mapped[str | None] = mapped_column(String(500))
     is_confidential: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -24,7 +25,7 @@ class OAuth2Client(Base):
     allowed_grant_types: Mapped[list[str]] = mapped_column(
         ARRAY(String), default=["authorization_code", "client_credentials", "password"]
     )
-    redirect_uris: Mapped[str] = mapped_column(String(2000), nullable=False)
+    redirect_uris: Mapped[list[str]] = mapped_column(ARRAY(String))
     scopes: Mapped[list[str]] = mapped_column(
         ARRAY(String), default=["openid", "profile", "email"]
     )
@@ -61,7 +62,7 @@ class OAuth2AuthorizationCode(Base):
     client_id: Mapped[str] = mapped_column(String(128), index=True, nullable=False)
     redirect_uri: Mapped[str | None] = mapped_column(String(512))
     response_type: Mapped[str | None] = mapped_column(String(32))
-    scope: Mapped[str | None] = mapped_column(String(512))
+    scopes: Mapped[list[str]] = mapped_column(ARRAY(String))
     auth_time: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(tz=timezone.utc)
     )

@@ -8,13 +8,19 @@ def create_oauth_code(
     client_id: str,
     user_id: int,
     code: str,
-    redirect_uri: str
+    redirect_uri: str,
+    scopes: list[str] | None,
+    code_challenge: str | None,
+    code_challenge_method: str | None
 ):
     db_code = models.oauth.OAuth2AuthorizationCode(
         client_id=client_id,
         user_id=user_id,
         code=code,
-        redirect_uri=redirect_uri
+        redirect_uri=redirect_uri,
+        scopes=scopes,
+        code_challenge=code_challenge,
+        code_challenge_method=code_challenge_method
     )
     db.add(db_code)
     db.flush()
@@ -41,13 +47,15 @@ def create_oauth_token(
 
 def create_oauth_client(
     db: Session, 
+    creator_id: int,
     name: str, 
     description: str | None,
     redirect_uris: list[str]
 ):
     client_id = uuid.uuid4().hex
     client_secret = uuid.uuid4().hex
-    db_client = models.oauth.OAuth2Client(client_id=client_id,
+    db_client = models.oauth.OAuth2Client(creator_id=creator_id,
+                                          client_id=client_id,
                                           client_secret=client_secret,
                                           redirect_uris=redirect_uris,
                                           name=name,

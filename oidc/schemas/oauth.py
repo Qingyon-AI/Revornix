@@ -13,3 +13,5 @@ class OAuthClientUpdateRequest(BaseModel):
     name: str | None = None
     description: str | None = None
     redirect_uris: list[str] | None = None
+    
+    

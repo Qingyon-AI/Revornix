@@ -1,4 +1,5 @@
 import crud
+import os
 from jose import jwt
 from redis import Redis
 from common.sql import SessionLocal
@@ -70,3 +71,36 @@ def get_current_user_without_throw(authorization: str | None = Header(default=No
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def get_current_user(authorization: str | None = Header(default=None), 
+                     db: Session = Depends(get_db), 
+                     ip: str = Depends(get_real_ip)):
+    now = datetime.now(timezone.utc)
+    authenticate_value = "Bearer"
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials"
+    )
+    if authorization is None or not authorization.startswith(authenticate_value):
+        raise credentials_exception
+    try:
+        token = authorization.replace('Bearer ', '')
+        payload = jwt.decode(token, os.environ.get('OAUTH_SECRET_KEY'), algorithms=['HS256'])
+        uuid: str = payload.get("sub")
+        if uuid is None:
+            raise credentials_exception
+    except Exception as e:
+        raise credentials_exception
+    user = crud.user.get_user_by_uuid(db, user_uuid=uuid)
+    if user is None:
+        raise credentials_exception
+    if user.is_forbidden:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are forbidden"
+        )
+    user.last_login_ip = ip
+    user.last_login_time = now
+    db.commit()
+    db.refresh(user)
+    return user
