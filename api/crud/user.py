@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 def create_wechat_user(db: Session, 
                        user_id: int, 
+                       wechat_platform: int,
                        wechat_user_open_id: str, 
                        wechat_user_union_id: str, 
                        wechat_user_name: str):
@@ -18,6 +19,7 @@ def create_wechat_user(db: Session,
     if db_user is None:
         raise Exception("The base info of the wechat user you want to create is not exist")
     db_wechat_user = models.user.WechatUser(user_id=user_id,
+                                            wechat_platform=wechat_platform,
                                             wechat_user_open_id=wechat_user_open_id,
                                             wechat_user_union_id=wechat_user_union_id,
                                             wechat_user_name=wechat_user_name)
@@ -321,28 +323,33 @@ def search_next_user_follow(db: Session,
     query = query.filter(models.user.User.id < user.id)
     return query.first()
 
+# 同一用户可能在不同平台登录过 比如Revornix小程序登录 比如Revornix Web端微信方式登录 所以会有多个微信openid
 def get_wechat_user_by_user_id(db: Session,
-                               user_id: int):
+                               user_id: int,
+                               filter_wechat_platform: int | None = None):
     query = db.query(models.user.WechatUser)
     query = query.join(models.user.User)
     query = query.filter(models.user.WechatUser.user_id == user_id,
                          models.user.WechatUser.delete_at == None,
                          models.user.User.delete_at == None)
-    return query.first()
+    if filter_wechat_platform is not None:
+        query = query.filter(models.user.WechatUser.wechat_platform == filter_wechat_platform)
+    return query.all()
 
 def get_wechat_user_by_wechat_open_id(db: Session,
                                       wechat_user_open_id: str):
     query = db.query(models.user.WechatUser)
     query = query.filter(models.user.WechatUser.wechat_user_open_id == wechat_user_open_id,
                          models.user.WechatUser.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
+# 同一用户可能在不同平台登录过 比如Revornix小程序登录 比如Revornix Web端微信方式登录 所以会有多个微信openid 但是union_id肯定是一致的
 def get_wechat_user_by_wechat_union_id(db: Session,
                                        wechat_user_union_id: str):
     query = db.query(models.user.WechatUser)
     query = query.filter(models.user.WechatUser.wechat_user_union_id == wechat_user_union_id,
                          models.user.WechatUser.delete_at == None)
-    return query.first()
+    return query.all()
 
 def get_phone_user_by_phone(db: Session,
                             phone: str):

@@ -45,8 +45,9 @@ import type {
   UserInfoUpdateRequest,
   UserLoginRequest,
   UserPublicInfo,
-  WeChatUserBindRequest,
-  WeChatUserCreateRequest,
+  WeChatMiniUserCreateRequest,
+  WeChatWebUserBindRequest,
+  WeChatWebUserCreateRequest,
 } from '../models/index';
 import {
     BindEmailVerifyRequestFromJSON,
@@ -109,10 +110,12 @@ import {
     UserLoginRequestToJSON,
     UserPublicInfoFromJSON,
     UserPublicInfoToJSON,
-    WeChatUserBindRequestFromJSON,
-    WeChatUserBindRequestToJSON,
-    WeChatUserCreateRequestFromJSON,
-    WeChatUserCreateRequestToJSON,
+    WeChatMiniUserCreateRequestFromJSON,
+    WeChatMiniUserCreateRequestToJSON,
+    WeChatWebUserBindRequestFromJSON,
+    WeChatWebUserBindRequestToJSON,
+    WeChatWebUserCreateRequestFromJSON,
+    WeChatWebUserCreateRequestToJSON,
 } from '../models/index';
 
 export interface BindEmailVerifyUserBindEmailVerifyPostRequest {
@@ -145,8 +148,8 @@ export interface BindPhoneVerifyUserBindPhoneVerifyPostRequest {
     xForwardedFor?: string | null;
 }
 
-export interface BindWechatUserBindWechatPostRequest {
-    weChatUserBindRequest: WeChatUserBindRequest;
+export interface BindWechatUserBindWechatWebPostRequest {
+    weChatWebUserBindRequest: WeChatWebUserBindRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -171,8 +174,12 @@ export interface CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest {
     smsUserCodeVerifyCreate: SmsUserCodeVerifyCreate;
 }
 
-export interface CreateUserByWechatUserCreateWechatPostRequest {
-    weChatUserCreateRequest: WeChatUserCreateRequest;
+export interface CreateUserByWechatMiniUserCreateWechatMiniPostRequest {
+    weChatMiniUserCreateRequest: WeChatMiniUserCreateRequest;
+}
+
+export interface CreateUserByWechatWebUserCreateWechatWebPostRequest {
+    weChatWebUserCreateRequest: WeChatWebUserCreateRequest;
 }
 
 export interface DeleteUserUserDeletePostRequest {
@@ -527,11 +534,11 @@ export class UserApi extends runtime.BaseAPI {
     /**
      * Bind Wechat
      */
-    async bindWechatUserBindWechatPostRaw(requestParameters: BindWechatUserBindWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        if (requestParameters['weChatUserBindRequest'] == null) {
+    async bindWechatUserBindWechatWebPostRaw(requestParameters: BindWechatUserBindWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['weChatWebUserBindRequest'] == null) {
             throw new runtime.RequiredError(
-                'weChatUserBindRequest',
-                'Required parameter "weChatUserBindRequest" was null or undefined when calling bindWechatUserBindWechatPost().'
+                'weChatWebUserBindRequest',
+                'Required parameter "weChatWebUserBindRequest" was null or undefined when calling bindWechatUserBindWechatWebPost().'
             );
         }
 
@@ -550,14 +557,14 @@ export class UserApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/user/bind/wechat`;
+        let urlPath = `/user/bind/wechat/web`;
 
         const response = await this.request({
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: WeChatUserBindRequestToJSON(requestParameters['weChatUserBindRequest']),
+            body: WeChatWebUserBindRequestToJSON(requestParameters['weChatWebUserBindRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
@@ -566,8 +573,8 @@ export class UserApi extends runtime.BaseAPI {
     /**
      * Bind Wechat
      */
-    async bindWechatUserBindWechatPost(requestParameters: BindWechatUserBindWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
-        const response = await this.bindWechatUserBindWechatPostRaw(requestParameters, initOverrides);
+    async bindWechatUserBindWechatWebPost(requestParameters: BindWechatUserBindWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.bindWechatUserBindWechatWebPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -767,13 +774,13 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create User By Wechat
+     * Create User By Wechat Mini
      */
-    async createUserByWechatUserCreateWechatPostRaw(requestParameters: CreateUserByWechatUserCreateWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
-        if (requestParameters['weChatUserCreateRequest'] == null) {
+    async createUserByWechatMiniUserCreateWechatMiniPostRaw(requestParameters: CreateUserByWechatMiniUserCreateWechatMiniPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        if (requestParameters['weChatMiniUserCreateRequest'] == null) {
             throw new runtime.RequiredError(
-                'weChatUserCreateRequest',
-                'Required parameter "weChatUserCreateRequest" was null or undefined when calling createUserByWechatUserCreateWechatPost().'
+                'weChatMiniUserCreateRequest',
+                'Required parameter "weChatMiniUserCreateRequest" was null or undefined when calling createUserByWechatMiniUserCreateWechatMiniPost().'
             );
         }
 
@@ -784,24 +791,63 @@ export class UserApi extends runtime.BaseAPI {
         headerParameters['Content-Type'] = 'application/json';
 
 
-        let urlPath = `/user/create/wechat`;
+        let urlPath = `/user/create/wechat/mini`;
 
         const response = await this.request({
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: WeChatUserCreateRequestToJSON(requestParameters['weChatUserCreateRequest']),
+            body: WeChatMiniUserCreateRequestToJSON(requestParameters['weChatMiniUserCreateRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
     }
 
     /**
-     * Create User By Wechat
+     * Create User By Wechat Mini
      */
-    async createUserByWechatUserCreateWechatPost(requestParameters: CreateUserByWechatUserCreateWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
-        const response = await this.createUserByWechatUserCreateWechatPostRaw(requestParameters, initOverrides);
+    async createUserByWechatMiniUserCreateWechatMiniPost(requestParameters: CreateUserByWechatMiniUserCreateWechatMiniPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.createUserByWechatMiniUserCreateWechatMiniPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Create User By Wechat Web
+     */
+    async createUserByWechatWebUserCreateWechatWebPostRaw(requestParameters: CreateUserByWechatWebUserCreateWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        if (requestParameters['weChatWebUserCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'weChatWebUserCreateRequest',
+                'Required parameter "weChatWebUserCreateRequest" was null or undefined when calling createUserByWechatWebUserCreateWechatWebPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/user/create/wechat/web`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: WeChatWebUserCreateRequestToJSON(requestParameters['weChatWebUserCreateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create User By Wechat Web
+     */
+    async createUserByWechatWebUserCreateWechatWebPost(requestParameters: CreateUserByWechatWebUserCreateWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.createUserByWechatWebUserCreateWechatWebPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
