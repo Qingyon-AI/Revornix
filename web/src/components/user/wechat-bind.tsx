@@ -28,23 +28,26 @@ const WeChatBind = () => {
 	};
 	return (
 		<div>
-			{userInfo && userInfo.wechat_info && (
-				<div className='flex flex-row items-center'>
-					<div className='font-bold text-xs'>
-						{t('account_wechat')}: {userInfo.wechat_info.nickname}
+			{userInfo &&
+				userInfo.wechat_infos &&
+				userInfo.wechat_infos.length > 0 && (
+					<div className='flex flex-row items-center'>
+						<div className='font-bold text-xs'>
+							{t('account_wechat')}:{' '}
+							{userInfo.wechat_infos.map((item) => item.nickname).join(',')}
+						</div>
+						<Button
+							variant={'link'}
+							className='text-xs'
+							disabled={unBindStatus}
+							onClick={handleUnBindWeChat}>
+							{t('account_unbind')}
+							{unBindStatus && <Loader2 className='size-4 animate-spin' />}
+						</Button>
 					</div>
-					<Button
-						variant={'link'}
-						className='text-xs'
-						disabled={unBindStatus}
-						onClick={handleUnBindWeChat}>
-						{t('account_unbind')}
-						{unBindStatus && <Loader2 className='size-4 animate-spin' />}
-					</Button>
-				</div>
-			)}
+				)}
 
-			{userInfo && !userInfo.wechat_info && (
+			{userInfo && !userInfo.wechat_infos?.length && (
 				<Link
 					href={`https://open.weixin.qq.com/connect/qrconnect?appid=${
 						process.env.NEXT_PUBLIC_WECHAT_APP_ID

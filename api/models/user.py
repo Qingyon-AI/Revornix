@@ -6,9 +6,10 @@ class WechatUser(Base):
     
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"), index=True)
-    wechat_user_open_id = Column(String(100), index=True)
     wechat_user_union_id = Column(String(100))
+    wechat_user_open_id = Column(String(100), index=True)
     wechat_user_name = Column(String(100))
+    wechat_platform = Column(Integer, comment='0: unknown, 1: Revornix WeChat Web App, 2: Revornix WeChat Mini Program')
     delete_at = Column(DateTime(timezone=True))
 
 class PhoneUser(Base):

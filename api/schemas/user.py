@@ -16,11 +16,15 @@ class SearchUserRequest(BaseModel):
 
 class WeChatInfo(BaseModel):
     nickname: str
+    platform: int
     
-class WeChatUserBindRequest(BaseModel):
+class WeChatWebUserBindRequest(BaseModel):
+    code: str
+    
+class WeChatMiniUserCreateRequest(BaseModel):
     code: str
 
-class WeChatUserCreateRequest(BaseModel):
+class WeChatWebUserCreateRequest(BaseModel):
     code: str
 
 class SmsUserCodeCreateRequest(BaseModel):
@@ -143,7 +147,7 @@ class PrivateUserInfo(BaseModel):
     email_info: EmailInfo | None = None
     github_info: GithubInfo | None = None
     google_info: GoogleInfo | None = None
-    wechat_info: WeChatInfo | None = None
+    wechat_infos: list[WeChatInfo] | None = None
     default_user_file_system: int | None = None
     default_read_mark_reason: int | None = None
     default_document_reader_model_id: int | None = None

@@ -9,6 +9,7 @@ class WechatUser(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int | None] = mapped_column(ForeignKey("user.id"), index=True)
+    wechat_platform: Mapped[int | None] = mapped_column(Integer, comment='0: unknown, 1: Revornix WeChat Web App, 2: Revornix WeChat Mini Program')
     wechat_user_open_id: Mapped[str | None] = mapped_column(String(100), index=True)
     wechat_user_union_id: Mapped[str | None] = mapped_column(String(100))
     wechat_user_name: Mapped[str | None] = mapped_column(String(100))

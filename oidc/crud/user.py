@@ -1,10 +1,14 @@
 import models
+import string
+import random
 import uuid
 from datetime import datetime, timezone
+from common.hash import hash_password
 from sqlalchemy.orm import Session
 
 def create_wechat_user(db: Session, 
                        user_id: int, 
+                       wechat_platform: str,
                        wechat_user_open_id: str, 
                        wechat_user_union_id: str, 
                        wechat_user_name: str):
@@ -15,6 +19,7 @@ def create_wechat_user(db: Session,
     if db_user is None:
         raise Exception("The base info of the wechat user you want to create is not exist")
     db_wechat_user = models.user.WechatUser(user_id=user_id,
+                                            wechat_platform=wechat_platform,
                                             wechat_user_open_id=wechat_user_open_id,
                                             wechat_user_union_id=wechat_user_union_id,
                                             wechat_user_name=wechat_user_name)
@@ -99,6 +104,46 @@ def create_google_user(db: Session,
     db.flush()
     return db_google_user     
 
+def create_email_user(db: Session, 
+                      user_id: int, 
+                      email: str, 
+                      password: str | None = None,
+                      nickname: str | None = None) -> models.user.EmailUser:
+    query_get_base_user = db.query(models.user.User)
+    query_get_base_user = query_get_base_user.filter(models.user.User.id == user_id,
+                                                     models.user.User.delete_at == None)
+    db_user = query_get_base_user.first()
+    if db_user is None:
+        raise Exception("The base info of the email user you want to create is not exist")
+    
+    user_data = {
+        "user_id": user_id,
+        "email": email,
+    }
+    
+    if nickname is not None:
+        user_data.update({
+            "nickname": nickname
+        })
+    
+    if password is not None:
+        user_data.update({
+            "hashed_password": hash_password(password)
+        })
+    else:
+        # 如果是在用户页面绑定邮箱的情况下的话，那么这里需要随机新建一串字符串作为初始密码
+        characters = string.ascii_letters + string.digits
+        random_password = ''.join(random.choice(characters) for _ in range(12))
+        user_data.update({
+            "hashed_password": hash_password(random_password),
+            "is_initial_password": True,
+            "initial_password": random_password
+        })
+ 
+    db_email_user = models.user.EmailUser(**user_data)
+    db.add(db_email_user)
+    db.flush()
+    return db_email_user
 
 def search_user_by_email_like(db: Session, keyword: str, start: int | None = None, limit: int | None = None):
     query = db.query(models.user.User)
@@ -278,6 +323,7 @@ def search_next_user_follow(db: Session,
     query = query.filter(models.user.User.id < user.id)
     return query.first()
 
+# 同一用户可能在不同平台登录过 比如Revornix小程序登录 比如Revornix Web端微信方式登录 所以会有多个微信openid
 def get_wechat_user_by_user_id(db: Session,
                                user_id: int):
     query = db.query(models.user.WechatUser)
@@ -285,21 +331,22 @@ def get_wechat_user_by_user_id(db: Session,
     query = query.filter(models.user.WechatUser.user_id == user_id,
                          models.user.WechatUser.delete_at == None,
                          models.user.User.delete_at == None)
-    return query.first()
+    return query.all()
 
 def get_wechat_user_by_wechat_open_id(db: Session,
                                       wechat_user_open_id: str):
     query = db.query(models.user.WechatUser)
     query = query.filter(models.user.WechatUser.wechat_user_open_id == wechat_user_open_id,
                          models.user.WechatUser.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
+# 同一用户可能在不同平台登录过 比如Revornix小程序登录 比如Revornix Web端微信方式登录 所以会有多个微信openid 但是union_id肯定是一致的
 def get_wechat_user_by_wechat_union_id(db: Session,
                                        wechat_user_union_id: str):
     query = db.query(models.user.WechatUser)
     query = query.filter(models.user.WechatUser.wechat_user_union_id == wechat_user_union_id,
                          models.user.WechatUser.delete_at == None)
-    return query.first()
+    return query.all()
 
 def get_phone_user_by_phone(db: Session,
                             phone: str):
@@ -408,6 +455,22 @@ def get_user_by_email(db: Session,
                          models.user.EmailUser.delete_at == None,
                          models.user.EmailUser.email == email)
     return query.first()
+
+def update_user_password(db: Session,
+                         user_id: int,
+                         password: str) -> models.user.EmailUser:
+    db_email_user_query = db.query(models.user.EmailUser)
+    db_email_user_query = db_email_user_query.join(models.user.User)
+    db_email_user_query = db_email_user_query.filter(models.user.EmailUser.user_id == user_id,
+                                                     models.user.EmailUser.delete_at == None,
+                                                     models.user.User.delete_at == None)
+    db_email_user = db_email_user_query.first()
+    if db_email_user is None:
+        raise Exception("Can't find the user info based on the user_id you provided.")
+    db_email_user.hashed_password = hash_password(password)
+    db_email_user.is_initial_password = False
+    db.flush()
+    return db_email_user
 
 def update_user_follow_by_to_user_id_and_from_user_id(db: Session,
                                                       from_user_id: int,

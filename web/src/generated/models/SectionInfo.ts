@@ -20,13 +20,6 @@ import {
     LabelToJSON,
     LabelToJSONTyped,
 } from './Label';
-import type { SectionDocumentInfo } from './SectionDocumentInfo';
-import {
-    SectionDocumentInfoFromJSON,
-    SectionDocumentInfoFromJSONTyped,
-    SectionDocumentInfoToJSON,
-    SectionDocumentInfoToJSONTyped,
-} from './SectionDocumentInfo';
 import type { UserPublicInfo } from './UserPublicInfo';
 import {
     UserPublicInfoFromJSON,
@@ -119,12 +112,6 @@ export interface SectionInfo {
      * @memberof SectionInfo
      */
     cover?: string | null;
-    /**
-     * 
-     * @type {Array<SectionDocumentInfo>}
-     * @memberof SectionInfo
-     */
-    documents?: Array<SectionDocumentInfo> | null;
 }
 
 /**
@@ -165,7 +152,6 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(LabelFromJSON)),
         'cover': json['cover'] == null ? undefined : json['cover'],
-        'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(SectionDocumentInfoFromJSON)),
     };
 }
 
@@ -193,7 +179,6 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'md_file_name': value['md_file_name'],
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(LabelToJSON)),
         'cover': value['cover'],
-        'documents': value['documents'] == null ? undefined : ((value['documents'] as Array<any>).map(SectionDocumentInfoToJSON)),
     };
 }
 

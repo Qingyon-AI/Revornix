@@ -16,13 +16,14 @@ from common.hash import verify_password
 from common.dependencies import get_current_user, get_db, get_cache
 from config.oauth2 import OAUTH_SECRET_KEY
 from common.tp_auth.google_utils import getGoogleToken
-from common.tp_auth.wechat_utils import get_user_info, get_wechat_tokens
+from common.tp_auth.wechat_utils import get_web_user_info, get_web_wechat_tokens, get_mini_wechat_tokens
 from redis import Redis
 from common.tp_auth.github_utils import getGithubToken, getGithubUserInfo
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from common.sms.tencent_sms import TencentSms
 from file.built_in_remote_file_service import BuiltInRemoteFileService
+from enums.user import WeChatUserSource
 
 user_router = APIRouter()
 
@@ -403,10 +404,11 @@ async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user)
     if phone_user is not None:
         res.phone_info = schemas.user.PhoneInfo(phone=phone_user.phone)
         
-    wechat_user = crud.user.get_wechat_user_by_user_id(db=db,
-                                                       user_id=user.id)
-    if wechat_user is not None:
-        res.wechat_info = schemas.user.WeChatInfo(nickname=wechat_user.wechat_user_name)
+    wechat_users = crud.user.get_wechat_user_by_user_id(db=db,
+                                                        user_id=user.id)
+    if wechat_users is not None:
+        res.wechat_infos = [schemas.user.WeChatInfo(nickname=wechat_user.wechat_user_name,
+                                                    platform=wechat_user.wechat_platform) for wechat_user in wechat_users]
         
     fans = crud.user.count_user_fans(db=db,
                                      user_id=user.id)
@@ -675,7 +677,7 @@ async def create_user_by_sms_verify(sms_user_code_verify_request: schemas.user.S
     else:
         db_user = crud.user.create_base_user(db=db, 
                                              default_read_mark_reason=0,
-                                             nickname=f'Revornix User {uuid4().hex}',
+                                             nickname=f'Revornix User {uuid4().hex[:8]}',
                                              avatar="files/default_avatar.png")
         db_user_phone = crud.user.create_phone_user(db, 
                                                     user_id=db_user.id, 
@@ -745,15 +747,67 @@ async def unbind_phone(user = Depends(get_current_user),
     db.commit()
     return schemas.common.SuccessResponse()
 
-@user_router.post("/create/wechat", response_model=schemas.user.TokenResponse)
-async def create_user_by_wechat(wechat_user_create_request: schemas.user.WeChatUserCreateRequest, 
-                                db: Session = Depends(get_db)):
-    code = wechat_user_create_request.code
-    response_tokens = get_wechat_tokens(os.environ.get('WECHAT_APP_ID'),
-                                        os.environ.get('WECHAT_APP_SECRET'),
-                                        code)
-    access_token = response_tokens.get('access_token')
-    openid = response_tokens.get('openid')
+@user_router.post('/create/wechat/mini', response_model=schemas.user.TokenResponse)
+async def create_user_by_wechat_mini(wechat_mini_user_create_request: schemas.user.WeChatMiniUserCreateRequest,
+                                     db: Session = Depends(get_db)):
+    code = wechat_mini_user_create_request.code
+    response_tokens = get_mini_wechat_tokens(os.environ.get('WECHAT_MINI_APP_ID'),
+                                             os.environ.get('WECHAT_MINI_APP_SECRET'),
+                                             code)
+    openid = response_tokens.openid
+    if openid is None:
+        raise CustomException('WeChat Login Failed', 401)
+    db_exist_wechat_user = crud.user.get_wechat_user_by_wechat_open_id(db=db,
+                                                                       wechat_user_open_id=openid)
+    if db_exist_wechat_user is not None:
+        db_user = crud.user.get_user_by_id(db=db, 
+                                           user_id=db_exist_wechat_user.user_id)
+        access_token, refresh_token = create_token(db_user)
+        res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
+        return res
+    union_id = response_tokens.unionid
+    nickname = f'Revornix User {uuid4().hex[:8]}'
+    db_user = crud.user.create_base_user(db=db,
+                                         default_read_mark_reason=0,
+                                         avatar="files/default_avatar.png",
+                                         nickname=nickname)
+    db_wechat_user = crud.user.create_wechat_user(db=db, 
+                                                  user_id=db_user.id, 
+                                                  wechat_platform=WeChatUserSource.REVORNIX_MINI_PROGRAM,
+                                                  wechat_user_open_id=openid, 
+                                                  wechat_user_union_id=union_id,
+                                                  wechat_user_name=nickname)
+    # init the default file system for the user
+    db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
+                                                                    file_system_id=1,
+                                                                    user_id=db_user.id,
+                                                                    title="Default File System",
+                                                                    description="The default file system for the user")
+    db_user.default_user_file_system = db_user_file_system.id
+    # create the minio file bucket for the user because it's the default file system
+    BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+    # init the default engine for the user
+    db_user_engine = crud.engine.create_user_engine(db=db,
+                                                    user_id=db_user.id,
+                                                    engine_id=1,
+                                                    title="Default Engine",
+                                                    description="The default engine for the user")
+    db_user.default_website_document_parse_user_engine_id = db_user_engine.id
+    db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    db.commit()
+    access_token, refresh_token = create_token(db_user)
+    res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
+    return res
+                                                      
+@user_router.post("/create/wechat/web", response_model=schemas.user.TokenResponse)
+async def create_user_by_wechat_web(wechat_web_user_create_request: schemas.user.WeChatWebUserCreateRequest, 
+                                    db: Session = Depends(get_db)):
+    code = wechat_web_user_create_request.code
+    response_tokens = get_web_wechat_tokens(os.environ.get('WECHAT_WEB_APP_ID'),
+                                            os.environ.get('WECHAT_WEB_APP_SECRET'),
+                                            code)
+    access_token = response_tokens.access_token
+    openid = response_tokens.openid
     if access_token is None or openid is None:
         raise CustomException('WeChat Login Failed', 401)
     db_exist_wechat_user = crud.user.get_wechat_user_by_wechat_open_id(db=db, 
@@ -764,9 +818,9 @@ async def create_user_by_wechat(wechat_user_create_request: schemas.user.WeChatU
         access_token, refresh_token = create_token(db_user)
         res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
         return res
-    union_id = response_tokens.get('unionid')
+    union_id = response_tokens.unionid
     # get the wechat user info
-    response_user_info = get_user_info(access_token, openid)
+    response_user_info = get_web_user_info(access_token, openid)
     nickname = response_user_info.get('nickname')
     db_user = crud.user.create_base_user(db=db,
                                          default_read_mark_reason=0,
@@ -774,6 +828,7 @@ async def create_user_by_wechat(wechat_user_create_request: schemas.user.WeChatU
                                          nickname=nickname)
     db_wechat_user = crud.user.create_wechat_user(db=db, 
                                                   user_id=db_user.id, 
+                                                  wechat_platform=WeChatUserSource.REVORNIX_WEB_APP,
                                                   wechat_user_open_id=openid, 
                                                   wechat_user_union_id=union_id,
                                                   wechat_user_name=nickname)
@@ -799,26 +854,27 @@ async def create_user_by_wechat(wechat_user_create_request: schemas.user.WeChatU
     res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
     return res
 
-@user_router.post("/bind/wechat", response_model=schemas.common.NormalResponse)
-async def bind_wechat(wechat_user_bind_request: schemas.user.WeChatUserBindRequest, 
+@user_router.post("/bind/wechat/web", response_model=schemas.common.NormalResponse)
+async def bind_wechat(wechat_user_bind_request: schemas.user.WeChatWebUserBindRequest, 
                       user: schemas.user.PrivateUserInfo = Depends(get_current_user),
                       db: Session = Depends(get_db)):
     db_wechat_user_exist = crud.user.get_wechat_user_by_user_id(db=db, 
-                                                                user_id=user.id)
+                                                                user_id=user.id,
+                                                                filter_wechat_platform=WeChatUserSource.REVORNIX_WEB_APP)
     if db_wechat_user_exist is not None:
         raise CustomException(message="This wechat account is alread be bounded",
                               code=401)
     code = wechat_user_bind_request.code
-    response_tokens = get_wechat_tokens(os.environ.get('WECHAT_APP_ID'),
-                                        os.environ.get('WECHAT_APP_SECRET'),
-                                        code)
-    access_token = response_tokens.get('access_token')
-    openid = response_tokens.get('openid')
+    response_tokens = get_web_wechat_tokens(os.environ.get('WECHAT_WEB_APP_ID'),
+                                            os.environ.get('WECHAT_WEB_APP_SECRET'),
+                                            code)
+    access_token = response_tokens.access_token
+    openid = response_tokens.openid
     if access_token is None or openid is None:
         raise CustomException(message='WeChat Login Failed', 
                               code=400)
-    union_id = response_tokens.get('unionid')
-    response_user_info = get_user_info(access_token, openid)
+    union_id = response_tokens.unionid
+    response_user_info = get_web_user_info(access_token, openid)
     nickname = response_user_info.get('nickname')
     db_github_exist = crud.user.get_wechat_user_by_wechat_open_id(db=db, 
                                                                   wechat_user_open_id=openid)
@@ -826,6 +882,7 @@ async def bind_wechat(wechat_user_bind_request: schemas.user.WeChatUserBindReque
         raise Exception("The wechat account has been bound by other user")
     db_wechat_user = crud.user.create_wechat_user(db=db, 
                                                   user_id=user.id, 
+                                                  wechat_platform=WeChatUserSource.REVORNIX_WEB_APP,
                                                   wechat_user_open_id=openid, 
                                                   wechat_user_union_id=union_id,
                                                   wechat_user_name=nickname)
