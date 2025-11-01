@@ -1,12 +1,12 @@
 from typing import List, Dict, Any
 from datetime import datetime
-from sentence_transformers import SentenceTransformer
+from embedding.qwen import get_embedding_model
 from data.custom_types.all import *
 from data.neo4j.base import neo4j_driver
 from data.milvus.search import naive_search
 
 # 使用与你插入时相同的 embedding model（避免向量不一致）
-embedding_model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+embedding_model = get_embedding_model()
 
 def to_neo4j_datetime_str(iso: str) -> str:
     return datetime.fromisoformat(iso).strftime("%Y-%m-%dT%H:%M:%S")

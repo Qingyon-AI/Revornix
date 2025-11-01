@@ -1,11 +1,11 @@
 from typing import cast, Any
 from pymilvus.client.search_result import SearchResult
-from sentence_transformers import SentenceTransformer
+from embedding.qwen import get_embedding_model
 from data.milvus.base import milvus_client, MILVUS_COLLECTION
 from pymilvus import AnnSearchRequest, WeightedRanker
 
 # 使用与你插入时相同的 embedding model（用于稠密向量）
-embedding_model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+embedding_model = get_embedding_model()
 
 def _normalize_search_result(results):
     if hasattr(results, "result"):  # SearchFuture
