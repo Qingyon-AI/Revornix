@@ -1,4 +1,4 @@
-fastapi[standard]==0.118.0
+fastapi[standard]==0.120.4
 alembic==1.16.5
 alibabacloud-sts20150401==1.1.6
 aliyun-python-sdk-sts==3.1.3
