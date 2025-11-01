@@ -38,7 +38,7 @@ celery_app = Celery('worker',
 async def handle_process_document(document_id: int, 
                                   user_id: int,
                                   auto_summary: bool = False,
-                                  override: dict | None = None):
+                                  override: DocumentOverrideProperty | None = None):
     db = SessionLocal()
     db_document_process_task = crud.task.create_document_process_task(db=db,
                                                                       user_id=user_id,
