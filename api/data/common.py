@@ -12,12 +12,12 @@ from chonkie.embeddings import AutoEmbeddings
 from enums.document import DocumentCategory
 from common.common import get_user_remote_file_system
 from common.sql import SessionLocal
-from sentence_transformers import SentenceTransformer
 from data.custom_types.all import *
 from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from data.milvus.insert import upsert_milvus
 from data.neo4j.insert import upsert_chunk_entity_relations, upsert_entities_neo4j, upsert_chunks_neo4j, upsert_relations_neo4j, create_communities_from_chunks, create_community_nodes_and_relationships_with_size, annotate_node_degrees, upsert_doc_chunk_relations, upsert_doc_neo4j
 from typing import AsyncGenerator
+from embedding.qwen import get_embedding_model
 
 def make_chunk_id(doc_id: int, idx: int, text: str) -> str:
     h = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
@@ -127,7 +127,7 @@ async def chunk_document(doc_id: int) -> list[ChunkInfo]:
 # 2) embedding text：把 chunk 的文本内容转为向量
 # -----------------------------
 def embedding_chunks(chunks: list[ChunkInfo]) -> list[ChunkInfo]:
-    embedding_model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+    embedding_model = get_embedding_model()
     for chunk in chunks:
         embedding = embedding_model.encode(chunk.text)
         chunk.embedding = embedding.tolist()
