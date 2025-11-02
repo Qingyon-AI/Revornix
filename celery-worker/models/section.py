@@ -1,42 +1,52 @@
-from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Optional
+
+from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from common.sql import Base
+from models.user import User
+
 
 class SectionUser(Base):
     __tablename__ = "section_user"
 
-    id = Column(Integer, primary_key=True)
-    section_id = Column(Integer, ForeignKey("section.id"), index=True)
-    user_id = Column(Integer, ForeignKey("user.id"), index=True)
-    authority = Column(Integer, nullable=False, index=True, comment='0: full access 1: w/r 2: r')
-    create_time = Column(DateTime(timezone=True), nullable=False)
-    update_time = Column(DateTime(timezone=True), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True)
+    authority: Mapped[int] = mapped_column(Integer, nullable=False, index=True, comment='0: full access 1: w/r 2: r')
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     # expire_time is null means the time is infinite
-    expire_time = Column(DateTime(timezone=True))
-    delete_at = Column(DateTime(timezone=True))
-    
+    expire_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
 class SectionDocument(Base):
     __tablename__ = "section_document"
 
-    id = Column(Integer, primary_key=True)
-    section_id = Column(Integer, ForeignKey("section.id"), index=True)
-    document_id = Column(Integer, ForeignKey("document.id"), index=True)
-    create_time = Column(DateTime(timezone=True), nullable=False)
-    update_time = Column(DateTime(timezone=True), nullable=False)
-    status = Column(Integer, nullable=False, index=True, comment='0: waiting to be supplemented, 1: supplementing 2: supplemented successfully 3: supplemented error')
-    delete_at = Column(DateTime(timezone=True))
-    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True)
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    status: Mapped[int] = mapped_column(Integer, nullable=False, index=True, comment='0: waiting to be supplemented, 1: supplementing 2: supplemented successfully 3: supplemented error')
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
 class Section(Base):
     __tablename__ = "section"
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String(500), index=True, nullable=False)
-    creator_id = Column(Integer, ForeignKey("user.id"), index=True, nullable=False)
-    cover = Column(String(500), comment='The path of the cover image which you uploaded to the file system')
-    description = Column(String(500), index=True, nullable=False)
-    md_file_name = Column(String(500), comment='The path of the markdown file which you uploaded to the file system')
-    create_time = Column(DateTime(timezone=True), nullable=False)
-    update_time = Column(DateTime(timezone=True), nullable=False)
-    delete_at = Column(DateTime(timezone=True))
-    
-    creator = relationship("User", backref="created_sections")
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
+    creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    cover: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the cover image which you uploaded to the file system')
+    description: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
+    md_file_name: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the markdown file which you uploaded to the file system')
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+    creator: Mapped["User"] = relationship("User", backref="created_sections")

@@ -1,30 +1,39 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Optional
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
+
 from common.sql import Base
+
 
 class UserEngine(Base):
     __tablename__ = "user_engine"
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String(100), nullable=False, index=True)
-    description = Column(String(2000))
-    user_id = Column(Integer, ForeignKey("user.id"))
-    engine_id = Column(Integer, ForeignKey("engine.id"))
-    create_time = Column(DateTime(timezone=True))
-    update_time = Column(DateTime(timezone=True))
-    delete_at = Column(DateTime(timezone=True))
-    enable = Column(Boolean)
-    config_json = Column(String(2000))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    description: Mapped[Optional[str]] = mapped_column(String(2000))
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"))
+    engine_id: Mapped[Optional[int]] = mapped_column(ForeignKey("engine.id"))
+    create_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    enable: Mapped[Optional[bool]] = mapped_column(Boolean)
+    config_json: Mapped[Optional[str]] = mapped_column(String(2000))
+
 
 class Engine(Base):
     __tablename__ = "engine"
 
-    id = Column(Integer, primary_key=True)
-    uuid = Column(String(100), nullable=False, index=True, unique=True)
-    name = Column(String(100), nullable=False, index=True)
-    name_zh = Column(String(100), nullable=False, index=True)
-    description = Column(String(500))
-    description_zh = Column(String(500))
-    demo_config = Column(String(2000))
-    create_time = Column(DateTime(timezone=True))
-    update_time = Column(DateTime(timezone=True))
-    delete_at = Column(DateTime(timezone=True))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(100), nullable=False, index=True, unique=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    name_zh: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    description: Mapped[Optional[str]] = mapped_column(String(500))
+    description_zh: Mapped[Optional[str]] = mapped_column(String(500))
+    demo_config: Mapped[Optional[str]] = mapped_column(String(2000))
+    create_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
