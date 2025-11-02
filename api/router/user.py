@@ -755,45 +755,63 @@ async def create_user_by_wechat_mini(wechat_mini_user_create_request: schemas.us
                                              os.environ.get('WECHAT_MINI_APP_SECRET'),
                                              code)
     openid = response_tokens.openid
-    if openid is None:
+    union_id = response_tokens.unionid
+    if openid is None or union_id is None:
         raise CustomException('WeChat Login Failed', 401)
-    db_exist_wechat_user = crud.user.get_wechat_user_by_wechat_open_id(db=db,
-                                                                       wechat_user_open_id=openid)
-    if db_exist_wechat_user is not None:
+    
+    # 如果openid都已经存在了 那就说明这个用户在这个平台已经注册过了 直接返回token
+    db_exist_wechat_user_by_open_id = crud.user.get_wechat_user_by_wechat_open_id(db=db,
+                                                                                  wechat_user_open_id=openid)
+    if db_exist_wechat_user_by_open_id is not None:
         db_user = crud.user.get_user_by_id(db=db, 
-                                           user_id=db_exist_wechat_user.user_id)
+                                           user_id=db_exist_wechat_user_by_open_id.user_id)
         access_token, refresh_token = create_token(db_user)
         res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
         return res
-    union_id = response_tokens.unionid
-    nickname = f'Revornix User {uuid4().hex[:8]}'
-    db_user = crud.user.create_base_user(db=db,
-                                         default_read_mark_reason=0,
-                                         avatar="files/default_avatar.png",
-                                         nickname=nickname)
-    db_wechat_user = crud.user.create_wechat_user(db=db, 
-                                                  user_id=db_user.id, 
-                                                  wechat_platform=WeChatUserSource.REVORNIX_MINI_PROGRAM,
-                                                  wechat_user_open_id=openid, 
-                                                  wechat_user_union_id=union_id,
-                                                  wechat_user_name=nickname)
-    # init the default file system for the user
-    db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
-                                                                    file_system_id=1,
-                                                                    user_id=db_user.id,
-                                                                    title="Default File System",
-                                                                    description="The default file system for the user")
-    db_user.default_user_file_system = db_user_file_system.id
-    # create the minio file bucket for the user because it's the default file system
-    BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
-    # init the default engine for the user
-    db_user_engine = crud.engine.create_user_engine(db=db,
-                                                    user_id=db_user.id,
-                                                    engine_id=1,
-                                                    title="Default Engine",
-                                                    description="The default engine for the user")
-    db_user.default_website_document_parse_user_engine_id = db_user_engine.id
-    db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    
+    # 微信创建方式 同一union_id只能创建一个用户
+    db_exist_wechat_user_by_union_id = crud.user.get_wechat_user_by_wechat_union_id(db=db,
+                                                                                    wechat_user_union_id=union_id)
+    
+    if len(db_exist_wechat_user_by_union_id) == 0:
+        nickname = f'Revornix User {uuid4().hex[:8]}'
+        db_user = crud.user.create_base_user(db=db,
+                                            default_read_mark_reason=0,
+                                            avatar="files/default_avatar.png",
+                                            nickname=nickname)
+        db_wechat_user = crud.user.create_wechat_user(db=db, 
+                                                      user_id=db_user.id, 
+                                                      wechat_platform=WeChatUserSource.REVORNIX_MINI_PROGRAM,
+                                                      wechat_user_open_id=openid, 
+                                                      wechat_user_union_id=union_id,
+                                                      wechat_user_name=nickname)
+        # init the default file system for the user
+        db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
+                                                                        file_system_id=1,
+                                                                        user_id=db_user.id,
+                                                                        title="Default File System",
+                                                                        description="The default file system for the user")
+        db_user.default_user_file_system = db_user_file_system.id
+        # create the minio file bucket for the user because it's the default file system
+        BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+        # init the default engine for the user
+        db_user_engine = crud.engine.create_user_engine(db=db,
+                                                        user_id=db_user.id,
+                                                        engine_id=1,
+                                                        title="Default Engine",
+                                                        description="The default engine for the user")
+        db_user.default_website_document_parse_user_engine_id = db_user_engine.id
+        db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    else:
+        # 如果union_id已经存在 说明该用户已通过别的微信渠道注册过，不需要新建文件系统等机制 仅仅再创建一个微信用户身份即可
+        db_user = crud.user.get_user_by_id(db=db,
+                                           user_id=db_exist_wechat_user_by_union_id[0].user_id)
+        db_wechat_user = crud.user.create_wechat_user(db=db, 
+                                                      user_id=db_user.id, 
+                                                      wechat_platform=WeChatUserSource.REVORNIX_MINI_PROGRAM,
+                                                      wechat_user_open_id=openid, 
+                                                      wechat_user_union_id=union_id,
+                                                      wechat_user_name=db_user.nickname)
     db.commit()
     access_token, refresh_token = create_token(db_user)
     res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
@@ -807,48 +825,64 @@ async def create_user_by_wechat_web(wechat_web_user_create_request: schemas.user
                                             os.environ.get('WECHAT_WEB_APP_SECRET'),
                                             code)
     access_token = response_tokens.access_token
+    
     openid = response_tokens.openid
-    if access_token is None or openid is None:
+    union_id = response_tokens.unionid
+    if access_token is None or openid or union_id is None:
         raise CustomException('WeChat Login Failed', 401)
-    db_exist_wechat_user = crud.user.get_wechat_user_by_wechat_open_id(db=db, 
-                                                                       wechat_user_open_id=openid)
-    if db_exist_wechat_user is not None:
+    
+    db_exist_wechat_user_by_openid = crud.user.get_wechat_user_by_wechat_open_id(db=db, 
+                                                                                 wechat_user_open_id=openid)
+    if db_exist_wechat_user_by_openid is not None:
         db_user = crud.user.get_user_by_id(db=db, 
-                                           user_id=db_exist_wechat_user.user_id)
+                                           user_id=db_exist_wechat_user_by_openid.user_id)
         access_token, refresh_token = create_token(db_user)
         res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
         return res
-    union_id = response_tokens.unionid
-    # get the wechat user info
-    response_user_info = get_web_user_info(access_token, openid)
-    nickname = response_user_info.get('nickname')
-    db_user = crud.user.create_base_user(db=db,
-                                         default_read_mark_reason=0,
-                                         avatar="files/default_avatar.png",
-                                         nickname=nickname)
-    db_wechat_user = crud.user.create_wechat_user(db=db, 
-                                                  user_id=db_user.id, 
-                                                  wechat_platform=WeChatUserSource.REVORNIX_WEB_APP,
-                                                  wechat_user_open_id=openid, 
-                                                  wechat_user_union_id=union_id,
-                                                  wechat_user_name=nickname)
-    # init the default file system for the user
-    db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
-                                                                    file_system_id=1,
-                                                                    user_id=db_user.id,
-                                                                    title="Default File System",
-                                                                    description="The default file system for the user")
-    db_user.default_user_file_system = db_user_file_system.id
-    # create the minio file bucket for the user because it's the default file system
-    BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
-    # init the default engine for the user
-    db_user_engine = crud.engine.create_user_engine(db=db,
-                                                    user_id=db_user.id,
-                                                    engine_id=1,
-                                                    title="Default Engine",
-                                                    description="The default engine for the user")
-    db_user.default_website_document_parse_user_engine_id = db_user_engine.id
-    db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    
+    db_exist_wechat_user_by_union_id = crud.user.get_wechat_user_by_wechat_union_id(db=db,
+                                                                                    wechat_user_union_id=union_id)
+    if len(db_exist_wechat_user_by_union_id) == 0:
+        # get the wechat user info
+        response_user_info = get_web_user_info(access_token=access_token, 
+                                            openid=openid)
+        nickname = response_user_info.get('nickname')
+        db_user = crud.user.create_base_user(db=db,
+                                            default_read_mark_reason=0,
+                                            avatar="files/default_avatar.png",
+                                            nickname=nickname)
+        db_wechat_user = crud.user.create_wechat_user(db=db, 
+                                                    user_id=db_user.id, 
+                                                    wechat_platform=WeChatUserSource.REVORNIX_WEB_APP,
+                                                    wechat_user_open_id=openid, 
+                                                    wechat_user_union_id=union_id,
+                                                    wechat_user_name=nickname)
+        # init the default file system for the user
+        db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
+                                                                        file_system_id=1,
+                                                                        user_id=db_user.id,
+                                                                        title="Default File System",
+                                                                        description="The default file system for the user")
+        db_user.default_user_file_system = db_user_file_system.id
+        # create the minio file bucket for the user because it's the default file system
+        BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+        # init the default engine for the user
+        db_user_engine = crud.engine.create_user_engine(db=db,
+                                                        user_id=db_user.id,
+                                                        engine_id=1,
+                                                        title="Default Engine",
+                                                        description="The default engine for the user")
+        db_user.default_website_document_parse_user_engine_id = db_user_engine.id
+        db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    else:
+        db_user = crud.user.get_user_by_id(db=db, 
+                                           user_id=db_exist_wechat_user_by_union_id[0].user_id)
+        db_wechat_user = crud.user.create_wechat_user(db=db, 
+                                                      user_id=db_user.id, 
+                                                      wechat_platform=WeChatUserSource.REVORNIX_MINI_PROGRAM,
+                                                      wechat_user_open_id=openid, 
+                                                      wechat_user_union_id=union_id,
+                                                      wechat_user_name=db_user.nickname)
     db.commit()
     access_token, refresh_token = create_token(db_user)
     res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
