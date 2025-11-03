@@ -1,5 +1,7 @@
 import documentApi from '@/api/document'
-import { InifiniteScrollPagnitionDocumentInfo, LabelListResponse, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, CreateLabelResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InifiniteScrollPagnitionDocumentNoteInfo, SearchDocumentNoteRequest, DocumentMarkdownTransformRequest, DocumentAiSummaryRequest, SearchUnreadListRequest, LabelSummaryResponse, DocumentUpdateRequest } from '@/generated'
+import { InifiniteScrollPagnitionDocumentInfo, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InifiniteScrollPagnitionDocumentNoteInfo, SearchDocumentNoteRequest, DocumentMarkdownTransformRequest, DocumentAiSummaryRequest, SearchUnreadListRequest, LabelSummaryResponse, DocumentUpdateRequest } from '@/generated'
+import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse'
+import { LabelListResponse } from '@/generated/models/LabelListResponse'
 import { request } from '@/lib/request'
 import { serverRequest } from '@/lib/request-server'
 

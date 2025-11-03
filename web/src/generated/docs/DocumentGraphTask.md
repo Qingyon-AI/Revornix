@@ -1,0 +1,34 @@
+
+# DocumentGraphTask
+
+
+## Properties
+
+Name | Type
+------------ | -------------
+`status` | number
+
+## Example
+
+```typescript
+import type { DocumentGraphTask } from ''
+
+// TODO: Update the object below with actual values
+const example = {
+  "status": null,
+} satisfies DocumentGraphTask
+
+console.log(example)
+
+// Convert the instance to a JSON string
+const exampleJSON: string = JSON.stringify(example)
+console.log(exampleJSON)
+
+// Parse the JSON string back to an object
+const exampleParsed = JSON.parse(exampleJSON) as DocumentGraphTask
+console.log(exampleParsed)
+```
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+

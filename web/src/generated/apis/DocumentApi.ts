@@ -15,7 +15,6 @@
 
 import * as runtime from '../runtime';
 import type {
-  CreateLabelResponse,
   DocumentAiSummaryRequest,
   DocumentCreateRequest,
   DocumentCreateResponse,
@@ -30,12 +29,13 @@ import type {
   HTTPValidationError,
   InifiniteScrollPagnitionDocumentInfo,
   InifiniteScrollPagnitionDocumentNoteInfo,
-  LabelAddRequest,
-  LabelDeleteRequest,
-  LabelListResponse,
   LabelSummaryResponse,
   NormalResponse,
   ReadRequest,
+  SchemasDocumentCreateLabelResponse,
+  SchemasDocumentLabelAddRequest,
+  SchemasDocumentLabelListResponse,
+  SchemasSectionLabelDeleteRequest,
   SearchAllMyDocumentsRequest,
   SearchDocumentNoteRequest,
   SearchMyStarDocumentsRequest,
@@ -47,8 +47,6 @@ import type {
   VectorSearchResponse,
 } from '../models/index';
 import {
-    CreateLabelResponseFromJSON,
-    CreateLabelResponseToJSON,
     DocumentAiSummaryRequestFromJSON,
     DocumentAiSummaryRequestToJSON,
     DocumentCreateRequestFromJSON,
@@ -77,18 +75,20 @@ import {
     InifiniteScrollPagnitionDocumentInfoToJSON,
     InifiniteScrollPagnitionDocumentNoteInfoFromJSON,
     InifiniteScrollPagnitionDocumentNoteInfoToJSON,
-    LabelAddRequestFromJSON,
-    LabelAddRequestToJSON,
-    LabelDeleteRequestFromJSON,
-    LabelDeleteRequestToJSON,
-    LabelListResponseFromJSON,
-    LabelListResponseToJSON,
     LabelSummaryResponseFromJSON,
     LabelSummaryResponseToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
     ReadRequestFromJSON,
     ReadRequestToJSON,
+    SchemasDocumentCreateLabelResponseFromJSON,
+    SchemasDocumentCreateLabelResponseToJSON,
+    SchemasDocumentLabelAddRequestFromJSON,
+    SchemasDocumentLabelAddRequestToJSON,
+    SchemasDocumentLabelListResponseFromJSON,
+    SchemasDocumentLabelListResponseToJSON,
+    SchemasSectionLabelDeleteRequestFromJSON,
+    SchemasSectionLabelDeleteRequestToJSON,
     SearchAllMyDocumentsRequestFromJSON,
     SearchAllMyDocumentsRequestToJSON,
     SearchDocumentNoteRequestFromJSON,
@@ -110,7 +110,7 @@ import {
 } from '../models/index';
 
 export interface AddLabelDocumentLabelCreatePostRequest {
-    labelAddRequest: LabelAddRequest;
+    schemasDocumentLabelAddRequest: SchemasDocumentLabelAddRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -140,7 +140,7 @@ export interface DeleteDocumentDocumentDeletePostRequest {
 }
 
 export interface DeleteLabelDocumentLabelDeletePostRequest {
-    labelDeleteRequest: LabelDeleteRequest;
+    schemasSectionLabelDeleteRequest: SchemasSectionLabelDeleteRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -240,11 +240,11 @@ export class DocumentApi extends runtime.BaseAPI {
     /**
      * Add Label
      */
-    async addLabelDocumentLabelCreatePostRaw(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
-        if (requestParameters['labelAddRequest'] == null) {
+    async addLabelDocumentLabelCreatePostRaw(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasDocumentCreateLabelResponse>> {
+        if (requestParameters['schemasDocumentLabelAddRequest'] == null) {
             throw new runtime.RequiredError(
-                'labelAddRequest',
-                'Required parameter "labelAddRequest" was null or undefined when calling addLabelDocumentLabelCreatePost().'
+                'schemasDocumentLabelAddRequest',
+                'Required parameter "schemasDocumentLabelAddRequest" was null or undefined when calling addLabelDocumentLabelCreatePost().'
             );
         }
 
@@ -270,16 +270,16 @@ export class DocumentApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: LabelAddRequestToJSON(requestParameters['labelAddRequest']),
+            body: SchemasDocumentLabelAddRequestToJSON(requestParameters['schemasDocumentLabelAddRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => CreateLabelResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => SchemasDocumentCreateLabelResponseFromJSON(jsonValue));
     }
 
     /**
      * Add Label
      */
-    async addLabelDocumentLabelCreatePost(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateLabelResponse> {
+    async addLabelDocumentLabelCreatePost(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasDocumentCreateLabelResponse> {
         const response = await this.addLabelDocumentLabelCreatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -476,10 +476,10 @@ export class DocumentApi extends runtime.BaseAPI {
      * Delete Label
      */
     async deleteLabelDocumentLabelDeletePostRaw(requestParameters: DeleteLabelDocumentLabelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        if (requestParameters['labelDeleteRequest'] == null) {
+        if (requestParameters['schemasSectionLabelDeleteRequest'] == null) {
             throw new runtime.RequiredError(
-                'labelDeleteRequest',
-                'Required parameter "labelDeleteRequest" was null or undefined when calling deleteLabelDocumentLabelDeletePost().'
+                'schemasSectionLabelDeleteRequest',
+                'Required parameter "schemasSectionLabelDeleteRequest" was null or undefined when calling deleteLabelDocumentLabelDeletePost().'
             );
         }
 
@@ -505,7 +505,7 @@ export class DocumentApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: LabelDeleteRequestToJSON(requestParameters['labelDeleteRequest']),
+            body: SchemasSectionLabelDeleteRequestToJSON(requestParameters['schemasSectionLabelDeleteRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
@@ -690,7 +690,7 @@ export class DocumentApi extends runtime.BaseAPI {
     /**
      * List Label
      */
-    async listLabelDocumentLabelListPostRaw(requestParameters: ListLabelDocumentLabelListPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<LabelListResponse>> {
+    async listLabelDocumentLabelListPostRaw(requestParameters: ListLabelDocumentLabelListPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasDocumentLabelListResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -713,13 +713,13 @@ export class DocumentApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => LabelListResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => SchemasDocumentLabelListResponseFromJSON(jsonValue));
     }
 
     /**
      * List Label
      */
-    async listLabelDocumentLabelListPost(requestParameters: ListLabelDocumentLabelListPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LabelListResponse> {
+    async listLabelDocumentLabelListPost(requestParameters: ListLabelDocumentLabelListPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasDocumentLabelListResponse> {
         const response = await this.listLabelDocumentLabelListPostRaw(requestParameters, initOverrides);
         return await response.value();
     }

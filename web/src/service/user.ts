@@ -1,5 +1,5 @@
 import userApi from '@/api/user'
-import { BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatUserBindRequest, WeChatUserCreateRequest } from '@/generated';
+import { BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatWebUserBindRequest, WeChatWebUserCreateRequest } from '@/generated';
 import { request } from '@/lib/request';
 
 export const searchUser = async (data: SearchUserRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
@@ -164,13 +164,13 @@ export const unBindPhone = async () => {
     return await request(userApi.unBindPhone)
 }
 
-export const createUserByWechat = async (data: WeChatUserCreateRequest): Promise<TokenResponse> => {
-    return await request(userApi.createUserByWechat, {
+export const createUserByWechat = async (data: WeChatWebUserCreateRequest): Promise<TokenResponse> => {
+    return await request(userApi.createUserByWechatWeb, {
         data
     })
 }
 
-export const bindWeChat = async (data: WeChatUserBindRequest): Promise<NormalResponse> => {
+export const bindWeChat = async (data: WeChatWebUserBindRequest): Promise<NormalResponse> => {
     return await request(userApi.bindWeChat, {
         data
     })

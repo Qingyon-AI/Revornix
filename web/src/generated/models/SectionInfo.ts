@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { Label } from './Label';
+import type { SchemasSectionLabel } from './SchemasSectionLabel';
 import {
-    LabelFromJSON,
-    LabelFromJSONTyped,
-    LabelToJSON,
-    LabelToJSONTyped,
-} from './Label';
+    SchemasSectionLabelFromJSON,
+    SchemasSectionLabelFromJSONTyped,
+    SchemasSectionLabelToJSON,
+    SchemasSectionLabelToJSONTyped,
+} from './SchemasSectionLabel';
 import type { UserPublicInfo } from './UserPublicInfo';
 import {
     UserPublicInfoFromJSON,
@@ -102,10 +102,10 @@ export interface SectionInfo {
     md_file_name?: string;
     /**
      * 
-     * @type {Array<Label>}
+     * @type {Array<SchemasSectionLabel>}
      * @memberof SectionInfo
      */
-    labels?: Array<Label> | null;
+    labels?: Array<SchemasSectionLabel> | null;
     /**
      * 
      * @type {string}
@@ -150,7 +150,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'authority': json['authority'] == null ? undefined : json['authority'],
         'is_subscribed': json['is_subscribed'] == null ? undefined : json['is_subscribed'],
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
-        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(LabelFromJSON)),
+        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasSectionLabelFromJSON)),
         'cover': json['cover'] == null ? undefined : json['cover'],
     };
 }
@@ -177,7 +177,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'authority': value['authority'],
         'is_subscribed': value['is_subscribed'],
         'md_file_name': value['md_file_name'],
-        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(LabelToJSON)),
+        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasSectionLabelToJSON)),
         'cover': value['cover'],
     };
 }
