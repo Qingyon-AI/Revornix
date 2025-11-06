@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 def create_engine(db: Session, 
                   uuid: str,
+                  category: int,
                   name: str,
                   name_zh: str | None = None,
                   description: str | None = None,
@@ -11,6 +12,7 @@ def create_engine(db: Session,
                   demo_config: str | None = None):
     now = datetime.now(timezone.utc)
     db_engine = models.engine.Engine(uuid=uuid,
+                                     category=category,
                                      name=name, 
                                      name_zh=name_zh,
                                      description=description,
@@ -59,14 +61,16 @@ def get_user_engine_by_user_engine_id(db: Session, user_engine_id: int):
                          models.engine.UserEngine.delete_at == None)
     return query.first()
 
-def get_all_engines(db: Session, keyword: str | None = None):
+def get_all_engines(db: Session, keyword: str | None = None, filter_category: int | None = None):
     query = db.query(models.engine.Engine)
     query = query.filter(models.engine.Engine.delete_at == None)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.engine.Engine.name.like(f'%{keyword}%'))
+    if filter_category is not None:
+        query = query.filter(models.engine.Engine.category == filter_category)
     return query.all()
 
-def get_user_engine_by_user_id(db: Session, user_id: int, keyword: str | None = None):
+def get_user_engine_by_user_id(db: Session, user_id: int, keyword: str | None = None, filter_category: int | None = None):
     query = db.query(models.engine.UserEngine)
     query = query.join(models.engine.Engine)
     query = query.filter(models.engine.UserEngine.user_id == user_id,
@@ -74,6 +78,8 @@ def get_user_engine_by_user_id(db: Session, user_id: int, keyword: str | None = 
                          models.engine.Engine.delete_at == None)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.engine.Engine.name.like(f'%{keyword}%'))
+    if filter_category is not None:
+        query = query.filter(models.engine.Engine.category == filter_category)
     return query.all()
 
 def delete_engine(db: Session, engine_id: int):

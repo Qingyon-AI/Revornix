@@ -20,6 +20,7 @@ async def search_document_parse_engine(engine_search_request: schemas.engine.Eng
                                                  id=db_user_engine.engine_id)
         item = schemas.engine.UserEngineInfo(
             id=db_user_engine.id,
+            category=db_engine.category,
             engine_id=db_user_engine.engine_id,
             title=db_user_engine.title,
             description=db_user_engine.description,

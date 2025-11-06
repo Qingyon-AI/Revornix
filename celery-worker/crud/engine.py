@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 def create_engine(db: Session, 
                   uuid: str,
+                  category: int,
                   name: str,
                   name_zh: str | None = None,
                   description: str | None = None,
@@ -11,6 +12,7 @@ def create_engine(db: Session,
                   demo_config: str | None = None):
     now = datetime.now(timezone.utc)
     db_engine = models.engine.Engine(uuid=uuid,
+                                     category=category,
                                      name=name, 
                                      name_zh=name_zh,
                                      description=description,
