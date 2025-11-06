@@ -1,8 +1,8 @@
 import httpx
-from protocol.engine import EngineProtocol, WebsiteInfo
+from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo
 from enums.engine import EngineUUID
 
-class JinaEngine(EngineProtocol):
+class JinaEngine(MarkdownEngineProtocol):
     
     def __init__(self):
         super().__init__(engine_uuid=EngineUUID.Jina.value,

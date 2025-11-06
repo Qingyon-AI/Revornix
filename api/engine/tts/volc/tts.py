@@ -2,27 +2,27 @@ import uuid
 import time
 import json
 import websockets
-from protocol.tts import TTSProtocol
+from protocol.tts_engine import TTSEngineProtocol
 from tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
-from enums.tts import TTSUUID
+from enums.engine import EngineUUID
 
-class VolcTTS(TTSProtocol):
+class VolcTTSEngine(TTSEngineProtocol):
     
     def __init__(self):
         super().__init__(
-            tts_uuid=TTSUUID.Volc_TTS.value,
-            tts_name="Volc Podcast TTS",
-            tts_name_zh="豆包播客TTS",
-            tts_description="DouBao Podcast TTS, based on ByteDance's DouBao large model podcast generation engine.",
-            tts_description_zh="豆包播客，基于字节跳动的豆包大模型的播客生成引擎。",
-            tts_demo_config='{"appid":"","access_token":""}'
+            engine_uuid=EngineUUID.Volc_TTS.value,
+            engine_name="Volc Podcast Engine",
+            engine_name_zh="豆包播客引擎",
+            engine_description="DouBao Podcast TTS, based on ByteDance's DouBao large model podcast generation engine.",
+            engine_description_zh="豆包播客，基于字节跳动的豆包大模型的播客生成引擎。",
+            engine_demo_config='{"appid":"","access_token":""}'
         )
         
     async def synthesize(self, input_url: str):
         
         final_audio_url = ""
         
-        config = self.get_tts_config()
+        config = self.get_engine_config()
         
         websocket = None  # websocket连接
         

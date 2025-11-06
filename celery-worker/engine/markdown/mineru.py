@@ -5,7 +5,7 @@ import crud
 from bs4 import BeautifulSoup
 from pathlib import Path
 from config.base import BASE_DIR
-from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
+from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
 from enums.engine import EngineUUID
 from playwright.async_api import async_playwright
 from common.common import get_user_remote_file_system
@@ -13,7 +13,7 @@ from common.mineru import parse_doc
 from common.common import is_dir_empty, extract_title_and_summary
 from common.sql import SessionLocal
 
-class MineruEngine(EngineProtocol):
+class MineruEngine(MarkdownEngineProtocol):
 
     def __init__(self):
         super().__init__(engine_uuid=EngineUUID.MinerU.value,

@@ -1,8 +1,9 @@
 # !!! There is no need for compeletion of this file as it is only for data reference !!!
 
-from protocol.engine import EngineProtocol, EngineUUID
+from protocol.markdown_engine import MarkdownEngineProtocol
+from enums.engine import EngineUUID
 
-class MineruEngine(EngineProtocol):
+class MineruEngine(MarkdownEngineProtocol):
 
     def __init__(self):
         super().__init__(engine_uuid=EngineUUID.MinerU.value,
