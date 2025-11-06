@@ -26,11 +26,6 @@ const EnginePage = () => {
 
 	return (
 		<div className='px-5 pb-5'>
-			<Alert className='mb-5'>
-				<Info />
-				<AlertTitle>{t('tip')}</AlertTitle>
-				<AlertDescription>{t('setting_engine_page_tip')}</AlertDescription>
-			</Alert>
 			{isFetching && !mineEngines && <Skeleton className='w-full h-52' />}
 			{isError && (
 				<div className='w-full h-full flex justify-center items-center'>
