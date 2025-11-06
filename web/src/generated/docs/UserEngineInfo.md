@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `id` | number
 `engine_id` | number
+`category` | number
 `title` | string
 `description` | string
 `demo_config` | string
@@ -25,6 +26,7 @@ import type { UserEngineInfo } from ''
 const example = {
   "id": null,
   "engine_id": null,
+  "category": null,
   "title": null,
   "description": null,
   "demo_config": null,

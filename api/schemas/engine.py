@@ -21,6 +21,7 @@ class EngineUpdateRequest(BaseModel):
 
 class EngineInfo(BaseModel):
     id: int
+    category: int
     name: str
     name_zh: str
     description: str | None = None
@@ -32,6 +33,7 @@ class EngineInfo(BaseModel):
 class UserEngineInfo(BaseModel):
     id: int
     engine_id: int
+    category: int
     title: str
     description: str | None = None
     demo_config: str | None = None

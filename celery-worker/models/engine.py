@@ -35,3 +35,4 @@ class Engine(Base):
     create_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    category: Mapped[Optional[str]] = mapped_column(Integer, comment='0: markdown转化引擎, 1: tts引擎')

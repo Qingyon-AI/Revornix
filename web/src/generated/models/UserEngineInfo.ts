@@ -33,6 +33,12 @@ export interface UserEngineInfo {
     engine_id: number;
     /**
      * 
+     * @type {number}
+     * @memberof UserEngineInfo
+     */
+    category: number;
+    /**
+     * 
      * @type {string}
      * @memberof UserEngineInfo
      */
@@ -81,6 +87,7 @@ export interface UserEngineInfo {
 export function instanceOfUserEngineInfo(value: object): value is UserEngineInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('engine_id' in value) || value['engine_id'] === undefined) return false;
+    if (!('category' in value) || value['category'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
@@ -99,6 +106,7 @@ export function UserEngineInfoFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'id': json['id'],
         'engine_id': json['engine_id'],
+        'category': json['category'],
         'title': json['title'],
         'description': json['description'] == null ? undefined : json['description'],
         'demo_config': json['demo_config'] == null ? undefined : json['demo_config'],
@@ -122,6 +130,7 @@ export function UserEngineInfoToJSONTyped(value?: UserEngineInfo | null, ignoreD
         
         'id': value['id'],
         'engine_id': value['engine_id'],
+        'category': value['category'],
         'title': value['title'],
         'description': value['description'],
         'demo_config': value['demo_config'],

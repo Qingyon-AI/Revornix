@@ -27,6 +27,12 @@ export interface EngineInfo {
     id: number;
     /**
      * 
+     * @type {number}
+     * @memberof EngineInfo
+     */
+    category: number;
+    /**
+     * 
      * @type {string}
      * @memberof EngineInfo
      */
@@ -62,6 +68,7 @@ export interface EngineInfo {
  */
 export function instanceOfEngineInfo(value: object): value is EngineInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('category' in value) || value['category'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
     return true;
@@ -78,6 +85,7 @@ export function EngineInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     return {
         
         'id': json['id'],
+        'category': json['category'],
         'name': json['name'],
         'name_zh': json['name_zh'],
         'description': json['description'] == null ? undefined : json['description'],
@@ -98,6 +106,7 @@ export function EngineInfoToJSONTyped(value?: EngineInfo | null, ignoreDiscrimin
     return {
         
         'id': value['id'],
+        'category': value['category'],
         'name': value['name'],
         'name_zh': value['name_zh'],
         'description': value['description'],

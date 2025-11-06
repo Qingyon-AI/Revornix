@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { SchemasSectionLabel } from './SchemasSectionLabel';
-import {
-    SchemasSectionLabelFromJSON,
-    SchemasSectionLabelFromJSONTyped,
-    SchemasSectionLabelToJSON,
-    SchemasSectionLabelToJSONTyped,
-} from './SchemasSectionLabel';
 import type { DocumentGraphTask } from './DocumentGraphTask';
 import {
     DocumentGraphTaskFromJSON,
@@ -27,6 +20,13 @@ import {
     DocumentGraphTaskToJSON,
     DocumentGraphTaskToJSONTyped,
 } from './DocumentGraphTask';
+import type { SchemasDocumentLabel } from './SchemasDocumentLabel';
+import {
+    SchemasDocumentLabelFromJSON,
+    SchemasDocumentLabelFromJSONTyped,
+    SchemasDocumentLabelToJSON,
+    SchemasDocumentLabelToJSONTyped,
+} from './SchemasDocumentLabel';
 import type { DocumentEmbeddingTask } from './DocumentEmbeddingTask';
 import {
     DocumentEmbeddingTaskFromJSON,
@@ -140,10 +140,10 @@ export interface DocumentDetailResponse {
     update_time?: Date | null;
     /**
      * 
-     * @type {Array<SchemasSectionLabel>}
+     * @type {Array<SchemasDocumentLabel>}
      * @memberof DocumentDetailResponse
      */
-    labels?: Array<SchemasSectionLabel> | null;
+    labels?: Array<SchemasDocumentLabel> | null;
     /**
      * 
      * @type {UserPublicInfo}
@@ -250,7 +250,7 @@ export function DocumentDetailResponseFromJSONTyped(json: any, ignoreDiscriminat
         'category': json['category'] == null ? undefined : json['category'],
         'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
-        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasSectionLabelFromJSON)),
+        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasDocumentLabelFromJSON)),
         'creator': json['creator'] == null ? undefined : UserPublicInfoFromJSON(json['creator']),
         'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SchemasDocumentBaseSectionInfoFromJSON)),
         'from_plat': json['from_plat'] == null ? undefined : json['from_plat'],
@@ -286,7 +286,7 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'category': value['category'],
         'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
-        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasSectionLabelToJSON)),
+        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasDocumentLabelToJSON)),
         'creator': UserPublicInfoToJSON(value['creator']),
         'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SchemasDocumentBaseSectionInfoToJSON)),
         'from_plat': value['from_plat'],

@@ -17,7 +17,7 @@ Name | Type
 `authority` | number
 `is_subscribed` | boolean
 `md_file_name` | string
-`labels` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
+`labels` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
 `cover` | string
 
 ## Example
