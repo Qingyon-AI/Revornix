@@ -8,10 +8,11 @@ from alembic import command
 from alembic.config import Config
 from common.sql import SessionLocal
 from config.base import BASE_DIR
-from engine.jina import JinaEngine
-from engine.markitdown import MarkitdownEngine
-from engine.mineru import MineruEngine
-from engine.mineru_api import MineruApiEngine
+from engine.markdown.jina import JinaEngine
+from engine.markdown.markitdown import MarkitdownEngine
+from engine.markdown.mineru import MineruEngine
+from engine.markdown.mineru_api import MineruApiEngine
+from engine.tts.volc.tts import VolcTTSEngine
 from enums.engine import EngineCategory
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
@@ -42,6 +43,7 @@ if __name__ == '__main__':
             jina_engine = JinaEngine()
             markitdown_engine = MarkitdownEngine()
             mineru_api_engine = MineruApiEngine()
+            volc_tts_engine = VolcTTSEngine()
             db_engine_mineru = crud.engine.create_engine(db=db,
                                                          category=EngineCategory.Markdown,
                                                          uuid=mineru_engine.engine_uuid,
@@ -74,6 +76,14 @@ if __name__ == '__main__':
                                                              description=mineru_api_engine.engine_description,
                                                              description_zh=mineru_api_engine.engine_description_zh,
                                                              demo_config=mineru_api_engine.engine_demo_config)
+            db_engine_volc_tts = crud.engine.create_engine(db=db,
+                                                           category=EngineCategory.TTS,
+                                                           uuid=volc_tts_engine.engine_uuid,
+                                                           name=volc_tts_engine.engine_name,
+                                                           name_zh=volc_tts_engine.engine_name_zh,
+                                                           description=volc_tts_engine.engine_description_zh,
+                                                           description_zh=volc_tts_engine.engine_description_zh,
+                                                           demo_config=volc_tts_engine.engine_demo_config)
             built_in_remote_file_service = BuiltInRemoteFileService()
             aliyun_oss_remote_file_service = AliyunOSSRemoteFileService()
             aws_s3_remote_file_service = AWSS3RemoteFileService()

@@ -1,5 +1,5 @@
 import io
-from protocol.engine import EngineProtocol, WebsiteInfo, FileInfo
+from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
 from enums.engine import EngineUUID
 from common.common import extract_title_and_summary
 from bs4 import BeautifulSoup
@@ -7,7 +7,7 @@ from markitdown import MarkItDown
 from openai import OpenAI
 from playwright.async_api import async_playwright
 
-class MarkitdownEngine(EngineProtocol):
+class MarkitdownEngine(MarkdownEngineProtocol):
     
     def __init__(self):
         super().__init__(engine_uuid=EngineUUID.MarkitDown.value,

@@ -17,10 +17,10 @@ from data.common import process_document
 from common.common import get_user_remote_file_system
 from enums.engine import EngineUUID
 from common.sql import SessionLocal
-from engine.markitdown import MarkitdownEngine
-from engine.jina import JinaEngine
-from engine.mineru import MineruEngine
-from engine.mineru_api import MineruApiEngine
+from engine.markdown.markitdown import MarkitdownEngine
+from engine.markdown.jina import JinaEngine
+from engine.markdown.mineru import MineruEngine
+from engine.markdown.mineru_api import MineruApiEngine
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus
 from enums.section import UserSectionAuthority
 from enums.section import SectionDocumentIntegration

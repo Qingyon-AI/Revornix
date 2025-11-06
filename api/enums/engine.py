@@ -6,6 +6,8 @@ class EngineUUID(Enum):
     MarkitDown = '9188ddca93ff4c2bb97fa252723c6c13'
     Jina = 'e31849ffa7f84a2cb4e2fa2ea00f25d2'
     
+    Volc_TTS = 'f2286c251b0b4650b60b6b9b48ea3cce'
+    
 class EngineCategory(IntEnum):
     Markdown = 0
     TTS = 1
