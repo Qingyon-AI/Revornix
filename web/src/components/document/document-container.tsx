@@ -4,7 +4,11 @@ import WebsiteDocumentDetail from '@/components/document/website-document-detail
 import DocumentInfo from './document-info';
 import { Card } from '@/components/ui/card';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { getDocumentDetail, readDocument } from '@/service/document';
+import {
+	generatePodcast,
+	getDocumentDetail,
+	readDocument,
+} from '@/service/document';
 import FileDocumentDetail from './file-document-detail';
 import QuickDocumentDetail from './quick-note-document-detail';
 import { useUserContext } from '@/provider/user-provider';
@@ -14,7 +18,7 @@ import { useEffect } from 'react';
 import { DocumentCategory, DocumentPodcastStatus } from '@/enums/document';
 import DocumentGraph from './document-graph';
 import { Button } from '../ui/button';
-import { Expand } from 'lucide-react';
+import { Expand, Loader2 } from 'lucide-react';
 import {
 	Dialog,
 	DialogContent,
@@ -25,6 +29,8 @@ import {
 } from '../ui/dialog';
 import { useTranslations } from 'next-intl';
 import AudioPlayer from '../ui/audio-player';
+import { Alert, AlertDescription } from '../ui/alert';
+import { toast } from 'sonner';
 
 const DocumentContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -34,6 +40,23 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	const { data: document } = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
+	});
+
+	const mutateGeneratePodcast = useMutation({
+		mutationFn: () =>
+			generatePodcast({
+				document_id: id,
+			}),
+		onSuccess(data, variables, onMutateResult, context) {
+			toast.success(t('document_podcast_generate_task_submitted'));
+			queryClient.invalidateQueries({
+				queryKey: ['getDocumentDetail', id],
+			});
+		},
+		onError(error, variables, onMutateResult, context) {
+			toast.error(t('document_podcast_generate_task_submitted_failed'));
+			console.error(error);
+		},
 	});
 
 	const mutateRead = useMutation({
@@ -135,30 +158,57 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					<DocumentGraph document_id={id} />
 				</Card>
 
-				{document?.podcast_task && (
-					<Card className='p-3 relative'>
-						{document?.podcast_task?.status ===
-							DocumentPodcastStatus.PROCESSING && (
-							<div>{t('document_podcast_processing')}</div>
-						)}
-						{document?.podcast_task?.status === DocumentPodcastStatus.SUCCESS &&
-							document?.podcast_info?.podcast_file_name && (
-								<AudioPlayer
-									src={document?.podcast_info?.podcast_file_name}
-									cover={
-										document.cover ??
-										'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
-									}
-									title={document.title ?? 'Unkown Title'}
-									artist={'AI Generated'}
-								/>
+				<Card className='p-3 relative'>
+					{!document?.podcast_task && (
+						<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
+							<AlertDescription className='flex flex-row items-center'>
+								<span className='inline-flex'>
+									{t('document_podcast_unset')}
+								</span>
+								<Button
+									variant={'link'}
+									size='sm'
+									className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0'
+									onClick={() => mutateGeneratePodcast.mutate()}
+									disabled={mutateGeneratePodcast.isPending}>
+									{t('document_podcast_generate')}
+									{mutateGeneratePodcast.isPending && (
+										<Loader2 className='animate-spin' />
+									)}
+								</Button>
+							</AlertDescription>
+						</Alert>
+					)}
+					{document?.podcast_task && (
+						<>
+							{document?.podcast_task?.status ===
+								DocumentPodcastStatus.PROCESSING && (
+								<div className='text-center text-muted-foreground text-xs p-3'>
+									{t('document_podcast_processing')}
+								</div>
 							)}
-						{document?.podcast_task?.status ===
-							DocumentPodcastStatus.FAILED && (
-							<div>{t('document_podcast_failed')}</div>
-						)}
-					</Card>
-				)}
+							{document?.podcast_task?.status ===
+								DocumentPodcastStatus.SUCCESS &&
+								document?.podcast_info?.podcast_file_name && (
+									<AudioPlayer
+										src={document?.podcast_info?.podcast_file_name}
+										cover={
+											document.cover ??
+											'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
+										}
+										title={document.title ?? 'Unkown Title'}
+										artist={'AI Generated'}
+									/>
+								)}
+							{document?.podcast_task?.status ===
+								DocumentPodcastStatus.FAILED && (
+								<div className='text-center text-muted-foreground text-xs p-3'>
+									{t('document_podcast_failed')}
+								</div>
+							)}
+						</>
+					)}
+				</Card>
 			</div>
 		</div>
 	);

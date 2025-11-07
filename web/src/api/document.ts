@@ -19,6 +19,7 @@ export default {
     createDocumentNote: API_PREFIX + '/document/note/create',
     deleteDocumentNotes: API_PREFIX + '/document/note/delete',
     transformToMarkdown: API_PREFIX + '/document/markdown/transform',
+    generatePodcast: API_PREFIX + '/document/podcast/generate',
     summaryContent: API_PREFIX + '/document/ai/summary',
     getDocumentLabelSummary: API_PREFIX + '/document/label/summary'
 } 

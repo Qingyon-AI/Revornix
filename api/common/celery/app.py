@@ -17,3 +17,13 @@ def start_process_document(document_id: int,
 def update_sections(document_id: int,
                     user_id: int):
     ...
+    
+@celery_app.task
+def start_process_podcast(document_id: int,
+                          user_id: int):
+    ...
+    
+@celery_app.task
+def update_document_process_status(document_id: int,
+                                   status: int):
+    ...

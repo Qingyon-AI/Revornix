@@ -72,6 +72,7 @@ export * from './FileSystemSearchRequest';
 export * from './FileUrlPrefixRequest';
 export * from './FileUrlPrefixResponse';
 export * from './FollowUserRequest';
+export * from './GeneratePodcastRequest';
 export * from './GenericFileSystemUploadResponse';
 export * from './GetRssServerDetailRequest';
 export * from './GetRssServerDocumentRequest';

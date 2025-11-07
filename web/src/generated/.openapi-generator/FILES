@@ -90,6 +90,7 @@ docs/FileSystemSearchRequest.md
 docs/FileUrlPrefixRequest.md
 docs/FileUrlPrefixResponse.md
 docs/FollowUserRequest.md
+docs/GeneratePodcastRequest.md
 docs/GenericFileSystemUploadResponse.md
 docs/GetRssServerDetailRequest.md
 docs/GetRssServerDocumentRequest.md
@@ -325,6 +326,7 @@ models/FileSystemSearchRequest.ts
 models/FileUrlPrefixRequest.ts
 models/FileUrlPrefixResponse.ts
 models/FollowUserRequest.ts
+models/GeneratePodcastRequest.ts
 models/GenericFileSystemUploadResponse.ts
 models/GetRssServerDetailRequest.ts
 models/GetRssServerDocumentRequest.ts
