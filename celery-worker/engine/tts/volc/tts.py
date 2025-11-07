@@ -3,7 +3,7 @@ import time
 import json
 import websockets
 from protocol.tts_engine import TTSEngineProtocol
-from tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
+from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
 from enums.engine import EngineUUID
 from pydantic import AnyUrl
 
