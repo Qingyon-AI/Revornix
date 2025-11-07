@@ -11,7 +11,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { getQueryClient } from '@/lib/get-query-client';
 import { DocumentDetailResponse } from '@/generated';
 import { useEffect } from 'react';
-import { DocumentCategory } from '@/enums/document';
+import { DocumentCategory, DocumentPodcastStatus } from '@/enums/document';
 import DocumentGraph from './document-graph';
 import { Button } from '../ui/button';
 import { Expand } from 'lucide-react';
@@ -133,6 +133,26 @@ const DocumentContainer = ({ id }: { id: number }) => {
 
 					<DocumentGraph document_id={id} />
 				</Card>
+
+				{document?.podcast_task && (
+					<Card className='p-3 relative'>
+						{document?.podcast_task?.status ===
+							DocumentPodcastStatus.PROCESSING && (
+							<div>{t('document_podcast_processing')}</div>
+						)}
+						{document?.podcast_task?.status ===
+							DocumentPodcastStatus.SUCCESS && (
+							<audio
+								controls
+								className='w-full'
+								src={document?.podcast_info?.podcast_file_name}></audio>
+						)}
+						{document?.podcast_task?.status ===
+							DocumentPodcastStatus.FAILED && (
+							<div>{t('document_podcast_failed')}</div>
+						)}
+					</Card>
+				)}
 			</div>
 		</div>
 	);
