@@ -21,14 +21,11 @@ class VolcTTSEngine(TTSEngineProtocol):
         
     async def synthesize(self, text: str):
         
-        # TODO 将text生成一份可供下载的文件，便于豆包博客模型处理，因为豆包默认不支持大于32k上下文的text传入
-        input_url = ''
-        
         final_audio_url: AnyUrl | None = None
         
         config = self.get_engine_config()
         
-        websocket = None  # websocket连接
+        websocket = None
         
         headers = {
             "X-Api-App-Id": config.get('appid'),
@@ -53,7 +50,8 @@ class VolcTTSEngine(TTSEngineProtocol):
             while retry_num > 0:
                 req_params = {
                     "input_id": str(time.time()),
-                    "action": 0,
+                    "action": 4,
+                    "prompt_text": f"这是一份文档，请你帮我用播客形式总结一下，{text}",
                     "scene": "deep_research",
                     "use_head_music": True,
                     "audio_config": {
@@ -62,9 +60,8 @@ class VolcTTSEngine(TTSEngineProtocol):
                         "speech_rate": 0
                     },
                     "input_info": {
-                        "input_url": input_url,
                         "return_audio_url": True
-                    }
+                    },
                 }
                 if not is_podcast_round_end:
                     req_params["retry_info"] = {

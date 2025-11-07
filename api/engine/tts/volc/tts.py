@@ -3,8 +3,9 @@ import time
 import json
 import websockets
 from protocol.tts_engine import TTSEngineProtocol
-from tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
+from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
 from enums.engine import EngineUUID
+from pydantic import AnyUrl
 
 class VolcTTSEngine(TTSEngineProtocol):
     
@@ -18,13 +19,13 @@ class VolcTTSEngine(TTSEngineProtocol):
             engine_demo_config='{"appid":"","access_token":""}'
         )
         
-    async def synthesize(self, input_url: str):
+    async def synthesize(self, text: str):
         
-        final_audio_url = ""
+        final_audio_url: AnyUrl | None = None
         
         config = self.get_engine_config()
         
-        websocket = None  # websocket连接
+        websocket = None
         
         headers = {
             "X-Api-App-Id": config.get('appid'),
@@ -49,7 +50,8 @@ class VolcTTSEngine(TTSEngineProtocol):
             while retry_num > 0:
                 req_params = {
                     "input_id": str(time.time()),
-                    "action": 0,
+                    "action": 4,
+                    "prompt_text": f"这是一份文档，请你帮我用播客形式总结一下，{text}",
                     "scene": "deep_research",
                     "use_head_music": True,
                     "audio_config": {
@@ -58,9 +60,8 @@ class VolcTTSEngine(TTSEngineProtocol):
                         "speech_rate": 0
                     },
                     "input_info": {
-                        "input_url": input_url,
                         "return_audio_url": True
-                    }
+                    },
                 }
                 if not is_podcast_round_end:
                     req_params["retry_info"] = {
@@ -113,8 +114,8 @@ class VolcTTSEngine(TTSEngineProtocol):
                     if msg.event == EventType.PodcastEnd:
                         # 播客总结性的信息，表示播客结束（注意如果你开启了音频链接返回，那么这段数据中是包含音频下载链接的）
                         data = json.loads(msg.payload.decode().encode("utf-8"))
-                        audio_url = data.get('meta_info').get("audio_url")
-                        final_audio_url = audio_url
+                        audio_url: str = data.get('meta_info').get("audio_url")
+                        final_audio_url = AnyUrl(audio_url)
                     # 会话结束
                     if msg.event == EventType.SessionFinished:
                         break
