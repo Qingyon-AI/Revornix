@@ -994,6 +994,7 @@ def delete_document_podcast_by_document_id(db: Session,
     db_document_podcasts = db.query(models.document.DocumentPodcast)\
         .join(models.document.UserDocument, models.document.DocumentPodcast.document_id == models.document.UserDocument.document_id)\
         .filter(models.document.DocumentPodcast.document_id == document_id,
+                models.document.UserDocument.user_id == user_id,
                 models.document.DocumentPodcast.delete_at == None)\
         .all()
     db_podcast_ids = [podcast.id for podcast in db_document_podcasts]

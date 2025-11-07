@@ -2,6 +2,7 @@ from pydantic import BaseModel, field_validator, field_serializer
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
 from schemas.user import UserPublicInfo, SectionUserPublicInfo
+from schemas.task import SectionPodcastTask
 from enums.section import UserSectionRole
 
 class SectionDocumentRequest(BaseModel):
@@ -192,6 +193,14 @@ class SectionDocumentInfo(BaseModel):
         return v
     class Config:
         from_attributes = True 
+        
+class SectionPodcastInfo(BaseModel):
+    creator_id: int
+    podcast_file_name: str
+    @field_serializer("podcast_file_name")
+    def podcast_file_name(self, v: str) -> str:
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
+        return f'{url_prefix}/{v}'
     
 class SectionInfo(BaseModel):
     id: int
@@ -207,6 +216,8 @@ class SectionInfo(BaseModel):
     md_file_name: str | None = None
     labels: list[Label] | None = None
     cover: str | None = None
+    podcast_task: SectionPodcastTask | None = None
+    podcast_info: SectionPodcastInfo | None = None
     @field_serializer("cover")
     def cover(self, v: str) -> str | None:
         if v is None:

@@ -2,6 +2,21 @@ import models
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from enums.section import UserSectionRole
+
+def create_section_podcast(db: Session,
+                           section_id: int):
+    db_section_podcast = models.section.SectionPodcast(section_id=section_id)
+    db.add(db_section_podcast)
+    db.flush()
+    return db_section_podcast
+
+def get_section_podcast_by_section_id(db: Session,
+                                      section_id: int):
+    query = db.query(models.section.SectionPodcast)
+    query = query.filter(models.section.SectionPodcast.section_id == section_id,
+                         models.section.SectionPodcast.delete_at == None)
+    return query.first()
 
 def get_document_sections_by_document_id(db: Session,
                                          document_id: int):
@@ -58,3 +73,20 @@ def update_section_document_by_section_id_and_document_id(db: Session,
     db_section_document.status = status
     db_section_document.update_time = now
     db.flush()
+
+def delete_section_podcast_by_document_id(db: Session, 
+                                          user_id: int,
+                                          section_id: int):
+    delete_time = datetime.now(timezone.utc)
+    db_section_podcasts = db.query(models.section.SectionPodcast)\
+        .join(models.section.SectionUser, models.section.SectionUser.section_id == models.section.SectionPodcast.section_id)\
+        .filter(models.section.SectionPodcast.section_id == section_id,
+                models.section.SectionUser.role == UserSectionRole.CREATOR,
+                models.section.SectionUser.user_id == user_id,
+                models.section.SectionPodcast.delete_at == None)\
+        .all()
+    db_podcast_ids = [podcast.id for podcast in db_section_podcasts]
+    db.query(models.section.SectionPodcast)\
+        .filter(models.section.SectionPodcast.id.in_(db_podcast_ids),
+                models.section.SectionPodcast.delete_at == None)\
+        .update({models.section.SectionPodcast.delete_at: delete_time}, synchronize_session=False)
