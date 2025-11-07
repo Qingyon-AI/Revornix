@@ -158,7 +158,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					<DocumentGraph document_id={id} />
 				</Card>
 
-				<Card className='p-3 relative'>
+				<Card className='p-5 relative'>
 					{!document?.podcast_task && (
 						<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
 							<AlertDescription className='flex flex-row items-center'>

@@ -75,7 +75,7 @@ export default function AudioPlayer({
 	};
 
 	return (
-		<div className='flex items-center gap-4 p-4'>
+		<div className='flex items-center gap-4'>
 			{/* 🎵 封面 */}
 			<div className='relative flex-shrink-0'>
 				<img

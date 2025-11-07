@@ -12,6 +12,7 @@ import {
 	DocumentCategory,
 	DocumentEmbeddingConvertStatus,
 	DocumentMdConvertStatus,
+	DocumentPodcastStatus,
 } from '@/enums/document';
 
 const DocumentInfo = ({ id }: { id: number }) => {
@@ -59,7 +60,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 								</p>
 							</div>
 						)}
-						<div className='text-muted-foreground mb-3 px-5 flex flex-row gap-1 items-center text-xs'>
+						<div className='text-muted-foreground mb-3 px-5 flex flex-row gap-3 items-center text-xs'>
 							<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 								{t('document_from_plat') + ': '}
 								{data.from_plat}
@@ -75,7 +76,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 									: t('document_category_others')}
 							</div>
 						</div>
-						<div className='text-muted-foreground mb-3 px-5 flex flex-row gap-1 items-center text-xs'>
+						<div className='text-muted-foreground mb-3 px-5 flex flex-row gap-3 items-center text-xs'>
 							{data.sections?.map((section) => {
 								return (
 									<Link
@@ -100,41 +101,62 @@ const DocumentInfo = ({ id }: { id: number }) => {
 								})}
 							</div>
 						)}
-						{data.embedding_task && (
-							<div className='text-muted-foreground px-5 flex flex-row gap-1 items-center text-xs mt-auto mb-2'>
-								<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
-									{t('document_embedding_status') + ': '}
-									{data.embedding_task?.status ===
-									DocumentEmbeddingConvertStatus.WAIT_TO
-										? t('document_md_status_todo')
-										: data.embedding_task?.status ===
-										  DocumentEmbeddingConvertStatus.Embedding
-										? t('document_md_status_doing')
-										: data.embedding_task?.status ===
-										  DocumentEmbeddingConvertStatus.SUCCESS
-										? t('document_md_status_success')
-										: t('document_md_status_failed')}
+						<div className='px-5 mb-3'>
+							<Separator />
+						</div>
+						<div className='flex flex-row flex-wrap gap-3 px-5 mb-3'>
+							{data.embedding_task && (
+								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
+									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
+										{t('document_embedding_status') + ': '}
+										{data.embedding_task?.status ===
+										DocumentEmbeddingConvertStatus.WAIT_TO
+											? t('document_md_status_todo')
+											: data.embedding_task?.status ===
+											  DocumentEmbeddingConvertStatus.Embedding
+											? t('document_md_status_doing')
+											: data.embedding_task?.status ===
+											  DocumentEmbeddingConvertStatus.SUCCESS
+											? t('document_md_status_success')
+											: t('document_md_status_failed')}
+									</div>
 								</div>
-							</div>
-						)}
-						{data.transform_task && (
-							<div className='text-muted-foreground px-5 flex flex-row gap-1 items-center text-xs mt-auto mb-2'>
-								<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
-									{t('document_md_status') + ': '}
-									{data.transform_task?.status ===
-									DocumentMdConvertStatus.WAIT_TO
-										? t('document_md_status_todo')
-										: data.transform_task?.status ===
-										  DocumentMdConvertStatus.CONVERTING
-										? t('document_md_status_doing')
-										: data.transform_task?.status ===
-										  DocumentMdConvertStatus.SUCCESS
-										? t('document_md_status_success')
-										: t('document_md_status_failed')}
+							)}
+							{data.transform_task && (
+								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
+									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
+										{t('document_md_status') + ': '}
+										{data.transform_task?.status ===
+										DocumentMdConvertStatus.WAIT_TO
+											? t('document_md_status_todo')
+											: data.transform_task?.status ===
+											  DocumentMdConvertStatus.CONVERTING
+											? t('document_md_status_doing')
+											: data.transform_task?.status ===
+											  DocumentMdConvertStatus.SUCCESS
+											? t('document_md_status_success')
+											: t('document_md_status_failed')}
+									</div>
 								</div>
-							</div>
-						)}
-						<div className='px-5 my-5'>
+							)}
+							{data.podcast_task && (
+								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
+									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
+										{t('document_podcast_status') + ': '}
+										{data.podcast_task?.status === DocumentPodcastStatus.WAIT_TO
+											? t('document_podcast_status_todo')
+											: data.transform_task?.status ===
+											  DocumentPodcastStatus.PROCESSING
+											? t('document_podcast_status_doing')
+											: data.transform_task?.status ===
+											  DocumentPodcastStatus.SUCCESS
+											? t('document_podcast_status_success')
+											: t('document_podcast_status_failed')}
+									</div>
+								</div>
+							)}
+						</div>
+						<div className='px-5 mb-3'>
 							<Separator />
 						</div>
 						<div className='text-sm rounded mx-5 mb-3'>
