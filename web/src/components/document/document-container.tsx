@@ -24,6 +24,7 @@ import {
 	DialogTrigger,
 } from '../ui/dialog';
 import { useTranslations } from 'next-intl';
+import AudioPlayer from '../ui/audio-player';
 
 const DocumentContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -140,13 +141,18 @@ const DocumentContainer = ({ id }: { id: number }) => {
 							DocumentPodcastStatus.PROCESSING && (
 							<div>{t('document_podcast_processing')}</div>
 						)}
-						{document?.podcast_task?.status ===
-							DocumentPodcastStatus.SUCCESS && (
-							<audio
-								controls
-								className='w-full'
-								src={document?.podcast_info?.podcast_file_name}></audio>
-						)}
+						{document?.podcast_task?.status === DocumentPodcastStatus.SUCCESS &&
+							document?.podcast_info?.podcast_file_name && (
+								<AudioPlayer
+									src={document?.podcast_info?.podcast_file_name}
+									cover={
+										document.cover ??
+										'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
+									}
+									title={document.title ?? 'Unkown Title'}
+									artist={'AI Generated'}
+								/>
+							)}
 						{document?.podcast_task?.status ===
 							DocumentPodcastStatus.FAILED && (
 							<div>{t('document_podcast_failed')}</div>
