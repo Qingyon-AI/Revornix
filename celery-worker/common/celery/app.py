@@ -396,10 +396,9 @@ async def handle_update_ai_podcast(document_id: int,
                                                                     document_id=document_id,
                                                                     podcast_file_name=podcast_file_name)
         db.commit()
+        
         db_document_podcast.podcast_file_name = podcast_file_name
-        
         db_document_podcast_task.status = DocumentPodcastStatus.SUCCESS
-        
         db.commit()
                                                                              
     except Exception as e:
@@ -522,4 +521,20 @@ def update_sections(document_id: int,
     asyncio.run(handle_update_sections(sections=section_ids,
                                        document_id=document_id, 
                                        user_id=user_id))
+    db.close()
+    
+@celery_app.task
+def start_process_podcast(document_id: int,
+                          user_id: int):
+    asyncio.run(handle_update_ai_podcast(document_id=document_id, user_id=user_id))
+    
+@celery_app.task
+def update_document_process_status(document_id: int,
+                                   status: int):
+    db = SessionLocal()
+    db_document_process_task = crud.task.get_document_process_task_by_document_id(db=db,
+                                                                                  document_id=document_id)
+    if db_document_process_task is not None:
+        db_document_process_task.status = status
+        db.commit()
     db.close()

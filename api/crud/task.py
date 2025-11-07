@@ -1,7 +1,20 @@
 import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from enums.document import DocumentGraphStatus
+from enums.document import DocumentGraphStatus, DocumentPodcastStatus
+
+def create_document_podcast_task(db: Session,
+                                 user_id: int,
+                                 document_id: int):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentPodcastTask(user_id=user_id,
+                                           status=DocumentPodcastStatus.WAIT_TO,
+                                           document_id=document_id,
+                                           create_time=now,
+                                           update_time=now)
+    db.add(task)
+    db.flush()
+    return task
 
 def create_document_graph_task(db: Session,
                                user_id: int,

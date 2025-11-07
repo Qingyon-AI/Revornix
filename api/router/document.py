@@ -1,6 +1,7 @@
 import crud
 import models
 import schemas
+from celery import chain
 from datetime import datetime, timezone
 from schemas.common import SuccessResponse
 from sqlalchemy.orm import Session
@@ -11,10 +12,9 @@ from common.dependencies import get_db
 from data.milvus.search import naive_search
 from data.milvus.create import milvus_client
 from common.dependencies import get_db, get_current_user
-from common.logger import log_exception, exception_logger
 from common.common import get_user_remote_file_system
-from common.celery.app import start_process_document, update_sections
-from enums.document import DocumentCategory, DocumentMdConvertStatus
+from common.celery.app import start_process_document, update_sections, start_process_podcast, update_document_process_status
+from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus
 from enums.section import UserSectionRole, UserSectionAuthority
 from enums.section import SectionDocumentIntegration
 
@@ -108,6 +108,41 @@ async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSumma
     db.commit()
     return schemas.common.SuccessResponse()
 
+@document_router.post('/podcast/generate', response_model=schemas.common.NormalResponse)
+async def generate_podcast(generate_podcast_request: schemas.document.GeneratePodcastRequest,
+                           user: models.user.User = Depends(get_current_user),
+                           db: Session = Depends(get_db)):
+    if user.default_user_file_system is None:
+        raise Exception('Please set the default file system for the user first.')
+    else:
+        remote_file_service = await get_user_remote_file_system(user_id=user.id)
+        await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
+
+    db_document = crud.document.get_document_by_document_id(db=db,
+                                                            document_id=generate_podcast_request.document_id)
+    if db_document is None:
+        raise Exception('The document you want to generate the podcast is not found')
+    db_exist_podcast_task = crud.task.get_document_podcast_task_by_document_id(db=db,
+                                                                               document_id=generate_podcast_request.document_id)
+    if db_exist_podcast_task is not None:
+        if db_exist_podcast_task.status == DocumentPodcastStatus.SUCCESS:
+            raise Exception('The podcast task is already finished, please refresh the page')
+        if db_exist_podcast_task.status == DocumentPodcastStatus.WAIT_TO:
+            raise Exception('The podcast task is already in the queue, please wait')
+        if db_exist_podcast_task.status == DocumentPodcastStatus.PROCESSING:
+            raise Exception('The podcast task is already processing, please wait')
+
+    db_process_task = crud.task.get_document_process_task_by_document_id(db=db,
+                                                                         document_id=generate_podcast_request.document_id)
+    db_process_task.status = DocumentProcessStatus.PROCESSING
+    workflow = chain(
+        start_process_podcast.si(db_document.id, user.id),
+        update_document_process_status.si(db_document.id, DocumentProcessStatus.SUCCESS)
+    )
+    workflow.delay()
+    db.commit()
+    return schemas.common.SuccessResponse()
+
 @document_router.post('/markdown/transform', response_model=schemas.common.NormalResponse)
 async def transform_markdown(transform_markdown_request: schemas.document.DocumentMarkdownTransformRequest,
                              user: models.user.User = Depends(get_current_user),
@@ -127,13 +162,20 @@ async def transform_markdown(transform_markdown_request: schemas.document.Docume
                                                                              document_id=transform_markdown_request.document_id)
     if db_transform_task.status == DocumentMdConvertStatus.SUCCESS:
         raise Exception('The transform task is already finished, please refresh the page')
-    try:
-        db_transform_task.status = DocumentMdConvertStatus.WAIT_TO
-        start_process_document.delay(db_document.id, user.id, False, True)
-    except Exception as e:
-        exception_logger.error(f"document transform request failed, error {e}")
-        log_exception()
-        db.rollback()
+    if db_transform_task.status == DocumentMdConvertStatus.WAIT_TO:
+        raise Exception('The transform task is already in the queue, please wait')
+    if db_transform_task.status == DocumentMdConvertStatus.CONVERTING:
+        raise Exception('The transform task is already processing, please wait')
+    
+    db_process_task = crud.task.get_document_process_task_by_document_id(db=db,
+                                                                         document_id=transform_markdown_request.document_id)
+    db_transform_task.status = DocumentMdConvertStatus.WAIT_TO
+    db_process_task.status = DocumentProcessStatus.PROCESSING
+    workflow = chain(
+        start_process_document.si(db_document.id, user.id, False, True),
+        update_document_process_status.si(db_document.id, DocumentProcessStatus.SUCCESS)
+    )
+    workflow.delay()
     db.commit()
     return schemas.common.SuccessResponse()
         

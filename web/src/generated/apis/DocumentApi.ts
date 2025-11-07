@@ -26,6 +26,7 @@ import type {
   DocumentNoteCreateRequest,
   DocumentNoteDeleteRequest,
   DocumentUpdateRequest,
+  GeneratePodcastRequest,
   HTTPValidationError,
   InifiniteScrollPagnitionDocumentInfo,
   InifiniteScrollPagnitionDocumentNoteInfo,
@@ -69,6 +70,8 @@ import {
     DocumentNoteDeleteRequestToJSON,
     DocumentUpdateRequestFromJSON,
     DocumentUpdateRequestToJSON,
+    GeneratePodcastRequestFromJSON,
+    GeneratePodcastRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     InifiniteScrollPagnitionDocumentInfoFromJSON,
@@ -147,6 +150,12 @@ export interface DeleteLabelDocumentLabelDeletePostRequest {
 
 export interface DeleteNoteDocumentNoteDeletePostRequest {
     documentNoteDeleteRequest: DocumentNoteDeleteRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GeneratePodcastDocumentPodcastGeneratePostRequest {
+    generatePodcastRequest: GeneratePodcastRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -563,6 +572,53 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async deleteNoteDocumentNoteDeletePost(requestParameters: DeleteNoteDocumentNoteDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.deleteNoteDocumentNoteDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Generate Podcast
+     */
+    async generatePodcastDocumentPodcastGeneratePostRaw(requestParameters: GeneratePodcastDocumentPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['generatePodcastRequest'] == null) {
+            throw new runtime.RequiredError(
+                'generatePodcastRequest',
+                'Required parameter "generatePodcastRequest" was null or undefined when calling generatePodcastDocumentPodcastGeneratePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/document/podcast/generate`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GeneratePodcastRequestToJSON(requestParameters['generatePodcastRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Generate Podcast
+     */
+    async generatePodcastDocumentPodcastGeneratePost(requestParameters: GeneratePodcastDocumentPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.generatePodcastDocumentPodcastGeneratePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
