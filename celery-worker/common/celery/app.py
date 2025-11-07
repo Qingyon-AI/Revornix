@@ -378,7 +378,7 @@ async def handle_update_ai_podcast(document_id: int,
         podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
         await remote_file_service.upload_raw_content_to_path(file_path=podcast_file_name, 
                                                              content=audio_bytes,
-                                                             content_type="text/plain")
+                                                             content_type="audio/mpeg")
         
         if podcast_result is None:
             db_document_podcast_task.status = DocumentPodcastStatus.FAILED
