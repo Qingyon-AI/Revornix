@@ -343,7 +343,7 @@ async def handle_update_ai_podcast(document_id: int,
         
         remote_file_service = await get_user_remote_file_system(user_id=user_id)
         await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
-        db_document_podcast_task = crud.task.create_document_process_task(db=db,
+        db_document_podcast_task = crud.task.create_document_podcast_task(db=db,
                                                                           user_id=user_id,
                                                                           document_id=document_id)
         db_document = crud.document.get_document_by_document_id(db=db,
