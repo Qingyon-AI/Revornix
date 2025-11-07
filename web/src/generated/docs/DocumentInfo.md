@@ -21,6 +21,7 @@ Name | Type
 `transform_task` | [DocumentTransformTask](DocumentTransformTask.md)
 `embedding_task` | [DocumentEmbeddingTask](DocumentEmbeddingTask.md)
 `graph_task` | [DocumentGraphTask](DocumentGraphTask.md)
+`podcast_task` | [DocumentPodcastTask](DocumentPodcastTask.md)
 `process_task` | [DocumentProcessTask](DocumentProcessTask.md)
 
 ## Example
@@ -45,6 +46,7 @@ const example = {
   "transform_task": null,
   "embedding_task": null,
   "graph_task": null,
+  "podcast_task": null,
   "process_task": null,
 } satisfies DocumentInfo
 

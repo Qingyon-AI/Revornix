@@ -85,6 +85,12 @@ export interface DocumentCreateRequest {
      * @memberof DocumentCreateRequest
      */
     file_name?: string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DocumentCreateRequest
+     */
+    auto_podcast?: boolean | null;
 }
 
 /**
@@ -117,6 +123,7 @@ export function DocumentCreateRequestFromJSONTyped(json: any, ignoreDiscriminato
         'url': json['url'] == null ? undefined : json['url'],
         'content': json['content'] == null ? undefined : json['content'],
         'file_name': json['file_name'] == null ? undefined : json['file_name'],
+        'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
     };
 }
 
@@ -142,6 +149,7 @@ export function DocumentCreateRequestToJSONTyped(value?: DocumentCreateRequest |
         'url': value['url'],
         'content': value['content'],
         'file_name': value['file_name'],
+        'auto_podcast': value['auto_podcast'],
     };
 }
 

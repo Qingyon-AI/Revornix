@@ -47,6 +47,8 @@ export * from './DocumentMonthSummaryResponse';
 export * from './DocumentNoteCreateRequest';
 export * from './DocumentNoteDeleteRequest';
 export * from './DocumentNoteInfo';
+export * from './DocumentPodcastInfo';
+export * from './DocumentPodcastTask';
 export * from './DocumentProcessTask';
 export * from './DocumentTransformTask';
 export * from './DocumentUpdateRequest';
