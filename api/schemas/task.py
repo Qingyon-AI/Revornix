@@ -20,6 +20,11 @@ class DocumentProcessTask(BaseModel):
     class Config:
         from_attributes = True
         
+class DocumentPodcastTask(BaseModel):
+    status: int
+    class Config:
+        from_attributes = True
+        
 class DocumentOverrideProperty(BaseModel):
     title: str | None = None
     description: str | None = None

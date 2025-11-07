@@ -2,6 +2,20 @@ import models
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session, selectinload
 
+def create_document_podcast(db: Session,
+                            document_id: int):
+    db_document_podcast = models.document.DocumentPodcast(document_id=document_id)
+    db.add(db_document_podcast)
+    db.flush()
+    return db_document_podcast
+
+def get_document_podcast_by_document_id(db: Session,
+                                        document_id: int):
+    query = db.query(models.document.DocumentPodcast)
+    query = query.filter(models.document.DocumentPodcast.document_id == document_id,
+                         models.document.DocumentPodcast.delete_at == None)
+    return query.first()
+
 def get_document_by_document_id(db: Session, 
                                 document_id: int):
     query = db.query(models.document.Document)
@@ -93,3 +107,19 @@ def update_document_by_document_id(db: Session,
     db_document.update_time = now
     db.flush()
     return db_document
+
+def delete_document_podcast_by_document_id(db: Session, 
+                                           user_id: int,
+                                           document_id: int):
+    delete_time = datetime.now(timezone.utc)
+    db_document_podcasts = db.query(models.document.DocumentPodcast)\
+        .join(models.document.UserDocument, models.document.DocumentPodcast.document_id == models.document.UserDocument.document_id)\
+        .filter(models.document.DocumentPodcast.document_id == document_id,
+                models.document.DocumentPodcast.delete_at == None,
+                models.document.UserDocument.user_id == user_id)\
+        .all()
+    db_podcast_ids = [podcast.id for podcast in db_document_podcasts]
+    db.query(models.document.DocumentPodcast)\
+        .filter(models.document.DocumentPodcast.id.in_(db_podcast_ids),
+                models.document.DocumentPodcast.delete_at == None)\
+        .update({models.document.DocumentPodcast.delete_at: delete_time}, synchronize_session=False)

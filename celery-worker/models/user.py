@@ -41,6 +41,7 @@ class User(Base):
     default_website_document_parse_user_engine_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user_engine.id"))
     default_file_document_parse_user_engine_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user_engine.id"))
     default_user_file_system: Mapped[Optional[int]] = mapped_column(ForeignKey("user_file_system.id"))
+    default_podcast_user_engine_id: Mapped[Optional[int]] = mapped_column(Integer)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))

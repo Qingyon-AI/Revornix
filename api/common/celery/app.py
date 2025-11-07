@@ -9,6 +9,7 @@ celery_app = Celery('worker',
 def start_process_document(document_id: int,
                            user_id: int,
                            auto_summary: bool = False,
+                           auto_podcast: bool = False,
                            override: dict | None = None):
     ...
 

@@ -2,7 +2,7 @@ from pydantic import BaseModel, field_validator, field_serializer
 from datetime import datetime, timezone
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from .user import UserPublicInfo
-from .task import DocumentTransformTask, DocumentEmbeddingTask, DocumentGraphTask, DocumentProcessTask
+from .task import DocumentTransformTask, DocumentEmbeddingTask, DocumentGraphTask, DocumentProcessTask, DocumentPodcastTask
 
 class DocumentUpdateRequest(BaseModel):
     document_id: int
@@ -90,6 +90,7 @@ class DocumentCreateRequest(BaseModel):
     url: str | None = None
     content: str | None = None
     file_name: str | None = None
+    auto_podcast: bool | None = False
     
 class DocumentCreateResponse(BaseModel):
     document_id: int
@@ -154,6 +155,7 @@ class DocumentInfo(BaseModel):
     transform_task: DocumentTransformTask | None = None
     embedding_task: DocumentEmbeddingTask | None = None
     graph_task: DocumentGraphTask | None = None
+    podcast_task: DocumentPodcastTask | None = None
     process_task: DocumentProcessTask | None = None
     
     @field_validator("create_time", mode="before")
@@ -197,6 +199,14 @@ class FileDocumentInfo(BaseModel):
 class QuickNoteDocumentInfo(BaseModel):
     content: str
     
+class DocumentPodcastInfo(BaseModel):
+    creator_id: int
+    podcast_file_name: str
+    @field_serializer("podcast_file_name")
+    def podcast_file_name(self, v: str) -> str:
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
+        return f'{url_prefix}/{v}'
+    
 class DocumentDetailResponse(BaseModel):
     id: int
     title: str | None = None
@@ -216,9 +226,11 @@ class DocumentDetailResponse(BaseModel):
     website_info: WebsiteDocumentInfo | None = None
     file_info: FileDocumentInfo | None = None
     quick_note_info: QuickNoteDocumentInfo | None = None
+    podcast_info: DocumentPodcastInfo | None = None
     transform_task: DocumentTransformTask | None = None
     embedding_task: DocumentEmbeddingTask | None = None
     graph_task: DocumentGraphTask | None = None
+    podcast_task: DocumentPodcastTask | None = None
     process_task: DocumentProcessTask | None = None
     
     @field_validator("create_time", mode="before")

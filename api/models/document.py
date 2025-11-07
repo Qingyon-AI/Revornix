@@ -127,3 +127,13 @@ class DocumentNote(Base):
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     user: Mapped[Optional["User"]] = relationship("User", backref="document_notes")
+
+
+class DocumentPodcast(Base):
+    __tablename__ = "document_podcast"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    document_id: Mapped[Optional[int]] = mapped_column(ForeignKey("document.id"), index=True)
+    podcast_file_name: Mapped[str] = mapped_column(String(500), nullable=False, index=True, comment='The path of the podcast file which you uploaded to the file system')
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    

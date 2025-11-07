@@ -1,7 +1,7 @@
 import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from enums.document import DocumentGraphStatus
+from enums.document import DocumentGraphStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentMdConvertStatus
 
 def create_document_graph_task(db: Session,
                                user_id: int,
@@ -16,12 +16,25 @@ def create_document_graph_task(db: Session,
     db.flush()
     return task
 
+def create_document_podcast_task(db: Session,
+                                 user_id: int,
+                                 document_id: int):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentPodcastTask(user_id=user_id,
+                                           status=DocumentPodcastStatus.WAIT_TO,
+                                           document_id=document_id,
+                                           create_time=now,
+                                           update_time=now)
+    db.add(task)
+    db.flush()
+    return task
+
 def create_document_process_task(db: Session,
                                  user_id: int,
                                  document_id: int):
     now = datetime.now(timezone.utc)
     task = models.task.DocumentProcessTask(user_id=user_id,
-                                           status=DocumentGraphStatus.WAIT_TO,
+                                           status=DocumentProcessStatus.WAIT_TO,
                                            document_id=document_id,
                                            create_time=now,
                                            update_time=now)
@@ -34,7 +47,7 @@ def create_document_embedding_task(db: Session,
                                    document_id: int):
     now = datetime.now(timezone.utc)
     task = models.task.DocumentEmbeddingTask(user_id=user_id,
-                                             status=DocumentGraphStatus.WAIT_TO,
+                                             status=DocumentEmbeddingStatus.WAIT_TO,
                                              document_id=document_id,
                                              create_time=now,
                                              update_time=now)
@@ -47,13 +60,20 @@ def create_document_transform_task(db: Session,
                                    document_id: int):
     now = datetime.now(timezone.utc)
     task = models.task.DocumentTransformToMdTask(user_id=user_id,
-                                                 status=DocumentGraphStatus.WAIT_TO,
+                                                 status=DocumentMdConvertStatus.WAIT_TO,
                                                  document_id=document_id,
                                                  create_time=now,
                                                  update_time=now)
     db.add(task)
     db.flush()
     return task
+
+def get_document_podcast_task_by_document_id(db: Session,
+                                               document_id: int):
+    query = db.query(models.task.DocumentPodcastTask)
+    query = query.filter(models.task.DocumentPodcastTask.document_id == document_id,
+                         models.task.DocumentPodcastTask.delete_at == None)
+    return query.first()
 
 def get_document_graph_task_by_document_id(db: Session,
                                            document_id: int):
