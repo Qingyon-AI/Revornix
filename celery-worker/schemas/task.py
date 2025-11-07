@@ -24,3 +24,8 @@ class DocumentOverrideProperty(BaseModel):
     title: str | None = None
     description: str | None = None
     cover: str | None = None
+
+class SectionPodcastTask(BaseModel):
+    status: int
+    class Config:
+        from_attributes = True

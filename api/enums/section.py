@@ -15,3 +15,9 @@ class SectionDocumentIntegration(IntEnum):
     SUPPLEMENTING = 1
     SUCCESS = 2
     FAILED = 3
+
+class SectionPodcastStatus(IntEnum):
+    WAIT_TO = 0
+    PROCESSING = 1
+    SUCCESS = 2
+    FAILED = 3

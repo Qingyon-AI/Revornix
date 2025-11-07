@@ -631,6 +631,19 @@ async def get_section_detail(
             creator=db_section.creator,
         )
         
+        db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(db=db,
+                                                                                   section_id=section_detail_request.section_id)
+        if db_section_podcast_task is not None:
+            res.podcast_task = schemas.section.SectionPodcastTask(
+                status=db_section_podcast_task.status
+            )
+        
+        db_section_podcast = crud.section.get_section_podcast_by_section_id(db=db,
+                                                                            section_id=section_detail_request.section_id)
+        if db_section_podcast is not None:
+            res.podcast_info = schemas.section.SectionPodcastInfo(creator_id=db_section_podcast.creator_id,
+                                                                  podcast_file_name=db_section_podcast.podcast_file_name)
+
         if user is not None:
             db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                                       section_id=section_detail_request.section_id,
@@ -662,6 +675,20 @@ async def get_section_detail(
                 subscribers_count=subscribers_count,
                 creator=db_section.creator,
             )
+            
+            db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(db=db,
+                                                                                       section_id=section_detail_request.section_id)
+            if db_section_podcast_task is not None:
+                res.podcast_task = schemas.section.SectionPodcastTask(
+                    status=db_section_podcast_task.status
+                )
+            
+            db_section_podcast = crud.section.get_section_podcast_by_section_id(db=db,
+                                                                                section_id=section_detail_request.section_id)
+            if db_section_podcast is not None:
+                res.podcast_info = schemas.section.SectionPodcastInfo(creator_id=db_section_podcast.creator_id,
+                                                                    podcast_file_name=db_section_podcast.podcast_file_name)
+            
             
             db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                                       section_id=section_detail_request.section_id,
