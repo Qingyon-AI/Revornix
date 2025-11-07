@@ -657,6 +657,8 @@
     "document_md_status_todo": "Pending Conversion",
     "document_md_status_failed": "Failed",
     "document_transform_again": "Added to conversion queue again, please wait",
+    "document_podcast_processing": "The document's podcast is being processed",
+    "document_podcast_failed": "Podcast generation failed",
     "document_graph": "Document Graph",
     "document_graph_description": "Here you can view all the knowledge points of the document and the reference relationships between them",
     "document_graph_empty": "The knowledge graph of this document is empty for now",
