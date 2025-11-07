@@ -353,17 +353,6 @@ async def handle_update_ai_podcast(document_id: int,
         db_user = crud.user.get_user_by_id(db=db,
                                            user_id=user_id)
         
-        document_podcast = crud.document.get_document_podcast_by_document_id(db=db,
-                                                                             document_id=document_id)
-        if document_podcast is not None:
-            crud.document.delete_document_podcast_by_document_id(db=db,
-                                                                 user_id=user_id,
-                                                                 document_id=document_id)
-            
-        db_document_podcast = crud.document.create_document_podcast(db=db,
-                                                                    document_id=document_id)
-        db.commit()
-        
         podcast_generator = crud.engine.get_user_engine_by_user_engine_id(db=db, 
                                                                           user_engine_id=db_user.default_podcast_user_engine_id)
         
@@ -396,7 +385,18 @@ async def handle_update_ai_podcast(document_id: int,
             db.commit()
             raise Exception("Podcast result is None")
         
-        db_document_podcast.podcast_file_name = str(podcast_result)
+        document_podcast = crud.document.get_document_podcast_by_document_id(db=db,
+                                                                             document_id=document_id)
+        if document_podcast is not None:
+            crud.document.delete_document_podcast_by_document_id(db=db,
+                                                                 user_id=user_id,
+                                                                 document_id=document_id)
+            
+        db_document_podcast = crud.document.create_document_podcast(db=db,
+                                                                    document_id=document_id,
+                                                                    podcast_file_name=podcast_file_name)
+        db.commit()
+        db_document_podcast.podcast_file_name = podcast_file_name
         
         db_document_podcast_task.status = DocumentPodcastStatus.SUCCESS
         

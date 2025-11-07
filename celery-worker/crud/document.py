@@ -3,8 +3,10 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session, selectinload
 
 def create_document_podcast(db: Session,
-                            document_id: int):
-    db_document_podcast = models.document.DocumentPodcast(document_id=document_id)
+                            document_id: int,
+                            podcast_file_name: str | None = None):
+    db_document_podcast = models.document.DocumentPodcast(document_id=document_id,
+                                                          podcast_file_name=podcast_file_name)
     db.add(db_document_podcast)
     db.flush()
     return db_document_podcast
