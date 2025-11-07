@@ -19,6 +19,7 @@ import {
 	Trash,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { FaBars } from "react-icons/fa6"
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import {
@@ -209,7 +210,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 						onClick={() => {
 							handleAiSummarize();
 						}}>
-						AI
+						<FaBars />
 						{aiSummaizing && <Loader2 className='size-4 animate-spin' />}
 					</Button>
 					{data.is_star ? (
