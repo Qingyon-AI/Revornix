@@ -245,6 +245,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
     start_process_document.delay(db_document.id, 
                                  user.id, 
                                  document_create_request.auto_summary, 
+                                 document_create_request.auto_podcast,
                                  schemas.task.DocumentOverrideProperty(title=document_create_request.title, 
                                                                        description=document_create_request.description, 
                                                                        cover=document_create_request.cover).model_dump())

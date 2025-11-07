@@ -85,7 +85,7 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                                                                                                       document_id=existing_doc.id)
                     db_document_transform_task.status = DocumentMdConvertStatus.WAIT_TO
                     db.commit()
-                    start_process_document.delay(existing_doc.id, rss_server.user_id)
+                    start_process_document.delay(existing_doc.id, rss_server.user_id, False, True)
             else:
                 db_base_document = crud.document.create_base_document(db=db,
                                                                       creator_id=rss_server.user_id,

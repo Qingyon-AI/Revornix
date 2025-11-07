@@ -129,7 +129,7 @@ async def transform_markdown(transform_markdown_request: schemas.document.Docume
         raise Exception('The transform task is already finished, please refresh the page')
     try:
         db_transform_task.status = DocumentMdConvertStatus.WAIT_TO
-        start_process_document.delay(db_document.id, user.id)
+        start_process_document.delay(db_document.id, user.id, False, True)
     except Exception as e:
         exception_logger.error(f"document transform request failed, error {e}")
         log_exception()
@@ -287,7 +287,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                                                  section_id=section_id,
                                                                                  status=SectionDocumentIntegration.WAIT_TO)
     db.commit()
-    start_process_document.delay(db_document.id, user.id, document_create_request.auto_summary)
+    start_process_document.delay(db_document.id, user.id, document_create_request.auto_summary, document_create_request.auto_podcast)
     return schemas.document.DocumentCreateResponse(document_id=db_document.id)
 
 @document_router.post('/update', response_model=schemas.common.NormalResponse)
@@ -546,8 +546,11 @@ async def get_document_detail(document_detail_request: schemas.document.Document
                                                                           document_id=document_detail_request.document_id)
     res.embedding_task = embedding_task
     graph_task = crud.task.get_document_graph_task_by_document_id(db=db,
-                                                                 document_id=document_detail_request.document_id)
+                                                                  document_id=document_detail_request.document_id)
     res.graph_task = graph_task
+    podcast_task = crud.task.get_document_podcast_task_by_document_id(db=db,
+                                                                      document_id=document_detail_request.document_id)
+    res.podcast_task = podcast_task
     process_task = crud.task.get_document_process_task_by_document_id(db=db,
                                                                       document_id=document_detail_request.document_id)
     res.process_task = process_task
@@ -567,6 +570,11 @@ async def get_document_detail(document_detail_request: schemas.document.Document
         quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db, 
                                                                                    document_id=document_detail_request.document_id)
         res.quick_note_info = schemas.document.QuickNoteDocumentInfo(content=quick_note_document.content)
+    podcast = crud.document.get_document_podcast_by_document_id(db=db,
+                                                                document_id=document_detail_request.document_id)
+    if podcast is not None:
+        res.podcast_info = schemas.document.DocumentPodcastInfo(creator_id=document.creator_id,
+                                                                podcast_file_name=podcast.podcast_file_name)
     return res
 
 @document_router.post('/star', response_model=SuccessResponse)

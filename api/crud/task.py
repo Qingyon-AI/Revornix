@@ -69,6 +69,13 @@ def get_document_process_task_by_document_id(db: Session,
                          models.task.DocumentProcessTask.delete_at == None)
     return query.first()
 
+def get_document_podcast_task_by_document_id(db: Session,
+                                             document_id: int):
+    query = db.query(models.task.DocumentPodcastTask)
+    query = query.filter(models.task.DocumentPodcastTask.document_id == document_id,
+                         models.task.DocumentPodcastTask.delete_at == None)
+    return query.first()
+
 def get_document_embedding_task_by_document_id(db: Session,
                                                document_id: int):
     query = db.query(models.task.DocumentEmbeddingTask)
@@ -112,6 +119,17 @@ def search_document_transform_tasks(db: Session,
     query = db.query(models.task.DocumentTransformToMdTask)
     query = query.filter(models.task.DocumentTransformToMdTask.user_id == user_id,
                          models.task.DocumentTransformToMdTask.delete_at == None)
+    query = query.offset((page_num - 1) * page_size)
+    query = query.limit(page_size)
+    return query.all()
+
+def search_document_podcast_tasks(db: Session,
+                                  user_id: int,
+                                  page_num: int,
+                                  page_size: int):
+    query = db.query(models.task.DocumentPodcastTask)
+    query = query.filter(models.task.DocumentPodcastTask.user_id == user_id,
+                         models.task.DocumentPodcastTask.delete_at == None)
     query = query.offset((page_num - 1) * page_size)
     query = query.limit(page_size)
     return query.all()

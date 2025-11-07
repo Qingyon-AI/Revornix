@@ -10,6 +10,18 @@ from common.sql import Base
 from models.user import User
 
 
+class UserDocument(Base):
+    __tablename__ = "user_document"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"), index=True)
+    document_id: Mapped[Optional[int]] = mapped_column(ForeignKey("document.id"), index=True)
+    authority: Mapped[Optional[str]] = mapped_column(String(100))
+    create_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
 class Document(Base):
     __tablename__ = "document"
 
@@ -56,3 +68,14 @@ class FileDocument(Base):
     file_name: Mapped[str] = mapped_column(String(500), nullable=False, index=True)
     md_file_name: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the markdown file which you uploaded to the file system')
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
+class DocumentPodcast(Base):
+    __tablename__ = "document_podcast"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    document_id: Mapped[Optional[int]] = mapped_column(ForeignKey("document.id"), index=True)
+    podcast_file_name: Mapped[str] = mapped_column(String(500), nullable=False, index=True, comment='The path of the podcast file which you uploaded to the file system')
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    
+    

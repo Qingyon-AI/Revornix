@@ -45,6 +45,18 @@ class DocumentGraphTask(Base):
     document_id: Mapped[Optional[int]] = mapped_column(ForeignKey("document.id"), index=True)
 
 
+class DocumentPodcastTask(Base):
+    __tablename__ = "document_podcast_task"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"), index=True)
+    status: Mapped[Optional[int]] = mapped_column(Integer, comment='0: waiting to generate podcast, 1: generating podcast, 2: podcast generated successfully, 3: podcast generation failed')
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    document_id: Mapped[Optional[int]] = mapped_column(ForeignKey("document.id"), index=True)
+    
+
 class DocumentProcessTask(Base):
     # 包含所有的文档处理，同时如果用户设置了AI自动总结，那么需要等总结结束才设置为完成
     __tablename__ = "document_process_task"

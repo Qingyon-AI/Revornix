@@ -22,7 +22,13 @@ class DocumentGraphStatus(IntEnum):
     BUILDING = 1
     SUCCESS = 2
     FAILED = 3
-    
+
+class DocumentPodcastStatus(IntEnum):
+    WAIT_TO = 0
+    PROCESSING = 1
+    SUCCESS = 2
+    FAILED = 3
+
 class DocumentProcessStatus(IntEnum):
     WAIT_TO = 0
     PROCESSING = 1
