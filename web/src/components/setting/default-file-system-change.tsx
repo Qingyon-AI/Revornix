@@ -112,7 +112,7 @@ const DefaultFileSystemChange = () => {
 				onValueChange={(e) => {
 					handleSelectChange(e);
 				}}>
-				<SelectTrigger className='w-[180px]'>
+				<SelectTrigger className='min-w-[180px]'>
 					<SelectValue
 						placeholder={t(
 							'setting_file_system_page_current_user_file_system_select'
@@ -133,26 +133,24 @@ const DefaultFileSystemChange = () => {
 				</SelectContent>
 			</Select>
 
-			{/* 确认对话框 */}
 			<AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-				{/* AlertDialogTrigger 可以不使用，因为我们是手动控制 open */}
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>
-							<div className='mx-auto sm:mx-0 mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-destructive/10'>
-								<AlertCircleIcon className='h-5 w-5 text-destructive' />
+						<AlertDialogTitle className='flex flex-row items-center gap-2 mb-2'>
+							<div className='mx-auto sm:mx-0 flex h-9 w-9 items-center justify-center rounded-full bg-destructive/10'>
+								<AlertCircleIcon className='size-4 text-destructive' />
 							</div>
 							{
 								t(
 									'setting_file_system_confirm_switch_file_system_title'
-								) /* 比如 “确认切换吗？” */
+								)
 							}
 						</AlertDialogTitle>
 						<AlertDialogDescription className='text-destructive'>
 							{
 								t(
 									'setting_file_system_confirm_switch_file_system_description'
-								) /* 比如 “切换后将使用此文件系统作为默认，是否继续？” */
+								)
 							}
 						</AlertDialogDescription>
 					</AlertDialogHeader>

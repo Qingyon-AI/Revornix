@@ -36,7 +36,7 @@ const DefaultWebsiteDocumentParseEngineChange = () => {
 			return;
 		}
 		refreshUserInfo();
-		toast.success(t('setting_default_document_parse_engine_update_successful'));
+		toast.success(t('setting_default_engine_update_successful'));
 	};
 
 	return (
@@ -51,9 +51,9 @@ const DefaultWebsiteDocumentParseEngineChange = () => {
 			}}>
 			<SelectTrigger
 				id='default_website_document_parse_engine_choose'
-				className='w-[180px]'>
+				className='min-w-[180px]'>
 				<SelectValue
-					placeholder={t('setting_default_document_parse_engine_choose')}
+					placeholder={t('setting_default_engine_choose')}
 				/>
 			</SelectTrigger>
 			<SelectContent>

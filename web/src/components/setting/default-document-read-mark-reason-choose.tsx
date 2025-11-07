@@ -50,7 +50,7 @@ const DefaultDocumentReadMarkReasonChoose = () => {
 				onValueChange={(e) => {
 					handleUpdateDocumentDefaultReadMarkReason(Number(e));
 				}}>
-				<SelectTrigger className='w-[180px]'>
+				<SelectTrigger className='min-w-[180px]'>
 					<SelectValue
 						placeholder={t('setting_default_document_read_mark_reason_select')}
 					/>

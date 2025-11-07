@@ -95,7 +95,7 @@ const DocumentSummaryModel = () => {
 				onValueChange={(e) => {
 					handleUpdateDefaultDocumentReaderModel(Number(e));
 				}}>
-				<SelectTrigger className='w-[180px]'>
+				<SelectTrigger className='min-w-[180px]'>
 					<SelectValue placeholder={t('setting_model_select')} />
 				</SelectTrigger>
 				<SelectContent>
