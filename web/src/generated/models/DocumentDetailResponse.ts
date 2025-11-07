@@ -13,6 +13,20 @@
  */
 
 import { mapValues } from '../runtime';
+import type { DocumentPodcastInfo } from './DocumentPodcastInfo';
+import {
+    DocumentPodcastInfoFromJSON,
+    DocumentPodcastInfoFromJSONTyped,
+    DocumentPodcastInfoToJSON,
+    DocumentPodcastInfoToJSONTyped,
+} from './DocumentPodcastInfo';
+import type { DocumentPodcastTask } from './DocumentPodcastTask';
+import {
+    DocumentPodcastTaskFromJSON,
+    DocumentPodcastTaskFromJSONTyped,
+    DocumentPodcastTaskToJSON,
+    DocumentPodcastTaskToJSONTyped,
+} from './DocumentPodcastTask';
 import type { DocumentGraphTask } from './DocumentGraphTask';
 import {
     DocumentGraphTaskFromJSON,
@@ -200,6 +214,12 @@ export interface DocumentDetailResponse {
     quick_note_info?: QuickNoteDocumentInfo | null;
     /**
      * 
+     * @type {DocumentPodcastInfo}
+     * @memberof DocumentDetailResponse
+     */
+    podcast_info?: DocumentPodcastInfo | null;
+    /**
+     * 
      * @type {DocumentTransformTask}
      * @memberof DocumentDetailResponse
      */
@@ -216,6 +236,12 @@ export interface DocumentDetailResponse {
      * @memberof DocumentDetailResponse
      */
     graph_task?: DocumentGraphTask | null;
+    /**
+     * 
+     * @type {DocumentPodcastTask}
+     * @memberof DocumentDetailResponse
+     */
+    podcast_task?: DocumentPodcastTask | null;
     /**
      * 
      * @type {DocumentProcessTask}
@@ -260,9 +286,11 @@ export function DocumentDetailResponseFromJSONTyped(json: any, ignoreDiscriminat
         'website_info': json['website_info'] == null ? undefined : WebsiteDocumentInfoFromJSON(json['website_info']),
         'file_info': json['file_info'] == null ? undefined : FileDocumentInfoFromJSON(json['file_info']),
         'quick_note_info': json['quick_note_info'] == null ? undefined : QuickNoteDocumentInfoFromJSON(json['quick_note_info']),
+        'podcast_info': json['podcast_info'] == null ? undefined : DocumentPodcastInfoFromJSON(json['podcast_info']),
         'transform_task': json['transform_task'] == null ? undefined : DocumentTransformTaskFromJSON(json['transform_task']),
         'embedding_task': json['embedding_task'] == null ? undefined : DocumentEmbeddingTaskFromJSON(json['embedding_task']),
         'graph_task': json['graph_task'] == null ? undefined : DocumentGraphTaskFromJSON(json['graph_task']),
+        'podcast_task': json['podcast_task'] == null ? undefined : DocumentPodcastTaskFromJSON(json['podcast_task']),
         'process_task': json['process_task'] == null ? undefined : DocumentProcessTaskFromJSON(json['process_task']),
     };
 }
@@ -296,9 +324,11 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'website_info': WebsiteDocumentInfoToJSON(value['website_info']),
         'file_info': FileDocumentInfoToJSON(value['file_info']),
         'quick_note_info': QuickNoteDocumentInfoToJSON(value['quick_note_info']),
+        'podcast_info': DocumentPodcastInfoToJSON(value['podcast_info']),
         'transform_task': DocumentTransformTaskToJSON(value['transform_task']),
         'embedding_task': DocumentEmbeddingTaskToJSON(value['embedding_task']),
         'graph_task': DocumentGraphTaskToJSON(value['graph_task']),
+        'podcast_task': DocumentPodcastTaskToJSON(value['podcast_task']),
         'process_task': DocumentProcessTaskToJSON(value['process_task']),
     };
 }

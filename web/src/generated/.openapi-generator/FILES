@@ -63,6 +63,8 @@ docs/DocumentMonthSummaryResponse.md
 docs/DocumentNoteCreateRequest.md
 docs/DocumentNoteDeleteRequest.md
 docs/DocumentNoteInfo.md
+docs/DocumentPodcastInfo.md
+docs/DocumentPodcastTask.md
 docs/DocumentProcessTask.md
 docs/DocumentTransformTask.md
 docs/DocumentUpdateRequest.md
@@ -298,6 +300,8 @@ models/DocumentMonthSummaryResponse.ts
 models/DocumentNoteCreateRequest.ts
 models/DocumentNoteDeleteRequest.ts
 models/DocumentNoteInfo.ts
+models/DocumentPodcastInfo.ts
+models/DocumentPodcastTask.ts
 models/DocumentProcessTask.ts
 models/DocumentTransformTask.ts
 models/DocumentUpdateRequest.ts

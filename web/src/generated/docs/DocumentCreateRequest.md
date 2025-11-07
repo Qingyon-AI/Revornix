@@ -17,6 +17,7 @@ Name | Type
 `url` | string
 `content` | string
 `file_name` | string
+`auto_podcast` | boolean
 
 ## Example
 
@@ -36,6 +37,7 @@ const example = {
   "url": null,
   "content": null,
   "file_name": null,
+  "auto_podcast": null,
 } satisfies DocumentCreateRequest
 
 console.log(example)

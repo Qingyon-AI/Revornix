@@ -50,6 +50,7 @@ const AddLink = () => {
 		labels: z.optional(z.array(z.number())),
 		sections: z.array(z.number()),
 		auto_summary: z.boolean(),
+		auto_podcast: z.boolean(),
 	});
 	const router = useRouter();
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -61,6 +62,7 @@ const AddLink = () => {
 			from_plat: 'revornix-web',
 			labels: [],
 			sections: sectionId ? [Number(sectionId)] : [],
+			auto_podcast: false
 		},
 	});
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
@@ -180,7 +182,7 @@ const AddLink = () => {
 								name='labels'
 								render={({ field }) => {
 									return (
-										<FormItem className='space-y-0'>
+										<FormItem className='gap-0'>
 											<MultipleSelector
 												defaultOptions={labels.data.map((label) => {
 													return { label: label.name, value: label.id };
@@ -220,40 +222,76 @@ const AddLink = () => {
 						) : (
 							<Skeleton className='h-10' />
 						)}
-						<FormField
-							name='auto_summary'
-							control={form.control}
-							render={({ field }) => {
-								return (
-									<FormItem>
-										<div className='flex flex-row gap-1 items-center'>
-											<FormLabel className='flex flex-row gap-1 items-center'>
-												{t('document_create_ai_summary')}
-												<Sparkles size={15} />
-											</FormLabel>
-											<Switch
-												disabled={!userInfo?.default_document_reader_model_id}
-												checked={field.value}
-												onCheckedChange={(e) => {
-													field.onChange(e);
-												}}
-											/>
-										</div>
-										<FormDescription>
-											{t('document_create_ai_summary_description')}
-										</FormDescription>
-										{!userInfo?.default_document_reader_model_id && (
-											<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-												<OctagonAlert className='h-4 w-4 !text-destructive' />
-												<AlertDescription>
-													{t('document_create_ai_summary_engine_unset')}
-												</AlertDescription>
-											</Alert>
-										)}
-									</FormItem>
-								);
-							}}
-						/>
+						<div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+							<FormField
+								name='auto_summary'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem className='rounded-lg border border-input p-3'>
+											<div className='flex flex-row gap-1 items-center'>
+												<FormLabel className='flex flex-row gap-1 items-center'>
+													{t('document_create_ai_summary')}
+													<Sparkles size={15} />
+												</FormLabel>
+												<Switch
+													disabled={!userInfo?.default_document_reader_model_id}
+													checked={field.value}
+													onCheckedChange={(e) => {
+														field.onChange(e);
+													}}
+												/>
+											</div>
+											<FormDescription>
+												{t('document_create_ai_summary_description')}
+											</FormDescription>
+											{!userInfo?.default_document_reader_model_id && (
+												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+													<OctagonAlert className='h-4 w-4 !text-destructive' />
+													<AlertDescription>
+														{t('document_create_ai_summary_engine_unset')}
+													</AlertDescription>
+												</Alert>
+											)}
+										</FormItem>
+									);
+								}}
+							/>
+							<FormField
+								name='auto_podcast'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem className='rounded-lg border border-input p-3'>
+											<div className='flex flex-row gap-1 items-center'>
+												<FormLabel className='flex flex-row gap-1 items-center'>
+													{t('document_create_auto_podcast')}
+													<Sparkles size={15} />
+												</FormLabel>
+												<Switch
+													disabled={!userInfo?.default_podcast_user_engine_id}
+													checked={field.value}
+													onCheckedChange={(e) => {
+														field.onChange(e);
+													}}
+												/>
+											</div>
+											<FormDescription>
+												{t('document_create_auto_podcast_description')}
+											</FormDescription>
+											{!userInfo?.default_podcast_user_engine_id && (
+												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+													<OctagonAlert className='h-4 w-4 !text-destructive' />
+													<AlertDescription>
+														{t('document_create_auto_podcast_engine_unset')}
+													</AlertDescription>
+												</Alert>
+											)}
+										</FormItem>
+									);
+								}}
+							/>
+						</div>
 						{sections ? (
 							<FormField
 								control={form.control}
