@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `default_website_document_parse_user_engine_id` | number
 `default_file_document_parse_user_engine_id` | number
+`default_podcast_user_engine_id` | number
 
 ## Example
 
@@ -18,6 +19,7 @@ import type { DefaultEngineUpdateRequest } from ''
 const example = {
   "default_website_document_parse_user_engine_id": null,
   "default_file_document_parse_user_engine_id": null,
+  "default_podcast_user_engine_id": null,
 } satisfies DefaultEngineUpdateRequest
 
 console.log(example)

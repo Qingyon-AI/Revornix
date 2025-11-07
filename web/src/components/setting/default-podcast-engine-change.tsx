@@ -14,7 +14,7 @@ import { utils } from '@kinda/utils';
 import { updateUserDefaultEngine } from '@/service/user';
 import { toast } from 'sonner';
 
-const DefaultFileDocumentParseEngineChange = () => {
+const DefaultPodcastEngineChange = () => {
 	const t = useTranslations();
 	const { userInfo, refreshUserInfo } = useUserContext();
 	const { data } = useQuery({
@@ -25,10 +25,10 @@ const DefaultFileDocumentParseEngineChange = () => {
 		},
 	});
 
-	const handleUpdateDefaultFileDocumentParseEngine = async (id: number) => {
+	const handleUpdateDefaultPodcastEngine = async (id: number) => {
 		const [res, err] = await utils.to(
 			updateUserDefaultEngine({
-				default_file_document_parse_user_engine_id: id,
+				default_podcast_user_engine_id: id,
 			})
 		);
 		if (err) {
@@ -42,12 +42,12 @@ const DefaultFileDocumentParseEngineChange = () => {
 	return (
 		<Select
 			value={
-				userInfo?.default_file_document_parse_user_engine_id
-					? String(userInfo?.default_file_document_parse_user_engine_id)
+				userInfo?.default_podcast_user_engine_id
+					? String(userInfo?.default_podcast_user_engine_id)
 					: undefined
 			}
 			onValueChange={(e) => {
-				handleUpdateDefaultFileDocumentParseEngine(Number(e));
+				handleUpdateDefaultPodcastEngine(Number(e));
 			}}>
 			<SelectTrigger
 				id='default_file_document_parse_engine_choose'
@@ -74,4 +74,4 @@ const DefaultFileDocumentParseEngineChange = () => {
 	);
 };
 
-export default DefaultFileDocumentParseEngineChange;
+export default DefaultPodcastEngineChange;

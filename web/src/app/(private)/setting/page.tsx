@@ -19,6 +19,7 @@ import FileSystemManage from '@/components/setting/file-system-manage';
 import DefaultFileSystemChange from '@/components/setting/default-file-system-change';
 import DefaultWebsiteDocumentParseEngineChange from '@/components/setting/default-website-document-parse-engine-change';
 import DefaultFileDocumentParseEngineChange from '@/components/setting/default-file-document-parse-engine-change';
+import DefaultPodcastEngineChange from '@/components/setting/default-podcast-engine-change';
 
 const SettingPage = () => {
 	const t = useTranslations();
@@ -181,6 +182,17 @@ const SettingPage = () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<DefaultFileDocumentParseEngineChange />
+						</div>
+					</div>
+					<Separator />
+					<div
+						className='flex justify-between items-center'
+						id='default_file_markdown_parse_user_engine_choose'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_engine_page_current_user_podcast_engine')}
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<DefaultPodcastEngineChange />
 						</div>
 					</div>
 				</CardContent>

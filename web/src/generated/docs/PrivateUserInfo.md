@@ -24,6 +24,7 @@ Name | Type
 `default_revornix_model_id` | number
 `default_website_document_parse_user_engine_id` | number
 `default_file_document_parse_user_engine_id` | number
+`default_podcast_user_engine_id` | number
 
 ## Example
 
@@ -50,6 +51,7 @@ const example = {
   "default_revornix_model_id": null,
   "default_website_document_parse_user_engine_id": null,
   "default_file_document_parse_user_engine_id": null,
+  "default_podcast_user_engine_id": null,
 } satisfies PrivateUserInfo
 
 console.log(example)
