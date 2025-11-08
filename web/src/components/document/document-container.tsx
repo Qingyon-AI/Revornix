@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 import { DocumentCategory, DocumentPodcastStatus } from '@/enums/document';
 import DocumentGraph from './document-graph';
 import { Button } from '../ui/button';
-import { Expand, Loader2 } from 'lucide-react';
+import { Expand, Loader2, OctagonAlert } from 'lucide-react';
 import {
 	Dialog,
 	DialogContent,
@@ -158,26 +158,39 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					<DocumentGraph document_id={id} />
 				</Card>
 
-				<Card className='p-5 relative'>
+				<Card className='p-5 relative flex flex-col gap-5'>
 					{!document?.podcast_task && (
-						<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
-							<AlertDescription className='flex flex-row items-center'>
-								<span className='inline-flex'>
-									{t('document_podcast_unset')}
-								</span>
-								<Button
-									variant={'link'}
-									size='sm'
-									className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0'
-									onClick={() => mutateGeneratePodcast.mutate()}
-									disabled={mutateGeneratePodcast.isPending}>
-									{t('document_podcast_generate')}
-									{mutateGeneratePodcast.isPending && (
-										<Loader2 className='animate-spin' />
-									)}
-								</Button>
-							</AlertDescription>
-						</Alert>
+						<>
+							<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
+								<AlertDescription className='flex flex-row items-center'>
+									<span className='inline-flex'>
+										{t('document_podcast_unset')}
+									</span>
+									<Button
+										variant={'link'}
+										size='sm'
+										className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0'
+										onClick={() => mutateGeneratePodcast.mutate()}
+										disabled={
+											mutateGeneratePodcast.isPending ||
+											!userInfo?.default_podcast_user_engine_id
+										}>
+										{t('document_podcast_generate')}
+										{mutateGeneratePodcast.isPending && (
+											<Loader2 className='animate-spin' />
+										)}
+									</Button>
+								</AlertDescription>
+							</Alert>
+							{!userInfo?.default_podcast_user_engine_id && (
+								<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+									<OctagonAlert className='h-4 w-4 !text-destructive' />
+									<AlertDescription>
+										{t('document_create_auto_podcast_engine_unset')}
+									</AlertDescription>
+								</Alert>
+							)}
+						</>
 					)}
 					{document?.podcast_task && (
 						<>
