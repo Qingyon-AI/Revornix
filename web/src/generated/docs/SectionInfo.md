@@ -10,6 +10,7 @@ Name | Type
 `title` | string
 `creator` | [UserPublicInfo](UserPublicInfo.md)
 `description` | string
+`auto_podcast` | boolean
 `documents_count` | number
 `subscribers_count` | number
 `create_time` | Date
@@ -17,7 +18,7 @@ Name | Type
 `authority` | number
 `is_subscribed` | boolean
 `md_file_name` | string
-`labels` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
+`labels` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
 `cover` | string
 `podcast_task` | [SectionPodcastTask](SectionPodcastTask.md)
 `podcast_info` | [SectionPodcastInfo](SectionPodcastInfo.md)
@@ -33,6 +34,7 @@ const example = {
   "title": null,
   "creator": null,
   "description": null,
+  "auto_podcast": null,
   "documents_count": null,
   "subscribers_count": null,
   "create_time": null,

@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`label_info` | [SchemasDocumentLabel](SchemasDocumentLabel.md)
+`label_info` | [SchemasSectionLabel](SchemasSectionLabel.md)
 `count` | number
 
 ## Example

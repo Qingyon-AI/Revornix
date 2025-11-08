@@ -20,13 +20,13 @@ import {
     SectionPodcastTaskToJSON,
     SectionPodcastTaskToJSONTyped,
 } from './SectionPodcastTask';
-import type { SchemasDocumentLabel } from './SchemasDocumentLabel';
+import type { SchemasSectionLabel } from './SchemasSectionLabel';
 import {
-    SchemasDocumentLabelFromJSON,
-    SchemasDocumentLabelFromJSONTyped,
-    SchemasDocumentLabelToJSON,
-    SchemasDocumentLabelToJSONTyped,
-} from './SchemasDocumentLabel';
+    SchemasSectionLabelFromJSON,
+    SchemasSectionLabelFromJSONTyped,
+    SchemasSectionLabelToJSON,
+    SchemasSectionLabelToJSONTyped,
+} from './SchemasSectionLabel';
 import type { SectionPodcastInfo } from './SectionPodcastInfo';
 import {
     SectionPodcastInfoFromJSON,
@@ -74,6 +74,12 @@ export interface SectionInfo {
     description: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof SectionInfo
+     */
+    auto_podcast?: boolean | null;
+    /**
+     * 
      * @type {number}
      * @memberof SectionInfo
      */
@@ -116,10 +122,10 @@ export interface SectionInfo {
     md_file_name?: string;
     /**
      * 
-     * @type {Array<SchemasDocumentLabel>}
+     * @type {Array<SchemasSectionLabel>}
      * @memberof SectionInfo
      */
-    labels?: Array<SchemasDocumentLabel> | null;
+    labels?: Array<SchemasSectionLabel> | null;
     /**
      * 
      * @type {string}
@@ -169,6 +175,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'title': json['title'],
         'creator': UserPublicInfoFromJSON(json['creator']),
         'description': json['description'],
+        'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
         'documents_count': json['documents_count'],
         'subscribers_count': json['subscribers_count'],
         'create_time': (new Date(json['create_time'])),
@@ -176,7 +183,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'authority': json['authority'] == null ? undefined : json['authority'],
         'is_subscribed': json['is_subscribed'] == null ? undefined : json['is_subscribed'],
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
-        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasDocumentLabelFromJSON)),
+        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasSectionLabelFromJSON)),
         'cover': json['cover'] == null ? undefined : json['cover'],
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
         'podcast_info': json['podcast_info'] == null ? undefined : SectionPodcastInfoFromJSON(json['podcast_info']),
@@ -198,6 +205,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'title': value['title'],
         'creator': UserPublicInfoToJSON(value['creator']),
         'description': value['description'],
+        'auto_podcast': value['auto_podcast'],
         'documents_count': value['documents_count'],
         'subscribers_count': value['subscribers_count'],
         'create_time': value['create_time'].toISOString(),
@@ -205,7 +213,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'authority': value['authority'],
         'is_subscribed': value['is_subscribed'],
         'md_file_name': value['md_file_name'],
-        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasDocumentLabelToJSON)),
+        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasSectionLabelToJSON)),
         'cover': value['cover'],
         'podcast_task': SectionPodcastTaskToJSON(value['podcast_task']),
         'podcast_info': SectionPodcastInfoToJSON(value['podcast_info']),
