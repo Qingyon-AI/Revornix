@@ -31,7 +31,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Expand } from 'lucide-react';
 import SectionGraphSEO from '@/components/section/section-graph-seo';
-import { Alert, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import SectionInfo from '@/components/section/section-info';
 import SectionDocumentCard from '@/components/section/section-document-card';
 import SectionCommentsList from '@/components/section/section-comments-list';
@@ -39,6 +39,8 @@ import SectionCommentForm from '@/components/section/section-comment-form';
 import { Separator } from '@/components/ui/separator';
 import { searchSectionDocuments } from '@/service/section';
 import SectionDocumentsList from '@/components/section/section-documents-list';
+import { SectionPodcastStatus } from '@/enums/section';
+import AudioPlayer from '@/components/ui/audio-player';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -189,7 +191,7 @@ const SEOSectionDetail = async (props: {
 					)}
 				</div>
 			</div>
-			<div className='col-span-3 py-0 h-full flex flex-col min-h-0 relative'>
+			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
 				<Card className='relative shadow-none h-full flex flex-col !gap-0'>
 					<CardHeader className='mb-5'>
 						<CardTitle>{t('section_documents')}</CardTitle>
@@ -200,6 +202,45 @@ const SEOSectionDetail = async (props: {
 					<CardContent className='flex-1 overflow-auto flex flex-col gap-5'>
 						{section && <SectionDocumentsList section_id={section.id} />}
 					</CardContent>
+				</Card>
+				<Card className='p-5 relative shadow-none'>
+					{!section?.podcast_task && (
+						<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
+							<AlertDescription className='flex flex-row items-center'>
+								<span className='inline-flex'>
+									{t('section_podcast_unset')}
+								</span>
+							</AlertDescription>
+						</Alert>
+					)}
+					{section?.podcast_task && (
+						<>
+							{section?.podcast_task?.status ===
+								SectionPodcastStatus.PROCESSING && (
+								<div className='text-center text-muted-foreground text-xs p-3'>
+									{t('section_podcast_processing')}
+								</div>
+							)}
+							{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
+								section?.podcast_info?.podcast_file_name && (
+									<AudioPlayer
+										src={section?.podcast_info?.podcast_file_name}
+										cover={
+											section.cover ??
+											'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
+										}
+										title={section.title ?? 'Unkown Title'}
+										artist={'AI Generated'}
+									/>
+								)}
+							{section?.podcast_task?.status ===
+								SectionPodcastStatus.FAILED && (
+								<div className='text-center text-muted-foreground text-xs p-3'>
+									{t('section_podcast_failed')}
+								</div>
+							)}
+						</>
+					)}
 				</Card>
 			</div>
 		</div>
