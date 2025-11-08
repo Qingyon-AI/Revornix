@@ -14,7 +14,7 @@ import {
 } from '../ui/dialog';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
-import { Expand, Loader2 } from 'lucide-react';
+import { Expand, Loader2, OctagonAlert } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateSectionPodcast, getSectionDetail } from '@/service/section';
 import { Alert, AlertDescription } from '../ui/alert';
@@ -117,26 +117,39 @@ const SectionContainer = ({ id }: { id: number }) => {
 					<SectionGraph section_id={id} />
 				</Card>
 
-				<Card className='p-5 relative'>
+				<Card className='p-5 relative flex flex-col gap-5'>
 					{!section?.podcast_task && (
-						<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
-							<AlertDescription className='flex flex-row items-center'>
-								<span className='inline-flex'>
-									{t('section_podcast_unset')}
-								</span>
-								<Button
-									variant={'link'}
-									size='sm'
-									className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0'
-									onClick={() => mutateGeneratePodcast.mutate()}
-									disabled={mutateGeneratePodcast.isPending}>
-									{t('section_podcast_generate')}
-									{mutateGeneratePodcast.isPending && (
-										<Loader2 className='animate-spin' />
-									)}
-								</Button>
-							</AlertDescription>
-						</Alert>
+						<>
+							<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
+								<AlertDescription className='flex flex-row items-center'>
+									<span className='inline-flex'>
+										{t('section_podcast_unset')}
+									</span>
+									<Button
+										variant={'link'}
+										size='sm'
+										className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0'
+										onClick={() => mutateGeneratePodcast.mutate()}
+										disabled={
+											mutateGeneratePodcast.isPending ||
+											!userInfo?.default_podcast_user_engine_id
+										}>
+										{t('section_podcast_generate')}
+										{mutateGeneratePodcast.isPending && (
+											<Loader2 className='animate-spin' />
+										)}
+									</Button>
+								</AlertDescription>
+							</Alert>
+							{!userInfo?.default_podcast_user_engine_id && (
+								<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+									<OctagonAlert className='h-4 w-4 !text-destructive' />
+									<AlertDescription>
+										{t('section_create_auto_podcast_engine_unset')}
+									</AlertDescription>
+								</Alert>
+							)}
+						</>
 					)}
 					{section?.podcast_task && (
 						<>
