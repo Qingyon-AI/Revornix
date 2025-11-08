@@ -135,12 +135,12 @@ async def generate_podcast(generate_podcast_request: schemas.document.GenerateDo
     db_process_task = crud.task.get_document_process_task_by_document_id(db=db,
                                                                          document_id=generate_podcast_request.document_id)
     db_process_task.status = DocumentProcessStatus.PROCESSING
+    db.commit()
     workflow = chain(
         start_process_document_podcast.si(db_document.id, user.id),
         update_document_process_status.si(db_document.id, DocumentProcessStatus.SUCCESS)
     )
-    workflow.delay()
-    db.commit()
+    workflow()
     return schemas.common.SuccessResponse()
 
 @document_router.post('/markdown/transform', response_model=schemas.common.NormalResponse)
@@ -171,12 +171,12 @@ async def transform_markdown(transform_markdown_request: schemas.document.Docume
                                                                          document_id=transform_markdown_request.document_id)
     db_transform_task.status = DocumentMdConvertStatus.WAIT_TO
     db_process_task.status = DocumentProcessStatus.PROCESSING
+    db.commit()
     workflow = chain(
         start_process_document.si(db_document.id, user.id, False, True),
         update_document_process_status.si(db_document.id, DocumentProcessStatus.SUCCESS)
     )
-    workflow.delay()
-    db.commit()
+    workflow()
     return schemas.common.SuccessResponse()
         
 @document_router.post('/month/summary', response_model=schemas.document.DocumentMonthSummaryResponse)

@@ -32,3 +32,8 @@ def start_process_section_podcast(section_id: int,
 def update_document_process_status(document_id: int,
                                    status: int):
     ...
+
+@celery_app.task
+def update_section_process_status(section_id: int,
+                                  status: int):
+    ...
