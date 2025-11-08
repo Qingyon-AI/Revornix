@@ -492,6 +492,7 @@
     "section_create_failed": "Section creation failed",
     "section_cover": "Section Cover",
     "section_cover_upload_new": "Upload New Cover",
+    "section_create_auto_podcast_engine_unset": "Please configure the default podcast generation engine first, otherwise the podcast cannot be generated",
     "section_create_cover_upload_failed": "Section cover upload failed",
     "section_create_form_title": "Section Name",
     "section_create_form_title_placeholder": "Please enter section name",

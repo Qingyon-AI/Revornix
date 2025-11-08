@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, PencilIcon } from 'lucide-react';
+import { Loader2, OctagonAlert, PencilIcon } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import CoverUpdate from './cover-update';
 import {
@@ -39,6 +39,8 @@ import AddSectionLabelDialog from './add-section-label-dialog';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Switch } from '../ui/switch';
+import { Alert, AlertDescription } from '../ui/alert';
+import { useUserContext } from '@/provider/user-provider';
 
 const SectionOperateConfiguration = ({
 	section_id,
@@ -65,6 +67,8 @@ const SectionOperateConfiguration = ({
 		queryKey: ['getSectionLabels'],
 		queryFn: getMineLabels,
 	});
+
+	const { userInfo } = useUserContext();
 
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
@@ -275,6 +279,7 @@ const SectionOperateConfiguration = ({
 													{t('section_configuration_form_auto_podcast')}
 												</FormLabel>
 												<Switch
+													disabled={!userInfo?.default_podcast_user_engine_id}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -284,6 +289,14 @@ const SectionOperateConfiguration = ({
 											<FormDescription>
 												{t('section_create_form_auto_podcast_description')}
 											</FormDescription>
+											{!userInfo?.default_podcast_user_engine_id && (
+												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+													<OctagonAlert className='h-4 w-4 !text-destructive' />
+													<AlertDescription>
+														{t('section_create_auto_podcast_engine_unset')}
+													</AlertDescription>
+												</Alert>
+											)}
 										</FormItem>
 									);
 								}}

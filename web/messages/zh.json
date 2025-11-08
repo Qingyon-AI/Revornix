@@ -493,6 +493,7 @@
     "section_create_failed": "专栏创建失败",
     "section_cover": "专栏封面",
     "section_cover_upload_new": "上传新图",
+    "section_create_auto_podcast_engine_unset": "请先配置默认播客生成引擎，否则无法生成相应播客",
     "section_create_cover_upload_failed": "专栏封面上传失败",
     "section_create_form_title": "专栏名称",
     "section_create_form_title_placeholder": "请输入专栏名称",
