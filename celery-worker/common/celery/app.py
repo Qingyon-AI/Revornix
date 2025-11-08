@@ -625,7 +625,7 @@ def update_sections(document_id: int,
     
 @celery_app.task
 def start_process_document_podcast(document_id: int,
-                          user_id: int):
+                                   user_id: int):
     asyncio.run(handle_update_document_ai_podcast(document_id=document_id, user_id=user_id))
     
 @celery_app.task
@@ -638,3 +638,8 @@ def update_document_process_status(document_id: int,
         db_document_process_task.status = status
         db.commit()
     db.close()
+    
+@celery_app.task
+def start_process_section_podcast(section_id: int,
+                                  user_id: int):
+    asyncio.run(handle_update_section_ai_podcast(section_id=section_id, user_id=user_id))
