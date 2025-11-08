@@ -21,3 +21,9 @@ class SectionPodcastStatus(IntEnum):
     PROCESSING = 1
     SUCCESS = 2
     FAILED = 3
+
+class SectionProcessStatus(IntEnum):
+    WAIT_TO = 0
+    PROCESSING = 1
+    SUCCESS = 2
+    FAILED = 3

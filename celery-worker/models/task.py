@@ -70,6 +70,18 @@ class DocumentProcessTask(Base):
     document_id: Mapped[Optional[int]] = mapped_column(ForeignKey("document.id"), index=True)
 
 
+class SectionProcessTask(Base):
+    __tablename__ = "section_process_task"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"), index=True)
+    status: Mapped[Optional[int]] = mapped_column(Integer, comment='0: waiting to process, 1: processing, 2: processed successfully, 3: process failed')
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    section_id: Mapped[Optional[int]] = mapped_column(ForeignKey("section.id"), index=True)
+
+
 class SectionPodcastTask(Base):
     __tablename__ = "section_podcast_task"
 
