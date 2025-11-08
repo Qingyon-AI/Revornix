@@ -5,6 +5,9 @@ from schemas.user import UserPublicInfo, SectionUserPublicInfo
 from schemas.task import SectionPodcastTask
 from enums.section import UserSectionRole
 
+class GeneratePodcastRequest(BaseModel):
+    section_id: int
+
 class SectionDocumentRequest(BaseModel):
     section_id: int
     start: int | None = None

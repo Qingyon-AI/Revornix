@@ -7,8 +7,10 @@ from sqlalchemy import or_
 from enums.section import UserSectionRole
 
 def create_section_podcast(db: Session,
-                           section_id: int):
-    db_section_podcast = models.section.SectionPodcast(section_id=section_id)
+                           section_id: int,
+                           podcast_file_name: str | None = None):
+    db_section_podcast = models.section.SectionPodcast(section_id=section_id,
+                                                       podcast_file_name=podcast_file_name)
     db.add(db_section_podcast)
     db.flush()
     return db_section_podcast
@@ -836,9 +838,9 @@ def delete_section_user_by_uuid(db: Session,
     query.update({"delete_at": now})
     db.flush()
     
-def delete_section_podcast_by_document_id(db: Session, 
-                                          user_id: int,
-                                          section_id: int):
+def delete_section_podcast_by_section_id(db: Session, 
+                                         user_id: int,
+                                         section_id: int):
     delete_time = datetime.now(timezone.utc)
     db_section_podcasts = db.query(models.section.SectionPodcast)\
         .join(models.section.SectionUser, models.section.SectionUser.section_id == models.section.SectionPodcast.section_id)\

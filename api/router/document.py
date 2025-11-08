@@ -13,7 +13,7 @@ from data.milvus.search import naive_search
 from data.milvus.create import milvus_client
 from common.dependencies import get_db, get_current_user
 from common.common import get_user_remote_file_system
-from common.celery.app import start_process_document, update_sections, start_process_podcast, update_document_process_status
+from common.celery.app import start_process_document, update_sections, start_process_document_podcast, update_document_process_status
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus
 from enums.section import UserSectionRole, UserSectionAuthority
 from enums.section import SectionDocumentIntegration
@@ -136,7 +136,7 @@ async def generate_podcast(generate_podcast_request: schemas.document.GeneratePo
                                                                          document_id=generate_podcast_request.document_id)
     db_process_task.status = DocumentProcessStatus.PROCESSING
     workflow = chain(
-        start_process_podcast.si(db_document.id, user.id),
+        start_process_document_podcast.si(db_document.id, user.id),
         update_document_process_status.si(db_document.id, DocumentProcessStatus.SUCCESS)
     )
     workflow.delay()

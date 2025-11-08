@@ -2,6 +2,20 @@ import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from enums.document import DocumentGraphStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentMdConvertStatus
+from enums.section import SectionPodcastStatus
+
+def create_section_podcast_task(db: Session,
+                                user_id: int,
+                                section_id: int):
+    now = datetime.now(timezone.utc)
+    task = models.task.SectionPodcastTask(user_id=user_id,
+                                          status=SectionPodcastStatus.WAIT_TO,
+                                          section_id=section_id,
+                                          create_time=now,
+                                          update_time=now)
+    db.add(task)
+    db.flush()
+    return task
 
 def create_document_graph_task(db: Session,
                                user_id: int,
@@ -67,6 +81,13 @@ def create_document_transform_task(db: Session,
     db.add(task)
     db.flush()
     return task
+
+def get_section_podcast_task_by_section_id(db: Session,
+                                           section_id: int):
+    query = db.query(models.task.SectionPodcastTask)
+    query = query.filter(models.task.SectionPodcastTask.section_id == section_id,
+                         models.task.SectionPodcastTask.delete_at == None)
+    return query.first()
 
 def get_document_podcast_task_by_document_id(db: Session,
                                                document_id: int):
