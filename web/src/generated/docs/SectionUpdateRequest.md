@@ -12,6 +12,7 @@ Name | Type
 `cover` | string
 `documents` | Array&lt;number&gt;
 `labels` | Array&lt;number&gt;
+`auto_podcast` | boolean
 
 ## Example
 
@@ -26,6 +27,7 @@ const example = {
   "cover": null,
   "documents": null,
   "labels": null,
+  "auto_podcast": null,
 } satisfies SectionUpdateRequest
 
 console.log(example)

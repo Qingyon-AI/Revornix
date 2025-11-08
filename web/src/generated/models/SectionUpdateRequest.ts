@@ -55,6 +55,12 @@ export interface SectionUpdateRequest {
      * @memberof SectionUpdateRequest
      */
     labels?: Array<number> | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SectionUpdateRequest
+     */
+    auto_podcast?: boolean | null;
 }
 
 /**
@@ -81,6 +87,7 @@ export function SectionUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator
         'cover': json['cover'] == null ? undefined : json['cover'],
         'documents': json['documents'] == null ? undefined : json['documents'],
         'labels': json['labels'] == null ? undefined : json['labels'],
+        'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
     };
 }
 
@@ -101,6 +108,7 @@ export function SectionUpdateRequestToJSONTyped(value?: SectionUpdateRequest | n
         'cover': value['cover'],
         'documents': value['documents'],
         'labels': value['labels'],
+        'auto_podcast': value['auto_podcast'],
     };
 }
 

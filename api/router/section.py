@@ -440,6 +440,8 @@ async def update_section(
         labels_to_delete = [label.id for label in exist_section_labels if label.id not in section_update_request.labels]
         crud.section.delete_section_labels_by_label_ids(db=db,
                                                         label_ids=labels_to_delete)
+    if section_update_request.auto_podcast is not None:
+        db_section.auto_podcast = section_update_request.auto_podcast
     db_section.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()

@@ -90,6 +90,7 @@ const SectionOperateConfiguration = ({
 		form.setValue('description', section?.description || '');
 		form.setValue('cover', section?.cover || undefined);
 		form.setValue('labels', section?.labels?.map((label) => label.id) || []);
+		form.setValue('auto_podcast', section?.auto_podcast || false);
 	}, [section]);
 
 	const getLabelByValue = (value: number): Option | undefined => {

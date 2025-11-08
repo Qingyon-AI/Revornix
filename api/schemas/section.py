@@ -294,3 +294,4 @@ class SectionUpdateRequest(BaseModel):
     cover: str | None = None
     documents: list[int] | None = None
     labels: list[int] | None = None
+    auto_podcast: bool | None = None
