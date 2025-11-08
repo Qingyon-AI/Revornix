@@ -2,7 +2,20 @@ import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from enums.document import DocumentGraphStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentMdConvertStatus
-from enums.section import SectionPodcastStatus
+from enums.section import SectionPodcastStatus, SectionProcessStatus
+
+def create_section_process_task(db: Session,
+                                user_id: int,
+                                section_id: int):
+    now = datetime.now(timezone.utc)
+    task = models.task.SectionProcessTask(user_id=user_id,
+                                          status=SectionProcessStatus.WAIT_TO,
+                                          section_id=section_id,
+                                          create_time=now,
+                                          update_time=now)
+    db.add(task)
+    db.flush()
+    return task
 
 def create_section_podcast_task(db: Session,
                                 user_id: int,
@@ -81,6 +94,13 @@ def create_document_transform_task(db: Session,
     db.add(task)
     db.flush()
     return task
+
+def get_section_process_task_by_section_id(db: Session,
+                                           section_id: int):
+    query = db.query(models.task.SectionProcessTask)
+    query = query.filter(models.task.SectionProcessTask.section_id == section_id,
+                         models.task.SectionProcessTask.delete_at == None)
+    return query.first()
 
 def get_section_podcast_task_by_section_id(db: Session,
                                            section_id: int):
