@@ -16,3 +16,10 @@ export enum SectionPodcastStatus {
     SUCCESS = 2,
     FAILED = 3,
 }
+
+export enum SectionProcessStatus {
+    WAIT_TO = 0,
+    PROCESSING = 1,
+    SUCCESS = 2,
+    FAILED = 3,
+}
