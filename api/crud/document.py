@@ -3,6 +3,15 @@ from datetime import datetime, timezone, timedelta
 from sqlalchemy import or_, func, cast, Date
 from sqlalchemy.orm import Session, selectinload
 
+def create_document_podcast(db: Session,
+                            document_id: int,
+                            podcast_file_name: str | None = None):
+    db_document_podcast = models.document.DocumentPodcast(document_id=document_id,
+                                                          podcast_file_name=podcast_file_name)
+    db.add(db_document_podcast)
+    db.flush()
+    return db_document_podcast
+
 def create_document_note(db: Session, 
                          user_id: int, 
                          document_id: int, 
@@ -50,13 +59,6 @@ def create_base_document(db: Session,
     db.add(db_document)
     db.flush()
     return db_document
-
-def create_document_podcast(db: Session,
-                            document_id: int):
-    db_document_podcast = models.document.DocumentPodcast(document_id=document_id)
-    db.add(db_document_podcast)
-    db.flush()
-    return db_document_podcast
 
 def create_quick_note_document(db: Session, 
                                document_id: int, 

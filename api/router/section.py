@@ -6,9 +6,41 @@ from datetime import datetime, timezone
 from uuid import uuid4
 from sqlalchemy.orm import Session
 from common.dependencies import get_db, get_current_user, get_current_user_without_throw
-from enums.section import UserSectionAuthority, UserSectionRole
+from common.common import get_user_remote_file_system
+from enums.section import UserSectionAuthority, UserSectionRole, SectionPodcastStatus
+from common.celery.app import start_process_section_podcast
 
 section_router = APIRouter()
+
+@section_router.post('/podcast/generate', response_model=schemas.common.NormalResponse)
+async def generate_podcast(generate_podcast_request: schemas.section.GeneratePodcastRequest,
+                           user: models.user.User = Depends(get_current_user),
+                           db: Session = Depends(get_db)):
+    db_section = crud.section.get_section_by_section_id(db=db,
+                                                        section_id=generate_podcast_request.section_id)
+    if db_section is None:
+        raise Exception('The section you want to generate the podcast is not found')
+    if db_section.creator_id != user.id:
+        raise Exception('You are not the creator of this section, so you can not generate the podcast')
+    
+    if user.default_user_file_system is None:
+        raise Exception('Please set the default file system for the user first.')
+    else:
+        remote_file_service = await get_user_remote_file_system(user_id=user.id)
+        await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
+
+    db_exist_podcast_task = crud.task.get_section_podcast_task_by_section_id(db=db,
+                                                                             section_id=generate_podcast_request.section_id)
+    if db_exist_podcast_task is not None:
+        if db_exist_podcast_task.status == SectionPodcastStatus.SUCCESS:
+            raise Exception('The podcast task is already finished, please refresh the page')
+        if db_exist_podcast_task.status == SectionPodcastStatus.WAIT_TO:
+            raise Exception('The podcast task is already in the queue, please wait')
+        if db_exist_podcast_task.status == SectionPodcastStatus.PROCESSING:
+            raise Exception('The podcast task is already processing, please wait')
+    start_process_section_podcast.delay(db_section.id, user.id)
+    db.commit()
+    return schemas.common.SuccessResponse()
 
 @section_router.post('/documents', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionDocumentInfo])
 async def section_document_request(section_document_request: schemas.section.SectionDocumentRequest,

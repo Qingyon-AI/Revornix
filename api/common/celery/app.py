@@ -19,8 +19,13 @@ def update_sections(document_id: int,
     ...
     
 @celery_app.task
-def start_process_podcast(document_id: int,
-                          user_id: int):
+def start_process_document_podcast(document_id: int,
+                                   user_id: int):
+    ...
+    
+@celery_app.task
+def start_process_section_podcast(section_id: int,
+                                  user_id: int):
     ...
     
 @celery_app.task

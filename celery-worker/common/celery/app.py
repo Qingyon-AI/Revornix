@@ -24,8 +24,7 @@ from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus
-from enums.section import UserSectionAuthority
-from enums.section import SectionDocumentIntegration
+from enums.section import UserSectionAuthority, SectionPodcastStatus, SectionDocumentIntegration
 
 import tracemalloc
 import warnings
@@ -243,22 +242,22 @@ async def handle_update_sections(sections: list[int],
             try:
                 # as the section may have no document binded, we need to check if it has documents
                 if db_section.md_file_name is not None:
-                        # get the original section summary
-                        origin_section_summary = await remote_file_service.get_file_content_by_file_path(file_path=db_section.md_file_name)
-                        # generate the new summary using the document
-                        new_summary = summary_section_with_origin(user_id=user_id,
-                                                                  model_id=db_user.default_document_reader_model_id,
-                                                                  origin_section_markdown_content=origin_section_summary,
-                                                                  new_document_markdown_content=markdown_content).get('summary')
-                        # put the new summary into the file system
-                        md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-                        await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
-                                                                             content=new_summary,
-                                                                             content_type='text/plain')
-                        # update the section content
-                        crud.section.update_section_by_section_id(db=db,
-                                                                  section_id=db_section.id,
-                                                                  md_file_name=md_file_name)
+                    # get the original section summary
+                    origin_section_summary = await remote_file_service.get_file_content_by_file_path(file_path=db_section.md_file_name)
+                    # generate the new summary using the document
+                    new_summary = summary_section_with_origin(user_id=user_id,
+                                                              model_id=db_user.default_document_reader_model_id,
+                                                              origin_section_markdown_content=origin_section_summary,
+                                                              new_document_markdown_content=markdown_content).get('summary')
+                    # put the new summary into the file system
+                    md_file_name = f"markdown/{uuid.uuid4().hex}.md"
+                    await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
+                                                                            content=new_summary,
+                                                                            content_type='text/plain')
+                    # update the section content
+                    crud.section.update_section_by_section_id(db=db,
+                                                                section_id=db_section.id,
+                                                                md_file_name=md_file_name)
                 else:
                     # summary the section of the document
                     summary = summary_section(user_id=user_id, 
@@ -278,6 +277,8 @@ async def handle_update_sections(sections: list[int],
                                                                                    document_id=document_id,
                                                                                    section_id=db_section.id,
                                                                                    status=SectionDocumentIntegration.SUCCESS)
+                await handle_update_section_ai_podcast(section_id=section_id, user_id=user_id)
+                
             except Exception as e:
                     log_exception()
                     exception_logger.error(f"Something is error while updating the section: {e}")
@@ -294,6 +295,28 @@ async def handle_update_sections(sections: list[int],
         raise e
     finally:
         db.close()
+        
+async def get_markdown_content_by_section_id(section_id: int, user_id: int):
+    db = SessionLocal()
+    db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+    if db_user is None:
+        raise Exception("User does not exist")
+    remote_file_service = await get_user_remote_file_system(user_id=user_id)
+    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
+    
+    try:
+        db_section = crud.section.get_section_by_section_id(db=db, section_id=section_id)
+        if db_section is None:
+            raise Exception("Section not found")
+        markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=db_section.md_file_name)
+    except Exception as e:
+        exception_logger.error(f"Something is error while getting the section: {e}, parameter: {section_id}, {user_id}")
+        log_exception()
+        db.rollback()
+        raise e
+    finally:
+        db.close()
+    return markdown_content
         
 async def get_markdown_content_by_document_id(document_id: int, user_id: int):
     db = SessionLocal()
@@ -332,8 +355,85 @@ async def get_markdown_content_by_document_id(document_id: int, user_id: int):
         db.close()
     return markdown_content
 
-async def handle_update_ai_podcast(document_id: int, 
-                                   user_id: int):
+async def handle_update_section_ai_podcast(section_id: int,
+                                           user_id: int):
+    db = SessionLocal()
+    try:
+        db_user = crud.user.get_user_by_id(db=db, 
+                                           user_id=user_id)
+        if db_user is None:
+            raise Exception("User not found")
+        
+        remote_file_service = await get_user_remote_file_system(user_id=user_id)
+        await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
+        
+        db_section_podcast_task = crud.task.create_section_podcast_task(db=db,
+                                                                        user_id=user_id,
+                                                                        section_id=section_id)
+        db_section = crud.section.get_section_by_section_id(db=db,
+                                                            section_id=section_id)
+        markdown_content = await get_markdown_content_by_section_id(section_id=section_id,
+                                                                    user_id=user_id)
+        db_user = crud.user.get_user_by_id(db=db,
+                                           user_id=user_id)
+        
+        podcast_generator = crud.engine.get_user_engine_by_user_engine_id(db=db, 
+                                                                          user_engine_id=db_user.default_podcast_user_engine_id)
+        
+        if podcast_generator is None:
+            raise Exception("User engine not found")
+        
+        db_engine = crud.engine.get_engine_by_id(db=db, 
+                                                 id=podcast_generator.engine_id)
+        
+        if db_engine is None:
+            raise Exception("Engine not found")
+        
+        if db_engine.uuid == EngineUUID.Volc_TTS.value:
+            engine = VolcTTSEngine()
+            
+        db_section_podcast_task.status = SectionPodcastStatus.PROCESSING
+        db.commit()
+        
+        await engine.init_engine_config_by_user_engine_id(user_engine_id=db_user.default_podcast_user_engine_id)
+        
+        podcast_result = await engine.synthesize(text=markdown_content)
+        audio_bytes = httpx.get(url=str(podcast_result)).content
+        podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
+        await remote_file_service.upload_raw_content_to_path(file_path=podcast_file_name, 
+                                                             content=audio_bytes,
+                                                             content_type="audio/mpeg")
+        
+        if podcast_result is None:
+            db_section_podcast_task.status = SectionPodcastStatus.FAILED
+            db.commit()
+            raise Exception("Podcast result is None")
+
+        section_podcast = crud.section.get_section_podcast_by_section_id(db=db,
+                                                                         section_id=section_id)
+        if section_podcast is not None:
+            crud.section.delete_section_podcast_by_section_id(db=db,
+                                                              user_id=user_id,
+                                                              section_id=section_id)
+    
+        db_section_podcast = crud.section.create_section_podcast(db=db,
+                                                                 section_id=section_id,
+                                                                 podcast_file_name=podcast_file_name)
+        db.commit()
+        
+        db_section_podcast.podcast_file_name = podcast_file_name
+        db_section_podcast_task.status = SectionPodcastStatus.SUCCESS
+        db.commit()
+
+    except Exception as e:
+        exception_logger.error(f"Something is error while updating the ai podcast: {e}")
+        log_exception()
+        db.rollback()
+    finally:
+        db.close()
+
+async def handle_update_document_ai_podcast(document_id: int, 
+                                            user_id: int):
     db = SessionLocal()
     try:
         db_user = crud.user.get_user_by_id(db=db, 
@@ -524,9 +624,9 @@ def update_sections(document_id: int,
     db.close()
     
 @celery_app.task
-def start_process_podcast(document_id: int,
+def start_process_document_podcast(document_id: int,
                           user_id: int):
-    asyncio.run(handle_update_ai_podcast(document_id=document_id, user_id=user_id))
+    asyncio.run(handle_update_document_ai_podcast(document_id=document_id, user_id=user_id))
     
 @celery_app.task
 def update_document_process_status(document_id: int,
