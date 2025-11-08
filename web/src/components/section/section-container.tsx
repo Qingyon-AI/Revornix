@@ -21,7 +21,9 @@ import { Alert, AlertDescription } from '../ui/alert';
 import AudioPlayer from '../ui/audio-player';
 import { getQueryClient } from '@/lib/get-query-client';
 import { toast } from 'sonner';
-import { SectionPodcastStatus } from '@/enums/section';
+import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
+import { useEffect, useState } from 'react';
+import { useInterval } from 'ahooks';
 
 const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -54,6 +56,25 @@ const SectionContainer = ({ id }: { id: number }) => {
 			console.error(error);
 		},
 	});
+
+	const [delay, setDelay] = useState<number | undefined>();
+	useInterval(() => {
+		queryClient.invalidateQueries({
+			queryKey: ['getSectionDetail', id],
+		});
+	}, delay);
+
+	useEffect(() => {
+		if (
+			section &&
+			section.process_task &&
+			section.process_task?.status < SectionProcessStatus.SUCCESS
+		) {
+			setDelay(1000);
+		} else {
+			setDelay(undefined);
+		}
+	}, [section?.process_task?.status]);
 
 	return (
 		<div className='px-5 pb-5 h-full w-full grid grid-cols-12 gap-5 relative'>

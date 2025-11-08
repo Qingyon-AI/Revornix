@@ -18,10 +18,11 @@ Name | Type
 `authority` | number
 `is_subscribed` | boolean
 `md_file_name` | string
-`labels` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
+`labels` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
 `cover` | string
 `podcast_task` | [SectionPodcastTask](SectionPodcastTask.md)
 `podcast_info` | [SectionPodcastInfo](SectionPodcastInfo.md)
+`process_task` | [SectionProcessTask](SectionProcessTask.md)
 
 ## Example
 
@@ -46,6 +47,7 @@ const example = {
   "cover": null,
   "podcast_task": null,
   "podcast_info": null,
+  "process_task": null,
 } satisfies SectionInfo
 
 console.log(example)
