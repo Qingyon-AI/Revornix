@@ -26,7 +26,7 @@ import type {
   DocumentNoteCreateRequest,
   DocumentNoteDeleteRequest,
   DocumentUpdateRequest,
-  GeneratePodcastRequest,
+  GenerateDocumentPodcastRequest,
   HTTPValidationError,
   InifiniteScrollPagnitionDocumentInfo,
   InifiniteScrollPagnitionDocumentNoteInfo,
@@ -70,8 +70,8 @@ import {
     DocumentNoteDeleteRequestToJSON,
     DocumentUpdateRequestFromJSON,
     DocumentUpdateRequestToJSON,
-    GeneratePodcastRequestFromJSON,
-    GeneratePodcastRequestToJSON,
+    GenerateDocumentPodcastRequestFromJSON,
+    GenerateDocumentPodcastRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     InifiniteScrollPagnitionDocumentInfoFromJSON,
@@ -155,7 +155,7 @@ export interface DeleteNoteDocumentNoteDeletePostRequest {
 }
 
 export interface GeneratePodcastDocumentPodcastGeneratePostRequest {
-    generatePodcastRequest: GeneratePodcastRequest;
+    generateDocumentPodcastRequest: GenerateDocumentPodcastRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -579,10 +579,10 @@ export class DocumentApi extends runtime.BaseAPI {
      * Generate Podcast
      */
     async generatePodcastDocumentPodcastGeneratePostRaw(requestParameters: GeneratePodcastDocumentPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        if (requestParameters['generatePodcastRequest'] == null) {
+        if (requestParameters['generateDocumentPodcastRequest'] == null) {
             throw new runtime.RequiredError(
-                'generatePodcastRequest',
-                'Required parameter "generatePodcastRequest" was null or undefined when calling generatePodcastDocumentPodcastGeneratePost().'
+                'generateDocumentPodcastRequest',
+                'Required parameter "generateDocumentPodcastRequest" was null or undefined when calling generatePodcastDocumentPodcastGeneratePost().'
             );
         }
 
@@ -608,7 +608,7 @@ export class DocumentApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: GeneratePodcastRequestToJSON(requestParameters['generatePodcastRequest']),
+            body: GenerateDocumentPodcastRequestToJSON(requestParameters['generateDocumentPodcastRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));

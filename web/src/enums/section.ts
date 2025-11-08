@@ -9,3 +9,10 @@ export enum UserSectionRole {
     MEMBER = 1,
     SUBSCRIBER = 2
 }
+
+export enum SectionPodcastStatus {
+    WAIT_TO = 0,
+    PROCESSING = 1,
+    SUCCESS = 2,
+    FAILED = 3,
+}

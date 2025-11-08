@@ -1,22 +1,22 @@
 
-# SchemasDocumentLabelListResponse
+# SchemasDocumentGeneratePodcastRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`data` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
+`document_id` | number
 
 ## Example
 
 ```typescript
-import type { SchemasDocumentLabelListResponse } from ''
+import type { SchemasDocumentGeneratePodcastRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "data": null,
-} satisfies SchemasDocumentLabelListResponse
+  "document_id": null,
+} satisfies SchemasDocumentGeneratePodcastRequest
 
 console.log(example)
 
@@ -25,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as SchemasDocumentLabelListResponse
+const exampleParsed = JSON.parse(exampleJSON) as SchemasDocumentGeneratePodcastRequest
 console.log(exampleParsed)
 ```
 

@@ -109,7 +109,7 @@ async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSumma
     return schemas.common.SuccessResponse()
 
 @document_router.post('/podcast/generate', response_model=schemas.common.NormalResponse)
-async def generate_podcast(generate_podcast_request: schemas.document.GeneratePodcastRequest,
+async def generate_podcast(generate_podcast_request: schemas.document.GenerateDocumentPodcastRequest,
                            user: models.user.User = Depends(get_current_user),
                            db: Session = Depends(get_db)):
     if user.default_user_file_system is None:
