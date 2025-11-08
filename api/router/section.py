@@ -784,7 +784,8 @@ async def create_section(
                                              creator_id=user.id,
                                              cover=section_create_request.cover,
                                              title=section_create_request.title, 
-                                             description=section_create_request.description)
+                                             description=section_create_request.description,
+                                             auto_podcast=section_create_request.auto_podcast)
     if section_create_request.labels:
         crud.section.bind_labels_to_section(db=db, 
                                             section_id=db_section.id, 
