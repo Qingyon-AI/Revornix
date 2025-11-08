@@ -182,7 +182,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					{document?.podcast_task && (
 						<>
 							{document?.podcast_task?.status ===
-								DocumentPodcastStatus.PROCESSING && (
+								DocumentPodcastStatus.GENERATING && (
 								<div className='text-center text-muted-foreground text-xs p-3'>
 									{t('document_podcast_processing')}
 								</div>

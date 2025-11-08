@@ -37,7 +37,7 @@ async def generate_podcast(generate_podcast_request: schemas.section.GenerateSec
             raise Exception('The podcast task is already finished, please refresh the page')
         if db_exist_podcast_task.status == SectionPodcastStatus.WAIT_TO:
             raise Exception('The podcast task is already in the queue, please wait')
-        if db_exist_podcast_task.status == SectionPodcastStatus.PROCESSING:
+        if db_exist_podcast_task.status == SectionPodcastStatus.GENERATING:
             raise Exception('The podcast task is already processing, please wait')
     db_section_process_task = crud.task.get_section_podcast_task_by_section_id(db=db,
                                                                                section_id=generate_podcast_request.section_id)

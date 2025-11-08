@@ -12,7 +12,7 @@ export enum UserSectionRole {
 
 export enum SectionPodcastStatus {
     WAIT_TO = 0,
-    PROCESSING = 1,
+    GENERATING = 1,
     SUCCESS = 2,
     FAILED = 3,
 }

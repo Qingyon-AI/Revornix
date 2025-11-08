@@ -129,7 +129,7 @@ async def generate_podcast(generate_podcast_request: schemas.document.GenerateDo
             raise Exception('The podcast task is already finished, please refresh the page')
         if db_exist_podcast_task.status == DocumentPodcastStatus.WAIT_TO:
             raise Exception('The podcast task is already in the queue, please wait')
-        if db_exist_podcast_task.status == DocumentPodcastStatus.PROCESSING:
+        if db_exist_podcast_task.status == DocumentPodcastStatus.GENERATING:
             raise Exception('The podcast task is already processing, please wait')
 
     db_process_task = crud.task.get_document_process_task_by_document_id(db=db,

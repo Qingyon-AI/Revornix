@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import { useEffect, useState } from 'react';
 import { useInterval } from 'ahooks';
+import { useUserContext } from '@/provider/user-provider';
 
 const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -39,6 +40,8 @@ const SectionContainer = ({ id }: { id: number }) => {
 			return getSectionDetail({ section_id: id });
 		},
 	});
+
+	const { userInfo } = useUserContext();
 
 	const mutateGeneratePodcast = useMutation({
 		mutationFn: () =>
@@ -138,7 +141,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 					{section?.podcast_task && (
 						<>
 							{section?.podcast_task?.status ===
-								SectionPodcastStatus.PROCESSING && (
+								SectionPodcastStatus.GENERATING && (
 								<div className='text-center text-muted-foreground text-xs p-3'>
 									{t('section_podcast_processing')}
 								</div>

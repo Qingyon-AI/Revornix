@@ -146,7 +146,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										{data.podcast_task?.status === DocumentPodcastStatus.WAIT_TO
 											? t('document_podcast_status_todo')
 											: data.transform_task?.status ===
-											  DocumentPodcastStatus.PROCESSING
+											  DocumentPodcastStatus.GENERATING
 											? t('document_podcast_status_doing')
 											: data.transform_task?.status ===
 											  DocumentPodcastStatus.SUCCESS

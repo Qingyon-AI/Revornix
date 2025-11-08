@@ -216,7 +216,7 @@ const SEOSectionDetail = async (props: {
 					{section?.podcast_task && (
 						<>
 							{section?.podcast_task?.status ===
-								SectionPodcastStatus.PROCESSING && (
+								SectionPodcastStatus.GENERATING && (
 								<div className='text-center text-muted-foreground text-xs p-3'>
 									{t('section_podcast_processing')}
 								</div>
