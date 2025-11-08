@@ -1,6 +1,7 @@
 'use client';
 
 import AddSectionLabelDialog from '@/components/section/add-section-label-dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
 	Form,
@@ -17,10 +18,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { getQueryClient } from '@/lib/get-query-client';
+import { useUserContext } from '@/provider/user-provider';
 import { createSection, getMineLabels } from '@/service/section';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { utils } from '@kinda/utils';
 import { useQuery } from '@tanstack/react-query';
+import { OctagonAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
 import { useState } from 'react';
@@ -61,6 +64,8 @@ const CreatePage = () => {
 		queryKey: ['getSectionLabels'],
 		queryFn: getMineLabels,
 	});
+
+	const { userInfo } = useUserContext();
 
 	const getLabelByValue = (value: number): Option | undefined => {
 		if (!labels) return;
@@ -256,6 +261,7 @@ const CreatePage = () => {
 												{t('section_create_form_auto_podcast')}
 											</FormLabel>
 											<Switch
+												disabled={!userInfo?.default_podcast_user_engine_id}
 												checked={field.value}
 												onCheckedChange={(e) => {
 													field.onChange(e);
@@ -265,6 +271,14 @@ const CreatePage = () => {
 										<FormDescription>
 											{t('section_create_form_auto_podcast_description')}
 										</FormDescription>
+										{!userInfo?.default_podcast_user_engine_id && (
+											<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+												<OctagonAlert className='h-4 w-4 !text-destructive' />
+												<AlertDescription>
+													{t('section_create_auto_podcast_engine_unset')}
+												</AlertDescription>
+											</Alert>
+										)}
 									</FormItem>
 								);
 							}}
