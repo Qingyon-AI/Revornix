@@ -34,3 +34,8 @@ class SectionPodcastTask(BaseModel):
     status: int
     class Config:
         from_attributes = True
+        
+class SectionProcessTask(BaseModel):
+    status: int
+    class Config:
+        from_attributes = True

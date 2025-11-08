@@ -2,7 +2,7 @@ from pydantic import BaseModel, field_validator, field_serializer
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
 from schemas.user import UserPublicInfo, SectionUserPublicInfo
-from schemas.task import SectionPodcastTask
+from schemas.task import SectionPodcastTask, SectionProcessTask
 from enums.section import UserSectionRole
 
 class GenerateSectionPodcastRequest(BaseModel):
@@ -222,6 +222,7 @@ class SectionInfo(BaseModel):
     cover: str | None = None
     podcast_task: SectionPodcastTask | None = None
     podcast_info: SectionPodcastInfo | None = None
+    process_task: SectionProcessTask | None = None
     @field_serializer("cover")
     def cover(self, v: str) -> str | None:
         if v is None:
