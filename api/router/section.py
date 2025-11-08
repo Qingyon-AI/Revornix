@@ -140,6 +140,13 @@ async def section_seo_detail_request(section_seo_detail_request: schemas.section
                                                               podcast_file_name=db_section_podcast.podcast_file_name)
 
     
+    db_section_process_task = crud.task.get_section_process_task_by_section_id(db=db,
+                                                                               section_id=db_section.id)
+    if db_section_process_task is not None:
+        res.process_task = schemas.section.SectionProcessTask(
+            status=db_section_process_task.status
+        )
+
     if user is not None:
         db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                                   section_id=db_section.id,
@@ -692,6 +699,13 @@ async def get_section_detail(
             res.podcast_info = schemas.section.SectionPodcastInfo(creator_id=db_section.creator_id,
                                                                   podcast_file_name=db_section_podcast.podcast_file_name)
 
+        db_section_process_task = crud.task.get_section_process_task_by_section_id(db=db,
+                                                                                   section_id=section_detail_request.section_id)
+        if db_section_process_task is not None:
+            res.process_task = schemas.section.SectionProcessTask(
+                status=db_section_process_task.status
+            )
+
         if user is not None:
             db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                                       section_id=section_detail_request.section_id,
@@ -737,7 +751,13 @@ async def get_section_detail(
                 res.podcast_info = schemas.section.SectionPodcastInfo(creator_id=db_section.creator_id,
                                                                       podcast_file_name=db_section_podcast.podcast_file_name)
             
-            
+            db_section_process_task = crud.task.get_section_process_task_by_section_id(db=db,
+                                                                                       section_id=section_detail_request.section_id)
+            if db_section_process_task is not None:
+                res.process_task = schemas.section.SectionProcessTask(
+                    status=db_section_process_task.status
+                )
+
             db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                                       section_id=section_detail_request.section_id,
                                                                                       user_id=user.id)
