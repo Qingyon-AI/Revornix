@@ -173,8 +173,8 @@ async def handle_process_document(document_id: int,
             await handle_update_ai_summary(document_id=db_document.id,
                                            user_id=user_id)
         if auto_podcast:
-            await handle_update_ai_podcast(document_id=db_document.id,
-                                           user_id=user_id)
+            await handle_update_document_ai_podcast(document_id=db_document.id,
+                                                    user_id=user_id)
         db_document_process_task.status = DocumentProcessStatus.SUCCESS.value
         db.commit()
 
