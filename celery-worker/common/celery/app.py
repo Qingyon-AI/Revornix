@@ -24,7 +24,7 @@ from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus
-from enums.section import UserSectionAuthority, SectionPodcastStatus, SectionDocumentIntegration
+from enums.section import UserSectionAuthority, SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus
 
 import tracemalloc
 import warnings
@@ -232,6 +232,14 @@ async def handle_update_sections(sections: list[int],
                                                                  user_id=user_id)
     try:
         for section_id in sections:
+            db_section_process_task = crud.task.get_section_process_task_by_section_id(db=db,
+                                                                                       section_id=section_id)
+            if db_section_process_task is None:
+                db_section_process_task = crud.task.create_section_process_task(db=db,
+                                                                                user_id=user_id,
+                                                                                section_id=section_id)
+            db_section_process_task.status = SectionProcessStatus.PROCESSING
+            db.commit()
             db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                                       section_id=section_id,
                                                                                       user_id=user_id)
@@ -279,7 +287,6 @@ async def handle_update_sections(sections: list[int],
                                                                                    status=SectionDocumentIntegration.SUCCESS)
                 if db_section.auto_podcast:
                     await handle_update_section_ai_podcast(section_id=section_id, user_id=user_id)
-                
             except Exception as e:
                     log_exception()
                     exception_logger.error(f"Something is error while updating the section: {e}")
@@ -288,6 +295,8 @@ async def handle_update_sections(sections: list[int],
                                                                                        document_id=document_id,
                                                                                        section_id=db_section.id,
                                                                                        status=SectionDocumentIntegration.FAILED)
+            finally:
+                db_section_process_task.status = SectionProcessStatus.SUCCESS
         db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while getting the section: {e}, parameter: {sections}, {document_id}, {user_id}")
