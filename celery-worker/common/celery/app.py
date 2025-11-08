@@ -46,7 +46,7 @@ async def handle_process_document(document_id: int,
                                                                       user_id=user_id,
                                                                       document_id=document_id)
     db.commit()
-    db_document_process_task.status = DocumentProcessStatus.PROCESSING.value
+    db_document_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
     db_user = crud.user.get_user_by_id(db=db, 
                                        user_id=user_id)
@@ -402,7 +402,7 @@ async def handle_update_section_ai_podcast(section_id: int,
         if db_engine.uuid == EngineUUID.Volc_TTS.value:
             engine = VolcTTSEngine()
             
-        db_section_podcast_task.status = SectionPodcastStatus.PROCESSING
+        db_section_podcast_task.status = SectionPodcastStatus.GENERATING
         db.commit()
         
         await engine.init_engine_config_by_user_engine_id(user_engine_id=db_user.default_podcast_user_engine_id)
@@ -478,7 +478,7 @@ async def handle_update_document_ai_podcast(document_id: int,
         if db_engine.uuid == EngineUUID.Volc_TTS.value:
             engine = VolcTTSEngine()
             
-        db_document_podcast_task.status = DocumentPodcastStatus.PROCESSING
+        db_document_podcast_task.status = DocumentPodcastStatus.GENERATING
         db.commit()
         
         await engine.init_engine_config_by_user_engine_id(user_engine_id=db_user.default_podcast_user_engine_id)

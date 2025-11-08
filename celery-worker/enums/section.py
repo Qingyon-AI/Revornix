@@ -18,7 +18,7 @@ class SectionDocumentIntegration(IntEnum):
 
 class SectionPodcastStatus(IntEnum):
     WAIT_TO = 0
-    PROCESSING = 1
+    GENERATING = 1
     SUCCESS = 2
     FAILED = 3
 
