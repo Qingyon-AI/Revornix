@@ -35,3 +35,4 @@ tencentcloud-sdk-python==3.0.1470
 sentence_transformers==5.1.1
 neo4j==6.0.2
 fastmcp==2.12.5
+websockets==15.0.1
