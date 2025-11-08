@@ -653,3 +653,14 @@ def update_document_process_status(document_id: int,
 def start_process_section_podcast(section_id: int,
                                   user_id: int):
     asyncio.run(handle_update_section_ai_podcast(section_id=section_id, user_id=user_id))
+    
+@celery_app.task
+def update_section_process_status(section_id: int,
+                                  status: int):
+    db = SessionLocal()
+    db_section_process_task = crud.task.get_section_process_task_by_section_id(db=db,
+                                                                               section_id=section_id)
+    if db_section_process_task is not None:
+        db_section_process_task.status = status
+        db.commit()
+    db.close()

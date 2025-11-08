@@ -7,8 +7,9 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 from common.dependencies import get_db, get_current_user, get_current_user_without_throw
 from common.common import get_user_remote_file_system
-from enums.section import UserSectionAuthority, UserSectionRole, SectionPodcastStatus
-from common.celery.app import start_process_section_podcast
+from enums.section import UserSectionAuthority, UserSectionRole, SectionPodcastStatus, SectionProcessStatus
+from common.celery.app import start_process_section_podcast, update_section_process_status
+from celery import chain
 
 section_router = APIRouter()
 
@@ -38,8 +39,19 @@ async def generate_podcast(generate_podcast_request: schemas.section.GenerateSec
             raise Exception('The podcast task is already in the queue, please wait')
         if db_exist_podcast_task.status == SectionPodcastStatus.PROCESSING:
             raise Exception('The podcast task is already processing, please wait')
-    start_process_section_podcast.delay(db_section.id, user.id)
+    db_section_process_task = crud.task.get_section_podcast_task_by_section_id(db=db,
+                                                                               section_id=generate_podcast_request.section_id)
+    if db_section_process_task is None:
+        db_section_process_task = crud.task.create_section_process_task(db=db,
+                                                                        user_id=user.id,
+                                                                        section_id=generate_podcast_request.section_id)
+    db_section_process_task.status = SectionProcessStatus.WAIT_TO
     db.commit()
+    workflow = chain(
+        start_process_section_podcast.si(db_section.id, user.id),
+        update_section_process_status.si(db_section.id, SectionProcessStatus.SUCCESS)
+    )
+    workflow()
     return schemas.common.SuccessResponse()
 
 @section_router.post('/documents', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionDocumentInfo])
