@@ -37,6 +37,7 @@ const CreatePage = () => {
 			.string()
 			.min(1, { message: t('section_create_description_needed') }),
 		auto_publish: z.boolean(),
+		auto_podcast: z.boolean(),
 		cover: z.string().nullable(),
 		labels: z.array(z.number()),
 	});
@@ -52,6 +53,7 @@ const CreatePage = () => {
 			description: '',
 			labels: [],
 			auto_publish: false,
+			auto_podcast: false,
 		},
 	});
 
@@ -218,30 +220,56 @@ const CreatePage = () => {
 							);
 						}}
 					/>
-					<FormField
-						name='auto_publish'
-						control={form.control}
-						render={({ field }) => {
-							return (
-								<FormItem className='mb-5'>
-									<div className='flex flex-row gap-1 items-center'>
-										<FormLabel className='flex flex-row gap-1 items-center'>
-											{t('section_create_form_auto_publish')}
-										</FormLabel>
-										<Switch
-											checked={field.value}
-											onCheckedChange={(e) => {
-												field.onChange(e);
-											}}
-										/>
-									</div>
-									<FormDescription>
-										{t('section_create_form_auto_publish_description')}
-									</FormDescription>
-								</FormItem>
-							);
-						}}
-					/>
+					<div className='grid grid-cols-1 md:grid-cols-2 gap-5 mb-5'>
+						<FormField
+							name='auto_publish'
+							control={form.control}
+							render={({ field }) => {
+								return (
+									<FormItem className='rounded-lg border border-input p-3'>
+										<div className='flex flex-row gap-1 items-center'>
+											<FormLabel className='flex flex-row gap-1 items-center'>
+												{t('section_create_form_auto_publish')}
+											</FormLabel>
+											<Switch
+												checked={field.value}
+												onCheckedChange={(e) => {
+													field.onChange(e);
+												}}
+											/>
+										</div>
+										<FormDescription>
+											{t('section_create_form_auto_publish_description')}
+										</FormDescription>
+									</FormItem>
+								);
+							}}
+						/>
+						<FormField
+							name='auto_podcast'
+							control={form.control}
+							render={({ field }) => {
+								return (
+									<FormItem className='rounded-lg border border-input p-3'>
+										<div className='flex flex-row gap-1 items-center'>
+											<FormLabel className='flex flex-row gap-1 items-center'>
+												{t('section_create_form_auto_podcast')}
+											</FormLabel>
+											<Switch
+												checked={field.value}
+												onCheckedChange={(e) => {
+													field.onChange(e);
+												}}
+											/>
+										</div>
+										<FormDescription>
+											{t('section_create_form_auto_podcast_description')}
+										</FormDescription>
+									</FormItem>
+								);
+							}}
+						/>
+					</div>
 					<Button className='w-full' type='submit'>
 						{t('section_create_form_submit')}
 					</Button>

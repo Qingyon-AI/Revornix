@@ -49,6 +49,12 @@ export interface SectionCreateRequest {
      * @memberof SectionCreateRequest
      */
     auto_publish?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SectionCreateRequest
+     */
+    auto_podcast?: boolean;
 }
 
 /**
@@ -76,6 +82,7 @@ export function SectionCreateRequestFromJSONTyped(json: any, ignoreDiscriminator
         'cover': json['cover'] == null ? undefined : json['cover'],
         'labels': json['labels'],
         'auto_publish': json['auto_publish'] == null ? undefined : json['auto_publish'],
+        'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
     };
 }
 
@@ -95,6 +102,7 @@ export function SectionCreateRequestToJSONTyped(value?: SectionCreateRequest | n
         'cover': value['cover'],
         'labels': value['labels'],
         'auto_publish': value['auto_publish'],
+        'auto_podcast': value['auto_podcast'],
     };
 }
 

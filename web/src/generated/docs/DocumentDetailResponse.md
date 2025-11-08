@@ -14,7 +14,7 @@ Name | Type
 `category` | number
 `create_time` | Date
 `update_time` | Date
-`labels` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
+`labels` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
 `creator` | [UserPublicInfo](UserPublicInfo.md)
 `sections` | [Array&lt;SchemasDocumentBaseSectionInfo&gt;](SchemasDocumentBaseSectionInfo.md)
 `from_plat` | string

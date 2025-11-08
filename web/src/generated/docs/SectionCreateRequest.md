@@ -11,6 +11,7 @@ Name | Type
 `cover` | string
 `labels` | Array&lt;number&gt;
 `auto_publish` | boolean
+`auto_podcast` | boolean
 
 ## Example
 
@@ -24,6 +25,7 @@ const example = {
   "cover": null,
   "labels": null,
   "auto_publish": null,
+  "auto_podcast": null,
 } satisfies SectionCreateRequest
 
 console.log(example)

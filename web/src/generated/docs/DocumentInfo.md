@@ -15,7 +15,7 @@ Name | Type
 `from_plat` | string
 `create_time` | Date
 `update_time` | Date
-`labels` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
+`labels` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
 `sections` | [Array&lt;SchemasDocumentBaseSectionInfo&gt;](SchemasDocumentBaseSectionInfo.md)
 `users` | [Array&lt;UserPublicInfo&gt;](UserPublicInfo.md)
 `transform_task` | [DocumentTransformTask](DocumentTransformTask.md)
