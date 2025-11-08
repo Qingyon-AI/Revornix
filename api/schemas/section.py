@@ -210,6 +210,7 @@ class SectionInfo(BaseModel):
     title: str
     creator: UserPublicInfo
     description: str
+    auto_podcast: bool | None = None
     documents_count: int 
     subscribers_count: int
     create_time: datetime
