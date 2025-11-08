@@ -535,7 +535,7 @@ No authorization required
 
 ## generatePodcastDocumentPodcastGeneratePost
 
-> NormalResponse generatePodcastDocumentPodcastGeneratePost(generatePodcastRequest, authorization, xForwardedFor)
+> NormalResponse generatePodcastDocumentPodcastGeneratePost(generateDocumentPodcastRequest, authorization, xForwardedFor)
 
 Generate Podcast
 
@@ -553,8 +553,8 @@ async function example() {
   const api = new DocumentApi();
 
   const body = {
-    // GeneratePodcastRequest
-    generatePodcastRequest: ...,
+    // GenerateDocumentPodcastRequest
+    generateDocumentPodcastRequest: ...,
     // string (optional)
     authorization: authorization_example,
     // string (optional)
@@ -578,7 +578,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **generatePodcastRequest** | [GeneratePodcastRequest](GeneratePodcastRequest.md) |  | |
+| **generateDocumentPodcastRequest** | [GenerateDocumentPodcastRequest](GenerateDocumentPodcastRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 

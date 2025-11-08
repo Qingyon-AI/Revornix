@@ -26,4 +26,5 @@ export default {
     republishSection: API_PREFIX + "/section/republish",
     getSectionPublish: API_PREFIX + "/section/publish/get",
     searchSectionDocuments: API_PREFIX + "/section/documents",
+    generateSectionPodcast: API_PREFIX + '/section/podcast/generate',
 }

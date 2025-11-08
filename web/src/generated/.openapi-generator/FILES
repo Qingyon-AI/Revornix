@@ -90,7 +90,8 @@ docs/FileSystemSearchRequest.md
 docs/FileUrlPrefixRequest.md
 docs/FileUrlPrefixResponse.md
 docs/FollowUserRequest.md
-docs/GeneratePodcastRequest.md
+docs/GenerateDocumentPodcastRequest.md
+docs/GenerateSectionPodcastRequest.md
 docs/GenericFileSystemUploadResponse.md
 docs/GetRssServerDetailRequest.md
 docs/GetRssServerDocumentRequest.md
@@ -176,10 +177,10 @@ docs/S3PresignUploadURLRequest.md
 docs/S3PresignUploadURLResponse.md
 docs/SchemasDocumentBaseSectionInfo.md
 docs/SchemasDocumentCreateLabelResponse.md
-docs/SchemasDocumentLabel.md
 docs/SchemasDocumentLabelAddRequest.md
 docs/SchemasDocumentLabelListResponse.md
 docs/SchemasSectionBaseSectionInfo.md
+docs/SchemasSectionLabel.md
 docs/SchemasSectionLabelDeleteRequest.md
 docs/SearchAllMyDocumentsRequest.md
 docs/SearchApiKeysRequest.md
@@ -209,6 +210,8 @@ docs/SectionDocumentInfo.md
 docs/SectionDocumentRequest.md
 docs/SectionGraphRequest.md
 docs/SectionInfo.md
+docs/SectionPodcastInfo.md
+docs/SectionPodcastTask.md
 docs/SectionPublishGetRequest.md
 docs/SectionPublishGetResponse.md
 docs/SectionPublishRequest.md
@@ -326,7 +329,8 @@ models/FileSystemSearchRequest.ts
 models/FileUrlPrefixRequest.ts
 models/FileUrlPrefixResponse.ts
 models/FollowUserRequest.ts
-models/GeneratePodcastRequest.ts
+models/GenerateDocumentPodcastRequest.ts
+models/GenerateSectionPodcastRequest.ts
 models/GenericFileSystemUploadResponse.ts
 models/GetRssServerDetailRequest.ts
 models/GetRssServerDocumentRequest.ts
@@ -408,10 +412,10 @@ models/S3PresignUploadURLRequest.ts
 models/S3PresignUploadURLResponse.ts
 models/SchemasDocumentBaseSectionInfo.ts
 models/SchemasDocumentCreateLabelResponse.ts
-models/SchemasDocumentLabel.ts
 models/SchemasDocumentLabelAddRequest.ts
 models/SchemasDocumentLabelListResponse.ts
 models/SchemasSectionBaseSectionInfo.ts
+models/SchemasSectionLabel.ts
 models/SchemasSectionLabelDeleteRequest.ts
 models/SearchAllMyDocumentsRequest.ts
 models/SearchApiKeysRequest.ts
@@ -440,6 +444,8 @@ models/SectionDocumentInfo.ts
 models/SectionDocumentRequest.ts
 models/SectionGraphRequest.ts
 models/SectionInfo.ts
+models/SectionPodcastInfo.ts
+models/SectionPodcastTask.ts
 models/SectionPublishGetRequest.ts
 models/SectionPublishGetResponse.ts
 models/SectionPublishRequest.ts

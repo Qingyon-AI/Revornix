@@ -5,7 +5,7 @@ import DocumentInfo from './document-info';
 import { Card } from '@/components/ui/card';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
-	generatePodcast,
+	generateDocumentPodcast,
 	getDocumentDetail,
 	readDocument,
 } from '@/service/document';
@@ -44,7 +44,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 
 	const mutateGeneratePodcast = useMutation({
 		mutationFn: () =>
-			generatePodcast({
+			generateDocumentPodcast({
 				document_id: id,
 			}),
 		onSuccess(data, variables, onMutateResult, context) {

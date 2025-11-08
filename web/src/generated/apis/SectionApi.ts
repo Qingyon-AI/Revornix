@@ -18,6 +18,7 @@ import type {
   AllMySectionsResponse,
   DaySectionRequest,
   DaySectionResponse,
+  GenerateSectionPodcastRequest,
   HTTPValidationError,
   InifiniteScrollPagnitionSectionCommentInfo,
   InifiniteScrollPagnitionSectionDocumentInfo,
@@ -60,6 +61,8 @@ import {
     DaySectionRequestToJSON,
     DaySectionResponseFromJSON,
     DaySectionResponseToJSON,
+    GenerateSectionPodcastRequestFromJSON,
+    GenerateSectionPodcastRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     InifiniteScrollPagnitionSectionCommentInfoFromJSON,
@@ -168,6 +171,12 @@ export interface DeleteSectionSectionDeletePostRequest {
 
 export interface DeleteSectionUserSectionUserDeletePostRequest {
     sectionUserDeleteRequest: SectionUserDeleteRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GeneratePodcastSectionPodcastGeneratePostRequest {
+    generateSectionPodcastRequest: GenerateSectionPodcastRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -615,6 +624,53 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async deleteSectionUserSectionUserDeletePost(requestParameters: DeleteSectionUserSectionUserDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.deleteSectionUserSectionUserDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Generate Podcast
+     */
+    async generatePodcastSectionPodcastGeneratePostRaw(requestParameters: GeneratePodcastSectionPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['generateSectionPodcastRequest'] == null) {
+            throw new runtime.RequiredError(
+                'generateSectionPodcastRequest',
+                'Required parameter "generateSectionPodcastRequest" was null or undefined when calling generatePodcastSectionPodcastGeneratePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/podcast/generate`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GenerateSectionPodcastRequestToJSON(requestParameters['generateSectionPodcastRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Generate Podcast
+     */
+    async generatePodcastSectionPodcastGeneratePost(requestParameters: GeneratePodcastSectionPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.generatePodcastSectionPodcastGeneratePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

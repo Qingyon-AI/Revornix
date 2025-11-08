@@ -13,7 +13,7 @@ from common.celery.app import start_process_section_podcast
 section_router = APIRouter()
 
 @section_router.post('/podcast/generate', response_model=schemas.common.NormalResponse)
-async def generate_podcast(generate_podcast_request: schemas.section.GeneratePodcastRequest,
+async def generate_podcast(generate_podcast_request: schemas.section.GenerateSectionPodcastRequest,
                            user: models.user.User = Depends(get_current_user),
                            db: Session = Depends(get_db)):
     db_section = crud.section.get_section_by_section_id(db=db,
