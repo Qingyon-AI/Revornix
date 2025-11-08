@@ -277,7 +277,8 @@ async def handle_update_sections(sections: list[int],
                                                                                    document_id=document_id,
                                                                                    section_id=db_section.id,
                                                                                    status=SectionDocumentIntegration.SUCCESS)
-                await handle_update_section_ai_podcast(section_id=section_id, user_id=user_id)
+                if db_section.auto_podcast:
+                    await handle_update_section_ai_podcast(section_id=section_id, user_id=user_id)
                 
             except Exception as e:
                     log_exception()

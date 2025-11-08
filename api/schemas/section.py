@@ -281,6 +281,7 @@ class SectionCreateRequest(BaseModel):
     cover: str | None = None
     labels: list[int]
     auto_publish: bool = False
+    auto_podcast: bool = False
     
 class SectionCreateResponse(BaseModel):
     id: int

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.sql import Base
@@ -45,6 +45,7 @@ class Section(Base):
     cover: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the cover image which you uploaded to the file system')
     description: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
     md_file_name: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the markdown file which you uploaded to the file system')
+    auto_podcast: Mapped[Optional[str]] = mapped_column(Boolean(), comment='Whether to automatically generate a podcast after uploading the markdown file')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))

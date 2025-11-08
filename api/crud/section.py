@@ -76,12 +76,14 @@ def create_section(db: Session,
                    creator_id: int,
                    title: str, 
                    description: str,
-                   cover: str | None = None):
+                   cover: str | None = None,
+                   auto_podcast: bool | None = False):
     now = datetime.now(timezone.utc)
     db_section = models.section.Section(title=title, 
                                         creator_id=creator_id,
                                         cover=cover,
                                         description=description,
+                                        auto_podcast=auto_podcast,
                                         create_time=now,
                                         update_time=now)
     db.add(db_section)
