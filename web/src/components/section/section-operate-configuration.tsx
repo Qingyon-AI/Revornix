@@ -1,5 +1,6 @@
 import {
 	Form,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -37,6 +38,7 @@ import { Skeleton } from '../ui/skeleton';
 import AddSectionLabelDialog from './add-section-label-dialog';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { Switch } from '../ui/switch';
 
 const SectionOperateConfiguration = ({
 	section_id,
@@ -53,6 +55,7 @@ const SectionOperateConfiguration = ({
 		title: z.string().min(1),
 		description: z.string().min(1),
 		labels: z.array(z.number()),
+		auto_podcast: z.boolean(),
 	});
 	const id = section_id;
 
@@ -77,6 +80,7 @@ const SectionOperateConfiguration = ({
 			cover: undefined,
 			description: '',
 			labels: [],
+			auto_podcast: false,
 		},
 		resolver: zodResolver(updateFormSchema),
 	});
@@ -255,6 +259,30 @@ const SectionOperateConfiguration = ({
 													{t('section_configuration_form_label_create')}
 												</Button>
 											</div>
+										</FormItem>
+									);
+								}}
+							/>
+							<FormField
+								name='auto_podcast'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem className='rounded-lg border border-input p-3'>
+											<div className='flex flex-row gap-1 items-center'>
+												<FormLabel className='flex flex-row gap-1 items-center'>
+													{t('section_configuration_form_auto_podcast')}
+												</FormLabel>
+												<Switch
+													checked={field.value}
+													onCheckedChange={(e) => {
+														field.onChange(e);
+													}}
+												/>
+											</div>
+											<FormDescription>
+												{t('section_create_form_auto_podcast_description')}
+											</FormDescription>
 										</FormItem>
 									);
 								}}
