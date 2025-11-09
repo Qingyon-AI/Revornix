@@ -266,7 +266,7 @@ def count_user_fans(db: Session,
     return query.count()
 
 def search_next_user_fan(db: Session,
-                         user: int,
+                         user: models.user.User,
                          keyword: str | None = None):
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.from_user_id == models.user.User.id)
@@ -310,8 +310,8 @@ def count_user_follows(db: Session,
     return query.count()
 
 def search_next_user_follow(db: Session,
-                         user: int,
-                         keyword: str | None = None):
+                            user: models.user.User,
+                            keyword: str | None = None):
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.to_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.from_user_id == user,
@@ -425,7 +425,7 @@ def get_email_user_by_user_id(db: Session,
     return query.first()
 
 def get_user_initial_password(db: Session, 
-                              user_id: int) -> str:
+                              user_id: int):
     query = db.query(models.user.EmailUser)
     query = query.filter(models.user.EmailUser.user_id == user_id,
                          models.user.EmailUser.delete_at == None)

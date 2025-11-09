@@ -32,8 +32,7 @@ def create_label(db: Session,
     now = datetime.now(timezone.utc)
     db_label = models.section.Label(name=name, 
                                     user_id=user_id,
-                                    create_time=now,
-                                    update_time=now)
+                                    create_time=now)
     db.add(db_label)
     db.flush()
     return db_label

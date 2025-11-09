@@ -1,5 +1,8 @@
 from enum import IntEnum
 
+class UserDocumentAuthority(IntEnum):
+    OWNER = 0
+
 class DocumentCategory(IntEnum):
     FILE = 0
     WEBSITE = 1

@@ -14,9 +14,8 @@ from data.milvus.create import milvus_client
 from common.dependencies import get_db, get_current_user
 from common.common import get_user_remote_file_system
 from common.celery.app import start_process_document, update_sections, start_process_document_podcast, update_document_process_status
-from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus
-from enums.section import UserSectionRole, UserSectionAuthority
-from enums.section import SectionDocumentIntegration
+from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus, UserDocumentAuthority
+from enums.section import UserSectionRole, UserSectionAuthority, SectionDocumentIntegration
 
 document_router = APIRouter()
     
@@ -100,11 +99,16 @@ async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSumma
         markdown_content = db_quick_note_document.content
     model_id = crud.user.get_user_by_id(db=db, user_id=user.id).default_document_reader_model_id
     ai_summary_result = summary_document(user_id=user.id, model_id=model_id, markdown_content=markdown_content)
-    crud.document.update_document_by_document_id(db=db,
-                                                 document_id=ai_summary_request.document_id,
-                                                 title=ai_summary_result.get('title'),
-                                                 description=ai_summary_result.get('description'),
-                                                 ai_summary=ai_summary_result.get('summary'))
+    db_document = crud.document.get_document_by_document_id(db=db,
+                                                            document_id=ai_summary_request.document_id)
+    if db_document is None:
+        raise Exception('The document you want to summary is not found')
+    if ai_summary_result.get('title') is not None:
+        db_document.title = ai_summary_result.get('title')
+    if ai_summary_result.get('description') is not None:
+        db_document.description = ai_summary_result.get('description')
+    if ai_summary_result.get('summary') is not None:
+        db_document.ai_summary = ai_summary_result.get('summary')
     db.commit()
     return schemas.common.SuccessResponse()
 
@@ -203,13 +207,13 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             from_plat=document_create_request.from_plat
         )
         if document_create_request.labels is not None:
-            crud.document.bind_labels_to_document(db=db, 
-                                                  document_id=db_document.id, 
-                                                  label_ids=document_create_request.labels)
-        crud.document.bind_document_to_user(db=db, 
+            crud.document.create_document_labels(db=db, 
+                                                 document_id=db_document.id, 
+                                                 label_ids=document_create_request.labels)
+        crud.document.create_user_document(db=db, 
                                             user_id=user.id, 
                                             document_id=db_document.id, 
-                                            authority="owner")
+                                            authority=UserDocumentAuthority.OWNER)
         db_website_document = crud.document.create_website_document(db=db, 
                                                                     url=document_create_request.url, 
                                                                     document_id=db_document.id)
@@ -255,13 +259,13 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                  user_id=user.id,
                                                  document_id=db_document.id)
         if document_create_request.labels:
-            crud.document.bind_labels_to_document(db=db, 
-                                                  document_id=db_document.id, 
-                                                  label_ids=document_create_request.labels)
-        crud.document.bind_document_to_user(db=db, 
-                                            user_id=user.id, 
-                                            document_id=db_document.id, 
-                                            authority="owner")
+            crud.document.create_document_labels(db=db, 
+                                                 document_id=db_document.id, 
+                                                 label_ids=document_create_request.labels)
+        crud.document.create_user_document(db=db, 
+                                           user_id=user.id, 
+                                           document_id=db_document.id, 
+                                           authority=UserDocumentAuthority.OWNER)
         # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
         db_today_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                      user_id=user.id,
@@ -298,13 +302,13 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                                           document_id=db_document.id,
                                                                           content=document_create_request.content)
         if document_create_request.labels:
-            crud.document.bind_labels_to_document(db=db, 
-                                                  document_id=db_document.id, 
-                                                  label_ids=document_create_request.labels)
-        crud.document.bind_document_to_user(db=db, 
-                                            user_id=user.id, 
-                                            document_id=db_document.id, 
-                                            authority="owner")
+            crud.document.create_document_labels(db=db, 
+                                                 document_id=db_document.id, 
+                                                 label_ids=document_create_request.labels)
+        crud.document.create_user_document(db=db, 
+                                           user_id=user.id, 
+                                           document_id=db_document.id, 
+                                           authority=UserDocumentAuthority.OWNER)
         # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
         db_today_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                      user_id=user.id,
@@ -356,9 +360,9 @@ async def update_document(document_update_request: schemas.document.DocumentUpda
                                                                                  document_id=document_update_request.document_id)
         exist_document_label_ids = [label.id for label in exist_document_labels]
         new_document_label_ids = [label_id for label_id in document_update_request.labels if label_id not in exist_document_label_ids]
-        crud.document.bind_labels_to_document(db=db, 
-                                              document_id=document_update_request.document_id, 
-                                              label_ids=new_document_label_ids)
+        crud.document.create_document_labels(db=db, 
+                                             document_id=document_update_request.document_id, 
+                                             label_ids=new_document_label_ids)
         labels_to_delete = [label.id for label in exist_document_labels if label.id not in document_update_request.labels]
         crud.document.delete_document_labels_by_label_ids(db=db,
                                                           label_ids=labels_to_delete)
@@ -557,9 +561,9 @@ async def get_document_detail(document_detail_request: schemas.document.Document
                                                          document_id=document_detail_request.document_id)
     if document is None:
         raise Exception('The document is not exist')
-    is_star = crud.document.get_star_document_by_document_id(db=db, 
-                                                             user_id=user.id, 
-                                                             document_id=document_detail_request.document_id) is not None
+    is_star = crud.document.get_star_document_by_user_id_and_document_id(db=db, 
+                                                                         user_id=user.id, 
+                                                                         document_id=document_detail_request.document_id) is not None
     is_read = crud.document.get_read_document_by_document_id(db=db, 
                                                              user_id=user.id, 
                                                              document_id=document_detail_request.document_id) is not None
@@ -633,8 +637,8 @@ async def star_document(star_request: schemas.document.StarRequest,
                                                      document_id=star_request.document_id)
     elif star_request.status is True:
         crud.document.star_document_by_document_id(db=db, 
-                                                user_id=user.id, 
-                                                document_id=star_request.document_id)
+                                                   user_id=user.id, 
+                                                   document_id=star_request.document_id)
     db.commit()
     return schemas.common.SuccessResponse(message="The star status of the document is successfully updated")
 

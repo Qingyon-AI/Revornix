@@ -43,8 +43,8 @@ async def search_api_key(search_api_key_request: schemas.api_key.SearchApiKeysRe
 async def delete_api_key(api_keys_delete_request: schemas.api_key.ApiKeysDeleteRequest,
                          db: Session = Depends(get_db),
                          user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    crud.api_key.delete_api_keys_by_ids(db=db, 
-                                        user_id=user.id,
-                                        api_key_ids=api_keys_delete_request.api_key_ids)
+    crud.api_key.delete_api_keys_by_api_key_ids(db=db, 
+                                                user_id=user.id,
+                                                api_key_ids=api_keys_delete_request.api_key_ids)
     db.commit()
     return schemas.common.NormalResponse()

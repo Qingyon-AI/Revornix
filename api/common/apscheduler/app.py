@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from common.sql import SessionLocal
 from notification_template.daily_summary import DailySummaryNotificationTemplate
 from common.celery.app import start_process_document
-from enums.document import DocumentMdConvertStatus
+from enums.document import DocumentMdConvertStatus, UserDocumentAuthority
 from enums.notification import NotificationContentType, NotificationSourceCategory
 from enums.section import SectionDocumentIntegration
 
@@ -49,7 +49,10 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
             entry_published = datetime.strptime(entry.published, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=timezone.utc) if hasattr(entry, "published") else None
             entry_updated = datetime.strptime(entry.updated, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=timezone.utc) if hasattr(entry, "updated") else None
 
-            existing_doc = crud.document.get_website_document_by_url(db=db, url=entry.link)
+            # TODO: 即使同一个用户，按目前的架构设计，也可能存在多个文档使用了同一个url的情况，因此此处需要修改逻辑，后续考虑当url重复时，直接更新对应文档内容
+            existing_doc = crud.document.get_website_document_by_user_id_and_url(db=db, 
+                                                                                 user_id=rss_server.user_id, 
+                                                                                 url=entry.link)
             
             if existing_doc:
                 for section in rss_server.sections:
@@ -74,9 +77,9 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                     db_website_document = crud.document.get_website_document_by_document_id(db=db, 
                                                                                             document_id=existing_doc.id)
                     # 删除原文档的网页解析信息
-                    crud.document.delete_website_document_by_website_document_id(db=db, 
-                                                                                 user_id=existing_doc.creator_id,
-                                                                                 website_document_id=db_website_document.id)
+                    crud.document.delete_website_document_by_website_document_ids(db=db, 
+                                                                                  user_id=existing_doc.creator_id,
+                                                                                  website_document_ids=[db_website_document.id])
                     # 创建新解析信息并且绑定到原文档
                     db_new_website_document = crud.document.create_website_document(db=db,
                                                                                     url=entry.link,
@@ -96,10 +99,10 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                 db_rss_document = crud.rss.bind_document_to_rss(db=db,
                                                                 rss_server_id=rss_server.id,
                                                                 document_id=db_base_document.id)
-                crud.document.bind_document_to_user(db=db,
+                crud.document.create_user_document(db=db,
                                                     user_id=rss_server.user_id,
                                                     document_id=db_base_document.id,
-                                                    authority='owner')
+                                                    authority=UserDocumentAuthority.OWNER)
                 db_website_document = crud.document.create_website_document(db=db, 
                                                                             url=entry.link, 
                                                                             document_id=db_base_document.id)

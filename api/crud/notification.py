@@ -314,31 +314,30 @@ def search_user_notification_records(db: Session,
 
 def read_user_notification_records(db: Session, 
                                    user_id: int):
+    now = datetime.now(timezone.utc)
     query = db.query(models.notification.NotificationRecord)
     query = query.filter(models.notification.NotificationRecord.user_id == user_id)
-    notifications = query.all()
-    for notification in notifications:
-        notification.read_at = datetime.now(timezone.utc)
+    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
     db.flush()
 
 def read_notification_records_by_notification_record_ids(db: Session, 
                                                          user_id: int, 
                                                          notification_record_ids: list[int]):
+    now = datetime.now(timezone.utc)
     query = db.query(models.notification.NotificationRecord)
     query = query.filter(models.notification.NotificationRecord.id.in_(notification_record_ids),
                          models.notification.NotificationRecord.user_id == user_id)
-    notification = query.first()
-    notification.read_at = datetime.now(timezone.utc)
+    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
     db.flush()
     
 def unread_notification_records_by_notification_record_ids(db: Session, 
                                                            user_id: int, 
                                                            notification_record_ids: list[int]):
+    now = datetime.now(timezone.utc)
     query = db.query(models.notification.NotificationRecord)
     query = query.filter(models.notification.NotificationRecord.id.in_(notification_record_ids),
                          models.notification.NotificationRecord.user_id == user_id)
-    notification = query.first()
-    notification.read_at = None
+    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
     db.flush()
     
 def delete_notification_targets_by_notification_target_ids(db: Session, 
