@@ -143,9 +143,9 @@ async def handle_process_document(document_id: int,
             await remote_file_service.upload_raw_content_to_path(file_path=md_file_name, 
                                                                  content=web_info.content, 
                                                                  content_type='text/plain')
-            crud.document.update_website_document_by_website_document_id(db=db,
-                                                                         website_document_id=db_website_document.id,
-                                                                         md_file_name=md_file_name)
+            db_website_document = crud.document.get_website_document_by_document_id(db=db,
+                                                                                    document_id=document_id)
+            db_website_document.md_file_name = md_file_name
             db_task.status = DocumentMdConvertStatus.SUCCESS
             db.commit()
             
@@ -498,9 +498,9 @@ async def handle_update_document_ai_podcast(document_id: int,
         document_podcast = crud.document.get_document_podcast_by_document_id(db=db,
                                                                              document_id=document_id)
         if document_podcast is not None:
-            crud.document.delete_document_podcast_by_document_id(db=db,
-                                                                 user_id=user_id,
-                                                                 document_id=document_id)
+            crud.document.delete_document_podcast_by_document_ids(db=db,
+                                                                  user_id=user_id,
+                                                                  document_ids=[document_id])
             
         db_document_podcast = crud.document.create_document_podcast(db=db,
                                                                     document_id=document_id,
@@ -531,11 +531,16 @@ async def handle_update_ai_summary(document_id: int,
         ai_summary_result = summary_document(user_id=user_id, 
                                              model_id=db_user.default_document_reader_model_id, 
                                              markdown_content=markdown_content)
-        crud.document.update_document_by_document_id(db=db,
-                                                     document_id=db_document.id,
-                                                     title=ai_summary_result.get('title'),
-                                                     description=ai_summary_result.get('description'),
-                                                     ai_summary=ai_summary_result.get('summary'))
+        db_document = crud.document.get_document_by_document_id(db=db,
+                                                                document_id=document_id)
+        if db_document is None:
+            raise Exception("Document does not exist")
+        if ai_summary_result.get('title') is not None:
+            db_document.title = ai_summary_result.get('title')
+        if ai_summary_result.get('description') is not None:
+            db_document.description = ai_summary_result.get('description')
+        if ai_summary_result.get('summary') is not None:
+            db_document.ai_summary = ai_summary_result.get('summary')
         db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai summary: {e}")

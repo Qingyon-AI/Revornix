@@ -6,7 +6,7 @@ def create_engine(db: Session,
                   uuid: str,
                   category: int,
                   name: str,
-                  name_zh: str | None = None,
+                  name_zh: str,
                   description: str | None = None,
                   description_zh: str | None = None,
                   demo_config: str | None = None):

@@ -11,9 +11,8 @@ from common.dependencies import get_db, get_current_user_with_api_key
 from common.common import get_user_remote_file_system
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, File, UploadFile, Form
-from enums.document import DocumentCategory
-from enums.section import UserSectionAuthority, UserSectionRole
-from enums.section import SectionDocumentIntegration
+from enums.document import DocumentCategory, UserDocumentAuthority
+from enums.section import UserSectionAuthority, UserSectionRole, SectionDocumentIntegration
 
 tp_router = APIRouter()
 
@@ -106,13 +105,13 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
             from_plat=document_create_request.from_plat
         )
         if document_create_request.labels is not None:
-            crud.document.bind_labels_to_document(db=db, 
-                                                  document_id=db_document.id, 
-                                                  label_ids=document_create_request.labels)
-        crud.document.bind_document_to_user(db=db, 
-                                            user_id=user.id, 
-                                            document_id=db_document.id, 
-                                            authority="owner")
+            crud.document.create_document_labels(db=db, 
+                                                 document_id=db_document.id, 
+                                                 label_ids=document_create_request.labels)
+        crud.document.create_user_document(db=db, 
+                                           user_id=user.id, 
+                                           document_id=db_document.id, 
+                                           authority=UserDocumentAuthority.OWNER)
         db_website_document = crud.document.create_website_document(db=db, 
                                                                     url=document_create_request.url, 
                                                                     document_id=db_document.id)
@@ -159,13 +158,13 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                  user_id=user.id,
                                                  document_id=db_document.id)
         if document_create_request.labels:
-            crud.document.bind_labels_to_document(db=db, 
-                                                  document_id=db_document.id, 
-                                                  label_ids=document_create_request.labels)
-        crud.document.bind_document_to_user(db=db, 
-                                            user_id=user.id, 
-                                            document_id=db_document.id, 
-                                            authority="owner")
+            crud.document.create_document_labels(db=db, 
+                                                 document_id=db_document.id, 
+                                                 label_ids=document_create_request.labels)
+        crud.document.create_user_document(db=db, 
+                                           user_id=user.id, 
+                                           document_id=db_document.id, 
+                                           authority=UserDocumentAuthority.OWNER)
         # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
         db_today_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                      user_id=user.id,
@@ -207,13 +206,13 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                                           document_id=db_document.id,
                                                                           content=document_create_request.content)
         if document_create_request.labels:
-            crud.document.bind_labels_to_document(db=db, 
-                                                  document_id=db_document.id, 
-                                                  label_ids=document_create_request.labels)
-        crud.document.bind_document_to_user(db=db, 
-                                            user_id=user.id, 
-                                            document_id=db_document.id, 
-                                            authority="owner")
+            crud.document.create_document_labels(db=db, 
+                                                 document_id=db_document.id, 
+                                                 label_ids=document_create_request.labels)
+        crud.document.create_user_document(db=db, 
+                                           user_id=user.id, 
+                                           document_id=db_document.id, 
+                                           authority=UserDocumentAuthority.OWNER)
         # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
         db_today_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                      user_id=user.id,

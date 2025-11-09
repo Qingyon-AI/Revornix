@@ -129,7 +129,7 @@ def get_user_ai_model_provider_by_id(db: Session, user_id: int, provider_id: int
                                                              models.model.UserAIModelProvider.ai_model_provider_id == provider_id,
                                                              models.model.UserAIModelProvider.delete_at == None).first()
     
-def search_ai_models(db: Session, user_id: int, keyword: str = None, provider_id: int = None):
+def search_ai_models(db: Session, user_id: int, keyword: str | None = None, provider_id: int | None = None):
     query = db.query(models.model.AIModel).join(models.model.UserAIModel)
     
     query = query.filter(models.model.UserAIModel.user_id == user_id,
@@ -143,7 +143,7 @@ def search_ai_models(db: Session, user_id: int, keyword: str = None, provider_id
     
     return query.all()
 
-def search_ai_model_providers(db: Session, user_id: int, keyword: str = None):
+def search_ai_model_providers(db: Session, user_id: int, keyword: str | None = None):
     query = db.query(models.model.AIModelPorvider).join(models.model.UserAIModelProvider)
     
     query = query.filter(models.model.AIModelPorvider.delete_at == None,

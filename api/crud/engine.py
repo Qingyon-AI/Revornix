@@ -6,7 +6,7 @@ def create_engine(db: Session,
                   uuid: str,
                   category: int,
                   name: str,
-                  name_zh: str | None = None,
+                  name_zh: str,
                   description: str | None = None,
                   description_zh: str | None = None,
                   demo_config: str | None = None):
@@ -18,8 +18,7 @@ def create_engine(db: Session,
                                      description=description,
                                      description_zh=description_zh,
                                      demo_config=demo_config,
-                                     create_time=now,
-                                     update_time=now)
+                                     create_time=now)
     db.add(db_engine)
     db.flush()
     return db_engine
@@ -37,12 +36,12 @@ def create_user_engine(db: Session,
                                               description=description,
                                               config_json=config_json,
                                               create_time=now,
-                                              update_time=now,
                                               enable=True)
     db.add(db_user_engine)
     db.flush()
     return db_user_engine
 
+# TODO：截止当前11/9 23:54 crud相关代码已优化到这里 明天继续
 def get_engine_by_id(db: Session, id: int):
     query = db.query(models.engine.Engine)
     query = query.filter(models.engine.Engine.id == id,
