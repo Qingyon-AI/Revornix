@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, date as datetime_date
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Boolean
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Boolean, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.sql import Base
@@ -14,10 +14,10 @@ class PublishSection(Base):
     __tablename__ = "publish_section"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True)
-    uuid: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
+    uuid: Mapped[str] = mapped_column(String(32), index=True, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
 
@@ -25,13 +25,13 @@ class SectionUser(Base):
     __tablename__ = "section_user"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True)
-    role: Mapped[int] = mapped_column(Integer, nullable=False, index=True, comment='0: creator 1: member 2: subscriber')
+    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    role: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: creator 1: member 2: subscriber')
     # full access相比于w&r多了一个邀请的权限，注意 除了所有者 任何人都不具备删除的权限，同时，除了所有者 任何人都不能修改他人的权限
-    authority: Mapped[int] = mapped_column(Integer, nullable=False, index=True, comment='0: full access 1: w&r 2: r')
+    authority: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: full access 1: w&r 2: r')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     # expire_time is null means the time is infinite
     expire_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
@@ -41,11 +41,11 @@ class SectionDocument(Base):
     __tablename__ = "section_document"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True)
-    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True)
+    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
+    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    status: Mapped[int] = mapped_column(Integer, nullable=False, index=True, comment='0: waiting to be supplemented, 1: supplementing 2: supplemented successfully 3: supplemented error')
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    status: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: waiting to be supplemented, 1: supplementing 2: supplemented successfully 3: supplemented error')
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
 
@@ -53,10 +53,10 @@ class SectionLabel(Base):
     __tablename__ = "section_section_label"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True)
-    label_id: Mapped[int] = mapped_column(ForeignKey("section_label.id"), index=True)
+    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
+    label_id: Mapped[int] = mapped_column(ForeignKey("section_label.id"), index=True, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
 
@@ -64,10 +64,10 @@ class DaySection(Base):
     __tablename__ = "day_section"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True)
-    date: Mapped[str] = mapped_column(String(20), nullable=False, comment='Considering that only the year, month, and day are needed here, a string is used for storage.')
+    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
+    date: Mapped[datetime_date] = mapped_column(Date, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
 
@@ -78,11 +78,11 @@ class Section(Base):
     title: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
     creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     cover: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the cover image which you uploaded to the file system')
-    description: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(500), index=True)
     md_file_name: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the markdown file which you uploaded to the file system')
-    auto_podcast: Mapped[Optional[bool]] = mapped_column(Boolean(), comment='Whether to automatically generate a podcast after uploading the markdown file')
+    auto_podcast: Mapped[bool] = mapped_column(Boolean, nullable=False, comment='Whether to automatically generate a podcast after uploading the markdown file')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     creator: Mapped["User"] = relationship("User", backref="created_sections")
@@ -92,10 +92,10 @@ class Label(Base):
     __tablename__ = "section_label"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
 
@@ -108,7 +108,7 @@ class SectionComment(Base):
     content: Mapped[str] = mapped_column(String(500), nullable=False)
     parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("section_comment.id"), index=True, comment='The id of the parent comment')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     creator: Mapped["User"] = relationship("User", backref="created_section_comments")
@@ -118,7 +118,6 @@ class SectionPodcast(Base):
     __tablename__ = "section_podcast"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    section_id: Mapped[Optional[int]] = mapped_column(ForeignKey("section.id"), index=True)
-    podcast_file_name: Mapped[str] = mapped_column(String(500), nullable=False, index=True, comment='The path of the podcast file which you uploaded to the file system')
+    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
+    podcast_file_name: Mapped[str] = mapped_column(String(500), nullable=False, comment='The path of the podcast file which you uploaded to the file system')
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    
