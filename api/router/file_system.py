@@ -2,6 +2,8 @@ import schemas
 import crud
 import json
 import boto3
+import models
+from typing import cast
 import alibabacloud_oss_v2 as oss
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, File, UploadFile, Form
@@ -255,9 +257,11 @@ async def search_mine_file_system(file_system_search_request: schemas.file_syste
     db_user_file_systems = crud.file_system.get_user_file_systems_by_user_id(db=db,
                                                                              user_id=current_user.id,
                                                                              keyword=file_system_search_request.keyword)
-    for db_user_file_system in db_user_file_systems:
-        db_file_system = crud.file_system.get_file_system_by_id(db=db, 
-                                                                file_system_id=db_user_file_system.file_system_id)
+    typed_user_file_systems = cast(
+        list[tuple[models.file_system.UserFileSystem, models.file_system.FileSystem]],
+        db_user_file_systems
+    )
+    for db_user_file_system, db_file_system in typed_user_file_systems:
         item = schemas.file_system.UserFileSystemInfo(
             id=db_user_file_system.id,
             file_system_id=db_user_file_system.file_system_id,
@@ -275,19 +279,24 @@ async def search_mine_file_system(file_system_search_request: schemas.file_syste
 async def provide_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
                               db: Session = Depends(get_db), 
                               current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    file_systems = crud.file_system.get_all_file_systems(db=db, keyword=file_system_search_request.keyword)
+    file_systems = crud.file_system.get_all_file_systems(
+        db=db, 
+        keyword=file_system_search_request.keyword
+    )
     return schemas.file_system.ProvideFileSystemSearchResponse(data=file_systems)
 
 @file_system_router.post("/install", response_model=schemas.file_system.FileSystemInstallResponse)
 async def install_user_file_system(file_system_install_request: schemas.file_system.FileSystemInstallRequest, 
                                    db: Session = Depends(get_db), 
                                    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
-                                                                    user_id=current_user.id,
-                                                                    file_system_id=file_system_install_request.file_system_id,
-                                                                    title=file_system_install_request.title,
-                                                                    description=file_system_install_request.description,
-                                                                    config_json=file_system_install_request.config_json)
+    db_user_file_system = crud.file_system.create_user_file_system(
+        db=db,
+        user_id=current_user.id,
+        file_system_id=file_system_install_request.file_system_id,
+        title=file_system_install_request.title,
+        description=file_system_install_request.description,
+        config_json=file_system_install_request.config_json
+    )
     db.commit()
     return schemas.file_system.FileSystemInstallResponse(user_file_system_id=db_user_file_system.id)
 
@@ -295,9 +304,11 @@ async def install_user_file_system(file_system_install_request: schemas.file_sys
 async def delete_user_file_system(user_file_system_delete_request: schemas.file_system.UserFileSystemDeleteRequest,
                                   db: Session = Depends(get_db),
                                   current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    crud.file_system.delete_user_file_system_by_id(db=db,
-                                                   user_id=current_user.id,
-                                                   user_file_system_id=user_file_system_delete_request.user_file_system_id)
+    crud.file_system.delete_user_file_system_by_user_id_and_user_file_system_id(
+        db=db,
+        user_id=current_user.id,
+        user_file_system_id=user_file_system_delete_request.user_file_system_id
+    )
     db.commit()
     return schemas.common.SuccessResponse()
 

@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
+# TODO 截止目前11/11 00:48 crud相关逻辑已经优化到这里 明天继续
+
 def create_rss_server(db: Session, title: str, description: str, cover: str, address: str, user_id: int):
     now = datetime.now(timezone.utc)
     db_rss_server = models.rss.RSSServer(title=title, 

@@ -40,7 +40,7 @@ class UserEngineInfo(BaseModel):
     enable: bool | None = None
     config_json: str | None = None
     create_time: datetime
-    update_time: datetime
+    update_time: datetime | None = None
     @field_validator("create_time", mode="before")
     def ensure_create_timezone(cls, v: datetime) -> datetime:
         if v.tzinfo is None:

@@ -7,7 +7,7 @@ class EngineProtocol(Protocol):
     
     engine_uuid: str
     engine_name: str
-    engine_name_zh: str | None
+    engine_name_zh: str
     engine_description: str | None
     engine_description_zh: str | None
     engine_demo_config: str | None

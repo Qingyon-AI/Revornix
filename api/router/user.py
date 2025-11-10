@@ -272,11 +272,11 @@ async def create_user_by_email_verify(email_user_create_verify_request: schemas.
                                 password=email_user_create_verify_request.password,
                                 nickname=email_user_create_verify_request.email)
     # init the default file system for the user
-    db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
-                                                                    file_system_id=1,
-                                                                    user_id=db_user.id,
-                                                                    title="Default File System",
-                                                                    description="The default file system for the user")
+    db_user_file_system = crud.file_system.create_user_file_system(db=db,
+                                                                   file_system_id=1,
+                                                                   user_id=db_user.id,
+                                                                   title="Default File System",
+                                                                   description="The default file system for the user")
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
     BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
@@ -497,11 +497,13 @@ async def create_user_by_google(user: schemas.user.GoogleUserCreate,
                                                   google_user_id=idinfo.get('sub'), 
                                                   google_user_name=idinfo.get('name'))
     # init the default file system for the user
-    db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
-                                                                    file_system_id=1,
-                                                                    user_id=db_user.id,
-                                                                    title="Default File System",
-                                                                    description="The default file system for the user")
+    db_user_file_system = crud.file_system.create_user_file_system(
+        db=db,
+        file_system_id=1,
+        user_id=db_user.id,
+        title="Default File System",
+        description="The default file system for the user"
+    )
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
     BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
@@ -584,11 +586,13 @@ async def create_user_by_github(user: schemas.user.GithubUserCreate,
                                                   github_user_name=github_user_info.get('login'))
     
     # init the default file system for the user
-    db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
-                                                                    file_system_id=1,
-                                                                    user_id=db_user.id,
-                                                                    title="Default File System",
-                                                                    description="The default file system for the user")
+    db_user_file_system = crud.file_system.create_user_file_system(
+        db=db,
+        file_system_id=1,
+        user_id=db_user.id,
+        title="Default File System",
+        description="The default file system for the user"
+    )
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
     BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
@@ -685,11 +689,13 @@ async def create_user_by_sms_verify(sms_user_code_verify_request: schemas.user.S
                                                     user_id=db_user.id, 
                                                     phone=sms_user_code_verify_request.phone)
         # init the default file system for the user
-        db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
-                                                                        file_system_id=1,
-                                                                        user_id=db_user.id,
-                                                                        title="Default File System",
-                                                                        description="The default file system for the user")
+        db_user_file_system = crud.file_system.create_user_file_system(
+            db=db,
+            file_system_id=1,
+            user_id=db_user.id,
+            title="Default File System",
+            description="The default file system for the user"
+        )
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
         BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
@@ -788,11 +794,13 @@ async def create_user_by_wechat_mini(wechat_mini_user_create_request: schemas.us
                                                       wechat_user_union_id=union_id,
                                                       wechat_user_name=nickname)
         # init the default file system for the user
-        db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
-                                                                        file_system_id=1,
-                                                                        user_id=db_user.id,
-                                                                        title="Default File System",
-                                                                        description="The default file system for the user")
+        db_user_file_system = crud.file_system.create_user_file_system(
+            db=db,
+            file_system_id=1,
+            user_id=db_user.id,
+            title="Default File System",
+            description="The default file system for the user"
+        )
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
         BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
@@ -860,11 +868,13 @@ async def create_user_by_wechat_web(wechat_web_user_create_request: schemas.user
                                                     wechat_user_union_id=union_id,
                                                     wechat_user_name=nickname)
         # init the default file system for the user
-        db_user_file_system = crud.file_system.bind_file_system_to_user(db=db,
-                                                                        file_system_id=1,
-                                                                        user_id=db_user.id,
-                                                                        title="Default File System",
-                                                                        description="The default file system for the user")
+        db_user_file_system = crud.file_system.create_user_file_system(
+            db=db,
+            file_system_id=1,
+            user_id=db_user.id,
+            title="Default File System",
+            description="The default file system for the user"
+        )
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
         BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)

@@ -212,8 +212,10 @@ db = SessionLocal()
 
 db_notification_tasks = crud.notification.get_all_notification_tasks(db=db)
 
+# TODO 如果用户任务多了之后 这个任务队列会非常的庞大 极其占用内存 考虑使用缓存优化
+
 for db_notification_task in db_notification_tasks:
-    if not db_notification_task.enable: 
+    if not db_notification_task.enable or not db_notification_task.cron_expr: 
         continue
     scheduler.add_job(
         func=send_notification,

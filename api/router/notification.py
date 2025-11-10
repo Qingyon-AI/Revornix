@@ -76,15 +76,19 @@ async def add_notification_task(add_notification_task_request: schemas.notificat
                                                                       notification_source_id=add_notification_task_request.notification_source_id,
                                                                       cron_expr=add_notification_task_request.cron_expr)
     if add_notification_task_request.notification_content_type == NotificationContentType.CUSTOM:
-        crud.notification.bind_notification_task_content_custom_to_notification_task(db=db,
-                                                                                     notification_task_id=db_notification_task.id,
-                                                                                     title=add_notification_task_request.title,
-                                                                                     content=add_notification_task_request.content)
+        crud.notification.create_notification_task_content_custom(
+            db=db,
+            notification_task_id=db_notification_task.id,
+            title=add_notification_task_request.title,
+            content=add_notification_task_request.content
+        )
     elif add_notification_task_request.notification_content_type == NotificationContentType.TEMPLATE:
-        crud.notification.bind_notification_task_content_template_to_notification_task(db=db,
-                                                                                        notification_task_id=db_notification_task.id,
-                                                                                        notification_template_id=add_notification_task_request.notification_template_id)
-    if add_notification_task_request.enable:
+        crud.notification.create_notification_task_content_template(
+            db=db,
+            notification_task_id=db_notification_task.id,
+            notification_template_id=add_notification_task_request.notification_template_id
+        )
+    if add_notification_task_request.enable and add_notification_task_request.cron_expr:
         scheduler.add_job(
             func=send_notification,
             trigger=CronTrigger.from_crontab(add_notification_task_request.cron_expr),
@@ -189,10 +193,12 @@ async def update_notification_task(update_notification_task_request: schemas.not
         db_notification_task_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(db=db,
                                                                                                                              notification_task_id=update_notification_task_request.notification_task_id)
         if db_notification_task_content_custom is None:
-            crud.notification.bind_notification_task_content_custom_to_notification_task(db=db,
-                                                                                         notification_task_id=update_notification_task_request.notification_task_id,
-                                                                                         title=update_notification_task_request.title,
-                                                                                         content=update_notification_task_request.content)
+            crud.notification.create_notification_task_content_custom(
+                db=db,
+                notification_task_id=update_notification_task_request.notification_task_id,
+                title=update_notification_task_request.title,
+                content=update_notification_task_request.content
+            )
         else:
             db_notification_task_content_custom.title = update_notification_task_request.title
             db_notification_task_content_custom.content = update_notification_task_request.content
@@ -200,9 +206,11 @@ async def update_notification_task(update_notification_task_request: schemas.not
         db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(db=db,
                                                                                                                                  notification_task_id=update_notification_task_request.notification_task_id)
         if db_notification_task_content_template is None:
-            crud.notification.bind_notification_task_content_template_to_notification_task(db=db,
-                                                                                           notification_task_id=update_notification_task_request.notification_task_id,
-                                                                                           notification_template_id=update_notification_task_request.notification_template_id)
+            crud.notification.create_notification_task_content_template(
+                db=db,
+                notification_task_id=update_notification_task_request.notification_task_id,
+                notification_template_id=update_notification_task_request.notification_template_id
+            )
         else:
             db_notification_task_content_template.notification_template_id = update_notification_task_request.notification_template_id
 
@@ -235,6 +243,7 @@ async def update_notification_task(update_notification_task_request: schemas.not
 async def get_mine_notification_task(db: Session = Depends(get_db),
                                      user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     data = []
+    # TODO 增加分页
     db_notification_tasks = crud.notification.get_notification_tasks_by_user_id(db=db,
                                                                                 user_id=user.id)
     for db_notification_task in db_notification_tasks:
@@ -277,13 +286,13 @@ async def add_notification_target(add_notification_target_request: schemas.notif
                                                                           creator_id=user.id,
                                                                           category=add_notification_target_request.category)
     if add_notification_target_request.category == NotificationTargetCategory.EMAIL:
-        db_email_notification_target = crud.notification.bind_email_info_to_notification_target(db=db,
-                                                                                                notification_target_id=db_notification_target.id,
-                                                                                                email=add_notification_target_request.email)
+        db_email_notification_target = crud.notification.create_email_notification_target(db=db,
+                                                                                          notification_target_id=db_notification_target.id,
+                                                                                          email=add_notification_target_request.email)
     if add_notification_target_request.category == NotificationTargetCategory.IOS:
-        db_ios_notification_target = crud.notification.bind_ios_info_to_notification_target(db=db,
-                                                                                             notification_target_id=db_notification_target.id,
-                                                                                             device_token=add_notification_target_request.device_token)
+        db_ios_notification_target = crud.notification.create_ios_notification_target(db=db,
+                                                                                      notification_target_id=db_notification_target.id,
+                                                                                      device_token=add_notification_target_request.device_token)
     db.commit()
     return schemas.common.NormalResponse(message="success")
 
@@ -334,6 +343,7 @@ async def update_notification_target(update_notification_target_request: schemas
 @notification_router.post('/target/mine', response_model=schemas.notification.NotificationTargetsResponse)
 async def get_mine_notification_target(db: Session = Depends(get_db),
                                        user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    # TODO 增加分野
     db_notification_targets = crud.notification.get_notification_targets_by_creator_id(db=db,
                                                                                        creator_id=user.id)
     res = schemas.notification.NotificationTargetsResponse(data=db_notification_targets)
@@ -417,6 +427,7 @@ async def update_email_source(update_notification_source_request: schemas.notifi
 @notification_router.post("/source/mine", response_model=schemas.notification.NotificationSourcesResponse)
 async def get_email_source(db: Session = Depends(get_db),
                            user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+    # TODO 增加分野
     notification_sources = crud.notification.get_notification_sources_by_creator_id(db=db, creator_id=user.id)
     return schemas.notification.NotificationSourcesResponse(data=notification_sources)
 
@@ -472,19 +483,22 @@ async def add_email_source(add_notification_source_request: schemas.notification
                                                                           description=add_notification_source_request.description,
                                                                           category=add_notification_source_request.category)
     if add_notification_source_request.category == NotificationSourceCategory.EMAIL:
-        crud.notification.bind_email_info_to_notification_source(db=db,
-                                                                 notification_source_id=db_notification_source.id,
-                                                                 email=add_notification_source_request.email,
-                                                                 password=add_notification_source_request.password,
-                                                                 server=add_notification_source_request.server,
-                                                                 port=add_notification_source_request.port)
+        crud.notification.create_email_notification_source(
+            db=db,
+            notification_source_id=db_notification_source.id,
+            email=add_notification_source_request.email,
+            password=add_notification_source_request.password,
+            server=add_notification_source_request.server,
+            port=add_notification_source_request.port
+        )
     if add_notification_source_request.category == NotificationSourceCategory.IOS:
-        crud.notification.bind_ios_info_to_notification_source(db=db,
-                                                               notification_source_id=db_notification_source.id, 
-                                                               team_id=add_notification_source_request.team_id,
-                                                               key_id=add_notification_source_request.key_id,
-                                                               private_key=add_notification_source_request.private_key,
-                                                               app_bundle_id=add_notification_source_request.app_bundle_id)
+        crud.notification.create_ios_notification_source(
+            db=db,
+            notification_source_id=db_notification_source.id, 
+            team_id=add_notification_source_request.team_id,
+            key_id=add_notification_source_request.key_id,
+            private_key=add_notification_source_request.private_key,
+            app_bundle_id=add_notification_source_request.app_bundle_id)
     db.commit()
     return schemas.common.NormalResponse(message="success")
 
@@ -507,22 +521,28 @@ async def search_notification_record(search_notification_record_request: schemas
                                      user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     has_more = True
     next_start = None
-    notification_records = crud.notification.search_user_notification_records(db=db, 
-                                                                              user_id=user.id, 
-                                                                              start=search_notification_record_request.start, 
-                                                                              limit=search_notification_record_request.limit, 
-                                                                              keyword=search_notification_record_request.keyword)
+    notification_records = crud.notification.search_notification_records_for_user(
+        db=db, 
+        user_id=user.id, 
+        start=search_notification_record_request.start, 
+        limit=search_notification_record_request.limit, 
+        keyword=search_notification_record_request.keyword
+    )
     if len(notification_records) == search_notification_record_request.limit:
-        next_notification_record = crud.notification.search_next_notification_record(db=db, 
-                                                                                     user_id=user.id, 
-                                                                                     notification_record=notification_records[-1])
+        next_notification_record = crud.notification.search_next_notification_record_for_user(
+            db=db, 
+            user_id=user.id, 
+            notification_record=notification_records[-1]
+        )
         has_more = next_notification_record is not None
         next_start = next_notification_record.id if has_more else None
     if len(notification_records) < search_notification_record_request.limit or len(notification_records) == 0:
         has_more = False
-    total = crud.notification.count_user_notification_records(db=db, 
-                                                              user_id=user.id, 
-                                                              keyword=search_notification_record_request.keyword)
+    total = crud.notification.count_notification_records_for_user(
+        db=db, 
+        user_id=user.id, 
+        keyword=search_notification_record_request.keyword
+    )
     res = schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationRecord](start=search_notification_record_request.start, 
                                                                                                limit=search_notification_record_request.limit, 
                                                                                                has_more=has_more, 
@@ -545,9 +565,11 @@ async def delete_notification_record(delete_notification_request: schemas.notifi
 async def get_notification_record_detail(notification_detail_request: schemas.notification.NotificationRecordDetailRequest, 
                                          db: Session = Depends(get_db), 
                                          user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_notification_record = crud.notification.get_user_notification_record_by_notification_record_id(db=db, 
-                                                                                                      user_id=user.id, 
-                                                                                                      notification_record_id=notification_detail_request.notification_record_id)
+    db_notification_record = crud.notification.get_notification_record_by_user_id_and_notification_record_id(
+        db=db, 
+        user_id=user.id, 
+        notification_record_id=notification_detail_request.notification_record_id
+    )
     return schemas.notification.NotificationRecord(id=db_notification_record.id,
                                                    content=db_notification_record.content,
                                                    link=db_notification_record.link,
@@ -556,7 +578,7 @@ async def get_notification_record_detail(notification_detail_request: schemas.no
 @notification_router.post('/record/read-all', response_model=schemas.common.NormalResponse)
 async def read_all_notification_record(db: Session = Depends(get_db), 
                                        user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    crud.notification.read_user_notification_records(db=db, 
+    crud.notification.read_all_notification_records_for_user(db=db, 
                                                      user_id=user.id)
     db.commit()
     return schemas.common.SuccessResponse(message="success")
@@ -566,12 +588,16 @@ async def read_notification_record(read_notification_request: schemas.notificati
                                    db: Session = Depends(get_db), 
                                    user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     if read_notification_request.status:
-        crud.notification.read_notification_records_by_notification_record_ids(db=db, 
-                                                                               user_id=user.id, 
-                                                                               notification_record_ids=read_notification_request.notification_record_ids)
+        crud.notification.read_notification_records_by_notification_record_ids_for_user(
+            db=db, 
+            user_id=user.id, 
+            notification_record_ids=read_notification_request.notification_record_ids
+        )
     else:
-        crud.notification.unread_notification_records_by_notification_record_ids(db=db, 
-                                                                                 user_id=user.id, 
-                                                                                 notification_record_ids=read_notification_request.notification_record_ids)
+        crud.notification.unread_notification_records_by_notification_record_ids_for_user(
+            db=db, 
+            user_id=user.id, 
+            notification_record_ids=read_notification_request.notification_record_ids
+        )
     db.commit()
     return schemas.common.NormalResponse(message="success")
