@@ -2,10 +2,12 @@ import models
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
-def create_api_key(db: Session, 
-                   user_id: int, 
-                   api_key: str, 
-                   description: str):
+def create_api_key(
+    db: Session, 
+    user_id: int, 
+    api_key: str, 
+    description: str
+):
     now = datetime.now(timezone.utc)
     db_api_key = models.api_key.ApiKey(user_id=user_id, 
                                        api_key=api_key, 
@@ -15,16 +17,20 @@ def create_api_key(db: Session,
     db.flush()
     return db_api_key
 
-def get_api_key_by_api_key(db: Session, 
-                           api_key: str):
+def get_api_key_by_api_key(
+    db: Session, 
+    api_key: str
+):
     query = db.query(models.api_key.ApiKey)
     query = query.filter(models.api_key.ApiKey.api_key == api_key,
                          models.api_key.ApiKey.delete_at == None)
     return query.first()
 
-def count_user_api_key(db: Session, 
-                       user_id: int, 
-                       keyword: str | None = None):
+def count_user_api_key(
+    db: Session, 
+    user_id: int, 
+    keyword: str | None = None
+):
     query = db.query(models.api_key.ApiKey)
     query = query.filter(models.api_key.ApiKey.user_id == user_id,
                          models.api_key.ApiKey.delete_at == None)
@@ -32,11 +38,13 @@ def count_user_api_key(db: Session,
         query = query.filter(models.api_key.ApiKey.description.like(f"%{keyword}%"))
     return query.count()
 
-def search_api_key(db: Session, 
-                   user_id: int, 
-                   page_num: int, 
-                   page_size: int = 10,
-                   keyword: str | None = None):
+def search_api_key(
+    db: Session, 
+    user_id: int, 
+    page_num: int, 
+    page_size: int = 10,
+    keyword: str | None = None
+):
     query = db.query(models.api_key.ApiKey)
     query = query.filter(models.api_key.ApiKey.user_id == user_id, 
                          models.api_key.ApiKey.delete_at == None)

@@ -1,8 +1,10 @@
 import schemas
 import crud
+import models
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import timezone, datetime
+from typing import cast
 from common.dependencies import get_current_user, get_db
 
 engine_router = APIRouter()
@@ -15,9 +17,11 @@ async def search_document_parse_engine(engine_search_request: schemas.engine.Eng
     db_user_engines = crud.engine.get_user_engine_by_user_id(db=db,
                                                              user_id=current_user.id,
                                                              keyword=engine_search_request.keyword)
-    for db_user_engine in db_user_engines:
-        db_engine = crud.engine.get_engine_by_id(db=db,
-                                                 id=db_user_engine.engine_id)
+    typed_user_engines = cast(
+        list[tuple[models.engine.UserEngine, models.engine.Engine]], 
+        db_user_engines
+    )
+    for db_user_engine, db_engine in typed_user_engines:
         item = schemas.engine.UserEngineInfo(
             id=db_user_engine.id,
             category=db_engine.category,
@@ -57,9 +61,9 @@ async def install_engine(engine_install_request: schemas.engine.EngineInstallReq
 async def delete_engine(engine_delete_request: schemas.engine.EngineDeleteRequest, 
                         db: Session = Depends(get_db),
                         current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    crud.engine.delete_user_engine_by_user_engine_id(db=db,
-                                                     user_id=current_user.id,
-                                                     user_engine_id=engine_delete_request.user_engine_id)
+    crud.engine.delete_user_engine_by_user_id_and_user_engine_id(db=db,
+                                                                 user_id=current_user.id,
+                                                                 user_engine_id=engine_delete_request.user_engine_id)
     db.commit()
     return schemas.common.SuccessResponse()
 

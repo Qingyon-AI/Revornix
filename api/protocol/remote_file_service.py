@@ -6,11 +6,19 @@ from config.file_system import FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_SERVER
 from enums.file import RemoteFileServiceUUID
 
 class RemoteFileServiceProtocol(Protocol):
+
+    file_service_uuid: str
+    file_service_name: str
+    file_service_name_zh: str
+    file_service_description: str | None
+    file_service_description_zh: str | None
+    file_service_demo_config: str | None
+    file_service_config: str | None
     
     def __init__(self, 
                  file_service_uuid: str,
-                 file_service_name: str | None = None, 
-                 file_service_name_zh: str | None = None, 
+                 file_service_name: str, 
+                 file_service_name_zh: str, 
                  file_service_description: str | None = None, 
                  file_service_description_zh: str | None = None, 
                  file_service_demo_config: str | None = None,

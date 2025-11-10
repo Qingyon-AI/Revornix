@@ -71,21 +71,27 @@ async def get_ai_model(model_request: schemas.ai.ModelRequest,
     if data is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
     
-    db_user_model = crud.model.get_user_ai_model_by_id_decrypted(db=db,
-                                                                 user_id=user.id,
-                                                                 model_id=model_request.model_id)
+    db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
+        db=db,
+        user_id=user.id,
+        ai_model_id=model_request.model_id
+    )
     
     if db_user_model is None or db_user_model.user_id != user.id:
         raise schemas.error.CustomException("The model is not belong to you", code=403)
     
     provider = crud.model.get_ai_model_provider_by_id(db=db,
                                                       provider_id=data.provider_id)
-    db_user_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(db=db,
-                                                                             user_id=user.id,
-                                                                             provider_id=data.provider_id)
-    db_user_model = crud.model.get_user_ai_model_by_id_decrypted(db=db,
-                                                                 user_id=user.id,
-                                                                 model_id=model_request.model_id)
+    db_user_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
+        db=db,
+        user_id=user.id,
+        ai_model_provider_id=data.provider_id
+    )
+    db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
+        db=db,
+        user_id=user.id,
+        ai_model_id=model_request.model_id
+    )
     return schemas.ai.Model(id=data.id,
                             name=data.name,
                             description=data.description,
@@ -107,9 +113,11 @@ async def get_ai_model(model_provider_request: schemas.ai.ModelProviderRequest,
         raise schemas.error.CustomException("The model provider is not exist", code=404)
     if data.user_id != user.id:
         raise schemas.error.CustomException("The model provider is not belong to you", code=403)
-    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(db=db,
-                                                                                   user_id=user.id,
-                                                                                   provider_id=model_provider_request.provider_id)
+    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
+        db=db,
+        user_id=user.id,
+        ai_model_provider_id=model_provider_request.provider_id
+    )
     return schemas.ai.ModelProvider(id=data.id,
                                     name=data.name,
                                     description=data.description,
@@ -135,9 +143,11 @@ async def create_model_provider(model_provider_request: schemas.ai.ModelProvider
 async def delete_ai_model(delete_model_request: schemas.ai.DeleteModelRequest,
                           db: Session = Depends(get_db),
                           user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    crud.model.delete_ai_models(db=db, 
-                                user_id=user.id,
-                                model_ids=delete_model_request.model_ids)
+    crud.model.delete_ai_models_by_user_id_and_model_ids(
+        db=db, 
+        user_id=user.id,
+        model_ids=delete_model_request.model_ids
+    )
     if user.default_revornix_model_id in delete_model_request.model_ids:
         user.default_revornix_model_id = None
     if user.default_document_reader_model_id in delete_model_request.model_ids:
@@ -153,9 +163,17 @@ async def delete_ai_model(delete_model_request: schemas.ai.DeleteModelProviderRe
                                          user_id=user.id,
                                          provider_ids=delete_model_request.provider_ids)
     for provider_id in delete_model_request.provider_ids:
-        db_models = crud.model.search_ai_models(db=db, user_id=user.id, provider_id=provider_id)
+        db_models = crud.model.search_ai_models_for_user_ai_model_provider(
+            db=db, 
+            user_id=user.id, 
+            provider_id=provider_id
+        )
         db_model_ids = [model.id for model in db_models]
-        crud.model.delete_ai_models(db=db, user_id=user.id, model_ids=db_model_ids)
+        crud.model.delete_ai_models_by_user_id_and_model_ids(
+            db=db, 
+            user_id=user.id, 
+            model_ids=db_model_ids
+        )
     if user.default_revornix_model_id in db_model_ids:
         user.default_revornix_model_id = None
     if user.default_document_reader_model_id in db_model_ids:
@@ -168,19 +186,25 @@ async def list_ai_model(model_search_request: schemas.ai.ModelSearchRequest,
                         db: Session = Depends(get_db),
                         user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     data = []
-    db_ai_models = crud.model.search_ai_models(db=db, 
-                                               user_id=user.id, 
-                                               keyword=model_search_request.keyword,
-                                               provider_id=model_search_request.provider_id)
+    db_ai_models = crud.model.search_ai_models_for_user_ai_model_provider(
+        db=db, 
+        user_id=user.id, 
+        keyword=model_search_request.keyword,
+        provider_id=model_search_request.provider_id
+    )
     for item in db_ai_models:
         db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, 
                                                                    provider_id=item.provider_id)
-        db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(db=db,
-                                                                                       user_id=user.id,
-                                                                                       provider_id=db_model_provider.id)
-        db_user_ai_model = crud.model.get_user_ai_model_by_id_decrypted(db=db,
-                                                                        user_id=user.id,
-                                                                        model_id=item.id)
+        db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
+            db=db,
+            user_id=user.id,
+            ai_model_provider_id=db_model_provider.id
+        )
+        db_user_ai_model = crud.model.get_user_ai_model_by_id_decrypted(
+            db=db,
+            user_id=user.id,
+            ai_model_id=item.id
+        )
         data.append(
             schemas.ai.Model(id=item.id,
                              name=item.name,
@@ -200,13 +224,17 @@ async def list_ai_model_provider(model_provider_search_request: schemas.ai.Model
                                  db: Session = Depends(get_db),
                                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     data = []
-    db_ai_model_providers = crud.model.search_ai_model_providers(db=db, 
-                                                                 user_id=user.id,
-                                                                 keyword=model_provider_search_request.keyword)
+    db_ai_model_providers = crud.model.search_ai_model_providers_for_user(
+        db=db, 
+        user_id=user.id,
+        keyword=model_provider_search_request.keyword
+    )
     for item in db_ai_model_providers:
-        db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(db=db,
-                                                                                          user_id=user.id,
-                                                                                          provider_id=item.id)
+        db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
+            db=db,
+            user_id=user.id,
+            ai_model_provider_id=item.id
+        )
         data.append(
             schemas.ai.ModelProvider(id=item.id,
                                      name=item.name,
@@ -225,9 +253,11 @@ async def update_ai_model(model_update_request: schemas.ai.ModelUpdateRequest,
                                                 model_id=model_update_request.id)
     if db_ai_model is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
-    db_user_ai_model = crud.model.get_user_ai_model_by_id_decrypted(db=db,
-                                                                    user_id=user.id,
-                                                                    model_id=db_ai_model.id)
+    db_user_ai_model = crud.model.get_user_ai_model_by_id_decrypted(
+        db=db,
+        user_id=user.id,
+        ai_model_id=db_ai_model.id
+    )
     if db_user_ai_model is None or db_user_ai_model.user_id != user.id:
         raise schemas.error.CustomException("The model is not belong to you", code=403)
     if model_update_request.name is not None:
@@ -251,9 +281,11 @@ async def update_ai_model_provider(model_provider_update_request: schemas.ai.Mod
                                                                   provider_id=model_provider_update_request.id)
     if db_ai_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
-    db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(db=db,
-                                                                                      user_id=user.id,
-                                                                                      provider_id=model_provider_update_request.id)
+    db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
+            db=db,
+            user_id=user.id,
+            ai_model_provider_id=model_provider_update_request.id
+        )
     if db_user_ai_model_provider.user_id != user.id:
         raise schemas.error.CustomException("The model provider is not belong to you", code=403)
     if model_provider_update_request.name is not None:
@@ -281,9 +313,11 @@ async def create_agent(user_id: int, enable_mcp: bool = False):
     db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
     if db_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
-    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(db=db, 
-                                                                                   user_id=user.id, 
-                                                                                   provider_id=db_model.provider_id)
+    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
+        db=db, 
+        user_id=user.id, 
+        ai_model_provider_id=db_model.provider_id
+    )
     mcp_client = MCPClient()
     if enable_mcp:
         mcp_servers = crud.mcp.search_mcp_servers(db=db, user_id=user_id)
@@ -292,7 +326,10 @@ async def create_agent(user_id: int, enable_mcp: bool = False):
                 continue
             else:
                 if mcp_server.category == MCPCategory.STD:
-                    stdio_mcp_server = crud.mcp.get_std_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
+                    stdio_mcp_server = crud.mcp.get_std_mcp_server_by_base_server_id(
+                        db=db, 
+                        base_server_id=mcp_server.id
+                    )
                     mcp_client.add_server(name=mcp_server.name,
                                           server_config={
                                               "command": stdio_mcp_server.cmd,
@@ -301,7 +338,10 @@ async def create_agent(user_id: int, enable_mcp: bool = False):
                                               }
                                           )
                 if mcp_server.category == MCPCategory.HTTP:
-                    http_mcp_server = crud.mcp.get_http_mcp_server_by_base_id(db=db, base_id=mcp_server.id)
+                    http_mcp_server = crud.mcp.get_http_mcp_server_by_base_server_id(
+                        db=db, 
+                        base_server_id=mcp_server.id
+                    )
                     mcp_client.add_server(name=mcp_server.name,
                                           server_config={
                                               "url": http_mcp_server.url,
