@@ -1,34 +1,39 @@
 import models
 from uuid import uuid4
 from datetime import datetime, timezone
-from sqlalchemy.orm import Session
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import or_
 from enums.section import UserSectionRole
+from datetime import date as datetime_date
 
-def create_section_podcast(db: Session,
-                           section_id: int,
-                           podcast_file_name: str | None = None):
+def create_section_podcast(
+    db: Session,
+    section_id: int,
+    podcast_file_name: str
+):
     db_section_podcast = models.section.SectionPodcast(section_id=section_id,
                                                        podcast_file_name=podcast_file_name)
     db.add(db_section_podcast)
     db.flush()
     return db_section_podcast
 
-def create_publish_section(db: Session,
-                           section_id: int):
+def create_publish_section(
+    db: Session,
+    section_id: int
+):
     now = datetime.now(timezone.utc)
     db_publish_section = models.section.PublishSection(section_id=section_id,
                                                        uuid=uuid4().hex,
-                                                       create_time=now,
-                                                       update_time=now)
+                                                       create_time=now)
     db.add(db_publish_section)
     db.flush()
     return db_publish_section
 
-def create_label(db: Session, 
-                 name: str, 
-                 user_id: int):
+def create_section_label(
+    db: Session, 
+    user_id: int,
+    name: str
+):
     now = datetime.now(timezone.utc)
     db_label = models.section.Label(name=name, 
                                     user_id=user_id,
@@ -37,74 +42,82 @@ def create_label(db: Session,
     db.flush()
     return db_label
 
-def create_section_comment(db: Session, 
-                           section_id: int, 
-                           creator_id: int, 
-                           content: str,
-                           parent_id: int | None = None):
+def create_section_comment(
+    db: Session, 
+    section_id: int, 
+    creator_id: int, 
+    content: str,
+    parent_id: int | None = None
+):
     now = datetime.now(timezone.utc)
     db_section_comment = models.section.SectionComment(section_id=section_id,
                                                        creator_id=creator_id,
                                                        content=content,
                                                        parent_id=parent_id,
-                                                       create_time=now,
-                                                       update_time=now)
+                                                       create_time=now)
     db.add(db_section_comment)
     db.flush()
     return db_section_comment
 
-def create_section_user(db: Session, 
-                        section_id: int, 
-                        user_id: int, 
-                        role: int,
-                        authority: int,
-                        expire_time: datetime | None = None):
+def create_section_user(
+    db: Session, 
+    section_id: int, 
+    user_id: int, 
+    role: int,
+    authority: int,
+    expire_time: datetime | None = None
+):
     now = datetime.now(timezone.utc)
     db_section_user = models.section.SectionUser(section_id=section_id,
                                                  user_id=user_id,
                                                  role=role,
                                                  authority=authority,
                                                  create_time=now,
-                                                 update_time=now,
                                                  expire_time=expire_time)
     db.add(db_section_user)
     db.flush()
     return db_section_user
 
-def create_section(db: Session, 
-                   creator_id: int,
-                   title: str, 
-                   description: str,
-                   cover: str | None = None,
-                   auto_podcast: bool | None = False):
+def create_section(
+    db: Session, 
+    creator_id: int,
+    title: str, 
+    cover: str | None = None,
+    description: str | None = None,
+    md_file_name: str | None = None,
+    auto_podcast: bool = False
+):
     now = datetime.now(timezone.utc)
     db_section = models.section.Section(title=title, 
                                         creator_id=creator_id,
                                         cover=cover,
                                         description=description,
                                         auto_podcast=auto_podcast,
-                                        create_time=now,
-                                        update_time=now)
+                                        md_file_name=md_file_name,
+                                        create_time=now)
     db.add(db_section)
     db.flush()
     return db_section
 
-def bind_labels_to_section(db: Session, 
-                           section_id: int, 
-                           label_ids: list[int]):
+def create_section_labels(
+    db: Session, 
+    section_id: int, 
+    label_ids: list[int]
+):
     now = datetime.now(timezone.utc)
     db_document_labels = [models.section.SectionLabel(section_id=section_id, 
                                                       label_id=label_id,
-                                                      create_time=now,
-                                                      update_time=now) for label_id in label_ids]
+                                                      create_time=now) for label_id in label_ids]
     db.add_all(db_document_labels)
     db.flush()
     return db_document_labels
 
-def create_or_update_section_document(db: Session,
-                                      section_id: int,
-                                      document_id: int,
-                                      status: int):
+def create_or_update_section_document(
+    db: Session,
+    section_id: int,
+    document_id: int,
+    status: int
+):
     now = datetime.now(timezone.utc)
     db_section_document = db.query(models.section.SectionDocument).filter_by(section_id=section_id,
                                                                              document_id=document_id).one_or_none()
@@ -112,7 +125,6 @@ def create_or_update_section_document(db: Session,
         db_section_document = models.section.SectionDocument(section_id=section_id,
                                                              document_id=document_id,
                                                              create_time=now,
-                                                             update_time=now,
                                                              status=status)
         db.add(db_section_document)
     else:
@@ -121,50 +133,30 @@ def create_or_update_section_document(db: Session,
     db.flush()
     return db_section_document
 
-def bind_document_to_section(db: Session,
-                             section_id: int,
-                             document_id: int,
-                             status: int = 0):
-    now = datetime.now(timezone.utc)
-    db_section_document = models.section.SectionDocument(section_id=section_id,
-                                                         document_id=document_id,
-                                                         create_time=now,
-                                                         update_time=now,
-                                                         status=status)
-    db.add(db_section_document)
-    db.flush()
-    return db_section_document
-
-def bind_section_to_date_by_date_and_section_id_and_user_id(db: Session,
-                                                            section_id: int, 
-                                                            date: str):
+def create_date_section(
+    db: Session,
+    section_id: int, 
+    date: datetime_date
+):
     now = datetime.now(timezone.utc)
     db_day_section = models.section.DaySection(date=date,
                                                section_id=section_id,
-                                               create_time=now,
-                                               update_time=now)
+                                               create_time=now)
     db.add(db_day_section)
     db.flush()
     return db_day_section
 
-def get_section_podcast_by_section_id(db: Session,
-                                      section_id: int):
+def get_section_podcast_by_section_id(
+    db: Session,
+    section_id: int
+):
     query = db.query(models.section.SectionPodcast)
     query = query.filter(models.section.SectionPodcast.section_id == section_id,
                          models.section.SectionPodcast.delete_at == None)
-    return query.first()
-
-def get_label_by_label_id(db: Session, 
-                          label_id: int, 
-                          user_id: int):
-    query = db.query(models.section.Label)
-    query = query.filter(models.section.Label.id == label_id,
-                         models.section.Label.delete_at == None,
-                         models.section.Label.user_id == user_id)
     return query.one_or_none()
 
-def get_document_sections_by_document_id(db: Session,
-                                         document_id: int):
+def get_sections_by_document_id(db: Session,
+                                document_id: int):
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.document_id == document_id,
@@ -173,44 +165,51 @@ def get_document_sections_by_document_id(db: Session,
     query = query.order_by(models.section.Section.update_time.desc())
     return query.all()
 
-# 只返回用户是创建者或者成员的section
-def get_all_my_sections(db: Session, 
-                        user_id: int):
+def get_user_sections(
+    db: Session, 
+    user_id: int,
+    filter_roles: list[UserSectionRole] | None = None
+):
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.user_id == user_id,
-                         models.section.SectionUser.delete_at == None,
-                         models.section.SectionUser.role.in_([
-                             UserSectionRole.CREATOR,
-                             UserSectionRole.MEMBER
-                            ])
-                         )
+                         models.section.SectionUser.delete_at == None)
+    if filter_roles is not None:
+        query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     query = query.filter(models.section.Section.delete_at == None)
     query = query.order_by(models.section.Section.create_time.desc())
     return query.all()
 
-def get_publish_section_by_section_id(db: Session, 
-                                      section_id: int):
+def get_publish_section_by_section_id(
+    db: Session, 
+    section_id: int
+):
     query = db.query(models.section.PublishSection)
     query = query.filter(models.section.PublishSection.section_id == section_id,
                          models.section.PublishSection.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_publish_sections_by_uuid(db: Session,
-                                 uuid: str):
+def get_publish_sections_by_uuid(
+    db: Session,
+    uuid: str
+):
     query = db.query(models.section.PublishSection)
     query = query.filter(models.section.PublishSection.uuid == uuid,
                          models.section.PublishSection.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def search_user_sections(db: Session, 
-                         user_id: int, 
-                         start: int | None = None, 
-                         limit: int = 10, 
-                         keyword: str | None = None,
-                         label_ids: list[int] | None = None,
-                         only_public: bool = False,
-                         desc: bool = True):
+# TODO 截止当前11/12 00:32 crud相关逻辑优化到这里 明天继续
+
+def search_user_sections(
+    db: Session, 
+    user_id: int, 
+    start: int | None = None, 
+    limit: int = 10, 
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+    only_public: bool = False,
+    desc: bool = True
+):
     query = db.query(models.section.Section)
     query = query.filter(models.section.Section.delete_at == None)
     query = query.join(models.section.SectionUser)

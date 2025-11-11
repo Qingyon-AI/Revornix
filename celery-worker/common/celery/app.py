@@ -163,7 +163,7 @@ async def handle_process_document(document_id: int,
                                    user_id=user_id)
         
         # 更新对应专栏section
-        sections = crud.section.get_document_sections_by_document_id(db=db, document_id=document_id)
+        sections = crud.section.get_sections_by_document_id(db=db, document_id=document_id)
         sections_ids = [sec.id for sec in sections]
         await handle_update_sections(sections=sections_ids, 
                                      document_id=document_id, 
@@ -631,7 +631,7 @@ def start_process_document(document_id: int,
 def update_sections(document_id: int,
                     user_id: int):
     db = SessionLocal()
-    sections = crud.section.get_document_sections_by_document_id(db=db, document_id=document_id)
+    sections = crud.section.get_sections_by_document_id(db=db, document_id=document_id)
     section_ids = [section.id for section in sections]
     asyncio.run(handle_update_sections(sections=section_ids,
                                        document_id=document_id, 

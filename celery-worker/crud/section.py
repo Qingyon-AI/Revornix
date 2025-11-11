@@ -4,15 +4,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from enums.section import UserSectionRole
 
-def create_section_podcast(db: Session,
-                           section_id: int,
-                           podcast_file_name: str | None = None):
-    db_section_podcast = models.section.SectionPodcast(section_id=section_id,
-                                                       podcast_file_name=podcast_file_name)
-    db.add(db_section_podcast)
-    db.flush()
-    return db_section_podcast
-
 def get_section_podcast_by_section_id(db: Session,
                                       section_id: int):
     query = db.query(models.section.SectionPodcast)
@@ -20,8 +11,8 @@ def get_section_podcast_by_section_id(db: Session,
                          models.section.SectionPodcast.delete_at == None)
     return query.first()
 
-def get_document_sections_by_document_id(db: Session,
-                                         document_id: int):
+def get_sections_by_document_id(db: Session,
+                                document_id: int):
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.document_id == document_id,

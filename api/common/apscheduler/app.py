@@ -96,9 +96,11 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                                                                       description=description,
                                                                       category=1,
                                                                       from_plat='rss')
-                db_rss_document = crud.rss.bind_document_to_rss(db=db,
-                                                                rss_server_id=rss_server.id,
-                                                                document_id=db_base_document.id)
+                db_rss_document = crud.rss.create_rss_document(
+                    db=db,
+                    rss_server_id=rss_server.id,
+                    document_id=db_base_document.id
+                )
                 crud.document.create_user_document(db=db,
                                                     user_id=rss_server.user_id,
                                                     document_id=db_base_document.id,
@@ -125,6 +127,7 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
 async def fetch_all_rss_sources_and_update():
     now = datetime.now(tz=timezone.utc)
     db = SessionLocal()
+    # TODO: 当rss过多的时候，会导致内存爆炸，考虑使用next迭代器，每次只获取一个rss
     db_rss_servers = crud.rss.get_all_rss_servers(db=db)
     for rss_server in db_rss_servers:
         rss_server_info = schemas.rss.RssServerInfo.model_validate(rss_server)
@@ -144,13 +147,15 @@ async def fetch_all_rss_sources_and_update():
                                              user_id=rss_server.user_id,
                                              role=UserSectionRole.CREATOR,
                                              authority=UserSectionAuthority.FULL_ACCESS)
-            crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
-                                                                                 section_id=db_user_day_section.id,
-                                                                                 date=now.date().isoformat())
+            crud.section.create_date_section(
+                db=db,
+                section_id=db_user_day_section.id,
+                date=now.date()
+            )
             db.commit()
         rss_server_info.sections.append(schemas.rss.RssSectionInfo.model_validate(db_user_day_section))
         
-        db_rss_sections = crud.rss.get_sections_by_rss_id(db=db, rss_server_id=rss_server.id)
+        db_rss_sections = crud.rss.get_sections_by_rss_server_id(db=db, rss_server_id=rss_server.id)
         for db_rss_section in db_rss_sections:
             rss_server_info.sections.append(schemas.rss.RssSectionInfo.model_validate(db_rss_section))
         await fetch_and_save(rss_server_info)
