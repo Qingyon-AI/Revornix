@@ -341,9 +341,11 @@ async def delete_section_user(section_user_delete_request: schemas.section.Secti
 async def add_label(label_add_request: schemas.section.LabelAddRequest,
                     db: Session = Depends(get_db), 
                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_label = crud.section.create_label(db=db, 
-                                         name=label_add_request.name, 
-                                         user_id=user.id)
+    db_label = crud.section.create_section_label(
+        db=db, 
+        name=label_add_request.name, 
+        user_id=user.id
+    )
     db.commit()
     return schemas.section.CreateLabelResponse(id=db_label.id, 
                                                name=db_label.name)
@@ -453,7 +455,7 @@ async def update_section(
                                                                              section_id=section_update_request.section_id)
         exist_section_label_ids = [label.id for label in exist_section_labels]
         new_section_label_ids = [label_id for label_id in section_update_request.labels if label_id not in exist_section_label_ids]
-        crud.section.bind_labels_to_section(db=db, 
+        crud.section.create_section_labels(db=db, 
                                             section_id=section_update_request.section_id, 
                                             label_ids=new_section_label_ids)
         labels_to_delete = [label.id for label in exist_section_labels if label.id not in section_update_request.labels]
@@ -531,8 +533,11 @@ async def search_public_sections(
 async def get_all_mine_sections(db: Session = Depends(get_db),
                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     sections = []
-    db_sections = crud.section.get_all_my_sections(db=db, 
-                                                   user_id=user.id)
+    db_sections = crud.section.get_user_sections(
+        db=db, 
+        user_id=user.id,
+        filter_roles=[UserSectionRole.CREATOR, UserSectionRole.MEMBER]
+    )
     for db_section in db_sections:
         db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                                   section_id=db_section.id,
@@ -835,7 +840,7 @@ async def create_section(
                                              description=section_create_request.description,
                                              auto_podcast=section_create_request.auto_podcast)
     if section_create_request.labels:
-        crud.section.bind_labels_to_section(db=db, 
+        crud.section.create_section_labels(db=db, 
                                             section_id=db_section.id, 
                                             label_ids=section_create_request.labels)
     db_user_section = crud.section.create_section_user(db=db,

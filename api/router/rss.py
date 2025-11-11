@@ -19,12 +19,12 @@ async def getRssServerDetail(get_rss_server_detail_request: schemas.rss.GetRssSe
     rss_server_info = schemas.rss.RssServerInfo.model_validate(db_rss_server)
         
     rss_server_info.sections = []
-    db_rss_sections = crud.rss.get_sections_by_rss_id(db=db, rss_server_id=db_rss_server.id)
+    db_rss_sections = crud.rss.get_sections_by_rss_server_id(db=db, rss_server_id=db_rss_server.id)
     for db_rss_section in db_rss_sections:
         rss_server_info.sections.append(schemas.rss.RssSectionInfo.model_validate(db_rss_section))
         
     rss_server_info.documents = []
-    db_rss_documents = crud.rss.get_documents_by_rss_id(db=db, rss_server_id=db_rss_server.id)
+    db_rss_documents = crud.rss.get_documents_by_rss_server_id(db=db, rss_server_id=db_rss_server.id)
     for db_rss_document in db_rss_documents:
         rss_server_info.documents.append(schemas.rss.RssDocumentInfo.model_validate(db_rss_document))
     return rss_server_info
@@ -35,12 +35,14 @@ async def getRssServerDocument(get_rss_server_document_request: schemas.rss.GetR
                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     has_more = True
     next_start = None
-    db_documents = crud.rss.search_rss_documents(db=db, 
-                                                 rss_id=get_rss_server_document_request.rss_id,
-                                                 start=get_rss_server_document_request.start,
-                                                 limit=get_rss_server_document_request.limit,
-                                                 keyword=get_rss_server_document_request.keyword,
-                                                 desc=get_rss_server_document_request.desc)
+    db_documents = crud.rss.search_document_for_rss(
+        db=db, 
+        rss_id=get_rss_server_document_request.rss_id,
+        start=get_rss_server_document_request.start,
+        limit=get_rss_server_document_request.limit,
+        keyword=get_rss_server_document_request.keyword,
+        desc=get_rss_server_document_request.desc
+    )
     def get_document_info(db_document: models.rss.RSSDocument): 
         db_labels = crud.document.get_labels_by_document_id(db=db,
                                                             document_id=db_document.id)
@@ -64,16 +66,20 @@ async def getRssServerDocument(get_rss_server_document_request: schemas.rss.GetR
     if len(documents) < get_rss_server_document_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == get_rss_server_document_request.limit:
-        next_rss_document = crud.rss.search_next_rss_document(db=db, 
-                                                              rss_id=get_rss_server_document_request.rss_id,
-                                                              document=db_documents[-1],
-                                                              keyword=get_rss_server_document_request.keyword,
-                                                              desc=get_rss_server_document_request.desc)
+        next_rss_document = crud.rss.search_next_document_for_rss(
+            db=db, 
+            rss_id=get_rss_server_document_request.rss_id,
+            document=db_documents[-1],
+            keyword=get_rss_server_document_request.keyword,
+            desc=get_rss_server_document_request.desc
+        )
         has_more = next_rss_document is not None
         next_start = next_rss_document.id if has_more else None
-    total = crud.rss.count_rss_documents(db=db,
-                                         rss_id=get_rss_server_document_request.rss_id,
-                                         keyword=get_rss_server_document_request.keyword)
+    total = crud.rss.count_document_for_rss(
+        db=db,
+        rss_id=get_rss_server_document_request.rss_id,
+        keyword=get_rss_server_document_request.keyword
+    )
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,
         elements=documents,
@@ -142,21 +148,23 @@ async def searchRssServer(search_rss_request: schemas.rss.SearchRssServerRequest
                           current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
     has_more = True
     next_start = None
-    db_rss_servers = crud.rss.search_user_rss_servers(db=db, 
-                                                      user_id=current_user.id,
-                                                      start=search_rss_request.start,
-                                                      limit=search_rss_request.limit,
-                                                      keyword=search_rss_request.keyword)
+    db_rss_servers = crud.rss.search_rss_servers_for_user(
+        db=db, 
+        user_id=current_user.id,
+        start=search_rss_request.start,
+        limit=search_rss_request.limit,
+        keyword=search_rss_request.keyword
+    )
     def get_rss_server_info(db_rss_server: models.rss.RSSServer):
         rss_server_info = schemas.rss.RssServerInfo.model_validate(db_rss_server)
         
         rss_server_info.sections = []
-        db_rss_sections = crud.rss.get_sections_by_rss_id(db=db, rss_server_id=db_rss_server.id)
+        db_rss_sections = crud.rss.get_sections_by_rss_server_id(db=db, rss_server_id=db_rss_server.id)
         for db_rss_section in db_rss_sections:
             rss_server_info.sections.append(schemas.rss.RssSectionInfo.model_validate(db_rss_section))
             
         rss_server_info.documents = []
-        db_rss_documents = crud.rss.get_documents_by_rss_id(db=db, rss_server_id=db_rss_server.id)
+        db_rss_documents = crud.rss.get_documents_by_rss_server_id(db=db, rss_server_id=db_rss_server.id)
         for db_rss_document in db_rss_documents:
             rss_server_info.documents.append(schemas.rss.RssDocumentInfo.model_validate(db_rss_document))
             
@@ -167,15 +175,19 @@ async def searchRssServer(search_rss_request: schemas.rss.SearchRssServerRequest
     if len(rss_servers) < search_rss_request.limit or len(rss_servers) == 0:
         has_more = False
     if len(rss_servers) == search_rss_request.limit:
-        db_next_rss_server = crud.rss.search_next_user_rss_server(db=db,
-                                                                  user_id=current_user.id,
-                                                                  rss_server=db_rss_servers[-1],
-                                                                  keyword=search_rss_request.keyword)
+        db_next_rss_server = crud.rss.search_next_rss_server_for_user(
+            db=db,
+            user_id=current_user.id,
+            rss_server=db_rss_servers[-1],
+            keyword=search_rss_request.keyword
+        )
         has_more = db_next_rss_server is not None
         next_start = db_next_rss_server.id if has_more else None
-    db_rss_servers_count = crud.rss.count_user_rss_servers(db=db,
-                                                           user_id=current_user.id,
-                                                           keyword=search_rss_request.keyword)
+    db_rss_servers_count = crud.rss.count_rss_servers_for_user(
+        db=db,
+        user_id=current_user.id,
+        keyword=search_rss_request.keyword
+    )
     return schemas.pagination.InifiniteScrollPagnition(total=db_rss_servers_count,
                                                        start=search_rss_request.start,
                                                        limit=search_rss_request.limit,

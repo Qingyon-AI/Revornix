@@ -44,7 +44,7 @@ async def create_section(section_create_request: schemas.section.SectionCreateRe
                                              title=section_create_request.title, 
                                              description=section_create_request.description)
     if section_create_request.labels:
-            crud.section.bind_labels_to_section(db=db, 
+            crud.section.create_section_labels(db=db, 
                                                 section_id=db_section.id, 
                                                 label_ids=section_create_request.labels)
     db_user_section = crud.section.create_section_user(db=db,
@@ -59,7 +59,7 @@ async def create_section(section_create_request: schemas.section.SectionCreateRe
 async def add_label(label_add_request: schemas.section.LabelAddRequest,
                     db: Session = Depends(get_db), 
                     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
-    db_label = crud.section.create_label(db=db, 
+    db_label = crud.section.create_section_label(db=db, 
                                          name=label_add_request.name, 
                                          user_id=user.id)
     db.commit()
@@ -68,8 +68,11 @@ async def add_label(label_add_request: schemas.section.LabelAddRequest,
 @tp_router.post('/section/mine/all', response_model=schemas.section.AllMySectionsResponse)
 async def get_all_mine_sections(db: Session = Depends(get_db),
                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
-    db_sections = crud.section.get_all_my_sections(db=db, 
-                                                   user_id=user.id)
+    db_sections = crud.section.get_user_sections(
+        db=db, 
+        user_id=user.id,
+        filter_roles=[UserSectionRole.CREATOR, UserSectionRole.MEMBER]
+    )
     return schemas.section.AllMySectionsResponse(data=db_sections)
 
 @tp_router.post("/document/label/list", response_model=schemas.document.LabelListResponse)
@@ -84,7 +87,7 @@ async def list_label(db: Session = Depends(get_db),
 async def create_document_label(label_add_request: schemas.document.LabelAddRequest,
                                 db: Session = Depends(get_db),
                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)):
-    db_label = crud.document.create_label(db=db, 
+    db_label = crud.document.create_document_label(db=db, 
                                           name=label_add_request.name, 
                                           user_id=user.id)
     db.commit()
@@ -129,9 +132,11 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                              user_id=user.id,
                                              authority=UserSectionAuthority.FULL_ACCESS,
                                              role=UserSectionRole.CREATOR)
-            crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
-                                                                                 section_id=db_today_section.id,
-                                                                                 date=now.date().isoformat())
+            crud.section.create_date_section(
+                db=db,
+                section_id=db_today_section.id,
+                date=now.date()
+            )
         document_create_request.sections.append(db_today_section.id)
         for section_id in document_create_request.sections:
             db_section_documents = crud.section.create_or_update_section_document(db=db,
@@ -179,9 +184,11 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                              user_id=user.id,
                                              authority=UserSectionAuthority.FULL_ACCESS,
                                              role=UserSectionRole.CREATOR)
-            crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
-                                                                                 section_id=db_today_section.id,
-                                                                                 date=now.date().isoformat())
+            crud.section.create_date_section(
+                db=db,
+                section_id=db_today_section.id,
+                date=now.date()
+            )
         document_create_request.sections.append(db_today_section.id)
         for section_id in document_create_request.sections:
             db_section_documents = crud.section.create_or_update_section_document(db=db,
@@ -227,9 +234,11 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                              user_id=user.id,
                                              authority=UserSectionAuthority.FULL_ACCESS,
                                              role=UserSectionRole.CREATOR)
-            crud.section.bind_section_to_date_by_date_and_section_id_and_user_id(db=db,
-                                                                                 section_id=db_today_section.id,
-                                                                                 date=now.date().isoformat())
+            crud.section.create_date_section(
+                db=db,
+                section_id=db_today_section.id,
+                date=now.date()
+            )
         document_create_request.sections.append(db_today_section.id)
         for section_id in document_create_request.sections:
             db_section_documents = crud.section.create_or_update_section_document(db=db,

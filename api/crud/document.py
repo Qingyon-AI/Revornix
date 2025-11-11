@@ -32,7 +32,7 @@ def create_document_note(
     db.flush()
     return db_document_note
 
-def create_label(
+def create_document_label(
     db: Session, 
     name: str, 
     user_id: int
