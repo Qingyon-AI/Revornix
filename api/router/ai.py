@@ -2,6 +2,7 @@ import json
 import time
 import crud
 import schemas
+import models
 from pydantic import SecretStr
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
@@ -54,7 +55,7 @@ def call_llm(
 async def create_model(
     model_create_request: schemas.ai.ModelCreateRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     db_ai_model = crud.model.create_ai_model(
         db=db, 
@@ -76,7 +77,7 @@ async def create_model(
 async def get_ai_model(
     model_request: schemas.ai.ModelRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     ai_model = crud.model.get_ai_model_by_id(
         db=db,
@@ -124,7 +125,7 @@ async def get_ai_model(
 async def get_ai_model_provider(
     model_provider_request: schemas.ai.ModelProviderRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     ai_model_provider = crud.model.get_ai_model_provider_by_id(
         db=db,
@@ -151,7 +152,7 @@ async def get_ai_model_provider(
 @ai_router.post("/model-provider/create", response_model=schemas.ai.ModelProviderCreateResponse)
 async def create_model_provider(model_provider_request: schemas.ai.ModelProviderCreateRequest,
                                 db: Session = Depends(get_db),
-                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                user: models.user.User = Depends(get_current_user)):
     db_ai_model_provider = crud.model.create_ai_model_provider(
         db=db, 
         name=model_provider_request.name, 
@@ -171,7 +172,7 @@ async def create_model_provider(model_provider_request: schemas.ai.ModelProvider
 async def delete_ai_model(
     delete_model_request: schemas.ai.DeleteModelRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     crud.model.delete_ai_models_by_user_id_and_model_ids(
         db=db, 
@@ -189,7 +190,7 @@ async def delete_ai_model(
 async def delete_ai_model_provider(
     delete_model_request: schemas.ai.DeleteModelProviderRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     crud.model.delete_ai_model_providers(
         db=db, 
@@ -219,7 +220,7 @@ async def delete_ai_model_provider(
 async def list_ai_model(
     model_search_request: schemas.ai.ModelSearchRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     data = []
     db_ai_models = crud.model.search_ai_models_for_user_ai_model_provider(
@@ -266,7 +267,7 @@ async def list_ai_model(
 async def list_ai_model_provider(
     model_provider_search_request: schemas.ai.ModelProviderSearchRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     data = []
     db_ai_model_providers = crud.model.search_ai_model_providers_for_user(
@@ -297,7 +298,7 @@ async def list_ai_model_provider(
 async def update_ai_model(
     model_update_request: schemas.ai.ModelUpdateRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     now = datetime.now(timezone.utc)
     db_ai_model = crud.model.get_ai_model_by_id(
@@ -329,7 +330,7 @@ async def update_ai_model(
 async def update_ai_model_provider(
     model_provider_update_request: schemas.ai.ModelProviderUpdateRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     now = datetime.now(timezone.utc)
     db_ai_model_provider = crud.model.get_ai_model_provider_by_id(
@@ -470,7 +471,7 @@ async def stream_ops(user_id: int, messages: list, enable_mcp: bool = False):
 
 @ai_router.post("/ask")
 async def ask_ai(chat_messages: schemas.ai.ChatMessages, 
-                 user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                 user: models.user.User = Depends(get_current_user)):
     enable_mcp = chat_messages.enable_mcp
     messages = chat_messages.messages
     

@@ -174,7 +174,7 @@ async def section_seo_detail_request(section_seo_detail_request: schemas.section
 @section_router.post('/publish', response_model=schemas.common.NormalResponse)
 async def section_publish_request(section_publish_request: schemas.section.SectionPublishRequest,
                                   db: Session = Depends(get_db),
-                                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                  user: models.user.User = Depends(get_current_user)):
     db_section = crud.section.get_section_by_section_id(db=db,
                                                         section_id=section_publish_request.section_id)
     if db_section is None:
@@ -197,7 +197,7 @@ async def section_publish_request(section_publish_request: schemas.section.Secti
 @section_router.post('/republish', response_model=schemas.common.NormalResponse)
 async def section_republish(section_republish_request: schemas.section.SectionRePublishRequest,
                             db: Session = Depends(get_db),
-                            user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                            user: models.user.User = Depends(get_current_user)):
     now = datetime.now(timezone.utc)
     db_section = crud.section.get_section_by_section_id(db=db,
                                                         section_id=section_republish_request.section_id)
@@ -220,7 +220,7 @@ async def section_republish(section_republish_request: schemas.section.SectionRe
 @section_router.post('/publish/get', response_model=schemas.section.SectionPublishGetResponse)
 async def section_publish_get_request(section_publish_get_request: schemas.section.SectionPublishGetRequest,
                                       db: Session = Depends(get_db),
-                                      user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                      user: models.user.User = Depends(get_current_user)):
     db_section = crud.section.get_section_by_section_id(db=db,
                                                         section_id=section_publish_get_request.section_id)
     if db_section is None:
@@ -240,7 +240,7 @@ async def section_publish_get_request(section_publish_get_request: schemas.secti
 @section_router.post('/user', response_model=schemas.section.SectionUserResponse)
 async def section_user_request(section_user_request: schemas.section.SectionUserRequest,
                                db: Session = Depends(get_db), 
-                               user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                               user: models.user.User = Depends(get_current_user)):
     db_section = crud.section.get_section_by_section_id(db=db,
                                                         section_id=section_user_request.section_id)
     if db_section is None:
@@ -269,7 +269,7 @@ async def section_user_request(section_user_request: schemas.section.SectionUser
 @section_router.post('/user/add', response_model=schemas.common.NormalResponse)
 async def section_user_add_request(section_share_request: schemas.section.SectionUserAddRequest,
                                    db: Session = Depends(get_db), 
-                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                   user: models.user.User = Depends(get_current_user)):
     section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                            user_id=user.id,
                                                                            section_id=section_share_request.section_id)
@@ -295,7 +295,7 @@ async def section_user_add_request(section_share_request: schemas.section.Sectio
 @section_router.post('/user/modify', response_model=schemas.common.NormalResponse)
 async def section_user_modify_request(section_user_modify_request: schemas.section.SectionUserModifyRequest,
                                       db: Session = Depends(get_db), 
-                                      user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                      user: models.user.User = Depends(get_current_user)):
     
     if user.id == section_user_modify_request.user_id:
         raise Exception("You can't modify your own authority")
@@ -324,7 +324,7 @@ async def section_user_modify_request(section_user_modify_request: schemas.secti
 @section_router.post('/user/delete', response_model=schemas.common.NormalResponse)
 async def delete_section_user(section_user_delete_request: schemas.section.SectionUserDeleteRequest,
                               db: Session = Depends(get_db), 
-                              user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                              user: models.user.User = Depends(get_current_user)):
     section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                            user_id=user.id,
                                                                            section_id=section_user_delete_request.section_id)
@@ -343,7 +343,7 @@ async def delete_section_user(section_user_delete_request: schemas.section.Secti
 @section_router.post('/label/create', response_model=schemas.section.CreateLabelResponse)
 async def add_label(label_add_request: schemas.section.LabelAddRequest,
                     db: Session = Depends(get_db), 
-                    user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                    user: models.user.User = Depends(get_current_user)):
     db_label = crud.section.create_section_label(
         db=db, 
         name=label_add_request.name, 
@@ -355,7 +355,7 @@ async def add_label(label_add_request: schemas.section.LabelAddRequest,
 
 @section_router.post("/label/list", response_model=schemas.section.LabelListResponse)
 async def list_label(db: Session = Depends(get_db), 
-                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                     user: models.user.User = Depends(get_current_user)):
     labels = crud.section.get_user_labels_by_user_id(db=db, 
                                                      user_id=user.id)
     return schemas.section.LabelListResponse(data=labels)
@@ -363,7 +363,7 @@ async def list_label(db: Session = Depends(get_db),
 @section_router.post('/label/delete', response_model=schemas.common.NormalResponse)
 async def delete_label(label_delete_request: schemas.section.LabelDeleteRequest,
                        db: Session = Depends(get_db), 
-                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                       user: models.user.User = Depends(get_current_user)):
     crud.document.delete_labels_by_label_ids(db=db, 
                                              label_ids=label_delete_request.label_ids,
                                              user_id=user.id)
@@ -544,7 +544,7 @@ async def public_sections(
     
 @section_router.post('/mine/all', response_model=schemas.section.AllMySectionsResponse)
 async def get_all_mine_sections(db: Session = Depends(get_db),
-                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                user: models.user.User = Depends(get_current_user)):
     sections = []
     db_sections = crud.section.get_user_sections(
         db=db, 
@@ -565,7 +565,7 @@ async def get_all_mine_sections(db: Session = Depends(get_db),
 @section_router.post('/user/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
 async def search_user_sections(search_user_sections_request: schemas.section.SearchUserSectionsRequest,
                                db: Session = Depends(get_db),
-                               user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                               user: models.user.User = Depends(get_current_user)):
     has_more = True
     next_start = None
     # 该接口仅在自己获取自己的所有专栏的时候会返回所有专栏，否则仅仅返回对应用户公开的专栏
@@ -627,7 +627,7 @@ async def search_user_sections(search_user_sections_request: schemas.section.Sea
 @section_router.post('/mine/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
 async def search_mine_sections(search_mine_sections_request: schemas.section.SearchMineSectionsRequest,
                                db: Session = Depends(get_db),
-                               user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                               user: models.user.User = Depends(get_current_user)):
     has_more = True
     next_start = None
     db_sections = crud.section.search_user_sections(db=db, 
@@ -819,7 +819,7 @@ async def get_section_detail(
 async def get_date_section_info(
     day_section_request: schemas.section.DaySectionRequest,
     db: Session = Depends(get_db), 
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     date = datetime.strptime(day_section_request.date, "%Y-%m-%d").date()
     db_section = crud.section.get_section_by_user_and_date(db=db, 
@@ -861,7 +861,7 @@ async def get_date_section_info(
 async def create_section(
     section_create_request: schemas.section.SectionCreateRequest,
     db: Session = Depends(get_db), 
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     db_section = crud.section.create_section(db=db, 
                                              creator_id=user.id,
@@ -889,7 +889,7 @@ async def create_section(
 async def subscribe_section(
     section_subscribe_request: schemas.section.SectionSubscribeRequest,
     db: Session = Depends(get_db), 
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     db_section = crud.section.get_section_by_section_id(db=db,
                                                         section_id=section_subscribe_request.section_id)
@@ -925,7 +925,7 @@ async def subscribe_section(
 async def delete_section(
     section_delete_request: schemas.section.SectionDeleteRequest,
     db: Session = Depends(get_db), 
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     db_section_user = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                               section_id=section_delete_request.section_id,    
@@ -955,7 +955,7 @@ async def delete_section(
 async def create_section_comment(
     section_comment_create_request: schemas.section.SectionCommentCreateRequest,
     db: Session = Depends(get_db), 
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     crud.section.create_section_comment(db=db,
                                         section_id=section_comment_create_request.section_id,
@@ -1000,7 +1000,7 @@ async def search_section_comment(
 @section_router.post('/comment/delete', response_model=schemas.common.NormalResponse)
 async def delete_section_comment(section_comment_delete_request: schemas.section.SectionCommentDeleteRequest,
                                  db: Session = Depends(get_db), 
-                                 user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                 user: models.user.User = Depends(get_current_user)):
     db_user_section = crud.section.get_section_user_by_section_id_and_user_id(db=db,
                                                                               section_id=section_comment_delete_request.section_id,
                                                                               user_id=user.id)

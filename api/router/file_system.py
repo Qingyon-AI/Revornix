@@ -36,7 +36,7 @@ async def get_url_prefix(
 def get_built_in_presigned_url(
     s3_presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
     db: Session = Depends(get_db),
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     sts = boto3.client(
         'sts',
@@ -88,7 +88,7 @@ def get_built_in_presigned_url(
 def get_aws_s3_presigned_url(
     s3_presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
     db: Session = Depends(get_db),
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     default_user_file_system = current_user.default_user_file_system
     if default_user_file_system is None:
@@ -160,7 +160,7 @@ def get_aws_s3_presigned_url(
 def get_aliyun_oss_presigned_url(
     presign_upload_url_request: schemas.file_system.AliyunOSSPresignUploadURLRequest,
     db: Session = Depends(get_db),
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     default_user_file_system = current_user.default_user_file_system
     if default_user_file_system is None:
@@ -248,7 +248,7 @@ def get_aliyun_oss_presigned_url(
 async def get_file_system_info(
     file_system_info_request: schemas.file_system.FileSystemInfoRequest,
     db: Session = Depends(get_db),
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     db_file_system = crud.file_system.get_file_system_by_id(
         db=db, 
@@ -262,7 +262,7 @@ async def get_file_system_info(
 async def get_user_file_system_info(
     user_file_system_info_request: schemas.file_system.UserFileSystemInfoRequest,
     db: Session = Depends(get_db),
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     db_user_file_system = crud.file_system.get_user_file_system_by_id(
         db=db, 
@@ -294,7 +294,7 @@ async def get_user_file_system_info(
 async def search_mine_file_system(
     file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
     db: Session = Depends(get_db), 
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     res = []
     db_user_file_systems = crud.file_system.get_user_file_systems_by_user_id(
@@ -323,7 +323,7 @@ async def search_mine_file_system(
 @file_system_router.post("/provide", response_model=schemas.file_system.ProvideFileSystemSearchResponse)
 async def provide_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
                               db: Session = Depends(get_db), 
-                              current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                              current_user: models.user.User = Depends(get_current_user)):
     db_file_systems = crud.file_system.get_all_file_systems(
         db=db, 
         keyword=file_system_search_request.keyword
@@ -337,7 +337,7 @@ async def provide_file_system(file_system_search_request: schemas.file_system.Fi
 async def install_user_file_system(
     file_system_install_request: schemas.file_system.FileSystemInstallRequest, 
     db: Session = Depends(get_db), 
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     db_user_file_system = crud.file_system.create_user_file_system(
         db=db,
@@ -354,7 +354,7 @@ async def install_user_file_system(
 async def delete_user_file_system(
     user_file_system_delete_request: schemas.file_system.UserFileSystemDeleteRequest,
     db: Session = Depends(get_db),
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     crud.file_system.delete_user_file_system_by_user_id_and_user_file_system_id(
         db=db,
@@ -368,7 +368,7 @@ async def delete_user_file_system(
 async def update_file_system(
     user_file_system_update_request: schemas.file_system.UserFileSystemUpdateRequest, 
     db: Session = Depends(get_db),
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     now = datetime.now(tz=timezone.utc)
     user_file_system = crud.file_system.get_user_file_system_by_id(
@@ -394,7 +394,7 @@ async def upload_file_system(
     file_path: str = Form(...),
     content_type: str = Form(...),
     db: Session = Depends(get_db),
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     default_user_file_system = current_user.default_user_file_system
     if default_user_file_system is None:

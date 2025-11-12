@@ -4,6 +4,7 @@ import jwt
 import os
 import random
 import string
+import models
 from uuid import uuid4
 from jwt.exceptions import ExpiredSignatureError
 from jose import jwt
@@ -29,7 +30,7 @@ user_router = APIRouter()
 
 @user_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
 async def search_user(search_user_request: schemas.user.SearchUserRequest,
-                      current_user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                      current_user: models.user.User = Depends(get_current_user),
                       db: Session = Depends(get_db)):
     has_more = True
     next_start = None
@@ -101,7 +102,7 @@ async def search_user(search_user_request: schemas.user.SearchUserRequest,
 
 @user_router.post('/default-file-system/update', response_model=schemas.common.NormalResponse)
 async def update_default_file_system(default_file_system_update_request: schemas.user.DefaultFileSystemUpdateRequest,
-                                     user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                                     user: models.user.User = Depends(get_current_user),
                                      db: Session = Depends(get_db)):
     user.default_user_file_system = default_file_system_update_request.default_user_file_system
     db.commit()
@@ -109,7 +110,7 @@ async def update_default_file_system(default_file_system_update_request: schemas
 
 @user_router.post('/default-engine/update', response_model=schemas.common.NormalResponse)
 async def update_default_document_parse_engine(default_engine_update_request: schemas.user.DefaultEngineUpdateRequest,
-                                               user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                                               user: models.user.User = Depends(get_current_user),
                                                db: Session = Depends(get_db)):
     crud.user.update_user_default_engine(db=db, 
                                          user_id=user.id, 
@@ -121,7 +122,7 @@ async def update_default_document_parse_engine(default_engine_update_request: sc
 
 @user_router.post('/default-model/update', response_model=schemas.common.NormalResponse)
 async def update_default_model(default_model_update_request: schemas.user.DefaultModelUpdateRequest,
-                               user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                               user: models.user.User = Depends(get_current_user),
                                db: Session = Depends(get_db)):
     crud.user.update_user_default_model(db=db, 
                                         user_id=user.id, 
@@ -132,7 +133,7 @@ async def update_default_model(default_model_update_request: schemas.user.Defaul
 
 @user_router.post('/fans', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
 async def search_user_fans(search_user_fans_request: schemas.user.SearchUserFansRequest,
-                           user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                           user: models.user.User = Depends(get_current_user),
                            db: Session = Depends(get_db)):
     has_more = True
     next_start = None
@@ -171,7 +172,7 @@ async def search_user_fans(search_user_fans_request: schemas.user.SearchUserFans
 
 @user_router.post('/follows', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
 async def search_user_follows(search_user_follows_request: schemas.user.SearchUserFollowsRequest, 
-                              user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                              user: models.user.User = Depends(get_current_user),
                               db: Session = Depends(get_db)):
     has_more = True
     next_start = None
@@ -210,7 +211,7 @@ async def search_user_follows(search_user_follows_request: schemas.user.SearchUs
 
 @user_router.post('/follow', response_model=schemas.common.NormalResponse)
 async def follow_user(follow_user_request: schemas.user.FollowUserRequest,
-                      user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                      user: models.user.User = Depends(get_current_user),
                       db: Session = Depends(get_db)):
     if follow_user_request.to_user_id == user.id:
         raise CustomException(message="You can't follow yourself",
@@ -238,7 +239,7 @@ async def follow_user(follow_user_request: schemas.user.FollowUserRequest,
 
 @user_router.post('/info', response_model=schemas.user.UserPublicInfo)
 async def user_info(user_info_request: schemas.user.UserInfoRequest,
-                    user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                    user: models.user.User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
     db_user = crud.user.get_user_by_id(db=db, 
                                        user_id=user_info_request.user_id)
@@ -368,7 +369,7 @@ async def initial_see_password(user = Depends(get_current_user),
     return schemas.user.InitialPasswordResponse(password=email_user.initial_password)
 
 @user_router.post('/mine/info', response_model=schemas.user.PrivateUserInfo)
-async def my_info(user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+async def my_info(user: models.user.User = Depends(get_current_user),
                   db: Session = Depends(get_db)):
     res = schemas.user.PrivateUserInfo(id=user.id,
                                        avatar=user.avatar,
@@ -461,7 +462,7 @@ async def update_token(token_update_request: schemas.user.TokenUpdateRequest,
     return res
 
 @user_router.post('/delete', response_model=schemas.common.NormalResponse)
-async def delete_user(user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+async def delete_user(user: models.user.User = Depends(get_current_user),
                       db: Session = Depends(get_db)):
     crud.user.delete_user_by_user_id(db=db, 
                                      user_id=user.id)
@@ -896,7 +897,7 @@ async def create_user_by_wechat_web(wechat_web_user_create_request: schemas.user
 
 @user_router.post("/bind/wechat/web", response_model=schemas.common.NormalResponse)
 async def bind_wechat(wechat_user_bind_request: schemas.user.WeChatWebUserBindRequest, 
-                      user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                      user: models.user.User = Depends(get_current_user),
                       db: Session = Depends(get_db)):
     db_wechat_user_exist = crud.user.get_wechat_user_by_user_id(db=db, 
                                                                 user_id=user.id,
@@ -930,7 +931,7 @@ async def bind_wechat(wechat_user_bind_request: schemas.user.WeChatWebUserBindRe
     return schemas.common.SuccessResponse()
 
 @user_router.post('/unbind/wechat', response_model=schemas.common.NormalResponse)
-async def unbind_wechat(user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+async def unbind_wechat(user: models.user.User = Depends(get_current_user),
                         db: Session = Depends(get_db)):
     crud.user.delete_wechat_user_by_user_id(db=db, 
                                             user_id=user.id)

@@ -11,7 +11,7 @@ rss_router = APIRouter()
 @rss_router.post('/detail', response_model=schemas.rss.RssServerInfo)
 async def getRssServerDetail(get_rss_server_detail_request: schemas.rss.GetRssServerDetailRequest,
                              db: Session = Depends(get_db),
-                             current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                             current_user: models.user.User = Depends(get_current_user)):
     db_rss_server = crud.rss.get_rss_server_by_id(db=db,
                                                   id=get_rss_server_detail_request.rss_id)
     if db_rss_server is None:
@@ -32,7 +32,7 @@ async def getRssServerDetail(get_rss_server_detail_request: schemas.rss.GetRssSe
 @rss_router.post('/document', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 async def getRssServerDocument(get_rss_server_document_request: schemas.rss.GetRssServerDocumentRequest,
                                db: Session = Depends(get_db),
-                               user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                               user: models.user.User = Depends(get_current_user)):
     has_more = True
     next_start = None
     db_documents = crud.rss.search_document_for_rss(
@@ -92,7 +92,7 @@ async def getRssServerDocument(get_rss_server_document_request: schemas.rss.GetR
 @rss_router.post('/add', response_model=schemas.rss.AddRssServerResponse)
 async def addRssServer(add_rss_request: schemas.rss.AddRssServerRequest, 
                        db: Session = Depends(get_db), 
-                       current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                       current_user: models.user.User = Depends(get_current_user)):
     db_rss_server = crud.rss.create_rss_server(db=db, 
                                                title=add_rss_request.title, 
                                                description=add_rss_request.description,
@@ -110,7 +110,7 @@ async def addRssServer(add_rss_request: schemas.rss.AddRssServerRequest,
 @rss_router.post('/delete', response_model=schemas.common.NormalResponse)
 async def deleteRssServer(delete_rss_request: schemas.rss.DeleteRssServerRequest, 
                           db: Session = Depends(get_db), 
-                          current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                          current_user: models.user.User = Depends(get_current_user)):
     crud.rss.delete_rss_servers(db=db, 
                                 ids=delete_rss_request.ids,
                                 user_id=current_user.id)
@@ -123,7 +123,7 @@ async def deleteRssServer(delete_rss_request: schemas.rss.DeleteRssServerRequest
 @rss_router.post('/update', response_model=schemas.common.NormalResponse)
 async def updateRssServer(update_rss_request: schemas.rss.UpdateRssServerRequest,
                           db: Session = Depends(get_db),
-                          current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                          current_user: models.user.User = Depends(get_current_user)):
     now = datetime.now()
     db_rss_server = crud.rss.get_rss_server_by_id(db=db, id=update_rss_request.rss_id)
     if db_rss_server is None:
@@ -145,7 +145,7 @@ async def updateRssServer(update_rss_request: schemas.rss.UpdateRssServerRequest
 @rss_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.rss.RssServerInfo])
 async def searchRssServer(search_rss_request: schemas.rss.SearchRssServerRequest, 
                           db: Session = Depends(get_db), 
-                          current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                          current_user: models.user.User = Depends(get_current_user)):
     has_more = True
     next_start = None
     db_rss_servers = crud.rss.search_rss_servers_for_user(

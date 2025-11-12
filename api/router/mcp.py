@@ -1,4 +1,5 @@
 import crud
+import models
 import schemas
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
@@ -8,9 +9,11 @@ from enums.mcp import MCPCategory
 mcp_router = APIRouter()
 
 @mcp_router.post('/server/detail', response_model=schemas.mcp.MCPServerInfo)
-async def get_mcp_server_detail(mcp_server_detail_request: schemas.mcp.MCPServerDetailRequest,
-                                db: Session = Depends(get_db),
-                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def get_mcp_server_detail(
+    mcp_server_detail_request: schemas.mcp.MCPServerDetailRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
     mcp_server = crud.mcp.get_base_mcp_server_by_id(db=db, 
                                                     id=mcp_server_detail_request.id)
     if mcp_server.category == MCPCategory.STD:
@@ -46,7 +49,7 @@ async def get_mcp_server_detail(mcp_server_detail_request: schemas.mcp.MCPServer
 @mcp_router.post("/server/search", response_model=schemas.mcp.MCPServerSearchResponse)
 async def get_mcp_server_list(mcp_server_search_request: schemas.mcp.MCPServerSearchRequest,
                               db: Session = Depends(get_db),
-                              user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                              user: models.user.User = Depends(get_current_user)):
     mcp_servers = crud.mcp.search_mcp_servers(db=db, 
                                               user_id=user.id,
                                               keyword=mcp_server_search_request.keyword)
@@ -84,7 +87,7 @@ async def get_mcp_server_list(mcp_server_search_request: schemas.mcp.MCPServerSe
 @mcp_router.post('/server/create', response_model=schemas.common.NormalResponse)
 async def create_server(mcp_server_create_request: schemas.mcp.MCPServerCreateRequest,
                         db: Session = Depends(get_db),
-                        user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                        user: models.user.User = Depends(get_current_user)):
     db_base_mcp_server = crud.mcp.create_mcp_server_base(
         db=db,
         user_id=user.id,
@@ -112,7 +115,7 @@ async def create_server(mcp_server_create_request: schemas.mcp.MCPServerCreateRe
 @mcp_router.post("/server/update", response_model=schemas.common.NormalResponse)
 async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRequest,
                         db: Session = Depends(get_db),
-                        user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                        user: models.user.User = Depends(get_current_user)):
     db_base_mcp_server = crud.mcp.get_base_mcp_server_by_id(db=db, 
                                                             id=mcp_server_update_request.id)
     if db_base_mcp_server is None:
@@ -178,7 +181,7 @@ async def update_server(mcp_server_update_request: schemas.mcp.MCPServerUpdateRe
 @mcp_router.post("/server/delete", response_model=schemas.common.NormalResponse)
 async def delete_server(mcp_server_delete_request: schemas.mcp.MCPServerDeleteRequest,
                         db: Session = Depends(get_db),
-                        user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                        user: models.user.User = Depends(get_current_user)):
     db_base_mcp_server = crud.mcp.get_base_mcp_server_by_id(db=db, 
                                                             id=mcp_server_delete_request.id)
     if db_base_mcp_server is None:
