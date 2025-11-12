@@ -12,9 +12,9 @@ class NotificationTargetDetailRequest(BaseModel):
 class NotificationTarget(BaseModel):
     id: int
     title: str
-    description: str
+    description: str | None
     category: int
-    create_time: datetime | None = None
+    create_time: datetime
     update_time: datetime | None = None
     @field_validator("create_time", mode="before")
     def ensure_create_time_timezone(cls, v: datetime) -> datetime:
@@ -60,7 +60,7 @@ class IOSNotificationTarget(BaseModel):
 class NotificationTargetDetail(BaseModel):
     id: int
     title: str
-    description: str
+    description: str | None
     category: int
     email_notification_target: EmailNotificationTarget | None = None
     ios_notification_target: IOSNotificationTarget | None = None
@@ -126,9 +126,9 @@ class UnreadNotificationRecordRequest(BaseModel):
 class NotificationRecord(BaseModel):
     id: int
     title: str
-    content: str
-    read_at: datetime | None = None
-    create_time: datetime | None = None
+    content: str | None
+    read_at: datetime | None
+    create_time: datetime
     update_time: datetime | None = None
     @field_validator("read_at", mode="before")
     def ensure_read_at_timezone(cls, v: datetime) -> datetime:
@@ -154,9 +154,9 @@ class DeleteNotificationRecordRequest(BaseModel):
 class NotificationSource(BaseModel):
     id: int
     title: str
-    description: str
-    create_time: datetime | None = None
-    update_time: datetime | None = None
+    description: str | None
+    create_time: datetime
+    update_time: datetime | None
     @field_validator("create_time", mode="before")
     def ensure_create_time_timezone(cls, v: datetime) -> datetime:
         if v is not None and v.tzinfo is None:
@@ -179,7 +179,7 @@ class NotificationSourceDetailRequest(BaseModel):
 class NotificationSourceDetail(BaseModel):
     id: int
     title: str
-    description: str
+    description: str | None
     category: int
     email_notification_source: EmailNotificationSource | None = None
     ios_notification_source: IOSNotificationSource | None = None
@@ -226,18 +226,15 @@ class UpdateNotificationTaskRequest(BaseModel):
     notification_target_id: int | None = None
     
 class AddNotificationTaskRequest(BaseModel):
+    notification_content_type: int
+    notification_source_id: int
+    notification_target_id: int
+    cron_expr: str
+    enable: bool
     title: str | None = None
     content: str | None = None
     notification_template_id: int | None = None
-    notification_content_type: int
-    cron_expr: str
-    enable: bool
-    notification_source_id: int
-    notification_target_id: int
-    
-class NotificationTaskResponse(BaseResponseModel):
-    data: list[NotificationTask]
-    
+
 class NotificationTaskDetailRequest(BaseModel):
     notification_task_id: int
     

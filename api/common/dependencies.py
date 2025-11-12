@@ -8,6 +8,9 @@ from datetime import datetime, timezone
 from config.oauth2 import OAUTH_SECRET_KEY
 from fastapi import Request, HTTPException, status, Depends, Header
 
+if OAUTH_SECRET_KEY is None:
+    raise Exception("OAUTH_SECRET_KEY is not set")
+
 def get_db():
     db = SessionLocal()
     try:
@@ -17,6 +20,9 @@ def get_db():
         raise
     finally:
         db.close()
+
+def decode_jwt_token(token: str, secret_key: str = OAUTH_SECRET_KEY):
+    return jwt.decode(token, secret_key, algorithms=["HS256"])
 
 def get_cache(request: Request) -> Redis:
     return request.app.state.redis

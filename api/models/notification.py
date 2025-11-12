@@ -18,7 +18,7 @@ class NotificationTask(Base):
     notification_target_id: Mapped[int] = mapped_column(ForeignKey("notification_target.id"), index=True, nullable=False)
     notification_content_type: Mapped[int] = mapped_column(Integer, index=True, comment='0: custom, 1: template', nullable=False)
     # TODO 通知任务除了定时执行以外应该还有事件触发执行，待补充
-    cron_expr: Mapped[Optional[str]] = mapped_column(String(100))
+    cron_expr: Mapped[str] = mapped_column(String(100))
     enable: Mapped[bool] = mapped_column(Boolean, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
