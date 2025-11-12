@@ -94,7 +94,7 @@ def create_notification_source(
     db: Session,
     creator_id: int,
     title: str,
-    category: str,
+    category: int,
     description: str | None = None
 ):
     now = datetime.now(timezone.utc)
@@ -200,12 +200,26 @@ def get_notification_task_by_notification_task_id(
 
 def get_notification_tasks_by_user_id(
     db: Session,
+    user_id: int,
+    page_num: int,
+    page_size: int = 10
+):
+    query = db.query(models.notification.NotificationTask)
+    query = query.filter(models.notification.NotificationTask.user_id == user_id,
+                         models.notification.NotificationTask.delete_at == None)
+    query = query.order_by(models.document.Document.id.desc())
+    query = query.offset((page_num - 1) * page_size)
+    query = query.limit(page_size)
+    return query.all()
+
+def count_notification_tasks_for_user(
+    db: Session,
     user_id: int
 ):
     query = db.query(models.notification.NotificationTask)
     query = query.filter(models.notification.NotificationTask.user_id == user_id,
                          models.notification.NotificationTask.delete_at == None)
-    return query.all()
+    return query.count()
 
 def get_notification_target_by_notification_target_id(
     db: Session, 
