@@ -1,5 +1,6 @@
 import schemas
 import crud
+import models
 import uuid
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -11,7 +12,7 @@ api_key_router = APIRouter()
 async def create_api_key(
     api_key_create_request: schemas.api_key.ApiKeyCreateRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     db_api_key = crud.api_key.create_api_key(
         db=db,
@@ -26,7 +27,7 @@ async def create_api_key(
 async def search_api_key(
     search_api_key_request: schemas.api_key.SearchApiKeysRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     db_api_keys = crud.api_key.search_api_key(
         db=db, 
@@ -55,7 +56,7 @@ async def search_api_key(
 async def delete_api_key(
     api_keys_delete_request: schemas.api_key.ApiKeysDeleteRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user)
 ):
     crud.api_key.delete_api_keys_by_api_key_ids(
         db=db, 

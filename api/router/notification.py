@@ -1,5 +1,6 @@
 import crud
 import schemas
+import models
 from jose import jwt
 from sqlalchemy.orm import Session
 from fastapi import WebSocket, APIRouter, WebSocketDisconnect, Depends
@@ -50,7 +51,7 @@ async def websocket_ask(websocket: WebSocket,
         db.close()
         
 @notification_router.post('/template/all', response_model=schemas.notification.NotificationTemplatesResponse)
-async def get_notification_templates(user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def get_notification_templates(user: models.user.User = Depends(get_current_user)):
     data = []
     daily_summary_template = DailySummaryNotificationTemplate()
     daily_summary_template.init_user(user_id=user.id)
@@ -68,7 +69,7 @@ async def get_notification_templates(user: schemas.user.PrivateUserInfo = Depend
 @notification_router.post('/task/add', response_model=schemas.common.NormalResponse)
 async def add_notification_task(add_notification_task_request: schemas.notification.AddNotificationTaskRequest,
                                 db: Session = Depends(get_db),
-                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                user: models.user.User = Depends(get_current_user)):
     db_notification_task = crud.notification.create_notification_task(db=db,
                                                                       user_id=user.id,
                                                                       notification_content_type=add_notification_task_request.notification_content_type,
@@ -103,7 +104,7 @@ async def add_notification_task(add_notification_task_request: schemas.notificat
 @notification_router.post('/task/detail', response_model=schemas.notification.NotificationTask)
 async def get_notification_task(get_notification_task_request: schemas.notification.NotificationTaskDetailRequest,
                                 db: Session = Depends(get_db),
-                                user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                user: models.user.User = Depends(get_current_user)):
     db_notification_task = crud.notification.get_notification_task_by_notification_task_id(db=db,
                                                                                            notification_task_id=get_notification_task_request.notification_task_id)
     if db_notification_task is None:
@@ -158,7 +159,7 @@ async def get_notification_task(get_notification_task_request: schemas.notificat
 @notification_router.post('/task/delete', response_model=schemas.common.NormalResponse)
 async def delete_notification_task(delete_notification_task_request: schemas.notification.DeleteNotificationTaskRequest,
                                    db: Session = Depends(get_db),
-                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                   user: models.user.User = Depends(get_current_user)):
     crud.notification.delete_notification_tasks(db=db,
                                                 user_id=user.id,
                                                 notification_task_ids=delete_notification_task_request.notification_task_ids)
@@ -178,7 +179,7 @@ async def delete_notification_task(delete_notification_task_request: schemas.not
 @notification_router.post('/task/update', response_model=schemas.common.NormalResponse)
 async def update_notification_task(update_notification_task_request: schemas.notification.UpdateNotificationTaskRequest,
                                    db: Session = Depends(get_db),
-                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                   user: models.user.User = Depends(get_current_user)):
     db_notification_task = crud.notification.get_notification_task_by_notification_task_id(db=db,
                                                                                            notification_task_id=update_notification_task_request.notification_task_id)
     if db_notification_task is None:
@@ -241,7 +242,7 @@ async def update_notification_task(update_notification_task_request: schemas.not
 
 @notification_router.post('/task/mine', response_model=schemas.notification.NotificationTaskResponse)
 async def get_mine_notification_task(db: Session = Depends(get_db),
-                                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                     user: models.user.User = Depends(get_current_user)):
     data = []
     # TODO 增加分页
     db_notification_tasks = crud.notification.get_notification_tasks_by_user_id(db=db,
@@ -279,7 +280,7 @@ async def get_mine_notification_task(db: Session = Depends(get_db),
 @notification_router.post('/target/add', response_model=schemas.common.NormalResponse)
 async def add_notification_target(add_notification_target_request: schemas.notification.AddNotificationTargetRequest,
                                   db: Session = Depends(get_db),
-                                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                  user: models.user.User = Depends(get_current_user)):
     db_notification_target = crud.notification.create_notification_target(db=db,
                                                                           title=add_notification_target_request.title,
                                                                           description=add_notification_target_request.description,
@@ -299,7 +300,7 @@ async def add_notification_target(add_notification_target_request: schemas.notif
 @notification_router.post('/target/delete', response_model=schemas.common.NormalResponse)
 async def delete_notification_target(delete_notification_target_request: schemas.notification.DeleteNotificationTargetRequest,
                                      db: Session = Depends(get_db),
-                                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                     user: models.user.User = Depends(get_current_user)):
     crud.notification.delete_notification_targets_by_notification_target_ids(db=db,
                                                                              creator_id=user.id,
                                                                              notification_target_ids=delete_notification_target_request.notification_target_ids)
@@ -309,7 +310,7 @@ async def delete_notification_target(delete_notification_target_request: schemas
 @notification_router.post('/target/update', response_model=schemas.common.NormalResponse)
 async def update_notification_target(update_notification_target_request: schemas.notification.UpdateNotificationTargetRequest,
                                      db: Session = Depends(get_db),
-                                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                     user: models.user.User = Depends(get_current_user)):
     db_notification_target = crud.notification.get_notification_target_by_notification_target_id(db=db,
                                                                                                  notification_target_id=update_notification_target_request.notification_target_id)
     if db_notification_target is None:
@@ -342,7 +343,7 @@ async def update_notification_target(update_notification_target_request: schemas
         
 @notification_router.post('/target/mine', response_model=schemas.notification.NotificationTargetsResponse)
 async def get_mine_notification_target(db: Session = Depends(get_db),
-                                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                       user: models.user.User = Depends(get_current_user)):
     # TODO 增加分野
     db_notification_targets = crud.notification.get_notification_targets_by_creator_id(db=db,
                                                                                        creator_id=user.id)
@@ -378,7 +379,7 @@ async def get_notification_target_detail(notification_target_detail_request: sch
 @notification_router.post("/source/update", response_model=schemas.common.NormalResponse)
 async def update_email_source(update_notification_source_request: schemas.notification.UpdateNotificationSourceRequest,
                               db: Session = Depends(get_db),
-                              user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                              user: models.user.User = Depends(get_current_user)):
     db_notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
                                                                                                  notification_source_id=update_notification_source_request.notification_source_id)
     if db_notification_source is None:
@@ -426,7 +427,7 @@ async def update_email_source(update_notification_source_request: schemas.notifi
         
 @notification_router.post("/source/mine", response_model=schemas.notification.NotificationSourcesResponse)
 async def get_email_source(db: Session = Depends(get_db),
-                           user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                           user: models.user.User = Depends(get_current_user)):
     # TODO 增加分野
     notification_sources = crud.notification.get_notification_sources_by_creator_id(db=db, creator_id=user.id)
     return schemas.notification.NotificationSourcesResponse(data=notification_sources)
@@ -434,7 +435,7 @@ async def get_email_source(db: Session = Depends(get_db),
 @notification_router.post("/source/detail", response_model=schemas.notification.NotificationSourceDetail)
 async def get_notification_detail(notification_source_detail_request: schemas.notification.NotificationSourceDetailRequest,
                                   db: Session = Depends(get_db),
-                                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                  user: models.user.User = Depends(get_current_user)):
     notification_source = crud.notification.get_notification_source_by_notification_source_id(db=db,
                                                                                               notification_source_id=notification_source_detail_request.notification_source_id)
     if notification_source is None:
@@ -476,7 +477,7 @@ async def get_notification_detail(notification_source_detail_request: schemas.no
 @notification_router.post("/source/add", response_model=schemas.common.NormalResponse)
 async def add_email_source(add_notification_source_request: schemas.notification.AddNotificationSourceRequest,
                            db: Session = Depends(get_db),
-                           user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                           user: models.user.User = Depends(get_current_user)):
     db_notification_source = crud.notification.create_notification_source(db=db, 
                                                                           creator_id=user.id, 
                                                                           title=add_notification_source_request.title,
@@ -505,7 +506,7 @@ async def add_email_source(add_notification_source_request: schemas.notification
 @notification_router.post("/source/delete", response_model=schemas.common.NormalResponse)
 async def delete_email_source(delete_email_source_request: schemas.notification.DeleteNotificationSourceRequest,
                               db: Session = Depends(get_db),
-                              user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                              user: models.user.User = Depends(get_current_user)):
     crud.notification.delete_notification_sources_by_notification_source_ids(db=db, 
                                                                              creator_id=user.id,
                                                                              notification_source_ids=delete_email_source_request.notification_source_ids)
@@ -518,7 +519,7 @@ async def delete_email_source(delete_email_source_request: schemas.notification.
 @notification_router.post('/record/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationRecord])
 async def search_notification_record(search_notification_record_request: schemas.notification.SearchNotificationRecordRequest, 
                                      db: Session = Depends(get_db), 
-                                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                     user: models.user.User = Depends(get_current_user)):
     has_more = True
     next_start = None
     notification_records = crud.notification.search_notification_records_for_user(
@@ -554,7 +555,7 @@ async def search_notification_record(search_notification_record_request: schemas
 @notification_router.post('/record/delete', response_model=schemas.common.NormalResponse)
 async def delete_notification_record(delete_notification_request: schemas.notification.DeleteNotificationRecordRequest, 
                                      db: Session = Depends(get_db), 
-                                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                     user: models.user.User = Depends(get_current_user)):
     crud.notification.delete_notification_records_by_notification_record_ids(db=db, 
                                                                              user_id=user.id, 
                                                                              notification_record_ids=delete_notification_request.notification_record_ids)
@@ -564,7 +565,7 @@ async def delete_notification_record(delete_notification_request: schemas.notifi
 @notification_router.post('/record/detail', response_model=schemas.notification.NotificationRecord)
 async def get_notification_record_detail(notification_detail_request: schemas.notification.NotificationRecordDetailRequest, 
                                          db: Session = Depends(get_db), 
-                                         user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                         user: models.user.User = Depends(get_current_user)):
     db_notification_record = crud.notification.get_notification_record_by_user_id_and_notification_record_id(
         db=db, 
         user_id=user.id, 
@@ -577,7 +578,7 @@ async def get_notification_record_detail(notification_detail_request: schemas.no
 
 @notification_router.post('/record/read-all', response_model=schemas.common.NormalResponse)
 async def read_all_notification_record(db: Session = Depends(get_db), 
-                                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                       user: models.user.User = Depends(get_current_user)):
     crud.notification.read_all_notification_records_for_user(db=db, 
                                                      user_id=user.id)
     db.commit()
@@ -586,7 +587,7 @@ async def read_all_notification_record(db: Session = Depends(get_db),
 @notification_router.post('/record/read', response_model=schemas.common.NormalResponse)
 async def read_notification_record(read_notification_request: schemas.notification.ReadNotificationRecordRequest, 
                                    db: Session = Depends(get_db), 
-                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                   user: models.user.User = Depends(get_current_user)):
     if read_notification_request.status:
         crud.notification.read_notification_records_by_notification_record_ids_for_user(
             db=db, 

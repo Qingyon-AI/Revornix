@@ -21,7 +21,7 @@ document_router = APIRouter()
     
 @document_router.post('/note/create', response_model=schemas.common.NormalResponse)
 async def create_note(note_create_request: schemas.document.DocumentNoteCreateRequest,
-                      user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                      user: models.user.User = Depends(get_current_user),
                       db: Session = Depends(get_db)):
     crud.document.create_document_note(db=db,
                                        user_id=user.id,
@@ -32,7 +32,7 @@ async def create_note(note_create_request: schemas.document.DocumentNoteCreateRe
 
 @document_router.post('/note/delete', response_model=schemas.common.NormalResponse)
 async def delete_note(note_delete_request: schemas.document.DocumentNoteDeleteRequest,
-                      user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                      user: models.user.User = Depends(get_current_user),
                       db: Session = Depends(get_db)):
     crud.document.delete_document_notes_by_user_id_and_note_ids(db=db,
                                                                 user_id=user.id,
@@ -42,7 +42,7 @@ async def delete_note(note_delete_request: schemas.document.DocumentNoteDeleteRe
 
 @document_router.post('/note/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentNoteInfo])
 async def update_note(search_note_request: schemas.document.SearchDocumentNoteRequest,
-                      user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+                      user: models.user.User = Depends(get_current_user),
                       db: Session = Depends(get_db)):
     has_more = True
     next_start = None
@@ -195,7 +195,7 @@ async def get_month_summary(db: Session = Depends(get_db),
 @document_router.post('/create', response_model=schemas.document.DocumentCreateResponse)
 async def create_document(document_create_request: schemas.document.DocumentCreateRequest,  
                           db: Session = Depends(get_db), 
-                          user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                          user: models.user.User = Depends(get_current_user)):
     now = datetime.now(timezone.utc)
     if document_create_request.category == DocumentCategory.WEBSITE:
         db_document = crud.document.create_base_document(
@@ -345,7 +345,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
 @document_router.post('/update', response_model=schemas.common.NormalResponse)
 async def update_document(document_update_request: schemas.document.DocumentUpdateRequest,
                           db: Session = Depends(get_db), 
-                          user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                          user: models.user.User = Depends(get_current_user)):
     now = datetime.now(tz=timezone.utc)
     db_document = crud.document.get_document_by_document_id(db=db, 
                                                             document_id=document_update_request.document_id)
@@ -395,7 +395,7 @@ async def update_document(document_update_request: schemas.document.DocumentUpda
 
 @document_router.post('/label/summary', response_model=schemas.document.LabelSummaryResponse)
 async def get_label_summary(db: Session = Depends(get_db),
-                            user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                            user: models.user.User = Depends(get_current_user)):
     res = []
     db_labels_summary = crud.document.get_labels_summary(db=db, user_id=user.id)
     for label, count in db_labels_summary:
@@ -407,7 +407,7 @@ async def get_label_summary(db: Session = Depends(get_db),
 @document_router.post('/label/delete', response_model=schemas.common.NormalResponse)
 async def delete_label(label_delete_request: schemas.document.LabelDeleteRequest,
                        db: Session = Depends(get_db), 
-                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                       user: models.user.User = Depends(get_current_user)):
     crud.document.delete_labels_by_label_ids(db=db, 
                                              label_ids=label_delete_request.label_ids,
                                              user_id=user.id)
@@ -416,7 +416,7 @@ async def delete_label(label_delete_request: schemas.document.LabelDeleteRequest
 
 @document_router.post("/label/list", response_model=schemas.document.LabelListResponse)
 async def list_label(db: Session = Depends(get_db), 
-                     user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                     user: models.user.User = Depends(get_current_user)):
     labels = crud.document.get_user_labels_by_user_id(db=db, 
                                                       user_id=user.id)
     labels = jsonable_encoder(labels)
@@ -425,7 +425,7 @@ async def list_label(db: Session = Depends(get_db),
 @document_router.post('/label/create', response_model=schemas.document.CreateLabelResponse)
 async def add_label(label_add_request: schemas.document.LabelAddRequest,
                     db: Session = Depends(get_db), 
-                    user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                    user: models.user.User = Depends(get_current_user)):
     db_label = crud.document.create_document_label(
         db=db, 
         name=label_add_request.name, 
@@ -437,7 +437,7 @@ async def add_label(label_add_request: schemas.document.LabelAddRequest,
 @document_router.post('/unread/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 async def search_user_unread_documents(search_unread_list_request: schemas.document.SearchUnreadListRequest, 
                                        db: Session = Depends(get_db), 
-                                       user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                       user: models.user.User = Depends(get_current_user)):
     has_more = True
     next_start = None
     documents = crud.document.search_user_unread_documents(db=db, 
@@ -494,7 +494,7 @@ async def search_user_unread_documents(search_unread_list_request: schemas.docum
 @document_router.post('/vector/search', response_model=schemas.document.VectorSearchResponse)
 async def search_knowledge_vector(vector_search_request: schemas.document.VectorSearchRequest, 
                                   db: Session = Depends(get_db), 
-                                  user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                  user: models.user.User = Depends(get_current_user)):
     hybrid_results = naive_search(
         user_id=user.id,
         search_text=vector_search_request.query
@@ -507,7 +507,7 @@ async def search_knowledge_vector(vector_search_request: schemas.document.Vector
 @document_router.post('/recent/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 async def recent_read_document(search_recent_read_request: schemas.document.SearchRecentReadRequest, 
                                db: Session = Depends(get_db), 
-                               user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                               user: models.user.User = Depends(get_current_user)):
     has_more = True
     next_start = None
     documents = crud.document.search_user_recent_read_documents(db=db, 
@@ -564,7 +564,7 @@ async def recent_read_document(search_recent_read_request: schemas.document.Sear
 @document_router.post('/detail', response_model=schemas.document.DocumentDetailResponse)
 async def get_document_detail(document_detail_request: schemas.document.DocumentDetailRequest, 
                               db: Session = Depends(get_db), 
-                              user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                              user: models.user.User = Depends(get_current_user)):
     document = crud.document.get_document_by_document_id(db=db, 
                                                          document_id=document_detail_request.document_id)
     if document is None:
@@ -634,7 +634,7 @@ async def get_document_detail(document_detail_request: schemas.document.Document
 @document_router.post('/star', response_model=SuccessResponse)
 async def star_document(star_request: schemas.document.StarRequest, 
                         db: Session = Depends(get_db), 
-                        user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                        user: models.user.User = Depends(get_current_user)):
     db_document = crud.document.get_document_by_document_id(db=db, 
                                                             document_id=star_request.document_id)
     if db_document is None:
@@ -653,7 +653,7 @@ async def star_document(star_request: schemas.document.StarRequest,
 @document_router.post('/read', response_model=SuccessResponse)
 async def read_document(read_request: schemas.document.ReadRequest, 
                         db: Session = Depends(get_db), 
-                        user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                        user: models.user.User = Depends(get_current_user)):
     db_document = crud.document.get_document_by_document_id(db=db, 
                                                             document_id=read_request.document_id)
     if db_document is None:
@@ -687,7 +687,7 @@ async def delete_document(documents_delete_request: schemas.document.DocumentDel
 @document_router.post('/search/mine', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 async def search_all_mine_documents(search_all_my_document_request: schemas.document.SearchAllMyDocumentsRequest, 
                                     db: Session = Depends(get_db), 
-                                    user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                    user: models.user.User = Depends(get_current_user)):
     has_more = True
     next_start = None
     documents = crud.document.search_user_documents(db=db, 
@@ -738,7 +738,7 @@ async def search_all_mine_documents(search_all_my_document_request: schemas.docu
 @document_router.post('/star/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 async def search_my_star_documents(search_my_star_documents_request: schemas.document.SearchMyStarDocumentsRequest, 
                                    db: Session = Depends(get_db), 
-                                   user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+                                   user: models.user.User = Depends(get_current_user)):
     has_more = True
     next_start = None
     documents = crud.document.search_user_stared_documents(db=db, 

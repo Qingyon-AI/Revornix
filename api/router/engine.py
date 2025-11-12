@@ -13,7 +13,7 @@ engine_router = APIRouter()
 async def search_document_parse_engine(
     engine_search_request: schemas.engine.EngineSearchRequest, 
     db: Session = Depends(get_db), 
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     res = []
     db_user_engines = crud.engine.get_user_engine_by_user_id(
@@ -45,7 +45,7 @@ async def search_document_parse_engine(
 async def provide_document_parse_engine(
     engine_search_request: schemas.engine.EngineSearchRequest, 
     db: Session = Depends(get_db), 
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     db_engines = crud.engine.get_all_engines(
         db=db, 
@@ -60,7 +60,7 @@ async def provide_document_parse_engine(
 async def install_engine(
     engine_install_request: schemas.engine.EngineInstallRequest, 
     db: Session = Depends(get_db), 
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     db_user_engine = crud.engine.create_user_engine(
         db=db,
@@ -77,7 +77,7 @@ async def install_engine(
 async def delete_engine(
     engine_delete_request: schemas.engine.EngineDeleteRequest, 
     db: Session = Depends(get_db),
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     crud.engine.delete_user_engine_by_user_id_and_user_engine_id(
         db=db,
@@ -91,7 +91,7 @@ async def delete_engine(
 async def update_engine(
     engine_update_request: schemas.engine.EngineUpdateRequest, 
     db: Session = Depends(get_db),
-    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user)
 ):
     now = datetime.now(tz=timezone.utc)
     user_engine = crud.engine.get_user_engine_by_user_engine_id(
