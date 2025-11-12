@@ -29,7 +29,7 @@ def create_user_ai_model_provider(
 def create_ai_model_provider(
     db: Session, 
     name: str, 
-    description: str
+    description: str | None = None
 ):
     """
     Create a new AI model provider.
