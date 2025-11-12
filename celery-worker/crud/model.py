@@ -1,5 +1,4 @@
 import models
-from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from common.encrypt import decrypt_api_key
 
@@ -20,7 +19,6 @@ def get_user_ai_model_provider_by_id_decrypted(
     if record and record.api_key:
         record.api_key = decrypt_api_key(record.api_key)
     return record
-
 
 def get_user_ai_model_by_id_decrypted(
     db: Session, 

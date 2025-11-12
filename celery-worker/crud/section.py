@@ -4,23 +4,25 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from enums.section import UserSectionRole
 
-def get_section_podcast_by_section_id(db: Session,
-                                      section_id: int):
+def get_section_podcast_by_section_id(
+    db: Session,
+    section_id: int
+):
     query = db.query(models.section.SectionPodcast)
     query = query.filter(models.section.SectionPodcast.section_id == section_id,
                          models.section.SectionPodcast.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_sections_by_document_id(db: Session,
-                                document_id: int):
+def get_sections_by_document_id(
+    db: Session,
+    document_id: int
+):
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.document_id == document_id,
-                         models.section.SectionDocument.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None)
-    query = query.order_by(models.section.Section.update_time.desc())
+                         models.section.SectionDocument.delete_at == None,
+                         models.section.Section.delete_at == None)
     return query.all()
-
 
 def get_section_user_by_section_id_and_user_id(
     db: Session, 
@@ -39,23 +41,27 @@ def get_section_user_by_section_id_and_user_id(
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     return query.one_or_none()
 
-def get_section_by_section_id(db: Session, 
-                              section_id: int):
+def get_section_by_section_id(
+    db: Session, 
+    section_id: int
+):
     query = db.query(models.section.Section)
     query = query.filter(models.section.Section.id == section_id, 
                          models.section.Section.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def update_section_document_by_section_id_and_document_id(db: Session,
-                                                          section_id: int,
-                                                          document_id: int,
-                                                          status: int):
+def update_section_document_by_section_id_and_document_id(
+    db: Session,
+    section_id: int,
+    document_id: int,
+    status: int
+):
     now = datetime.now(timezone.utc)
     db_section_document = db.query(models.section.SectionDocument)\
         .filter(models.section.SectionDocument.section_id == section_id,
                 models.section.SectionDocument.document_id == document_id,
                 models.section.SectionDocument.delete_at == None)\
-        .first()
+        .one_or_none()
     if db_section_document is None:
         raise Exception("Section document is not found")
     db_section_document.status = status
