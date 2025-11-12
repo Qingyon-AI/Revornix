@@ -58,7 +58,7 @@ class RssServerInfo(BaseModel):
     create_time: datetime
     update_time: datetime
     documents: list[RssDocumentInfo] = []
-    sections: list[SectionInfo] = []
+    sections: list[RssSectionInfo] = []
     class Config:
         from_attributes = True
     @field_serializer('cover')
