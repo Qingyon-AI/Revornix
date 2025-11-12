@@ -220,7 +220,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
         db_today_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                      user_id=user.id,
-                                                                     date=now.date().isoformat())
+                                                                     date=now.date())
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
@@ -271,7 +271,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
         db_today_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                      user_id=user.id,
-                                                                     date=now.date().isoformat())
+                                                                     date=now.date())
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
@@ -316,7 +316,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
         db_today_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                      user_id=user.id,
-                                                                     date=now.date().isoformat())
+                                                                     date=now.date())
         if db_today_section is None:
             db_today_section = crud.section.create_section(db=db, 
                                                            creator_id=user.id,
@@ -384,7 +384,7 @@ async def update_document(document_update_request: schemas.document.DocumentUpda
                                                            status=SectionDocumentIntegration.WAIT_TO)
         sections_to_delete = [section.id for section in exist_document_sections if section.id not in document_update_request.sections]
         for section_id in sections_to_delete:
-            crud.section.unbind_document_from_section(db=db,
+            crud.section.delete_section_document_by_section_id_and_document_id(db=db,
                                                       section_id=section_id,
                                                       document_id=document_update_request.document_id)
         if sorted(exist_document_section_ids) != sorted(document_update_request.sections):

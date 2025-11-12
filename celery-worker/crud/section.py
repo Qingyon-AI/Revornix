@@ -21,9 +21,13 @@ def get_sections_by_document_id(db: Session,
     query = query.order_by(models.section.Section.update_time.desc())
     return query.all()
 
-def get_section_user_by_section_id_and_user_id(db: Session, 
-                                               section_id: int, 
-                                               user_id: int):
+
+def get_section_user_by_section_id_and_user_id(
+    db: Session, 
+    section_id: int, 
+    user_id: int,
+    filter_roles: list[int] | None = None
+):
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.section_id == section_id,
@@ -31,7 +35,9 @@ def get_section_user_by_section_id_and_user_id(db: Session,
                          models.section.SectionUser.delete_at == None)
     query = query.filter(or_(models.section.SectionUser.expire_time > now, 
                              models.section.SectionUser.expire_time == None))
-    return query.first()
+    if filter_roles is not None:
+        query = query.filter(models.section.SectionUser.role.in_(filter_roles))
+    return query.one_or_none()
 
 def get_section_by_section_id(db: Session, 
                               section_id: int):
@@ -39,17 +45,6 @@ def get_section_by_section_id(db: Session,
     query = query.filter(models.section.Section.id == section_id, 
                          models.section.Section.delete_at == None)
     return query.first()
-
-def update_section_by_section_id(db: Session,
-                                 section_id: int,
-                                 md_file_name: str):
-    now = datetime.now(timezone.utc)
-    db_section = db.query(models.section.Section).filter(models.section.Section.id == section_id).first()
-    if db_section is None:
-        raise Exception("Section is not found")
-    db_section.md_file_name = md_file_name
-    db_section.update_time = now
-    db.flush()
 
 def update_section_document_by_section_id_and_document_id(db: Session,
                                                           section_id: int,
@@ -67,19 +62,19 @@ def update_section_document_by_section_id_and_document_id(db: Session,
     db_section_document.update_time = now
     db.flush()
 
-def delete_section_podcast_by_section_id(db: Session, 
-                                         user_id: int,
-                                         section_id: int):
-    delete_time = datetime.now(timezone.utc)
-    db_section_podcasts = db.query(models.section.SectionPodcast)\
+def delete_section_podcast_by_section_id(
+    db: Session, 
+    user_id: int,
+    section_id: int
+):
+    now = datetime.now(timezone.utc)
+    db_section_podcast = db.query(models.section.SectionPodcast)\
         .join(models.section.SectionUser, models.section.SectionUser.section_id == models.section.SectionPodcast.section_id)\
         .filter(models.section.SectionPodcast.section_id == section_id,
                 models.section.SectionUser.role == UserSectionRole.CREATOR,
                 models.section.SectionUser.user_id == user_id,
                 models.section.SectionPodcast.delete_at == None)\
-        .all()
-    db_podcast_ids = [podcast.id for podcast in db_section_podcasts]
-    db.query(models.section.SectionPodcast)\
-        .filter(models.section.SectionPodcast.id.in_(db_podcast_ids),
-                models.section.SectionPodcast.delete_at == None)\
-        .update({models.section.SectionPodcast.delete_at: delete_time}, synchronize_session=False)
+        .one_or_none()
+    if db_section_podcast is not None:
+        db_section_podcast.delete_at = now
+    db.flush()
