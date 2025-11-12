@@ -5,17 +5,36 @@ import uuid
 from datetime import datetime, timezone
 from common.hash import hash_password
 from sqlalchemy.orm import Session
+from enums.user import MarkDocumentReadReason
 
-def create_wechat_user(db: Session, 
-                       user_id: int, 
-                       wechat_platform: int,
-                       wechat_user_open_id: str, 
-                       wechat_user_union_id: str, 
-                       wechat_user_name: str):
+def create_base_user(
+    db: Session, 
+    nickname: str,
+    avatar: str | None = None,
+    default_read_mark_reason: MarkDocumentReadReason = MarkDocumentReadReason.REQUEST_ONCE,
+):
+    now = datetime.now(timezone.utc)
+    db_user = models.user.User(uuid=str(uuid.uuid4()),
+                               nickname=nickname,
+                               avatar=avatar,
+                               default_read_mark_reason=default_read_mark_reason,
+                               create_time=now)
+    db.add(db_user)
+    db.flush()
+    return db_user
+
+def create_wechat_user(
+    db: Session, 
+    user_id: int, 
+    wechat_platform: int,
+    wechat_user_open_id: str, 
+    wechat_user_union_id: str, 
+    wechat_user_name: str | None = None
+):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.id == user_id,
                          models.user.User.delete_at == None)
-    db_user = query.first()
+    db_user = query.one_or_none()
     if db_user is None:
         raise Exception("The base info of the wechat user you want to create is not exist")
     db_wechat_user = models.user.WechatUser(user_id=user_id,
@@ -27,13 +46,15 @@ def create_wechat_user(db: Session,
     db.flush()
     return db_wechat_user
 
-def create_phone_user(db: Session, 
-                      user_id: int, 
-                      phone: str):
+def create_phone_user(
+    db: Session, 
+    user_id: int, 
+    phone: str
+):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.id == user_id,
                          models.user.User.delete_at == None)
-    db_user = query.first()
+    db_user = query.one_or_none()
     if db_user is None:
         raise Exception("The base info of the phone user you want to create is not exist")
     
@@ -43,39 +64,28 @@ def create_phone_user(db: Session,
     db.flush()
     return db_phone_user
 
-def create_follow_user_record(db: Session, 
-                              from_user_id: int, 
-                              to_user_id: int):
+def create_follow_user_record(
+    db: Session, 
+    from_user_id: int, 
+    to_user_id: int
+):
     now = datetime.now(timezone.utc)
     db_follow_user = models.user.FollowUser(from_user_id=from_user_id,
                                             to_user_id=to_user_id,
-                                            create_time=now,
-                                            update_time=now)
+                                            create_time=now)
     db.add(db_follow_user)
     db.flush()
 
-def create_base_user(db: Session, 
-                     default_read_mark_reason: int,
-                     nickname: str,
-                     avatar: str | None = None) -> models.user.User:
-    db_user = models.user.User(uuid=str(uuid.uuid4()),
-                               nickname=nickname,
-                               avatar=avatar,
-                               default_read_mark_reason=default_read_mark_reason,
-                               create_time=datetime.now(timezone.utc),
-                               update_time=datetime.now(timezone.utc))
-    db.add(db_user)
-    db.flush()
-    return db_user
-
-def create_github_user(db: Session, 
-                       user_id: int, 
-                       github_user_id: str, 
-                       github_user_name: str):
+def create_github_user(
+    db: Session, 
+    user_id: int, 
+    github_user_id: str, 
+    github_user_name: str | None = None
+):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.id == user_id,
                          models.user.User.delete_at == None)
-    db_user = query.first()
+    db_user = query.one_or_none()
     if db_user is None:
         raise Exception("The base info of the github user you want to create is not exist")
     
@@ -86,14 +96,16 @@ def create_github_user(db: Session,
     db.flush()
     return db_github
 
-def create_google_user(db: Session, 
-                       user_id: int, 
-                       google_user_id: str, 
-                       google_user_name: str):
+def create_google_user(
+    db: Session, 
+    user_id: int, 
+    google_user_id: str, 
+    google_user_name: str | None = None
+):
     query_get_base_user = db.query(models.user.User)
     query_get_base_user = query_get_base_user.filter(models.user.User.id == user_id,
                                                      models.user.User.delete_at == None)
-    db_user = query_get_base_user.first()
+    db_user = query_get_base_user.one_or_none()
     if db_user is None:
         raise Exception("The base info of the google user you want to create is not exist")
     
@@ -104,15 +116,17 @@ def create_google_user(db: Session,
     db.flush()
     return db_google_user     
 
-def create_email_user(db: Session, 
-                      user_id: int, 
-                      email: str, 
-                      password: str | None = None,
-                      nickname: str | None = None) -> models.user.EmailUser:
+def create_email_user(
+    db: Session, 
+    user_id: int, 
+    email: str, 
+    password: str | None = None,
+    nickname: str | None = None
+):
     query_get_base_user = db.query(models.user.User)
     query_get_base_user = query_get_base_user.filter(models.user.User.id == user_id,
                                                      models.user.User.delete_at == None)
-    db_user = query_get_base_user.first()
+    db_user = query_get_base_user.one_or_none()
     if db_user is None:
         raise Exception("The base info of the email user you want to create is not exist")
     
@@ -137,7 +151,8 @@ def create_email_user(db: Session,
         user_data.update({
             "hashed_password": hash_password(random_password),
             "is_initial_password": True,
-            "initial_password": random_password
+            "initial_password": random_password,
+            "has_seen_initial_password": False
         })
  
     db_email_user = models.user.EmailUser(**user_data)
@@ -145,12 +160,17 @@ def create_email_user(db: Session,
     db.flush()
     return db_email_user
 
-def search_user_by_email_like(db: Session, keyword: str, start: int | None = None, limit: int | None = None):
+def search_user_by_email(
+    db: Session, 
+    keyword: str | None = None, 
+    start: int | None = None, 
+    limit: int = 10
+):
     query = db.query(models.user.User)
     query = query.join(models.user.EmailUser, models.user.User.id == models.user.EmailUser.user_id)
     query = query.filter(models.user.EmailUser.delete_at == None,
                          models.user.User.delete_at == None)
-    if len(keyword) > 0:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     if start is not None:
@@ -159,58 +179,82 @@ def search_user_by_email_like(db: Session, keyword: str, start: int | None = Non
         query = query.limit(limit)
     return query.all()
 
-def search_next_user_by_email_like(db: Session, email_user: models.user.EmailUser, keyword: str):
+def search_next_user_by_email(
+    db: Session, 
+    email_user: models.user.EmailUser, 
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.join(models.user.EmailUser, models.user.User.id == models.user.EmailUser.user_id)
     query = query.filter(models.user.EmailUser.delete_at == None,
                          models.user.User.delete_at == None)
-    if len(keyword) > 0:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     query = query.filter(models.user.User.id < email_user.id)
     return query.first()
 
-def count_user_by_email_like(db: Session, keyword: str):
+def count_user_by_email(
+    db: Session, 
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.join(models.user.EmailUser, models.user.User.id == models.user.EmailUser.user_id)
     query = query.filter(models.user.EmailUser.delete_at == None,
                          models.user.User.delete_at == None)
-    if len(keyword) > 0:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
     return query.count()
 
-def search_user_by_nickname_like(db: Session, keyword: str, start: int | None = None, limit: int | None = None):
+def search_user_by_nickname(
+    db: Session, 
+    keyword: str | None = None, 
+    start: int | None = None, 
+    limit: int = 10
+):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at == None)
-    if len(keyword) > 0:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
-    query = query.order_by(models.user.User.create_time.desc())
+    query = query.order_by(models.user.User.id.desc())
     if start is not None:
         query = query.filter(models.user.User.id <= start)
     if limit is not None:
         query = query.limit(limit)
     return query.all()
     
-def search_next_user_by_nickname_like(db: Session, user: models.user.User, keyword: str):
+def search_next_user_by_nickname(
+    db: Session, 
+    user: models.user.User, 
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at == None)
-    if len(keyword) > 0:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
-    query = query.order_by(models.user.User.create_time.desc())
+    query = query.order_by(models.user.User.id.desc())
     query = query.filter(models.user.User.id < user.id)
     return query.first()
 
-def count_user_by_nickname_like(db: Session, keyword: str):
+def count_user_by_nickname(
+    db: Session, 
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at == None)
-    if len(keyword) > 0:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     return query.count()
 
-def search_user_by_uuid_like(db: Session, keyword: str, start: int | None = None, limit: int | None = None):
+def search_user_by_uuid(
+    db: Session, 
+    keyword: str | None = None, 
+    start: int | None = None, 
+    limit: int = 10
+):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at == None)
-    if len(keyword) > 0:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
     query = query.order_by(models.user.User.id.desc())
     if start is not None:
@@ -219,33 +263,42 @@ def search_user_by_uuid_like(db: Session, keyword: str, start: int | None = None
         query = query.limit(limit)
     return query.all()
 
-def search_next_user_by_uuid_like(db: Session, user: models.user.User, keyword: str):
+def search_next_user_by_uuid(
+    db: Session, 
+    user: models.user.User, 
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at == None)
-    if len(keyword) > 0:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
     query = query.order_by(models.user.User.id.desc())
     query = query.filter(models.user.User.id < user.id)
     return query.first()
 
-def count_user_by_uuid_like(db: Session, keyword: str):
+def count_user_by_uuid(
+    db: Session, 
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at == None)
-    if len(keyword) > 0:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.uuid.like(f"%{keyword}%"))
     return query.count()
 
-def search_user_fans(db: Session,
-                     user_id: int,
-                     limit: int = 10,
-                     start: int | None = None,
-                     keyword: str | None = None):
+def search_user_fans(
+    db: Session,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.from_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.to_user_id == user_id,
                          models.user.FollowUser.delete_at == None,
                          models.user.User.delete_at == None)
-    if keyword is not None:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     if start is not None:
@@ -253,43 +306,49 @@ def search_user_fans(db: Session,
     query = query.limit(limit)
     return query.all()
 
-def count_user_fans(db: Session,
-                    user_id: int,
-                    keyword: str | None = None):
+def count_user_fans(
+    db: Session,
+    user_id: int,
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.from_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.to_user_id == user_id,
                          models.user.FollowUser.delete_at == None,
                          models.user.User.delete_at == None)
-    if keyword is not None:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     return query.count()
 
-def search_next_user_fan(db: Session,
-                         user: models.user.User,
-                         keyword: str | None = None):
+def search_next_user_fan(
+    db: Session,
+    user: models.user.User,
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.from_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.to_user_id == user,
                          models.user.FollowUser.delete_at == None,
                          models.user.User.delete_at == None)
-    if keyword is not None:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     query = query.filter(models.user.User.id < user.id)
     return query.first()
 
-def search_user_follows(db: Session,
-                        user_id: int,
-                        limit: int = 10,
-                        start: int | None = None,
-                        keyword: str | None = None):
+def search_user_follows(
+    db: Session,
+    user_id: int,
+    limit: int = 10,
+    start: int | None = None,
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.to_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.from_user_id == user_id,
                          models.user.FollowUser.delete_at == None,
                          models.user.User.delete_at == None)
-    if keyword is not None:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     if start is not None:
@@ -297,36 +356,42 @@ def search_user_follows(db: Session,
     query = query.limit(limit)
     return query.all()
 
-def count_user_follows(db: Session,
-                       user_id: int,
-                       keyword: str | None = None):
+def count_user_follows(
+    db: Session,
+    user_id: int,
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.to_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.from_user_id == user_id,
                          models.user.FollowUser.delete_at == None,
                          models.user.User.delete_at == None)
-    if keyword is not None:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     return query.count()
 
-def search_next_user_follow(db: Session,
-                            user: models.user.User,
-                            keyword: str | None = None):
+def search_next_user_follow(
+    db: Session,
+    user: models.user.User,
+    keyword: str | None = None
+):
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.to_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.from_user_id == user,
                          models.user.FollowUser.delete_at == None,
                          models.user.User.delete_at == None)
-    if keyword is not None:
+    if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     query = query.filter(models.user.User.id < user.id)
     return query.first()
 
 # 同一用户可能在不同平台登录过 比如Revornix小程序登录 比如Revornix Web端微信方式登录 所以会有多个微信openid
-def get_wechat_user_by_user_id(db: Session,
-                               user_id: int,
-                               filter_wechat_platform: int | None = None):
+def get_wechat_user_by_user_id(
+    db: Session,
+    user_id: int,
+    filter_wechat_platform: int | None = None
+):
     query = db.query(models.user.WechatUser)
     query = query.join(models.user.User)
     query = query.filter(models.user.WechatUser.user_id == user_id,
@@ -336,138 +401,156 @@ def get_wechat_user_by_user_id(db: Session,
         query = query.filter(models.user.WechatUser.wechat_platform == filter_wechat_platform)
     return query.all()
 
-def get_wechat_user_by_wechat_open_id(db: Session,
-                                      wechat_user_open_id: str):
+def get_wechat_user_by_wechat_open_id(
+    db: Session,
+    wechat_user_open_id: str
+):
     query = db.query(models.user.WechatUser)
     query = query.filter(models.user.WechatUser.wechat_user_open_id == wechat_user_open_id,
                          models.user.WechatUser.delete_at == None)
     return query.one_or_none()
 
 # 同一用户可能在不同平台登录过 比如Revornix小程序登录 比如Revornix Web端微信方式登录 所以会有多个微信openid 但是union_id肯定是一致的
-def get_wechat_user_by_wechat_union_id(db: Session,
-                                       wechat_user_union_id: str):
+def get_wechat_user_by_wechat_union_id(
+    db: Session,
+    wechat_user_union_id: str
+):
     query = db.query(models.user.WechatUser)
     query = query.filter(models.user.WechatUser.wechat_user_union_id == wechat_user_union_id,
                          models.user.WechatUser.delete_at == None)
     return query.all()
 
-def get_phone_user_by_phone(db: Session,
-                            phone: str):
+def get_phone_user_by_phone(
+    db: Session,
+    phone: str
+):
     query = db.query(models.user.PhoneUser)
     query = query.filter(models.user.PhoneUser.phone == phone,
                          models.user.PhoneUser.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_phone_user_by_user_id(db: Session,
-                              user_id: int):
+def get_phone_user_by_user_id(
+    db: Session,
+    user_id: int
+):
     query = db.query(models.user.PhoneUser)
     query = query.join(models.user.User)
     query = query.filter(models.user.PhoneUser.user_id == user_id,
                          models.user.PhoneUser.delete_at == None,
                          models.user.User.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_github_user_by_user_id(db: Session,
-                               user_id: int):
+def get_github_user_by_user_id(
+    db: Session,
+    user_id: int
+):
     query = db.query(models.user.GithubUser)
     query = query.join(models.user.User)
     query = query.filter(models.user.GithubUser.user_id == user_id,
                          models.user.GithubUser.delete_at == None,
                          models.user.User.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_github_user_by_github_user_id(db: Session,
-                                      github_user_id: str):
+def get_github_user_by_github_user_id(
+    db: Session,
+    github_user_id: str
+):
     query = db.query(models.user.GithubUser)
     query = query.filter(models.user.GithubUser.github_user_id == github_user_id,
                          models.user.GithubUser.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_google_user_by_user_id(db: Session,
-                               user_id: int):
+def get_google_user_by_user_id(
+    db: Session,
+    user_id: int
+):
     query = db.query(models.user.GoogleUser)
     query = query.join(models.user.User)
     query = query.filter(models.user.GoogleUser.user_id == user_id,
                          models.user.GoogleUser.delete_at == None,
                          models.user.User.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_google_user_by_google_id(db: Session, 
-                                 google_user_id: str): 
+def get_google_user_by_google_id(
+    db: Session, 
+    google_user_id: str
+):
     query = db.query(models.user.GoogleUser)
     query = query.filter(models.user.GoogleUser.google_user_id == google_user_id,
                          models.user.GoogleUser.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_user_follow_by_to_user_id_and_from_user_id(db: Session,
-                                                   to_user_id: int,
-                                                   from_user_id: int):
+def get_user_follow_by_to_user_id_and_from_user_id(
+    db: Session,
+    to_user_id: int,
+    from_user_id: int
+):
     query = db.query(models.user.FollowUser)
     query = query.filter(models.user.FollowUser.to_user_id == to_user_id,
                          models.user.FollowUser.from_user_id == from_user_id,
                          models.user.FollowUser.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_user_by_id(db: Session,
-                   user_id: int) -> models.user.User:
+def get_user_by_id(
+    db: Session,
+    user_id: int
+):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.id == user_id,
                          models.user.User.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_email_user_by_user_id(db: Session,
-                              user_id: int) -> models.user.EmailUser:
+def get_email_user_by_user_id(
+    db: Session,
+    user_id: int
+):
     query = db.query(models.user.EmailUser)
     query = query.join(models.user.User)
     query = query.filter(models.user.EmailUser.user_id == user_id,
                         models.user.EmailUser.delete_at == None,
                         models.user.User.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_user_initial_password(db: Session, 
-                              user_id: int):
-    query = db.query(models.user.EmailUser)
-    query = query.filter(models.user.EmailUser.user_id == user_id,
-                         models.user.EmailUser.delete_at == None)
-    db_user = query.first()
-    if db_user is None:
-        raise Exception("Can't find the email user")
-    db_user.has_seen_initial_password = True
-    db.flush()
-    return db_user.initial_password
-
-def get_user_by_uuid(db: Session,
-                     user_uuid: str) -> models.user.User:
-    query = db.query(models.user.User)
-    query = query.filter(models.user.User.uuid == user_uuid, 
-                         models.user.User.delete_at == None)
-    return query.first()
-
-def get_email_user_by_email(db: Session,
-                            email: str):
+def get_email_user_by_email(
+    db: Session,
+    email: str
+):
     query = db.query(models.user.EmailUser)
     query = query.filter(models.user.EmailUser.email == email,
                          models.user.EmailUser.delete_at == None)
-    return query.first()
+    return query.one_or_none()
 
-def get_user_by_email(db: Session, 
-                      email: str) -> models.user.User:
+def get_user_by_email(
+    db: Session, 
+    email: str
+):
     query = db.query(models.user.User)
     query = query.join(models.user.EmailUser)
     query = query.filter(models.user.User.delete_at == None,
                          models.user.EmailUser.delete_at == None,
                          models.user.EmailUser.email == email)
-    return query.first()
+    return query.one_or_none()
 
-def update_user_password(db: Session,
-                         user_id: int,
-                         password: str) -> models.user.EmailUser:
+def get_user_by_uuid(
+    db: Session,
+    user_uuid: str
+):
+    query = db.query(models.user.User)
+    query = query.filter(models.user.User.uuid == user_uuid, 
+                         models.user.User.delete_at == None)
+    return query.one_or_none()
+
+def update_user_password(
+    db: Session,
+    user_id: int,
+    password: str
+):
     db_email_user_query = db.query(models.user.EmailUser)
     db_email_user_query = db_email_user_query.join(models.user.User)
     db_email_user_query = db_email_user_query.filter(models.user.EmailUser.user_id == user_id,
                                                      models.user.EmailUser.delete_at == None,
                                                      models.user.User.delete_at == None)
-    db_email_user = db_email_user_query.first()
+    db_email_user = db_email_user_query.one_or_none()
     if db_email_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
     db_email_user.hashed_password = hash_password(password)
@@ -475,16 +558,18 @@ def update_user_password(db: Session,
     db.flush()
     return db_email_user
 
-def update_user_follow_by_to_user_id_and_from_user_id(db: Session,
-                                                      from_user_id: int,
-                                                      to_user_id: int,
-                                                      status: bool):
+def update_user_follow_by_to_user_id_and_from_user_id(
+    db: Session,
+    from_user_id: int,
+    to_user_id: int,
+    status: bool
+):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.FollowUser)
     query = query.filter(models.user.FollowUser.from_user_id == from_user_id,
                          models.user.FollowUser.to_user_id == to_user_id,
                          models.user.FollowUser.delete_at == None)
-    db_user_follow = query.first()
+    db_user_follow = query.one_or_none()
     if db_user_follow is None:
         raise Exception("Can't find the user follow info based on the from_user_id and to_user_id you provided.")
     else:
@@ -495,18 +580,21 @@ def update_user_follow_by_to_user_id_and_from_user_id(db: Session,
     db.flush()
     return db_user_follow
 
-def update_user_default_engine(db: Session,
-                               user_id: int,
-                               default_file_document_parse_user_engine_id: int | None = None,
-                               default_website_document_parse_user_engine_id: int | None = None,
-                               default_podcast_user_engine_id: int | None = None):
+def update_user_default_engine(
+    db: Session,
+    user_id: int,
+    default_file_document_parse_user_engine_id: int | None = None,
+    default_website_document_parse_user_engine_id: int | None = None,
+    default_podcast_user_engine_id: int | None = None
+):
     now = datetime.now(timezone.utc)
     db_user_query = db.query(models.user.User)
     db_user_query = db_user_query.filter(models.user.User.id == user_id,
                                          models.user.User.delete_at == None)
-    db_user = db_user_query.first()
+    db_user = db_user_query.one_or_none()
     if db_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
+    
     if default_file_document_parse_user_engine_id is not None:
         db_user.default_file_document_parse_user_engine_id = default_file_document_parse_user_engine_id
     if default_website_document_parse_user_engine_id is not None:
@@ -516,16 +604,18 @@ def update_user_default_engine(db: Session,
     db_user.update_time = now
     db.flush()
     return db_user
-    
-def update_user_default_model(db: Session,
-                              user_id: int,
-                              default_document_reader_model_id: int | None = None,
-                              default_revornix_model_id: int | None = None):
+
+def update_user_default_model(
+    db: Session,
+    user_id: int,
+    default_document_reader_model_id: int | None = None,
+    default_revornix_model_id: int | None = None
+):
     now = datetime.now(timezone.utc)
     db_user_query = db.query(models.user.User)
     db_user_query = db_user_query.filter(models.user.User.id == user_id,
-                                        models.user.User.delete_at == None)
-    db_user = db_user_query.first()
+                                         models.user.User.delete_at == None)
+    db_user = db_user_query.one_or_none()
     if db_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
     if default_document_reader_model_id is not None:
@@ -536,14 +626,16 @@ def update_user_default_model(db: Session,
     db.flush()
     return db_user
 
-def update_user_default_mark_read_reason(db: Session,
-                                         user_id: int,
-                                         default_read_mark_reason: int | None = None):
+def update_user_default_mark_read_reason(
+    db: Session,
+    user_id: int,
+    default_read_mark_reason: int | None = None
+):
     now = datetime.now(timezone.utc)
     db_user_query = db.query(models.user.User)
     db_user_query = db_user_query.filter(models.user.User.id == user_id,
                                          models.user.User.delete_at == None)
-    db_user = db_user_query.first()
+    db_user = db_user_query.one_or_none()
     if db_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
     if default_read_mark_reason is not None:
@@ -552,17 +644,19 @@ def update_user_default_mark_read_reason(db: Session,
     db.flush()
     return db_user
 
-def update_user_info(db: Session,
-                     user_id: int,
-                     avatar: str | None = None,
-                     nickname: str | None = None,
-                     slogan: str | None = None,
-                     age: int | None = None,
-                     gender: int | None = None) -> models.user.User:
+def update_user_info(
+    db: Session,
+    user_id: int,
+    avatar: str | None = None,
+    nickname: str | None = None,
+    slogan: str | None = None,
+    age: int | None = None,
+    gender: int | None = None
+):
     db_user_query = db.query(models.user.User)
     db_user_query = db_user_query.filter(models.user.User.id == user_id, 
                                          models.user.User.delete_at == None)
-    db_user = db_user_query.first()
+    db_user = db_user_query.one_or_none()
     if db_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
     if nickname is not None:
@@ -578,72 +672,72 @@ def update_user_info(db: Session,
     db.flush()
     return db_user
 
-def delete_email_user_by_user_id(db: Session,
-                                 user_id: int):
+def delete_email_user_by_user_id(
+    db: Session,
+    user_id: int
+):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.EmailUser)
     query = query.filter(models.user.EmailUser.user_id == user_id,
                          models.user.EmailUser.delete_at == None)
-    query = query.update({"delete_at": now})
+    query = query.update({models.user.EmailUser.delete_at: now})
     db.flush()
     
-def delete_user_by_user_id(db: Session,
-                           user_id: int):
-    now = datetime.now(timezone.utc)
-    
-    db_user = db.query(models.user.User).filter(models.user.User.id == user_id,
-                                                models.user.User.delete_at == None).first()
-    if db_user is None:
-        raise Exception("Can't find the user info based on the user_id you provided.")
-    db_user.delete_at = now
-    
-    delete_email_user_by_user_id(db, user_id)
-    db.flush()
-    
-def delete_follow_user_record(db: Session,
-                              from_user_id: int,
-                              to_user_id: int):
-    now = datetime.now(timezone.utc)
-    query = db.query(models.user.FollowUser).filter(models.user.FollowUser.from_user_id == from_user_id,
-                                                             models.user.FollowUser.to_user_id == to_user_id)
-    db_follow_user = query.first()
-    if db_follow_user is None:
-        raise Exception("The follow user record you want to delete is not exist")
-    db_follow_user.delete_at = now
-    db.flush()
-    
-def delete_google_user_by_user_id(db: Session,
-                                  user_id: int):
+def delete_google_user_by_user_id(
+    db: Session,
+    user_id: int
+):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.GoogleUser)
     query = query.filter(models.user.GoogleUser.user_id == user_id,
                          models.user.GoogleUser.delete_at == None)
-    query = query.update({"delete_at": now})
+    query = query.update({models.user.GoogleUser.delete_at: now})
     db.flush()
     
-def delete_github_user_by_user_id(db: Session,
-                                  user_id: int):
+def delete_github_user_by_user_id(
+    db: Session,
+    user_id: int
+):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.GithubUser)
     query = query.filter(models.user.GithubUser.user_id == user_id,
                          models.user.GithubUser.delete_at == None)
-    query = query.update({"delete_at": now})
+    query = query.update({models.user.GithubUser.delete_at: now})
     db.flush()
     
-def delete_phone_user_by_user_id(db: Session,
-                                 user_id: int):
+def delete_phone_user_by_user_id(
+    db: Session,
+    user_id: int
+):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.PhoneUser)
     query = query.filter(models.user.PhoneUser.user_id == user_id,
                          models.user.PhoneUser.delete_at == None)
-    query = query.update({"delete_at": now})
+    query = query.update({models.user.PhoneUser.delete_at: now})
     db.flush()
 
-def delete_wechat_user_by_user_id(db: Session,
-                                  user_id: int):
+def delete_wechat_user_by_user_id(
+    db: Session,
+    user_id: int
+):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.WechatUser)
     query = query.filter(models.user.WechatUser.user_id == user_id,
                          models.user.WechatUser.delete_at == None)
-    query = query.update({"delete_at": now})
+    query = query.update({models.user.WechatUser.delete_at: now})
+    db.flush()
+    
+def delete_user_by_user_id(
+    db: Session,
+    user_id: int
+):
+    now = datetime.now(timezone.utc)
+    
+    db_user = db.query(models.user.User)\
+        .filter(models.user.User.id == user_id,
+                models.user.User.delete_at == None)\
+        .one_or_none()
+    if db_user is None:
+        raise Exception("Can't find the user info based on the user_id you provided.")
+    db_user.delete_at = now
     db.flush()
