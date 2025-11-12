@@ -13,7 +13,7 @@ class MCPServer(Base):
     __tablename__ = 'mcp_server'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[Optional[str]] = mapped_column(String(200), index=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     category: Mapped[int] = mapped_column(Integer, nullable=False, index=True, comment='0: std, 1: stream')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
