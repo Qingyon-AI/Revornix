@@ -34,7 +34,6 @@ from router.section import section_router
 from router.engine import engine_router
 from router.file_system import file_system_router
 from router.api_key import api_key_router
-from router.task import task_router
 from router.tp import tp_router
 from router.rss import rss_router
 from router.graph import graph_router
@@ -107,7 +106,6 @@ app.include_router(notification_router, prefix="/notification", tags=["notificat
 app.include_router(section_router, prefix="/section", tags=["section"])
 app.include_router(api_key_router, prefix="/api-key", tags=["api-key"])
 app.include_router(tp_router, prefix="/tp", tags=["tp"])
-app.include_router(task_router, prefix="/task", tags=["task"])
 app.include_router(mcp_router, prefix="/mcp", tags=["mcp"])
 app.include_router(engine_router, prefix="/engine", tags=["engine"])
 app.include_router(file_system_router, prefix="/file-system", tags=["file-system"])
