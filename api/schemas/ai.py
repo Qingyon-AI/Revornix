@@ -14,7 +14,7 @@ class ModelCreateResponse(BaseModel):
 class ModelProvider(BaseModel):
     id: int
     name: str
-    description: str
+    description: str | None
     api_key: str
     api_url: str
     class Config:
@@ -23,7 +23,7 @@ class ModelProvider(BaseModel):
 class Model(BaseModel):
     id: int
     name: str
-    description: str
+    description: str | None
     api_key: str
     api_url: str
     provider: ModelProvider
@@ -46,10 +46,10 @@ class ModelProviderRequest(BaseModel):
     provider_id: int
     
 class DeleteModelRequest(BaseModel):
-    model_ids: list[int] | None = None
+    model_ids: list[int]
     
 class DeleteModelProviderRequest(BaseModel):
-    provider_ids: list[int] | None = None
+    provider_ids: list[int]
     
 class ModelSearchRequest(BaseModel):
     keyword: str | None = None
