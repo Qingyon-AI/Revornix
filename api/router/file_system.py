@@ -3,8 +3,8 @@ import crud
 import json
 import boto3
 import models
-from typing import cast
 import alibabacloud_oss_v2 as oss
+from typing import cast
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from sqlalchemy.orm import Session
@@ -21,16 +21,23 @@ from common.common import get_user_remote_file_system
 file_system_router = APIRouter()
 
 @file_system_router.post('/url-prefix', response_model=schemas.file_system.FileUrlPrefixResponse)
-async def get_url_prefix(file_url_prefix_request: schemas.file_system.FileUrlPrefixRequest,
-                         db: Session = Depends(get_db)):
-    url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=file_url_prefix_request.user_id)
-    res = schemas.file_system.FileUrlPrefixResponse(url_prefix=url_prefix)
+async def get_url_prefix(
+    file_url_prefix_request: schemas.file_system.FileUrlPrefixRequest
+):
+    url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(
+        user_id=file_url_prefix_request.user_id
+    )
+    res = schemas.file_system.FileUrlPrefixResponse(
+        url_prefix=url_prefix
+    )
     return res
 
 @file_system_router.post("/built-in/presign-upload-url", response_model=schemas.file_system.S3PresignUploadURLResponse)
-def get_built_in_presigned_url(s3_presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
-                               db: Session = Depends(get_db),
-                               current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+def get_built_in_presigned_url(
+    s3_presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
+    db: Session = Depends(get_db),
+    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
     sts = boto3.client(
         'sts',
         endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
@@ -78,11 +85,18 @@ def get_built_in_presigned_url(s3_presign_upload_url_request: schemas.file_syste
     )
 
 @file_system_router.post("/aws-s3/presign-upload-url", response_model=schemas.file_system.S3PresignUploadURLResponse)
-def get_aws_s3_presigned_url(s3_presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
-                             db: Session = Depends(get_db),
-                             current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                      user_file_system_id=current_user.default_user_file_system)
+def get_aws_s3_presigned_url(
+    s3_presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
+    db: Session = Depends(get_db),
+    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
+    default_user_file_system = current_user.default_user_file_system
+    if default_user_file_system is None:
+        raise Exception("Please set default user file system first")
+    db_user_file_system = crud.file_system.get_user_file_system_by_id(
+        db=db,
+        user_file_system_id=default_user_file_system
+    )
     if db_user_file_system is None:
         raise Exception("User file system not found")
     
@@ -143,11 +157,16 @@ def get_aws_s3_presigned_url(s3_presign_upload_url_request: schemas.file_system.
     )
 
 @file_system_router.post('/aliyun-oss/presign-upload-url', response_model=schemas.file_system.AliyunOSSPresignUploadURLResponse)
-def get_aliyun_oss_presigned_url(presign_upload_url_request: schemas.file_system.AliyunOSSPresignUploadURLRequest,
-                                 db: Session = Depends(get_db),
-                                 current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+def get_aliyun_oss_presigned_url(
+    presign_upload_url_request: schemas.file_system.AliyunOSSPresignUploadURLRequest,
+    db: Session = Depends(get_db),
+    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
+    default_user_file_system = current_user.default_user_file_system
+    if default_user_file_system is None:
+        raise Exception("Please set default user file system first")
     db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                      user_file_system_id=current_user.default_user_file_system)
+                                                                      user_file_system_id=default_user_file_system)
     if db_user_file_system is None:
         raise Exception("User file system not found")
     
@@ -171,6 +190,8 @@ def get_aliyun_oss_presigned_url(presign_upload_url_request: schemas.file_system
     request.set_RoleArn(role_arn)
     request.set_RoleSessionName(role_session_name)
     response = client.do_action_with_exception(request)
+    if response is None:
+        raise Exception("Failed to get STS credentials")
     result = json.loads(response)
     
     sts_role_access_key_id = result.get('Credentials').get('AccessKeyId')
@@ -210,53 +231,77 @@ def get_aliyun_oss_presigned_url(presign_upload_url_request: schemas.file_system
         expires=timedelta(seconds=expires_in)
     )
     
-    return schemas.file_system.AliyunOSSPresignUploadURLResponse(file_path=presign_upload_url_request.file_path,
-                                                                 upload_url=pre_result.url,
-                                                                 expiration=pre_result.expiration,
-                                                                 fields=pre_result.signed_headers)
+    if pre_result is None:
+        raise Exception("Failed to get presigned URL")
+    
+    if pre_result.url is None or pre_result.signed_headers is None or pre_result.expiration is None:
+        raise Exception("Failed to get presigned URL")
+    
+    return schemas.file_system.AliyunOSSPresignUploadURLResponse(
+        file_path=presign_upload_url_request.file_path,
+        upload_url=pre_result.url,
+        expiration=pre_result.expiration,
+        fields=dict(pre_result.signed_headers)
+    )
 
 @file_system_router.post('/detail', response_model=schemas.file_system.FileSystemInfo)
-async def get_file_system_info(file_system_info_request: schemas.file_system.FileSystemInfoRequest,
-                               db: Session = Depends(get_db),
-                               current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_file_system = crud.file_system.get_file_system_by_id(db=db, 
-                                                            file_system_id=file_system_info_request.file_system_id)
+async def get_file_system_info(
+    file_system_info_request: schemas.file_system.FileSystemInfoRequest,
+    db: Session = Depends(get_db),
+    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
+    db_file_system = crud.file_system.get_file_system_by_id(
+        db=db, 
+        file_system_id=file_system_info_request.file_system_id
+    )
     if db_file_system is None:
         raise schemas.error.CustomException(code=404, message="File System not found")
     return schemas.file_system.FileSystemInfo.model_validate(db_file_system)
 
 @file_system_router.post('/user-file-system/detail', response_model=schemas.file_system.UserFileSystemInfo)
-async def get_user_file_system_info(user_file_system_info_request: schemas.file_system.UserFileSystemInfoRequest,
-                                    db: Session = Depends(get_db),
-                                    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db, 
-                                                                      user_file_system_id=user_file_system_info_request.user_file_system_id)
+async def get_user_file_system_info(
+    user_file_system_info_request: schemas.file_system.UserFileSystemInfoRequest,
+    db: Session = Depends(get_db),
+    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
+    db_user_file_system = crud.file_system.get_user_file_system_by_id(
+        db=db, 
+        user_file_system_id=user_file_system_info_request.user_file_system_id
+    )
     if db_user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User File System not found")
-    db_file_system = crud.file_system.get_file_system_by_id(db=db, 
-                                                            file_system_id=db_user_file_system.file_system_id)
+    db_file_system = crud.file_system.get_file_system_by_id(
+        db=db, 
+        file_system_id=db_user_file_system.file_system_id
+    )
     if db_file_system is None:
         raise schemas.error.CustomException(code=404, message="File System not found")
-    res = schemas.file_system.UserFileSystemInfo(id=db_user_file_system.id,
-                                                 file_system_id=db_user_file_system.file_system_id,
-                                                 title=db_user_file_system.title,
-                                                 description=db_user_file_system.description,
-                                                 demo_config=db_file_system.demo_config,
-                                                 create_time=db_user_file_system.create_time,
-                                                 update_time=db_user_file_system.update_time)
+    res = schemas.file_system.UserFileSystemInfo(
+        id=db_user_file_system.id,
+        file_system_id=db_user_file_system.file_system_id,
+        title=db_user_file_system.title,
+        description=db_user_file_system.description,
+        demo_config=db_file_system.demo_config,
+        create_time=db_user_file_system.create_time,
+        update_time=db_user_file_system.update_time
+    )
     if db_user_file_system.user_id == current_user.id:
         # only if the user is the owner of the user file system, the config_json will be returned
         res.config_json=db_user_file_system.config_json
     return res
 
 @file_system_router.post("/mine", response_model=schemas.file_system.MineFileSystemSearchResponse)
-async def search_mine_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
-                                  db: Session = Depends(get_db), 
-                                  current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def search_mine_file_system(
+    file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
+    db: Session = Depends(get_db), 
+    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
     res = []
-    db_user_file_systems = crud.file_system.get_user_file_systems_by_user_id(db=db,
-                                                                             user_id=current_user.id,
-                                                                             keyword=file_system_search_request.keyword)
+    db_user_file_systems = crud.file_system.get_user_file_systems_by_user_id(
+        db=db,
+        user_id=current_user.id,
+        keyword=file_system_search_request.keyword
+    )
     typed_user_file_systems = cast(
         list[tuple[models.file_system.UserFileSystem, models.file_system.FileSystem]],
         db_user_file_systems
@@ -279,16 +324,21 @@ async def search_mine_file_system(file_system_search_request: schemas.file_syste
 async def provide_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
                               db: Session = Depends(get_db), 
                               current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
-    file_systems = crud.file_system.get_all_file_systems(
+    db_file_systems = crud.file_system.get_all_file_systems(
         db=db, 
         keyword=file_system_search_request.keyword
     )
+    file_systems = [
+        schemas.file_system.FileSystemInfo.model_validate(db_file_system, from_attributes=True) for db_file_system in db_file_systems
+    ]
     return schemas.file_system.ProvideFileSystemSearchResponse(data=file_systems)
 
 @file_system_router.post("/install", response_model=schemas.file_system.FileSystemInstallResponse)
-async def install_user_file_system(file_system_install_request: schemas.file_system.FileSystemInstallRequest, 
-                                   db: Session = Depends(get_db), 
-                                   current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def install_user_file_system(
+    file_system_install_request: schemas.file_system.FileSystemInstallRequest, 
+    db: Session = Depends(get_db), 
+    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
     db_user_file_system = crud.file_system.create_user_file_system(
         db=db,
         user_id=current_user.id,
@@ -301,9 +351,11 @@ async def install_user_file_system(file_system_install_request: schemas.file_sys
     return schemas.file_system.FileSystemInstallResponse(user_file_system_id=db_user_file_system.id)
 
 @file_system_router.post("/user-file-system/delete", response_model=schemas.common.NormalResponse)
-async def delete_user_file_system(user_file_system_delete_request: schemas.file_system.UserFileSystemDeleteRequest,
-                                  db: Session = Depends(get_db),
-                                  current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def delete_user_file_system(
+    user_file_system_delete_request: schemas.file_system.UserFileSystemDeleteRequest,
+    db: Session = Depends(get_db),
+    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
     crud.file_system.delete_user_file_system_by_user_id_and_user_file_system_id(
         db=db,
         user_id=current_user.id,
@@ -313,12 +365,16 @@ async def delete_user_file_system(user_file_system_delete_request: schemas.file_
     return schemas.common.SuccessResponse()
 
 @file_system_router.post("/update", response_model=schemas.common.NormalResponse)
-async def update_file_system(user_file_system_update_request: schemas.file_system.UserFileSystemUpdateRequest, 
-                             db: Session = Depends(get_db),
-                             current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def update_file_system(
+    user_file_system_update_request: schemas.file_system.UserFileSystemUpdateRequest, 
+    db: Session = Depends(get_db),
+    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
     now = datetime.now(tz=timezone.utc)
-    user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                   user_file_system_id=user_file_system_update_request.user_file_system_id)
+    user_file_system = crud.file_system.get_user_file_system_by_id(
+        db=db,
+        user_file_system_id=user_file_system_update_request.user_file_system_id
+    )
     if user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User File System not found")
     else:
@@ -333,22 +389,40 @@ async def update_file_system(user_file_system_update_request: schemas.file_syste
     return schemas.common.SuccessResponse()
 
 @file_system_router.post("/generic-s3/upload", response_model=schemas.file_system.GenericFileSystemUploadResponse)
-async def upload_file_system(file: UploadFile = File(...),
-                             file_path: str = Form(...),
-                             content_type: str = Form(...),
-                             db: Session = Depends(get_db),
-                             current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)):
+async def upload_file_system(
+    file: UploadFile = File(...),
+    file_path: str = Form(...),
+    content_type: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: schemas.user.PrivateUserInfo = Depends(get_current_user)
+):
+    default_user_file_system = current_user.default_user_file_system
+    if default_user_file_system is None:
+        raise schemas.error.CustomException(code=404, message="User File System not found")
+    
     content = await file.read()
-    user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                   user_file_system_id=current_user.default_user_file_system)
+    user_file_system = crud.file_system.get_user_file_system_by_id(
+        db=db,
+        user_file_system_id=default_user_file_system
+    )
     if user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User File System not found")
-    remote_file_service = await get_user_remote_file_system(user_id=current_user.id)
-    if remote_file_service.uuid != RemoteFileServiceUUID.Generic_S3.value:
+    remote_file_service = await get_user_remote_file_system(
+        user_id=current_user.id
+    )
+    if remote_file_service is None:
+        raise schemas.error.CustomException(code=404, message="User File System not found")
+    if remote_file_service.file_service_uuid != RemoteFileServiceUUID.Generic_S3.value:
         raise schemas.error.CustomException(code=404, message="The default user file system is not Generic S3")
     generic_s3_remote_file_service = GenericS3RemoteFileService()
-    await generic_s3_remote_file_service.init_client_by_user_file_system_id(user_file_system_id=current_user.default_user_file_system)
-    await generic_s3_remote_file_service.upload_raw_content_to_path(file_path=file_path,
-                                                                    content=content,
-                                                                    content_type=content_type)
-    return schemas.file_system.GenericFileSystemUploadResponse(file_path=file_path)
+    await generic_s3_remote_file_service.init_client_by_user_file_system_id(
+        user_file_system_id=default_user_file_system
+    )
+    await generic_s3_remote_file_service.upload_raw_content_to_path(
+        file_path=file_path,
+        content=content,
+        content_type=content_type
+    )
+    return schemas.file_system.GenericFileSystemUploadResponse(
+        file_path=file_path
+    )
