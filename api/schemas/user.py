@@ -6,7 +6,7 @@ class SearchUserRequest(BaseModel):
     filter_name: str
     filter_value: str
     start: int | None = None
-    limit: int | None = None
+    limit: int = 10
     
     @field_validator('filter_name')
     def filter_name_validator(cls, v):
@@ -15,7 +15,8 @@ class SearchUserRequest(BaseModel):
         return v
 
 class WeChatInfo(BaseModel):
-    nickname: str
+    wechat_open_id: str
+    nickname: str | None
     platform: int
     
 class WeChatWebUserBindRequest(BaseModel):
@@ -134,7 +135,7 @@ class InitialPasswordResponse(BaseModel):
 class EmailInfo(BaseModel):
     email: str
     is_initial_password: bool
-    has_seen_initial_password: bool
+    has_seen_initial_password: bool | None
     
 class PrivateUserInfo(BaseModel):
     id: int

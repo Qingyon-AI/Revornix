@@ -8,7 +8,7 @@ class WebWeChatTokenResponse(BaseModel):
     refresh_token: str
     openid: str
     scope: str
-    unionid: str | None = None
+    unionid: str
 
 class MiniWeChatTokenResponse(BaseModel):
     session_key: str
