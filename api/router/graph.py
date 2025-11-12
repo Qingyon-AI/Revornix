@@ -10,27 +10,35 @@ from enums.section import UserSectionRole
 graph_router = APIRouter()
 
 @graph_router.post('/section', response_model=schemas.graph.GraphResponse)
-async def section_graph(section_graph_request: schemas.graph.SectionGraphRequest,
-                        user: models.user.User = Depends(get_current_user_without_throw),
-                        db: Session = Depends(get_db)):
+async def section_graph(
+    section_graph_request: schemas.graph.SectionGraphRequest,
+    user: models.user.User = Depends(get_current_user_without_throw),
+    db: Session = Depends(get_db)
+):
     
     nodes, edges = [], []
     
     section_id = section_graph_request.section_id
     
-    section = crud.section.get_section_by_section_id(db=db, 
-                                                     section_id=section_id)
+    section = crud.section.get_section_by_section_id(
+        db=db, 
+        section_id=section_id
+    )
     
     if not section:
         raise Exception("Section not found")
     
-    documents = crud.section.get_documents_for_section_by_section_id(db=db, 
-                                                         section_id=section_id)
+    documents = crud.section.get_documents_for_section_by_section_id(
+        db=db, 
+        section_id=section_id
+    )
     document_ids = [document.id for document in documents]
     
     # 如果专栏是公开的 直接返回所有节点
-    db_section_publish = crud.section.get_publish_section_by_section_id(db=db,
-                                                                        section_id=section_id)
+    db_section_publish = crud.section.get_publish_section_by_section_id(
+        db=db,
+        section_id=section_id
+    )
     if db_section_publish is not None:
         with neo4j_driver.session() as session:
             entity_query = """
@@ -118,9 +126,11 @@ async def section_graph(section_graph_request: schemas.graph.SectionGraphRequest
     return schemas.graph.GraphResponse(nodes=nodes, edges=edges)
 
 @graph_router.post('/document', response_model=schemas.graph.GraphResponse)
-async def document_graph(document_graph_request: schemas.graph.DocumentGraphRequest,
-                         user: models.user.User = Depends(get_current_user)):
-    doc_id = document_graph_request.document_id  # Optional[int]
+async def document_graph(
+    document_graph_request: schemas.graph.DocumentGraphRequest,
+    user: models.user.User = Depends(get_current_user)
+):
+    doc_id = document_graph_request.document_id
     nodes = []
     edges = []
 
@@ -158,7 +168,9 @@ async def document_graph(document_graph_request: schemas.graph.DocumentGraphRequ
     return schemas.graph.GraphResponse(nodes=nodes, edges=edges) 
 
 @graph_router.post("/search", response_model=schemas.graph.GraphResponse)
-async def graph(user: models.user.User = Depends(get_current_user)):
+async def graph(
+    user: models.user.User = Depends(get_current_user)
+):
     nodes = []
     edges = []
 
