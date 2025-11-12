@@ -21,11 +21,13 @@ class UserAuthMiddleware(Middleware):
         user_id = await self.verify_api_key_and_get_user_id(api_key)
         if not user_id:
             raise ToolError("Access denied: invalid token")
-
-        context.fastmcp_context.set_state("user_id", user_id)
+        
+        if context.fastmcp_context:
+            context.fastmcp_context.set_state("api_key", api_key)
+            
         return await call_next(context)
 
-    async def verify_api_key_and_get_user_id(self, api_key: str) -> str | None:
+    async def verify_api_key_and_get_user_id(self, api_key: str) -> int | None:
         db = SessionLocal()
         db_api_key = crud.api_key.get_api_key_by_api_key(db=db, 
                                                          api_key=api_key)
