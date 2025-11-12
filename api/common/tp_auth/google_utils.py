@@ -1,6 +1,6 @@
 import httpx
 
-def getGoogleToken(google_client_id: str, google_client_secret: str, code: str, redirect_uri: str):
+def get_google_token(google_client_id: str, google_client_secret: str, code: str, redirect_uri: str):
     url = "https://oauth2.googleapis.com/token"
     data = {
         'client_id': google_client_id,
