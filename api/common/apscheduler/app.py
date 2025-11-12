@@ -136,7 +136,7 @@ async def fetch_all_rss_sources_and_update():
         # get the section of the user on the current day
         db_user_day_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                         user_id=rss_server.user_id,
-                                                                        date=datetime.now().date().isoformat())
+                                                                        date=datetime.now().date())
         if db_user_day_section is None:
             db_user_day_section = crud.section.create_section(db=db, 
                                                               creator_id=rss_server.user_id,

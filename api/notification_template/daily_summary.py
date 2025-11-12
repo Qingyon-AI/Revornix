@@ -25,7 +25,7 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
         now = datetime.now(tz=timezone.utc)
         db_section = crud.section.get_section_by_user_and_date(db=db, 
                                                                user_id=self.user_id,
-                                                               date=now.date().isoformat())
+                                                               date=now.date())
         if db_section is None:
             return schemas.notification.Message(
                 title=f"Daily Summary Of {now.date().isoformat()}",
