@@ -86,6 +86,8 @@ class FileSystemSearchRequest(BaseModel):
     
 class ProvideFileSystemSearchResponse(BaseModel):
     data: list[FileSystemInfo]
+    class Config:
+        from_attributes = True
     
 class MineFileSystemSearchResponse(BaseModel):
     data: list[UserFileSystemInfo]
