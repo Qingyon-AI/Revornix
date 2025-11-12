@@ -37,42 +37,42 @@ async def search_user(search_user_request: schemas.user.SearchUserRequest,
     db_users = []
     db_next_user = None
     if search_user_request.filter_name == 'email':
-        db_users = crud.user.search_user_by_email_like(db=db, 
+        db_users = crud.user.search_user_by_email(db=db, 
                                                        keyword=search_user_request.filter_value, 
                                                        start=search_user_request.start, 
                                                        limit=search_user_request.limit)
-        total = crud.user.count_user_by_email_like(db=db, 
+        total = crud.user.count_user_by_email(db=db, 
                                                    keyword=search_user_request.filter_value)
         if len(db_users) < search_user_request.limit or len(db_users) == 0:
             has_more = False
         if len(db_users) == search_user_request.limit:
-            db_next_user = crud.user.search_next_user_by_email_like(db=db,
+            db_next_user = crud.user.search_next_user_by_email(db=db,
                                                                     email_user=db_users[-1],
                                                                     keyword=search_user_request.filter_value)
     if search_user_request.filter_name == 'nickname':
-        db_users = crud.user.search_user_by_nickname_like(db=db, 
+        db_users = crud.user.search_user_by_nickname(db=db, 
                                                           keyword=search_user_request.filter_value,
                                                           start=search_user_request.start,
                                                           limit=search_user_request.limit)
-        total = crud.user.count_user_by_nickname_like(db=db,
+        total = crud.user.count_user_by_nickname(db=db,
                                                       keyword=search_user_request.filter_value)
         if len(db_users) < search_user_request.limit or len(db_users) == 0:
             has_more = False
         if len(db_users) == search_user_request.limit:
-            db_next_user = crud.user.search_next_user_by_nickname_like(db=db,
+            db_next_user = crud.user.search_next_user_by_nickname(db=db,
                                                                     user=db_users[-1],
                                                                     keyword=search_user_request.filter_value)
     if search_user_request.filter_name == 'uuid':
-        db_users = crud.user.search_user_by_uuid_like(db=db, 
+        db_users = crud.user.search_user_by_uuid(db=db, 
                                                       keyword=search_user_request.filter_value,
                                                       start=search_user_request.start,
                                                       limit=search_user_request.limit)
-        total = crud.user.count_user_by_uuid_like(db=db,
+        total = crud.user.count_user_by_uuid(db=db,
                                                   keyword=search_user_request.filter_value)
         if len(db_users) < search_user_request.limit or len(db_users) == 0:
             has_more = False
         if len(db_users) == search_user_request.limit:
-            db_next_user = crud.user.search_next_user_by_uuid_like(db=db,
+            db_next_user = crud.user.search_next_user_by_uuid(db=db,
                                                                    user=db_users[-1],
                                                                    keyword=search_user_request.filter_value)
     for db_user in db_users:
@@ -263,10 +263,9 @@ async def create_user_by_email_verify(email_user_create_verify_request: schemas.
                                    email=email_user_create_verify_request.email):
         raise Exception("The email is already exists")
     db_user = crud.user.create_base_user(db=db, 
-                                         default_read_mark_reason=0,
                                          nickname=email_user_create_verify_request.email,
                                          avatar="files/default_avatar.png")
-    crud.user.create_email_user(db, 
+    crud.user.create_email_user(db=db, 
                                 user_id=db_user.id, 
                                 email=email_user_create_verify_request.email, 
                                 password=email_user_create_verify_request.password,
@@ -489,7 +488,6 @@ async def create_user_by_google(user: schemas.user.GoogleUserCreate,
         res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
         return res
     db_user = crud.user.create_base_user(db=db,  
-                                         default_read_mark_reason=0,
                                          avatar="files/default_avatar.png",
                                          nickname=idinfo.get('name'))
     db_google_user = crud.user.create_google_user(db=db, 
@@ -577,7 +575,6 @@ async def create_user_by_github(user: schemas.user.GithubUserCreate,
         res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
         return res
     db_user = crud.user.create_base_user(db=db,
-                                         default_read_mark_reason=0,
                                          nickname=github_user_info.get('login'),
                                          avatar="files/default_avatar.png")
     db_github_user = crud.user.create_github_user(db=db, 
@@ -682,7 +679,6 @@ async def create_user_by_sms_verify(sms_user_code_verify_request: schemas.user.S
         return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
     else:
         db_user = crud.user.create_base_user(db=db, 
-                                             default_read_mark_reason=0,
                                              nickname=f'Revornix User {uuid4().hex[:8]}',
                                              avatar="files/default_avatar.png")
         db_user_phone = crud.user.create_phone_user(db, 
@@ -784,7 +780,6 @@ async def create_user_by_wechat_mini(wechat_mini_user_create_request: schemas.us
     if len(db_exist_wechat_user_by_union_id) == 0:
         nickname = f'Revornix User {uuid4().hex[:8]}'
         db_user = crud.user.create_base_user(db=db,
-                                            default_read_mark_reason=0,
                                             avatar="files/default_avatar.png",
                                             nickname=nickname)
         db_wechat_user = crud.user.create_wechat_user(db=db, 
@@ -858,7 +853,6 @@ async def create_user_by_wechat_web(wechat_web_user_create_request: schemas.user
                                             openid=openid)
         nickname = response_user_info.get('nickname')
         db_user = crud.user.create_base_user(db=db,
-                                            default_read_mark_reason=0,
                                             avatar="files/default_avatar.png",
                                             nickname=nickname)
         db_wechat_user = crud.user.create_wechat_user(db=db, 
@@ -936,7 +930,7 @@ async def bind_wechat(wechat_user_bind_request: schemas.user.WeChatWebUserBindRe
     return schemas.common.SuccessResponse()
 
 @user_router.post('/unbind/wechat', response_model=schemas.common.NormalResponse)
-async def unbind_github(user: schemas.user.PrivateUserInfo = Depends(get_current_user),
+async def unbind_wechat(user: schemas.user.PrivateUserInfo = Depends(get_current_user),
                         db: Session = Depends(get_db)):
     crud.user.delete_wechat_user_by_user_id(db=db, 
                                             user_id=user.id)
