@@ -62,3 +62,5 @@ class MineEngineSearchResponse(BaseModel):
     
 class ProvideEngineSearchResponse(BaseModel):
     data: list[EngineInfo]
+    class Config:
+        from_attributes = True
