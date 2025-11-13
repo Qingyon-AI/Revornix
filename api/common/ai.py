@@ -2,8 +2,21 @@ import json
 import crud
 from openai import OpenAI
 from common.sql import SessionLocal
+from pydantic import BaseModel
 
-def summary_section(user_id: int, model_id: int, markdown_content: str):
+class SummaryResult(BaseModel):
+    summary: str
+    
+class SummaryResultWithTitleAndDescription(BaseModel):
+    title: str
+    description: str
+    summary: str
+
+def summary_section(
+    user_id: int, 
+    model_id: int, 
+    markdown_content: str
+):
     db = SessionLocal()
     db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
     db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
@@ -91,16 +104,25 @@ Here is the full original document:
         response_format={"type": "json_object"},
         max_tokens=4096
     )
-    content = json.loads(completion.choices[0].message.content)
+    content = completion.choices[0].message.content
+    if content is None:
+        raise Exception("No content returned for ai")
+    content = json.loads(content)
     summary = content.get('summary')
     db.close()
-    return {
-        "summary": summary
-    }
+    return SummaryResult(summary=summary)
 
-def summary_section_with_origin(user_id: int, model_id: int, origin_section_markdown_content: str, new_document_markdown_content: str):
+def summary_section_with_origin(
+    user_id: int, 
+    model_id: int, 
+    origin_section_markdown_content: str, 
+    new_document_markdown_content: str
+):
     db = SessionLocal()
-    db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    db_model = crud.model.get_ai_model_by_id(
+        db=db, 
+        model_id=model_id
+    )
     db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
         db=db, 
         user_id=user_id, 
@@ -110,7 +132,10 @@ def summary_section_with_origin(user_id: int, model_id: int, origin_section_mark
         raise Exception("Model not found")
     if db_user_model is None:
         raise Exception("User model not found")
-    db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
+    db_model_provider = crud.model.get_ai_model_provider_by_id(
+        db=db, 
+        provider_id=db_model.provider_id
+    )
     db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
         db=db, 
         user_id=user_id, 
@@ -197,14 +222,19 @@ New Document:
         response_format={"type": "json_object"},
         max_tokens=8192
     )
-    content = json.loads(completion.choices[0].message.content)
+    content = completion.choices[0].message.content
+    if content is None:
+        raise Exception("No content returned for ai")
+    content = json.loads(content)
     summary = content.get('summary')
     db.close()
-    return {
-        "summary": summary
-    }
+    return SummaryResult(summary=summary)
     
-def summary_document(user_id: int, model_id: int, markdown_content: str):
+def summary_document(
+    user_id: int, 
+    model_id: int, 
+    markdown_content: str
+):
     db = SessionLocal()
     db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
     db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
@@ -216,7 +246,10 @@ def summary_document(user_id: int, model_id: int, markdown_content: str):
         raise Exception("Model not found")
     if db_user_model is None:
         raise Exception("User model not found")
-    db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
+    db_model_provider = crud.model.get_ai_model_provider_by_id(
+        db=db, 
+        provider_id=db_model.provider_id
+    )
     db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
         db=db, 
         user_id=user_id, 
@@ -274,13 +307,16 @@ Below is the full document content:
         response_format={"type": "json_object"},
         max_tokens=4096
     )
-    content = json.loads(completion.choices[0].message.content)
+    content = completion.choices[0].message.content
+    if content is None:
+        raise Exception("No content returned for ai")
+    content = json.loads(content)
     title = content.get('title')
     description = content.get('description')
     summary = content.get('summary')
     db.close()
-    return {
-        "title": title,
-        "description": description,
-        "summary": summary
-    }
+    return SummaryResultWithTitleAndDescription(
+        title=title,
+        description=description,
+        summary=summary
+    )

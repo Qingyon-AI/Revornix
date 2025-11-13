@@ -20,48 +20,75 @@ from enums.section import UserSectionRole, UserSectionAuthority, SectionDocument
 document_router = APIRouter()
     
 @document_router.post('/note/create', response_model=schemas.common.NormalResponse)
-async def create_note(note_create_request: schemas.document.DocumentNoteCreateRequest,
-                      user: models.user.User = Depends(get_current_user),
-                      db: Session = Depends(get_db)):
-    crud.document.create_document_note(db=db,
-                                       user_id=user.id,
-                                       document_id=note_create_request.document_id,
-                                       content=note_create_request.content)
+async def create_note(
+    note_create_request: schemas.document.DocumentNoteCreateRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    crud.document.create_document_note(
+        db=db,
+        user_id=user.id,
+        document_id=note_create_request.document_id,
+        content=note_create_request.content
+    )
     db.commit()
     return schemas.common.SuccessResponse()
 
 @document_router.post('/note/delete', response_model=schemas.common.NormalResponse)
-async def delete_note(note_delete_request: schemas.document.DocumentNoteDeleteRequest,
-                      user: models.user.User = Depends(get_current_user),
-                      db: Session = Depends(get_db)):
-    crud.document.delete_document_notes_by_user_id_and_note_ids(db=db,
-                                                                user_id=user.id,
-                                                                note_ids=note_delete_request.document_note_ids)
+async def delete_note(
+    note_delete_request: schemas.document.DocumentNoteDeleteRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    crud.document.delete_document_notes_by_user_id_and_note_ids(
+        db=db,
+        user_id=user.id,
+        note_ids=note_delete_request.document_note_ids
+    )
     db.commit()
     return schemas.common.SuccessResponse()
 
 @document_router.post('/note/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentNoteInfo])
-async def update_note(search_note_request: schemas.document.SearchDocumentNoteRequest,
-                      user: models.user.User = Depends(get_current_user),
-                      db: Session = Depends(get_db)):
+async def update_note(
+    search_note_request: schemas.document.SearchDocumentNoteRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     has_more = True
     next_start = None
-    notes = crud.document.search_all_document_notes_by_document_id(db=db,
-                                                                   document_id=search_note_request.document_id,
-                                                                   start=search_note_request.start,
-                                                                   limit=search_note_request.limit,
-                                                                   keyword=search_note_request.keyword)
+    notes = crud.document.search_all_document_notes_by_document_id(
+        db=db,
+        document_id=search_note_request.document_id,
+        start=search_note_request.start,
+        limit=search_note_request.limit,
+        keyword=search_note_request.keyword
+    )
     if len(notes) < search_note_request.limit or len(notes) == 0:
         has_more = False
     if len(notes) == search_note_request.limit:
-        next_note = crud.document.search_next_note_by_document_note(db=db, 
-                                                                    document_note=notes[-1],
-                                                                    keyword=search_note_request.keyword)
+        next_note = crud.document.search_next_note_by_document_note(
+            db=db, 
+            document_note=notes[-1],
+            keyword=search_note_request.keyword
+        )
+        next_note = crud.document.search_next_note_by_document_note(
+            db=db, 
+            document_note=notes[-1],
+            keyword=search_note_request.keyword
+        )
         has_more = next_note is not None
-        next_start = next_note.id if has_more else None
-    total = crud.document.count_all_document_notes_by_document_id(db=db,
-                                                                  document_id=search_note_request.document_id,
-                                                                  keyword=search_note_request.keyword)
+        next_start = next_note.id if next_note is not None else None
+    total = crud.document.count_all_document_notes_by_document_id(
+        db=db,
+        document_id=search_note_request.document_id,
+        keyword=search_note_request.keyword
+    )
+    next_start = next_note.id if next_note is not None else None
+    total = crud.document.count_all_document_notes_by_document_id(
+        db=db,
+        document_id=search_note_request.document_id,
+        keyword=search_note_request.keyword
+    )
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,
         elements=notes,
@@ -72,62 +99,103 @@ async def update_note(search_note_request: schemas.document.SearchDocumentNoteRe
     )
     
 @document_router.post('/ai/summary', response_model=schemas.common.NormalResponse)
-async def create_ai_summary(ai_summary_request: schemas.document.DocumentAiSummaryRequest,
-                            user: models.user.User = Depends(get_current_user),
-                            db: Session = Depends(get_db)):
+async def create_ai_summary(
+    ai_summary_request: schemas.document.DocumentAiSummaryRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     if user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
-        remote_file_service = await get_user_remote_file_system(user_id=user.id)
-        await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
+        remote_file_service = await get_user_remote_file_system(
+            user_id=user.id
+        )
+        await remote_file_service.init_client_by_user_file_system_id(
+            user_file_system_id=user.default_user_file_system
+        )
         
-    db_document = crud.document.get_document_by_document_id(db=db,
-                                                            document_id=ai_summary_request.document_id)
+    db_document = crud.document.get_document_by_document_id(
+        db=db,
+        document_id=ai_summary_request.document_id
+    )
     if db_document is None:
         raise Exception('The document you want to summary is not found')
     if db_document.category == DocumentCategory.WEBSITE:
-        db_website_document = crud.document.get_website_document_by_document_id(db=db,
-                                                                                document_id=ai_summary_request.document_id)
-        markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=db_website_document.md_file_name)
+        db_website_document = crud.document.get_website_document_by_document_id(
+            db=db,
+            document_id=ai_summary_request.document_id
+        )
+        if db_website_document is None:
+            raise Exception('The document you want to summary has no website info')
+        markdown_content = await remote_file_service.get_file_content_by_file_path(
+            file_path=db_website_document.md_file_name
+        )
     if db_document.category == DocumentCategory.FILE:
-        db_file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                          document_id=ai_summary_request.document_id)
-        markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=db_file_document.md_file_name)
+        db_file_document = crud.document.get_file_document_by_document_id(
+            db=db,
+            document_id=ai_summary_request.document_id
+        )
+        if db_file_document is None:
+            raise Exception('The document you want to summary has no file info')
+        markdown_content = await remote_file_service.get_file_content_by_file_path(
+            file_path=db_file_document.md_file_name
+        )
     if db_document.category == DocumentCategory.QUICK_NOTE:
-        db_quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
-                                                                                      document_id=ai_summary_request.document_id)
+        db_quick_note_document = crud.document.get_quick_note_document_by_document_id(
+            db=db,
+            document_id=ai_summary_request.document_id
+        )
+        if db_quick_note_document is None:
+            raise Exception('The document you want to summary has no quick note info')
         markdown_content = db_quick_note_document.content
-    model_id = crud.user.get_user_by_id(db=db, user_id=user.id).default_document_reader_model_id
-    ai_summary_result = summary_document(user_id=user.id, model_id=model_id, markdown_content=markdown_content)
-    db_document = crud.document.get_document_by_document_id(db=db,
-                                                            document_id=ai_summary_request.document_id)
+    model_id = user.default_document_reader_model_id
+    if model_id is None:
+        raise Exception('Please set the default document reader model for the user first.')
+    ai_summary_result = summary_document(
+        user_id=user.id, 
+        model_id=model_id, 
+        markdown_content=markdown_content
+    )
+    db_document = crud.document.get_document_by_document_id(
+        db=db,
+        document_id=ai_summary_request.document_id
+    )
     if db_document is None:
         raise Exception('The document you want to summary is not found')
-    if ai_summary_result.get('title') is not None:
-        db_document.title = ai_summary_result.get('title')
-    if ai_summary_result.get('description') is not None:
-        db_document.description = ai_summary_result.get('description')
-    if ai_summary_result.get('summary') is not None:
-        db_document.ai_summary = ai_summary_result.get('summary')
+    db_document.title = ai_summary_result.title
+    db_document.description = ai_summary_result.description
+    db_document.ai_summary = ai_summary_result.summary
     db.commit()
     return schemas.common.SuccessResponse()
 
 @document_router.post('/podcast/generate', response_model=schemas.common.NormalResponse)
-async def generate_podcast(generate_podcast_request: schemas.document.GenerateDocumentPodcastRequest,
-                           user: models.user.User = Depends(get_current_user),
-                           db: Session = Depends(get_db)):
+async def generate_podcast(
+    generate_podcast_request: schemas.document.GenerateDocumentPodcastRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_document = crud.document.get_document_by_document_id(
+        db=db,
+        document_id=generate_podcast_request.document_id
+    )
+    if db_document is None:
+        raise Exception('The document you want to generate the podcast is not found')
+    
+    # podcast必须要存储系统，所以检查用户的存储系统配置
     if user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
     else:
-        remote_file_service = await get_user_remote_file_system(user_id=user.id)
-        await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
-
-    db_document = crud.document.get_document_by_document_id(db=db,
-                                                            document_id=generate_podcast_request.document_id)
-    if db_document is None:
-        raise Exception('The document you want to generate the podcast is not found')
-    db_exist_podcast_task = crud.task.get_document_podcast_task_by_document_id(db=db,
-                                                                               document_id=generate_podcast_request.document_id)
+        remote_file_service = await get_user_remote_file_system(
+            user_id=user.id
+        )
+        await remote_file_service.init_client_by_user_file_system_id(
+            user_file_system_id=user.default_user_file_system
+        )
+    
+    db_exist_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+        db=db,
+        document_id=generate_podcast_request.document_id
+    )
     if db_exist_podcast_task is not None:
         if db_exist_podcast_task.status == DocumentPodcastStatus.SUCCESS:
             raise Exception('The podcast task is already finished, please refresh the page')
@@ -136,51 +204,83 @@ async def generate_podcast(generate_podcast_request: schemas.document.GenerateDo
         if db_exist_podcast_task.status == DocumentPodcastStatus.GENERATING:
             raise Exception('The podcast task is already processing, please wait')
 
-    db_process_task = crud.task.get_document_process_task_by_document_id(db=db,
-                                                                         document_id=generate_podcast_request.document_id)
+    db_process_task = crud.task.get_document_process_task_by_document_id(
+        db=db,
+        document_id=generate_podcast_request.document_id
+    )
+    if db_process_task is None:
+        raise Exception('The document you want to generate the podcast is not processed')
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
+    
     workflow = chain(
         start_process_document_podcast.si(db_document.id, user.id),
         update_document_process_status.si(db_document.id, DocumentProcessStatus.SUCCESS)
     )
     workflow()
+    
     return schemas.common.SuccessResponse()
 
 @document_router.post('/markdown/transform', response_model=schemas.common.NormalResponse)
-async def transform_markdown(transform_markdown_request: schemas.document.DocumentMarkdownTransformRequest,
-                             user: models.user.User = Depends(get_current_user),
-                             db: Session = Depends(get_db)):
-    if user.default_user_file_system is None:
-        raise Exception('Please set the default file system for the user first.')
-    else:
-        remote_file_service = await get_user_remote_file_system(user_id=user.id)
-        await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=user.default_user_file_system)
-        
-    db_document = crud.document.get_document_by_document_id(db=db,
-                                                            document_id=transform_markdown_request.document_id)
+async def transform_markdown(
+    transform_markdown_request: schemas.document.DocumentMarkdownTransformRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_document = crud.document.get_document_by_document_id(
+        db=db,
+        document_id=transform_markdown_request.document_id
+    )
     if db_document is None:
         raise Exception('The document you want to transform is not found')
-    
-    db_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
-                                                                             document_id=transform_markdown_request.document_id)
-    if db_transform_task.status == DocumentMdConvertStatus.SUCCESS:
-        raise Exception('The transform task is already finished, please refresh the page')
-    if db_transform_task.status == DocumentMdConvertStatus.WAIT_TO:
-        raise Exception('The transform task is already in the queue, please wait')
-    if db_transform_task.status == DocumentMdConvertStatus.CONVERTING:
-        raise Exception('The transform task is already processing, please wait')
-    
-    db_process_task = crud.task.get_document_process_task_by_document_id(db=db,
-                                                                         document_id=transform_markdown_request.document_id)
-    db_transform_task.status = DocumentMdConvertStatus.WAIT_TO
+
+    if user.default_user_file_system is None:
+        raise Exception("The user havn't set the default file system yet")
+    else:
+        remote_file_service = await get_user_remote_file_system(
+            user_id=user.id
+        )
+        await remote_file_service.init_client_by_user_file_system_id(
+            user_file_system_id=user.default_user_file_system
+        )
+    db_process_task = crud.task.get_document_process_task_by_document_id(
+        db=db,
+        document_id=transform_markdown_request.document_id
+    )
+    if db_process_task is None:
+        raise Exception('The document you want to transform is not processed')
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
+    
+    db_transform_task = crud.task.get_document_transform_task_by_document_id(
+        db=db,
+        document_id=transform_markdown_request.document_id
+    )
+    # 如果该文档的转化任务存在
+    if db_transform_task is not None:
+        if db_transform_task.status == DocumentMdConvertStatus.SUCCESS:
+            raise Exception('The transform task is already finished, please refresh the page')
+        elif db_transform_task.status == DocumentMdConvertStatus.WAIT_TO:
+            raise Exception('The transform task is already in the queue, please wait')
+        elif db_transform_task.status == DocumentMdConvertStatus.CONVERTING:
+            raise Exception('The transform task is already processing, please wait')
+        db_transform_task.status = DocumentMdConvertStatus.WAIT_TO
+    # 如果该文档的转化任务不存在
+    else:
+        db_transform_task = crud.task.create_document_transform_task(
+            db=db,
+            user_id=user.id,
+            document_id=transform_markdown_request.document_id
+        )
+        
+    # TODO 优化至此 待续
+    
     workflow = chain(
         start_process_document.si(db_document.id, user.id, False, True),
         update_document_process_status.si(db_document.id, DocumentProcessStatus.SUCCESS)
     )
     workflow()
+    
     return schemas.common.SuccessResponse()
         
 @document_router.post('/month/summary', response_model=schemas.document.DocumentMonthSummaryResponse)
