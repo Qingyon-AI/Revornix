@@ -146,6 +146,15 @@ def create_date_section(
     db.flush()
     return db_day_section
 
+def get_user_labels_by_user_id(
+    db: Session, 
+    user_id: int
+):
+    query = db.query(models.section.Label)
+    query = query.filter(models.section.Label.delete_at == None,
+                         models.section.Label.user_id == user_id)
+    return query.all()
+
 def get_section_podcast_by_section_id(
     db: Session,
     section_id: int
@@ -417,7 +426,7 @@ def search_parent_degree_section_comments(
     db: Session, 
     section_id: int,
     keyword: str | None = None,
-    start: int = 1,
+    start: int | None = None,
     limit: int = 10
 ):
     query = db.query(models.section.SectionComment)
@@ -791,12 +800,14 @@ def delete_section_user_by_section_id_and_user_id(
     
 def delete_section_comments_by_section_comment_ids(
     db: Session,
+    user_id: int,
     section_comment_ids: list[int]
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionComment)
     query = query.filter(models.section.SectionComment.id.in_(section_comment_ids),
-                         models.section.SectionComment.delete_at == None)
+                         models.section.SectionComment.delete_at == None,
+                         models.section.SectionComment.creator_id == user_id)
     query.update({models.section.SectionComment.delete_at: now}, synchronize_session=False)
     db.flush()
 
