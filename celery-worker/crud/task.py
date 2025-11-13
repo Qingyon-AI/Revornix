@@ -1,7 +1,7 @@
 import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from enums.document import DocumentGraphStatus, DocumentPodcastStatus
+from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentEmbeddingStatus
 from enums.section import SectionPodcastStatus, SectionProcessStatus
 
 def create_section_process_task(
@@ -68,7 +68,7 @@ def create_document_process_task(
     db: Session,
     user_id: int,
     document_id: int,
-    status: DocumentGraphStatus = DocumentGraphStatus.WAIT_TO
+    status: DocumentProcessStatus = DocumentProcessStatus.WAIT_TO
 ):
     now = datetime.now(timezone.utc)
     task = models.task.DocumentProcessTask(user_id=user_id,
@@ -83,7 +83,7 @@ def create_document_embedding_task(
     db: Session,
     user_id: int,
     document_id: int,
-    status: DocumentGraphStatus = DocumentGraphStatus.WAIT_TO
+    status: DocumentEmbeddingStatus = DocumentEmbeddingStatus.WAIT_TO
 ):
     now = datetime.now(timezone.utc)
     task = models.task.DocumentEmbeddingTask(user_id=user_id,
