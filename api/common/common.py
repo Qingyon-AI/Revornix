@@ -38,17 +38,33 @@ def extract_title_and_summary(content: str):
 
     return title, summary
 
-async def get_user_remote_file_system(user_id: int):
+async def get_user_remote_file_system(
+    user_id: int
+):
     db = SessionLocal()
-    db_user = crud.user.get_user_by_id(db=db, user_id=user_id) 
+    db_user = crud.user.get_user_by_id(
+        db=db, 
+        user_id=user_id
+    )
+    if not db_user:
+        raise Exception('The user is not found, so his/her file system cannot be obtained.')
+    
     remote_file_service = None
     if db_user.default_user_file_system is None:
-        raise Exception('Please set the default file system for the user first.')
+        raise Exception('The user has not set a default file system.')
     else:
-        db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db, 
-                                                                          user_file_system_id=db_user.default_user_file_system)
-        db_file_system = crud.file_system.get_file_system_by_id(db=db,
-                                                                file_system_id=db_user_file_system.file_system_id)
+        db_user_file_system = crud.file_system.get_user_file_system_by_id(
+            db=db, 
+            user_file_system_id=db_user.default_user_file_system
+        )
+        if not db_user_file_system:
+            raise Exception("There is something wrong with the user's default file system.")
+        db_file_system = crud.file_system.get_file_system_by_id(
+            db=db,
+            file_system_id=db_user_file_system.file_system_id
+        )
+        if not db_file_system:
+            raise Exception("There is something wrong with the user's default file system.")
         if db_file_system.uuid == RemoteFileServiceUUID.Built_In.value:
             remote_file_service = BuiltInRemoteFileService()
         elif db_file_system.uuid == RemoteFileServiceUUID.AliyunOSS.value:
@@ -58,8 +74,7 @@ async def get_user_remote_file_system(user_id: int):
         elif db_file_system.uuid == RemoteFileServiceUUID.AWS_S3.value:
             remote_file_service = AWSS3RemoteFileService()
         else:
-            raise Exception('Unknown file system.')
-            
+            raise Exception("There is something wrong with the user's default file system.")
     db.close()
     return remote_file_service
 

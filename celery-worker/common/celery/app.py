@@ -36,64 +36,101 @@ celery_app = Celery('worker',
                     broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0',
                     backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
-async def handle_process_document(document_id: int, 
-                                  user_id: int,
-                                  auto_summary: bool = False,
-                                  auto_podcast: bool = False,
-                                  override: DocumentOverrideProperty | None = None):
+async def handle_process_document(
+    document_id: int, 
+    user_id: int,
+    auto_summary: bool = False,
+    auto_podcast: bool = False,
+    override: DocumentOverrideProperty | None = None
+):
     db = SessionLocal()
-    db_document_process_task = crud.task.create_document_process_task(db=db,
-                                                                      user_id=user_id,
-                                                                      document_id=document_id)
-    db.commit()
-    db_document_process_task.status = DocumentProcessStatus.PROCESSING
-    db.commit()
-    db_user = crud.user.get_user_by_id(db=db, 
-                                       user_id=user_id)
+    db_user = crud.user.get_user_by_id(
+        db=db, 
+        user_id=user_id
+    )
     if db_user is None:
-        raise Exception("User not found")
+        raise Exception("The user which you want to process document is not found")
+    if db_user.default_user_file_system is None:
+        raise Exception("The user which you want to process document has not set default user file system")
+    if db_user.default_file_document_parse_user_engine_id is None:
+        raise Exception("The user which you want to process document has not set default file document parse user engine")
+    db_document = crud.document.get_document_by_document_id(
+        db=db,
+        document_id=document_id
+    )
+    if db_document is None:
+        raise Exception("The document you want to process is not found")
+    md_extractor = crud.engine.get_user_engine_by_user_engine_id(
+        db=db, 
+        user_engine_id=db_user.default_file_document_parse_user_engine_id
+    )
+    if md_extractor is None:
+        raise Exception("There are something wrong with the user's markdown convert engine")
+    db_engine = crud.engine.get_engine_by_id(
+        db=db, 
+        id=md_extractor.engine_id
+    )
+    if db_engine is None:
+        raise Exception("There are something wrong with the user's markdown convert engine")
     
-    remote_file_service = await get_user_remote_file_system(user_id=user_id)
-    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
+    remote_file_service = await get_user_remote_file_system(
+        user_id=user_id
+    )
+    await remote_file_service.init_client_by_user_file_system_id(
+        user_file_system_id=db_user.default_user_file_system
+    )
+    
+    db_document_process_task = crud.task.get_document_process_task_by_document_id(
+        db=db,
+        document_id=document_id
+    )
+    if db_document_process_task is None:
+        db_document_process_task = crud.task.create_document_process_task(
+            db=db,
+            user_id=user_id,
+            document_id=document_id,
+            status=DocumentProcessStatus.PROCESSING
+        )
+    else:
+        if db_document_process_task.status != DocumentProcessStatus.PROCESSING:
+            db_document_process_task.status = DocumentProcessStatus.PROCESSING
+    db.commit()
     
     try:
-        db_document = crud.document.get_document_by_document_id(db=db,
-                                                                document_id=document_id)
-        if db_document is None:
-            raise Exception("Document not found")
-        
         # 如果是速记，就不需要转化流程，所以此处不用寻找转化记录
         if db_document.category != DocumentCategory.QUICK_NOTE:
-            db_task = crud.task.get_document_transform_task_by_document_id(db=db,
-                                                                        document_id=document_id)
+            db_task = crud.task.get_document_transform_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
             if db_task is None:
-                raise Exception("Document transform task not found")
-            
-            db_task.status = DocumentMdConvertStatus.CONVERTING
+                db_task = crud.task.create_document_transform_task(
+                    db=db,
+                    user_id=user_id,
+                    document_id=document_id,
+                    status=DocumentMdConvertStatus.CONVERTING
+                )
+            else:
+                if db_task.status != DocumentMdConvertStatus.CONVERTING:
+                    db_task.status = DocumentMdConvertStatus.CONVERTING
             db.commit()
-            
-        md_extractor = crud.engine.get_user_engine_by_user_engine_id(db=db, 
-                                                                     user_engine_id=db_user.default_file_document_parse_user_engine_id)
-        
-        if md_extractor is None:
-            raise Exception("User engine not found")
-        
-        db_engine = crud.engine.get_engine_by_id(db=db, 
-                                                 id=md_extractor.engine_id)
-        
-        if db_engine is None:
-            raise Exception("Engine not found")
         
         if db_engine.uuid == EngineUUID.MinerU_API.value:
             engine = MineruApiEngine()
-        if db_engine.uuid == EngineUUID.MarkitDown.value:
+        elif db_engine.uuid == EngineUUID.MarkitDown.value:
             engine = MarkitdownEngine()
-        if db_engine.uuid == EngineUUID.Jina.value:
+        elif db_engine.uuid == EngineUUID.Jina.value:
             engine = JinaEngine()
-        if db_engine.uuid == EngineUUID.MinerU.value:
+        elif db_engine.uuid == EngineUUID.MinerU.value:
             engine = MineruEngine()
+        else:
+            raise Exception("The convert engine is not supported")
+        
+        # TODO 优化至此 待续
             
-        await engine.init_engine_config_by_user_engine_id(user_engine_id=db_user.default_file_document_parse_user_engine_id)
+        await engine.init_engine_config_by_user_engine_id(
+            user_engine_id=db_user.default_file_document_parse_user_engine_id
+        )
         
         if db_document.category == DocumentCategory.FILE:
             # 处理文件文档
@@ -180,16 +217,19 @@ async def handle_process_document(document_id: int,
 
     except Exception as e:
         exception_logger.error(f"Something is error while process document info: {e}")
-        log_exception()
         db.rollback()
         # 同样的 如果是速记，不需要查找和修改转化记录
         if db_document.category != DocumentCategory.QUICK_NOTE:
             db_task = crud.task.get_document_transform_task_by_document_id(db=db,
                                                                         document_id=document_id)
             db_task.status = DocumentMdConvertStatus.FAILED
-        db_document = crud.document.get_document_by_document_id(db=db,
-                                                                document_id=document_id)
-        db_document.title = f'Document Convert Error: {e}'
+        db_document = crud.document.get_document_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_document is None:
+            raise Exception("The document you want to process is not found")
+        db_document.title = f'Document Convert Error'
         db_document.description = f'Document Convert Error: {e}'
         db.commit()
         raise e
@@ -328,49 +368,82 @@ async def get_markdown_content_by_section_id(section_id: int, user_id: int):
         db.close()
     return markdown_content
         
-async def get_markdown_content_by_document_id(document_id: int, user_id: int):
+async def get_markdown_content_by_document_id(
+    document_id: int, 
+    user_id: int
+):
     db = SessionLocal()
-    db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+    db_user = crud.user.get_user_by_id(
+        db=db, 
+        user_id=user_id
+    )
     if db_user is None:
-        raise Exception("User does not exist")
-    remote_file_service = await get_user_remote_file_system(user_id=user_id)
-    await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
+        raise Exception("The user does not exist")
+    if db_user.default_user_file_system is None:
+        raise Exception("The user havn't set the default file system")
+    
+    remote_file_service = await get_user_remote_file_system(
+        user_id=user_id
+    )
+    
+    await remote_file_service.init_client_by_user_file_system_id(
+        user_file_system_id=db_user.default_user_file_system
+    )
     
     try:
-        db_document = crud.document.get_document_by_document_id(db=db,
-                                                                document_id=document_id)
+        db_document = crud.document.get_document_by_document_id(
+            db=db,
+            document_id=document_id
+        )
         if db_document is None:
             raise Exception("Document not found")
         if db_document.category == DocumentCategory.WEBSITE:
-            website_document = crud.document.get_website_document_by_document_id(db=db,
-                                                                                 document_id=document_id)
+            website_document = crud.document.get_website_document_by_document_id(
+                db=db,
+                document_id=document_id
+            )
             if website_document is None:
-                raise Exception("Website document not found")
-            markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=website_document.md_file_name)
-        if db_document.category == DocumentCategory.FILE:
-            file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                           document_id=document_id)
+                raise Exception("The website info of the document is not found")
+            markdown_content = await remote_file_service.get_file_content_by_file_path(
+                file_path=website_document.md_file_name
+            )
+        elif db_document.category == DocumentCategory.FILE:
+            file_document = crud.document.get_file_document_by_document_id(
+                db=db,
+                document_id=document_id
+            )
             if file_document is None:
-                raise Exception("Website document not found")
-            markdown_content = await remote_file_service.get_file_content_by_file_path(file_path=file_document.md_file_name)
-        if db_document.category == DocumentCategory.QUICK_NOTE:
-            quick_note_document = crud.document.get_quick_note_document_by_document_id(db=db,
-                                                                                       document_id=document_id)
+                raise Exception("The file info of the document is not found")
+            markdown_content = await remote_file_service.get_file_content_by_file_path(
+                file_path=file_document.md_file_name
+            )
+        elif db_document.category == DocumentCategory.QUICK_NOTE:
+            quick_note_document = crud.document.get_quick_note_document_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if quick_note_document is None:
+                raise Exception("The quick note info of the document is not found")
             markdown_content = quick_note_document.content
+        else:
+            raise Exception("Document category not supported")
     except Exception as e:
         exception_logger.error(f"Something is error while getting the markdown content: {e}")
-        log_exception()
         raise e
     finally:
         db.close()
     return markdown_content
 
-async def handle_update_section_ai_podcast(section_id: int,
-                                           user_id: int):
+async def handle_update_section_ai_podcast(
+    section_id: int,
+    user_id: int
+):
     db = SessionLocal()
     try:
-        db_user = crud.user.get_user_by_id(db=db, 
-                                           user_id=user_id)
+        db_user = crud.user.get_user_by_id(
+            db=db, 
+            user_id=user_id
+        )
         if db_user is None:
             raise Exception("User not found")
         
@@ -442,79 +515,107 @@ async def handle_update_section_ai_podcast(section_id: int,
     finally:
         db.close()
 
-async def handle_update_document_ai_podcast(document_id: int, 
-                                            user_id: int):
+async def handle_update_document_ai_podcast(
+    document_id: int, 
+    user_id: int
+):
     db = SessionLocal()
     try:
-        db_user = crud.user.get_user_by_id(db=db, 
-                                           user_id=user_id)
+        db_document = crud.document.get_document_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_document is None:
+            raise Exception("The document which you want to create the podcast is not found")
+        
+        db_user = crud.user.get_user_by_id(
+            db=db, 
+            user_id=user_id
+        )
         if db_user is None:
-            raise Exception("User not found")
-        
-        remote_file_service = await get_user_remote_file_system(user_id=user_id)
-        await remote_file_service.init_client_by_user_file_system_id(user_file_system_id=db_user.default_user_file_system)
-        db_document_podcast_task = crud.task.create_document_podcast_task(db=db,
-                                                                          user_id=user_id,
-                                                                          document_id=document_id)
-        db_document = crud.document.get_document_by_document_id(db=db,
-                                                                document_id=document_id)
-        markdown_content = await get_markdown_content_by_document_id(document_id=db_document.id,
-                                                                     user_id=user_id)
-        db_user = crud.user.get_user_by_id(db=db,
-                                           user_id=user_id)
-        
-        podcast_generator = crud.engine.get_user_engine_by_user_engine_id(db=db, 
-                                                                          user_engine_id=db_user.default_podcast_user_engine_id)
-        
-        if podcast_generator is None:
-            raise Exception("User engine not found")
-        
-        db_engine = crud.engine.get_engine_by_id(db=db, 
-                                                 id=podcast_generator.engine_id)
-        
+            raise Exception("The document's creator is not found")
+        if db_user.default_user_file_system is None:
+            raise Exception("The document's creator has not set the default file system")
+        if db_user.default_podcast_user_engine_id is None:
+            raise Exception("The document's creator has not set the default podcast generate engine")
+        db_podcast_generator = crud.engine.get_user_engine_by_user_engine_id(
+            db=db, 
+            user_engine_id=db_user.default_podcast_user_engine_id
+        )
+        if db_podcast_generator is None:
+            raise Exception("There is something wrong with the user's default podcast generate engine")
+        db_engine = crud.engine.get_engine_by_id(
+            db=db, 
+            id=db_podcast_generator.engine_id
+        )
         if db_engine is None:
-            raise Exception("Engine not found")
+            raise Exception("There is something wrong with the user's default podcast generate engine")
+        
+        remote_file_service = await get_user_remote_file_system(
+            user_id=user_id
+        )
+        await remote_file_service.init_client_by_user_file_system_id(
+            user_file_system_id=db_user.default_user_file_system
+        )
+        db_document_podcast_task = crud.task.create_document_podcast_task(
+            db=db,
+            user_id=user_id,
+            document_id=document_id,
+            status = DocumentPodcastStatus.GENERATING
+        )
+        db.commit()
+        
+        markdown_content = await get_markdown_content_by_document_id(
+            document_id=db_document.id,
+            user_id=user_id
+        )
         
         if db_engine.uuid == EngineUUID.Volc_TTS.value:
             engine = VolcTTSEngine()
-            
-        db_document_podcast_task.status = DocumentPodcastStatus.GENERATING
-        db.commit()
         
-        await engine.init_engine_config_by_user_engine_id(user_engine_id=db_user.default_podcast_user_engine_id)
+        await engine.init_engine_config_by_user_engine_id(
+            user_engine_id=db_user.default_podcast_user_engine_id
+        )
         
-        podcast_result = await engine.synthesize(text=markdown_content)
+        podcast_result = await engine.synthesize(
+            text=markdown_content
+        )
         audio_bytes = httpx.get(url=str(podcast_result)).content
         podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
-        await remote_file_service.upload_raw_content_to_path(file_path=podcast_file_name, 
-                                                             content=audio_bytes,
-                                                             content_type="audio/mpeg")
+        await remote_file_service.upload_raw_content_to_path(
+            file_path=podcast_file_name, 
+            content=audio_bytes,
+            content_type="audio/mpeg"
+        )
         
         if podcast_result is None:
             db_document_podcast_task.status = DocumentPodcastStatus.FAILED
             db.commit()
-            raise Exception("Podcast result is None")
+            raise Exception("The podcast of the document is not generated because of the error of the engine")
         
-        document_podcast = crud.document.get_document_podcast_by_document_id(db=db,
-                                                                             document_id=document_id)
+        document_podcast = crud.document.get_document_podcast_by_document_id(
+            db=db,
+            document_id=document_id
+        )
         if document_podcast is not None:
-            crud.document.delete_document_podcast_by_document_ids(db=db,
-                                                                  user_id=user_id,
-                                                                  document_ids=[document_id])
+            crud.document.delete_document_podcast_by_document_ids(
+                db=db,
+                user_id=user_id,
+                document_ids=[document_id]
+            )
             
-        db_document_podcast = crud.document.create_document_podcast(db=db,
-                                                                    document_id=document_id,
-                                                                    podcast_file_name=podcast_file_name)
-        db.commit()
+        crud.document.create_document_podcast(
+            db=db,
+            document_id=document_id,
+            podcast_file_name=podcast_file_name
+        )
         
-        db_document_podcast.podcast_file_name = podcast_file_name
         db_document_podcast_task.status = DocumentPodcastStatus.SUCCESS
-        db.commit()
-                                                                             
+        db.commit()                            
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai podcast: {e}")
-        log_exception()
         db.rollback()
+        raise e
     finally:
         db.close()
         
@@ -620,12 +721,22 @@ async def handle_update_section_use_document(section_id: int,
         db.close()
         
 @celery_app.task
-def start_process_document(document_id: int,
-                           user_id: int,
-                           auto_summary: bool = False,
-                           auto_podcast: bool = False,
-                           override: DocumentOverrideProperty | None = None):
-    asyncio.run(handle_process_document(document_id=document_id, user_id=user_id, auto_summary=auto_summary, auto_podcast=auto_podcast, override=override))
+def start_process_document(
+    document_id: int,
+    user_id: int,
+    auto_summary: bool = False,
+    auto_podcast: bool = False,
+    override: DocumentOverrideProperty | None = None
+):
+    asyncio.run(
+        handle_process_document(
+            document_id=document_id, 
+            user_id=user_id, 
+            auto_summary=auto_summary, 
+            auto_podcast=auto_podcast, 
+            override=override
+        )
+    )
     
 @celery_app.task
 def update_sections(document_id: int,
@@ -639,9 +750,16 @@ def update_sections(document_id: int,
     db.close()
     
 @celery_app.task
-def start_process_document_podcast(document_id: int,
-                                   user_id: int):
-    asyncio.run(handle_update_document_ai_podcast(document_id=document_id, user_id=user_id))
+def start_process_document_podcast(
+    document_id: int,
+    user_id: int
+):
+    asyncio.run(
+        handle_update_document_ai_podcast(
+            document_id=document_id, 
+            user_id=user_id
+        )
+    )
     
 @celery_app.task
 def update_document_process_status(document_id: int,

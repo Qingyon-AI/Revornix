@@ -3,11 +3,13 @@ import time
 import json
 import websockets
 from protocol.tts_engine import TTSEngineProtocol
-from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
 from enums.engine import EngineUUID
 from pydantic import AnyUrl
+from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
 
 class VolcTTSEngine(TTSEngineProtocol):
+    """此引擎使用的是字节跳动的播客TTS引擎，具体文档参照https://www.volcengine.com/docs/6561/1668014
+    """
     
     def __init__(self):
         super().__init__(
@@ -19,11 +21,17 @@ class VolcTTSEngine(TTSEngineProtocol):
             engine_demo_config='{"appid":"","access_token":""}'
         )
         
-    async def synthesize(self, text: str):
+    async def synthesize(
+        self, 
+        text: str
+    ):
+        config = self.get_engine_config()
+        if config is None:
+            raise Exception("The engine havn't been initialized yet.")
+        if config.get('appid') is None or config.get('access_token') is None:
+            raise Exception("The user's configuration of this engine is not complete.")
         
         final_audio_url: AnyUrl | None = None
-        
-        config = self.get_engine_config()
         
         websocket = None
         
@@ -61,7 +69,7 @@ class VolcTTSEngine(TTSEngineProtocol):
                     },
                     "input_info": {
                         "return_audio_url": True
-                    },
+                    }
                 }
                 if not is_podcast_round_end:
                     req_params["retry_info"] = {

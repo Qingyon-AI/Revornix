@@ -1,8 +1,23 @@
 import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentEmbeddingStatus
+from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentEmbeddingStatus, DocumentMdConvertStatus
 from enums.section import SectionPodcastStatus, SectionProcessStatus
+
+def create_document_transform_task(
+    db: Session,
+    user_id: int,
+    document_id: int,
+    status: DocumentMdConvertStatus = DocumentMdConvertStatus.WAIT_TO
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentTransformToMdTask(user_id=user_id,
+                                                 status=status,
+                                                 document_id=document_id,
+                                                 create_time=now)
+    db.add(task)
+    db.flush()
+    return task
 
 def create_section_process_task(
     db: Session,
