@@ -12,7 +12,7 @@ class SectionDocumentRequest(BaseModel):
     section_id: int
     start: int | None = None
     limit: int = 10
-    desc: bool | None = True
+    desc: bool = True
     keyword: str | None = None
     
 class SectionSeoDetailRequest(BaseModel):
@@ -79,7 +79,7 @@ class LabelDeleteRequest(BaseModel):
 class SearchSubscribedSectionRequest(BaseModel):
     start: int | None = None
     limit: int = 10
-    desc: bool | None = True
+    desc: bool = True
     keyword: str | None = None
     label_ids: list[int] | None = None
 
@@ -125,7 +125,7 @@ class SearchUserSectionsRequest(BaseModel):
     start: int | None = None
     limit: int = 10
     label_ids: list[int] | None = None
-    desc: bool | None = True
+    desc: bool = True
 
 class SectionDetailRequest(BaseModel):
     section_id: int
@@ -146,13 +146,13 @@ class SearchMineSectionsRequest(BaseModel):
     start: int | None = None
     limit: int = 10
     label_ids: list[int] | None = None
-    desc: bool | None = True
+    desc: bool = True
 
 class SearchPublicSectionsRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
     limit: int = 10
-    desc: bool | None = True
+    desc: bool = True
     label_ids: list[int] | None = None
     
 class Label(BaseModel):
@@ -201,7 +201,7 @@ class SectionPodcastInfo(BaseModel):
     creator_id: int
     podcast_file_name: str
     @field_serializer("podcast_file_name")
-    def podcast_file_name(self, v: str) -> str:
+    def serializer_podcast_file_name(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
         return f'{url_prefix}/{v}'
     
@@ -219,32 +219,38 @@ class SectionInfo(BaseModel):
     is_subscribed: bool | None = None
     md_file_name: str | None = None
     labels: list[Label] | None = None
-    cover: str | None = None
+    cover: str | None
     podcast_task: SectionPodcastTask | None = None
     podcast_info: SectionPodcastInfo | None = None
     process_task: SectionProcessTask | None = None
+    
+    def _url_prefix(self) -> str:
+        return RemoteFileServiceProtocol.get_user_file_system_url_prefix(
+            user_id=self.creator.id
+        )
+
     @field_serializer("cover")
-    def cover(self, v: str) -> str | None:
+    def serialize_cover(self, v: str | None):
         if v is None:
             return None
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator.id)
-        return f'{url_prefix}/{v}'
+        return f"{self._url_prefix()}/{v}"
+
     @field_serializer("md_file_name")
-    def md_file_name(self, v: str) -> str:
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator.id)
-        return f'{url_prefix}/{v}'
-    @field_validator("create_time", mode="before")
-    def ensure_create_timezone(cls, v: datetime) -> datetime:
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_timezone(cls, v: datetime) -> datetime:
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
+    def serialize_md_file_name(self, v: str | None):
+        if v is None:
+            return None
+        return f"{self._url_prefix()}/{v}"
+
+    @field_serializer("create_time")
+    def serialize_create_time(self, v: datetime):
+        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+
+    @field_serializer("update_time")
+    def serialize_update_time(self, v: datetime):
+        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+
     class Config:
-        from_attributes = True 
+        from_attributes = True
 
 class SectionDeleteRequest(BaseModel):
     section_id: int
@@ -257,25 +263,28 @@ class DaySectionResponse(BaseModel):
     creator: UserPublicInfo
     date: str
     title: str
-    description: str
+    description: str | None
     create_time: datetime
-    update_time: datetime
-    md_file_name: str | None = None
+    update_time: datetime | None
+    md_file_name: str | None
     documents: list[SectionDocumentInfo]
+    
     @field_serializer("md_file_name")
-    def md_file_name(self, v: str) -> str:
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator.id)
-        return f'{url_prefix}/{v}'
-    @field_validator("create_time", mode="before")
-    def ensure_create_timezone(cls, v: datetime) -> datetime:
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_timezone(cls, v: datetime) -> datetime:
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
+    def serialize_md_file_name(self, v: str | None):
+        if v is None:
+            return None
+        prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(
+            self.creator.id
+        )
+        return f"{prefix}/{v}"
+
+    @field_serializer("create_time")
+    def serialize_create_time(self, v):
+        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+
+    @field_serializer("update_time")
+    def serialize_update_time(self, v):
+        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
 
 class SectionCreateRequest(BaseModel):
     title: str
