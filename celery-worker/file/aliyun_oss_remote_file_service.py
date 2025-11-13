@@ -1,5 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv(override=True)
 import crud
 import json
 import boto3
@@ -17,21 +15,30 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
     bucket: str | None = None
     
     def __init__(self):
-        super().__init__(file_service_uuid=RemoteFileServiceUUID.AliyunOSS.value,
-                         file_service_name='Aliyun OSS',
-                         file_service_name_zh='阿里云OSS',
-                         file_service_description='Aliyun-OSS File System, Based on Aliyun official OSS, has strong stability and availability, but needs to be charged.',
-                         file_service_description_zh='Aliyun OSS 文件系统，基于阿里云官方的OSS，具有极强的稳定性和可用性，但需要收费。',
-                         file_service_demo_config='{"role_arn":"","user_access_key_id":"","user_access_key_secret":"","region_id":"","endpoint_url":"","bucket":"","url_prefix":""}')
+        super().__init__(
+            file_service_uuid=RemoteFileServiceUUID.AliyunOSS.value,
+            file_service_name='Aliyun OSS',
+            file_service_name_zh='阿里云OSS',
+            file_service_description='Aliyun-OSS File System, Based on Aliyun official OSS, has strong stability and availability, but needs to be charged.',
+            file_service_description_zh='Aliyun OSS 文件系统，基于阿里云官方的OSS，具有极强的稳定性和可用性，但需要收费。',
+            file_service_demo_config='{"role_arn":"","user_access_key_id":"","user_access_key_secret":"","region_id":"","endpoint_url":"","bucket":"","url_prefix":""}'
+        )
     
-    async def init_client_by_user_file_system_id(self, user_file_system_id: int):
+    async def init_client_by_user_file_system_id(
+        self, 
+        user_file_system_id: int
+    ):
         db = SessionLocal()
-        db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                          user_file_system_id=user_file_system_id)
+        db_user_file_system = crud.file_system.get_user_file_system_by_id(
+            db=db,
+            user_file_system_id=user_file_system_id
+        )
         if db_user_file_system is None:
-            raise Exception("User file system not found")
+            raise Exception("There is something wrong with the user's file system")
         
         config_str = db_user_file_system.config_json
+        if config_str is None:
+            raise Exception("There is something wrong with the user's file system")
         self.file_service_config = config_str
         config = json.loads(config_str)
         
@@ -49,6 +56,8 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
         request.set_RoleSessionName('oss-session')
 
         response = client.do_action_with_exception(request)
+        if response is None:
+            raise Exception("Failed to get the user's file system's STS credentials")
         result = json.loads(response)
         sts_role_session_token = result.get('Credentials').get('SecurityToken')
         sts_role_access_key_id = result.get('Credentials').get('AccessKeyId')
@@ -70,7 +79,12 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
         self.oss_client = s3
         db.close()
     
-    async def get_file_content_by_file_path(self, file_path: str):
+    async def get_file_content_by_file_path(
+        self, 
+        file_path: str
+    ):
+        if self.oss_client is None:
+            raise Exception("The user's file system has not been initialized")
         res = self.oss_client.get_object(Bucket=self.bucket, Key=file_path)
         content = None
         contentType = res.get('ContentType')
@@ -83,6 +97,8 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
         return content
     
     async def upload_file_to_path(self, file_path, file, content_type: str | None = None):
+        if self.oss_client is None:
+            raise Exception("The user's file system has not been initialized")
         extra_args = {}
         if content_type:
             extra_args['ContentType'] = content_type
@@ -96,7 +112,14 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
         res = self.oss_client.upload_fileobj(**kwargs)
         return res
     
-    async def upload_raw_content_to_path(self, file_path, content, content_type: str | None = None):
+    async def upload_raw_content_to_path(
+        self, 
+        file_path, 
+        content, 
+        content_type: str | None = None
+    ):
+        if self.oss_client is None:
+            raise Exception("The user's file system has not been initialized")
         kwargs = {
             'Bucket': self.bucket,
             'Key': file_path,
@@ -107,10 +130,19 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
         res = self.oss_client.put_object(**kwargs)
         return res
         
-    async def delete_file(self, file_path):
+    async def delete_file(
+        self, 
+        file_path
+    ):
+        if self.oss_client is None:
+            raise Exception("The user's file system has not been initialized")
         res = self.oss_client.delete_object(Bucket=self.bucket, Key=file_path)
         return res
     
-    async def list_files(self):
+    async def list_files(
+        self
+    ):
+        if self.oss_client is None:
+            raise Exception("The user's file system has not been initialized")
         res = self.oss_client.list_objects_v2(Bucket=self.bucket)
         return res
