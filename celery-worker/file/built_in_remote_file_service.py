@@ -1,29 +1,38 @@
 from dotenv import load_dotenv
 load_dotenv(override=True)
+
+from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL 
+
 import boto3
 import crud
 import json
+from typing import Any
 from common.sql import SessionLocal
 from botocore.client import Config
-from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL
 from botocore.exceptions import ClientError
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from enums.file import RemoteFileServiceUUID
 
 class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     
-    s3_client: any = None
-    bucket: str = None
+    s3_client: Any | None = None
+    bucket: str | None = None
 
     def __init__(self):
-        super().__init__(file_service_uuid=RemoteFileServiceUUID.Built_In.value,
-                         file_service_name='Built-In',
-                         file_service_name_zh='内置文件系统',
-                         file_service_description='Built-In file system, based on minio, free to use.',
-                         file_service_description_zh='内置文件系统，基于minio，可免费使用。')
+        super().__init__(
+            file_service_uuid=RemoteFileServiceUUID.Built_In.value,
+            file_service_name='Built-In',
+            file_service_name_zh='内置文件系统',
+            file_service_description='Built-In file system, based on minio, free to use.',
+            file_service_description_zh='内置文件系统，基于minio，可免费使用。'
+        )
+
     @staticmethod
-    def empty_bucket(bucket_name: str):
-        s3 = boto3.resource('s3',
+    def empty_bucket(
+        bucket_name: str
+    ):
+        s3 = boto3.resource(
+            's3',
             endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
             aws_access_key_id=FILE_SYSTEM_USER_NAME,
             aws_secret_access_key=FILE_SYSTEM_PASSWORD,
@@ -39,7 +48,9 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             bucket.objects.all().delete()
 
     @staticmethod
-    def delete_bucket(bucket_name: str):
+    def delete_bucket(
+        bucket_name: str
+    ):
         BuiltInRemoteFileService.empty_bucket(bucket_name)
         s3 = boto3.resource('s3',
             endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
@@ -88,14 +99,24 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             else:
                 raise
         
-    async def init_client_by_user_file_system_id(self, user_file_system_id: int):
+    async def init_client_by_user_file_system_id(
+        self, 
+        user_file_system_id: int
+    ):
         db = SessionLocal()
-        db_user_file_system_id = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                             user_file_system_id=user_file_system_id)
-        user = crud.user.get_user_by_id(db=db, 
-                                        user_id=db_user_file_system_id.user_id)
+        db_user_file_system = crud.file_system.get_user_file_system_by_id(
+            db=db,
+            user_file_system_id=user_file_system_id
+        )
+        if db_user_file_system is None:
+            raise Exception("There is something wrong with the user's file system")
+        
+        user = crud.user.get_user_by_id(
+            db=db, 
+            user_id=db_user_file_system.user_id
+        )
         if user is None:
-            raise Exception("User not found")
+            raise Exception("The user of the file system does not exist")
         self.ensure_bucket_exists(bucket_name=user.uuid)
         self.bucket = user.uuid
         sts = boto3.client(
@@ -124,7 +145,12 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         self.s3_client = s3
         db.close()
 
-    async def get_file_content_by_file_path(self, file_path: str):
+    async def get_file_content_by_file_path(
+        self, 
+        file_path: str
+    ):
+        if self.s3_client is None:
+            raise Exception("The user's file system has not been initialized")
         res = self.s3_client.get_object(Bucket=self.bucket, Key=file_path)
         content = None
         contentType = res.get('ContentType')
@@ -136,7 +162,14 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             content = res.get('Body').read()
         return content
 
-    async def upload_file_to_path(self, file_path, file, content_type: str | None = None):
+    async def upload_file_to_path(
+        self, 
+        file_path, 
+        file, 
+        content_type: str | None = None
+    ):
+        if self.s3_client is None:
+            raise Exception("The user's file system has not been initialized")
         extra_args = {}
         if content_type:
             extra_args['ContentType'] = content_type
@@ -151,6 +184,8 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         return res
     
     async def upload_raw_content_to_path(self, file_path, content, content_type: str | None = None):
+        if self.s3_client is None:
+            raise Exception("The user's file system has not been initialized")
         kwargs = {
             'Bucket': self.bucket,
             'Key': file_path,
@@ -162,11 +197,13 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         return res
         
     async def delete_file(self, file_path):
-        await self.auth()
+        if self.s3_client is None:
+            raise Exception("The user's file system has not been initialized")
         res = self.s3_client.delete_object(Bucket=self.bucket, Key=file_path)
         return res
     
     async def list_files(self):
-        await self.auth()
+        if self.s3_client is None:
+            raise Exception("The user's file system has not been initialized")
         res = self.s3_client.list_objects_v2(Bucket=self.bucket)
         return res

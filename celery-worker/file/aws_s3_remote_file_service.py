@@ -1,5 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv(override=True)
 import boto3
 import crud
 import json
@@ -15,21 +13,30 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
     bucket: str | None = None
 
     def __init__(self):
-        super().__init__(file_service_uuid=RemoteFileServiceUUID.AWS_S3.value,
-                         file_service_name='AWS-S3',
-                         file_service_name_zh='亚马逊S3',
-                         file_service_description="AWS S3, this amazon's paid oss service.",
-                         file_service_description_zh='AWS S3，亚马逊云付费存储服务。',
-                         file_service_demo_config='{"role_arn":"","user_access_key_id":"","user_access_key_secret":"","region_name":"","bucket":"","url_prefix":""}')
+        super().__init__(
+            file_service_uuid=RemoteFileServiceUUID.AWS_S3.value,
+            file_service_name='AWS-S3',
+            file_service_name_zh='亚马逊S3',
+            file_service_description="AWS S3, this amazon's paid oss service.",
+            file_service_description_zh='AWS S3，亚马逊云付费存储服务。',
+            file_service_demo_config='{"role_arn":"","user_access_key_id":"","user_access_key_secret":"","region_name":"","bucket":"","url_prefix":""}'
+        )
 
-    async def init_client_by_user_file_system_id(self, user_file_system_id: int):
+    async def init_client_by_user_file_system_id(
+        self, 
+        user_file_system_id: int
+    ):
         db = SessionLocal()
-        db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                          user_file_system_id=user_file_system_id)
+        db_user_file_system = crud.file_system.get_user_file_system_by_id(
+            db=db,
+            user_file_system_id=user_file_system_id
+        )
         if db_user_file_system is None:
-            raise Exception("User file system not found")
+            raise Exception("There is something wrong with the user's file system")
         
         config_str = db_user_file_system.config_json
+        if config_str is None:
+            raise Exception("There is something wrong with the user's file system")
         self.file_service_config = config_str
         config = json.loads(config_str)
         
@@ -55,6 +62,8 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
             DurationSeconds=3600
         )
         creds = resp['Credentials']
+        if creds is None:
+            raise Exception("Failed to get the user's file system's STS credentials")
         s3 = boto3.client(
             's3',
             endpoint_url=endpoint_url,
@@ -66,7 +75,12 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
         self.s3_client = s3
         db.close()
 
-    async def get_file_content_by_file_path(self, file_path: str):
+    async def get_file_content_by_file_path(
+        self, 
+        file_path
+    ):
+        if self.s3_client is None:
+            raise Exception("The user's file system has not been initialized")
         res = self.s3_client.get_object(Bucket=self.bucket, Key=file_path)
         content = None
         contentType = res.get('ContentType')
@@ -78,7 +92,14 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
             content = res.get('Body').read()
         return content
 
-    async def upload_file_to_path(self, file_path, file, content_type: str | None = None):
+    async def upload_file_to_path(
+        self, 
+        file_path, 
+        file, 
+        content_type: str | None = None
+    ):
+        if self.s3_client is None:
+            raise Exception("The user's file system has not been initialized")
         extra_args = {}
         if content_type:
             extra_args['ContentType'] = content_type
@@ -92,7 +113,14 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
         res = self.s3_client.upload_fileobj(**kwargs)
         return res
     
-    async def upload_raw_content_to_path(self, file_path, content, content_type: str | None = None):
+    async def upload_raw_content_to_path(
+        self, 
+        file_path, 
+        content, 
+        content_type: str | None = None
+    ):
+        if self.s3_client is None:
+            raise Exception("The user's file system has not been initialized")
         kwargs = {
             'Bucket': self.bucket,
             'Key': file_path,
@@ -103,10 +131,19 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
         res = self.s3_client.put_object(**kwargs)
         return res
         
-    async def delete_file(self, file_path):
+    async def delete_file(
+        self, 
+        file_path
+    ):
+        if self.s3_client is None:
+            raise Exception("The user's file system has not been initialized")
         res = self.s3_client.delete_object(Bucket=self.bucket, Key=file_path)
         return res
     
-    async def list_files(self):
+    async def list_files(
+        self
+    ):
+        if self.s3_client is None:
+            raise Exception("The user's file system has not been initialized")
         res = self.s3_client.list_objects_v2(Bucket=self.bucket)
         return res
