@@ -5,15 +5,15 @@ from pydantic import BaseModel
 from playwright.async_api import async_playwright
 
 class WebsiteInfo(BaseModel):
-    url: str | None = None
-    title: str | None = None
+    url: str
+    title: str
     description: str | None = None
     keywords: str | None = None
     content: str | None = None
     cover: str | None = None
 
 class FileInfo(BaseModel):
-    title: str | None = None
+    title: str
     description: str | None = None
     keywords: str | None = None
     content: str | None = None
@@ -21,49 +21,74 @@ class FileInfo(BaseModel):
 
 class MarkdownEngineProtocol(EngineProtocol):
     @staticmethod
-    async def get_website_cover_by_playwright(url: str):
-        html_content = None
+    async def get_website_cover_by_playwright(
+        url: str
+    ) -> str | None:
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
             page = await browser.new_page()
             await page.goto(url)
             html_content = await page.content()
             await browser.close()
-        soup = BeautifulSoup(html_content, 'html.parser')
 
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        # 提取 og:image
         og = soup.find('meta', property='og:image')
         if og and og.get('content'):
-            return og['content']
-        
+            return str(og.get("content"))
+
+        # 提取 twitter:image
         twitter = soup.find('meta', attrs={'name': 'twitter:image'})
         if twitter and twitter.get('content'):
-            return twitter['content']
-        
-        imgs = soup.find_all('img')
-        biggest_img_url = None
-        biggest_area = 0
-        for img in imgs:
-            src = img.get('src') or img.get('data-src')
-            if not src:
-                continue
+            return str(twitter.get("content"))
 
-            # 下面请求图片大小，这里为了速度和简洁，简单用Content-Length估计大小，
-            try:
-                head = httpx.head(src, timeout=5)
-                size = int(head.headers.get('Content-Length', 0))
-            except:
-                size = 0
+        # 图片查找
+        imgs = soup.find_all("img")
+        if not imgs:
+            return None
 
-            if size > biggest_area:
-                biggest_area = size
-                biggest_img_url = src
+        from urllib.parse import urljoin
 
-            return biggest_img_url
+        def normalize_src(base: str, src: str) -> str:
+            if src.startswith("http://") or src.startswith("https://"):
+                return src
+            if src.startswith("//"):
+                return "https:" + src
+            return urljoin(base, src)
 
-        return None
+        timeout = httpx.Timeout(10.0, connect=5.0)
+        biggest_url = None
+        biggest_size = 0
+
+        async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
+            for img in imgs:
+                raw = img.get("src") or img.get("data-src")
+                if not raw:
+                    continue
+
+                src = normalize_src(url, str(raw))
+
+                try:
+                    head = await client.head(src)
+                    size = int(head.headers.get("Content-Length", 0))
+                except:
+                    continue
+
+                if size > biggest_size:
+                    biggest_size = size
+                    biggest_url = src
+
+        return biggest_url
     
-    async def analyse_website(self, url: str) -> WebsiteInfo:
+    async def analyse_website(
+        self, 
+        url: str
+    ) -> WebsiteInfo:
         raise NotImplementedError("Method not implemented")
     
-    async def analyse_file(self, file_path: str) -> FileInfo:
+    async def analyse_file(
+        self, 
+        file_path: str
+    ) -> FileInfo:
         raise NotImplementedError("Method not implemented")

@@ -126,26 +126,33 @@ async def handle_process_document(
         else:
             raise Exception("The convert engine is not supported")
         
-        # TODO 优化至此 待续
-            
         await engine.init_engine_config_by_user_engine_id(
             user_engine_id=db_user.default_file_document_parse_user_engine_id
         )
-        
+
         if db_document.category == DocumentCategory.FILE:
             # 处理文件文档
-            db_file_document = crud.document.get_file_document_by_document_id(db=db,
-                                                                              document_id=document_id)
+            db_file_document = crud.document.get_file_document_by_document_id(
+                db=db,
+                document_id=document_id
+            )
             if db_file_document is None:
-                raise Exception("File document not found")
-            
+                raise Exception("The file info of the document is not found")
+            if db_file_document.file_name is None:
+                raise Exception("The file info of the document is not completed yet")
             # download the file to the temp dir
-            file_content = await remote_file_service.get_file_content_by_file_path(file_path=db_file_document.file_name)
+            file_content = await remote_file_service.get_file_content_by_file_path(
+                file_path=db_file_document.file_name
+            )
             temp_file_path = f'{str(BASE_DIR)}/temp/{db_file_document.file_name.replace("files/", "")}'
             with open(temp_file_path, 'wb') as f:
                 f.write(file_content)
                 
-            file_info = await engine.analyse_file(file_path=temp_file_path)
+            # TODO 优化至此 待续
+                
+            file_info = await engine.analyse_file(
+                file_path=temp_file_path
+            )
 
             db_document.title = file_info.title
             db_document.description = file_info.description
