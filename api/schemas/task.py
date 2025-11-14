@@ -1,5 +1,10 @@
 from pydantic import BaseModel
 
+class NecessaryDocumentData(BaseModel):
+    url: str | None
+    file_name: str | None
+    content: str | None
+
 class DocumentTransformTask(BaseModel):
     status: int
     class Config:
@@ -26,6 +31,11 @@ class DocumentPodcastTask(BaseModel):
         from_attributes = True
         
 class DocumentOverrideProperty(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    cover: str | None = None
+
+class SectionOverrideProperty(BaseModel):
     title: str | None = None
     description: str | None = None
     cover: str | None = None

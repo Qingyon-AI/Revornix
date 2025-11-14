@@ -2,7 +2,50 @@ import models
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from enums.section import UserSectionRole
+from enums.section import UserSectionRole, SectionDocumentIntegration
+
+def create_section_podcast(
+    db: Session,
+    section_id: int,
+    podcast_file_name: str
+):
+    db_section_podcast = models.section.SectionPodcast(section_id=section_id,
+                                                       podcast_file_name=podcast_file_name)
+    db.add(db_section_podcast)
+    db.flush()
+    return db_section_podcast
+
+def create_or_update_section_document(
+    db: Session,
+    section_id: int,
+    document_id: int,
+    status: SectionDocumentIntegration = SectionDocumentIntegration.WAIT_TO
+):
+    now = datetime.now(timezone.utc)
+    db_section_document = db.query(models.section.SectionDocument).filter_by(section_id=section_id,
+                                                                             document_id=document_id).one_or_none()
+    if db_section_document is None:
+        db_section_document = models.section.SectionDocument(section_id=section_id,
+                                                             document_id=document_id,
+                                                             create_time=now,
+                                                             status=status)
+        db.add(db_section_document)
+    else:
+        db_section_document.status = status
+        db_section_document.update_time = now
+    db.flush()
+    return db_section_document
+
+def get_section_document_by_section_id_and_document_id(
+    db: Session,
+    section_id: int,
+    document_id: int
+):
+    query = db.query(models.section.SectionDocument)
+    query = query.filter(models.section.SectionDocument.section_id == section_id,
+                         models.section.SectionDocument.document_id == document_id,
+                         models.section.SectionDocument.delete_at == None)
+    return query.one_or_none()
 
 def get_section_podcast_by_section_id(
     db: Session,

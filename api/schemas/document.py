@@ -30,7 +30,7 @@ class DocumentAiSummaryRequest(BaseModel):
 class BaseSectionInfo(BaseModel):
     id: int
     title: str
-    description: str
+    description: str | None
     class Config:
         from_attributes = True 
 
@@ -84,16 +84,16 @@ class DocumentMonthSummaryResponse(BaseModel):
 class DocumentCreateRequest(BaseModel):
     category: int
     from_plat: str
-    auto_summary: bool = False
-    sections: list[int] | None = []
-    labels: list[int] | None = None
+    sections: list[int] = []
+    labels: list[int] = []
     title: str | None = None
     description: str | None = None
     cover: str | None = None
-    url: str | None = None
     content: str | None = None
+    url: str | None = None
     file_name: str | None = None
-    auto_podcast: bool | None = False
+    auto_summary: bool = False
+    auto_podcast: bool = False
     
 class DocumentCreateResponse(BaseModel):
     document_id: int
@@ -119,28 +119,28 @@ class SearchUnreadListRequest(BaseModel):
     start: int | None = None
     limit: int = 10
     label_ids: list[int] | None = None
-    desc: bool | None = True
+    desc: bool = True
 
 class SearchRecentReadRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
     limit: int = 10
     label_ids: list[int] | None = None
-    desc: bool | None = True
+    desc: bool = True
     
 class SearchAllMyDocumentsRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
     limit: int = 10
     label_ids: list[int] | None = None
-    desc: bool | None = True
+    desc: bool = True
     
 class SearchMyStarDocumentsRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
     limit: int = 10
     label_ids: list[int] | None = None
-    desc: bool | None = True
+    desc: bool = True
 
 class DocumentInfo(BaseModel):
     id: int
@@ -182,7 +182,7 @@ class WebsiteDocumentInfo(BaseModel):
     md_file_name: str | None = None
     
     @field_serializer("md_file_name")
-    def md_file_name(self, v: str) -> str:
+    def serializer_md_file_name(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
         return f'{url_prefix}/{v}'
     
@@ -191,11 +191,11 @@ class FileDocumentInfo(BaseModel):
     file_name: str
     md_file_name: str | None = None
     @field_serializer("md_file_name")
-    def md_file_name(self, v: str) -> str:
+    def serializer_md_file_name(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
         return f'{url_prefix}/{v}'
     @field_serializer("file_name")
-    def file_name(self, v: str) -> str:
+    def serializer_file_name(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
         return f'{url_prefix}/{v}'
     
@@ -206,24 +206,24 @@ class DocumentPodcastInfo(BaseModel):
     creator_id: int
     podcast_file_name: str
     @field_serializer("podcast_file_name")
-    def podcast_file_name(self, v: str) -> str:
+    def serializer_podcast_file_name(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
         return f'{url_prefix}/{v}'
     
 class DocumentDetailResponse(BaseModel):
     id: int
-    title: str | None = None
+    category: int
+    title: str
+    from_plat: str
     ai_summary: str | None = None
     description: str | None = None
     cover: str | None = None
-    category: int | None = None
-    create_time: datetime | None = None
+    create_time: datetime
     update_time: datetime | None = None
-    labels: list[Label] | None = None
-    creator: UserPublicInfo | None = None
-    sections: list[BaseSectionInfo] | None = None
-    from_plat: str | None = None
-    users: list[UserPublicInfo] | None = None
+    labels: list[Label] = []
+    creator: UserPublicInfo
+    sections: list[BaseSectionInfo] = []
+    users: list[UserPublicInfo] = []
     is_star: bool | None = None
     is_read: bool | None = None
     website_info: WebsiteDocumentInfo | None = None

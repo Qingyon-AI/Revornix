@@ -135,6 +135,17 @@ def create_document_labels(
     db.flush()
     return db_document_labels
 
+def get_read_document_by_document_id_and_user_id(
+    db: Session,
+    document_id: int,
+    user_id: int
+):
+    query = db.query(models.document.ReadDocument)
+    query = query.filter(models.document.ReadDocument.document_id == document_id,
+                         models.document.ReadDocument.user_id == user_id,
+                         models.document.ReadDocument.delete_at == None)
+    return query.one_or_none()
+
 def get_website_document_by_user_id_and_url(
     db: Session, 
     user_id: int,

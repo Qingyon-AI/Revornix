@@ -109,6 +109,33 @@ def create_document_embedding_task(
     db.flush()
     return task
 
+def get_section_podcast_task_by_section_id(
+    db: Session,
+    section_id: int
+):
+    query = db.query(models.task.SectionPodcastTask)
+    query = query.filter(models.task.SectionPodcastTask.section_id == section_id,
+                         models.task.SectionPodcastTask.delete_at == None)
+    return query.one_or_none()
+
+def get_document_podcast_task_by_document_id(
+    db: Session,
+    document_id: int
+):
+    query = db.query(models.task.DocumentPodcastTask)
+    query = query.filter(models.task.DocumentPodcastTask.document_id == document_id,
+                         models.task.DocumentPodcastTask.delete_at == None)
+    return query.one_or_none()
+
+def get_document_embedding_task_by_document_id(
+    db: Session,
+    document_id: int
+):
+    query = db.query(models.task.DocumentEmbeddingTask)
+    query = query.filter(models.task.DocumentEmbeddingTask.document_id == document_id,
+                         models.task.DocumentEmbeddingTask.delete_at == None)
+    return query.one_or_none()
+
 def get_section_process_task_by_section_id(
     db: Session,
     section_id: int

@@ -3,7 +3,7 @@ from uuid import uuid4
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import or_
-from enums.section import UserSectionRole
+from enums.section import UserSectionRole, SectionDocumentIntegration
 from datetime import date as datetime_date
 
 def create_section_podcast(
@@ -116,7 +116,7 @@ def create_or_update_section_document(
     db: Session,
     section_id: int,
     document_id: int,
-    status: int
+    status: SectionDocumentIntegration = SectionDocumentIntegration.WAIT_TO
 ):
     now = datetime.now(timezone.utc)
     db_section_document = db.query(models.section.SectionDocument).filter_by(section_id=section_id,
