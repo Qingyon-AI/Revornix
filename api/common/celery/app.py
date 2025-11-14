@@ -1,39 +1,61 @@
 from celery import Celery
 from config.redis import REDIS_PORT, REDIS_URL
+from schemas.task import DocumentOverrideProperty, NecessaryDocumentData, SectionOverrideProperty
 
-celery_app = Celery('worker', 
-                    broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0',
-                    backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
+celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
 @celery_app.task
-def start_process_document(document_id: int,
-                           user_id: int,
-                           auto_summary: bool = False,
-                           auto_podcast: bool = False,
-                           override: dict | None = None):
+def start_process_document(
+    document_id: int,
+    user_id: int,
+    auto_summary: bool = False,
+    auto_podcast: bool = False,
+    override: DocumentOverrideProperty | None = None,
+    necessary_document_data: NecessaryDocumentData | None = None
+):
     ...
 
 @celery_app.task
-def update_sections(document_id: int,
-                    user_id: int):
+def start_process_section(
+    section_id: int,
+    user_id: int,
+    auto_summary: bool = False,
+    auto_podcast: bool = False,
+    override: SectionOverrideProperty | None = None
+):
     ...
 
 @celery_app.task
-def start_process_document_podcast(document_id: int,
-                                   user_id: int):
+def update_sections_for_document(
+    document_id: int,
+    user_id: int
+):
     ...
 
 @celery_app.task
-def start_process_section_podcast(section_id: int,
-                                  user_id: int):
+def start_process_document_podcast(
+    document_id: int,
+    user_id: int
+):
     ...
 
 @celery_app.task
-def update_document_process_status(document_id: int,
-                                   status: int):
+def start_process_section_podcast(
+    section_id: int,
+    user_id: int
+):
     ...
 
 @celery_app.task
-def update_section_process_status(section_id: int,
-                                  status: int):
+def update_document_process_status(
+    document_id: int,
+    status: int
+):
+    ...
+
+@celery_app.task
+def update_section_process_status(
+    section_id: int,
+    status: int
+):
     ...

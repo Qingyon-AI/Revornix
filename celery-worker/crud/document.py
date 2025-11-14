@@ -2,6 +2,45 @@ import models
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session, selectinload
 
+def create_quick_note_document(
+    db: Session, 
+    document_id: int, 
+    content: str
+):
+    db_quick_note_document = models.document.QuickNoteDocument(document_id=document_id, 
+                                                               content=content)
+    db.add(db_quick_note_document)
+    db.flush()
+    return db_quick_note_document
+
+def create_website_document(
+    db: Session, 
+    document_id: int, 
+    url: str, 
+    md_file_name: str,
+    keywords: str | None = None
+):
+    db_website_document = models.document.WebsiteDocument(document_id=document_id, 
+                                                          url=url, 
+                                                          md_file_name=md_file_name,
+                                                          keywords=keywords)
+    db.add(db_website_document)
+    db.flush()
+    return db_website_document
+
+def create_file_document(
+    db: Session, 
+    document_id: int, 
+    file_name: str, 
+    md_file_name: str
+):
+    db_file_document = models.document.FileDocument(document_id=document_id, 
+                                                    file_name=file_name, 
+                                                    md_file_name=md_file_name)
+    db.add(db_file_document)
+    db.flush()
+    return db_file_document
+
 def create_document_podcast(
     db: Session,
     document_id: int,
