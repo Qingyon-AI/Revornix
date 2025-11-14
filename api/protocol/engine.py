@@ -13,6 +13,8 @@ class EngineProtocol(Protocol):
     engine_demo_config: str | None
     engine_config: str | None = None
     
+    user_id: int | None = None
+    
     def __init__(
         self, 
         engine_uuid: str,
@@ -31,7 +33,7 @@ class EngineProtocol(Protocol):
         self.engine_demo_config = engine_demo_config
         self.engine_config = engine_config
     
-    def get_engine_config(self):
+    def get_engine_config(self) -> dict | None:
         if self.engine_config is None:
             return None
         return json.loads(self.engine_config)
@@ -56,4 +58,5 @@ class EngineProtocol(Protocol):
         if db_engine.uuid != self.engine_uuid:
             raise Exception("The uuid of the user's engine is not matched with the uuid of the engine for revornix system")
         self.engine_config = db_user_engine.config_json
+        self.user_id = db_user_engine.user_id
         db.close()

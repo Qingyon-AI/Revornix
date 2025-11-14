@@ -21,7 +21,7 @@ def authenticate_user(db,
         return False
     return user
 
-def is_dir_empty(path: str):
+def is_dir_empty(path: Path):
     return not any(Path(path).iterdir())
 
 def extract_title_and_summary(content: str):
