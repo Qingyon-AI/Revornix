@@ -9,7 +9,7 @@ class SearchUserRequest(BaseModel):
     limit: int = 10
     
     @field_validator('filter_name')
-    def filter_name_validator(cls, v):
+    def validate_filter_name(cls, v: str):
         if v not in ['nickname', 'email', 'uuid']:
             raise ValueError('filter_name must be name or email')
         return v
@@ -177,16 +177,18 @@ class SectionUserPublicInfo(BaseModel):
     authority: int | None = None
     role: int | None = None
     create_time: datetime
-    update_time: datetime
-    @field_validator("create_time", mode="before")
-    def ensure_create_timezone(cls, v: datetime) -> datetime:
+    update_time: datetime | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
         if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+            return v.replace(tzinfo=timezone.utc)
         return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is None:
+            return v
         if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+            return v.replace(tzinfo=timezone.utc)
         return v
     @field_serializer("avatar")
     def serialize_avatar(self, v: str) -> str:

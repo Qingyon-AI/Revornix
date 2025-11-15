@@ -309,7 +309,7 @@ async def section_publish_get_request(
         section_id=section_publish_get_request.section_id
     )
     if db_publish_section is None:
-        return schemas.section.SectionPublishGetResponse(status=False)
+        raise Exception("Section not published yet")
     return schemas.section.SectionPublishGetResponse(
         status=True,
         uuid=db_publish_section.uuid,

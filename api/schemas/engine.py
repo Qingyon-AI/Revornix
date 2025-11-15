@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone
 
 class EngineDeleteRequest(BaseModel):
@@ -40,14 +40,16 @@ class UserEngineInfo(BaseModel):
     enable: bool | None = None
     config_json: str | None = None
     create_time: datetime
-    update_time: datetime | None = None
-    @field_validator("create_time", mode="before")
-    def ensure_create_timezone(cls, v: datetime) -> datetime:
+    update_time: datetime | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is None:
+            return None
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v

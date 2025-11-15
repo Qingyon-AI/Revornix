@@ -15,7 +15,7 @@ class NotificationTarget(BaseModel):
     description: str | None
     category: int
     create_time: datetime
-    update_time: datetime | None = None
+    update_time: datetime | None
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:
@@ -129,7 +129,7 @@ class NotificationRecord(BaseModel):
     content: str | None
     read_at: datetime | None
     create_time: datetime
-    update_time: datetime | None = None
+    update_time: datetime | None
     @field_serializer("read_at")
     def serializer_read_at(self, v: datetime | None):
         if v is not None and v.tzinfo is None:
