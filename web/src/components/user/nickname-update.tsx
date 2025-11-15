@@ -42,6 +42,14 @@ const NicknameUpdate = () => {
 		},
 		onSuccess: () => {
 			refreshUserInfo();
+			toast.success('Name updated successfully');
+		},
+		onError: (error) => {
+			toast.error(error.message);
+		},
+		onSettled: () => {
+			setFormSubmitStatus(false);
+			setShowNicknameUpdateFormDialog(false);
 		},
 	});
 	const { userInfo } = useUserContext();
@@ -73,17 +81,9 @@ const NicknameUpdate = () => {
 		values: z.infer<typeof nicknameFormSchema>
 	) => {
 		setFormSubmitStatus(true);
-		await mutation.mutateAsync({
+		mutation.mutate({
 			nickname: values.nickname,
 		});
-		if (mutation.isError) {
-			toast.error(mutation.error.message);
-			setFormSubmitStatus(false);
-			return;
-		}
-		toast.success('');
-		setFormSubmitStatus(false);
-		setShowNicknameUpdateFormDialog(false);
 	};
 
 	const onFormValidateError = (errors: any) => {

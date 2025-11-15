@@ -36,6 +36,9 @@ const AvatarUpdate = () => {
 			await utils.sleep(500);
 			await refreshUserInfo();
 		},
+		onError(error) {
+			toast.error(error.message);
+		},
 	});
 
 	const onChooseFile = async () => {
@@ -54,7 +57,12 @@ const AvatarUpdate = () => {
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();
 		const fileName = `images/${name}.${suffix}`;
-		await fileService.uploadFile(fileName, file);
+		const [res, err] = await utils.to(fileService.uploadFile(fileName, file));
+		if (err) {
+			toast.error('Failed to upload the image');
+			setUploadingStatus(false);
+			return;
+		}
 		await mutationUpdateUserInfo.mutateAsync({
 			avatar: fileName,
 		});
