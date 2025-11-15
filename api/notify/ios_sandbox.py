@@ -13,11 +13,11 @@ APPLE_PUBLIC_KEYS_URL = "https://appleid.apple.com/auth/keys"
 class IOSNotify(NotifyProtocol):
     def __init__(self):
         super().__init__(
-            notify_uuid='ec2101d2d2134fe398626487eae7b05c',
-            notify_name='IOSNotify (Production)',
-            notify_name_zh='iOS通知（正式服）',
-            notify_description='Send notification via ios apns (production)',
-            notify_description_zh='通过iOS APNS发送通知 (正式服)',
+            notify_uuid='492bddf082c24ef88ecfba6bd687fae0',
+            notify_name='IOSNotify (sandbox)',
+            notify_name_zh='iOS通知 (sandbox)',
+            notify_description='Send notification via ios apns (sandbox)',
+            notify_description_zh='通过iOS APNS发送通知 (sandbox)'
         )
     
     def _create_apns_headers(
@@ -151,7 +151,7 @@ class IOSNotify(NotifyProtocol):
             apns_topic=self.source.ios_notification_source.app_bundle_id
         )
         device_token = self.target.ios_notification_target.device_token
-        url = f'https://api.push.apple.com/3/device/{device_token}'
+        url = f'https://api.sandbox.push.apple.com/3/device/{device_token}'
         data = {
             "aps" : {
                 "alert" : {
