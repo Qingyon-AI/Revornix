@@ -12,17 +12,17 @@ from schemas.task import DocumentOverrideProperty, SectionOverrideProperty
 from enums.document import DocumentProcessStatus
 from config.redis import REDIS_PORT, REDIS_URL
 from config.base import BASE_DIR
-from common.logger import log_exception, exception_logger
+from common.logger import exception_logger
 from common.ai import summary_section_with_origin, summary_document, summary_section
 from data.common import process_document
 from common.common import get_user_remote_file_system
-from enums.engine import EngineUUID
 from common.sql import SessionLocal
 from engine.markdown.markitdown import MarkitdownEngine
 from engine.markdown.jina import JinaEngine
 from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
+from enums.engine import EngineUUID
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus
 from enums.section import UserSectionAuthority, SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus
 
