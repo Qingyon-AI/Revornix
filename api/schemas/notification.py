@@ -1,10 +1,10 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone
 from schemas.common import BaseResponseModel
 
 class Message(BaseModel):
     title: str
-    content: str
+    content: str | None
 
 class NotificationTargetDetailRequest(BaseModel):
     notification_target_id: int
@@ -16,13 +16,13 @@ class NotificationTarget(BaseModel):
     category: int
     create_time: datetime
     update_time: datetime | None = None
-    @field_validator("create_time", mode="before")
-    def ensure_create_time_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_time_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
@@ -60,8 +60,8 @@ class IOSNotificationTarget(BaseModel):
 class NotificationTargetDetail(BaseModel):
     id: int
     title: str
-    description: str | None
     category: int
+    description: str | None
     email_notification_target: EmailNotificationTarget | None = None
     ios_notification_target: IOSNotificationTarget | None = None
 
@@ -130,20 +130,20 @@ class NotificationRecord(BaseModel):
     read_at: datetime | None
     create_time: datetime
     update_time: datetime | None = None
-    @field_validator("read_at", mode="before")
-    def ensure_read_at_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("read_at")
+    def serializer_read_at(self, v: datetime | None):
         if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+            return v.replace(tzinfo=timezone.utc)
         return v
-    @field_validator("create_time", mode="before")
-    def ensure_create_time_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+            return v.replace(tzinfo=timezone.utc)
         return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_time_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
         if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+            return v.replace(tzinfo=timezone.utc)
         return v
     class Config:
         from_attributes = True
@@ -157,13 +157,13 @@ class NotificationSource(BaseModel):
     description: str | None
     create_time: datetime
     update_time: datetime | None
-    @field_validator("create_time", mode="before")
-    def ensure_create_time_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_time_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
@@ -193,18 +193,18 @@ class NotificationTask(BaseResponseModel):
     notification_content_type: int
     title: str | None = None
     content: str | None = None
-    notification_template_id: int | None = None
-    notification_source: NotificationSource | None = None
-    notification_target: NotificationTarget | None = None
-    create_time: datetime | None = None
-    update_time: datetime | None = None
-    @field_validator("create_time", mode="before")
-    def ensure_create_time_timezone(cls, v: datetime) -> datetime:
+    notification_template_id: int | None
+    notification_source: NotificationSource | None
+    notification_target: NotificationTarget | None
+    create_time: datetime
+    update_time: datetime | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_time_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
@@ -244,7 +244,6 @@ class NotificationTemplate(BaseModel):
     name_zh: str
     description: str | None = None
     description_zh: str | None = None
-    version: str
     
 class NotificationTemplatesResponse(BaseResponseModel):
     data: list[NotificationTemplate]

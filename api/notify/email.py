@@ -8,18 +8,26 @@ from email.utils import formataddr
 from common.logger import exception_logger
 
 class EmailNotify(NotifyProtocol):
-    def __init__(self, 
-                 source_id: int, 
-                 target_id: int):
-        super().__init__(notify_uuid='e8118c5a5ff4418cafe6f1bc5914f598',
-                         notify_name='EmailNotify',
-                         notify_name_zh='电子邮件通知',
-                         notify_description='Send notification via email',
-                         notify_description_zh='通过电子邮件发送通知',
-                         source_id=source_id, 
-                         target_id=target_id)
+    
+    def __init__(
+        self
+    ):
+        super().__init__(
+            notify_uuid='e8118c5a5ff4418cafe6f1bc5914f598',
+            notify_name='EmailNotify',
+            notify_name_zh='电子邮件通知',
+            notify_description='Send notification via email',
+            notify_description_zh='通过电子邮件发送通知'
+        )
         
-    def send_notification(self, message: schemas.notification.Message) -> bool:
+    def send_notification(
+        self, 
+        message: schemas.notification.Message
+    ):
+        if self.source is None or self.target is None:
+            raise Exception("The source or target of the notification is not set")
+        if self.source.email_notification_source is None or self.target.email_notification_target is None:
+            raise Exception("The email notification source or target of the notification is not set")
         smtp_server = self.source.email_notification_source.server
         smtp_port = self.source.email_notification_source.port
         username = self.source.email_notification_source.email
@@ -30,7 +38,7 @@ class EmailNotify(NotifyProtocol):
         msg = MIMEMultipart()
         msg["From"] = formataddr(("Revornix", username))  # 正确设置发件人
         msg["To"] = recipient
-        msg["Subject"] = Header(message.title, 'utf-8')
+        msg["Subject"] = str(Header(message.title, 'utf-8'))
         msg.attach(MIMEText(message.content, "html", "utf-8"))
 
         try:
@@ -40,9 +48,9 @@ class EmailNotify(NotifyProtocol):
             return True
 
         except smtplib.SMTPException as e:
-            exception_logger.error(f"[EmailNotify] 邮件发送失败: {e}")
+            exception_logger.error(f"[EmailNotify] SMTP error: {e}")
             return False
 
         except Exception as e:
-            exception_logger.error(f"[EmailNotify] 未知错误: {e}")
+            exception_logger.error(f"[EmailNotify] Unknown error: {e}")
             return False

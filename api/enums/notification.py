@@ -11,3 +11,6 @@ class NotificationTargetCategory(IntEnum):
 class NotificationContentType(IntEnum):
     CUSTOM = 0
     TEMPLATE = 1
+
+class NotifyTemplate(IntEnum):
+    DAILY_SUMMARY = 1

@@ -173,3 +173,18 @@ def get_document_convert_task_by_document_id(
     query = query.filter(models.task.DocumentConvertToMdTask.document_id == document_id,
                          models.task.DocumentConvertToMdTask.delete_at == None)
     return query.one_or_none()
+
+def delete_document_convert_task_by_document_ids(
+    db: Session,
+    user_id: int,
+    document_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.task.DocumentConvertToMdTask)
+    query = query.filter(
+        models.task.DocumentConvertToMdTask.document_id.in_(document_ids),
+        models.task.DocumentConvertToMdTask.delete_at == None,
+        models.task.DocumentConvertToMdTask.user_id == user_id
+    )
+    query = query.update({models.task.DocumentConvertToMdTask.delete_at: now}, synchronize_session=False)
+    db.flush()
