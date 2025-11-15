@@ -10,7 +10,7 @@ from common.logger import exception_logger
 
 APPLE_PUBLIC_KEYS_URL = "https://appleid.apple.com/auth/keys"
 
-class IOSNotify(NotifyProtocol):
+class IOSSandboxNotify(NotifyProtocol):
     def __init__(self):
         super().__init__(
             notify_uuid='492bddf082c24ef88ecfba6bd687fae0',

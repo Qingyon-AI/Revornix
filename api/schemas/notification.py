@@ -193,9 +193,9 @@ class NotificationTask(BaseResponseModel):
     notification_content_type: int
     title: str | None = None
     content: str | None = None
-    notification_template_id: int | None
-    notification_source: NotificationSource | None
-    notification_target: NotificationTarget | None
+    notification_template_id: int | None = None
+    notification_source: NotificationSource | None = None
+    notification_target: NotificationTarget | None = None
     create_time: datetime
     update_time: datetime | None
     @field_serializer("create_time")
