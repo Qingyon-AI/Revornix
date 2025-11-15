@@ -306,6 +306,8 @@ async def create_document(
     now = datetime.now(timezone.utc)
     db_document = None
     if document_create_request.category == DocumentCategory.WEBSITE:
+        if document_create_request.url is None:
+            raise Exception('The url is required when the document category is website')
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -314,7 +316,15 @@ async def create_document(
             category=document_create_request.category,
             from_plat=document_create_request.from_plat
         )
+        crud.document.create_website_document(
+            db=db,
+            document_id=db_document.id,
+            url=document_create_request.url,
+            
+        )
     elif document_create_request.category == DocumentCategory.FILE:
+        if document_create_request.file_name is None:
+            raise Exception('The file name is required when the document category is file')
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -323,7 +333,14 @@ async def create_document(
             title=f'File document analysing...',
             description=f'File document analysing...'
         )
+        crud.document.create_file_document(
+            db=db,
+            document_id=db_document.id,
+            file_name=document_create_request.file_name
+        )
     elif document_create_request.category == DocumentCategory.QUICK_NOTE:
+        if document_create_request.content is None:
+            raise Exception('The content is required when the document category is quick note')
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -331,6 +348,11 @@ async def create_document(
             from_plat=document_create_request.from_plat,
             title=f'Quick Note saved at {now}',
             description=f'Quick Note saved at {now}'
+        )
+        crud.document.create_quick_note_document(
+            db=db,
+            document_id=db_document.id,
+            content=document_create_request.content
         )
     else:
         raise Exception('Invalid document category')
@@ -380,7 +402,7 @@ async def create_document(
             status=SectionDocumentIntegration.WAIT_TO
         )
     if db_document.category != DocumentCategory.QUICK_NOTE:
-        crud.task.create_document_transform_task(
+        crud.task.create_document_convert_task(
             db=db,
             user_id=user.id,
             document_id=db_document.id
@@ -392,12 +414,7 @@ async def create_document(
             document_id=db_document.id, 
             user_id=user.id, 
             auto_summary=document_create_request.auto_summary,
-            auto_podcast=document_create_request.auto_podcast,
-            necessary_document_data=schemas.task.NecessaryDocumentData(
-                url=document_create_request.url,
-                file_name=document_create_request.file_name,
-                content=document_create_request.content
-            )
+            auto_podcast=document_create_request.auto_podcast
         ),
         update_sections_for_document.si(
             document_id=db_document.id, 
@@ -409,7 +426,7 @@ async def create_document(
 
 @document_router.post('/markdown/transform', response_model=schemas.common.NormalResponse)
 async def transform_markdown(
-    transform_markdown_request: schemas.document.DocumentMarkdownTransformRequest,
+    transform_markdown_request: schemas.document.DocumentMarkdownConvertRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -438,37 +455,33 @@ async def transform_markdown(
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
     
-    db_transform_task = crud.task.get_document_transform_task_by_document_id(
+    db_convert_task = crud.task.get_document_convert_task_by_document_id(
         db=db,
         document_id=transform_markdown_request.document_id
     )
     # 如果该文档的转化任务存在
-    if db_transform_task is not None:
-        if db_transform_task.status == DocumentMdConvertStatus.SUCCESS:
+    if db_convert_task is not None:
+        if db_convert_task.status == DocumentMdConvertStatus.SUCCESS:
             raise Exception('The transform task is already finished, please refresh the page')
-        elif db_transform_task.status == DocumentMdConvertStatus.WAIT_TO:
+        elif db_convert_task.status == DocumentMdConvertStatus.WAIT_TO:
             raise Exception('The transform task is already in the queue, please wait')
-        elif db_transform_task.status == DocumentMdConvertStatus.CONVERTING:
+        elif db_convert_task.status == DocumentMdConvertStatus.CONVERTING:
             raise Exception('The transform task is already processing, please wait')
-        db_transform_task.status = DocumentMdConvertStatus.WAIT_TO
+        db_convert_task.status = DocumentMdConvertStatus.WAIT_TO
     # 如果该文档的转化任务不存在
     else:
-        db_transform_task = crud.task.create_document_transform_task(
+        db_convert_task = crud.task.create_document_convert_task(
             db=db,
             user_id=user.id,
             document_id=transform_markdown_request.document_id
         )
 
-    # TODO 由于这种情况下，数据库并不存在进行文档处理的必要necessary_document_data，因此需要一定程度上修改当前的架构设计
     # Background tasks
     start_process_document.delay(
         document_id=db_document.id, 
         user_id=user.id, 
         auto_summary=False,
-        auto_podcast=True,
-        necessary_document_data=schemas.task.NecessaryDocumentData(
-            
-        )
+        auto_podcast=True
     )
 
     return schemas.common.SuccessResponse()
@@ -553,7 +566,7 @@ def get_document_info(
     db: Session,
     document: models.document.Document
 ): 
-    db_transform_task = crud.task.get_document_transform_task_by_document_id(
+    db_convert_task = crud.task.get_document_convert_task_by_document_id(
         db=db,
         document_id=document.id
     )
@@ -582,7 +595,7 @@ def get_document_info(
     return schemas.document.DocumentInfo(
         **document.__dict__,
         labels=labels,
-        transform_task=db_transform_task,
+        convert_task=db_convert_task,
         embedding_task=db_embedding_task,
         graph_task=db_graph_task,
         process_task=db_process_task
@@ -648,11 +661,41 @@ async def get_document_detail(
         is_star=is_star,
         is_read=is_read
     )
-    transform_task = crud.task.get_document_transform_task_by_document_id(
+    if document.category == DocumentCategory.WEBSITE:
+        website_document = crud.document.get_website_document_by_document_id(
+            db=db, 
+            document_id=document_detail_request.document_id
+        )
+        if website_document is not None:
+            res.website_info = schemas.document.WebsiteDocumentInfo(
+                creator_id=document.creator_id,
+                url=website_document.url
+            )
+    elif document.category == DocumentCategory.FILE:
+        file_document = crud.document.get_file_document_by_document_id(
+            db=db, 
+            document_id=document_detail_request.document_id
+        )
+        if file_document is not None:
+            res.file_info = schemas.document.FileDocumentInfo(
+                creator_id=document.creator_id,
+                file_name=file_document.file_name
+            )
+    elif document.category == DocumentCategory.QUICK_NOTE:
+        quick_note_document = crud.document.get_quick_note_document_by_document_id(
+            db=db, 
+            document_id=document_detail_request.document_id
+        )
+        if quick_note_document is not None:
+            res.quick_note_info = schemas.document.QuickNoteDocumentInfo(
+                creator_id=document.creator_id,
+                content=quick_note_document.content
+            )
+    convert_task = crud.task.get_document_convert_task_by_document_id(
         db=db,
         document_id=document_detail_request.document_id
     )
-    res.transform_task = transform_task
+    res.convert_task = convert_task
     embedding_task = crud.task.get_document_embedding_task_by_document_id(
         db=db,
         document_id=document_detail_request.document_id
@@ -673,46 +716,6 @@ async def get_document_detail(
         document_id=document_detail_request.document_id
     )
     res.process_task = process_task
-    if document.category == DocumentCategory.WEBSITE:
-        website_document = crud.document.get_website_document_by_document_id(
-            db=db, 
-            document_id=document_detail_request.document_id
-        )
-        if website_document is not None:
-            res.website_info = schemas.document.WebsiteDocumentInfo(
-                creator_id=document.creator_id,
-                url=website_document.url, 
-                md_file_name=website_document.md_file_name
-            )
-    elif document.category == DocumentCategory.FILE:
-        file_document = crud.document.get_file_document_by_document_id(
-            db=db, 
-            document_id=document_detail_request.document_id
-        )
-        if file_document is not None:
-            res.file_info = schemas.document.FileDocumentInfo(
-                creator_id=document.creator_id,
-                file_name=file_document.file_name,
-                md_file_name=file_document.md_file_name
-            )
-    elif document.category == DocumentCategory.QUICK_NOTE:
-        quick_note_document = crud.document.get_quick_note_document_by_document_id(
-            db=db, 
-            document_id=document_detail_request.document_id
-        )
-        if quick_note_document is not None:
-            res.quick_note_info = schemas.document.QuickNoteDocumentInfo(
-                content=quick_note_document.content
-            )
-    podcast = crud.document.get_document_podcast_by_document_id(
-        db=db,
-        document_id=document_detail_request.document_id
-    )
-    if podcast is not None:
-        res.podcast_info = schemas.document.DocumentPodcastInfo(
-            creator_id=document.creator_id,
-            podcast_file_name=podcast.podcast_file_name
-        )
     return res
 
 @document_router.post('/unread/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])

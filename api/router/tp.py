@@ -143,7 +143,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
                                                                                   document_id=db_document.id,
                                                                                   section_id=section_id,
                                                                                   status=SectionDocumentIntegration.WAIT_TO)
-        crud.task.create_document_transform_task(db=db,
+        crud.task.create_document_convert_task(db=db,
                                                  user_id=user.id,
                                                  document_id=db_document.id)
         db.commit()
@@ -159,7 +159,7 @@ async def create_document(document_create_request: schemas.document.DocumentCrea
         db_file_document = crud.document.create_file_document(db=db,
                                                               document_id=db_document.id,
                                                               file_name=document_create_request.file_name)
-        crud.task.create_document_transform_task(db=db,
+        crud.task.create_document_convert_task(db=db,
                                                  user_id=user.id,
                                                  document_id=db_document.id)
         if document_create_request.labels:

@@ -1,8 +1,8 @@
-from pydantic import BaseModel, field_validator, field_serializer
+from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from .user import UserPublicInfo
-from .task import DocumentTransformTask, DocumentEmbeddingTask, DocumentGraphTask, DocumentProcessTask, DocumentPodcastTask
+from .task import DocumentConvertTask, DocumentEmbeddingTask, DocumentGraphTask, DocumentProcessTask, DocumentPodcastTask
 
 class GenerateDocumentPodcastRequest(BaseModel):
     document_id: int
@@ -21,7 +21,7 @@ class LabelDeleteRequest(BaseModel):
 class DocumentEmbeddingRequest(BaseModel):
     document_id: int
     
-class DocumentMarkdownTransformRequest(BaseModel):
+class DocumentMarkdownConvertRequest(BaseModel):
     document_id: int
 
 class DocumentAiSummaryRequest(BaseModel):
@@ -49,33 +49,36 @@ class DocumentNoteDeleteRequest(BaseModel):
     
 class DocumentNoteUpdateRequest(BaseModel):
     document_note_id: int
-    content: str
+    content: str | None = None
     
 class DocumentNoteInfo(BaseModel):
     id: int
     content: str
     user: UserPublicInfo
     create_time: datetime
-    update_time: datetime
+    update_time: datetime | None
 
-    @field_validator("create_time", mode="before")
-    def ensure_create_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("create_time")
+    def serializer_create_timezone(self, v: datetime):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_timezone(self, v: datetime | None):
+        if v is None:
+            return None
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
+
     class Config:
         from_attributes = True 
 
 class SummaryItem(BaseModel):
     date: str
     total: int
-    @field_validator("date", mode="before")
-    def format_date(cls, v: datetime) -> str:
+    @field_serializer("date")
+    def format_date(self, v: datetime) -> str:
         return v.strftime("%Y-%m-%d")
     
 class DocumentMonthSummaryResponse(BaseModel):
@@ -145,30 +148,32 @@ class SearchMyStarDocumentsRequest(BaseModel):
 class DocumentInfo(BaseModel):
     id: int
     creator_id: int
-    category: int | None = None
-    title: str | None = None
+    category: int
+    title: str
+    from_plat: str
+    create_time: datetime
+    update_time: datetime | None = None
     cover: str | None = None
     description: str | None = None
-    from_plat: str | None = None
-    create_time: datetime | None = None
-    update_time: datetime | None = None
-    labels: list[Label] | None = None
-    sections: list[BaseSectionInfo] | None = None
-    users: list[UserPublicInfo] | None = None
-    transform_task: DocumentTransformTask | None = None
+    labels: list[Label] = []
+    sections: list[BaseSectionInfo] = []
+    users: list[UserPublicInfo] = []
+    convert_task: DocumentConvertTask | None = None
     embedding_task: DocumentEmbeddingTask | None = None
     graph_task: DocumentGraphTask | None = None
     podcast_task: DocumentPodcastTask | None = None
     process_task: DocumentProcessTask | None = None
     
-    @field_validator("create_time", mode="before")
-    def ensure_create_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("create_time")
+    def serializer_create_timezone(self, v: datetime) -> datetime:
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
     
-    @field_validator("update_time", mode="before")
-    def ensure_update_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_timezone(self, v: datetime | None):
+        if v is None:
+            return None
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
@@ -179,36 +184,18 @@ class DocumentInfo(BaseModel):
 class WebsiteDocumentInfo(BaseModel):
     creator_id: int
     url: str
-    md_file_name: str | None = None
-    
-    @field_serializer("md_file_name")
-    def serializer_md_file_name(self, v: str) -> str:
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
-        return f'{url_prefix}/{v}'
     
 class FileDocumentInfo(BaseModel):
     creator_id: int
     file_name: str
-    md_file_name: str | None = None
-    @field_serializer("md_file_name")
-    def serializer_md_file_name(self, v: str) -> str:
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
-        return f'{url_prefix}/{v}'
     @field_serializer("file_name")
     def serializer_file_name(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
         return f'{url_prefix}/{v}'
     
 class QuickNoteDocumentInfo(BaseModel):
-    content: str
-    
-class DocumentPodcastInfo(BaseModel):
     creator_id: int
-    podcast_file_name: str
-    @field_serializer("podcast_file_name")
-    def serializer_podcast_file_name(self, v: str) -> str:
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
-        return f'{url_prefix}/{v}'
+    content: str
     
 class DocumentDetailResponse(BaseModel):
     id: int
@@ -229,21 +216,22 @@ class DocumentDetailResponse(BaseModel):
     website_info: WebsiteDocumentInfo | None = None
     file_info: FileDocumentInfo | None = None
     quick_note_info: QuickNoteDocumentInfo | None = None
-    podcast_info: DocumentPodcastInfo | None = None
-    transform_task: DocumentTransformTask | None = None
+    convert_task: DocumentConvertTask | None = None
     embedding_task: DocumentEmbeddingTask | None = None
     graph_task: DocumentGraphTask | None = None
     podcast_task: DocumentPodcastTask | None = None
     process_task: DocumentProcessTask | None = None
     
-    @field_validator("create_time", mode="before")
-    def ensure_create_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("create_time")
+    def serializer_create_timezone(self, v: datetime):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
     
-    @field_validator("update_time", mode="before")
-    def ensure_update_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_timezone(self, v: datetime | None):
+        if v is None:
+            return None
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v

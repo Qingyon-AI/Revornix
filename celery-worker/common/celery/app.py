@@ -8,7 +8,7 @@ import uuid
 import crud
 import asyncio
 from celery import Celery
-from schemas.task import DocumentOverrideProperty, NecessaryDocumentData, SectionOverrideProperty
+from schemas.task import DocumentOverrideProperty, SectionOverrideProperty
 from enums.document import DocumentProcessStatus
 from config.redis import REDIS_PORT, REDIS_URL
 from config.base import BASE_DIR
@@ -220,24 +220,8 @@ async def handle_update_document_ai_podcast(
             db.commit()
             raise Exception("The podcast of the document is not generated because of the error of the engine")
         
-        document_podcast = crud.document.get_document_podcast_by_document_id(
-            db=db,
-            document_id=document_id
-        )
-        if document_podcast is not None:
-            crud.document.delete_document_podcast_by_document_ids(
-                db=db,
-                user_id=user_id,
-                document_ids=[document_id]
-            )
-
-        crud.document.create_document_podcast(
-            db=db,
-            document_id=document_id,
-            podcast_file_name=podcast_file_name
-        )
-        
         db_podcast_task.status = DocumentPodcastStatus.SUCCESS
+        db_podcast_task.podcast_file_name = podcast_file_name
         db.commit()                            
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai podcast: {e}")
@@ -292,16 +276,15 @@ async def handle_update_document_ai_summary(
 
 async def handle_convert_document_md(
     document_id: int,
-    user_id: int,
-    necessary_document_data: NecessaryDocumentData | None
+    user_id: int
 ):
     db = SessionLocal()
-    db_convert_task = crud.task.get_document_transform_task_by_document_id(
+    db_convert_task = crud.task.get_document_convert_task_by_document_id(
         db=db,
         document_id=document_id
     )
     if db_convert_task is None:
-        db_convert_task = crud.task.create_document_transform_task(
+        db_convert_task = crud.task.create_document_convert_task(
             db=db,
             user_id=user_id,
             document_id=document_id,
@@ -364,24 +347,22 @@ async def handle_convert_document_md(
         )
 
         if db_document.category == DocumentCategory.QUICK_NOTE:
-            if necessary_document_data is None or necessary_document_data.content is None:
-                raise Exception("The content is needed for quick note document")
-            
-            crud.document.create_quick_note_document(
-                db=db,
-                document_id=document_id,
-                content=necessary_document_data.content
-            )
-
+            # 目前的设计架构 速记模式在api请求时候已经填充了数据，后台任务不需要convert处理
+            pass
+        
         elif db_document.category == DocumentCategory.FILE:
-            if necessary_document_data is None or necessary_document_data.file_name is None:
-                raise Exception("The content is needed for file document")
+            db_file_document = crud.document.get_file_document_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_file_document is None:
+                raise Exception("The document you want to process do not have a the file info")
             
             # download the file to the temp dir
             file_content = await remote_file_service.get_file_content_by_file_path(
-                file_path=necessary_document_data.file_name
+                file_path=db_file_document.file_name
             )
-            temp_file_path = f'{str(BASE_DIR)}/temp/{necessary_document_data.file_name.replace("files/", "")}'
+            temp_file_path = f'{str(BASE_DIR)}/temp/{db_file_document.file_name.replace("files/", "")}'
             with open(temp_file_path, 'wb') as f:
                 f.write(file_content)
                 
@@ -403,20 +384,17 @@ async def handle_convert_document_md(
                 content=file_info.content.encode("utf-8"),
                 content_type="text/plain"
             )
-            crud.document.create_file_document(
-                db=db,
-                document_id=document_id,
-                file_name=necessary_document_data.file_name,
-                md_file_name=md_file_name
-            )
-            db_convert_task.status = DocumentMdConvertStatus.SUCCESS
 
         elif db_document.category == DocumentCategory.WEBSITE:
-            if necessary_document_data is None or necessary_document_data.url is None:
-                raise Exception("The url is needed for website document")
+            db_website_document = crud.document.get_website_document_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_website_document is None:
+                raise Exception("The document you want to process do not have a the website info")
             
             web_info = await engine.analyse_website(
-                url=necessary_document_data.url
+                url=db_website_document.url
             )
             
             db_document.title = web_info.title
@@ -433,14 +411,8 @@ async def handle_convert_document_md(
                 content=web_info.content.encode("utf-8"), 
                 content_type='text/plain'
             )
-            crud.document.create_website_document(
-                db=db,
-                document_id=document_id,
-                url=necessary_document_data.url,
-                md_file_name=md_file_name,
-                keywords=web_info.keywords
-            )
         db_convert_task.status = DocumentMdConvertStatus.SUCCESS
+        db_convert_task.md_file_name = md_file_name
         db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while converting the document to markdown: {e}")
@@ -498,8 +470,7 @@ async def handle_process_document(
     user_id: int,
     auto_summary: bool = False,
     auto_podcast: bool = False,
-    override: DocumentOverrideProperty | None = None,
-    necessary_document_data: NecessaryDocumentData | None = None
+    override: DocumentOverrideProperty | None = None
 ):
     db = SessionLocal()
     db_document_process_task = crud.task.get_document_process_task_by_document_id(
@@ -558,8 +529,7 @@ async def handle_process_document(
         # converting
         await handle_convert_document_md(
             document_id=document_id,
-            user_id=user_id,
-            necessary_document_data=necessary_document_data
+            user_id=user_id
         )
         
         if override is not None:
@@ -677,22 +647,8 @@ async def handle_update_section_ai_podcast(
             content_type="audio/mpeg"
         )
 
-        section_podcast = crud.section.get_section_podcast_by_section_id(
-            db=db,
-            section_id=section_id
-        )
-        if section_podcast is not None:
-            crud.section.delete_section_podcast_by_section_id(
-                db=db,
-                user_id=user_id,
-                section_id=section_id
-            )
-        crud.section.create_section_podcast(
-            db=db,
-            section_id=section_id,
-            podcast_file_name=podcast_file_name
-        )
         db_podcast_task.status = SectionPodcastStatus.SUCCESS
+        db_podcast_task.podcast_file_name = podcast_file_name
         db.commit()
 
     except Exception as e:
@@ -862,8 +818,7 @@ def start_process_document(
     user_id: int,
     auto_summary: bool = False,
     auto_podcast: bool = False,
-    override: DocumentOverrideProperty | None = None,
-    necessary_document_data: NecessaryDocumentData | None = None
+    override: DocumentOverrideProperty | None = None
 ):
     asyncio.run(
         handle_process_document(
@@ -871,8 +826,7 @@ def start_process_document(
             user_id=user_id, 
             auto_summary=auto_summary, 
             auto_podcast=auto_podcast, 
-            override=override,
-            necessary_document_data=necessary_document_data
+            override=override
         )
     )
 

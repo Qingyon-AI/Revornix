@@ -1,6 +1,6 @@
 from celery import Celery
 from config.redis import REDIS_PORT, REDIS_URL
-from schemas.task import DocumentOverrideProperty, NecessaryDocumentData, SectionOverrideProperty
+from schemas.task import DocumentOverrideProperty, SectionOverrideProperty
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
@@ -10,8 +10,7 @@ def start_process_document(
     user_id: int,
     auto_summary: bool = False,
     auto_podcast: bool = False,
-    override: DocumentOverrideProperty | None = None,
-    necessary_document_data: NecessaryDocumentData | None = None
+    override: DocumentOverrideProperty | None = None
 ):
     ...
 

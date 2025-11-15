@@ -3,18 +3,19 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Integer
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from common.sql import Base
 
 
-class DocumentTransformToMdTask(Base):
-    __tablename__ = "document_transform_to_md_task"
+class DocumentConvertToMdTask(Base):
+    __tablename__ = "document_convert_to_md_task"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to transform, 1: transforming, 2: transformed successfully, 3: transform failed')
+    md_file_name: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the converted markdown file which you uploaded to the file system')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
@@ -52,6 +53,7 @@ class DocumentPodcastTask(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to generate podcast, 1: generating podcast, 2: podcast generated successfully, 3: podcast generation failed')
+    podcast_file_name: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the podcast file which you uploaded to the file system')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
@@ -89,6 +91,7 @@ class SectionPodcastTask(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to generate podcast, 1: generating podcast, 2: podcast generated successfully, 3: podcast generation failed')
+    podcast_file_name: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the podcast file which you uploaded to the file system')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))

@@ -112,12 +112,3 @@ class SectionComment(Base):
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     creator: Mapped["User"] = relationship("User", backref="created_section_comments")
-
-
-class SectionPodcast(Base):
-    __tablename__ = "section_podcast"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
-    podcast_file_name: Mapped[str] = mapped_column(String(500), nullable=False, comment='The path of the podcast file which you uploaded to the file system')
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
