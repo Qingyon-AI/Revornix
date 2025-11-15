@@ -152,7 +152,7 @@ class DocumentInfo(BaseModel):
     title: str
     from_plat: str
     create_time: datetime
-    update_time: datetime | None = None
+    update_time: datetime | None
     cover: str | None = None
     description: str | None = None
     labels: list[Label] = []
@@ -206,7 +206,7 @@ class DocumentDetailResponse(BaseModel):
     description: str | None = None
     cover: str | None = None
     create_time: datetime
-    update_time: datetime | None = None
+    update_time: datetime | None
     labels: list[Label] = []
     creator: UserPublicInfo
     sections: list[BaseSectionInfo] = []

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator, field_serializer
+from pydantic import BaseModel, field_serializer, field_validator
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
 from schemas.user import UserPublicInfo, SectionUserPublicInfo
@@ -24,15 +24,17 @@ class SectionPublishGetRequest(BaseModel):
 class SectionPublishGetResponse(BaseModel):
     status: bool
     uuid: str | None = None
-    create_time: datetime | None = None
-    update_time: datetime | None = None
-    @field_validator("create_time", mode="before")
-    def ensure_create_timezone(cls, v: datetime) -> datetime:
+    create_time: datetime 
+    update_time: datetime | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is None:
+            return None
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
@@ -68,7 +70,7 @@ class SectionUserModifyRequest(BaseModel):
     authority: int
     role: int
     @field_validator("role")
-    def check_role_not_invalid(cls, v):
+    def check_role_not_invalid(cls, v: int):
         if v == UserSectionRole.CREATOR:
             raise ValueError("You can't change the user's role to CREATOR because there is only one creator in a section")
         return v
@@ -89,13 +91,15 @@ class SectionCommentInfo(BaseModel):
     create_time: datetime
     update_time: datetime
     creator: UserPublicInfo
-    @field_validator("create_time", mode="before")
-    def ensure_create_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("create_time")
+    def serializer_create_time(cls, v: datetime):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_time(cls, v: datetime | None):
+        if v is None:
+            return None
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
@@ -184,13 +188,15 @@ class SectionDocumentInfo(BaseModel):
     users: list[UserPublicInfo] | None = None
     create_time: datetime
     update_time: datetime
-    @field_validator("create_time", mode="before")
-    def ensure_create_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    @field_validator("update_time", mode="before")
-    def ensure_update_timezone(cls, v: datetime) -> datetime:
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is None:
+            return None
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
