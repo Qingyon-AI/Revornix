@@ -230,17 +230,17 @@ export interface UnbindGithubUserUnbindGithubPostRequest {
     xForwardedFor?: string | null;
 }
 
-export interface UnbindGithubUserUnbindWechatPostRequest {
-    authorization?: string | null;
-    xForwardedFor?: string | null;
-}
-
 export interface UnbindGoogleUserUnbindGooglePostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
 
 export interface UnbindPhoneUserUnbindPhonePostRequest {
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface UnbindWechatUserUnbindWechatPostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -1227,43 +1227,6 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Unbind Github
-     */
-    async unbindGithubUserUnbindWechatPostRaw(requestParameters: UnbindGithubUserUnbindWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
-
-        let urlPath = `/user/unbind/wechat`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Unbind Github
-     */
-    async unbindGithubUserUnbindWechatPost(requestParameters: UnbindGithubUserUnbindWechatPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
-        const response = await this.unbindGithubUserUnbindWechatPostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Unbind Google
      */
     async unbindGoogleUserUnbindGooglePostRaw(requestParameters: UnbindGoogleUserUnbindGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
@@ -1334,6 +1297,43 @@ export class UserApi extends runtime.BaseAPI {
      */
     async unbindPhoneUserUnbindPhonePost(requestParameters: UnbindPhoneUserUnbindPhonePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.unbindPhoneUserUnbindPhonePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Unbind Wechat
+     */
+    async unbindWechatUserUnbindWechatPostRaw(requestParameters: UnbindWechatUserUnbindWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/unbind/wechat`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Unbind Wechat
+     */
+    async unbindWechatUserUnbindWechatPost(requestParameters: UnbindWechatUserUnbindWechatPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.unbindWechatUserUnbindWechatPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

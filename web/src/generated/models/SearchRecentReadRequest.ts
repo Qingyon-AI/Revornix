@@ -48,7 +48,7 @@ export interface SearchRecentReadRequest {
      * @type {boolean}
      * @memberof SearchRecentReadRequest
      */
-    desc?: boolean | null;
+    desc?: boolean;
 }
 
 /**

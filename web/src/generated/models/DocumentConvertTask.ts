@@ -16,37 +16,44 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface DocumentEmbeddingTask
+ * @interface DocumentConvertTask
  */
-export interface DocumentEmbeddingTask {
+export interface DocumentConvertTask {
     /**
      * 
      * @type {number}
-     * @memberof DocumentEmbeddingTask
+     * @memberof DocumentConvertTask
      */
     creator_id: number;
     /**
      * 
      * @type {number}
-     * @memberof DocumentEmbeddingTask
+     * @memberof DocumentConvertTask
      */
     status: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DocumentConvertTask
+     */
+    md_file_name: string;
 }
 
 /**
- * Check if a given object implements the DocumentEmbeddingTask interface.
+ * Check if a given object implements the DocumentConvertTask interface.
  */
-export function instanceOfDocumentEmbeddingTask(value: object): value is DocumentEmbeddingTask {
+export function instanceOfDocumentConvertTask(value: object): value is DocumentConvertTask {
     if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
+    if (!('md_file_name' in value) || value['md_file_name'] === undefined) return false;
     return true;
 }
 
-export function DocumentEmbeddingTaskFromJSON(json: any): DocumentEmbeddingTask {
-    return DocumentEmbeddingTaskFromJSONTyped(json, false);
+export function DocumentConvertTaskFromJSON(json: any): DocumentConvertTask {
+    return DocumentConvertTaskFromJSONTyped(json, false);
 }
 
-export function DocumentEmbeddingTaskFromJSONTyped(json: any, ignoreDiscriminator: boolean): DocumentEmbeddingTask {
+export function DocumentConvertTaskFromJSONTyped(json: any, ignoreDiscriminator: boolean): DocumentConvertTask {
     if (json == null) {
         return json;
     }
@@ -54,14 +61,15 @@ export function DocumentEmbeddingTaskFromJSONTyped(json: any, ignoreDiscriminato
         
         'creator_id': json['creator_id'],
         'status': json['status'],
+        'md_file_name': json['md_file_name'],
     };
 }
 
-export function DocumentEmbeddingTaskToJSON(json: any): DocumentEmbeddingTask {
-    return DocumentEmbeddingTaskToJSONTyped(json, false);
+export function DocumentConvertTaskToJSON(json: any): DocumentConvertTask {
+    return DocumentConvertTaskToJSONTyped(json, false);
 }
 
-export function DocumentEmbeddingTaskToJSONTyped(value?: DocumentEmbeddingTask | null, ignoreDiscriminator: boolean = false): any {
+export function DocumentConvertTaskToJSONTyped(value?: DocumentConvertTask | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -70,6 +78,7 @@ export function DocumentEmbeddingTaskToJSONTyped(value?: DocumentEmbeddingTask |
         
         'creator_id': value['creator_id'],
         'status': value['status'],
+        'md_file_name': value['md_file_name'],
     };
 }
 

@@ -48,7 +48,7 @@ export interface SearchUnreadListRequest {
      * @type {boolean}
      * @memberof SearchUnreadListRequest
      */
-    desc?: boolean | null;
+    desc?: boolean;
 }
 
 /**

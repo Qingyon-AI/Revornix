@@ -26,9 +26,9 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**searchUserFollowsUserFollowsPost**](UserApi.md#searchuserfollowsuserfollowspost) | **POST** /user/follows | Search User Follows |
 | [**searchUserUserSearchPost**](UserApi.md#searchuserusersearchpost) | **POST** /user/search | Search User |
 | [**unbindGithubUserUnbindGithubPost**](UserApi.md#unbindgithubuserunbindgithubpost) | **POST** /user/unbind/github | Unbind Github |
-| [**unbindGithubUserUnbindWechatPost**](UserApi.md#unbindgithubuserunbindwechatpost) | **POST** /user/unbind/wechat | Unbind Github |
 | [**unbindGoogleUserUnbindGooglePost**](UserApi.md#unbindgoogleuserunbindgooglepost) | **POST** /user/unbind/google | Unbind Google |
 | [**unbindPhoneUserUnbindPhonePost**](UserApi.md#unbindphoneuserunbindphonepost) | **POST** /user/unbind/phone | Unbind Phone |
+| [**unbindWechatUserUnbindWechatPost**](UserApi.md#unbindwechatuserunbindwechatpost) | **POST** /user/unbind/wechat | Unbind Wechat |
 | [**updateDefaultDocumentParseEngineUserDefaultEngineUpdatePost**](UserApi.md#updatedefaultdocumentparseengineuserdefaultengineupdatepost) | **POST** /user/default-engine/update | Update Default Document Parse Engine |
 | [**updateDefaultFileSystemUserDefaultFileSystemUpdatePost**](UserApi.md#updatedefaultfilesystemuserdefaultfilesystemupdatepost) | **POST** /user/default-file-system/update | Update Default File System |
 | [**updateDefaultModelUserDefaultModelUpdatePost**](UserApi.md#updatedefaultmodeluserdefaultmodelupdatepost) | **POST** /user/default-model/update | Update Default Model |
@@ -1564,75 +1564,6 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## unbindGithubUserUnbindWechatPost
-
-> NormalResponse unbindGithubUserUnbindWechatPost(authorization, xForwardedFor)
-
-Unbind Github
-
-### Example
-
-```ts
-import {
-  Configuration,
-  UserApi,
-} from '';
-import type { UnbindGithubUserUnbindWechatPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new UserApi();
-
-  const body = {
-    // string (optional)
-    authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
-  } satisfies UnbindGithubUserUnbindWechatPostRequest;
-
-  try {
-    const data = await api.unbindGithubUserUnbindWechatPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**NormalResponse**](NormalResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
 ## unbindGoogleUserUnbindGooglePost
 
 > NormalResponse unbindGoogleUserUnbindGooglePost(authorization, xForwardedFor)
@@ -1730,6 +1661,75 @@ async function example() {
 
   try {
     const data = await api.unbindPhoneUserUnbindPhonePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## unbindWechatUserUnbindWechatPost
+
+> NormalResponse unbindWechatUserUnbindWechatPost(authorization, xForwardedFor)
+
+Unbind Wechat
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { UnbindWechatUserUnbindWechatPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies UnbindWechatUserUnbindWechatPostRequest;
+
+  try {
+    const data = await api.unbindWechatUserUnbindWechatPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);

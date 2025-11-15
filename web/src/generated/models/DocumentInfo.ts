@@ -41,13 +41,13 @@ import {
     DocumentEmbeddingTaskToJSON,
     DocumentEmbeddingTaskToJSONTyped,
 } from './DocumentEmbeddingTask';
-import type { DocumentTransformTask } from './DocumentTransformTask';
+import type { DocumentConvertTask } from './DocumentConvertTask';
 import {
-    DocumentTransformTaskFromJSON,
-    DocumentTransformTaskFromJSONTyped,
-    DocumentTransformTaskToJSON,
-    DocumentTransformTaskToJSONTyped,
-} from './DocumentTransformTask';
+    DocumentConvertTaskFromJSON,
+    DocumentConvertTaskFromJSONTyped,
+    DocumentConvertTaskToJSON,
+    DocumentConvertTaskToJSONTyped,
+} from './DocumentConvertTask';
 import type { DocumentProcessTask } from './DocumentProcessTask';
 import {
     DocumentProcessTaskFromJSON,
@@ -93,13 +93,31 @@ export interface DocumentInfo {
      * @type {number}
      * @memberof DocumentInfo
      */
-    category?: number | null;
+    category: number;
     /**
      * 
      * @type {string}
      * @memberof DocumentInfo
      */
-    title?: string | null;
+    title: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DocumentInfo
+     */
+    from_plat: string;
+    /**
+     * 
+     * @type {Date}
+     * @memberof DocumentInfo
+     */
+    create_time: Date;
+    /**
+     * 
+     * @type {Date}
+     * @memberof DocumentInfo
+     */
+    update_time: Date | null;
     /**
      * 
      * @type {string}
@@ -114,46 +132,28 @@ export interface DocumentInfo {
     description?: string | null;
     /**
      * 
-     * @type {string}
-     * @memberof DocumentInfo
-     */
-    from_plat?: string | null;
-    /**
-     * 
-     * @type {Date}
-     * @memberof DocumentInfo
-     */
-    create_time?: Date | null;
-    /**
-     * 
-     * @type {Date}
-     * @memberof DocumentInfo
-     */
-    update_time?: Date | null;
-    /**
-     * 
      * @type {Array<SchemasDocumentLabel>}
      * @memberof DocumentInfo
      */
-    labels?: Array<SchemasDocumentLabel> | null;
+    labels?: Array<SchemasDocumentLabel>;
     /**
      * 
      * @type {Array<SchemasDocumentBaseSectionInfo>}
      * @memberof DocumentInfo
      */
-    sections?: Array<SchemasDocumentBaseSectionInfo> | null;
+    sections?: Array<SchemasDocumentBaseSectionInfo>;
     /**
      * 
      * @type {Array<UserPublicInfo>}
      * @memberof DocumentInfo
      */
-    users?: Array<UserPublicInfo> | null;
+    users?: Array<UserPublicInfo>;
     /**
      * 
-     * @type {DocumentTransformTask}
+     * @type {DocumentConvertTask}
      * @memberof DocumentInfo
      */
-    transform_task?: DocumentTransformTask | null;
+    convert_task?: DocumentConvertTask | null;
     /**
      * 
      * @type {DocumentEmbeddingTask}
@@ -186,6 +186,11 @@ export interface DocumentInfo {
 export function instanceOfDocumentInfo(value: object): value is DocumentInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
+    if (!('category' in value) || value['category'] === undefined) return false;
+    if (!('title' in value) || value['title'] === undefined) return false;
+    if (!('from_plat' in value) || value['from_plat'] === undefined) return false;
+    if (!('create_time' in value) || value['create_time'] === undefined) return false;
+    if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
 }
 
@@ -201,17 +206,17 @@ export function DocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'id': json['id'],
         'creator_id': json['creator_id'],
-        'category': json['category'] == null ? undefined : json['category'],
-        'title': json['title'] == null ? undefined : json['title'],
+        'category': json['category'],
+        'title': json['title'],
+        'from_plat': json['from_plat'],
+        'create_time': (new Date(json['create_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
         'cover': json['cover'] == null ? undefined : json['cover'],
         'description': json['description'] == null ? undefined : json['description'],
-        'from_plat': json['from_plat'] == null ? undefined : json['from_plat'],
-        'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
-        'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasDocumentLabelFromJSON)),
         'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SchemasDocumentBaseSectionInfoFromJSON)),
         'users': json['users'] == null ? undefined : ((json['users'] as Array<any>).map(UserPublicInfoFromJSON)),
-        'transform_task': json['transform_task'] == null ? undefined : DocumentTransformTaskFromJSON(json['transform_task']),
+        'convert_task': json['convert_task'] == null ? undefined : DocumentConvertTaskFromJSON(json['convert_task']),
         'embedding_task': json['embedding_task'] == null ? undefined : DocumentEmbeddingTaskFromJSON(json['embedding_task']),
         'graph_task': json['graph_task'] == null ? undefined : DocumentGraphTaskFromJSON(json['graph_task']),
         'podcast_task': json['podcast_task'] == null ? undefined : DocumentPodcastTaskFromJSON(json['podcast_task']),
@@ -234,15 +239,15 @@ export function DocumentInfoToJSONTyped(value?: DocumentInfo | null, ignoreDiscr
         'creator_id': value['creator_id'],
         'category': value['category'],
         'title': value['title'],
+        'from_plat': value['from_plat'],
+        'create_time': value['create_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'cover': value['cover'],
         'description': value['description'],
-        'from_plat': value['from_plat'],
-        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
-        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasDocumentLabelToJSON)),
         'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SchemasDocumentBaseSectionInfoToJSON)),
         'users': value['users'] == null ? undefined : ((value['users'] as Array<any>).map(UserPublicInfoToJSON)),
-        'transform_task': DocumentTransformTaskToJSON(value['transform_task']),
+        'convert_task': DocumentConvertTaskToJSON(value['convert_task']),
         'embedding_task': DocumentEmbeddingTaskToJSON(value['embedding_task']),
         'graph_task': DocumentGraphTaskToJSON(value['graph_task']),
         'podcast_task': DocumentPodcastTaskToJSON(value['podcast_task']),

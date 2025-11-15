@@ -1,26 +1,32 @@
 
-# WeChatInfo
+# RssSectionInfo
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`wechat_open_id` | string
-`nickname` | string
-`platform` | number
+`id` | number
+`title` | string
+`description` | string
+`cover` | string
+`create_time` | Date
+`update_time` | Date
 
 ## Example
 
 ```typescript
-import type { WeChatInfo } from ''
+import type { RssSectionInfo } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "wechat_open_id": null,
-  "nickname": null,
-  "platform": null,
-} satisfies WeChatInfo
+  "id": null,
+  "title": null,
+  "description": null,
+  "cover": null,
+  "create_time": null,
+  "update_time": null,
+} satisfies RssSectionInfo
 
 console.log(example)
 
@@ -29,7 +35,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as WeChatInfo
+const exampleParsed = JSON.parse(exampleJSON) as RssSectionInfo
 console.log(exampleParsed)
 ```
 

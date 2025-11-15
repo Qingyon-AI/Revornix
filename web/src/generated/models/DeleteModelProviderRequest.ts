@@ -24,13 +24,14 @@ export interface DeleteModelProviderRequest {
      * @type {Array<number>}
      * @memberof DeleteModelProviderRequest
      */
-    provider_ids?: Array<number> | null;
+    provider_ids: Array<number>;
 }
 
 /**
  * Check if a given object implements the DeleteModelProviderRequest interface.
  */
 export function instanceOfDeleteModelProviderRequest(value: object): value is DeleteModelProviderRequest {
+    if (!('provider_ids' in value) || value['provider_ids'] === undefined) return false;
     return true;
 }
 
@@ -44,7 +45,7 @@ export function DeleteModelProviderRequestFromJSONTyped(json: any, ignoreDiscrim
     }
     return {
         
-        'provider_ids': json['provider_ids'] == null ? undefined : json['provider_ids'],
+        'provider_ids': json['provider_ids'],
     };
 }
 

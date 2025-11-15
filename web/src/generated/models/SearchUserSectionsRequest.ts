@@ -54,7 +54,7 @@ export interface SearchUserSectionsRequest {
      * @type {boolean}
      * @memberof SearchUserSectionsRequest
      */
-    desc?: boolean | null;
+    desc?: boolean;
 }
 
 /**

@@ -8,9 +8,9 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**createModelAiModelCreatePost**](AiApi.md#createmodelaimodelcreatepost) | **POST** /ai/model/create | Create Model |
 | [**createModelProviderAiModelProviderCreatePost**](AiApi.md#createmodelprovideraimodelprovidercreatepost) | **POST** /ai/model-provider/create | Create Model Provider |
 | [**deleteAiModelAiModelDeletePost**](AiApi.md#deleteaimodelaimodeldeletepost) | **POST** /ai/model/delete | Delete Ai Model |
-| [**deleteAiModelAiModelProviderDeletePost**](AiApi.md#deleteaimodelaimodelproviderdeletepost) | **POST** /ai/model-provider/delete | Delete Ai Model |
+| [**deleteAiModelProviderAiModelProviderDeletePost**](AiApi.md#deleteaimodelprovideraimodelproviderdeletepost) | **POST** /ai/model-provider/delete | Delete Ai Model Provider |
 | [**getAiModelAiModelDetailPost**](AiApi.md#getaimodelaimodeldetailpost) | **POST** /ai/model/detail | Get Ai Model |
-| [**getAiModelAiModelProviderDetailPost**](AiApi.md#getaimodelaimodelproviderdetailpost) | **POST** /ai/model-provider/detail | Get Ai Model |
+| [**getAiModelProviderAiModelProviderDetailPost**](AiApi.md#getaimodelprovideraimodelproviderdetailpost) | **POST** /ai/model-provider/detail | Get Ai Model Provider |
 | [**listAiModelAiModelSearchPost**](AiApi.md#listaimodelaimodelsearchpost) | **POST** /ai/model/search | List Ai Model |
 | [**listAiModelProviderAiModelProviderSearchPost**](AiApi.md#listaimodelprovideraimodelprovidersearchpost) | **POST** /ai/model-provider/search | List Ai Model Provider |
 | [**updateAiModelAiModelUpdatePost**](AiApi.md#updateaimodelaimodelupdatepost) | **POST** /ai/model/update | Update Ai Model |
@@ -306,11 +306,11 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## deleteAiModelAiModelProviderDeletePost
+## deleteAiModelProviderAiModelProviderDeletePost
 
-> NormalResponse deleteAiModelAiModelProviderDeletePost(deleteModelProviderRequest, authorization, xForwardedFor)
+> NormalResponse deleteAiModelProviderAiModelProviderDeletePost(deleteModelProviderRequest, authorization, xForwardedFor)
 
-Delete Ai Model
+Delete Ai Model Provider
 
 ### Example
 
@@ -319,7 +319,7 @@ import {
   Configuration,
   AiApi,
 } from '';
-import type { DeleteAiModelAiModelProviderDeletePostRequest } from '';
+import type { DeleteAiModelProviderAiModelProviderDeletePostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -332,10 +332,10 @@ async function example() {
     authorization: authorization_example,
     // string (optional)
     xForwardedFor: xForwardedFor_example,
-  } satisfies DeleteAiModelAiModelProviderDeletePostRequest;
+  } satisfies DeleteAiModelProviderAiModelProviderDeletePostRequest;
 
   try {
-    const data = await api.deleteAiModelAiModelProviderDeletePost(body);
+    const data = await api.deleteAiModelProviderAiModelProviderDeletePost(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -450,11 +450,11 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## getAiModelAiModelProviderDetailPost
+## getAiModelProviderAiModelProviderDetailPost
 
-> ModelProvider getAiModelAiModelProviderDetailPost(modelProviderRequest, authorization, xForwardedFor)
+> ModelProvider getAiModelProviderAiModelProviderDetailPost(modelProviderRequest, authorization, xForwardedFor)
 
-Get Ai Model
+Get Ai Model Provider
 
 ### Example
 
@@ -463,7 +463,7 @@ import {
   Configuration,
   AiApi,
 } from '';
-import type { GetAiModelAiModelProviderDetailPostRequest } from '';
+import type { GetAiModelProviderAiModelProviderDetailPostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -476,10 +476,10 @@ async function example() {
     authorization: authorization_example,
     // string (optional)
     xForwardedFor: xForwardedFor_example,
-  } satisfies GetAiModelAiModelProviderDetailPostRequest;
+  } satisfies GetAiModelProviderAiModelProviderDetailPostRequest;
 
   try {
-    const data = await api.getAiModelAiModelProviderDetailPost(body);
+    const data = await api.getAiModelProviderAiModelProviderDetailPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);

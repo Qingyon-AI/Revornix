@@ -21,6 +21,36 @@ import { mapValues } from '../runtime';
 export interface AddNotificationTaskRequest {
     /**
      * 
+     * @type {number}
+     * @memberof AddNotificationTaskRequest
+     */
+    notification_content_type: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AddNotificationTaskRequest
+     */
+    notification_source_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AddNotificationTaskRequest
+     */
+    notification_target_id: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddNotificationTaskRequest
+     */
+    cron_expr: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AddNotificationTaskRequest
+     */
+    enable: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof AddNotificationTaskRequest
      */
@@ -37,36 +67,6 @@ export interface AddNotificationTaskRequest {
      * @memberof AddNotificationTaskRequest
      */
     notification_template_id?: number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof AddNotificationTaskRequest
-     */
-    notification_content_type: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof AddNotificationTaskRequest
-     */
-    cron_expr: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AddNotificationTaskRequest
-     */
-    enable: boolean;
-    /**
-     * 
-     * @type {number}
-     * @memberof AddNotificationTaskRequest
-     */
-    notification_source_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof AddNotificationTaskRequest
-     */
-    notification_target_id: number;
 }
 
 /**
@@ -74,10 +74,10 @@ export interface AddNotificationTaskRequest {
  */
 export function instanceOfAddNotificationTaskRequest(value: object): value is AddNotificationTaskRequest {
     if (!('notification_content_type' in value) || value['notification_content_type'] === undefined) return false;
-    if (!('cron_expr' in value) || value['cron_expr'] === undefined) return false;
-    if (!('enable' in value) || value['enable'] === undefined) return false;
     if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
     if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
+    if (!('cron_expr' in value) || value['cron_expr'] === undefined) return false;
+    if (!('enable' in value) || value['enable'] === undefined) return false;
     return true;
 }
 
@@ -91,14 +91,14 @@ export function AddNotificationTaskRequestFromJSONTyped(json: any, ignoreDiscrim
     }
     return {
         
+        'notification_content_type': json['notification_content_type'],
+        'notification_source_id': json['notification_source_id'],
+        'notification_target_id': json['notification_target_id'],
+        'cron_expr': json['cron_expr'],
+        'enable': json['enable'],
         'title': json['title'] == null ? undefined : json['title'],
         'content': json['content'] == null ? undefined : json['content'],
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
-        'notification_content_type': json['notification_content_type'],
-        'cron_expr': json['cron_expr'],
-        'enable': json['enable'],
-        'notification_source_id': json['notification_source_id'],
-        'notification_target_id': json['notification_target_id'],
     };
 }
 
@@ -113,14 +113,14 @@ export function AddNotificationTaskRequestToJSONTyped(value?: AddNotificationTas
 
     return {
         
+        'notification_content_type': value['notification_content_type'],
+        'notification_source_id': value['notification_source_id'],
+        'notification_target_id': value['notification_target_id'],
+        'cron_expr': value['cron_expr'],
+        'enable': value['enable'],
         'title': value['title'],
         'content': value['content'],
         'notification_template_id': value['notification_template_id'],
-        'notification_content_type': value['notification_content_type'],
-        'cron_expr': value['cron_expr'],
-        'enable': value['enable'],
-        'notification_source_id': value['notification_source_id'],
-        'notification_target_id': value['notification_target_id'],
     };
 }
 

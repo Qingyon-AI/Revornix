@@ -35,8 +35,9 @@ import type {
   NotificationTargetsResponse,
   NotificationTask,
   NotificationTaskDetailRequest,
-  NotificationTaskResponse,
   NotificationTemplatesResponse,
+  PageableRequest,
+  PaginationNotificationTask,
   ReadNotificationRecordRequest,
   SearchNotificationRecordRequest,
   UpdateNotificationSourceRequest,
@@ -84,10 +85,12 @@ import {
     NotificationTaskToJSON,
     NotificationTaskDetailRequestFromJSON,
     NotificationTaskDetailRequestToJSON,
-    NotificationTaskResponseFromJSON,
-    NotificationTaskResponseToJSON,
     NotificationTemplatesResponseFromJSON,
     NotificationTemplatesResponseToJSON,
+    PageableRequestFromJSON,
+    PageableRequestToJSON,
+    PaginationNotificationTaskFromJSON,
+    PaginationNotificationTaskToJSON,
     ReadNotificationRecordRequestFromJSON,
     ReadNotificationRecordRequestToJSON,
     SearchNotificationRecordRequestFromJSON,
@@ -153,6 +156,7 @@ export interface GetMineNotificationTargetNotificationTargetMinePostRequest {
 }
 
 export interface GetMineNotificationTaskNotificationTaskMinePostRequest {
+    pageableRequest: PageableRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -630,10 +634,19 @@ export class NotificationApi extends runtime.BaseAPI {
     /**
      * Get Mine Notification Task
      */
-    async getMineNotificationTaskNotificationTaskMinePostRaw(requestParameters: GetMineNotificationTaskNotificationTaskMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTaskResponse>> {
+    async getMineNotificationTaskNotificationTaskMinePostRaw(requestParameters: GetMineNotificationTaskNotificationTaskMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PaginationNotificationTask>> {
+        if (requestParameters['pageableRequest'] == null) {
+            throw new runtime.RequiredError(
+                'pageableRequest',
+                'Required parameter "pageableRequest" was null or undefined when calling getMineNotificationTaskNotificationTaskMinePost().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
@@ -651,15 +664,16 @@ export class NotificationApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: PageableRequestToJSON(requestParameters['pageableRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTaskResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => PaginationNotificationTaskFromJSON(jsonValue));
     }
 
     /**
      * Get Mine Notification Task
      */
-    async getMineNotificationTaskNotificationTaskMinePost(requestParameters: GetMineNotificationTaskNotificationTaskMinePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTaskResponse> {
+    async getMineNotificationTaskNotificationTaskMinePost(requestParameters: GetMineNotificationTaskNotificationTaskMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PaginationNotificationTask> {
         const response = await this.getMineNotificationTaskNotificationTaskMinePostRaw(requestParameters, initOverrides);
         return await response.value();
     }

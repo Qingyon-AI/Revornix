@@ -21,7 +21,7 @@ import type {
   DocumentDeleteRequest,
   DocumentDetailRequest,
   DocumentDetailResponse,
-  DocumentMarkdownTransformRequest,
+  DocumentMarkdownConvertRequest,
   DocumentMonthSummaryResponse,
   DocumentNoteCreateRequest,
   DocumentNoteDeleteRequest,
@@ -60,8 +60,8 @@ import {
     DocumentDetailRequestToJSON,
     DocumentDetailResponseFromJSON,
     DocumentDetailResponseToJSON,
-    DocumentMarkdownTransformRequestFromJSON,
-    DocumentMarkdownTransformRequestToJSON,
+    DocumentMarkdownConvertRequestFromJSON,
+    DocumentMarkdownConvertRequestToJSON,
     DocumentMonthSummaryResponseFromJSON,
     DocumentMonthSummaryResponseToJSON,
     DocumentNoteCreateRequestFromJSON,
@@ -224,7 +224,7 @@ export interface StarDocumentDocumentStarPostRequest {
 }
 
 export interface TransformMarkdownDocumentMarkdownTransformPostRequest {
-    documentMarkdownTransformRequest: DocumentMarkdownTransformRequest;
+    documentMarkdownConvertRequest: DocumentMarkdownConvertRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -1113,10 +1113,10 @@ export class DocumentApi extends runtime.BaseAPI {
      * Transform Markdown
      */
     async transformMarkdownDocumentMarkdownTransformPostRaw(requestParameters: TransformMarkdownDocumentMarkdownTransformPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        if (requestParameters['documentMarkdownTransformRequest'] == null) {
+        if (requestParameters['documentMarkdownConvertRequest'] == null) {
             throw new runtime.RequiredError(
-                'documentMarkdownTransformRequest',
-                'Required parameter "documentMarkdownTransformRequest" was null or undefined when calling transformMarkdownDocumentMarkdownTransformPost().'
+                'documentMarkdownConvertRequest',
+                'Required parameter "documentMarkdownConvertRequest" was null or undefined when calling transformMarkdownDocumentMarkdownTransformPost().'
             );
         }
 
@@ -1142,7 +1142,7 @@ export class DocumentApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: DocumentMarkdownTransformRequestToJSON(requestParameters['documentMarkdownTransformRequest']),
+            body: DocumentMarkdownConvertRequestToJSON(requestParameters['documentMarkdownConvertRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));

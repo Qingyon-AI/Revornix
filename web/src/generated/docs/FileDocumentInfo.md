@@ -8,7 +8,6 @@ Name | Type
 ------------ | -------------
 `creator_id` | number
 `file_name` | string
-`md_file_name` | string
 
 ## Example
 
@@ -19,7 +18,6 @@ import type { FileDocumentInfo } from ''
 const example = {
   "creator_id": null,
   "file_name": null,
-  "md_file_name": null,
 } satisfies FileDocumentInfo
 
 console.log(example)

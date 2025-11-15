@@ -36,13 +36,13 @@ export interface SectionPublishGetResponse {
      * @type {Date}
      * @memberof SectionPublishGetResponse
      */
-    create_time?: Date | null;
+    create_time: Date;
     /**
      * 
      * @type {Date}
      * @memberof SectionPublishGetResponse
      */
-    update_time?: Date | null;
+    update_time: Date | null;
 }
 
 /**
@@ -50,6 +50,8 @@ export interface SectionPublishGetResponse {
  */
 export function instanceOfSectionPublishGetResponse(value: object): value is SectionPublishGetResponse {
     if (!('status' in value) || value['status'] === undefined) return false;
+    if (!('create_time' in value) || value['create_time'] === undefined) return false;
+    if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
 }
 
@@ -65,8 +67,8 @@ export function SectionPublishGetResponseFromJSONTyped(json: any, ignoreDiscrimi
         
         'status': json['status'],
         'uuid': json['uuid'] == null ? undefined : json['uuid'],
-        'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
-        'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
+        'create_time': (new Date(json['create_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
 }
 
@@ -83,7 +85,7 @@ export function SectionPublishGetResponseToJSONTyped(value?: SectionPublishGetRe
         
         'status': value['status'],
         'uuid': value['uuid'],
-        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
+        'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }

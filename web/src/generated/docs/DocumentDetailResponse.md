@@ -7,25 +7,24 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`category` | number
 `title` | string
+`from_plat` | string
 `ai_summary` | string
 `description` | string
 `cover` | string
-`category` | number
 `create_time` | Date
 `update_time` | Date
 `labels` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
 `creator` | [UserPublicInfo](UserPublicInfo.md)
 `sections` | [Array&lt;SchemasDocumentBaseSectionInfo&gt;](SchemasDocumentBaseSectionInfo.md)
-`from_plat` | string
 `users` | [Array&lt;UserPublicInfo&gt;](UserPublicInfo.md)
 `is_star` | boolean
 `is_read` | boolean
 `website_info` | [WebsiteDocumentInfo](WebsiteDocumentInfo.md)
 `file_info` | [FileDocumentInfo](FileDocumentInfo.md)
 `quick_note_info` | [QuickNoteDocumentInfo](QuickNoteDocumentInfo.md)
-`podcast_info` | [DocumentPodcastInfo](DocumentPodcastInfo.md)
-`transform_task` | [DocumentTransformTask](DocumentTransformTask.md)
+`convert_task` | [DocumentConvertTask](DocumentConvertTask.md)
 `embedding_task` | [DocumentEmbeddingTask](DocumentEmbeddingTask.md)
 `graph_task` | [DocumentGraphTask](DocumentGraphTask.md)
 `podcast_task` | [DocumentPodcastTask](DocumentPodcastTask.md)
@@ -39,25 +38,24 @@ import type { DocumentDetailResponse } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "category": null,
   "title": null,
+  "from_plat": null,
   "ai_summary": null,
   "description": null,
   "cover": null,
-  "category": null,
   "create_time": null,
   "update_time": null,
   "labels": null,
   "creator": null,
   "sections": null,
-  "from_plat": null,
   "users": null,
   "is_star": null,
   "is_read": null,
   "website_info": null,
   "file_info": null,
   "quick_note_info": null,
-  "podcast_info": null,
-  "transform_task": null,
+  "convert_task": null,
   "embedding_task": null,
   "graph_task": null,
   "podcast_task": null,

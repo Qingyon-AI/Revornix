@@ -56,7 +56,7 @@ export interface DocumentNoteInfo {
      * @type {Date}
      * @memberof DocumentNoteInfo
      */
-    update_time: Date;
+    update_time: Date | null;
 }
 
 /**
@@ -85,7 +85,7 @@ export function DocumentNoteInfoFromJSONTyped(json: any, ignoreDiscriminator: bo
         'content': json['content'],
         'user': UserPublicInfoFromJSON(json['user']),
         'create_time': (new Date(json['create_time'])),
-        'update_time': (new Date(json['update_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
 }
 
@@ -104,7 +104,7 @@ export function DocumentNoteInfoToJSONTyped(value?: DocumentNoteInfo | null, ign
         'content': value['content'],
         'user': UserPublicInfoToJSON(value['user']),
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
 

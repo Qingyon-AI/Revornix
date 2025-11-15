@@ -24,7 +24,13 @@ export interface WeChatInfo {
      * @type {string}
      * @memberof WeChatInfo
      */
-    nickname: string;
+    wechat_open_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof WeChatInfo
+     */
+    nickname: string | null;
     /**
      * 
      * @type {number}
@@ -37,6 +43,7 @@ export interface WeChatInfo {
  * Check if a given object implements the WeChatInfo interface.
  */
 export function instanceOfWeChatInfo(value: object): value is WeChatInfo {
+    if (!('wechat_open_id' in value) || value['wechat_open_id'] === undefined) return false;
     if (!('nickname' in value) || value['nickname'] === undefined) return false;
     if (!('platform' in value) || value['platform'] === undefined) return false;
     return true;
@@ -52,6 +59,7 @@ export function WeChatInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     }
     return {
         
+        'wechat_open_id': json['wechat_open_id'],
         'nickname': json['nickname'],
         'platform': json['platform'],
     };
@@ -68,6 +76,7 @@ export function WeChatInfoToJSONTyped(value?: WeChatInfo | null, ignoreDiscrimin
 
     return {
         
+        'wechat_open_id': value['wechat_open_id'],
         'nickname': value['nickname'],
         'platform': value['platform'],
     };

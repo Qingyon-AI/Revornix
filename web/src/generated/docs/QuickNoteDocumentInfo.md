@@ -6,6 +6,7 @@
 
 Name | Type
 ------------ | -------------
+`creator_id` | number
 `content` | string
 
 ## Example
@@ -15,6 +16,7 @@ import type { QuickNoteDocumentInfo } from ''
 
 // TODO: Update the object below with actual values
 const example = {
+  "creator_id": null,
   "content": null,
 } satisfies QuickNoteDocumentInfo
 

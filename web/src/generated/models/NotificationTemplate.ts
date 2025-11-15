@@ -49,12 +49,6 @@ export interface NotificationTemplate {
      * @memberof NotificationTemplate
      */
     description_zh?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof NotificationTemplate
-     */
-    version: string;
 }
 
 /**
@@ -64,7 +58,6 @@ export function instanceOfNotificationTemplate(value: object): value is Notifica
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
-    if (!('version' in value) || value['version'] === undefined) return false;
     return true;
 }
 
@@ -83,7 +76,6 @@ export function NotificationTemplateFromJSONTyped(json: any, ignoreDiscriminator
         'name_zh': json['name_zh'],
         'description': json['description'] == null ? undefined : json['description'],
         'description_zh': json['description_zh'] == null ? undefined : json['description_zh'],
-        'version': json['version'],
     };
 }
 
@@ -103,7 +95,6 @@ export function NotificationTemplateToJSONTyped(value?: NotificationTemplate | n
         'name_zh': value['name_zh'],
         'description': value['description'],
         'description_zh': value['description_zh'],
-        'version': value['version'],
     };
 }
 

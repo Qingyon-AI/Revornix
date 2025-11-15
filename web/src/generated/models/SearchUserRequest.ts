@@ -42,7 +42,7 @@ export interface SearchUserRequest {
      * @type {number}
      * @memberof SearchUserRequest
      */
-    limit?: number | null;
+    limit?: number;
 }
 
 /**

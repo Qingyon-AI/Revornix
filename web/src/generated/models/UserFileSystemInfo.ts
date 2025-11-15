@@ -66,7 +66,7 @@ export interface UserFileSystemInfo {
      * @type {Date}
      * @memberof UserFileSystemInfo
      */
-    update_time: Date;
+    update_time: Date | null;
 }
 
 /**
@@ -97,7 +97,7 @@ export function UserFileSystemInfoFromJSONTyped(json: any, ignoreDiscriminator: 
         'demo_config': json['demo_config'] == null ? undefined : json['demo_config'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
         'create_time': (new Date(json['create_time'])),
-        'update_time': (new Date(json['update_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
 }
 
@@ -119,7 +119,7 @@ export function UserFileSystemInfoToJSONTyped(value?: UserFileSystemInfo | null,
         'demo_config': value['demo_config'],
         'config_json': value['config_json'],
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
 

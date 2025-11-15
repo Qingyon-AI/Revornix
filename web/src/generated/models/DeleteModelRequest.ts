@@ -24,13 +24,14 @@ export interface DeleteModelRequest {
      * @type {Array<number>}
      * @memberof DeleteModelRequest
      */
-    model_ids?: Array<number> | null;
+    model_ids: Array<number>;
 }
 
 /**
  * Check if a given object implements the DeleteModelRequest interface.
  */
 export function instanceOfDeleteModelRequest(value: object): value is DeleteModelRequest {
+    if (!('model_ids' in value) || value['model_ids'] === undefined) return false;
     return true;
 }
 
@@ -44,7 +45,7 @@ export function DeleteModelRequestFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'model_ids': json['model_ids'] == null ? undefined : json['model_ids'],
+        'model_ids': json['model_ids'],
     };
 }
 

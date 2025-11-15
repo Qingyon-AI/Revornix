@@ -17,8 +17,8 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**getMySubscribedSectionsSectionSubscribedPost**](SectionApi.md#getmysubscribedsectionssectionsubscribedpost) | **POST** /section/subscribed | Get My Subscribed Sections |
 | [**getSectionDetailSectionDetailPost**](SectionApi.md#getsectiondetailsectiondetailpost) | **POST** /section/detail | Get Section Detail |
 | [**listLabelSectionLabelListPost**](SectionApi.md#listlabelsectionlabellistpost) | **POST** /section/label/list | List Label |
+| [**publicSectionsSectionPublicSearchPost**](SectionApi.md#publicsectionssectionpublicsearchpost) | **POST** /section/public/search | Public Sections |
 | [**searchMineSectionsSectionMineSearchPost**](SectionApi.md#searchminesectionssectionminesearchpost) | **POST** /section/mine/search | Search Mine Sections |
-| [**searchPublicSectionsSectionPublicSearchPost**](SectionApi.md#searchpublicsectionssectionpublicsearchpost) | **POST** /section/public/search | Search Public Sections |
 | [**searchSectionCommentSectionCommentSearchPost**](SectionApi.md#searchsectioncommentsectioncommentsearchpost) | **POST** /section/comment/search | Search Section Comment |
 | [**searchUserSectionsSectionUserSearchPost**](SectionApi.md#searchusersectionssectionusersearchpost) | **POST** /section/user/search | Search User Sections |
 | [**sectionDocumentRequestSectionDocumentsPost**](SectionApi.md#sectiondocumentrequestsectiondocumentspost) | **POST** /section/documents | Section Document Request |
@@ -964,6 +964,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## publicSectionsSectionPublicSearchPost
+
+> InifiniteScrollPagnitionSectionInfo publicSectionsSectionPublicSearchPost(searchPublicSectionsRequest, authorization, xForwardedFor)
+
+Public Sections
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { PublicSectionsSectionPublicSearchPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // SearchPublicSectionsRequest
+    searchPublicSectionsRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies PublicSectionsSectionPublicSearchPostRequest;
+
+  try {
+    const data = await api.publicSectionsSectionPublicSearchPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **searchPublicSectionsRequest** | [SearchPublicSectionsRequest](SearchPublicSectionsRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**InifiniteScrollPagnitionSectionInfo**](InifiniteScrollPagnitionSectionInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## searchMineSectionsSectionMineSearchPost
 
 > InifiniteScrollPagnitionSectionInfo searchMineSectionsSectionMineSearchPost(searchMineSectionsRequest, authorization, xForwardedFor)
@@ -1010,78 +1082,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **searchMineSectionsRequest** | [SearchMineSectionsRequest](SearchMineSectionsRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**InifiniteScrollPagnitionSectionInfo**](InifiniteScrollPagnitionSectionInfo.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## searchPublicSectionsSectionPublicSearchPost
-
-> InifiniteScrollPagnitionSectionInfo searchPublicSectionsSectionPublicSearchPost(searchPublicSectionsRequest, authorization, xForwardedFor)
-
-Search Public Sections
-
-### Example
-
-```ts
-import {
-  Configuration,
-  SectionApi,
-} from '';
-import type { SearchPublicSectionsSectionPublicSearchPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new SectionApi();
-
-  const body = {
-    // SearchPublicSectionsRequest
-    searchPublicSectionsRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
-  } satisfies SearchPublicSectionsSectionPublicSearchPostRequest;
-
-  try {
-    const data = await api.searchPublicSectionsSectionPublicSearchPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **searchPublicSectionsRequest** | [SearchPublicSectionsRequest](SearchPublicSectionsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 

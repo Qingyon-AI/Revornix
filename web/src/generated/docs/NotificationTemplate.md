@@ -11,7 +11,6 @@ Name | Type
 `name_zh` | string
 `description` | string
 `description_zh` | string
-`version` | string
 
 ## Example
 
@@ -25,7 +24,6 @@ const example = {
   "name_zh": null,
   "description": null,
   "description_zh": null,
-  "version": null,
 } satisfies NotificationTemplate
 
 console.log(example)

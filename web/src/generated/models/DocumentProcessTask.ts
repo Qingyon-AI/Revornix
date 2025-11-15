@@ -24,6 +24,12 @@ export interface DocumentProcessTask {
      * @type {number}
      * @memberof DocumentProcessTask
      */
+    creator_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DocumentProcessTask
+     */
     status: number;
 }
 
@@ -31,6 +37,7 @@ export interface DocumentProcessTask {
  * Check if a given object implements the DocumentProcessTask interface.
  */
 export function instanceOfDocumentProcessTask(value: object): value is DocumentProcessTask {
+    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     return true;
 }
@@ -45,6 +52,7 @@ export function DocumentProcessTaskFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
+        'creator_id': json['creator_id'],
         'status': json['status'],
     };
 }
@@ -60,6 +68,7 @@ export function DocumentProcessTaskToJSONTyped(value?: DocumentProcessTask | nul
 
     return {
         
+        'creator_id': value['creator_id'],
         'status': value['status'],
     };
 }

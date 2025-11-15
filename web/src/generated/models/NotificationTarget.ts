@@ -36,7 +36,7 @@ export interface NotificationTarget {
      * @type {string}
      * @memberof NotificationTarget
      */
-    description: string;
+    description: string | null;
     /**
      * 
      * @type {number}
@@ -48,13 +48,13 @@ export interface NotificationTarget {
      * @type {Date}
      * @memberof NotificationTarget
      */
-    create_time?: Date | null;
+    create_time: Date;
     /**
      * 
      * @type {Date}
      * @memberof NotificationTarget
      */
-    update_time?: Date | null;
+    update_time: Date | null;
 }
 
 /**
@@ -65,6 +65,8 @@ export function instanceOfNotificationTarget(value: object): value is Notificati
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('category' in value) || value['category'] === undefined) return false;
+    if (!('create_time' in value) || value['create_time'] === undefined) return false;
+    if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
 }
 
@@ -82,8 +84,8 @@ export function NotificationTargetFromJSONTyped(json: any, ignoreDiscriminator: 
         'title': json['title'],
         'description': json['description'],
         'category': json['category'],
-        'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
-        'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
+        'create_time': (new Date(json['create_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
 }
 
@@ -102,7 +104,7 @@ export function NotificationTargetToJSONTyped(value?: NotificationTarget | null,
         'title': value['title'],
         'description': value['description'],
         'category': value['category'],
-        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
+        'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }

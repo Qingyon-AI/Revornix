@@ -48,7 +48,7 @@ export interface SearchMyStarDocumentsRequest {
      * @type {boolean}
      * @memberof SearchMyStarDocumentsRequest
      */
-    desc?: boolean | null;
+    desc?: boolean;
 }
 
 /**

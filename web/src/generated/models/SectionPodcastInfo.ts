@@ -30,7 +30,7 @@ export interface SectionPodcastInfo {
      * @type {string}
      * @memberof SectionPodcastInfo
      */
-    podcast_file_name?: string;
+    podcast_file_name: string;
 }
 
 /**
@@ -38,6 +38,7 @@ export interface SectionPodcastInfo {
  */
 export function instanceOfSectionPodcastInfo(value: object): value is SectionPodcastInfo {
     if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
+    if (!('podcast_file_name' in value) || value['podcast_file_name'] === undefined) return false;
     return true;
 }
 
@@ -52,7 +53,7 @@ export function SectionPodcastInfoFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'creator_id': json['creator_id'],
-        'podcast_file_name': json['podcast_file_name'] == null ? undefined : json['podcast_file_name'],
+        'podcast_file_name': json['podcast_file_name'],
     };
 }
 

@@ -78,7 +78,7 @@ export interface UserEngineInfo {
      * @type {Date}
      * @memberof UserEngineInfo
      */
-    update_time: Date;
+    update_time: Date | null;
 }
 
 /**
@@ -113,7 +113,7 @@ export function UserEngineInfoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'enable': json['enable'] == null ? undefined : json['enable'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
         'create_time': (new Date(json['create_time'])),
-        'update_time': (new Date(json['update_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
 }
 
@@ -137,7 +137,7 @@ export function UserEngineInfoToJSONTyped(value?: UserEngineInfo | null, ignoreD
         'enable': value['enable'],
         'config_json': value['config_json'],
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
 

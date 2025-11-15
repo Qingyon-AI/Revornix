@@ -48,7 +48,7 @@ export interface SearchMineSectionsRequest {
      * @type {boolean}
      * @memberof SearchMineSectionsRequest
      */
-    desc?: boolean | null;
+    desc?: boolean;
 }
 
 /**

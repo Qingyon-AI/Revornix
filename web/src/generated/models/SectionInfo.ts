@@ -126,7 +126,7 @@ export interface SectionInfo {
      * @type {string}
      * @memberof SectionInfo
      */
-    md_file_name?: string;
+    md_file_name?: string | null;
     /**
      * 
      * @type {Array<SchemasDocumentLabel>}
@@ -138,7 +138,7 @@ export interface SectionInfo {
      * @type {string}
      * @memberof SectionInfo
      */
-    cover?: string | null;
+    cover: string | null;
     /**
      * 
      * @type {SectionPodcastTask}
@@ -171,6 +171,7 @@ export function instanceOfSectionInfo(value: object): value is SectionInfo {
     if (!('subscribers_count' in value) || value['subscribers_count'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
+    if (!('cover' in value) || value['cover'] === undefined) return false;
     return true;
 }
 
@@ -197,7 +198,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'is_subscribed': json['is_subscribed'] == null ? undefined : json['is_subscribed'],
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasDocumentLabelFromJSON)),
-        'cover': json['cover'] == null ? undefined : json['cover'],
+        'cover': json['cover'],
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
         'podcast_info': json['podcast_info'] == null ? undefined : SectionPodcastInfoFromJSON(json['podcast_info']),
         'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),

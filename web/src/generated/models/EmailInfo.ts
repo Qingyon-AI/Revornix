@@ -36,7 +36,7 @@ export interface EmailInfo {
      * @type {boolean}
      * @memberof EmailInfo
      */
-    has_seen_initial_password: boolean;
+    has_seen_initial_password: boolean | null;
 }
 
 /**

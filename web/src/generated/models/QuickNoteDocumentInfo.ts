@@ -21,6 +21,12 @@ import { mapValues } from '../runtime';
 export interface QuickNoteDocumentInfo {
     /**
      * 
+     * @type {number}
+     * @memberof QuickNoteDocumentInfo
+     */
+    creator_id: number;
+    /**
+     * 
      * @type {string}
      * @memberof QuickNoteDocumentInfo
      */
@@ -31,6 +37,7 @@ export interface QuickNoteDocumentInfo {
  * Check if a given object implements the QuickNoteDocumentInfo interface.
  */
 export function instanceOfQuickNoteDocumentInfo(value: object): value is QuickNoteDocumentInfo {
+    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('content' in value) || value['content'] === undefined) return false;
     return true;
 }
@@ -45,6 +52,7 @@ export function QuickNoteDocumentInfoFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
+        'creator_id': json['creator_id'],
         'content': json['content'],
     };
 }
@@ -60,6 +68,7 @@ export function QuickNoteDocumentInfoToJSONTyped(value?: QuickNoteDocumentInfo |
 
     return {
         
+        'creator_id': value['creator_id'],
         'content': value['content'],
     };
 }

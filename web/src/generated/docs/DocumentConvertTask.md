@@ -1,26 +1,26 @@
 
-# WeChatInfo
+# DocumentConvertTask
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`wechat_open_id` | string
-`nickname` | string
-`platform` | number
+`creator_id` | number
+`status` | number
+`md_file_name` | string
 
 ## Example
 
 ```typescript
-import type { WeChatInfo } from ''
+import type { DocumentConvertTask } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "wechat_open_id": null,
-  "nickname": null,
-  "platform": null,
-} satisfies WeChatInfo
+  "creator_id": null,
+  "status": null,
+  "md_file_name": null,
+} satisfies DocumentConvertTask
 
 console.log(example)
 
@@ -29,7 +29,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as WeChatInfo
+const exampleParsed = JSON.parse(exampleJSON) as DocumentConvertTask
 console.log(exampleParsed)
 ```
 

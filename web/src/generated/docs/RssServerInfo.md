@@ -15,7 +15,7 @@ Name | Type
 `create_time` | Date
 `update_time` | Date
 `documents` | [Array&lt;RssDocumentInfo&gt;](RssDocumentInfo.md)
-`sections` | [Array&lt;SectionInfo&gt;](SectionInfo.md)
+`sections` | [Array&lt;RssSectionInfo&gt;](RssSectionInfo.md)
 
 ## Example
 

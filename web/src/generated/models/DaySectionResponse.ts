@@ -63,7 +63,7 @@ export interface DaySectionResponse {
      * @type {string}
      * @memberof DaySectionResponse
      */
-    description: string;
+    description: string | null;
     /**
      * 
      * @type {Date}
@@ -75,13 +75,13 @@ export interface DaySectionResponse {
      * @type {Date}
      * @memberof DaySectionResponse
      */
-    update_time: Date;
+    update_time: Date | null;
     /**
      * 
      * @type {string}
      * @memberof DaySectionResponse
      */
-    md_file_name?: string;
+    md_file_name: string | null;
     /**
      * 
      * @type {Array<SectionDocumentInfo>}
@@ -101,6 +101,7 @@ export function instanceOfDaySectionResponse(value: object): value is DaySection
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
+    if (!('md_file_name' in value) || value['md_file_name'] === undefined) return false;
     if (!('documents' in value) || value['documents'] === undefined) return false;
     return true;
 }
@@ -121,8 +122,8 @@ export function DaySectionResponseFromJSONTyped(json: any, ignoreDiscriminator: 
         'title': json['title'],
         'description': json['description'],
         'create_time': (new Date(json['create_time'])),
-        'update_time': (new Date(json['update_time'])),
-        'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
+        'md_file_name': json['md_file_name'],
         'documents': ((json['documents'] as Array<any>).map(SectionDocumentInfoFromJSON)),
     };
 }
@@ -144,7 +145,7 @@ export function DaySectionResponseToJSONTyped(value?: DaySectionResponse | null,
         'title': value['title'],
         'description': value['description'],
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'md_file_name': value['md_file_name'],
         'documents': ((value['documents'] as Array<any>).map(SectionDocumentInfoToJSON)),
     };

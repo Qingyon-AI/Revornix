@@ -42,7 +42,7 @@ export interface SectionDocumentRequest {
      * @type {boolean}
      * @memberof SectionDocumentRequest
      */
-    desc?: boolean | null;
+    desc?: boolean;
     /**
      * 
      * @type {string}
