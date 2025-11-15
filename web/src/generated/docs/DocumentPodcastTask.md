@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `creator_id` | number
 `status` | number
+`podcast_file_name` | string
 
 ## Example
 
@@ -18,6 +19,7 @@ import type { DocumentPodcastTask } from ''
 const example = {
   "creator_id": null,
   "status": null,
+  "podcast_file_name": null,
 } satisfies DocumentPodcastTask
 
 console.log(example)

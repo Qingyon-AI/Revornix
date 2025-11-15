@@ -2,10 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
-import { useEffect, useState } from 'react';
-import { PrivateUserInfo } from '@/generated';
-import { useQuery } from '@tanstack/react-query';
-import { getMyInfo } from '@/service/user';
 import Link from 'next/link';
 import {
 	DropdownMenu,
@@ -18,7 +14,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { BadgeCheck, Bell, LogOut } from 'lucide-react';
 import { useRouter } from 'nextjs-toploader/app';
-import { useSidebar } from '../ui/sidebar';
 import { useUserContext } from '@/provider/user-provider';
 
 const NavUser = () => {

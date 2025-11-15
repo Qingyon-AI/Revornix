@@ -33,6 +33,11 @@ class DocumentProcessTask(BaseModel):
 class DocumentPodcastTask(BaseModel):
     creator_id: int
     status: int
+    podcast_file_name: str
+    @field_serializer("podcast_file_name")
+    def serializer_podcast_file_name(self, v: str):
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
+        return f'{url_prefix}/{v}'
     class Config:
         from_attributes = True
         

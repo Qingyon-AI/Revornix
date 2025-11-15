@@ -59,7 +59,7 @@ const UpdateNotificationTarget = ({
 		.object({
 			notification_target_id: z.number(),
 			title: z.string(),
-			description: z.string(),
+			description: z.string().nullable(),
 			category: z.number(),
 			email: z.string().email().optional(),
 			device_token: z.string().optional(),
@@ -198,6 +198,7 @@ const UpdateNotificationTarget = ({
 												placeholder={t(
 													'setting_notification_target_manage_form_description_placeholder'
 												)}
+												value={field.value ? field.value : ''}
 											/>
 											<FormMessage />
 										</FormItem>

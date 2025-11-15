@@ -31,10 +31,6 @@ const DocumentCommentForm = ({
 		resolver: zodResolver(formSchema),
 	});
 	const [noteSubmitting, setNoteSubmitting] = useState(false);
-	const { data: document } = useQuery({
-		queryKey: ['getDocumentDetail', documentId],
-		queryFn: () => getDocumentDetail({ document_id: documentId }),
-	});
 	const handleSubmitNote = async (event: React.FormEvent<HTMLFormElement>) => {
 		if (event) {
 			if (typeof event.preventDefault === 'function') {

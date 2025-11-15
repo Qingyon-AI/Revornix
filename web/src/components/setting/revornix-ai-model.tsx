@@ -22,7 +22,7 @@ import { toast } from 'sonner';
 interface ProviderMapProps {
 	id: number;
 	name: string;
-	description: string;
+	description: string | null;
 	api_key: string;
 	api_url: string;
 	models: Model[];

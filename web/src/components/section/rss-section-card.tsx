@@ -1,9 +1,9 @@
-import { SectionInfo } from '@/generated';
+import { RssSectionInfo } from '@/generated';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
 
-const RssSectionCard = ({ section }: { section: SectionInfo }) => {
+const RssSectionCard = ({ section }: { section: RssSectionInfo }) => {
 	const t = useTranslations();
 	const router = useRouter();
 	return (

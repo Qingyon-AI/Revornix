@@ -22,7 +22,6 @@ import {
 	searchAiModelProvider,
 } from '@/service/ai';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { updateUserDefaultModel } from '@/service/user';
 import { useUserContext } from '@/provider/user-provider';
 import { CircleCheck } from 'lucide-react';
 import { Separator } from '../ui/separator';
@@ -39,7 +38,6 @@ import { useState } from 'react';
 
 const InitMineModel = () => {
 	const [providerChooseYepOrNo, setProviderChooseYepOrNo] = useState('no');
-	const { refreshUserInfo } = useUserContext();
 	const t = useTranslations();
 	const formSchema = z
 		.object({

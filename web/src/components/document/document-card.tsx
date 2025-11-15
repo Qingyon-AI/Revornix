@@ -96,17 +96,16 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 						</div>
 					</div>
 				)}
-				{document.transform_task && (
+				{document.convert_task && (
 					<div className='text-muted-foreground px-2 flex flex-row gap-1 items-center text-xs mt-auto mb-2'>
 						<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 							{t('document_md_status') + ': '}
-							{document.transform_task?.status ===
-							DocumentMdConvertStatus.WAIT_TO
+							{document.convert_task?.status === DocumentMdConvertStatus.WAIT_TO
 								? t('document_md_status_todo')
-								: document.transform_task?.status ===
+								: document.convert_task?.status ===
 								  DocumentMdConvertStatus.CONVERTING
 								? t('document_md_status_doing')
-								: document.transform_task?.status ===
+								: document.convert_task?.status ===
 								  DocumentMdConvertStatus.SUCCESS
 								? t('document_md_status_success')
 								: t('document_md_status_failed')}

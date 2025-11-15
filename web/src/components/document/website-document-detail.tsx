@@ -25,7 +25,10 @@ import {
 	getUserFileSystemDetail,
 	getUserFileUrlPrefix,
 } from '@/service/file-system';
-import { DocumentProcessStatus, DocumentMdConvertStatus } from '@/enums/document';
+import {
+	DocumentProcessStatus,
+	DocumentMdConvertStatus,
+} from '@/enums/document';
 
 const WebsiteDocumentDetail = ({
 	id,
@@ -91,7 +94,12 @@ const WebsiteDocumentDetail = ({
 
 	const [markdown, setMarkdown] = useState<string>();
 	const onGetMarkdown = async () => {
-		if (!document || !document?.website_info?.md_file_name || !userInfo) return;
+		if (
+			!document ||
+			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
+			!userInfo
+		)
+			return;
 		if (!userInfo.default_user_file_system) {
 			toast.error('No user default file system found');
 			return;
@@ -99,7 +107,7 @@ const WebsiteDocumentDetail = ({
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
 			let [res, err] = await utils.to(
-				fileService.getFileContent(document.website_info?.md_file_name)
+				fileService.getFileContent(document.convert_task?.md_file_name)
 			);
 			console.log(res, err);
 			if (!res || err) {
@@ -137,8 +145,7 @@ const WebsiteDocumentDetail = ({
 	useEffect(() => {
 		if (
 			!document ||
-			!document.website_info?.md_file_name ||
-			document.transform_task?.status !== DocumentProcessStatus.SUCCESS ||
+			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
 			!userInfo ||
 			!userFileSystemDetail ||
 			!userRemoteFileUrlPrefix
@@ -168,7 +175,7 @@ const WebsiteDocumentDetail = ({
 				</div>
 			)}
 			{document &&
-				document.transform_task?.status ===
+				document.convert_task?.status ===
 					DocumentMdConvertStatus.CONVERTING && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
@@ -191,7 +198,7 @@ const WebsiteDocumentDetail = ({
 					</div>
 				)}
 			{document &&
-				document.transform_task?.status === DocumentMdConvertStatus.WAIT_TO && (
+				document.convert_task?.status === DocumentMdConvertStatus.WAIT_TO && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
 							<span className='mr-1'>
@@ -223,7 +230,7 @@ const WebsiteDocumentDetail = ({
 					</div>
 				)}
 			{document &&
-				document.transform_task?.status === DocumentMdConvertStatus.FAILED && (
+				document.convert_task?.status === DocumentMdConvertStatus.FAILED && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
 						<p>{t('document_transform_to_markdown_failed')}</p>
 						<Button
@@ -246,7 +253,7 @@ const WebsiteDocumentDetail = ({
 				!markdown &&
 				!isError &&
 				!markdownGetError &&
-				document.process_task?.status === DocumentMdConvertStatus.SUCCESS && (
+				document.convert_task?.status === DocumentMdConvertStatus.SUCCESS && (
 					<Skeleton className='h-full w-full rounded' />
 				)}
 			{markdown && !isError && !markdownGetError && (

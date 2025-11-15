@@ -150,15 +150,15 @@ const DocumentOperate = ({ id }: { id: number }) => {
 	});
 
 	const handleAiSummarize = async () => {
-		if (data?.transform_task?.status === DocumentMdConvertStatus.FAILED) {
+		if (data?.convert_task?.status === DocumentMdConvertStatus.FAILED) {
 			toast.error(t('ai_summary_failed_as_markdown_transform_failed'));
 			return;
 		}
-		if (data?.transform_task?.status === DocumentMdConvertStatus.CONVERTING) {
+		if (data?.convert_task?.status === DocumentMdConvertStatus.CONVERTING) {
 			toast.error(t('ai_summary_failed_as_markdown_transform_doing'));
 			return;
 		}
-		if (data?.transform_task?.status === DocumentMdConvertStatus.WAIT_TO) {
+		if (data?.convert_task?.status === DocumentMdConvertStatus.WAIT_TO) {
 			toast.error(t('ai_summary_failed_as_markdown_transform_waiting'));
 			return;
 		}
