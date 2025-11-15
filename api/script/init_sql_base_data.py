@@ -14,6 +14,7 @@ from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
 from enums.engine import EngineCategory
+from common.logger import info_logger
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.aws_s3_remote_file_service import AWSS3RemoteFileService
@@ -37,7 +38,7 @@ if __name__ == '__main__':
     # 仅在数据库数据未初始化时，执行数据初始化
     db = SessionLocal()
     if not is_data_initialized(db):
-        print("首次运行，初始化数据库数据...")
+        info_logger.info("Initialize the database data...")
         try:
             mineru_engine = MineruEngine()
             jina_engine = JinaEngine()
