@@ -277,8 +277,14 @@ async def generate_podcast(
     db.commit()
     
     workflow = chain(
-        start_process_document_podcast.si(db_document.id, user.id),
-        update_document_process_status.si(db_document.id, DocumentProcessStatus.SUCCESS)
+        start_process_document_podcast.si(
+            document_id=db_document.id, 
+            user_id=user.id
+        ),
+        update_document_process_status.si(
+            document_id=db_document.id, 
+            status=DocumentProcessStatus.SUCCESS
+        )
     )
     workflow()
     
@@ -320,7 +326,6 @@ async def create_document(
             db=db,
             document_id=db_document.id,
             url=document_create_request.url,
-            
         )
     elif document_create_request.category == DocumentCategory.FILE:
         if document_create_request.file_name is None:
