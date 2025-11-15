@@ -29,6 +29,7 @@ import {
 import {
 	DocumentProcessStatus,
 	DocumentMdConvertStatus,
+	DocumentEmbeddingConvertStatus,
 } from '@/enums/document';
 
 const FileDocumentDetail = ({
@@ -113,7 +114,13 @@ const FileDocumentDetail = ({
 	};
 
 	const onGetMarkdown = async () => {
-		if (!document || !document.file_info?.md_file_name || !userInfo) return;
+		if (
+			!document ||
+			document.convert_task?.status !==
+				DocumentEmbeddingConvertStatus.SUCCESS ||
+			!userInfo
+		)
+			return;
 		if (!userInfo?.default_user_file_system) {
 			toast.error('No user default file system found');
 			return;
@@ -121,7 +128,7 @@ const FileDocumentDetail = ({
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
 			let [res, err] = await utils.to(
-				fileService.getFileContent(document.file_info?.md_file_name)
+				fileService.getFileContent(document.convert_task?.md_file_name)
 			);
 			if (!res || err) {
 				throw new Error(err.message);
@@ -141,8 +148,7 @@ const FileDocumentDetail = ({
 	useEffect(() => {
 		if (
 			!document ||
-			!document.file_info?.md_file_name ||
-			document.transform_task?.status !== DocumentMdConvertStatus.SUCCESS ||
+			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
 			!userInfo ||
 			!userFileSystemDetail ||
 			!userRemoteFileUrlPrefix
@@ -172,7 +178,8 @@ const FileDocumentDetail = ({
 				</div>
 			)}
 			{document &&
-				document.transform_task?.status === DocumentMdConvertStatus.CONVERTING && (
+				document.convert_task?.status ===
+					DocumentMdConvertStatus.CONVERTING && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
 							{t('document_transform_to_markdown_doing')}
@@ -194,7 +201,7 @@ const FileDocumentDetail = ({
 					</div>
 				)}
 			{document &&
-				document.transform_task?.status === DocumentMdConvertStatus.WAIT_TO && (
+				document.convert_task?.status === DocumentMdConvertStatus.WAIT_TO && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
 							<span className='mr-1'>
@@ -226,7 +233,7 @@ const FileDocumentDetail = ({
 					</div>
 				)}
 			{document &&
-				document.transform_task?.status === DocumentMdConvertStatus.FAILED && (
+				document.convert_task?.status === DocumentMdConvertStatus.FAILED && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
 						<p>{t('document_transform_to_markdown_failed')}</p>
 						<Button
@@ -249,7 +256,7 @@ const FileDocumentDetail = ({
 				!markdown &&
 				!isError &&
 				!markdownGetError &&
-				document.transform_task?.status === DocumentMdConvertStatus.SUCCESS && (
+				document.convert_task?.status === DocumentMdConvertStatus.SUCCESS && (
 					<Skeleton className='h-full w-full' />
 				)}
 			{markdown && !isError && !markdownGetError && (

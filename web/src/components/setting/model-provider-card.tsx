@@ -57,7 +57,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 	const { refreshUserInfo } = useUserContext();
 	const formSchema = z.object({
 		name: z.string().min(1, 'Name is required'),
-		description: z.string().optional(),
+		description: z.string().optional().nullable(),
 		api_key: z.string().min(1, 'API Key is required'),
 		api_url: z.string().optional(),
 	});
@@ -232,7 +232,9 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>{t('setting_model_provider_name')}</FormLabel>
+												<FormLabel className='col-span-3'>
+													{t('setting_model_provider_name')}
+												</FormLabel>
 												<Input
 													className='col-span-9'
 													placeholder='Name'
@@ -249,11 +251,14 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>{t('setting_model_provider_description')}</FormLabel>
+												<FormLabel className='col-span-3'>
+													{t('setting_model_provider_description')}
+												</FormLabel>
 												<Input
 													className='col-span-9'
 													placeholder='Description'
 													{...field}
+													value={field.value ? field.value : ''}
 												/>
 											</div>
 											<FormMessage />

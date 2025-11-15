@@ -15,7 +15,6 @@ const DocumentCardList = () => {
 		isFetchingNextPage,
 		isFetching,
 		isSuccess,
-		isRefetching,
 		fetchNextPage,
 		hasNextPage,
 	} = useInfiniteQuery({

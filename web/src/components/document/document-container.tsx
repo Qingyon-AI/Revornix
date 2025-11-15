@@ -202,9 +202,9 @@ const DocumentContainer = ({ id }: { id: number }) => {
 							)}
 							{document?.podcast_task?.status ===
 								DocumentPodcastStatus.SUCCESS &&
-								document?.podcast_info?.podcast_file_name && (
+								document?.podcast_task?.podcast_file_name && (
 									<AudioPlayer
-										src={document?.podcast_info?.podcast_file_name}
+										src={document?.podcast_task?.podcast_file_name}
 										cover={
 											document.cover ??
 											'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'

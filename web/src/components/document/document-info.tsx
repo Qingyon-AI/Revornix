@@ -122,17 +122,17 @@ const DocumentInfo = ({ id }: { id: number }) => {
 									</div>
 								</div>
 							)}
-							{data.transform_task && (
+							{data.convert_task && (
 								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
 									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 										{t('document_md_status') + ': '}
-										{data.transform_task?.status ===
+										{data.convert_task?.status ===
 										DocumentMdConvertStatus.WAIT_TO
 											? t('document_md_status_todo')
-											: data.transform_task?.status ===
+											: data.convert_task?.status ===
 											  DocumentMdConvertStatus.CONVERTING
 											? t('document_md_status_doing')
-											: data.transform_task?.status ===
+											: data.convert_task?.status ===
 											  DocumentMdConvertStatus.SUCCESS
 											? t('document_md_status_success')
 											: t('document_md_status_failed')}
@@ -145,10 +145,10 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										{t('document_podcast_status') + ': '}
 										{data.podcast_task?.status === DocumentPodcastStatus.WAIT_TO
 											? t('document_podcast_status_todo')
-											: data.transform_task?.status ===
+											: data.convert_task?.status ===
 											  DocumentPodcastStatus.GENERATING
 											? t('document_podcast_status_doing')
-											: data.transform_task?.status ===
+											: data.convert_task?.status ===
 											  DocumentPodcastStatus.SUCCESS
 											? t('document_podcast_status_success')
 											: t('document_podcast_status_failed')}

@@ -62,7 +62,7 @@ const UpdateNotificationSource = ({
 		.object({
 			notification_source_id: z.number(),
 			title: z.string(),
-			description: z.string(),
+			description: z.string().nullable(),
 			category: z.number(),
 			email: z.string().email().optional(),
 			password: z.string().optional(),
@@ -264,6 +264,7 @@ const UpdateNotificationSource = ({
 												placeholder={t(
 													'setting_notification_source_manage_form_description_placeholder'
 												)}
+												value={field.value ? field.value : ''}
 											/>
 											<FormMessage />
 										</FormItem>
