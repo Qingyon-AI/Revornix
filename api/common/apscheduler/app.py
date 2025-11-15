@@ -84,9 +84,9 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                     db_new_website_document = crud.document.create_website_document(db=db,
                                                                                     url=entry.link,
                                                                                     document_id=existing_doc.id)
-                    db_document_transform_task = crud.task.get_document_transform_task_by_document_id(db=db,
+                    db_document_convert_task = crud.task.get_document_convert_task_by_document_id(db=db,
                                                                                                       document_id=existing_doc.id)
-                    db_document_transform_task.status = DocumentMdConvertStatus.WAIT_TO
+                    db_document_convert_task.status = DocumentMdConvertStatus.WAIT_TO
                     db.commit()
                     start_process_document.delay(existing_doc.id, rss_server.user_id, False, True)
             else:
@@ -113,7 +113,7 @@ async def fetch_and_save(rss_server: schemas.rss.RssServerInfo):
                                                                                          document_id=db_base_document.id,
                                                                                          section_id=section.id,
                                                                                          status=SectionDocumentIntegration.WAIT_TO)
-                crud.task.create_document_transform_task(db=db,
+                crud.task.create_document_convert_task(db=db,
                                                          user_id=rss_server.user_id,
                                                          document_id=db_base_document.id)
                 db.commit()

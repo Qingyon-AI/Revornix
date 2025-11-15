@@ -56,7 +56,6 @@ class WebsiteDocument(Base):
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     url: Mapped[str] = mapped_column(String(500), nullable=False)
     keywords: Mapped[Optional[str]] = mapped_column(String(500))
-    md_file_name: Mapped[str] = mapped_column(String(500), nullable=False, comment='The path of the markdown file which you uploaded to the file system')
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
 
@@ -66,16 +65,4 @@ class FileDocument(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     file_name: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
-    md_file_name: Mapped[str] = mapped_column(String(500), nullable=False, comment='The path of the markdown file which you uploaded to the file system')
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-
-
-class DocumentPodcast(Base):
-    __tablename__ = "document_podcast"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
-    podcast_file_name: Mapped[str] = mapped_column(String(500), nullable=False, comment='The path of the podcast file which you uploaded to the file system')
-    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))

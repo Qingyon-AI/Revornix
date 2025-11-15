@@ -4,17 +4,19 @@ from datetime import datetime, timezone
 from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentEmbeddingStatus, DocumentMdConvertStatus
 from enums.section import SectionPodcastStatus, SectionProcessStatus
 
-def create_document_transform_task(
+def create_document_convert_task(
     db: Session,
     user_id: int,
     document_id: int,
     status: DocumentMdConvertStatus = DocumentMdConvertStatus.WAIT_TO
 ):
     now = datetime.now(timezone.utc)
-    task = models.task.DocumentTransformToMdTask(user_id=user_id,
-                                                 status=status,
-                                                 document_id=document_id,
-                                                 create_time=now)
+    task = models.task.DocumentConvertToMdTask(
+        user_id=user_id,
+        status=status,
+        document_id=document_id,
+        create_time=now
+    )
     db.add(task)
     db.flush()
     return task
@@ -154,11 +156,11 @@ def get_document_process_task_by_document_id(
                          models.task.DocumentProcessTask.delete_at == None)
     return query.one_or_none()
 
-def get_document_transform_task_by_document_id(
+def get_document_convert_task_by_document_id(
     db: Session,
     document_id: int
 ):
-    query = db.query(models.task.DocumentTransformToMdTask)
-    query = query.filter(models.task.DocumentTransformToMdTask.document_id == document_id,
-                         models.task.DocumentTransformToMdTask.delete_at == None)
+    query = db.query(models.task.DocumentConvertToMdTask)
+    query = query.filter(models.task.DocumentConvertToMdTask.document_id == document_id,
+                         models.task.DocumentConvertToMdTask.delete_at == None)
     return query.one_or_none()

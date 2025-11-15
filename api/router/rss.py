@@ -68,7 +68,7 @@ async def getRssServerDocument(
                 name=db_label.name
             ) for db_label in db_labels
         ]
-        db_transform_task = crud.task.get_document_transform_task_by_document_id(
+        db_convert_task = crud.task.get_document_convert_task_by_document_id(
             db=db,
             document_id=db_document.id
         )
@@ -87,7 +87,7 @@ async def getRssServerDocument(
         return schemas.document.DocumentInfo(
             **db_document.__dict__,
             labels=labels,
-            transform_task=db_transform_task,
+            convert_task=db_convert_task,
             process_task=db_process_task,
             graph_task=db_graph_task,
             embedding_task=db_embedding_task

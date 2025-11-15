@@ -4,19 +4,6 @@ from sqlalchemy import or_, func, cast, Date
 from sqlalchemy.orm import Session, selectinload
 from enums.document import UserDocumentAuthority
 
-def create_document_podcast(
-    db: Session,
-    document_id: int,
-    podcast_file_name: str
-):
-    now = datetime.now(timezone.utc)
-    db_document_podcast = models.document.DocumentPodcast(document_id=document_id,
-                                                          podcast_file_name=podcast_file_name,
-                                                          create_time=now)
-    db.add(db_document_podcast)
-    db.flush()
-    return db_document_podcast
-
 def create_document_note(
     db: Session, 
     user_id: int, 
@@ -83,12 +70,10 @@ def create_website_document(
     db: Session, 
     document_id: int, 
     url: str, 
-    md_file_name: str,
     keywords: str | None = None
 ):
     db_website_document = models.document.WebsiteDocument(document_id=document_id, 
                                                           url=url, 
-                                                          md_file_name=md_file_name,
                                                           keywords=keywords)
     db.add(db_website_document)
     db.flush()
@@ -97,12 +82,10 @@ def create_website_document(
 def create_file_document(
     db: Session, 
     document_id: int, 
-    file_name: str, 
-    md_file_name: str
+    file_name: str
 ):
     db_file_document = models.document.FileDocument(document_id=document_id, 
-                                                    file_name=file_name, 
-                                                    md_file_name=md_file_name)
+                                                    file_name=file_name)
     db.add(db_file_document)
     db.flush()
     return db_file_document
@@ -169,15 +152,6 @@ def get_sections_by_document_id(
                          models.section.SectionDocument.delete_at == None,
                          models.section.Section.delete_at == None)
     return query.all()
-
-def get_document_podcast_by_document_id(
-    db: Session,
-    document_id: int
-):
-    query = db.query(models.document.DocumentPodcast)
-    query = query.filter(models.document.DocumentPodcast.document_id == document_id,
-                         models.document.DocumentPodcast.delete_at == None)
-    return query.one_or_none()
 
 def get_document_summary_by_user_id(
     db: Session,
@@ -1008,12 +982,7 @@ def delete_user_documents_by_document_ids(
         .filter(models.document.DocumentNote.document_id.in_(ids_to_update),
                 models.document.DocumentNote.delete_at == None)\
         .update({models.document.DocumentNote.delete_at: now}, synchronize_session=False)
-        
-    db.query(models.document.DocumentPodcast)\
-        .filter(models.document.DocumentPodcast.document_id.in_(ids_to_update),
-                models.document.DocumentPodcast.delete_at == None)\
-        .update({models.document.DocumentPodcast.delete_at: now}, synchronize_session=False)
-        
+
     db.query(models.section.SectionDocument)\
         .filter(models.section.SectionDocument.document_id.in_(ids_to_update),
                 models.section.SectionDocument.delete_at == None)\
@@ -1056,28 +1025,5 @@ def delete_website_document_by_website_document_ids(
         .filter(models.document.WebsiteDocument.id.in_(db_website_document_ids),
                 models.document.WebsiteDocument.delete_at == None)\
         .update({models.document.WebsiteDocument.delete_at: now}, synchronize_session=False)
-
-    db.flush()
-        
-def delete_document_podcast_by_document_ids(
-    db: Session, 
-    user_id: int,
-    document_ids: list[int]
-):
-    now = datetime.now(timezone.utc)
-    
-    db_document_podcasts = db.query(models.document.DocumentPodcast)\
-        .join(models.document.UserDocument, models.document.DocumentPodcast.document_id == models.document.UserDocument.document_id)\
-        .filter(models.document.DocumentPodcast.document_id.in_(document_ids),
-                models.document.UserDocument.user_id == user_id,
-                models.document.DocumentPodcast.delete_at == None)\
-        .all()
-
-    db_podcast_ids = [podcast.id for podcast in db_document_podcasts]
-
-    db.query(models.document.DocumentPodcast)\
-        .filter(models.document.DocumentPodcast.id.in_(db_podcast_ids),
-                models.document.DocumentPodcast.delete_at == None)\
-        .update({models.document.DocumentPodcast.delete_at: now}, synchronize_session=False)
 
     db.flush()

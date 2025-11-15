@@ -1,11 +1,6 @@
 from pydantic import BaseModel
 
-class NecessaryDocumentData(BaseModel):
-    url: str | None
-    file_name: str | None
-    content: str | None
-
-class DocumentTransformTask(BaseModel):
+class DocumentConvertTask(BaseModel):
     status: int
     class Config:
         from_attributes = True 
