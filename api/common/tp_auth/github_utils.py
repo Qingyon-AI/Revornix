@@ -1,6 +1,11 @@
 import httpx
     
-def get_github_token(github_client_id: str, github_client_secret: str, code: str, redirect_uri: str):
+def get_github_token(
+    github_client_id: str, 
+    github_client_secret: str, 
+    code: str, 
+    redirect_uri: str
+):
     url = "https://github.com/login/oauth/access_token"
     params = {
         'client_id': github_client_id,
@@ -17,7 +22,9 @@ def get_github_token(github_client_id: str, github_client_secret: str, code: str
     github_token_res_json = github_token_res.json()
     return github_token_res_json
 
-def getGithubEmail(token: str):
+def get_github_email(
+    token: str
+):
     url = "https://api.github.com/user/emails"
     headers = {
         'Accept': 'application/vnd.github+json', 
@@ -29,7 +36,9 @@ def getGithubEmail(token: str):
     github_email_res_json = github_email_res.json()
     return github_email_res_json
 
-def get_github_userInfo(token: str):
+def get_github_userInfo(
+    token: str
+):
     url = "https://api.github.com/user"
     headers = {
         'Accept': 'application/vnd.github+json', 
