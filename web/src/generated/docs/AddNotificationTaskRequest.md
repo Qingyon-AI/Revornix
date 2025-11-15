@@ -6,14 +6,14 @@
 
 Name | Type
 ------------ | -------------
+`notification_content_type` | number
+`notification_source_id` | number
+`notification_target_id` | number
+`cron_expr` | string
+`enable` | boolean
 `title` | string
 `content` | string
 `notification_template_id` | number
-`notification_content_type` | number
-`cron_expr` | string
-`enable` | boolean
-`notification_source_id` | number
-`notification_target_id` | number
 
 ## Example
 
@@ -22,14 +22,14 @@ import type { AddNotificationTaskRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
+  "notification_content_type": null,
+  "notification_source_id": null,
+  "notification_target_id": null,
+  "cron_expr": null,
+  "enable": null,
   "title": null,
   "content": null,
   "notification_template_id": null,
-  "notification_content_type": null,
-  "cron_expr": null,
-  "enable": null,
-  "notification_source_id": null,
-  "notification_target_id": null,
 } satisfies AddNotificationTaskRequest
 
 console.log(example)

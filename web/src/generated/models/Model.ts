@@ -44,7 +44,7 @@ export interface Model {
      * @type {string}
      * @memberof Model
      */
-    description: string;
+    description: string | null;
     /**
      * 
      * @type {string}

@@ -51,7 +51,7 @@ export interface NotificationSourceDetail {
      * @type {string}
      * @memberof NotificationSourceDetail
      */
-    description: string;
+    description: string | null;
     /**
      * 
      * @type {number}

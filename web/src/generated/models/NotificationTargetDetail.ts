@@ -48,16 +48,16 @@ export interface NotificationTargetDetail {
     title: string;
     /**
      * 
-     * @type {string}
-     * @memberof NotificationTargetDetail
-     */
-    description: string;
-    /**
-     * 
      * @type {number}
      * @memberof NotificationTargetDetail
      */
     category: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof NotificationTargetDetail
+     */
+    description: string | null;
     /**
      * 
      * @type {EmailNotificationTarget}
@@ -78,8 +78,8 @@ export interface NotificationTargetDetail {
 export function instanceOfNotificationTargetDetail(value: object): value is NotificationTargetDetail {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
-    if (!('description' in value) || value['description'] === undefined) return false;
     if (!('category' in value) || value['category'] === undefined) return false;
+    if (!('description' in value) || value['description'] === undefined) return false;
     return true;
 }
 
@@ -95,8 +95,8 @@ export function NotificationTargetDetailFromJSONTyped(json: any, ignoreDiscrimin
         
         'id': json['id'],
         'title': json['title'],
-        'description': json['description'],
         'category': json['category'],
+        'description': json['description'],
         'email_notification_target': json['email_notification_target'] == null ? undefined : EmailNotificationTargetFromJSON(json['email_notification_target']),
         'ios_notification_target': json['ios_notification_target'] == null ? undefined : IOSNotificationTargetFromJSON(json['ios_notification_target']),
     };
@@ -115,8 +115,8 @@ export function NotificationTargetDetailToJSONTyped(value?: NotificationTargetDe
         
         'id': value['id'],
         'title': value['title'],
-        'description': value['description'],
         'category': value['category'],
+        'description': value['description'],
         'email_notification_target': EmailNotificationTargetToJSON(value['email_notification_target']),
         'ios_notification_target': IOSNotificationTargetToJSON(value['ios_notification_target']),
     };

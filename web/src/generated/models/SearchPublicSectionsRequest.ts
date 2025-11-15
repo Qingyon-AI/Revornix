@@ -42,7 +42,7 @@ export interface SearchPublicSectionsRequest {
      * @type {boolean}
      * @memberof SearchPublicSectionsRequest
      */
-    desc?: boolean | null;
+    desc?: boolean;
     /**
      * 
      * @type {Array<number>}

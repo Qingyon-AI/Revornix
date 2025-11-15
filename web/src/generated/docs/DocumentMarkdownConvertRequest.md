@@ -1,26 +1,22 @@
 
-# WeChatInfo
+# DocumentMarkdownConvertRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`wechat_open_id` | string
-`nickname` | string
-`platform` | number
+`document_id` | number
 
 ## Example
 
 ```typescript
-import type { WeChatInfo } from ''
+import type { DocumentMarkdownConvertRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "wechat_open_id": null,
-  "nickname": null,
-  "platform": null,
-} satisfies WeChatInfo
+  "document_id": null,
+} satisfies DocumentMarkdownConvertRequest
 
 console.log(example)
 
@@ -29,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as WeChatInfo
+const exampleParsed = JSON.parse(exampleJSON) as DocumentMarkdownConvertRequest
 console.log(exampleParsed)
 ```
 

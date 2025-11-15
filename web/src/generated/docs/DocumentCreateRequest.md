@@ -8,15 +8,15 @@ Name | Type
 ------------ | -------------
 `category` | number
 `from_plat` | string
-`auto_summary` | boolean
 `sections` | Array&lt;number&gt;
 `labels` | Array&lt;number&gt;
 `title` | string
 `description` | string
 `cover` | string
-`url` | string
 `content` | string
+`url` | string
 `file_name` | string
+`auto_summary` | boolean
 `auto_podcast` | boolean
 
 ## Example
@@ -28,15 +28,15 @@ import type { DocumentCreateRequest } from ''
 const example = {
   "category": null,
   "from_plat": null,
-  "auto_summary": null,
   "sections": null,
   "labels": null,
   "title": null,
   "description": null,
   "cover": null,
-  "url": null,
   "content": null,
+  "url": null,
   "file_name": null,
+  "auto_summary": null,
   "auto_podcast": null,
 } satisfies DocumentCreateRequest
 

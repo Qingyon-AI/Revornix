@@ -16,45 +16,51 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface NotificationSource
+ * @interface RssSectionInfo
  */
-export interface NotificationSource {
+export interface RssSectionInfo {
     /**
      * 
      * @type {number}
-     * @memberof NotificationSource
+     * @memberof RssSectionInfo
      */
     id: number;
     /**
      * 
      * @type {string}
-     * @memberof NotificationSource
+     * @memberof RssSectionInfo
      */
     title: string;
     /**
      * 
      * @type {string}
-     * @memberof NotificationSource
+     * @memberof RssSectionInfo
      */
-    description: string | null;
+    description: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RssSectionInfo
+     */
+    cover?: string | null;
     /**
      * 
      * @type {Date}
-     * @memberof NotificationSource
+     * @memberof RssSectionInfo
      */
     create_time: Date;
     /**
      * 
      * @type {Date}
-     * @memberof NotificationSource
+     * @memberof RssSectionInfo
      */
-    update_time: Date | null;
+    update_time: Date;
 }
 
 /**
- * Check if a given object implements the NotificationSource interface.
+ * Check if a given object implements the RssSectionInfo interface.
  */
-export function instanceOfNotificationSource(value: object): value is NotificationSource {
+export function instanceOfRssSectionInfo(value: object): value is RssSectionInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
@@ -63,11 +69,11 @@ export function instanceOfNotificationSource(value: object): value is Notificati
     return true;
 }
 
-export function NotificationSourceFromJSON(json: any): NotificationSource {
-    return NotificationSourceFromJSONTyped(json, false);
+export function RssSectionInfoFromJSON(json: any): RssSectionInfo {
+    return RssSectionInfoFromJSONTyped(json, false);
 }
 
-export function NotificationSourceFromJSONTyped(json: any, ignoreDiscriminator: boolean): NotificationSource {
+export function RssSectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): RssSectionInfo {
     if (json == null) {
         return json;
     }
@@ -76,16 +82,17 @@ export function NotificationSourceFromJSONTyped(json: any, ignoreDiscriminator: 
         'id': json['id'],
         'title': json['title'],
         'description': json['description'],
+        'cover': json['cover'] == null ? undefined : json['cover'],
         'create_time': (new Date(json['create_time'])),
-        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
+        'update_time': (new Date(json['update_time'])),
     };
 }
 
-export function NotificationSourceToJSON(json: any): NotificationSource {
-    return NotificationSourceToJSONTyped(json, false);
+export function RssSectionInfoToJSON(json: any): RssSectionInfo {
+    return RssSectionInfoToJSONTyped(json, false);
 }
 
-export function NotificationSourceToJSONTyped(value?: NotificationSource | null, ignoreDiscriminator: boolean = false): any {
+export function RssSectionInfoToJSONTyped(value?: RssSectionInfo | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -95,8 +102,9 @@ export function NotificationSourceToJSONTyped(value?: NotificationSource | null,
         'id': value['id'],
         'title': value['title'],
         'description': value['description'],
+        'cover': value['cover'],
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
+        'update_time': value['update_time'].toISOString(),
     };
 }
 

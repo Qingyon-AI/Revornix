@@ -33,22 +33,16 @@ export interface DocumentCreateRequest {
     from_plat: string;
     /**
      * 
-     * @type {boolean}
+     * @type {Array<number>}
      * @memberof DocumentCreateRequest
      */
-    auto_summary?: boolean;
+    sections?: Array<number>;
     /**
      * 
      * @type {Array<number>}
      * @memberof DocumentCreateRequest
      */
-    sections?: Array<number> | null;
-    /**
-     * 
-     * @type {Array<number>}
-     * @memberof DocumentCreateRequest
-     */
-    labels?: Array<number> | null;
+    labels?: Array<number>;
     /**
      * 
      * @type {string}
@@ -72,13 +66,13 @@ export interface DocumentCreateRequest {
      * @type {string}
      * @memberof DocumentCreateRequest
      */
-    url?: string | null;
+    content?: string | null;
     /**
      * 
      * @type {string}
      * @memberof DocumentCreateRequest
      */
-    content?: string | null;
+    url?: string | null;
     /**
      * 
      * @type {string}
@@ -90,7 +84,13 @@ export interface DocumentCreateRequest {
      * @type {boolean}
      * @memberof DocumentCreateRequest
      */
-    auto_podcast?: boolean | null;
+    auto_summary?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DocumentCreateRequest
+     */
+    auto_podcast?: boolean;
 }
 
 /**
@@ -114,15 +114,15 @@ export function DocumentCreateRequestFromJSONTyped(json: any, ignoreDiscriminato
         
         'category': json['category'],
         'from_plat': json['from_plat'],
-        'auto_summary': json['auto_summary'] == null ? undefined : json['auto_summary'],
         'sections': json['sections'] == null ? undefined : json['sections'],
         'labels': json['labels'] == null ? undefined : json['labels'],
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
         'cover': json['cover'] == null ? undefined : json['cover'],
-        'url': json['url'] == null ? undefined : json['url'],
         'content': json['content'] == null ? undefined : json['content'],
+        'url': json['url'] == null ? undefined : json['url'],
         'file_name': json['file_name'] == null ? undefined : json['file_name'],
+        'auto_summary': json['auto_summary'] == null ? undefined : json['auto_summary'],
         'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
     };
 }
@@ -140,15 +140,15 @@ export function DocumentCreateRequestToJSONTyped(value?: DocumentCreateRequest |
         
         'category': value['category'],
         'from_plat': value['from_plat'],
-        'auto_summary': value['auto_summary'],
         'sections': value['sections'],
         'labels': value['labels'],
         'title': value['title'],
         'description': value['description'],
         'cover': value['cover'],
-        'url': value['url'],
         'content': value['content'],
+        'url': value['url'],
         'file_name': value['file_name'],
+        'auto_summary': value['auto_summary'],
         'auto_podcast': value['auto_podcast'],
     };
 }

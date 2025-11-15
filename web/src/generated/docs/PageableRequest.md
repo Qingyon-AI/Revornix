@@ -1,26 +1,24 @@
 
-# WeChatInfo
+# PageableRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`wechat_open_id` | string
-`nickname` | string
-`platform` | number
+`page_num` | number
+`page_size` | number
 
 ## Example
 
 ```typescript
-import type { WeChatInfo } from ''
+import type { PageableRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "wechat_open_id": null,
-  "nickname": null,
-  "platform": null,
-} satisfies WeChatInfo
+  "page_num": null,
+  "page_size": null,
+} satisfies PageableRequest
 
 console.log(example)
 
@@ -29,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as WeChatInfo
+const exampleParsed = JSON.parse(exampleJSON) as PageableRequest
 console.log(exampleParsed)
 ```
 

@@ -100,7 +100,7 @@ export interface DeleteAiModelAiModelDeletePostRequest {
     xForwardedFor?: string | null;
 }
 
-export interface DeleteAiModelAiModelProviderDeletePostRequest {
+export interface DeleteAiModelProviderAiModelProviderDeletePostRequest {
     deleteModelProviderRequest: DeleteModelProviderRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
@@ -112,7 +112,7 @@ export interface GetAiModelAiModelDetailPostRequest {
     xForwardedFor?: string | null;
 }
 
-export interface GetAiModelAiModelProviderDetailPostRequest {
+export interface GetAiModelProviderAiModelProviderDetailPostRequest {
     modelProviderRequest: ModelProviderRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
@@ -340,13 +340,13 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Ai Model
+     * Delete Ai Model Provider
      */
-    async deleteAiModelAiModelProviderDeletePostRaw(requestParameters: DeleteAiModelAiModelProviderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteAiModelProviderAiModelProviderDeletePostRaw(requestParameters: DeleteAiModelProviderAiModelProviderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
         if (requestParameters['deleteModelProviderRequest'] == null) {
             throw new runtime.RequiredError(
                 'deleteModelProviderRequest',
-                'Required parameter "deleteModelProviderRequest" was null or undefined when calling deleteAiModelAiModelProviderDeletePost().'
+                'Required parameter "deleteModelProviderRequest" was null or undefined when calling deleteAiModelProviderAiModelProviderDeletePost().'
             );
         }
 
@@ -379,10 +379,10 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Ai Model
+     * Delete Ai Model Provider
      */
-    async deleteAiModelAiModelProviderDeletePost(requestParameters: DeleteAiModelAiModelProviderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
-        const response = await this.deleteAiModelAiModelProviderDeletePostRaw(requestParameters, initOverrides);
+    async deleteAiModelProviderAiModelProviderDeletePost(requestParameters: DeleteAiModelProviderAiModelProviderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteAiModelProviderAiModelProviderDeletePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -434,13 +434,13 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Ai Model
+     * Get Ai Model Provider
      */
-    async getAiModelAiModelProviderDetailPostRaw(requestParameters: GetAiModelAiModelProviderDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelProvider>> {
+    async getAiModelProviderAiModelProviderDetailPostRaw(requestParameters: GetAiModelProviderAiModelProviderDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelProvider>> {
         if (requestParameters['modelProviderRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelProviderRequest',
-                'Required parameter "modelProviderRequest" was null or undefined when calling getAiModelAiModelProviderDetailPost().'
+                'Required parameter "modelProviderRequest" was null or undefined when calling getAiModelProviderAiModelProviderDetailPost().'
             );
         }
 
@@ -473,10 +473,10 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Ai Model
+     * Get Ai Model Provider
      */
-    async getAiModelAiModelProviderDetailPost(requestParameters: GetAiModelAiModelProviderDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelProvider> {
-        const response = await this.getAiModelAiModelProviderDetailPostRaw(requestParameters, initOverrides);
+    async getAiModelProviderAiModelProviderDetailPost(requestParameters: GetAiModelProviderAiModelProviderDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelProvider> {
+        const response = await this.getAiModelProviderAiModelProviderDetailPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

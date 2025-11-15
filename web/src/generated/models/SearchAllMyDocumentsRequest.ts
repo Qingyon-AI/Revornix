@@ -48,7 +48,7 @@ export interface SearchAllMyDocumentsRequest {
      * @type {boolean}
      * @memberof SearchAllMyDocumentsRequest
      */
-    desc?: boolean | null;
+    desc?: boolean;
 }
 
 /**

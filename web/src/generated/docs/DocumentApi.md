@@ -1390,7 +1390,7 @@ No authorization required
 
 ## transformMarkdownDocumentMarkdownTransformPost
 
-> NormalResponse transformMarkdownDocumentMarkdownTransformPost(documentMarkdownTransformRequest, authorization, xForwardedFor)
+> NormalResponse transformMarkdownDocumentMarkdownTransformPost(documentMarkdownConvertRequest, authorization, xForwardedFor)
 
 Transform Markdown
 
@@ -1408,8 +1408,8 @@ async function example() {
   const api = new DocumentApi();
 
   const body = {
-    // DocumentMarkdownTransformRequest
-    documentMarkdownTransformRequest: ...,
+    // DocumentMarkdownConvertRequest
+    documentMarkdownConvertRequest: ...,
     // string (optional)
     authorization: authorization_example,
     // string (optional)
@@ -1433,7 +1433,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **documentMarkdownTransformRequest** | [DocumentMarkdownTransformRequest](DocumentMarkdownTransformRequest.md) |  | |
+| **documentMarkdownConvertRequest** | [DocumentMarkdownConvertRequest](DocumentMarkdownConvertRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 

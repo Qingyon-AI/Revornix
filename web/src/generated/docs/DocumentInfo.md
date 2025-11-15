@@ -10,15 +10,15 @@ Name | Type
 `creator_id` | number
 `category` | number
 `title` | string
-`cover` | string
-`description` | string
 `from_plat` | string
 `create_time` | Date
 `update_time` | Date
+`cover` | string
+`description` | string
 `labels` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
 `sections` | [Array&lt;SchemasDocumentBaseSectionInfo&gt;](SchemasDocumentBaseSectionInfo.md)
 `users` | [Array&lt;UserPublicInfo&gt;](UserPublicInfo.md)
-`transform_task` | [DocumentTransformTask](DocumentTransformTask.md)
+`convert_task` | [DocumentConvertTask](DocumentConvertTask.md)
 `embedding_task` | [DocumentEmbeddingTask](DocumentEmbeddingTask.md)
 `graph_task` | [DocumentGraphTask](DocumentGraphTask.md)
 `podcast_task` | [DocumentPodcastTask](DocumentPodcastTask.md)
@@ -35,15 +35,15 @@ const example = {
   "creator_id": null,
   "category": null,
   "title": null,
-  "cover": null,
-  "description": null,
   "from_plat": null,
   "create_time": null,
   "update_time": null,
+  "cover": null,
+  "description": null,
   "labels": null,
   "sections": null,
   "users": null,
-  "transform_task": null,
+  "convert_task": null,
   "embedding_task": null,
   "graph_task": null,
   "podcast_task": null,

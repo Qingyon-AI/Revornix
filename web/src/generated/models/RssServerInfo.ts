@@ -20,13 +20,13 @@ import {
     RssDocumentInfoToJSON,
     RssDocumentInfoToJSONTyped,
 } from './RssDocumentInfo';
-import type { SectionInfo } from './SectionInfo';
+import type { RssSectionInfo } from './RssSectionInfo';
 import {
-    SectionInfoFromJSON,
-    SectionInfoFromJSONTyped,
-    SectionInfoToJSON,
-    SectionInfoToJSONTyped,
-} from './SectionInfo';
+    RssSectionInfoFromJSON,
+    RssSectionInfoFromJSONTyped,
+    RssSectionInfoToJSON,
+    RssSectionInfoToJSONTyped,
+} from './RssSectionInfo';
 
 /**
  * 
@@ -90,10 +90,10 @@ export interface RssServerInfo {
     documents?: Array<RssDocumentInfo>;
     /**
      * 
-     * @type {Array<SectionInfo>}
+     * @type {Array<RssSectionInfo>}
      * @memberof RssServerInfo
      */
-    sections?: Array<SectionInfo>;
+    sections?: Array<RssSectionInfo>;
 }
 
 /**
@@ -129,7 +129,7 @@ export function RssServerInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         'create_time': (new Date(json['create_time'])),
         'update_time': (new Date(json['update_time'])),
         'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(RssDocumentInfoFromJSON)),
-        'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SectionInfoFromJSON)),
+        'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(RssSectionInfoFromJSON)),
     };
 }
 
@@ -153,7 +153,7 @@ export function RssServerInfoToJSONTyped(value?: RssServerInfo | null, ignoreDis
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'].toISOString(),
         'documents': value['documents'] == null ? undefined : ((value['documents'] as Array<any>).map(RssDocumentInfoToJSON)),
-        'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SectionInfoToJSON)),
+        'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(RssSectionInfoToJSON)),
     };
 }
 

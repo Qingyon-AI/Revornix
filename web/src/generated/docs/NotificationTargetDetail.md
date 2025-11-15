@@ -8,8 +8,8 @@ Name | Type
 ------------ | -------------
 `id` | number
 `title` | string
-`description` | string
 `category` | number
+`description` | string
 `email_notification_target` | [EmailNotificationTarget](EmailNotificationTarget.md)
 `ios_notification_target` | [IOSNotificationTarget](IOSNotificationTarget.md)
 
@@ -22,8 +22,8 @@ import type { NotificationTargetDetail } from ''
 const example = {
   "id": null,
   "title": null,
-  "description": null,
   "category": null,
+  "description": null,
   "email_notification_target": null,
   "ios_notification_target": null,
 } satisfies NotificationTargetDetail

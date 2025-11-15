@@ -8,7 +8,6 @@ Name | Type
 ------------ | -------------
 `creator_id` | number
 `url` | string
-`md_file_name` | string
 
 ## Example
 
@@ -19,7 +18,6 @@ import type { WebsiteDocumentInfo } from ''
 const example = {
   "creator_id": null,
   "url": null,
-  "md_file_name": null,
 } satisfies WebsiteDocumentInfo
 
 console.log(example)

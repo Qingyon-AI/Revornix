@@ -36,7 +36,7 @@ export interface SearchSubscribedSectionRequest {
      * @type {boolean}
      * @memberof SearchSubscribedSectionRequest
      */
-    desc?: boolean | null;
+    desc?: boolean;
     /**
      * 
      * @type {string}

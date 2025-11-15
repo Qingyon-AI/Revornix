@@ -31,12 +31,6 @@ export interface WebsiteDocumentInfo {
      * @memberof WebsiteDocumentInfo
      */
     url: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof WebsiteDocumentInfo
-     */
-    md_file_name?: string;
 }
 
 /**
@@ -60,7 +54,6 @@ export function WebsiteDocumentInfoFromJSONTyped(json: any, ignoreDiscriminator:
         
         'creator_id': json['creator_id'],
         'url': json['url'],
-        'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
     };
 }
 
@@ -77,7 +70,6 @@ export function WebsiteDocumentInfoToJSONTyped(value?: WebsiteDocumentInfo | nul
         
         'creator_id': value['creator_id'],
         'url': value['url'],
-        'md_file_name': value['md_file_name'],
     };
 }
 

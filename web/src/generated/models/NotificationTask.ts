@@ -105,13 +105,13 @@ export interface NotificationTask {
      * @type {Date}
      * @memberof NotificationTask
      */
-    create_time?: Date | null;
+    create_time: Date;
     /**
      * 
      * @type {Date}
      * @memberof NotificationTask
      */
-    update_time?: Date | null;
+    update_time: Date | null;
 }
 
 /**
@@ -124,6 +124,8 @@ export function instanceOfNotificationTask(value: object): value is Notification
     if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
     if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
     if (!('notification_content_type' in value) || value['notification_content_type'] === undefined) return false;
+    if (!('create_time' in value) || value['create_time'] === undefined) return false;
+    if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
 }
 
@@ -148,8 +150,8 @@ export function NotificationTaskFromJSONTyped(json: any, ignoreDiscriminator: bo
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
         'notification_source': json['notification_source'] == null ? undefined : NotificationSourceFromJSON(json['notification_source']),
         'notification_target': json['notification_target'] == null ? undefined : NotificationTargetFromJSON(json['notification_target']),
-        'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
-        'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
+        'create_time': (new Date(json['create_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
 }
 
@@ -175,7 +177,7 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
         'notification_template_id': value['notification_template_id'],
         'notification_source': NotificationSourceToJSON(value['notification_source']),
         'notification_target': NotificationTargetToJSON(value['notification_target']),
-        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
+        'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }

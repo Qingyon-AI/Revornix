@@ -66,7 +66,7 @@ export interface SectionUserPublicInfo {
      * @type {Date}
      * @memberof SectionUserPublicInfo
      */
-    update_time: Date;
+    update_time: Date | null;
 }
 
 /**
@@ -96,7 +96,7 @@ export function SectionUserPublicInfoFromJSONTyped(json: any, ignoreDiscriminato
         'authority': json['authority'] == null ? undefined : json['authority'],
         'role': json['role'] == null ? undefined : json['role'],
         'create_time': (new Date(json['create_time'])),
-        'update_time': (new Date(json['update_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
 }
 
@@ -118,7 +118,7 @@ export function SectionUserPublicInfoToJSONTyped(value?: SectionUserPublicInfo |
         'authority': value['authority'],
         'role': value['role'],
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
 

@@ -36,7 +36,7 @@ export interface ModelProvider {
      * @type {string}
      * @memberof ModelProvider
      */
-    description: string;
+    description: string | null;
     /**
      * 
      * @type {string}

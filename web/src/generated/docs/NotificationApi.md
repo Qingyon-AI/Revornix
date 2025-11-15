@@ -672,7 +672,7 @@ No authorization required
 
 ## getMineNotificationTaskNotificationTaskMinePost
 
-> NotificationTaskResponse getMineNotificationTaskNotificationTaskMinePost(authorization, xForwardedFor)
+> PaginationNotificationTask getMineNotificationTaskNotificationTaskMinePost(pageableRequest, authorization, xForwardedFor)
 
 Get Mine Notification Task
 
@@ -690,6 +690,8 @@ async function example() {
   const api = new NotificationApi();
 
   const body = {
+    // PageableRequest
+    pageableRequest: ...,
     // string (optional)
     authorization: authorization_example,
     // string (optional)
@@ -713,12 +715,13 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
+| **pageableRequest** | [PageableRequest](PageableRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-[**NotificationTaskResponse**](NotificationTaskResponse.md)
+[**PaginationNotificationTask**](PaginationNotificationTask.md)
 
 ### Authorization
 
@@ -726,7 +729,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 
