@@ -49,30 +49,53 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import Link from 'next/link';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Label } from '../ui/label';
-import { Badge } from '../ui/badge';
 
 const AddNotificationTask = () => {
 	const locale = useLocale();
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const formSchema = z.object({
-		title: z.string().optional(),
-		content: z.string().optional(),
-		notification_content_type: z.number(),
-		notification_template_id: z.coerce
-			.number({
-				required_error: 'Please select the template',
-			})
-			.optional(),
-		cron_expr: z.string(),
-		enable: z.boolean(),
-		notification_source_id: z.coerce.number({
-			required_error: 'Please select the source',
-		}),
-		notification_target_id: z.coerce.number({
-			required_error: 'Please select the target',
-		}),
-	});
+	const formSchema = z
+		.object({
+			title: z.string().optional(),
+			content: z.string().optional(),
+			notification_content_type: z.number(),
+			notification_template_id: z.coerce
+				.number({
+					required_error: 'Please select the template',
+				})
+				.optional(),
+			cron_expr: z.string(),
+			enable: z.boolean(),
+			notification_source_id: z.coerce.number({
+				required_error: 'Please select the source',
+			}),
+			notification_target_id: z.coerce.number({
+				required_error: 'Please select the target',
+			}),
+		})
+		.superRefine((data, ctx) => {
+			// If content type is 0 => title required
+			if (data.notification_content_type === 0) {
+				if (!data.title || data.title.trim() === '') {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						message: "Title is required when content type is 'custom content'",
+						path: ['title'],
+					});
+				}
+			}
+
+			// If content type is 1 => template_id required
+			if (data.notification_content_type === 1) {
+				if (!data.notification_template_id) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						message: "Template is required when content type is 'template'",
+						path: ['notification_template_id'],
+					});
+				}
+			}
+		});
 
 	const { data: notificationTemplates } = useQuery({
 		queryKey: ['notification-template'],
@@ -118,7 +141,9 @@ const AddNotificationTask = () => {
 		mutationFn: addNotificationTask,
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['notification-task'],
+				predicate(query) {
+					return query.queryKey.includes('notification-task');
+				},
 			});
 			form.reset();
 			setShowAddDialog(false);
