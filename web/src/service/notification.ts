@@ -1,5 +1,5 @@
 import notificationApi from '@/api/notification'
-import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, DeleteNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, NotificationSourceDetail, NotificationSourceDetailRequest, AddNotificationTargetRequest, DeleteNotificationTargetRequest, NotificationTargetDetailRequest, UpdateNotificationTargetRequest, NotificationTargetDetail, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, NotificationTargetsResponse, PaginationNotificationTask } from '@/generated';
+import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, DeleteNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, NotificationSourceDetail, NotificationSourceDetailRequest, AddNotificationTargetRequest, DeleteNotificationTargetRequest, NotificationTargetDetailRequest, UpdateNotificationTargetRequest, NotificationTargetDetail, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, NotificationTargetsResponse, PaginationNotificationTask, PageableRequest } from '@/generated';
 import { request } from '@/lib/request';
 
 export const deleteNotificationRecords = async (data: DeleteNotificationRecordRequest): Promise<NormalResponse> => {
@@ -104,8 +104,10 @@ export const updateNotificationTask = async (data: UpdateNotificationTaskRequest
     })
 }
 
-export const getMineNotificationTask = async (): Promise<PaginationNotificationTask> => {
-    return await request(notificationApi.getMineNotificationTask)
+export const getMineNotificationTask = async (data: PageableRequest): Promise<PaginationNotificationTask> => {
+    return await request(notificationApi.getMineNotificationTask, {
+        data
+    })
 }
 
 export const getNotificationTaskDetail = async (data: NotificationTaskDetailRequest): Promise<NotificationTask> => {

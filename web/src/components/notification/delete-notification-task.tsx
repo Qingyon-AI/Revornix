@@ -33,7 +33,9 @@ const DeleteNotificationTask = ({
 		},
 		onSuccess(data, variables, context) {
 			queryClient.invalidateQueries({
-				queryKey: ['notification-task'],
+				predicate(query) {
+					return query.queryKey.includes('notification-task');
+				},
 			});
 			setShowDeleteDialog(false);
 		},

@@ -91,7 +91,8 @@ async def add_notification_task(
         notification_content_type=add_notification_task_request.notification_content_type,
         notification_target_id=add_notification_task_request.notification_target_id,
         notification_source_id=add_notification_task_request.notification_source_id,
-        cron_expr=add_notification_task_request.cron_expr
+        cron_expr=add_notification_task_request.cron_expr,
+        enable=add_notification_task_request.enable
     )
     if add_notification_task_request.notification_content_type == NotificationContentType.CUSTOM:
         if add_notification_task_request.title is None or add_notification_task_request.content is None:

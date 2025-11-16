@@ -33,7 +33,8 @@ def create_notification_task(
     notification_content_type: int,
     notification_source_id: int,
     notification_target_id: int,
-    cron_expr: str | None = None
+    enable: bool,
+    cron_expr: str | None = None,
 ):
     now = datetime.now(timezone.utc)
     notification_task = models.notification.NotificationTask(user_id=user_id,
@@ -42,7 +43,7 @@ def create_notification_task(
                                                              notification_target_id=notification_target_id,
                                                              cron_expr=cron_expr,
                                                              create_time=now,
-                                                             enable=True)
+                                                             enable=enable)
     db.add(notification_task)
     db.flush()
     return notification_task
@@ -207,7 +208,7 @@ def get_notification_tasks_by_user_id(
     query = db.query(models.notification.NotificationTask)
     query = query.filter(models.notification.NotificationTask.user_id == user_id,
                          models.notification.NotificationTask.delete_at == None)
-    query = query.order_by(models.document.Document.id.desc())
+    query = query.order_by(models.notification.NotificationTask.id.desc())
     query = query.offset((page_num - 1) * page_size)
     query = query.limit(page_size)
     return query.all()
