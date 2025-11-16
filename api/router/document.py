@@ -561,22 +561,58 @@ def get_document_info(
     db: Session,
     document: models.document.Document
 ): 
+    convert_task = None
+    embedding_task = None
+    graph_task = None
+    process_task = None
+    podcast_task = None
     db_convert_task = crud.task.get_document_convert_task_by_document_id(
         db=db,
         document_id=document.id
     )
+    if db_convert_task is not None:
+        convert_task = schemas.task.DocumentConvertTask(
+            creator_id=document.creator_id,
+            status=db_convert_task.status,
+            md_file_name=db_convert_task.md_file_name,
+        )
     db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
         db=db,
         document_id=document.id
     )
-    db_process_task = crud.task.get_document_process_task_by_document_id(
-        db=db,
-        document_id=document.id
-    )
+    if db_embedding_task is not None:
+        embedding_task = schemas.task.DocumentEmbeddingTask(
+            creator_id=document.creator_id,
+            status=db_embedding_task.status
+        )
     db_graph_task = crud.task.get_document_graph_task_by_document_id(
         db=db,
         document_id=document.id
     )
+    if db_graph_task is not None:
+        graph_task = schemas.task.DocumentGraphTask(
+            creator_id=document.creator_id,
+            status=db_graph_task.status
+        )
+    db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+        db=db,
+        document_id=document.id
+    )
+    if db_podcast_task is not None:
+        podcast_task = schemas.task.DocumentPodcastTask(
+            creator_id=document.creator_id,
+            status=db_podcast_task.status,
+            podcast_file_name=db_podcast_task.podcast_file_name
+        )
+    db_process_task = crud.task.get_document_process_task_by_document_id(
+        db=db,
+        document_id=document.id
+    )
+    if db_process_task is not None:
+        process_task = schemas.task.DocumentProcessTask(
+            creator_id=document.creator_id,
+            status=db_process_task.status
+        )
     db_labels = crud.document.get_labels_by_document_id(
         db=db,
         document_id=document.id
@@ -587,14 +623,14 @@ def get_document_info(
             name=label.name
         ) for label in db_labels
     ]
-    return schemas.document.DocumentInfo(
-        **document.__dict__,
-        labels=labels,
-        convert_task=db_convert_task,
-        embedding_task=db_embedding_task,
-        graph_task=db_graph_task,
-        process_task=db_process_task
-    )
+    res = schemas.document.DocumentInfo.model_validate(document)
+    res.labels = labels
+    res.convert_task=convert_task
+    res.embedding_task=embedding_task
+    res.graph_task=graph_task
+    res.process_task=process_task
+    res.podcast_task = podcast_task
+    return res
 
 @document_router.post('/detail', response_model=schemas.document.DocumentDetailResponse)
 async def get_document_detail(
