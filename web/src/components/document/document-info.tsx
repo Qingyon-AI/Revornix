@@ -19,13 +19,18 @@ const DocumentInfo = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const router = useRouter();
 
-	const { data, isPending, isError, error, isRefetching } = useQuery({
+	const { data, isPending, isError, error } = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
 
 	return (
 		<>
+			{isError && error && (
+				<div className='w-full h-full flex justify-center items-center text-sm text-muted-foreground'>
+					{error.message}
+				</div>
+			)}
 			{isPending && <Skeleton className='w-full h-full' />}
 			{data && (
 				<div className='relative h-full'>

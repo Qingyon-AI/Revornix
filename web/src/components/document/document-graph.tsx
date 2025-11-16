@@ -64,7 +64,11 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 			}),
 	});
 
-	const { data: document } = useQuery({
+	const {
+		data: document,
+		isError: isDocumentDetailError,
+		error: documentDetailError,
+	} = useQuery({
 		queryKey: ['getDocumentDetail', document_id],
 		queryFn: () => getDocumentDetail({ document_id: document_id }),
 	});
@@ -280,34 +284,39 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 
 	return (
 		<div className='w-full h-full flex justify-center items-center relative'>
-			{isError && <div className='text-red-500'>Error: {error.message}</div>}
+			{isDocumentDetailError && (
+				<div className='text-sm text-muted-foreground'>
+					Error: {documentDetailError.message}
+				</div>
+			)}
+			{isError && <div className='text-sm text-muted-foreground'>Error: {error.message}</div>}
 			{isLoading && <Skeleton className='w-full h-full' />}
-			{isFetched && (
+			{isFetched && !isError && !isDocumentDetailError && (
 				<>
 					{!document?.graph_task && (
-						<div className='text-xs text-muted-foreground'>
+						<div className='text-sm text-muted-foreground'>
 							{t('document_graph_empty')}
 						</div>
 					)}
 					{document?.graph_task?.status === DocumentGraphStatus.WAIT_TO && (
-						<div className='text-xs text-muted-foreground'>
+						<div className='text-sm text-muted-foreground'>
 							{t('document_graph_wait_to')}
 						</div>
 					)}
 					{document?.graph_task?.status === DocumentGraphStatus.BUILDING && (
-						<div className='text-xs text-muted-foreground'>
+						<div className='text-sm text-muted-foreground'>
 							{t('document_graph_building')}
 						</div>
 					)}
 					{document?.graph_task?.status === DocumentGraphStatus.FAILED && (
-						<div className='text-xs text-muted-foreground'>
+						<div className='text-sm text-muted-foreground'>
 							{t('document_graph_failed')}
 						</div>
 					)}
 					{document?.graph_task?.status === DocumentGraphStatus.SUCCESS &&
 						!data?.edges.length &&
 						!data?.nodes.length && (
-							<div className='text-xs text-muted-foreground'>
+							<div className='text-sm text-muted-foreground'>
 								{t('document_graph_data_empty')}
 							</div>
 						)}
