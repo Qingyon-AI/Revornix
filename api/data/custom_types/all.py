@@ -1,12 +1,25 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
+from datetime import datetime, timezone
 
 class DocumentInfo(BaseModel):
     id: int
     creator_id: int
     title: str
-    description: str
-    updated_at: str
-    created_at: str
+    description: str | None
+    update_time: datetime | None
+    create_time: datetime
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    class Config:
+        from_attributes = True
 
 class ChunkInfo(BaseModel):
     id: str

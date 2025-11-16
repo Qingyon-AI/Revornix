@@ -4,13 +4,22 @@ from common.sql import SessionLocal
 from data.neo4j.search import *
 from prompts.query import query_context_summary
 
-def get_query_result_summary_llm_client(user_id: int) -> openai.OpenAI:
+def get_query_result_summary_llm_client(
+    user_id: int
+) -> openai.OpenAI:
     db = SessionLocal()
-    db_user = crud.user.get_user_by_id(db=db, 
-                                       user_id=user_id)
-    db = SessionLocal()
-    db_model = crud.model.get_ai_model_by_id(db=db, 
-                                             model_id=db_user.default_revornix_model_id)
+    db_user = crud.user.get_user_by_id(
+        db=db, 
+        user_id=user_id
+    )
+    if db_user is None:
+        raise Exception("User not found")
+    if db_user.default_revornix_model_id is None:
+        raise Exception("User default model not found")
+    db_model = crud.model.get_ai_model_by_id(
+        db=db, 
+        model_id=db_user.default_revornix_model_id
+    )
     db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
         db=db, 
         user_id=user_id, 
@@ -20,8 +29,10 @@ def get_query_result_summary_llm_client(user_id: int) -> openai.OpenAI:
         raise Exception("Model not found")
     if db_user_model is None:
         raise Exception("User model not found")
-    db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, 
-                                                               provider_id=db_model.provider_id)
+    db_model_provider = crud.model.get_ai_model_provider_by_id(
+        db=db, 
+        provider_id=db_model.provider_id
+    )
     db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
         db=db, 
         user_id=user_id, 
@@ -38,12 +49,19 @@ def get_query_result_summary_llm_client(user_id: int) -> openai.OpenAI:
     db.close()
     return llm_client
 
-def global_query(user_id: int, query: str):
+def global_query(
+    user_id: int, 
+    query: str
+):
     # Perform search
-    results = global_search(user_id=user_id,
-                            search_text=query)
+    results = global_search(
+        user_id=user_id,
+        search_text=query
+    )
     prompt = query_context_summary(query, str(results))
-    llm_client = get_query_result_summary_llm_client(user_id=user_id)
+    llm_client = get_query_result_summary_llm_client(
+        user_id=user_id
+    )
     resp = llm_client.chat.completions.create(
         model="kimi-latest",
         messages=[{"role": "user", "content": prompt}],
@@ -52,12 +70,19 @@ def global_query(user_id: int, query: str):
     output_text = resp.choices[0].message.content
     return output_text
 
-def naive_query(user_id: int, query: str):
+def naive_query(
+    user_id: int, 
+    query: str
+):
     # Perform search
-    results = naive_search(user_id=user_id, 
-                           search_text=query)
+    results = naive_search(
+        user_id=user_id, 
+        search_text=query
+    )
     prompt = query_context_summary(query, str(results))
-    llm_client = get_query_result_summary_llm_client(user_id=user_id)
+    llm_client = get_query_result_summary_llm_client(
+        user_id=user_id
+    )
     resp = llm_client.chat.completions.create(
         model="kimi-latest",
         messages=[{"role": "user", "content": prompt}],

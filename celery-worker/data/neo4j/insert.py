@@ -9,7 +9,9 @@ def now_str():
 # -----------------------------
 # 1) 批量 upsert Document节点
 # -----------------------------
-def upsert_doc_neo4j(docs_info: list[DocumentInfo]):
+def upsert_doc_neo4j(
+    docs_info: list[DocumentInfo]
+):
     cypher = """
     UNWIND $rows AS r
     MERGE (d:Document {id: r.id})
@@ -50,7 +52,9 @@ def upsert_doc_chunk_relations():
 # -----------------------------
 # 4) 批量 upsert Chunk 节点
 # -----------------------------
-def upsert_chunks_neo4j(chunks_info: list[ChunkInfo]):
+def upsert_chunks_neo4j(
+    chunks_info: list[ChunkInfo]
+):
     cypher = """
     UNWIND $rows AS r
     MERGE (c:Chunk {id: r.id})
@@ -75,7 +79,9 @@ def upsert_chunks_neo4j(chunks_info: list[ChunkInfo]):
 # -----------------------------
 # 7) 批量 upsert Entity 节点
 # -----------------------------
-def upsert_entities_neo4j(entities_info: list[EntityInfo]):
+def upsert_entities_neo4j(
+    entities_info: list[EntityInfo]
+):
     cypher = """
     UNWIND $rows AS r
     MERGE (e:Entity {id: r.id})
@@ -104,7 +110,9 @@ def upsert_entities_neo4j(entities_info: list[EntityInfo]):
 # -----------------------------
 # 8) 批量 upsert Entity -> Entity 的关系
 # -----------------------------
-def upsert_relations_neo4j(relations_info: list[RelationInfo]):
+def upsert_relations_neo4j(
+    relations_info: list[RelationInfo]
+):
     cypher = """
     UNWIND $rows AS r
     MERGE (a:Entity {id: r.src_node})

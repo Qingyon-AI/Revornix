@@ -97,25 +97,15 @@ async def get_markdown_content_by_document_id(
         )
         if db_document is None:
             raise Exception("Document not found")
-        if db_document.category == DocumentCategory.WEBSITE:
-            website_document = crud.document.get_website_document_by_document_id(
+        if db_document.category == DocumentCategory.WEBSITE or db_document.category == DocumentCategory.FILE:
+            db_convert_task = crud.task.get_document_convert_task_by_document_id(
                 db=db,
                 document_id=document_id
             )
-            if website_document is None:
-                raise Exception("The website info of the document is not found")
+            if db_convert_task is None or db_convert_task.status != DocumentMdConvertStatus.SUCCESS or db_convert_task.md_file_name is None:
+                raise Exception("The document convert task of the document you want to summary havn't been finished")
             markdown_content = await remote_file_service.get_file_content_by_file_path(
-                file_path=website_document.md_file_name
-            )
-        elif db_document.category == DocumentCategory.FILE:
-            file_document = crud.document.get_file_document_by_document_id(
-                db=db,
-                document_id=document_id
-            )
-            if file_document is None:
-                raise Exception("The file info of the document is not found")
-            markdown_content = await remote_file_service.get_file_content_by_file_path(
-                file_path=file_document.md_file_name
+                file_path=db_convert_task.md_file_name
             )
         elif db_document.category == DocumentCategory.QUICK_NOTE:
             quick_note_document = crud.document.get_quick_note_document_by_document_id(
