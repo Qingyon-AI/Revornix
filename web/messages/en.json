@@ -526,6 +526,7 @@
     "section_document_empty": "No associated documents",
     "section_title_empty": "Untitled",
     "section_description_empty": "No description",
+    "section_podcast_user_unable": "You are not the creator of this column and cannot generate a podcast for it",
     "section_podcast_unset": "The podcast generation function for this column has not been configured yet",
     "section_podcast_generate": "Click To Generate",
     "section_podcast_generate_task_submitted": "Task submitted, please wait",

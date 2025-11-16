@@ -527,6 +527,7 @@
     "section_document_empty": "暂无关联文档",
     "section_title_empty": "未命名",
     "section_description_empty": "暂无描述",
+    "section_podcast_user_unable": "你不是这份专栏的创建者，无法为其生成播客",
     "section_podcast_unset": "该专栏暂未配置生成音频",
     "section_podcast_generate": "点击生成",
     "section_podcast_generate_task_submitted": "生成任务已提交，请稍后",
