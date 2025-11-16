@@ -8,10 +8,16 @@ from data.milvus.search import naive_search
 # 使用与你插入时相同的 embedding model（避免向量不一致）
 embedding_model = get_embedding_model()
 
-def to_neo4j_datetime_str(iso: str) -> str:
+def to_neo4j_datetime_str(
+    iso: str
+) -> str:
     return datetime.fromisoformat(iso).strftime("%Y-%m-%dT%H:%M:%S")
 
-def build_time_filter(time_start: str | None, time_end: str | None, param_prefix="") -> tuple[str, dict]:
+def build_time_filter(
+    time_start: str | None, 
+    time_end: str | None, 
+    param_prefix=""
+) -> tuple[str, dict]:
     """
     构造 Neo4j Cypher 的时间范围 WHERE 子句和参数字典
     """
@@ -28,10 +34,12 @@ def build_time_filter(time_start: str | None, time_end: str | None, param_prefix
     return (" AND " + " AND ".join(clauses)) if clauses else "", params
 
 # ===================== Local Search =====================
-def local_search_by_entity(user_id: int,
-                           entity_name: str,
-                           hops: int = 1,
-                           limit: int = 50) -> List[Dict[str, Any]]:
+def local_search_by_entity(
+    user_id: int,
+    entity_name: str,
+    hops: int = 1,
+    limit: int = 50
+) -> List[Dict[str, Any]]:
     """
     局部实体子图搜索（带用户权限）：
     - Entity 名称模糊匹配
@@ -84,20 +92,24 @@ def local_search_by_entity(user_id: int,
         ]
 
 # ===================== Global Search =====================
-def global_search(user_id: int,
-                  search_text: str,
-                  top_k: int = 10,
-                  expand_limit: int = 50,
-                  time_start: str | None = None,
-                  time_end: str | None = None) -> Dict[str, Any]:
+def global_search(
+    user_id: int,
+    search_text: str,
+    top_k: int = 10,
+    expand_limit: int = 50,
+    time_start: str | None = None,
+    time_end: str | None = None
+) -> Dict[str, Any]:
     """
     全局检索流程（带 user_id 权限过滤）：
     1) 在 Milvus 上做全局向量检索（得到 top_k chunk）
     2) 在 Neo4j 中扩展：找到与用户相关的 Entity / Chunk / Community
     """
-    seed_chunks = naive_search(user_id=user_id,
-                               search_text=search_text, 
-                               top_k=top_k)
+    seed_chunks = naive_search(
+        user_id=user_id,
+        search_text=search_text, 
+        top_k=top_k
+    )
     chunk_ids = [c["chunk_id"] for c in seed_chunks]
 
     expanded_chunks = []
@@ -185,11 +197,13 @@ def global_search(user_id: int,
     }
 
 # ===================== 小工具：一条 API 把三种策略合并并返回（可选） =====================
-def hybrid_search(user_id: int, 
-                  search_text: str, 
-                  naive_k: int = 5, 
-                  local_hops: int = 1, 
-                  global_k: int = 10):
+def hybrid_search(
+    user_id: int, 
+    search_text: str, 
+    naive_k: int = 5, 
+    local_hops: int = 1, 
+    global_k: int = 10
+):
     """
     混合策略：
     - 先 local search（基于实体）拿到最相关局部上下文
@@ -197,15 +211,19 @@ def hybrid_search(user_id: int,
     返回合并结果（按优先级：local -> naive -> global expand）
     """
     # 1. local attempt（若能匹配实体，则优先）
-    local_chunks = local_search_by_entity(user_id=user_id,
-                                          entity_name=search_text, 
-                                          hops=local_hops, 
-                                          limit=50)
+    local_chunks = local_search_by_entity(
+        user_id=user_id,
+        entity_name=search_text, 
+        hops=local_hops, 
+        limit=50
+    )
     if local_chunks:
         # 若 local 有结果，则也同时拿 naive 做补充
-        naive_chunks = naive_search(user_id=user_id,
-                                    search_text=search_text, 
-                                    top_k=naive_k)
+        naive_chunks = naive_search(
+            user_id=user_id,
+            search_text=search_text, 
+            top_k=naive_k
+        )
         # 做简单合并（保序且去重）
         seen = set()
         merged = []
@@ -217,10 +235,12 @@ def hybrid_search(user_id: int,
         return {"strategy": "local+naive", "results": merged}
     else:
         # local 没有命中实体，退回 global (naive + expand)
-        g = global_search(user_id=user_id, 
-                          search_text=search_text, 
-                          top_k=global_k, 
-                          expand_limit=50)
+        g = global_search(
+            user_id=user_id, 
+            search_text=search_text, 
+            top_k=global_k, 
+            expand_limit=50
+        )
         # 合并 seed + expanded，按 score 已在 seed 中返回
         merged = {c["chunk_id"]: c for c in g["expanded_chunks"]}
         for s in g["seed_chunks"]:
