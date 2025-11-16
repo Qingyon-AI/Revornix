@@ -115,8 +115,8 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 				<div className='text-muted-foreground px-2 flex flex-row gap-1 items-center text-xs mt-auto'>
 					<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 						{t('document_last_update') + ': '}
-						{document.update_time &&
-							format(new Date(document.update_time), 'MM-dd HH:mm')}
+						{document.create_time &&
+							format(new Date(document.create_time), 'MM-dd HH:mm')}
 					</div>
 				</div>
 			</div>

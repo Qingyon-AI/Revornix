@@ -65,7 +65,7 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 						alt='avatar'
 						className='rounded-full object-cover w-5 h-5'
 					/>
-					{formatDistance(new Date(section.update_time), new Date(), {
+					{formatDistance(new Date(section.create_time), new Date(), {
 						addSuffix: true,
 						locale: locale === 'zh' ? zhCN : enUS,
 					})}

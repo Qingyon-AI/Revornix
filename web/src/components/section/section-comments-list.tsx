@@ -69,7 +69,7 @@ const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 									</p>
 								</div>
 								<p className='text-xs text-muted-foreground'>
-									{format(comment.update_time, 'MM-dd HH:mm')}
+									{format(comment.create_time, 'MM-dd HH:mm')}
 								</p>
 							</div>
 						</div>
