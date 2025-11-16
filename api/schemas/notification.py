@@ -1,6 +1,5 @@
 from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone
-from schemas.common import BaseResponseModel
 
 class Message(BaseModel):
     title: str
@@ -184,7 +183,7 @@ class NotificationSourceDetail(BaseModel):
     email_notification_source: EmailNotificationSource | None = None
     ios_notification_source: IOSNotificationSource | None = None
 
-class NotificationTask(BaseResponseModel):
+class NotificationTask(BaseModel):
     id: int
     cron_expr: str
     enable: bool
@@ -245,5 +244,5 @@ class NotificationTemplate(BaseModel):
     description: str | None = None
     description_zh: str | None = None
     
-class NotificationTemplatesResponse(BaseResponseModel):
+class NotificationTemplatesResponse(BaseModel):
     data: list[NotificationTemplate]

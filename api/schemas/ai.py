@@ -3,7 +3,7 @@ from typing import Any
 
 class ModelCreateRequest(BaseModel):
     name: str
-    description: str
+    description: str | None
     provider_id: int
     api_key: str
     api_url: str
@@ -86,26 +86,20 @@ class ModelProviderUpdateRequest(BaseModel):
 class Document(BaseModel):
     id: int
     title: str
-    description: str
-    ai_summary: str
+    description: str | None
+    ai_summary: str | None
     
 class CoverImage(BaseModel):
     url: str
     width: int
     height: int
     
-class Extra(BaseModel):
-    rel_info: str
-    freshness_info: str
-    auth_info: str
-    final_ref: str
-    
 class ReferenceItem(BaseModel):
     url: str
-    logo_url: str
+    logo_url: str | None = None
     site_name: str
     title: str
-    summary: str
+    summary: str | None = None
     publish_time: str
     cover_image: CoverImage | None = None
     
