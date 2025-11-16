@@ -145,10 +145,10 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										{t('document_podcast_status') + ': '}
 										{data.podcast_task?.status === DocumentPodcastStatus.WAIT_TO
 											? t('document_podcast_status_todo')
-											: data.convert_task?.status ===
+											: data.podcast_task?.status ===
 											  DocumentPodcastStatus.GENERATING
 											? t('document_podcast_status_doing')
-											: data.convert_task?.status ===
+											: data.podcast_task?.status ===
 											  DocumentPodcastStatus.SUCCESS
 											? t('document_podcast_status_success')
 											: t('document_podcast_status_failed')}
