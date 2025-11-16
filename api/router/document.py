@@ -119,6 +119,7 @@ async def update_note(
 ):
     has_more = True
     next_start = None
+    next_note = None
     notes = crud.document.search_all_document_notes_by_document_id(
         db=db,
         document_id=search_note_request.document_id,
@@ -767,6 +768,7 @@ async def search_user_unread_documents(
 ):
     has_more = True
     next_start = None
+    next_document = None
     db_documents = crud.document.search_user_unread_documents(
         db=db, 
         user_id=user.id, 
@@ -819,6 +821,7 @@ async def recent_read_document(
 ):
     has_more = True
     next_start = None
+    next_document = None
     db_documents = crud.document.search_user_recent_read_documents(
         db=db, 
         user_id=user.id, 
@@ -870,6 +873,7 @@ async def search_all_mine_documents(
 ):
     has_more = True
     next_start = None
+    next_document = None
     db_documents = crud.document.search_user_documents(
         db=db, 
         user_id=user.id, 
@@ -921,6 +925,7 @@ async def search_my_star_documents(
 ):
     has_more = True
     next_start = None
+    next_document = None
     db_documents = crud.document.search_user_stared_documents(
         db=db, 
         user_id=user.id, 

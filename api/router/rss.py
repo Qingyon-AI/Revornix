@@ -49,6 +49,7 @@ async def getRssServerDocument(
 ):
     has_more = True
     next_start = None
+    next_rss_document = None
     db_documents = crud.rss.search_document_for_rss(
         db=db, 
         rss_id=get_rss_server_document_request.rss_id,
@@ -197,6 +198,7 @@ async def searchRssServer(
 ):
     has_more = True
     next_start = None
+    db_next_rss_server = None
     db_rss_servers = crud.rss.search_rss_servers_for_user(
         db=db, 
         user_id=current_user.id,

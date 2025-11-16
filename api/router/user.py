@@ -172,6 +172,7 @@ async def search_user_fans(
 ):
     has_more = True
     next_start = None
+    next_user = None
     users = crud.user.search_user_fans(
         db=db,
         user_id=user.id,
@@ -223,6 +224,7 @@ async def search_user_follows(
 ):
     has_more = True
     next_start = None
+    next_user = None
     users = crud.user.search_user_follows(
         db=db,
         user_id=user.id,

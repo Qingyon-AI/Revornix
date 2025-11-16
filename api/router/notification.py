@@ -685,6 +685,7 @@ async def search_notification_record(
 ):
     has_more = True
     next_start = None
+    next_notification_record = None
     db_notification_records = crud.notification.search_notification_records_for_user(
         db=db, 
         user_id=user.id, 
