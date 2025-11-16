@@ -2,10 +2,8 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Play, Pause, Volume2 } from 'lucide-react';
-import Image from 'next/image';
 
 function formatTime(time: number) {
 	const m = Math.floor(time / 60);
@@ -37,17 +35,39 @@ export default function AudioPlayer({
 		audio.volume = volume;
 
 		const updateProgress = () => setProgress(audio.currentTime);
-		const updateDuration = () => setDuration(audio.duration || 0);
+
+		const updateDuration = () => {
+			if (!isNaN(audio.duration) && audio.duration > 0) {
+				setDuration(audio.duration);
+			}
+		};
+
 		const handleEnded = () => setPlaying(false);
 
+		// ---- 多事件监听（解决 duration = 0）----
 		audio.addEventListener('timeupdate', updateProgress);
 		audio.addEventListener('loadedmetadata', updateDuration);
+		audio.addEventListener('durationchange', updateDuration);
+		audio.addEventListener('canplay', updateDuration);
+		audio.addEventListener('canplaythrough', updateDuration);
 		audio.addEventListener('ended', handleEnded);
+
+		// ---- 主动轮询兜底（部分浏览器事件不触发）----
+		const interval = setInterval(() => {
+			if (!isNaN(audio.duration) && audio.duration > 0) {
+				setDuration(audio.duration);
+				clearInterval(interval);
+			}
+		}, 200);
 
 		return () => {
 			audio.removeEventListener('timeupdate', updateProgress);
 			audio.removeEventListener('loadedmetadata', updateDuration);
+			audio.removeEventListener('durationchange', updateDuration);
+			audio.removeEventListener('canplay', updateDuration);
+			audio.removeEventListener('canplaythrough', updateDuration);
 			audio.removeEventListener('ended', handleEnded);
+			clearInterval(interval);
 		};
 	}, []);
 
@@ -76,7 +96,7 @@ export default function AudioPlayer({
 
 	return (
 		<div className='flex items-center gap-4'>
-			{/* 🎵 封面 */}
+			{/* 封面 */}
 			<div className='relative flex-shrink-0'>
 				<img
 					src={cover}
@@ -87,7 +107,7 @@ export default function AudioPlayer({
 				/>
 			</div>
 
-			{/* 🎧 播放器主体 */}
+			{/* 播放器主体 */}
 			<div className='flex flex-col flex-1 min-w-0'>
 				{/* 标题与作者 */}
 				<div className='flex flex-col mb-2'>
@@ -95,7 +115,7 @@ export default function AudioPlayer({
 					<p className='text-xs text-muted-foreground truncate'>{artist}</p>
 				</div>
 
-				{/* 播放控制区 */}
+				{/* 播放控制 */}
 				<div className='flex items-center'>
 					<Button
 						variant='outline'
@@ -114,19 +134,24 @@ export default function AudioPlayer({
 						<span className='text-xs text-muted-foreground w-10 text-right'>
 							{formatTime(progress)}
 						</span>
-						<Slider
-							value={[progress]}
-							max={duration}
-							step={0.1}
-							className='flex-1'
-							onValueChange={handleSeek}
-						/>
+						{duration > 0 ? (
+							<Slider
+								value={[progress]}
+								max={duration}
+								step={0.1}
+								className='flex-1'
+								onValueChange={handleSeek}
+							/>
+						) : (
+							// 占位，不闪烁
+							<div className='flex-1 h-2 bg-muted rounded-md opacity-50 animate-pulse' />
+						)}
 						<span className='text-xs text-muted-foreground w-10'>
 							{formatTime(duration)}
 						</span>
 					</div>
 
-					{/* 音量控制 */}
+					{/* 音量 */}
 					<div className='hidden md:flex items-center gap-2 w-28'>
 						<Volume2 className='h-4 w-4 text-muted-foreground' />
 						<Slider
