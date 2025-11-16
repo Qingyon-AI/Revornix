@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_serializer
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date as date_type
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from .user import UserPublicInfo
 from .task import DocumentConvertTask, DocumentEmbeddingTask, DocumentGraphTask, DocumentProcessTask, DocumentPodcastTask
@@ -75,10 +75,10 @@ class DocumentNoteInfo(BaseModel):
         from_attributes = True 
 
 class SummaryItem(BaseModel):
-    date: str
+    date: date_type
     total: int
     @field_serializer("date")
-    def format_date(self, v: datetime) -> str:
+    def format_date(self, v: date_type) -> str:
         return v.strftime("%Y-%m-%d")
     
 class DocumentMonthSummaryResponse(BaseModel):

@@ -286,12 +286,12 @@ async def get_month_summary(
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
 ):
-    documents = crud.document.get_document_summary_by_user_id(
+    rows = crud.document.get_document_summary_by_user_id(
         db=db, 
         user_id=user.id
     )
     # 格式化数据
-    summary_items = [schemas.document.SummaryItem(date=row.date, total=row.total) for row in documents]
+    summary_items = [schemas.document.SummaryItem(date=row.date, total=row.total) for row in rows]
     return schemas.document.DocumentMonthSummaryResponse(data=summary_items)
 
 @document_router.post('/create', response_model=schemas.document.DocumentCreateResponse)

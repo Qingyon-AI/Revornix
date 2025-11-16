@@ -51,9 +51,9 @@ const DashboardPage = () => {
 					</CardContent>
 				</Card>
 			</div>
-			<div className='text-muted-foreground text-xs p-5 rounded-lg bg-card flex justify-center items-center'>
+			<Card className='text-muted-foreground text-xs p-5 rounded-lg bg-card flex justify-center items-center shadow-none'>
 				{t('dashboard_bottom_slogan')}
-			</div>
+			</Card>
 		</div>
 	);
 };

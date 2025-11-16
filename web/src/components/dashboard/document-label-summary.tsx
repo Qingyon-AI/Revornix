@@ -84,7 +84,7 @@ const DocumentLabelSummary = ({ className }: { className?: string }) => {
 					</ChartContainer>
 				)}
 				{!isFetching && data && colorizedData.length == 0 && (
-					<div className='flex flex-col items-center justify-center h-[250px]'>
+					<div className='flex flex-col items-center justify-center h-[250px] text-sm text-muted-foreground'>
 						{t('dashboard_document_label_summary_empty')}
 					</div>
 				)}
