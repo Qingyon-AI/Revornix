@@ -278,6 +278,15 @@ const SectionGraph = ({ section_id }: { section_id: number }) => {
 			{isFetched && (
 				<>{data?.nodes && data?.nodes.length > 0 && <svg ref={svgRef}></svg>}</>
 			)}
+			{isFetched && (
+				<>
+					{data?.nodes && data?.nodes.length === 0 && (
+						<div className='text-muted-foreground text-sm'>
+							{t('section_graph_empty')}
+						</div>
+					)}
+				</>
+			)}
 		</div>
 	);
 };
