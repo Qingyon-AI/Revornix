@@ -80,9 +80,9 @@ const DocumentNotes = ({ id }: { id: number }) => {
 											{note.user.nickname}
 										</p>
 									</div>
-									{note.update_time && (
+									{note.create_time && (
 										<p className='text-xs text-muted-foreground'>
-											{format(note.update_time, 'MM-dd HH:mm')}
+											{format(note.create_time, 'MM-dd HH:mm')}
 										</p>
 									)}
 								</div>

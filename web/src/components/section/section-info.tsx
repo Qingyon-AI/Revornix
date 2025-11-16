@@ -67,11 +67,11 @@ const SectionInfo = ({ id }: { id: number }) => {
 
 			{isFetched && (
 				<>
-					{section?.update_time && (
+					{section?.create_time && (
 						<div className='px-5 mb-3'>
 							<p className='text-xs text-muted-foreground'>
 								{t('section_updated_at')}{' '}
-								{formatDistance(new Date(section.update_time), new Date(), {
+								{formatDistance(new Date(section.create_time), new Date(), {
 									addSuffix: true,
 									locale: locale === 'zh' ? zhCN : enUS,
 								})}
