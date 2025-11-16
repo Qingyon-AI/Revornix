@@ -119,6 +119,7 @@
     "user_logout": "退出",
     "notification_receive": "收到一条新通知",
     "notification_to_view": "前往查看",
+    "rss_empty": "暂无RSS源",
     "rss_page_tips": "RSS订阅将会在后台自动识别源的更新，并且生成对应文档，同时归类更新对应专栏。识别频率默认60分钟一次。",
     "rss_add": "添加RSS源",
     "rss_add_tips": "增加Server后，Revornix会定期（默认情况下60分钟一次）通过订阅源的变动来抓取对应页面，并且新建对应文档。",
