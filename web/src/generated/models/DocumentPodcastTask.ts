@@ -36,7 +36,7 @@ export interface DocumentPodcastTask {
      * @type {string}
      * @memberof DocumentPodcastTask
      */
-    podcast_file_name: string;
+    podcast_file_name: string | null;
 }
 
 /**

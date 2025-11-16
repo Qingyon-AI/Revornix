@@ -36,7 +36,7 @@ export interface SchemasSectionBaseSectionInfo {
      * @type {string}
      * @memberof SchemasSectionBaseSectionInfo
      */
-    description: string;
+    description: string | null;
     /**
      * 
      * @type {number}

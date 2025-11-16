@@ -36,7 +36,7 @@ export interface DocumentConvertTask {
      * @type {string}
      * @memberof DocumentConvertTask
      */
-    md_file_name: string;
+    md_file_name: string | null;
 }
 
 /**

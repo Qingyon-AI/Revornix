@@ -63,7 +63,7 @@ export interface RssServerInfo {
      * @type {string}
      * @memberof RssServerInfo
      */
-    cover?: string;
+    cover?: string | null;
     /**
      * 
      * @type {string}
@@ -81,7 +81,7 @@ export interface RssServerInfo {
      * @type {Date}
      * @memberof RssServerInfo
      */
-    update_time: Date;
+    update_time: Date | null;
     /**
      * 
      * @type {Array<RssDocumentInfo>}
@@ -127,7 +127,7 @@ export function RssServerInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         'cover': json['cover'] == null ? undefined : json['cover'],
         'address': json['address'],
         'create_time': (new Date(json['create_time'])),
-        'update_time': (new Date(json['update_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
         'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(RssDocumentInfoFromJSON)),
         'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(RssSectionInfoFromJSON)),
     };
@@ -151,7 +151,7 @@ export function RssServerInfoToJSONTyped(value?: RssServerInfo | null, ignoreDis
         'cover': value['cover'],
         'address': value['address'],
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'documents': value['documents'] == null ? undefined : ((value['documents'] as Array<any>).map(RssDocumentInfoToJSON)),
         'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(RssSectionInfoToJSON)),
     };

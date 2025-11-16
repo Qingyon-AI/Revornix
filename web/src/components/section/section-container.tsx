@@ -160,9 +160,9 @@ const SectionContainer = ({ id }: { id: number }) => {
 								</div>
 							)}
 							{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
-								section?.podcast_info?.podcast_file_name && (
+								section?.podcast_task?.podcast_file_name && (
 									<AudioPlayer
-										src={section?.podcast_info?.podcast_file_name}
+										src={section?.podcast_task?.podcast_file_name}
 										cover={
 											section.cover ??
 											'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'

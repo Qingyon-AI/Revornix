@@ -211,7 +211,6 @@ docs/SectionDocumentInfo.md
 docs/SectionDocumentRequest.md
 docs/SectionGraphRequest.md
 docs/SectionInfo.md
-docs/SectionPodcastInfo.md
 docs/SectionPodcastTask.md
 docs/SectionProcessTask.md
 docs/SectionPublishGetRequest.md
@@ -447,7 +446,6 @@ models/SectionDocumentInfo.ts
 models/SectionDocumentRequest.ts
 models/SectionGraphRequest.ts
 models/SectionInfo.ts
-models/SectionPodcastInfo.ts
 models/SectionPodcastTask.ts
 models/SectionProcessTask.ts
 models/SectionPublishGetRequest.ts

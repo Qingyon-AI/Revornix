@@ -21,7 +21,6 @@ Name | Type
 `labels` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
 `cover` | string
 `podcast_task` | [SectionPodcastTask](SectionPodcastTask.md)
-`podcast_info` | [SectionPodcastInfo](SectionPodcastInfo.md)
 `process_task` | [SectionProcessTask](SectionProcessTask.md)
 
 ## Example
@@ -46,7 +45,6 @@ const example = {
   "labels": null,
   "cover": null,
   "podcast_task": null,
-  "podcast_info": null,
   "process_task": null,
 } satisfies SectionInfo
 

@@ -66,7 +66,7 @@ export interface RssDocumentInfo {
      * @type {Date}
      * @memberof RssDocumentInfo
      */
-    update_time: Date;
+    update_time: Date | null;
 }
 
 /**
@@ -100,7 +100,7 @@ export function RssDocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'cover': json['cover'] == null ? undefined : json['cover'],
         'from_plat': json['from_plat'],
         'create_time': (new Date(json['create_time'])),
-        'update_time': (new Date(json['update_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
 }
 
@@ -122,7 +122,7 @@ export function RssDocumentInfoToJSONTyped(value?: RssDocumentInfo | null, ignor
         'cover': value['cover'],
         'from_plat': value['from_plat'],
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
 

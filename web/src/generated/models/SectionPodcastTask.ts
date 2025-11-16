@@ -36,7 +36,7 @@ export interface SectionPodcastTask {
      * @type {string}
      * @memberof SectionPodcastTask
      */
-    podcast_file_name: string;
+    podcast_file_name: string | null;
 }
 
 /**

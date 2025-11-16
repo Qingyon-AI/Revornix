@@ -38,7 +38,7 @@ export interface ReferenceItem {
      * @type {string}
      * @memberof ReferenceItem
      */
-    logo_url: string;
+    logo_url?: string | null;
     /**
      * 
      * @type {string}
@@ -56,7 +56,7 @@ export interface ReferenceItem {
      * @type {string}
      * @memberof ReferenceItem
      */
-    summary: string;
+    summary?: string | null;
     /**
      * 
      * @type {string}
@@ -76,10 +76,8 @@ export interface ReferenceItem {
  */
 export function instanceOfReferenceItem(value: object): value is ReferenceItem {
     if (!('url' in value) || value['url'] === undefined) return false;
-    if (!('logo_url' in value) || value['logo_url'] === undefined) return false;
     if (!('site_name' in value) || value['site_name'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
-    if (!('summary' in value) || value['summary'] === undefined) return false;
     if (!('publish_time' in value) || value['publish_time'] === undefined) return false;
     return true;
 }
@@ -95,10 +93,10 @@ export function ReferenceItemFromJSONTyped(json: any, ignoreDiscriminator: boole
     return {
         
         'url': json['url'],
-        'logo_url': json['logo_url'],
+        'logo_url': json['logo_url'] == null ? undefined : json['logo_url'],
         'site_name': json['site_name'],
         'title': json['title'],
-        'summary': json['summary'],
+        'summary': json['summary'] == null ? undefined : json['summary'],
         'publish_time': json['publish_time'],
         'cover_image': json['cover_image'] == null ? undefined : CoverImageFromJSON(json['cover_image']),
     };

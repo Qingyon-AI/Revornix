@@ -30,7 +30,7 @@ export interface ModelCreateRequest {
      * @type {string}
      * @memberof ModelCreateRequest
      */
-    description: string;
+    description: string | null;
     /**
      * 
      * @type {number}
