@@ -90,18 +90,18 @@ const SectionMarkdown = ({
 
 	return (
 		<>
-			{isFetched && !section?.md_file_name && (
+			{section && isFetched && !section?.md_file_name && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-sm'>
 					{t('section_markdown_empty')}
 				</div>
 			)}
 
-			{(isFetching || markdownIsFetching) && (
+			{(isFetching || markdownIsFetching) && !markdown && (
 				<Skeleton className='h-full w-full' />
 			)}
 
 			{(isError || markdownGetError) && (
-				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs relative'>
+				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-sm relative'>
 					{error?.message ?? (
 						<div className='flex flex-col text-center gap-2 w-full'>
 							<p>{markdownGetError}</p>
@@ -127,7 +127,7 @@ const SectionMarkdown = ({
 									rehypePlugins={[rehypeKatex, rehypeRaw]}>
 									{markdown}
 								</Markdown>
-								<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
+								<p className='text-sm text-center text-muted-foreground bg-muted rounded py-2'>
 									{t('section_ai_tips')}
 								</p>
 							</div>

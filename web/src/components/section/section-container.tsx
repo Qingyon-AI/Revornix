@@ -118,7 +118,15 @@ const SectionContainer = ({ id }: { id: number }) => {
 				</Card>
 
 				<Card className='p-5 relative flex flex-col gap-5'>
-					{!section?.podcast_task && (
+					{section?.creator.id !== userInfo?.id && !section?.podcast_task && (
+						<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+							<OctagonAlert className='h-4 w-4 !text-destructive' />
+							<AlertDescription>
+								{t('section_podcast_user_unable')}
+							</AlertDescription>
+						</Alert>
+					)}
+					{section?.creator.id === userInfo?.id && !section?.podcast_task && (
 						<>
 							<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
 								<AlertDescription className='flex flex-row items-center'>
