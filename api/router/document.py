@@ -645,6 +645,23 @@ async def get_document_detail(
     )
     if document is None:
         raise Exception('The document is not exist')
+    # 判断用户是否有权限访问这份文档
+    if document.creator_id != user.id:
+        # 如果文档属于公开的某一份专栏中，那就可以
+        db_published_section_documents = crud.document.get_published_section_of_the_document_by_document_id(
+            db=db,
+            document_id=document_detail_request.document_id
+        )
+        if len(db_published_section_documents) == 0:
+            # 判断用户是否是该文档相关的专栏的参与者
+            db_user_published_section_documents = crud.document.get_published_section_of_the_document_by_document_id(
+                db=db,
+                document_id=document_detail_request.document_id,
+                user_id=user.id
+            )
+            if len(db_user_published_section_documents) == 0:
+                raise Exception('You have no permission to access this document')
+
     is_star = crud.document.get_star_document_by_user_id_and_document_id(
         db=db, 
         user_id=user.id, 

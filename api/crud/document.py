@@ -317,6 +317,47 @@ def count_user_documents(
     query = query.distinct(models.document.Document.id)
     return query.count()
 
+def get_published_section_of_the_document_by_document_id(
+    db: Session,
+    document_id: int,
+    user_id: int | None = None
+):
+    # 基础查询：Section + SectionDocument
+    query = (
+        db.query(models.section.Section)
+        .join(
+            models.section.SectionDocument,
+            models.section.Section.id == models.section.SectionDocument.section_id,
+        )
+        .filter(
+            models.section.SectionDocument.document_id == document_id,
+            models.section.Section.delete_at == None,
+            models.section.SectionDocument.delete_at == None,
+        )
+    )
+    
+    # 此处是判断文档是否有归类于某些公开的专栏
+    if user_id is None:
+        query = query.join(
+            models.section.PublishSection,
+            models.section.PublishSection.section_id == models.section.Section.id,
+        )
+        query.filter(
+            models.section.PublishSection.delete_at == None,
+        )
+    # 如果没有就看当前用户是否有参与文档相关的某些公开的专栏
+    else:
+        # 如果限制用户，则增加 SectionUser JOIN
+        query = query.join(
+            models.section.SectionUser,
+            models.section.SectionUser.section_id == models.section.Section.id,
+        ).filter(
+            models.section.SectionUser.user_id == user_id,
+            models.section.SectionUser.delete_at == None,
+        )
+
+    return query.all()
+
 def get_star_document_by_user_id_and_document_id(
     db: Session, 
     user_id: int, 
