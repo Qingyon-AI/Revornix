@@ -187,7 +187,7 @@ class SectionDocumentInfo(BaseModel):
     sections: list[BaseSectionInfo] | None = None
     users: list[UserPublicInfo] | None = None
     create_time: datetime
-    update_time: datetime
+    update_time: datetime | None = None
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
         if v.tzinfo is None:
@@ -220,7 +220,7 @@ class SectionInfo(BaseModel):
     documents_count: int 
     subscribers_count: int
     create_time: datetime
-    update_time: datetime
+    update_time: datetime | None = None
     authority: int | None = None
     is_subscribed: bool | None = None
     md_file_name: str | None = None
@@ -251,7 +251,9 @@ class SectionInfo(BaseModel):
         return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
 
     @field_serializer("update_time")
-    def serialize_update_time(self, v: datetime):
+    def serialize_update_time(self, v: datetime | None):
+        if v is None:
+            return None
         return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
 
     class Config:
@@ -288,7 +290,9 @@ class DaySectionResponse(BaseModel):
         return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
 
     @field_serializer("update_time")
-    def serialize_update_time(self, v):
+    def serialize_update_time(self, v: datetime | None):
+        if v is None:
+            return None
         return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
 
 class SectionCreateRequest(BaseModel):
