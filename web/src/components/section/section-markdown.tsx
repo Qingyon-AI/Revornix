@@ -90,7 +90,13 @@ const SectionMarkdown = ({
 
 	return (
 		<>
-			{!markdown && !isError && !markdownGetError && (
+			{isFetched && !section?.md_file_name && (
+				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-sm'>
+					{t('section_markdown_empty')}
+				</div>
+			)}
+
+			{(isFetching || markdownIsFetching) && (
 				<Skeleton className='h-full w-full' />
 			)}
 
@@ -106,7 +112,7 @@ const SectionMarkdown = ({
 				</div>
 			)}
 
-			{markdown && !isError && !markdownGetError && (
+			{markdown && (
 				<div className={cn('h-full w-full relative', className)}>
 					<div className='w-full h-full flex flex-col'>
 						<div className='flex-1 overflow-auto relative'>
