@@ -1,7 +1,6 @@
 from . import document
 from . import section
 from . import user
-from . import notification
 from . import task
 from . import model
 from . import engine

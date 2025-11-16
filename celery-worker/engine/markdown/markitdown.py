@@ -66,7 +66,7 @@ class MarkitdownEngine(MarkdownEngineProtocol):
             title = str(og_title_meta.get("content"))
         if not title and normal_title_tag is not None:
             # 有些页面 title 可能是 None
-            title = str(normal_title_tag.string.strip()) if normal_title_tag.string 
+            title = str(normal_title_tag.string.strip()) if normal_title_tag.string else "Unknown Title"
 
         # 描述提取：优先 og:description，其次 meta[name=description]
         og_description_meta = soup.find("meta", property="og:description")
