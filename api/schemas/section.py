@@ -137,7 +137,7 @@ class SectionDetailRequest(BaseModel):
 class BaseSectionInfo(BaseModel):
     id: int
     title: str
-    description: str
+    description: str | None
     authority: int | None = None
     class Config:
         from_attributes = True 

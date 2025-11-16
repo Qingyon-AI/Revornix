@@ -1,6 +1,5 @@
 from pydantic import BaseModel, field_serializer
-from .section import SectionInfo
-from datetime import datetime
+from datetime import datetime, timezone
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
 class GetRssServerDocumentRequest(BaseModel):
@@ -32,7 +31,19 @@ class RssSectionInfo(BaseModel):
     description: str
     cover: str | None = None
     create_time: datetime
-    update_time: datetime
+    update_time: datetime | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is None:
+            return None
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
     class Config:
         from_attributes = True
         
@@ -44,7 +55,19 @@ class RssDocumentInfo(BaseModel):
     cover: str | None = None
     from_plat: str
     create_time: datetime
-    update_time: datetime
+    update_time: datetime | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is None:
+            return None
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
     class Config:
         from_attributes = True
 
@@ -56,13 +79,13 @@ class RssServerInfo(BaseModel):
     cover: str | None = None
     address: str
     create_time: datetime
-    update_time: datetime
+    update_time: datetime | None
     documents: list[RssDocumentInfo] = []
     sections: list[RssSectionInfo] = []
     class Config:
         from_attributes = True
     @field_serializer('cover')
-    def cover_serializer(self, v: str) -> str:
+    def cover_serializer(self, v: str | None):
         if v is None:
             return None
         if v.startswith('http://') or v.startswith('https://'):
