@@ -1225,9 +1225,12 @@ async def search_section_comment(
         )
         has_more = next_section_comment is not None
         next_start = next_section_comment.id if next_section_comment is not None else None
+    section_parent_degree_comments = [
+        schemas.section.SectionCommentInfo.model_validate(db_section_parent_degree_comment) for db_section_parent_degree_comment in db_section_parent_degree_comments
+    ]
     res = schemas.pagination.InifiniteScrollPagnition(
         total=total_parent,
-        elements=db_section_parent_degree_comments,
+        elements=section_parent_degree_comments,
         start=section_comment_search_request.start,
         limit=section_comment_search_request.limit,
         has_more=has_more,
