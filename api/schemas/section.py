@@ -89,15 +89,15 @@ class SectionCommentInfo(BaseModel):
     id: int
     content: str
     create_time: datetime
-    update_time: datetime
+    update_time: datetime | None
     creator: UserPublicInfo
     @field_serializer("create_time")
-    def serializer_create_time(cls, v: datetime):
+    def serializer_create_timezone(self, v: datetime):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
     @field_serializer("update_time")
-    def serializer_update_time(cls, v: datetime | None):
+    def serializer_update_timezone(self, v: datetime | None):
         if v is None:
             return None
         if v.tzinfo is None:
