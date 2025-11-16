@@ -119,6 +119,7 @@
     "user_logout": "Logout",
     "notification_receive": "You have received a new notification",
     "notification_to_view": "View now",
+    "rss_empty": "Empty for now",
     "rss_page_tips": "RSS subscriptions will automatically detect source updates in the background and generate corresponding documents, while also updating the related sections. The default detection frequency is every 60 minutes.",
     "rss_add": "Add RSS Source",
     "rss_add_tips": "After adding a server, Revornix will periodically (every 60 minutes by default) fetch updated pages from the feed and create corresponding documents.",

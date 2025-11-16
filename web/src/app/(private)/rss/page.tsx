@@ -20,8 +20,7 @@ const RSSPage = () => {
 		data,
 		isFetchingNextPage,
 		isFetching,
-		isRefetching,
-		isSuccess,
+		isLoading,
 		fetchNextPage,
 		hasNextPage,
 	} = useInfiniteQuery({
@@ -53,20 +52,25 @@ const RSSPage = () => {
 			<div className='w-full px-5'>
 				<Alert className='mb-5'>
 					<Info />
-					<AlertDescription>
-						{t('rss_page_tips')}
-					</AlertDescription>
+					<AlertDescription>{t('rss_page_tips')}</AlertDescription>
 				</Alert>
 				<div className='flex justify-end mb-5'>
 					<AddRss />
 				</div>
+
+				{rssServers && rssServers.length === 0 && !isFetching && (
+					<div className='w-full text-center rounded-lg bg-muted p-12 text-muted-foreground text-xs'>
+						{t('rss_empty')}
+					</div>
+				)}
 
 				<div className='w-full grid grid-cols-1 gap-4 md:grid-cols-4 flex-1 overflow-auto'>
 					{rssServers &&
 						rssServers.map((rss, index) => {
 							return <RssCard key={index} rss={rss} />;
 						})}
-					{isFetching && !data && (
+
+					{isLoading && (
 						<>
 							{[...Array(12)].map((number, index) => {
 								return <RssCardSkeleton key={index} />;
