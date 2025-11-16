@@ -37,7 +37,11 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	const queryClient = getQueryClient();
 	const { userInfo } = useUserContext();
 
-	const { data: document } = useQuery({
+	const {
+		data: document,
+		isError,
+		error,
+	} = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
@@ -118,6 +122,9 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		<div className='px-5 pb-5 h-full w-full grid grid-cols-12 gap-5 relative'>
 			{/* 此处的min-h-0是因为父级的grid布局会导致子元素的h-full无法准确继承到父级的实际高度，导致其高度被内容撑开 */}
 			<div className='col-span-8 h-full relative min-h-0'>
+				{isError && (
+					<div className='text-sm text-muted-foreground h-full w-full flex justify-center items-center'>{error.message}</div>
+				)}
 				{document?.category === DocumentCategory.WEBSITE && (
 					<WebsiteDocumentDetail onFinishRead={handleFinishRead} id={id} />
 				)}
