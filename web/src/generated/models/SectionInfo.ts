@@ -34,13 +34,6 @@ import {
     SchemasDocumentLabelToJSON,
     SchemasDocumentLabelToJSONTyped,
 } from './SchemasDocumentLabel';
-import type { SectionPodcastInfo } from './SectionPodcastInfo';
-import {
-    SectionPodcastInfoFromJSON,
-    SectionPodcastInfoFromJSONTyped,
-    SectionPodcastInfoToJSON,
-    SectionPodcastInfoToJSONTyped,
-} from './SectionPodcastInfo';
 import type { UserPublicInfo } from './UserPublicInfo';
 import {
     UserPublicInfoFromJSON,
@@ -108,7 +101,7 @@ export interface SectionInfo {
      * @type {Date}
      * @memberof SectionInfo
      */
-    update_time: Date;
+    update_time?: Date | null;
     /**
      * 
      * @type {number}
@@ -147,12 +140,6 @@ export interface SectionInfo {
     podcast_task?: SectionPodcastTask | null;
     /**
      * 
-     * @type {SectionPodcastInfo}
-     * @memberof SectionInfo
-     */
-    podcast_info?: SectionPodcastInfo | null;
-    /**
-     * 
      * @type {SectionProcessTask}
      * @memberof SectionInfo
      */
@@ -170,7 +157,6 @@ export function instanceOfSectionInfo(value: object): value is SectionInfo {
     if (!('documents_count' in value) || value['documents_count'] === undefined) return false;
     if (!('subscribers_count' in value) || value['subscribers_count'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
-    if (!('update_time' in value) || value['update_time'] === undefined) return false;
     if (!('cover' in value) || value['cover'] === undefined) return false;
     return true;
 }
@@ -193,14 +179,13 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'documents_count': json['documents_count'],
         'subscribers_count': json['subscribers_count'],
         'create_time': (new Date(json['create_time'])),
-        'update_time': (new Date(json['update_time'])),
+        'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
         'authority': json['authority'] == null ? undefined : json['authority'],
         'is_subscribed': json['is_subscribed'] == null ? undefined : json['is_subscribed'],
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasDocumentLabelFromJSON)),
         'cover': json['cover'],
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
-        'podcast_info': json['podcast_info'] == null ? undefined : SectionPodcastInfoFromJSON(json['podcast_info']),
         'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),
     };
 }
@@ -224,14 +209,13 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'documents_count': value['documents_count'],
         'subscribers_count': value['subscribers_count'],
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'authority': value['authority'],
         'is_subscribed': value['is_subscribed'],
         'md_file_name': value['md_file_name'],
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasDocumentLabelToJSON)),
         'cover': value['cover'],
         'podcast_task': SectionPodcastTaskToJSON(value['podcast_task']),
-        'podcast_info': SectionPodcastInfoToJSON(value['podcast_info']),
         'process_task': SectionProcessTaskToJSON(value['process_task']),
     };
 }

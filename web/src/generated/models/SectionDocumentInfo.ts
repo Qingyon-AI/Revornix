@@ -112,7 +112,7 @@ export interface SectionDocumentInfo {
      * @type {Date}
      * @memberof SectionDocumentInfo
      */
-    update_time: Date;
+    update_time?: Date | null;
 }
 
 /**
@@ -124,7 +124,6 @@ export function instanceOfSectionDocumentInfo(value: object): value is SectionDo
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('category' in value) || value['category'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
-    if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
 }
 
@@ -149,7 +148,7 @@ export function SectionDocumentInfoFromJSONTyped(json: any, ignoreDiscriminator:
         'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SchemasSectionBaseSectionInfoFromJSON)),
         'users': json['users'] == null ? undefined : ((json['users'] as Array<any>).map(UserPublicInfoFromJSON)),
         'create_time': (new Date(json['create_time'])),
-        'update_time': (new Date(json['update_time'])),
+        'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
     };
 }
 
@@ -175,7 +174,7 @@ export function SectionDocumentInfoToJSONTyped(value?: SectionDocumentInfo | nul
         'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SchemasSectionBaseSectionInfoToJSON)),
         'users': value['users'] == null ? undefined : ((value['users'] as Array<any>).map(UserPublicInfoToJSON)),
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
 

@@ -54,7 +54,7 @@ export interface RssSectionInfo {
      * @type {Date}
      * @memberof RssSectionInfo
      */
-    update_time: Date;
+    update_time: Date | null;
 }
 
 /**
@@ -84,7 +84,7 @@ export function RssSectionInfoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'description': json['description'],
         'cover': json['cover'] == null ? undefined : json['cover'],
         'create_time': (new Date(json['create_time'])),
-        'update_time': (new Date(json['update_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
 }
 
@@ -104,7 +104,7 @@ export function RssSectionInfoToJSONTyped(value?: RssSectionInfo | null, ignoreD
         'description': value['description'],
         'cover': value['cover'],
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
 

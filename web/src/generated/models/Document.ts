@@ -36,13 +36,13 @@ export interface Document {
      * @type {string}
      * @memberof Document
      */
-    description: string;
+    description: string | null;
     /**
      * 
      * @type {string}
      * @memberof Document
      */
-    ai_summary: string;
+    ai_summary: string | null;
 }
 
 /**

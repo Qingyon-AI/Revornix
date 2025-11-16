@@ -188,7 +188,6 @@ export * from './SectionDocumentInfo';
 export * from './SectionDocumentRequest';
 export * from './SectionGraphRequest';
 export * from './SectionInfo';
-export * from './SectionPodcastInfo';
 export * from './SectionPodcastTask';
 export * from './SectionProcessTask';
 export * from './SectionPublishGetRequest';
