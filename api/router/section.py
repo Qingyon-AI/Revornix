@@ -756,14 +756,12 @@ async def search_user_sections(
             section_id=section.id,
             user_id=user.id
         )
-        return schemas.section.SectionInfo(
-            **section.__dict__,
-            creator=section.creator,
-            authority=db_section_user.authority if db_section_user else None,
-            cover=section.cover,
-            documents_count=documents_count,
-            subscribers_count=subscribers_count
-        )
+        res = schemas.section.SectionInfo.model_validate(section)
+        res.creator = section.creator
+        res.authority = db_section_user.authority if db_section_user else None
+        res.documents_count = documents_count
+        res.subscribers_count = subscribers_count
+        return res
         
     sections = [get_section_info(section) for section in db_sections]
     if len(db_sections) < search_user_sections_request.limit or len(db_sections) == 0:
@@ -779,11 +777,13 @@ async def search_user_sections(
         )
         has_more = next_section is not None
         next_start = next_section.id if next_section is not None else None
-    total = crud.section.count_user_sections(db=db,
-                                             user_id=user.id,
-                                             only_published=True if search_user_sections_request.user_id != user.id else False,
-                                             keyword=search_user_sections_request.keyword,
-                                             label_ids=search_user_sections_request.label_ids)
+    total = crud.section.count_user_sections(
+        db=db,
+        user_id=user.id,
+        only_published=True if search_user_sections_request.user_id != user.id else False,
+        keyword=search_user_sections_request.keyword,
+        label_ids=search_user_sections_request.label_ids
+    )
     return schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo](
         total=total,
         elements=sections,
