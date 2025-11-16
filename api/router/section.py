@@ -136,9 +136,7 @@ async def section_document_request(
         has_more=has_more,
         next_start=next_start
     )
-    
-# TODO 截止当前11/13 00:59 优化至此 待续
-    
+
 @section_router.post('/detail/seo', response_model=schemas.section.SectionInfo)
 async def section_seo_detail_request(
     section_seo_detail_request: schemas.section.SectionSeoDetailRequest,
@@ -195,17 +193,9 @@ async def section_seo_detail_request(
     )
     if db_section_podcast_task is not None:
         res.podcast_task = schemas.section.SectionPodcastTask(
-            status=db_section_podcast_task.status
-        )
-    
-    db_section_podcast = crud.section.get_section_podcast_by_section_id(
-        db=db,
-        section_id=db_section.id
-    )
-    if db_section_podcast is not None:
-        res.podcast_info = schemas.section.SectionPodcastInfo(
-            creator_id=db_section.creator_id,
-            podcast_file_name=db_section_podcast.podcast_file_name
+            creator_id=db_section_podcast_task.user_id,
+            status=db_section_podcast_task.status,
+            podcast_file_name=db_section_podcast_task.podcast_file_name
         )
     
     db_section_process_task = crud.task.get_section_process_task_by_section_id(
@@ -910,15 +900,6 @@ async def get_section_detail(
             section_id=db_section.id,
             filter_roles=[UserSectionRole.SUBSCRIBER]
         )
-        db_documents = crud.section.get_documents_for_section_by_section_id(
-            db=db,
-            section_id=section_detail_request.section_id
-        )
-        section_docs = crud.section.get_section_documents_by_section_id(
-            db=db, 
-            section_id=db_section.id
-        )
-
         db_labels = crud.section.get_labels_by_section_id(
             db=db,
             section_id=section_detail_request.section_id
@@ -942,17 +923,9 @@ async def get_section_detail(
         )
         if db_section_podcast_task is not None:
             res.podcast_task = schemas.section.SectionPodcastTask(
-                status=db_section_podcast_task.status
-            )
-        
-        db_section_podcast = crud.section.get_section_podcast_by_section_id(
-            db=db,
-            section_id=section_detail_request.section_id
-        )
-        if db_section_podcast is not None:
-            res.podcast_info = schemas.section.SectionPodcastInfo(
-                creator_id=db_section.creator_id,
-                podcast_file_name=db_section_podcast.podcast_file_name
+                creator_id=db_section_podcast_task.user_id,
+                status=db_section_podcast_task.status,
+                podcast_file_name=db_section_podcast_task.podcast_file_name
             )
 
         db_section_process_task = crud.task.get_section_process_task_by_section_id(
@@ -1011,19 +984,11 @@ async def get_section_detail(
             )
             if db_section_podcast_task is not None:
                 res.podcast_task = schemas.section.SectionPodcastTask(
-                    status=db_section_podcast_task.status
+                    creator_id=db_section_podcast_task.user_id,
+                    status=db_section_podcast_task.status,
+                    podcast_file_name=db_section_podcast_task.podcast_file_name
                 )
-            
-            db_section_podcast = crud.section.get_section_podcast_by_section_id(
-                db=db,
-                section_id=section_detail_request.section_id
-            )
-            if db_section_podcast is not None:
-                res.podcast_info = schemas.section.SectionPodcastInfo(
-                    creator_id=db_section.creator_id,
-                    podcast_file_name=db_section_podcast.podcast_file_name
-                )
-            
+
             db_section_process_task = crud.task.get_section_process_task_by_section_id(
                 db=db,
                 section_id=section_detail_request.section_id

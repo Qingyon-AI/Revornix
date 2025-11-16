@@ -227,7 +227,6 @@ class SectionInfo(BaseModel):
     labels: list[Label] | None = None
     cover: str | None
     podcast_task: SectionPodcastTask | None = None
-    podcast_info: SectionPodcastInfo | None = None
     process_task: SectionProcessTask | None = None
     
     def _url_prefix(self) -> str:

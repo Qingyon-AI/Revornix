@@ -9,7 +9,7 @@ from config.milvus import MILVUS_CLUSTER_ENDPOINT, MILVUS_TOKEN
 MILVUS_COLLECTION = "document"
 
 if MILVUS_CLUSTER_ENDPOINT is None or MILVUS_TOKEN is None:
-    raise ValueError("请设置 Milvus 集群地址和 API 密钥。")
+    raise Exception("Please set the environment variables MILVUS_CLUSTER_ENDPOINT and MILVUS_TOKEN")
 
 milvus_client = MilvusClient(
     uri=MILVUS_CLUSTER_ENDPOINT, # Cluster endpoint obtained from the console

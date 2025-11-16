@@ -828,13 +828,15 @@ def star_document_by_document_id(
     user_id: int,
     document_id: int
 ):
+    now = datetime.now(tz=timezone.utc)
     db_exist_star_document = db.query(models.document.StarDocument)\
         .filter(models.document.StarDocument.document_id == document_id,
                 models.document.StarDocument.user_id == user_id)\
         .one_or_none()
     if db_exist_star_document is None:    
         db_star_document = models.document.StarDocument(document_id=document_id, 
-                                                        user_id=user_id)
+                                                        user_id=user_id,
+                                                        create_time=now)
         db.add(db_star_document)
         db.flush()
         return db_star_document
@@ -871,7 +873,8 @@ def read_document_by_document_id(
     if db_exist_read_document is None:
         db_read_document = models.document.ReadDocument(document_id=document_id, 
                                                         user_id=user_id, 
-                                                        read_time=now)
+                                                        read_time=now,
+                                                        create_time=now)
         db.add(db_read_document)
         db.flush()
         return db_read_document

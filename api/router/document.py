@@ -183,25 +183,15 @@ async def create_ai_summary(
     )
     if db_document is None:
         raise Exception('The document you want to summary is not found')
-    if db_document.category == DocumentCategory.WEBSITE:
-        db_website_document = crud.document.get_website_document_by_document_id(
+    if db_document.category == DocumentCategory.WEBSITE or db_document.category == DocumentCategory.FILE:
+        db_convert_task = crud.task.get_document_convert_task_by_document_id(
             db=db,
             document_id=ai_summary_request.document_id
         )
-        if db_website_document is None:
-            raise Exception('The document you want to summary has no website info')
+        if db_convert_task is None or db_convert_task.status != DocumentMdConvertStatus.SUCCESS or db_convert_task.md_file_name is None:
+            raise Exception("The document convert task of the document you want to summary havn't been finished")
         markdown_content = await remote_file_service.get_file_content_by_file_path(
-            file_path=db_website_document.md_file_name
-        )
-    if db_document.category == DocumentCategory.FILE:
-        db_file_document = crud.document.get_file_document_by_document_id(
-            db=db,
-            document_id=ai_summary_request.document_id
-        )
-        if db_file_document is None:
-            raise Exception('The document you want to summary has no file info')
-        markdown_content = await remote_file_service.get_file_content_by_file_path(
-            file_path=db_file_document.md_file_name
+            file_path=db_convert_task.md_file_name
         )
     if db_document.category == DocumentCategory.QUICK_NOTE:
         db_quick_note_document = crud.document.get_quick_note_document_by_document_id(
@@ -700,7 +690,22 @@ async def get_document_detail(
         db=db,
         document_id=document_detail_request.document_id
     )
-    res.convert_task = convert_task
+    if convert_task is not None:
+        res.convert_task = schemas.document.DocumentConvertTask(
+            creator_id=convert_task.user_id,
+            status=convert_task.status,
+            md_file_name=convert_task.md_file_name
+        )
+    podcast_task = crud.task.get_document_podcast_task_by_document_id(
+        db=db,
+        document_id=document_detail_request.document_id
+    )
+    if podcast_task is not None:
+        res.podcast_task = schemas.document.DocumentPodcastTask(
+            creator_id=podcast_task.user_id,
+            status=podcast_task.status,
+            podcast_file_name=podcast_task.podcast_file_name
+        )
     embedding_task = crud.task.get_document_embedding_task_by_document_id(
         db=db,
         document_id=document_detail_request.document_id
@@ -711,11 +716,6 @@ async def get_document_detail(
         document_id=document_detail_request.document_id
     )
     res.graph_task = graph_task
-    podcast_task = crud.task.get_document_podcast_task_by_document_id(
-        db=db,
-        document_id=document_detail_request.document_id
-    )
-    res.podcast_task = podcast_task
     process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
         document_id=document_detail_request.document_id
