@@ -576,7 +576,7 @@ def get_users_for_section_by_section_id(
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User)
-    query = db.query(models.section.SectionUser)
+    query = query.join(models.section.SectionUser)
     query = query.filter(models.user.User.delete_at == None,
                          models.section.SectionUser.delete_at == None,
                          models.section.SectionUser.section_id == section_id)
