@@ -123,3 +123,6 @@ class DocumentNote(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    
+    user: Mapped["User"] = relationship("User", backref="document_notes")
+    document: Mapped["Document"] = relationship("Document", backref="notes")

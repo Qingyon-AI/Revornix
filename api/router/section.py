@@ -83,6 +83,7 @@ async def section_document_request(
     
     has_more = True
     next_start = None
+    next_document = None
     db_documents = crud.document.search_section_documents(
         db=db, 
         section_id=section_document_request.section_id,
@@ -491,6 +492,7 @@ async def get_my_subscribed_sections(
 ):
     has_more = True
     next_start = None
+    next_section = None
     db_sections = crud.section.search_user_subscribed_sections(
         db=db, 
         user_id=user.id,
@@ -619,6 +621,7 @@ async def public_sections(
 ):
     has_more = True
     next_start = None
+    next_section = None
     db_sections = crud.section.search_published_sections(
         db=db, 
         start=search_public_sections_request.start,
@@ -725,6 +728,7 @@ async def search_user_sections(
 ):
     has_more = True
     next_start = None
+    next_section = None
     # 该接口仅在自己获取自己的所有专栏的时候会返回所有专栏，否则仅仅返回对应用户公开的专栏
     db_sections = crud.section.search_user_sections(
         db=db, 
@@ -765,7 +769,7 @@ async def search_user_sections(
     if len(db_sections) < search_user_sections_request.limit or len(db_sections) == 0:
         has_more = False
     if len(db_sections) == search_user_sections_request.limit:
-        next_notification = crud.section.search_next_user_section(
+        next_section = crud.section.search_next_user_section(
             db=db, 
             user_id=search_user_sections_request.user_id,
             section=db_sections[-1],
@@ -773,8 +777,8 @@ async def search_user_sections(
             keyword=search_user_sections_request.keyword,
             label_ids=search_user_sections_request.label_ids
         )
-        has_more = next_notification is not None
-        next_start = next_notification.id if next_notification is not None else None
+        has_more = next_section is not None
+        next_start = next_section.id if next_section is not None else None
     total = crud.section.count_user_sections(db=db,
                                              user_id=user.id,
                                              only_published=True if search_user_sections_request.user_id != user.id else False,
@@ -797,6 +801,7 @@ async def search_mine_sections(
 ):
     has_more = True
     next_start = None
+    next_section = None
     db_sections = crud.section.search_user_sections(
         db=db, 
         user_id=user.id,
@@ -840,7 +845,7 @@ async def search_mine_sections(
     if len(db_sections) < search_mine_sections_request.limit or len(db_sections) == 0:
         has_more = False
     if len(db_sections) == search_mine_sections_request.limit:
-        next_notification = crud.section.search_next_user_section(
+        next_section = crud.section.search_next_user_section(
             db=db, 
             user_id=user.id,
             section=db_sections[-1],
@@ -848,8 +853,8 @@ async def search_mine_sections(
             label_ids=search_mine_sections_request.label_ids,
             desc=search_mine_sections_request.desc
         )
-        has_more = next_notification is not None
-        next_start = next_notification.id if next_notification is not None else None
+        has_more = next_section is not None
+        next_start = next_section.id if next_section is not None else None
     total = crud.section.count_user_sections(
         db=db,
         user_id=user.id,
@@ -1202,6 +1207,7 @@ async def search_section_comment(
 ):
     has_more = True
     next_start = None
+    next_section_comment = None
     db_section_parent_degree_comments = crud.section.search_parent_degree_section_comments(
         db=db,
         section_id=section_comment_search_request.section_id,
