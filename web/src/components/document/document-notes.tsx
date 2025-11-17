@@ -9,6 +9,8 @@ import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
 import DocumentCommentForm from './document-comment-form';
 import CustomImage from '../ui/custom-image';
+import { Alert, AlertDescription } from '../ui/alert';
+import { OctagonAlert } from 'lucide-react';
 
 const DocumentNotes = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -51,18 +53,22 @@ const DocumentNotes = ({ id }: { id: number }) => {
 	}, [inView]);
 
 	return (
-		<div>
+		<div className='h-full flex flex-col overflow-auto px-5'>
 			{document?.creator?.id !== userInfo?.id && (
-				<p className='text-xs text-muted-foreground mb-3'>
-					{t('document_notes_tips')}
-				</p>
+				<Alert className='bg-destructive/10 dark:bg-destructive/20 mb-5'>
+					<OctagonAlert className='h-4 w-4 !text-destructive' />
+					<AlertDescription>{t('document_notes_tips')}</AlertDescription>
+				</Alert>
 			)}
 			{document?.creator?.id === userInfo?.id && (
-				<DocumentCommentForm documentId={id} commentSearchKeyword={keyword} />
+				<div className='pt-1'>
+					<DocumentCommentForm documentId={id} commentSearchKeyword={keyword} />
+				</div>
 			)}
-			<div className='flex flex-col gap-2'>
-				{notes &&
-					notes.map((note) => {
+
+			{notes && notes.length > 0 && (
+				<div className='flex-1 flex flex-col gap-2 overflow-auto pb-5'>
+					{notes.map((note) => {
 						return (
 							<div
 								key={note.id}
@@ -89,7 +95,9 @@ const DocumentNotes = ({ id }: { id: number }) => {
 							</div>
 						);
 					})}
-			</div>
+				</div>
+			)}
+
 			{isFetching && !data && (
 				<div className='flex flex-col gap-3'>
 					{[...Array(12)].map((number, index) => {
@@ -105,7 +113,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 				</div>
 			)}
 			{!isFetching && notes && notes.length === 0 && (
-				<div className='text-muted-foreground text-sm'>
+				<div className='text-muted-foreground text-sm flex-1 flex justify-center items-center'>
 					{t('document_notes_empty')}
 				</div>
 			)}
