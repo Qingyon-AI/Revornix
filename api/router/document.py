@@ -1066,6 +1066,15 @@ async def delete_document(
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
 ):
+    for document_id in documents_delete_request.document_ids:
+        db_document = crud.document.get_document_by_document_id(
+            db=db, 
+            document_id=document_id
+        )
+        if db_document is None:
+            raise Exception("The document is not found")
+        if db_document.user_id != user.id:
+            raise Exception("You are not the owner of the document")
     # TODO 需要补充一些删除附属资源的逻辑
     crud.document.delete_user_documents_by_document_ids(
         db=db, 

@@ -158,8 +158,6 @@ def create_communities_from_chunks():
                 { writeProperty: 'community' }
             ) YIELD communityCount, modularity
         """)
-        for record in result:
-            print(record['communityCount'], record['modularity'])
         session.run("CALL gds.graph.drop('communityGraph')")
 
 # -----------------------------

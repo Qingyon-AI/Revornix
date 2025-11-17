@@ -19,7 +19,7 @@ import {
 	Trash,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { FaBars } from "react-icons/fa6"
+import { FaBars } from 'react-icons/fa6';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import {
@@ -47,6 +47,7 @@ import {
 import DocumentNotes from './document-notes';
 import { DocumentCategory, DocumentMdConvertStatus } from '@/enums/document';
 import DocumentConfiguration from './document-configuration';
+import { useUserContext } from '@/provider/user-provider';
 
 const DocumentOperate = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -55,6 +56,8 @@ const DocumentOperate = ({ id }: { id: number }) => {
 	const [aiSummaizing, setAiSummaizing] = useState(false);
 	const [showDeleteDocumentDialog, setShowDeleteDocumentDialog] =
 		useState(false);
+
+	const { userInfo } = useUserContext();
 
 	const { data } = useQuery({
 		queryKey: ['getDocumentDetail', id],
@@ -202,17 +205,6 @@ const DocumentOperate = ({ id }: { id: number }) => {
 							</Button>
 						</Link>
 					)}
-					<Button
-						variant={'ghost'}
-						className='flex-1 w-full'
-						disabled={aiSummaizing}
-						title={t('ai_summary')}
-						onClick={() => {
-							handleAiSummarize();
-						}}>
-						<FaBars />
-						{aiSummaizing && <Loader2 className='size-4 animate-spin' />}
-					</Button>
 					{data.is_star ? (
 						<Button
 							title={t('document_star_cancel')}
@@ -257,56 +249,70 @@ const DocumentOperate = ({ id }: { id: number }) => {
 								<NotebookPen />
 							</Button>
 						</SheetTrigger>
-						<SheetContent>
+						<SheetContent className='flex flex-col'>
 							<SheetHeader>
 								<SheetTitle>{t('document_notes_title')}</SheetTitle>
 								<SheetDescription>
 									{t('document_notes_description')}
 								</SheetDescription>
 							</SheetHeader>
-							<div className='px-5'>
+							<div className='flex-1 overflow-auto'>
 								<DocumentNotes id={id} />
 							</div>
 						</SheetContent>
 					</Sheet>
-
-					<Dialog
-						open={showDeleteDocumentDialog}
-						onOpenChange={setShowDeleteDocumentDialog}>
-						<DialogTrigger asChild>
+					{data.creator.id === userInfo?.id && (
+						<>
 							<Button
-								title={t('document_delete')}
 								variant={'ghost'}
-								className='flex-1'>
-								<Trash />
+								className='flex-1 w-full'
+								disabled={aiSummaizing}
+								title={t('ai_summary')}
+								onClick={() => {
+									handleAiSummarize();
+								}}>
+								<FaBars />
+								{aiSummaizing && <Loader2 className='size-4 animate-spin' />}
 							</Button>
-						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>{t('document_delete')}</DialogTitle>
-								<DialogDescription>
-									{t('document_delete_alert_description')}
-								</DialogDescription>
-							</DialogHeader>
-							<DialogFooter>
-								<DialogClose asChild>
-									<Button variant='outline'>
-										{t('document_delete_cancel')}
+							<Dialog
+								open={showDeleteDocumentDialog}
+								onOpenChange={setShowDeleteDocumentDialog}>
+								<DialogTrigger asChild>
+									<Button
+										title={t('document_delete')}
+										variant={'ghost'}
+										className='flex-1'>
+										<Trash />
 									</Button>
-								</DialogClose>
-								<Button
-									variant='destructive'
-									onClick={() => mutateDelete.mutate()}
-									disabled={mutateDelete.isPending}>
-									{t('document_delete_confirm')}
-									{mutateDelete.isPending && (
-										<Loader2 className='size-4 animate-spin' />
-									)}
-								</Button>
-							</DialogFooter>
-						</DialogContent>
-					</Dialog>
-					<DocumentConfiguration document_id={id} />
+								</DialogTrigger>
+								<DialogContent>
+									<DialogHeader>
+										<DialogTitle>{t('document_delete')}</DialogTitle>
+										<DialogDescription>
+											{t('document_delete_alert_description')}
+										</DialogDescription>
+									</DialogHeader>
+									<DialogFooter>
+										<DialogClose asChild>
+											<Button variant='outline'>
+												{t('document_delete_cancel')}
+											</Button>
+										</DialogClose>
+										<Button
+											variant='destructive'
+											onClick={() => mutateDelete.mutate()}
+											disabled={mutateDelete.isPending}>
+											{t('document_delete_confirm')}
+											{mutateDelete.isPending && (
+												<Loader2 className='size-4 animate-spin' />
+											)}
+										</Button>
+									</DialogFooter>
+								</DialogContent>
+							</Dialog>
+							<DocumentConfiguration document_id={id} />
+						</>
+					)}
 				</div>
 			)}
 		</>
