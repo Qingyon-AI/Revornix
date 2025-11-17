@@ -25,12 +25,12 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 
 	const { userInfo } = useUserContext();
 
-	const { data: sectionUsers, isLoading: isLoadingMembers } = useQuery({
+	const { data: sectionUsers } = useQuery({
 		queryKey: ['getSectionMembers', section_id],
 		queryFn: async () => {
 			return getSectionUser({
 				section_id: section_id,
-				filter_roles: [UserSectionRole.MEMBER, UserSectionRole.CERATOR],
+				filter_roles: [UserSectionRole.MEMBER],
 			});
 		},
 	});
