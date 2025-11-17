@@ -343,9 +343,12 @@ async def section_user_request(
         filter_roles=section_user_request.filter_roles
     )
     for db_user, db_user_section in db_section_users:
-        users.append(schemas.section.SectionUserPublicInfo(**db_user.__dict__,
-                                                            authority=db_user_section.authority,
-                                                            role=db_user_section.role))
+        user_item = schemas.section.SectionUserPublicInfo.model_validate(db_user)
+        user_item.authority = db_user_section.authority
+        user_item.role = db_user_section.role
+        users.append(
+            user_item   
+        )
     return schemas.section.SectionUserResponse(users=users)
 
 @section_router.post('/user/add', response_model=schemas.common.NormalResponse)

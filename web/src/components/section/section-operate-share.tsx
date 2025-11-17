@@ -21,13 +21,6 @@ import SectionShare from './section-share';
 const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
 
-	const { data: section } = useQuery({
-		queryKey: ['getSectionDetail', section_id],
-		queryFn: async () => {
-			return getSectionDetail({ section_id: section_id });
-		},
-	});
-
 	const { data: sectionPublish } = useQuery({
 		queryKey: ['getSectionPublish', section_id],
 		queryFn: async () => {
