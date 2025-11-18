@@ -1758,7 +1758,7 @@ No authorization required
 
 ## sectionUserRequestSectionUserPost
 
-> SectionUserResponse sectionUserRequestSectionUserPost(sectionUserRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionSectionUserPublicInfo sectionUserRequestSectionUserPost(sectionUserRequest, authorization, xForwardedFor)
 
 Section User Request
 
@@ -1807,7 +1807,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**SectionUserResponse**](SectionUserResponse.md)
+[**InifiniteScrollPagnitionSectionUserPublicInfo**](InifiniteScrollPagnitionSectionUserPublicInfo.md)
 
 ### Authorization
 

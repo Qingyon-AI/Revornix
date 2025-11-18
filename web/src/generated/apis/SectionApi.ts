@@ -23,6 +23,7 @@ import type {
   InifiniteScrollPagnitionSectionCommentInfo,
   InifiniteScrollPagnitionSectionDocumentInfo,
   InifiniteScrollPagnitionSectionInfo,
+  InifiniteScrollPagnitionSectionUserPublicInfo,
   NormalResponse,
   SchemasDocumentCreateLabelResponse,
   SchemasDocumentLabelAddRequest,
@@ -52,7 +53,6 @@ import type {
   SectionUserDeleteRequest,
   SectionUserModifyRequest,
   SectionUserRequest,
-  SectionUserResponse,
 } from '../models/index';
 import {
     AllMySectionsResponseFromJSON,
@@ -71,6 +71,8 @@ import {
     InifiniteScrollPagnitionSectionDocumentInfoToJSON,
     InifiniteScrollPagnitionSectionInfoFromJSON,
     InifiniteScrollPagnitionSectionInfoToJSON,
+    InifiniteScrollPagnitionSectionUserPublicInfoFromJSON,
+    InifiniteScrollPagnitionSectionUserPublicInfoToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
     SchemasDocumentCreateLabelResponseFromJSON,
@@ -129,8 +131,6 @@ import {
     SectionUserModifyRequestToJSON,
     SectionUserRequestFromJSON,
     SectionUserRequestToJSON,
-    SectionUserResponseFromJSON,
-    SectionUserResponseToJSON,
 } from '../models/index';
 
 export interface AddLabelSectionLabelCreatePostRequest {
@@ -1409,7 +1409,7 @@ export class SectionApi extends runtime.BaseAPI {
     /**
      * Section User Request
      */
-    async sectionUserRequestSectionUserPostRaw(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionUserResponse>> {
+    async sectionUserRequestSectionUserPostRaw(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionUserPublicInfo>> {
         if (requestParameters['sectionUserRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionUserRequest',
@@ -1442,13 +1442,13 @@ export class SectionApi extends runtime.BaseAPI {
             body: SectionUserRequestToJSON(requestParameters['sectionUserRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => SectionUserResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionUserPublicInfoFromJSON(jsonValue));
     }
 
     /**
      * Section User Request
      */
-    async sectionUserRequestSectionUserPost(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SectionUserResponse> {
+    async sectionUserRequestSectionUserPost(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionUserPublicInfo> {
         const response = await this.sectionUserRequestSectionUserPostRaw(requestParameters, initOverrides);
         return await response.value();
     }

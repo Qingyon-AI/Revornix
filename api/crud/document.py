@@ -440,7 +440,7 @@ def search_all_documents(
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
-    query = query.order_by(models.document.Document.create_time.desc())
+    query = query.order_by(models.document.Document.id.desc())
     if start is not None:
         query = query.filter(models.document.Document.id <= start)
     query = query.options(selectinload(models.document.Document.creator))
@@ -481,7 +481,7 @@ def search_next_all_document(
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
     query = query.order_by(models.document.Document.id.desc())
-    query = query.filter(models.document.Document.create_time < document.create_time)
+    query = query.filter(models.document.Document.id < document.id)
     return query.first()
 
 def search_all_document_notes_by_document_id(

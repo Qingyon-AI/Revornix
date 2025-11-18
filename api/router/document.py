@@ -112,7 +112,7 @@ async def delete_note(
     return schemas.common.SuccessResponse()
 
 @document_router.post('/note/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentNoteInfo])
-async def update_note(
+async def search_note(
     search_note_request: schemas.document.SearchDocumentNoteRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -135,11 +135,6 @@ async def update_note(
             document_note=notes[-1],
             keyword=search_note_request.keyword
         )
-        next_note = crud.document.search_next_note_by_document_note(
-            db=db, 
-            document_note=notes[-1],
-            keyword=search_note_request.keyword
-        )
         has_more = next_note is not None
         next_start = next_note.id if next_note is not None else None
     total = crud.document.count_all_document_notes_by_document_id(
@@ -148,11 +143,6 @@ async def update_note(
         keyword=search_note_request.keyword
     )
     next_start = next_note.id if next_note is not None else None
-    total = crud.document.count_all_document_notes_by_document_id(
-        db=db,
-        document_id=search_note_request.document_id,
-        keyword=search_note_request.keyword
-    )
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,
         elements=notes,
