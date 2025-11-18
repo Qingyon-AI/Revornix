@@ -1,5 +1,5 @@
 import sectionApi from '@/api/section'
-import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, GenerateSectionPodcastRequest, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionDocumentInfo, InifiniteScrollPagnitionSectionInfo, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserResponse } from '@/generated';
+import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, GenerateSectionPodcastRequest, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionDocumentInfo, InifiniteScrollPagnitionSectionInfo, InifiniteScrollPagnitionSectionUserPublicInfo, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest } from '@/generated';
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse';
 import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
 import { LabelListResponse } from '@/generated/models/LabelListResponse';
@@ -127,7 +127,7 @@ export const deleteSectionUser = async (data: SectionUserDeleteRequest): Promise
     })
 }
 
-export const getSectionUser = async (data: SectionUserRequest): Promise<SectionUserResponse> => {
+export const getSectionUser = async (data: SectionUserRequest): Promise<InifiniteScrollPagnitionSectionUserPublicInfo> => {
     return await request(sectionApi.getSectionUser, {
         data
     })

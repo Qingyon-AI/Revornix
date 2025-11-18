@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '../ui/alert';
 import SectionPublish from './section-publish';
 import SectionShare from './section-share';
+import { Separator } from '../ui/separator';
 
 const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
@@ -46,11 +47,11 @@ const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 						)}
 					</Button>
 				</DialogTrigger>
-				<DialogContent className='flex flex-col'>
+				<DialogContent className='max-h-[90vh] flex flex-col overflow-auto'>
 					<DialogHeader>
 						<DialogTitle>{t('section_share')}</DialogTitle>
 					</DialogHeader>
-					<Tabs defaultValue='account'>
+					<Tabs defaultValue='account' className='flex-1 overflow-auto'>
 						<TabsList className='w-full'>
 							<TabsTrigger value='share'>{t('section_share')}</TabsTrigger>
 							<TabsTrigger value='publish'>{t('section_publish')}</TabsTrigger>
@@ -76,6 +77,7 @@ const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 							</div>
 						</TabsContent>
 					</Tabs>
+					<Separator />
 					<DialogFooter>
 						<DialogClose asChild>
 							<Button variant='outline'>{t('cancel')}</Button>

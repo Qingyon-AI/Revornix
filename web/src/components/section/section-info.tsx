@@ -2,7 +2,7 @@
 
 import { zhCN } from 'date-fns/locale/zh-CN';
 import { enUS } from 'date-fns/locale/en-US';
-import { getSectionDetail, getSectionUser } from '@/service/section';
+import { getSectionDetail } from '@/service/section';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistance } from 'date-fns';
 import { useRouter } from 'nextjs-toploader/app';
@@ -10,7 +10,6 @@ import { Badge } from '../ui/badge';
 import { useLocale, useTranslations } from 'next-intl';
 import { Skeleton } from '../ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { UserSectionRole } from '@/enums/section';
 
 const SectionInfo = ({ id }: { id: number }) => {
 	const locale = useLocale();
@@ -27,27 +26,6 @@ const SectionInfo = ({ id }: { id: number }) => {
 			return getSectionDetail({ section_id: id });
 		},
 	});
-
-	const { data: sectionMembers, isLoading: isLoadingMembers } = useQuery({
-		queryKey: ['getSectionMembers', id, UserSectionRole.MEMBER],
-		queryFn: async () => {
-			return getSectionUser({
-				section_id: id,
-				filter_roles: [UserSectionRole.MEMBER],
-			});
-		},
-	});
-
-	const { data: sectionSubscribers, isLoading: isLoadingSubscribers } =
-		useQuery({
-			queryKey: ['getSectionSubscribers', id],
-			queryFn: async () => {
-				return getSectionUser({
-					section_id: id,
-					filter_roles: [UserSectionRole.SUBSCRIBER],
-				});
-			},
-		});
 
 	return (
 		<>
@@ -124,70 +102,6 @@ const SectionInfo = ({ id }: { id: number }) => {
 								</p>
 							</div>
 						)}
-					</div>
-					<div className='grid grid-cols-12 px-5 mb-3 text-xs text-muted-foreground gap-5'>
-						<div className='col-span-3'>{t('section_participants')}</div>
-						<div className='flex flex-row items-center gap-1 col-span-9'>
-							{isLoadingMembers && <Skeleton className='w-full h-5' />}
-							{!isLoadingMembers && sectionMembers && (
-								<div className='*:data-[slot=avatar]:ring-background flex -space-x-1 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale'>
-									{sectionMembers?.users &&
-										sectionMembers?.users.length > 0 &&
-										sectionMembers.users.map((member, index) => {
-											return (
-												<Avatar
-													key={index}
-													className='size-5'
-													title={member?.nickname ?? ''}
-													onClick={(e) => {
-														router.push(`/user/detail/${member?.id}`);
-														e.preventDefault();
-														e.stopPropagation();
-													}}>
-													<AvatarImage src={member.avatar} alt='avatar' />
-													<AvatarFallback>{member.nickname}</AvatarFallback>
-												</Avatar>
-											);
-										})}
-									{sectionMembers?.users &&
-										sectionMembers?.users.length === 0 && (
-											<p>{t('section_participants_empty')}</p>
-										)}
-								</div>
-							)}
-						</div>
-					</div>
-					<div className='grid grid-cols-12 px-5 text-xs text-muted-foreground gap-5'>
-						<div className='col-span-3'>{t('section_subscribers')}</div>
-						<div className='flex flex-row items-center gap-1 col-span-9'>
-							{isLoadingSubscribers && <Skeleton className='w-full h-5' />}
-							{!isLoadingSubscribers && sectionSubscribers && (
-								<div className='*:data-[slot=avatar]:ring-background flex -space-x-1 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale'>
-									{sectionSubscribers?.users &&
-										sectionSubscribers?.users.length > 0 &&
-										sectionSubscribers?.users?.map((subscriber, index) => {
-											return (
-												<Avatar
-													key={index}
-													className='size-5'
-													title={subscriber?.nickname ?? ''}
-													onClick={(e) => {
-														router.push(`/user/detail/${subscriber?.id}`);
-														e.preventDefault();
-														e.stopPropagation();
-													}}>
-													<AvatarImage src={subscriber.avatar} alt='avatar' />
-													<AvatarFallback>{subscriber.nickname}</AvatarFallback>
-												</Avatar>
-											);
-										})}
-									{sectionSubscribers?.users &&
-										sectionSubscribers?.users.length === 0 && (
-											<p>{t('section_subscribers_empty')}</p>
-										)}
-								</div>
-							)}
-						</div>
 					</div>
 				</>
 			)}
