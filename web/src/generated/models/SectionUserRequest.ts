@@ -27,6 +27,24 @@ export interface SectionUserRequest {
     section_id: number;
     /**
      * 
+     * @type {number}
+     * @memberof SectionUserRequest
+     */
+    start?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionUserRequest
+     */
+    limit?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof SectionUserRequest
+     */
+    keyword?: string | null;
+    /**
+     * 
      * @type {Array<number>}
      * @memberof SectionUserRequest
      */
@@ -52,6 +70,9 @@ export function SectionUserRequestFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'section_id': json['section_id'],
+        'start': json['start'] == null ? undefined : json['start'],
+        'limit': json['limit'] == null ? undefined : json['limit'],
+        'keyword': json['keyword'] == null ? undefined : json['keyword'],
         'filter_roles': json['filter_roles'] == null ? undefined : json['filter_roles'],
     };
 }
@@ -68,6 +89,9 @@ export function SectionUserRequestToJSONTyped(value?: SectionUserRequest | null,
     return {
         
         'section_id': value['section_id'],
+        'start': value['start'],
+        'limit': value['limit'],
+        'keyword': value['keyword'],
         'filter_roles': value['filter_roles'],
     };
 }

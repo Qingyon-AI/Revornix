@@ -50,7 +50,7 @@ export interface SectionCommentInfo {
      * @type {Date}
      * @memberof SectionCommentInfo
      */
-    update_time: Date;
+    update_time: Date | null;
     /**
      * 
      * @type {UserPublicInfo}
@@ -84,7 +84,7 @@ export function SectionCommentInfoFromJSONTyped(json: any, ignoreDiscriminator: 
         'id': json['id'],
         'content': json['content'],
         'create_time': (new Date(json['create_time'])),
-        'update_time': (new Date(json['update_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
         'creator': UserPublicInfoFromJSON(json['creator']),
     };
 }
@@ -103,7 +103,7 @@ export function SectionCommentInfoToJSONTyped(value?: SectionCommentInfo | null,
         'id': value['id'],
         'content': value['content'],
         'create_time': value['create_time'].toISOString(),
-        'update_time': value['update_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'creator': UserPublicInfoToJSON(value['creator']),
     };
 }

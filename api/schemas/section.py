@@ -50,6 +50,9 @@ class SectionPublishRequest(BaseModel):
 
 class SectionUserRequest(BaseModel):
     section_id: int
+    start: int | None = None
+    limit: int = 10
+    keyword: str | None = None
     filter_roles: list[int] | None = None
     
 class SectionUserResponse(BaseModel):

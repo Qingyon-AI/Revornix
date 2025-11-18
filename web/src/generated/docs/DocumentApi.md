@@ -21,11 +21,11 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**searchAllMineDocumentsDocumentSearchMinePost**](DocumentApi.md#searchallminedocumentsdocumentsearchminepost) | **POST** /document/search/mine | Search All Mine Documents |
 | [**searchKnowledgeVectorDocumentVectorSearchPost**](DocumentApi.md#searchknowledgevectordocumentvectorsearchpost) | **POST** /document/vector/search | Search Knowledge Vector |
 | [**searchMyStarDocumentsDocumentStarSearchPost**](DocumentApi.md#searchmystardocumentsdocumentstarsearchpost) | **POST** /document/star/search | Search My Star Documents |
+| [**searchNoteDocumentNoteSearchPost**](DocumentApi.md#searchnotedocumentnotesearchpost) | **POST** /document/note/search | Search Note |
 | [**searchUserUnreadDocumentsDocumentUnreadSearchPost**](DocumentApi.md#searchuserunreaddocumentsdocumentunreadsearchpost) | **POST** /document/unread/search | Search User Unread Documents |
 | [**starDocumentDocumentStarPost**](DocumentApi.md#stardocumentdocumentstarpost) | **POST** /document/star | Star Document |
 | [**transformMarkdownDocumentMarkdownTransformPost**](DocumentApi.md#transformmarkdowndocumentmarkdowntransformpost) | **POST** /document/markdown/transform | Transform Markdown |
 | [**updateDocumentDocumentUpdatePost**](DocumentApi.md#updatedocumentdocumentupdatepost) | **POST** /document/update | Update Document |
-| [**updateNoteDocumentNoteSearchPost**](DocumentApi.md#updatenotedocumentnotesearchpost) | **POST** /document/note/search | Update Note |
 
 
 
@@ -1244,6 +1244,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## searchNoteDocumentNoteSearchPost
+
+> InifiniteScrollPagnitionDocumentNoteInfo searchNoteDocumentNoteSearchPost(searchDocumentNoteRequest, authorization, xForwardedFor)
+
+Search Note
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { SearchNoteDocumentNoteSearchPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // SearchDocumentNoteRequest
+    searchDocumentNoteRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies SearchNoteDocumentNoteSearchPostRequest;
+
+  try {
+    const data = await api.searchNoteDocumentNoteSearchPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **searchDocumentNoteRequest** | [SearchDocumentNoteRequest](SearchDocumentNoteRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**InifiniteScrollPagnitionDocumentNoteInfo**](InifiniteScrollPagnitionDocumentNoteInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## searchUserUnreadDocumentsDocumentUnreadSearchPost
 
 > InifiniteScrollPagnitionDocumentInfo searchUserUnreadDocumentsDocumentUnreadSearchPost(searchUnreadListRequest, authorization, xForwardedFor)
@@ -1512,78 +1584,6 @@ example().catch(console.error);
 ### Return type
 
 [**NormalResponse**](NormalResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## updateNoteDocumentNoteSearchPost
-
-> InifiniteScrollPagnitionDocumentNoteInfo updateNoteDocumentNoteSearchPost(searchDocumentNoteRequest, authorization, xForwardedFor)
-
-Update Note
-
-### Example
-
-```ts
-import {
-  Configuration,
-  DocumentApi,
-} from '';
-import type { UpdateNoteDocumentNoteSearchPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new DocumentApi();
-
-  const body = {
-    // SearchDocumentNoteRequest
-    searchDocumentNoteRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
-  } satisfies UpdateNoteDocumentNoteSearchPostRequest;
-
-  try {
-    const data = await api.updateNoteDocumentNoteSearchPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **searchDocumentNoteRequest** | [SearchDocumentNoteRequest](SearchDocumentNoteRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**InifiniteScrollPagnitionDocumentNoteInfo**](InifiniteScrollPagnitionDocumentNoteInfo.md)
 
 ### Authorization
 

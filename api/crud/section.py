@@ -552,10 +552,13 @@ def count_documents_for_section_by_section_id(
     query = query.distinct(models.document.Document.id)
     return query.count()
 
-def get_users_and_section_users_by_section_id(
+def search_users_and_section_users_by_section_id(
     db: Session,
     section_id: int,
-    filter_roles: list[int] | None = None
+    filter_roles: list[int] | None = None,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User, models.section.SectionUser)
@@ -567,7 +570,56 @@ def get_users_and_section_users_by_section_id(
     query = query.filter(models.user.User.delete_at == None)
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
+    query = query.order_by(models.section.SectionUser.section_id.desc())
+    if start is not None:
+        query = query.filter(models.user.User.id <= start)
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.user.User.nickname.like(f'%{keyword}%'))
+    query = query.limit(limit)
     return query.all()
+
+def search_next_user_and_section_user_by_section_id(
+    db: Session,
+    section_id: int,
+    user: models.user.User,
+    filter_roles: list[int] | None = None,
+    keyword: str | None = None
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.user.User, models.section.SectionUser)
+    query = query.filter(models.section.SectionUser.delete_at == None,
+                         models.section.SectionUser.section_id == section_id)
+    query = query.filter(or_(models.section.SectionUser.expire_time > now,
+                             models.section.SectionUser.expire_time == None))
+    query = query.join(models.user.User)
+    query = query.filter(models.user.User.delete_at == None)
+    if filter_roles is not None:
+        query = query.filter(models.section.SectionUser.role.in_(filter_roles))
+    query = query.order_by(models.section.SectionUser.section_id.desc())
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.user.User.nickname.like(f'%{keyword}%'))
+    query = query.filter(models.user.User.id > user.id)
+    return query.first()
+
+def count_users_and_section_users_by_section_id(
+    db: Session,
+    section_id: int,
+    filter_roles: list[int] | None = None,
+    keyword: str | None = None
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.user.User, models.section.SectionUser)
+    query = query.filter(models.section.SectionUser.delete_at == None,
+                         models.section.SectionUser.section_id == section_id)
+    query = query.filter(or_(models.section.SectionUser.expire_time > now,
+                             models.section.SectionUser.expire_time == None))
+    query = query.join(models.user.User)
+    query = query.filter(models.user.User.delete_at == None)
+    if filter_roles is not None:
+        query = query.filter(models.section.SectionUser.role.in_(filter_roles))
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.user.User.nickname.like(f'%{keyword}%'))
+    return query.count()
 
 def get_users_for_section_by_section_id(
     db: Session,

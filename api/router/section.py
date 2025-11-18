@@ -308,8 +308,7 @@ async def section_publish_get_request(
         create_time=db_publish_section.create_time
     )
 
-
-@section_router.post('/user', response_model=schemas.section.SectionUserResponse)
+@section_router.post('/user', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionUserPublicInfo])
 async def section_user_request(
     section_user_request: schemas.section.SectionUserRequest,
     db: Session = Depends(get_db), 
@@ -336,11 +335,38 @@ async def section_user_request(
         )
         if db_section_user is None or db_section_user.role not in [UserSectionRole.CREATOR, UserSectionRole.MEMBER]:
             raise Exception("You are forbidden to get the users' info about this section")
+        
+    has_more = True
+    next_start = None
+    db_next_section_user = None
     users = []
-    db_section_users = crud.section.get_users_and_section_users_by_section_id(
+    db_section_users = crud.section.search_users_and_section_users_by_section_id(
         db=db, 
         section_id=section_user_request.section_id,
-        filter_roles=section_user_request.filter_roles
+        filter_roles=section_user_request.filter_roles,
+        start=section_user_request.start,
+        limit=section_user_request.limit,
+        keyword=section_user_request.keyword
+    )
+    if len(db_section_users) < section_user_request.limit or len(db_section_users) == 0:
+        has_more = False
+    if len(db_section_users) == section_user_request.limit:
+        last_user = db_section_users[-1][0]
+        db_next_section_user = crud.section.search_next_user_and_section_user_by_section_id(
+            db=db,
+            section_id=section_user_request.section_id,
+            filter_roles=section_user_request.filter_roles,
+            user=last_user,
+            keyword=section_user_request.keyword
+        )
+        has_more = db_next_section_user is not None
+        next_start = db_next_section_user.id if db_next_section_user is not None else None
+    next_start = db_next_section_user.id if db_next_section_user is not None else None
+    total = crud.section.count_users_and_section_users_by_section_id(
+        db=db,
+        section_id=section_user_request.section_id,
+        filter_roles=section_user_request.filter_roles,
+        keyword=section_user_request.keyword
     )
     for db_user, db_user_section in db_section_users:
         user_item = schemas.section.SectionUserPublicInfo.model_validate(db_user)
@@ -349,7 +375,14 @@ async def section_user_request(
         users.append(
             user_item   
         )
-    return schemas.section.SectionUserResponse(users=users)
+    return schemas.pagination.InifiniteScrollPagnition(
+        total=total,
+        elements=users,
+        start=section_user_request.start,
+        limit=section_user_request.limit,
+        has_more=has_more,
+        next_start=next_start
+    )
 
 @section_router.post('/user/add', response_model=schemas.common.NormalResponse)
 async def section_user_add_request(

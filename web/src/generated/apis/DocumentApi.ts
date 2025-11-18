@@ -211,6 +211,12 @@ export interface SearchMyStarDocumentsDocumentStarSearchPostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface SearchNoteDocumentNoteSearchPostRequest {
+    searchDocumentNoteRequest: SearchDocumentNoteRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest {
     searchUnreadListRequest: SearchUnreadListRequest;
     authorization?: string | null;
@@ -231,12 +237,6 @@ export interface TransformMarkdownDocumentMarkdownTransformPostRequest {
 
 export interface UpdateDocumentDocumentUpdatePostRequest {
     documentUpdateRequest: DocumentUpdateRequest;
-    authorization?: string | null;
-    xForwardedFor?: string | null;
-}
-
-export interface UpdateNoteDocumentNoteSearchPostRequest {
-    searchDocumentNoteRequest: SearchDocumentNoteRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -1016,6 +1016,53 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
+     * Search Note
+     */
+    async searchNoteDocumentNoteSearchPostRaw(requestParameters: SearchNoteDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentNoteInfo>> {
+        if (requestParameters['searchDocumentNoteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchDocumentNoteRequest',
+                'Required parameter "searchDocumentNoteRequest" was null or undefined when calling searchNoteDocumentNoteSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/document/note/search`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchDocumentNoteRequestToJSON(requestParameters['searchDocumentNoteRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentNoteInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Note
+     */
+    async searchNoteDocumentNoteSearchPost(requestParameters: SearchNoteDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentNoteInfo> {
+        const response = await this.searchNoteDocumentNoteSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Search User Unread Documents
      */
     async searchUserUnreadDocumentsDocumentUnreadSearchPostRaw(requestParameters: SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
@@ -1200,53 +1247,6 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async updateDocumentDocumentUpdatePost(requestParameters: UpdateDocumentDocumentUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.updateDocumentDocumentUpdatePostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Update Note
-     */
-    async updateNoteDocumentNoteSearchPostRaw(requestParameters: UpdateNoteDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentNoteInfo>> {
-        if (requestParameters['searchDocumentNoteRequest'] == null) {
-            throw new runtime.RequiredError(
-                'searchDocumentNoteRequest',
-                'Required parameter "searchDocumentNoteRequest" was null or undefined when calling updateNoteDocumentNoteSearchPost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
-
-        let urlPath = `/document/note/search`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: SearchDocumentNoteRequestToJSON(requestParameters['searchDocumentNoteRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentNoteInfoFromJSON(jsonValue));
-    }
-
-    /**
-     * Update Note
-     */
-    async updateNoteDocumentNoteSearchPost(requestParameters: UpdateNoteDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentNoteInfo> {
-        const response = await this.updateNoteDocumentNoteSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

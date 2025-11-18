@@ -27,13 +27,13 @@ import {
     SectionPodcastTaskToJSON,
     SectionPodcastTaskToJSONTyped,
 } from './SectionPodcastTask';
-import type { SchemasDocumentLabel } from './SchemasDocumentLabel';
+import type { SchemasSectionLabel } from './SchemasSectionLabel';
 import {
-    SchemasDocumentLabelFromJSON,
-    SchemasDocumentLabelFromJSONTyped,
-    SchemasDocumentLabelToJSON,
-    SchemasDocumentLabelToJSONTyped,
-} from './SchemasDocumentLabel';
+    SchemasSectionLabelFromJSON,
+    SchemasSectionLabelFromJSONTyped,
+    SchemasSectionLabelToJSON,
+    SchemasSectionLabelToJSONTyped,
+} from './SchemasSectionLabel';
 import type { UserPublicInfo } from './UserPublicInfo';
 import {
     UserPublicInfoFromJSON,
@@ -83,13 +83,13 @@ export interface SectionInfo {
      * @type {number}
      * @memberof SectionInfo
      */
-    documents_count: number;
+    documents_count?: number;
     /**
      * 
      * @type {number}
      * @memberof SectionInfo
      */
-    subscribers_count: number;
+    subscribers_count?: number;
     /**
      * 
      * @type {Date}
@@ -122,10 +122,10 @@ export interface SectionInfo {
     md_file_name?: string | null;
     /**
      * 
-     * @type {Array<SchemasDocumentLabel>}
+     * @type {Array<SchemasSectionLabel>}
      * @memberof SectionInfo
      */
-    labels?: Array<SchemasDocumentLabel> | null;
+    labels?: Array<SchemasSectionLabel> | null;
     /**
      * 
      * @type {string}
@@ -154,8 +154,6 @@ export function instanceOfSectionInfo(value: object): value is SectionInfo {
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('creator' in value) || value['creator'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('documents_count' in value) || value['documents_count'] === undefined) return false;
-    if (!('subscribers_count' in value) || value['subscribers_count'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('cover' in value) || value['cover'] === undefined) return false;
     return true;
@@ -176,14 +174,14 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'creator': UserPublicInfoFromJSON(json['creator']),
         'description': json['description'],
         'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
-        'documents_count': json['documents_count'],
-        'subscribers_count': json['subscribers_count'],
+        'documents_count': json['documents_count'] == null ? undefined : json['documents_count'],
+        'subscribers_count': json['subscribers_count'] == null ? undefined : json['subscribers_count'],
         'create_time': (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
         'authority': json['authority'] == null ? undefined : json['authority'],
         'is_subscribed': json['is_subscribed'] == null ? undefined : json['is_subscribed'],
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
-        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasDocumentLabelFromJSON)),
+        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasSectionLabelFromJSON)),
         'cover': json['cover'],
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
         'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),
@@ -213,7 +211,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'authority': value['authority'],
         'is_subscribed': value['is_subscribed'],
         'md_file_name': value['md_file_name'],
-        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasDocumentLabelToJSON)),
+        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasSectionLabelToJSON)),
         'cover': value['cover'],
         'podcast_task': SectionPodcastTaskToJSON(value['podcast_task']),
         'process_task': SectionProcessTaskToJSON(value['process_task']),

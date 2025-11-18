@@ -1,30 +1,32 @@
 
-# SectionUserRequest
+# InifiniteScrollPagnitionSectionUserPublicInfo
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`section_id` | number
+`total` | number
 `start` | number
 `limit` | number
-`keyword` | string
-`filter_roles` | Array&lt;number&gt;
+`has_more` | boolean
+`elements` | [Array&lt;SectionUserPublicInfo&gt;](SectionUserPublicInfo.md)
+`next_start` | number
 
 ## Example
 
 ```typescript
-import type { SectionUserRequest } from ''
+import type { InifiniteScrollPagnitionSectionUserPublicInfo } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "section_id": null,
+  "total": null,
   "start": null,
   "limit": null,
-  "keyword": null,
-  "filter_roles": null,
-} satisfies SectionUserRequest
+  "has_more": null,
+  "elements": null,
+  "next_start": null,
+} satisfies InifiniteScrollPagnitionSectionUserPublicInfo
 
 console.log(example)
 
@@ -33,7 +35,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as SectionUserRequest
+const exampleParsed = JSON.parse(exampleJSON) as InifiniteScrollPagnitionSectionUserPublicInfo
 console.log(exampleParsed)
 ```
 
