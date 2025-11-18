@@ -1,11 +1,7 @@
-import { UserSectionAuthority, UserSectionRole } from '@/enums/section';
+import { UserSectionAuthority } from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
-import {
-	addSectionUser,
-	getSectionUser,
-	modifySectionUser,
-} from '@/service/section';
-import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import { addSectionUser } from '@/service/section';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import {
 	Command,
@@ -41,7 +37,8 @@ import { Separator } from '../ui/separator';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import SectionMemberItem from './section-user-member-item';
+import SectionMember from './section-member';
+import SectionSubscriber from './section-subscriber';
 
 const SectionShare = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
@@ -66,23 +63,11 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 	const [keyword, setKeyword] = useState('');
 	const [open, setOpen] = useState(false);
 
-	const { data: sectionMembers, isLoading: isLoadingMembers } = useQuery({
-		queryKey: ['getSectionMembers', section_id],
-		queryFn: async () => {
-			return getSectionUser({
-				section_id: section_id,
-				filter_roles: [UserSectionRole.MEMBER],
-			});
-		},
-	});
-
 	const {
 		data: userPages,
 		isFetchingNextPage,
 		isFetching,
-		isSuccess,
 		fetchNextPage,
-		isError,
 		hasNextPage,
 	} = useInfiniteQuery({
 		queryKey: ['searchUser', keyword],
@@ -90,7 +75,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 		initialPageParam: {
 			filter_name: 'nickname',
 			filter_value: keyword,
-			limit: 10,
+			limit: 20,
 		},
 		getNextPageParam: (lastPage) => {
 			return lastPage.has_more
@@ -117,7 +102,9 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 			toast.success(t('section_share_user_add_success'));
 			form.reset();
 			queryClient.invalidateQueries({
-				queryKey: ['getSectionMembers', section_id],
+				predicate(query) {
+					return query.queryKey.includes('getSectionMembers');
+				},
 			});
 			queryClient.invalidateQueries({
 				queryKey: ['getSectionDetail', section_id],
@@ -186,7 +173,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 						render={({ field }) => {
 							return (
 								<Popover open={open} onOpenChange={setOpen}>
-									<PopoverTrigger asChild className='flex-1'>
+									<PopoverTrigger asChild>
 										<Button
 											variant='outline'
 											role='combobox'
@@ -203,7 +190,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 											<ChevronsUpDown className='opacity-50 flex-shrink-0 ml-2' />
 										</Button>
 									</PopoverTrigger>
-									<PopoverContent className='flex-1 p-0' align={'start'}>
+									<PopoverContent align={'start'} className='p-0'>
 										<Command shouldFilter={false}>
 											<CommandInput
 												placeholder={t('section_share_user_search_placeholder')}
@@ -230,7 +217,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 															return (
 																<CommandItem
 																	key={user.id}
-																	ref={isLast ? loadMoreRef : null} // ✅ 监听最后一项
+																	ref={isLast ? loadMoreRef : null}
 																	value={user.id.toString()}
 																	onSelect={(currentValue) => {
 																		field.onChange(Number(currentValue));
@@ -267,7 +254,6 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 															);
 														})}
 
-														{/* ✅ 底部加载状态 */}
 														{isFetchingNextPage && (
 															<div className='p-3 text-center text-xs text-muted-foreground'>
 																{t('loading')}...
@@ -320,29 +306,11 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 			</Form>
 			<div>
 				<Separator className='mb-5' />
-				{isLoadingMembers && <Skeleton className='w-full h-64' />}
-				{!isLoadingMembers &&
-					sectionMembers?.users &&
-					sectionMembers?.users.length === 0 && (
-						<div className='text-xs text-muted-foreground text-center bg-muted rounded-lg p-3'>
-							{t('section_participants_empty')}
-						</div>
-					)}
-				{!isLoadingMembers &&
-					sectionMembers?.users &&
-					sectionMembers?.users.length > 0 && (
-						<div className='bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground gap-3 flex flex-col max-h-40 overflow-auto'>
-							{sectionMembers?.users.map((user, index) => {
-								return (
-									<SectionMemberItem
-										section_id={section_id}
-										user={user}
-										key={index}
-									/>
-								);
-							})}
-						</div>
-					)}
+				<SectionMember section_id={section_id} />
+			</div>
+			<div>
+				<Separator className='mb-5' />
+				<SectionSubscriber section_id={section_id} />
 			</div>
 		</div>
 	);

@@ -4,6 +4,7 @@ import models
 from fastapi import APIRouter, Depends
 from datetime import datetime, timezone
 from uuid import uuid4
+from typing import cast
 from sqlalchemy.orm import Session
 from common.dependencies import get_db, get_current_user, get_current_user_without_throw
 from common.common import get_user_remote_file_system
@@ -361,7 +362,7 @@ async def section_user_request(
         )
         has_more = db_next_section_user is not None
         next_start = db_next_section_user.id if db_next_section_user is not None else None
-    next_start = db_next_section_user.id if db_next_section_user is not None else None
+    next_start = cast(int, db_next_section_user.id) if db_next_section_user is not None else None
     total = crud.section.count_users_and_section_users_by_section_id(
         db=db,
         section_id=section_user_request.section_id,

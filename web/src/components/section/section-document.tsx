@@ -6,15 +6,13 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from '@/components/ui/sheet';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { getSectionUser, searchSectionDocuments } from '@/service/section';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { searchSectionDocuments } from '@/service/section';
 import SectionDocumentCard from './section-document-card';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
 import { PlusCircleIcon, TableOfContentsIcon } from 'lucide-react';
 import { useRouter } from 'nextjs-toploader/app';
-import { UserSectionRole } from '@/enums/section';
-import { useUserContext } from '@/provider/user-provider';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
 import { Skeleton } from '../ui/skeleton';
@@ -22,18 +20,6 @@ import { Skeleton } from '../ui/skeleton';
 const SectionDocument = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
 	const router = useRouter();
-
-	const { userInfo } = useUserContext();
-
-	const { data: sectionUsers } = useQuery({
-		queryKey: ['getSectionMembers', section_id],
-		queryFn: async () => {
-			return getSectionUser({
-				section_id: section_id,
-				filter_roles: [UserSectionRole.MEMBER],
-			});
-		},
-	});
 
 	const handleAddDocument = () => {
 		const params = new URLSearchParams({
@@ -117,17 +103,12 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 					)}
 					<div ref={bottomRef}></div>
 				</div>
-				{userInfo &&
-					sectionUsers?.users.find((user) => {
-						return user.id === userInfo.id;
-					}) && (
-						<div className='p-5 w-full'>
-							<Button className='w-full' onClick={handleAddDocument}>
-								{t('section_documents_add')}
-								<PlusCircleIcon />
-							</Button>
-						</div>
-					)}
+				<div className='p-5 w-full'>
+					<Button className='w-full' onClick={handleAddDocument}>
+						{t('section_documents_add')}
+						<PlusCircleIcon />
+					</Button>
+				</div>
 			</SheetContent>
 		</Sheet>
 	);
