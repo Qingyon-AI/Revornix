@@ -262,6 +262,7 @@ const AddNotificationSource = () => {
 													<SelectGroup>
 														<SelectItem value='0'>email</SelectItem>
 														<SelectItem value='1'>ios</SelectItem>
+														<SelectItem value='2'>ios sandbox</SelectItem>
 													</SelectGroup>
 												</SelectContent>
 											</Select>
@@ -373,7 +374,8 @@ const AddNotificationSource = () => {
 									/>
 								</>
 							)}
-							{form.watch('category') === 1 && (
+							{(form.watch('category') === 1 ||
+								form.watch('category') === 2) && (
 								<>
 									<FormField
 										name='team_id'

@@ -3,6 +3,7 @@ from enum import IntEnum
 class NotificationSourceCategory(IntEnum):
     EMAIL = 0
     IOS = 1
+    IOS_SANDBOX = 2
     
 class NotificationTargetCategory(IntEnum):
     EMAIL = 0
