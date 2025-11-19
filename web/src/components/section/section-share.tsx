@@ -103,7 +103,10 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 			form.reset();
 			queryClient.invalidateQueries({
 				predicate(query) {
-					return query.queryKey.includes('getSectionMembers');
+					return (
+						query.queryKey[0] === 'getSectionMembers' &&
+						query.queryKey[1] === section_id
+					);
 				},
 			});
 			queryClient.invalidateQueries({
