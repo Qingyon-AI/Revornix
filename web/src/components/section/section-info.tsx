@@ -10,6 +10,8 @@ import { Badge } from '../ui/badge';
 import { useLocale, useTranslations } from 'next-intl';
 import { Skeleton } from '../ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import SectionInfoSubscriber from './section-info-subscriber';
+import SectionInfoMember from './section-info-member';
 
 const SectionInfo = ({ id }: { id: number }) => {
 	const locale = useLocale();
@@ -82,15 +84,21 @@ const SectionInfo = ({ id }: { id: number }) => {
 						{section?.creator && (
 							<div className='flex flex-row items-center gap-1 col-span-9'>
 								<Avatar
-									className='size-5'
+									className='size-6'
 									title={section?.creator.nickname ?? ''}
 									onClick={(e) => {
 										router.push(`/user/detail/${section?.creator.id}`);
 										e.preventDefault();
 										e.stopPropagation();
 									}}>
-									<AvatarImage src={section?.creator.avatar} alt='avatar' />
-									<AvatarFallback>{section?.creator.nickname}</AvatarFallback>
+									<AvatarImage
+										src={section?.creator.avatar}
+										alt='avatar'
+										className='size-6'
+									/>
+									<AvatarFallback className='size-6'>
+										{section?.creator.nickname}
+									</AvatarFallback>
 								</Avatar>
 								<p
 									onClick={(e) => {
@@ -102,6 +110,18 @@ const SectionInfo = ({ id }: { id: number }) => {
 								</p>
 							</div>
 						)}
+					</div>
+					<div className='grid grid-cols-12 px-5 mb-3 text-xs text-muted-foreground gap-5'>
+						<div className='col-span-3'>{t('section_participants')}</div>
+						<div className='col-span-9'>
+							<SectionInfoMember section_id={id} />
+						</div>
+					</div>
+					<div className='grid grid-cols-12 px-5 mb-3 text-xs text-muted-foreground gap-5'>
+						<div className='col-span-3'>{t('section_subscribers')}</div>
+						<div className='col-span-9'>
+							<SectionInfoSubscriber section_id={id} />
+						</div>
 					</div>
 				</>
 			)}

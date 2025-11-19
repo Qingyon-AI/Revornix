@@ -48,7 +48,7 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 										<div className='flex flex-row gap-2 items-center'>
 											<div
 												className={cn(
-													'size-5 rounded flex justify-center items-center',
+													'size-6 rounded flex justify-center items-center',
 													{
 														'bg-red-500 text-white': index == 0,
 														'bg-orange-500 text-white': index == 1,
@@ -91,7 +91,7 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 										<div className='flex flex-row gap-2 items-center'>
 											<div
 												className={cn(
-													'size-5 rounded flex justify-center items-center',
+													'size-6 rounded flex justify-center items-center',
 													{
 														'bg-red-500 text-white': index == 0,
 														'bg-orange-500 text-white': index == 1,

@@ -15,7 +15,7 @@ import { cloneDeep } from 'lodash-es';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
-import CustomImage from '../ui/custom-image';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const UserContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -111,11 +111,14 @@ const UserContainer = ({ id }: { id: number }) => {
 					{userInfo && (
 						<div className='w-full flex flex-col items-center justify-center'>
 							{userInfo.avatar && (
-								<CustomImage
-									src={userInfo.avatar}
-									alt='avatar'
-									className='w-20 h-20 relative mb-2 rounded-full object-cover'
-								/>
+								<Avatar
+									className='size-24 mb-3'
+									title={
+										userInfo.nickname ? userInfo.nickname : 'Unknown User'
+									}>
+									<AvatarImage src={userInfo.avatar} alt='user avatar' />
+									<AvatarFallback>{userInfo.nickname}</AvatarFallback>
+								</Avatar>
 							)}
 							<p className='font-bold text-2xl mb-2'>{userInfo.nickname}</p>
 							<p className='text-muted-foreground mb-2'>
@@ -126,6 +129,7 @@ const UserContainer = ({ id }: { id: number }) => {
 									{t('user_fans')}{' '}
 									<span className='font-bold'>{userInfo.fans}</span>
 								</div>
+								<div className='text-muted-foreground text-xs'>|</div>
 								<div>
 									{t('user_follows')}{' '}
 									<span className='font-bold'>{userInfo.follows}</span>

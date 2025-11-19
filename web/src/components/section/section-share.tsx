@@ -224,7 +224,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 																		setOpen(false);
 																	}}>
 																	<Avatar
-																		className='size-5'
+																		className='size-6'
 																		title={user.nickname ?? 'unknow name'}
 																		onClick={(e) => {
 																			e.preventDefault();
