@@ -88,7 +88,7 @@ const SectionMemberItem = ({
 		<div className='flex items-center justify-between'>
 			<div className='flex flex-row gap-2 items-center'>
 				<Avatar
-					className='size-5'
+					className='size-6'
 					title={user?.nickname ?? ''}
 					onClick={(e) => {
 						router.push(`/user/detail/${user?.id}`);
