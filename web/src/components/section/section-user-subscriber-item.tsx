@@ -1,20 +1,9 @@
-import { UserSectionRole } from '@/enums/section';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '../ui/select';
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
 import { SectionUserPublicInfo } from '@/generated';
 import { useMutation } from '@tanstack/react-query';
-import { deleteSectionUser, modifySectionUser } from '@/service/section';
+import { deleteSectionUser } from '@/service/section';
 import { toast } from 'sonner';
-import { cloneDeep } from 'lodash';
 import { Button } from '../ui/button';
 import { Loader2, XCircleIcon } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -26,25 +15,8 @@ const SectionSubscriberItem = ({
 	user: SectionUserPublicInfo;
 	section_id: number;
 }) => {
-	const t = useTranslations();
 	const router = useRouter();
 	const queryClient = getQueryClient();
-
-	const mutateModifySectionUser = useMutation({
-		mutationFn: modifySectionUser,
-		onMutate(variables) {
-			const prevUser = cloneDeep(user);
-			user.authority = variables.authority;
-			return { prevUser };
-		},
-		onError(error, variables, context) {
-			console.error(error, variables, context);
-			toast.error(error.message);
-			if (user && context?.prevUser) {
-				user = context?.prevUser;
-			}
-		},
-	});
 
 	const mutateDeleteSectionUser = useMutation({
 		mutationFn: deleteSectionUser,
@@ -54,7 +26,9 @@ const SectionSubscriberItem = ({
 		},
 		onSuccess(data, variables, onMutateResult, context) {
 			queryClient.invalidateQueries({
-				queryKey: ['getSectionMembers', section_id],
+				predicate(query) {
+					return query.queryKey[0] === 'getSectionSubscriber';
+				},
 			});
 		},
 	});

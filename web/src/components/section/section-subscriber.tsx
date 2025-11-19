@@ -1,6 +1,5 @@
 import { useTranslations } from 'next-intl';
 import { Skeleton } from '../ui/skeleton';
-import SectionMemberItem from './section-user-member-item';
 import { getSectionUser } from '@/service/section';
 import { UserSectionRole } from '@/enums/section';
 import { useEffect, useRef, useState } from 'react';
