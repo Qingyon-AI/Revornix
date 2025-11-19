@@ -172,7 +172,8 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 						control={form.control}
 						render={({ field }) => {
 							return (
-								<Popover open={open} onOpenChange={setOpen}>
+								// 必须model={true} 防止dialog内部的popover被外层dialog锁住无法滚动
+								<Popover open={open} onOpenChange={setOpen} modal={true}>
 									<PopoverTrigger asChild>
 										<Button
 											variant='outline'
@@ -200,11 +201,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 												}}
 											/>
 											<CommandList>
-												{isFetching && (
-													<div className='p-3'>
-														<Skeleton className='w-full h-12' />
-													</div>
-												)}
+												{isFetching && <Skeleton className='w-full h-12' />}
 												{!isFetching && users && users.length === 0 && (
 													<CommandEmpty>
 														{t('section_share_user_search_empty')}
