@@ -6,6 +6,7 @@ import { UserSectionRole } from '@/enums/section';
 import { useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Input } from '../ui/input';
+import SectionSubscriberItem from './section-user-subscriber-item';
 
 const SectionSubscriber = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
@@ -93,7 +94,7 @@ const SectionSubscriber = ({ section_id }: { section_id: number }) => {
 						const isLast = index === users.length - 1;
 						return (
 							<div ref={isLast ? loadMoreRef : null} key={index}>
-								<SectionMemberItem section_id={section_id} user={user} />
+								<SectionSubscriberItem section_id={section_id} user={user} />
 							</div>
 						);
 					})}
