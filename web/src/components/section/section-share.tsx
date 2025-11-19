@@ -276,7 +276,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 							return (
 								<Select
 									value={field.value.toString()}
-									onValueChange={field.onChange}>
+									onValueChange={(e) => field.onChange(Number(e))}>
 									<SelectTrigger>
 										<SelectValue
 											placeholder={t('section_share_user_authority')}
