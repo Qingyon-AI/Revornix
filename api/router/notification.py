@@ -1,7 +1,6 @@
 import crud
 import schemas
 import models
-from jose import jwt
 from sqlalchemy.orm import Session
 from fastapi import WebSocket, APIRouter, WebSocketDisconnect, Depends
 from common.apscheduler.app import scheduler
@@ -10,9 +9,8 @@ from apscheduler.triggers.cron import CronTrigger
 from common.dependencies import get_current_user, get_db
 from fastapi import status, WebSocketException
 from datetime import datetime
-from config.oauth2 import OAUTH_SECRET_KEY
 from common.apscheduler.app import send_notification
-from notification_template.daily_summary import DailySummaryNotificationTemplate
+from notifcation.template.daily_summary import DailySummaryNotificationTemplate
 from enums.notification import NotificationContentType, NotificationSourceCategory, NotificationTargetCategory
 from common.dependencies import decode_jwt_token
 

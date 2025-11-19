@@ -8,11 +8,12 @@ from common.logger import info_logger, exception_logger
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from apscheduler.triggers.cron import CronTrigger
-from notify.email import EmailNotify
-from notify.ios import IOSNotify
+from notifcation.tool.email import EmailNotify
+from notifcation.tool.ios import IOSNotify
+from notifcation.tool.ios_sandbox import IOSSandboxNotify
 from datetime import datetime, timezone
 from common.sql import SessionLocal
-from notification_template.daily_summary import DailySummaryNotificationTemplate
+from notifcation.template.daily_summary import DailySummaryNotificationTemplate
 from common.celery.app import start_process_document
 from enums.document import DocumentMdConvertStatus, UserDocumentAuthority, DocumentCategory
 from enums.notification import NotificationContentType, NotificationSourceCategory, NotifyTemplate
@@ -263,7 +264,7 @@ async def send_notification(
                 content=content
             )
         )
-    if db_notification_source.category == NotificationSourceCategory.IOS:
+    elif db_notification_source.category == NotificationSourceCategory.IOS:
         ios_notify = IOSNotify()
         ios_notify.set_source(
             source_id=db_notification_task.notification_source_id,
@@ -272,6 +273,20 @@ async def send_notification(
             target_id=db_notification_task.notification_target_id,
         )
         send_res = ios_notify.send_notification(
+            message=schemas.notification.Message(
+                title=title,
+                content=content
+            )
+        )
+    elif db_notification_source.category == NotificationSourceCategory.IOS_SANDBOX:
+        ios_sandbox_notify = IOSSandboxNotify()
+        ios_sandbox_notify.set_source(
+            source_id=db_notification_task.notification_source_id,
+        )
+        ios_sandbox_notify.set_target(
+            target_id=db_notification_task.notification_target_id,
+        )
+        send_res = ios_sandbox_notify.send_notification(
             message=schemas.notification.Message(
                 title=title,
                 content=content
