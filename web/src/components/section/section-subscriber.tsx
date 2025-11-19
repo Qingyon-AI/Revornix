@@ -5,6 +5,7 @@ import { getSectionUser } from '@/service/section';
 import { UserSectionRole } from '@/enums/section';
 import { useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { Input } from '../ui/input';
 
 const SectionSubscriber = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
@@ -71,8 +72,16 @@ const SectionSubscriber = ({ section_id }: { section_id: number }) => {
 
 	return (
 		<div>
-			<div className='mb-5 font-bold text-sm'>{t('section_subscribers')}</div>
-			{isLoading && <Skeleton className='w-full h-64' />}
+			<div className='flex items-center justify-between mb-5'>
+				<div className='font-bold text-sm'>{t('section_subscribers')}</div>
+				<Input
+					className='max-w-50'
+					placeholder={t('section_subscribers_search')}
+					value={keyword}
+					onChange={(e) => setKeyword(e.target.value)}
+				/>
+			</div>
+			{isLoading && <Skeleton className='w-full h-12' />}
 			{!isLoading && users && users.length === 0 && (
 				<div className='text-xs text-muted-foreground text-center bg-muted rounded-lg p-3'>
 					{t('section_subscribers_empty')}
