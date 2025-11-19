@@ -18,6 +18,16 @@ import { cloneDeep } from 'lodash';
 import { Button } from '../ui/button';
 import { Loader2, XCircleIcon } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogTitle,
+	DialogTrigger,
+} from '../ui/dialog';
+import { useState } from 'react';
 
 const SectionMemberItem = ({
 	user,
@@ -29,6 +39,8 @@ const SectionMemberItem = ({
 	const t = useTranslations();
 	const router = useRouter();
 	const queryClient = getQueryClient();
+
+	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
 	const mutateModifySectionUser = useMutation({
 		mutationFn: modifySectionUser,
@@ -54,8 +66,14 @@ const SectionMemberItem = ({
 		},
 		onSuccess(data, variables, onMutateResult, context) {
 			queryClient.invalidateQueries({
-				queryKey: ['getSectionMembers', section_id],
+				predicate(query) {
+					return (
+						query.queryKey[0] === 'getSectionMembers' &&
+						query.queryKey[1] === section_id
+					);
+				},
 			});
+			setShowDeleteDialog(false);
 		},
 	});
 
@@ -112,16 +130,33 @@ const SectionMemberItem = ({
 						</SelectGroup>
 					</SelectContent>
 				</Select>
-				<Button
-					size={'icon'}
-					variant={'secondary'}
-					disabled={mutateDeleteSectionUser.isPending}
-					onClick={handleDeleteSectionUser}>
-					<XCircleIcon />
-					{mutateDeleteSectionUser.isPending && (
-						<Loader2 className='animate-spin' />
-					)}
-				</Button>
+				<Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+					<DialogTrigger asChild>
+						<Button size={'icon'} variant={'secondary'}>
+							<XCircleIcon />
+						</Button>
+					</DialogTrigger>
+					<DialogContent>
+						<DialogTitle>{t('warning')}</DialogTitle>
+						<DialogDescription>
+							{t('section_participants_delete_description')}
+						</DialogDescription>
+						<DialogFooter>
+							<Button
+								variant='destructive'
+								onClick={handleDeleteSectionUser}
+								disabled={mutateDeleteSectionUser.isPending}>
+								{t('confirm')}
+								{mutateDeleteSectionUser.isPending && (
+									<Loader2 className='animate-spin' />
+								)}
+							</Button>
+							<DialogClose asChild>
+								<Button variant='default'>{t('cancel')}</Button>
+							</DialogClose>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
 			</div>
 		</div>
 	);
