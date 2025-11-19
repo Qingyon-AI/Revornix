@@ -42,7 +42,7 @@ export interface AddNotificationTaskRequest {
      * @type {string}
      * @memberof AddNotificationTaskRequest
      */
-    cron_expr: string;
+    trigger_cron_expr: string;
     /**
      * 
      * @type {boolean}
@@ -76,7 +76,7 @@ export function instanceOfAddNotificationTaskRequest(value: object): value is Ad
     if (!('notification_content_type' in value) || value['notification_content_type'] === undefined) return false;
     if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
     if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
-    if (!('cron_expr' in value) || value['cron_expr'] === undefined) return false;
+    if (!('trigger_cron_expr' in value) || value['trigger_cron_expr'] === undefined) return false;
     if (!('enable' in value) || value['enable'] === undefined) return false;
     return true;
 }
@@ -94,7 +94,7 @@ export function AddNotificationTaskRequestFromJSONTyped(json: any, ignoreDiscrim
         'notification_content_type': json['notification_content_type'],
         'notification_source_id': json['notification_source_id'],
         'notification_target_id': json['notification_target_id'],
-        'cron_expr': json['cron_expr'],
+        'trigger_cron_expr': json['trigger_cron_expr'],
         'enable': json['enable'],
         'title': json['title'] == null ? undefined : json['title'],
         'content': json['content'] == null ? undefined : json['content'],
@@ -116,7 +116,7 @@ export function AddNotificationTaskRequestToJSONTyped(value?: AddNotificationTas
         'notification_content_type': value['notification_content_type'],
         'notification_source_id': value['notification_source_id'],
         'notification_target_id': value['notification_target_id'],
-        'cron_expr': value['cron_expr'],
+        'trigger_cron_expr': value['trigger_cron_expr'],
         'enable': value['enable'],
         'title': value['title'],
         'content': value['content'],

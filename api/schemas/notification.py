@@ -185,7 +185,7 @@ class NotificationSourceDetail(BaseModel):
 
 class NotificationTask(BaseModel):
     id: int
-    cron_expr: str
+    trigger_cron_expr: str
     enable: bool
     notification_source_id: int
     notification_target_id: int
@@ -218,7 +218,7 @@ class UpdateNotificationTaskRequest(BaseModel):
     notification_content_type: int | None = None
     enable: bool | None = None
     notification_template_id: int | None = None
-    cron_expr: str | None = None
+    trigger_cron_expr: str | None = None
     title: str | None = None
     content: str | None = None
     notification_source_id: int | None = None
@@ -228,7 +228,7 @@ class AddNotificationTaskRequest(BaseModel):
     notification_content_type: int
     notification_source_id: int
     notification_target_id: int
-    cron_expr: str
+    trigger_cron_expr: str
     enable: bool
     title: str | None = None
     content: str | None = None

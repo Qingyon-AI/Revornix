@@ -34,14 +34,14 @@ def create_notification_task(
     notification_source_id: int,
     notification_target_id: int,
     enable: bool,
-    cron_expr: str | None = None,
+    trigger_cron_expr: str | None = None,
 ):
     now = datetime.now(timezone.utc)
     notification_task = models.notification.NotificationTask(user_id=user_id,
                                                              notification_content_type=notification_content_type,
                                                              notification_source_id=notification_source_id,
                                                              notification_target_id=notification_target_id,
-                                                             cron_expr=cron_expr,
+                                                             trigger_cron_expr=trigger_cron_expr,
                                                              create_time=now,
                                                              enable=enable)
     db.add(notification_task)

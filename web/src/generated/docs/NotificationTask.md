@@ -7,7 +7,7 @@
 Name | Type
 ------------ | -------------
 `id` | number
-`cron_expr` | string
+`trigger_cron_expr` | string
 `enable` | boolean
 `notification_source_id` | number
 `notification_target_id` | number
@@ -28,7 +28,7 @@ import type { NotificationTask } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
-  "cron_expr": null,
+  "trigger_cron_expr": null,
   "enable": null,
   "notification_source_id": null,
   "notification_target_id": null,

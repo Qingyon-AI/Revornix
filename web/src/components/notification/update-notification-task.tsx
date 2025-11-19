@@ -78,7 +78,7 @@ const UpdateNotificationTask = ({
 					required_error: 'Please select the template',
 				})
 				.optional(),
-			cron_expr: z.string(),
+			trigger_cron_expr: z.string(),
 			enable: z.boolean(),
 			notification_source_id: z.number(),
 			notification_target_id: z.number(),
@@ -127,7 +127,7 @@ const UpdateNotificationTask = ({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			notification_task_id: notification_task_id,
-			cron_expr: '',
+			trigger_cron_expr: '',
 			enable: true,
 		},
 	});
@@ -177,7 +177,7 @@ const UpdateNotificationTask = ({
 		if (data) {
 			const defaultValues: z.infer<typeof formSchema> = {
 				notification_task_id: notification_task_id,
-				cron_expr: data.cron_expr,
+				trigger_cron_expr: data.trigger_cron_expr,
 				enable: data.enable,
 				notification_source_id: data.notification_source_id,
 				notification_target_id: data.notification_target_id,
@@ -331,7 +331,7 @@ const UpdateNotificationTask = ({
 								</TabsContent>
 							</Tabs>
 							<FormField
-								name='cron_expr'
+								name='trigger_cron_expr'
 								control={form.control}
 								render={({ field }) => {
 									return (
