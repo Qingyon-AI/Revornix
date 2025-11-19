@@ -445,6 +445,10 @@ async def section_user_modify_request(
     if origin_section_user is None:
         raise Exception("The user is not a member of this section")
     
+    # 如果用户是订阅者，那么就不能修改权限，仅支持对专栏的参与者修改权限
+    if origin_section_user.role == UserSectionRole.SUBSCRIBER:
+        raise Exception("You can't modify subscriber's authority")
+    
     if section_user_modify_request.authority is not None:
         origin_section_user.authority = section_user_modify_request.authority
     if section_user_modify_request.role is not None:
