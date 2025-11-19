@@ -48,7 +48,7 @@ export interface UpdateNotificationTaskRequest {
      * @type {string}
      * @memberof UpdateNotificationTaskRequest
      */
-    cron_expr?: string | null;
+    trigger_cron_expr?: string | null;
     /**
      * 
      * @type {string}
@@ -97,7 +97,7 @@ export function UpdateNotificationTaskRequestFromJSONTyped(json: any, ignoreDisc
         'notification_content_type': json['notification_content_type'] == null ? undefined : json['notification_content_type'],
         'enable': json['enable'] == null ? undefined : json['enable'],
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
-        'cron_expr': json['cron_expr'] == null ? undefined : json['cron_expr'],
+        'trigger_cron_expr': json['trigger_cron_expr'] == null ? undefined : json['trigger_cron_expr'],
         'title': json['title'] == null ? undefined : json['title'],
         'content': json['content'] == null ? undefined : json['content'],
         'notification_source_id': json['notification_source_id'] == null ? undefined : json['notification_source_id'],
@@ -120,7 +120,7 @@ export function UpdateNotificationTaskRequestToJSONTyped(value?: UpdateNotificat
         'notification_content_type': value['notification_content_type'],
         'enable': value['enable'],
         'notification_template_id': value['notification_template_id'],
-        'cron_expr': value['cron_expr'],
+        'trigger_cron_expr': value['trigger_cron_expr'],
         'title': value['title'],
         'content': value['content'],
         'notification_source_id': value['notification_source_id'],

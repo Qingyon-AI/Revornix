@@ -8,6 +8,20 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from common.sql import Base
 
+class NotificationTool(Base):
+    __tablename__ = "notification_tool"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    name_zh: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(500))
+    description_zh: Mapped[Optional[str]] = mapped_column(String(500))
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    enable: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
 
 class NotificationTask(Base):
     __tablename__ = "notification_task"
@@ -17,9 +31,23 @@ class NotificationTask(Base):
     notification_source_id: Mapped[int] = mapped_column(ForeignKey("notification_source.id"), index=True, nullable=False)
     notification_target_id: Mapped[int] = mapped_column(ForeignKey("notification_target.id"), index=True, nullable=False)
     notification_content_type: Mapped[int] = mapped_column(Integer, index=True, comment='0: custom, 1: template', nullable=False)
-    # TODO 通知任务除了定时执行以外应该还有事件触发执行，待补充
-    cron_expr: Mapped[str] = mapped_column(String(100))
+    trigger_type: Mapped[int] = mapped_column(Integer, index=True, comment='0: event, 1: cron', nullable=False)
+    trigger_event_id: Mapped[Optional[int]] = mapped_column(Integer)
+    trigger_cron_expr: Mapped[Optional[str]] = mapped_column(String(100))
     enable: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
+class TriggerEvent(Base):
+    __tablename__ = "trigger_event"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    name_zh: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(500))
+    description_zh: Mapped[Optional[str]] = mapped_column(String(500))
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))

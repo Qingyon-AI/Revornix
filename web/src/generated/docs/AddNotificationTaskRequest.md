@@ -9,7 +9,7 @@ Name | Type
 `notification_content_type` | number
 `notification_source_id` | number
 `notification_target_id` | number
-`cron_expr` | string
+`trigger_cron_expr` | string
 `enable` | boolean
 `title` | string
 `content` | string
@@ -25,7 +25,7 @@ const example = {
   "notification_content_type": null,
   "notification_source_id": null,
   "notification_target_id": null,
-  "cron_expr": null,
+  "trigger_cron_expr": null,
   "enable": null,
   "title": null,
   "content": null,

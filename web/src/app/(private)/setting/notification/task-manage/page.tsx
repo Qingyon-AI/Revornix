@@ -152,7 +152,7 @@ const NotificationTaskManagePage = () => {
 			},
 		},
 		{
-			accessorKey: 'cron_expr',
+			accessorKey: 'trigger_cron_expr',
 			header: () => {
 				return (
 					<div className='w-full'>
@@ -162,7 +162,7 @@ const NotificationTaskManagePage = () => {
 			},
 			cell: ({ row }) => (
 				<div className='flex flex-row gap-2 items-center'>
-					{row.getValue('cron_expr')}
+					{row.getValue('trigger_cron_expr')}
 				</div>
 			),
 		},

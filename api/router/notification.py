@@ -89,7 +89,7 @@ async def add_notification_task(
         notification_content_type=add_notification_task_request.notification_content_type,
         notification_target_id=add_notification_task_request.notification_target_id,
         notification_source_id=add_notification_task_request.notification_source_id,
-        cron_expr=add_notification_task_request.cron_expr,
+        trigger_cron_expr=add_notification_task_request.trigger_cron_expr,
         enable=add_notification_task_request.enable
     )
     if add_notification_task_request.notification_content_type == NotificationContentType.CUSTOM:
@@ -109,10 +109,10 @@ async def add_notification_task(
             notification_task_id=db_notification_task.id,
             notification_template_id=add_notification_task_request.notification_template_id
         )
-    if add_notification_task_request.enable and add_notification_task_request.cron_expr:
+    if add_notification_task_request.enable and add_notification_task_request.trigger_cron_expr:
         scheduler.add_job(
             func=send_notification,
-            trigger=CronTrigger.from_crontab(add_notification_task_request.cron_expr),
+            trigger=CronTrigger.from_crontab(add_notification_task_request.trigger_cron_expr),
             args=[db_notification_task.user_id,
                   db_notification_task.id],
             id=str(db_notification_task.id),
@@ -141,7 +141,7 @@ async def get_notification_task(
         notification_content_type=db_notification_task.notification_content_type,
         notification_target_id=db_notification_task.notification_target_id,
         notification_source_id=db_notification_task.notification_source_id,
-        cron_expr=db_notification_task.cron_expr,
+        trigger_cron_expr=db_notification_task.trigger_cron_expr,
         create_time=db_notification_task.create_time,
         update_time=db_notification_task.update_time,
         enable=db_notification_task.enable,
@@ -275,8 +275,8 @@ async def update_notification_task(
         db_notification_task.notification_target_id = update_notification_task_request.notification_target_id
     if update_notification_task_request.notification_source_id is not None:
         db_notification_task.notification_source_id = update_notification_task_request.notification_source_id
-    if update_notification_task_request.cron_expr is not None:
-        db_notification_task.cron_expr = update_notification_task_request.cron_expr
+    if update_notification_task_request.trigger_cron_expr is not None:
+        db_notification_task.trigger_cron_expr = update_notification_task_request.trigger_cron_expr
     if update_notification_task_request.enable is not None:
         db_notification_task.enable = update_notification_task_request.enable
     
@@ -286,7 +286,7 @@ async def update_notification_task(
     if db_notification_task.enable:
         scheduler.add_job(
             func=send_notification,
-            trigger=CronTrigger.from_crontab(db_notification_task.cron_expr),
+            trigger=CronTrigger.from_crontab(db_notification_task.trigger_cron_expr),
             args=[db_notification_task.user_id,
                   db_notification_task.id],
             id=str(db_notification_task.id),

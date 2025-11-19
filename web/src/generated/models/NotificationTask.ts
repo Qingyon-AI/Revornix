@@ -45,7 +45,7 @@ export interface NotificationTask {
      * @type {string}
      * @memberof NotificationTask
      */
-    cron_expr: string;
+    trigger_cron_expr: string;
     /**
      * 
      * @type {boolean}
@@ -119,7 +119,7 @@ export interface NotificationTask {
  */
 export function instanceOfNotificationTask(value: object): value is NotificationTask {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('cron_expr' in value) || value['cron_expr'] === undefined) return false;
+    if (!('trigger_cron_expr' in value) || value['trigger_cron_expr'] === undefined) return false;
     if (!('enable' in value) || value['enable'] === undefined) return false;
     if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
     if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
@@ -140,7 +140,7 @@ export function NotificationTaskFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
         
         'id': json['id'],
-        'cron_expr': json['cron_expr'],
+        'trigger_cron_expr': json['trigger_cron_expr'],
         'enable': json['enable'],
         'notification_source_id': json['notification_source_id'],
         'notification_target_id': json['notification_target_id'],
@@ -167,7 +167,7 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
     return {
         
         'id': value['id'],
-        'cron_expr': value['cron_expr'],
+        'trigger_cron_expr': value['trigger_cron_expr'],
         'enable': value['enable'],
         'notification_source_id': value['notification_source_id'],
         'notification_target_id': value['notification_target_id'],

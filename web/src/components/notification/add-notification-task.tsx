@@ -64,7 +64,7 @@ const AddNotificationTask = () => {
 					required_error: 'Please select the template',
 				})
 				.optional(),
-			cron_expr: z.string(),
+			trigger_cron_expr: z.string(),
 			enable: z.boolean(),
 			notification_source_id: z.coerce.number({
 				required_error: 'Please select the source',
@@ -119,7 +119,7 @@ const AddNotificationTask = () => {
 		defaultValues: {
 			title: '',
 			content: '',
-			cron_expr: '',
+			trigger_cron_expr: '',
 			enable: true,
 			notification_content_type: 0,
 		},
@@ -299,7 +299,7 @@ const AddNotificationTask = () => {
 							</Tabs>
 
 							<FormField
-								name='cron_expr'
+								name='trigger_cron_expr'
 								control={form.control}
 								render={({ field }) => {
 									return (
