@@ -56,7 +56,7 @@ const NotificationSourceCard = ({
 			</CardHeader>
 			<CardFooter className='flex flex-row items-center gap-1 justify-end'>
 				<UpdateNotificationSource
-					notification_source_id={notification_source.id}
+					user_notification_source_id={notification_source.id}
 				/>
 				<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 					<AlertDialogTrigger asChild>

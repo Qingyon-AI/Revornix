@@ -225,7 +225,7 @@ const AddNotificationSource = () => {
 													</FormLabel>
 													<Textarea
 														placeholder={t(
-															'setting_notification_source_manage_form_json_placeholder'
+															'setting_notification_source_manage_form_config_json_placeholder'
 														)}
 														className='font-mono break-all'
 														{...field}
@@ -237,7 +237,7 @@ const AddNotificationSource = () => {
 										}}
 									/>
 									<FormLabel>
-										{t('setting_notification_source_manage_form_config_demo')}
+										{t('setting_notification_source_manage_form_config_json_demo')}
 									</FormLabel>
 									<div className='p-5 rounded bg-muted font-mono text-sm break-all'>
 										{

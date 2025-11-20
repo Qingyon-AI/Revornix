@@ -10,7 +10,6 @@ Name | Type
 `title` | string
 `notification_target_id` | number
 `description` | string
-`category` | number
 `create_time` | Date
 `update_time` | Date
 `config_json` | string
@@ -26,7 +25,6 @@ const example = {
   "title": null,
   "notification_target_id": null,
   "description": null,
-  "category": null,
   "create_time": null,
   "update_time": null,
   "config_json": null,

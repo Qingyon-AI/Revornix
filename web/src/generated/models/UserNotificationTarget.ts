@@ -45,12 +45,6 @@ export interface UserNotificationTarget {
     description: string | null;
     /**
      * 
-     * @type {number}
-     * @memberof UserNotificationTarget
-     */
-    category: number;
-    /**
-     * 
      * @type {Date}
      * @memberof UserNotificationTarget
      */
@@ -77,7 +71,6 @@ export function instanceOfUserNotificationTarget(value: object): value is UserNo
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('category' in value) || value['category'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     if (!('config_json' in value) || value['config_json'] === undefined) return false;
@@ -98,7 +91,6 @@ export function UserNotificationTargetFromJSONTyped(json: any, ignoreDiscriminat
         'title': json['title'],
         'notification_target_id': json['notification_target_id'],
         'description': json['description'],
-        'category': json['category'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
         'config_json': json['config_json'],
@@ -120,7 +112,6 @@ export function UserNotificationTargetToJSONTyped(value?: UserNotificationTarget
         'title': value['title'],
         'notification_target_id': value['notification_target_id'],
         'description': value['description'],
-        'category': value['category'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'config_json': value['config_json'],
