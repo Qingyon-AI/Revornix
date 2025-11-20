@@ -8,36 +8,34 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from common.sql import Base
 
-class NotificationTool(Base):
-    __tablename__ = "notification_tool"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    uuid: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    name_zh: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String(500))
-    description_zh: Mapped[Optional[str]] = mapped_column(String(500))
-    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    enable: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-
-
 class NotificationTask(Base):
     __tablename__ = "notification_task"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
-    notification_source_id: Mapped[int] = mapped_column(ForeignKey("notification_source.id"), index=True, nullable=False)
-    notification_target_id: Mapped[int] = mapped_column(ForeignKey("notification_target.id"), index=True, nullable=False)
+    user_notification_source_id: Mapped[int] = mapped_column(ForeignKey("user_notification_source.id"), index=True, nullable=False)
+    user_notification_target_id: Mapped[int] = mapped_column(ForeignKey("user_notification_target.id"), index=True, nullable=False)
     notification_content_type: Mapped[int] = mapped_column(Integer, index=True, comment='0: custom, 1: template', nullable=False)
-    trigger_type: Mapped[int] = mapped_column(Integer, index=True, comment='0: event, 1: cron', nullable=False)
-    trigger_event_id: Mapped[Optional[int]] = mapped_column(Integer)
-    trigger_cron_expr: Mapped[Optional[str]] = mapped_column(String(100))
+    trigger_type: Mapped[int] = mapped_column(Integer, index=True, comment='0: event, 1: scheduler', nullable=False)
     enable: Mapped[bool] = mapped_column(Boolean, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+class NotificationTaskTriggerScheduler(Base):
+    __tablename__ = "notification_task_trigger_scheduler"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    notification_task_id: Mapped[int] = mapped_column(ForeignKey("notification_task.id"), index=True, nullable=False)
+    cron_expr: Mapped[str] = mapped_column(String(100), nullable=False)
+
+
+class NotificationTaskTriggerEvent(Base):
+    __tablename__ = "notification_task_trigger_event"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    notification_task_id: Mapped[int] = mapped_column(ForeignKey("notification_task.id"), index=True, nullable=False)
+    trigger_event_id: Mapped[int] = mapped_column(ForeignKey("trigger_event.id"), index=True, nullable=False)
 
 
 class TriggerEvent(Base):
@@ -77,60 +75,10 @@ class NotificationRecord(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    cover: Mapped[Optional[str]] = mapped_column(String(2000))
     title: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
     content: Mapped[Optional[str]] = mapped_column(Text())
-    notification_source_id: Mapped[int] = mapped_column(ForeignKey("notification_source.id"), index=True, nullable=False)
-    notification_target_id: Mapped[int] = mapped_column(ForeignKey("notification_target.id"), index=True, nullable=False)
     read_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-
-
-class NotificationTarget(Base):
-    __tablename__ = "notification_target"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String(500))
-    creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
-    category: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: email, 1: ios, 2: android, 3: sms')
-    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-
-
-class IOSNotificationSource(Base):
-    __tablename__ = "ios_notification_source"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    notification_source_id: Mapped[int] = mapped_column(ForeignKey("notification_source.id"), index=True, nullable=False)
-    team_id: Mapped[str] = mapped_column(String(200), nullable=False)
-    key_id: Mapped[str] = mapped_column(String(200), nullable=False)
-    private_key: Mapped[str] = mapped_column(String(2000), nullable=False)
-    app_bundle_id: Mapped[str] = mapped_column(String(200), nullable=False)
-    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-
-
-class IOSNotificationTarget(Base):
-    __tablename__ = "ios_notification_target"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    notification_target_id: Mapped[int] = mapped_column(ForeignKey("notification_target.id"), index=True, nullable=False)
-    device_token: Mapped[str] = mapped_column(String(200), nullable=False)
-    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-
-
-class EmailNotificationTarget(Base):
-    __tablename__ = "email_notification_target"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    notification_target_id: Mapped[int] = mapped_column(ForeignKey("notification_target.id"), index=True, nullable=False)
-    email: Mapped[str] = mapped_column(String(100), nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
@@ -138,26 +86,59 @@ class EmailNotificationTarget(Base):
 
 class NotificationSource(Base):
     __tablename__ = "notification_source"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    name_zh: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(500))
+    description_zh: Mapped[Optional[str]] = mapped_column(String(500))
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    enable: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    demo_config: Mapped[Optional[str]] = mapped_column(String(2000))
 
+
+class UserNotificationSource(Base):
+    __tablename__ = "user_notification_source"
+    
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(500))
-    category: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: email, 1: ios, 2: android, 3: sms')
+    notification_source_id: Mapped[int] = mapped_column(ForeignKey("notification_source.id"), index=True, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    config_json: Mapped[Optional[str]] = mapped_column(String(2000))
 
 
-class EmailNotificationSource(Base):
-    __tablename__ = "email_notification_source"
+class NotificationTarget(Base):
+    __tablename__ = "notification_target"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    notification_source_id: Mapped[int] = mapped_column(ForeignKey("notification_source.id"), index=True, nullable=False)
-    server: Mapped[str] = mapped_column(String(100), nullable=False)
-    port: Mapped[int] = mapped_column(Integer, nullable=False)
-    email: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(100), nullable=False)
+    uuid: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    name_zh: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(500))
+    description_zh: Mapped[Optional[str]] = mapped_column(String(500))
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    enable: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    demo_config: Mapped[Optional[str]] = mapped_column(String(2000))
+
+
+class UserNotificationTarget(Base):
+    __tablename__ = "user_notification_target"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(500))
+    creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    notification_target_id: Mapped[int] = mapped_column(ForeignKey("notification_target.id"), index=True, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    config_json: Mapped[Optional[str]] = mapped_column(String(2000))

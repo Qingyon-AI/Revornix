@@ -1,24 +1,15 @@
-import schemas
 import httpx
 import time
 import uuid
 import json
 import jwt
 from jwcrypto import jwk
-from protocol.notify import NotifyProtocol
+from protocol.notification_tool import NotificationToolProtocol
 from common.logger import exception_logger
 
 APPLE_PUBLIC_KEYS_URL = "https://appleid.apple.com/auth/keys"
 
-class IOSSandboxNotify(NotifyProtocol):
-    def __init__(self):
-        super().__init__(
-            notify_uuid='492bddf082c24ef88ecfba6bd687fae0',
-            notify_name='IOSNotify (sandbox)',
-            notify_name_zh='iOS通知 (sandbox)',
-            notify_description='Send notification via ios apns (sandbox)',
-            notify_description_zh='通过iOS APNS发送通知 (sandbox)'
-        )
+class AppleSandboxNotificationTool(NotificationToolProtocol):
     
     def _create_apns_headers(
         self, 
@@ -138,25 +129,29 @@ class IOSSandboxNotify(NotifyProtocol):
 
     def send_notification(
         self, 
-        message: schemas.notification.Message
+        title: str,
+        content: str | None = None,
+        cover: str | None = None,
     ):
         if self.source is None or self.target is None:
             raise Exception("The source or target of the notification is not set")
-        if self.source.ios_notification_source is None or self.target.ios_notification_target is None:
-            raise Exception("The ios notification source or target of the notification is not set")
+        source_config = self.get_source_config()
+        target_config = self.get_target_config()
+        if source_config is None or target_config is None:
+            raise Exception("The source or target config of the notification is not set")
         headers = self._create_apns_headers(
-            team_id=self.source.ios_notification_source.team_id,
-            key_id=self.source.ios_notification_source.key_id,
-            private_key=self.source.ios_notification_source.private_key,
-            apns_topic=self.source.ios_notification_source.app_bundle_id
+            team_id=source_config.get('team_id'),
+            key_id=source_config.get('key_id'),
+            private_key=source_config.get('private_key'),
+            apns_topic=source_config.get('app_bundle_id')
         )
-        device_token = self.target.ios_notification_target.device_token
+        device_token = target_config.get('device_token')
         url = f'https://api.sandbox.push.apple.com/3/device/{device_token}'
         data = {
             "aps" : {
                 "alert" : {
-                    "title" : message.title,
-                    "body" : message.content
+                    "title" : title,
+                    "body" : content
                 },
                 "sound": {
                     "name": "default"

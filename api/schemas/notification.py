@@ -3,18 +3,86 @@ from datetime import datetime, timezone
 
 class Message(BaseModel):
     title: str
-    content: str | None
+    content: str | None = None
 
-class NotificationTargetDetailRequest(BaseModel):
-    notification_target_id: int
+class NotificationSource(BaseModel):
+    id: int
+    uuid: str
+    title: str
+    description: str | None
+    create_time: datetime
+    update_time: datetime | None
+    demo_config: str | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    class Config:
+        from_attributes = True
 
 class NotificationTarget(BaseModel):
     id: int
+    uuid: str
     title: str
+    description: str | None
+    create_time: datetime
+    update_time: datetime | None
+    demo_config: str | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    class Config:
+        from_attributes = True
+
+class NotificationSourcesResponse(BaseModel):
+    data: list[NotificationSource]
+
+class NotificationTargetsResponse(BaseModel):
+    data: list[NotificationTarget]
+
+class UserNotificationSource(BaseModel):
+    id: int
+    title: str
+    description: str | None
+    notification_source_id: int
+    create_time: datetime
+    update_time: datetime | None
+    config_json: str | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    class Config:
+        from_attributes = True
+
+class UserNotificationTarget(BaseModel):
+    id: int
+    title: str
+    notification_target_id: int
     description: str | None
     category: int
     create_time: datetime
     update_time: datetime | None
+    config_json: str | None
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:
@@ -27,86 +95,51 @@ class NotificationTarget(BaseModel):
         return v
     class Config:
         from_attributes = True
-    
-class NotificationTargetsResponse(BaseModel):
-    data: list[NotificationTarget]
 
-class AddNotificationTargetRequest(BaseModel):
-    category: int
-    title: str
-    description: str | None = None
-    email: str | None = None
-    device_token: str | None = None
-    
-class UpdateNotificationTargetRequest(BaseModel):
-    notification_target_id: int
-    title: str | None = None
-    description: str | None = None
-    email: str | None = None
-    device_token: str | None = None
-    
-class DeleteNotificationTargetRequest(BaseModel):
-    notification_target_ids: list[int]
-    
-class EmailNotificationTarget(BaseModel):
-    id: int
-    email: str
-    
-class IOSNotificationTarget(BaseModel):
-    id: int
-    device_token: str
-    
-class NotificationTargetDetail(BaseModel):
-    id: int
-    title: str
-    category: int
-    description: str | None
-    email_notification_target: EmailNotificationTarget | None = None
-    ios_notification_target: IOSNotificationTarget | None = None
+class UserNotificationTargetDetailRequest(BaseModel):
+    user_notification_target_id: int
 
-class UpdateNotificationSourceRequest(BaseModel):
-    notification_source_id: int
-    title: str | None = None
-    description: str | None = None
-    email: str | None = None
-    password: str | None = None
-    server: str | None = None
-    port: int | None = None
-    key_id: str | None = None
-    team_id: str | None = None
-    private_key: str | None = None
-    app_bundle_id: str | None = None
+class UserNotificationSourceDetailRequest(BaseModel):
+    user_notification_source_id: int
+
+class UserNotificationTargetsResponse(BaseModel):
+    data: list[UserNotificationTarget]
+    
+class UserNotificationSourcesResponse(BaseModel):
+    data: list[UserNotificationSource]
 
 class AddNotificationSourceRequest(BaseModel):
+    notification_source_id: int
     title: str
-    description: str
-    category: int
-    email: str | None = None
-    password: str | None = None
-    server: str | None = None
-    port: int | None = None
-    key_id: str | None = None
-    team_id: str | None = None
-    private_key: str | None = None
-    app_bundle_id: str | None = None
-    
-class EmailNotificationSource(BaseModel):
-    id: int
-    email: str
-    password: str
-    server: str
-    port: int
-    
-class IOSNotificationSource(BaseModel):
-    id: int
-    key_id: str
-    team_id: str
-    private_key: str
-    app_bundle_id: str
-    
-class DeleteNotificationSourceRequest(BaseModel):
-    notification_source_ids: list[int]
+    description: str | None = None
+    config_json: str | None = None
 
+class AddNotificationTargetRequest(BaseModel):
+    notification_target_id: int
+    title: str
+    description: str | None = None
+    config_json: str | None = None
+
+class UpdateNotificationSourceRequest(BaseModel):
+    user_notification_source_id: int
+    notification_source_id: int | None = None
+    title: str | None = None
+    description: str | None = None
+    config_json: str | None = None
+
+class UpdateNotificationTargetRequest(BaseModel):
+    user_notification_target_id: int
+    notification_target_id: int | None = None
+    title: str | None = None
+    description: str | None = None
+    config_json: str | None = None
+    
+class DeleteUserNotificationTargetRequest(BaseModel):
+    user_notification_target_ids: list[int]
+
+class DeleteUserNotificationSourceRequest(BaseModel):
+    user_notification_source_ids: list[int]
+    
 class NotificationRecordDetailRequest(BaseModel):
     notification_record_id: int
 
@@ -118,10 +151,7 @@ class SearchNotificationRecordRequest(BaseModel):
 class ReadNotificationRecordRequest(BaseModel):
     notification_record_ids: list[int]
     status: bool
-    
-class UnreadNotificationRecordRequest(BaseModel):
-    notification_record_ids: list[int]
-    
+
 class NotificationRecord(BaseModel):
     id: int
     title: str
@@ -150,51 +180,29 @@ class NotificationRecord(BaseModel):
 class DeleteNotificationRecordRequest(BaseModel):
     notification_record_ids: list[int]
     
-class NotificationSource(BaseModel):
-    id: int
-    title: str
-    description: str | None
-    create_time: datetime
-    update_time: datetime | None
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    class Config:
-        from_attributes = True
+class NotificationTaskDetailRequest(BaseModel):
+    notification_task_id: int
     
-class NotificationSourcesResponse(BaseModel):
-    data: list[NotificationSource]
-    
-class NotificationSourceDetailRequest(BaseModel):
-    notification_source_id: int
-
-class NotificationSourceDetail(BaseModel):
+class NotificationTriggerEvent(BaseModel):
     id: int
-    title: str
-    description: str | None
-    category: int
-    email_notification_source: EmailNotificationSource | None = None
-    ios_notification_source: IOSNotificationSource | None = None
+    name: str
+    
+class NotificationTriggerScheduler(BaseModel):
+    id: int
+    cron_expr: str
 
 class NotificationTask(BaseModel):
     id: int
-    trigger_cron_expr: str
     enable: bool
-    notification_source_id: int
-    notification_target_id: int
     notification_content_type: int
+    trigger_type: int
+    trigger_event: NotificationTriggerEvent | None = None
+    trigger_scheduler: NotificationTriggerScheduler | None = None
     title: str | None = None
     content: str | None = None
     notification_template_id: int | None = None
-    notification_source: NotificationSource | None = None
-    notification_target: NotificationTarget | None = None
+    user_notification_source: UserNotificationSource | None = None
+    user_notification_target: UserNotificationTarget | None = None
     create_time: datetime
     update_time: datetime | None
     @field_serializer("create_time")
@@ -218,24 +226,25 @@ class UpdateNotificationTaskRequest(BaseModel):
     notification_content_type: int | None = None
     enable: bool | None = None
     notification_template_id: int | None = None
-    trigger_cron_expr: str | None = None
+    trigger_type: int | None = None
+    notification_trigger_scheduler_cron: str | None = None
+    notification_trigger_event_id: int | None = None
     title: str | None = None
     content: str | None = None
-    notification_source_id: int | None = None
-    notification_target_id: int | None = None
+    user_notification_source_id: int | None = None
+    user_notification_target_id: int | None = None
     
 class AddNotificationTaskRequest(BaseModel):
     notification_content_type: int
-    notification_source_id: int
-    notification_target_id: int
-    trigger_cron_expr: str
+    user_notification_source_id: int
+    user_notification_target_id: int
+    trigger_type: int
     enable: bool
     title: str | None = None
     content: str | None = None
     notification_template_id: int | None = None
-
-class NotificationTaskDetailRequest(BaseModel):
-    notification_task_id: int
+    notification_trigger_event_id: int | None = None
+    notification_trigger_scheduler_cron: str | None = None
     
 class NotificationTemplate(BaseModel):
     id: int

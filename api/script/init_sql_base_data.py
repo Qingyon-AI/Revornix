@@ -13,15 +13,18 @@ from engine.markdown.markitdown import MarkitdownEngine
 from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
-from notifcation.tool.email import EmailNotify
-from notifcation.tool.ios import IOSNotify
-from notifcation.tool.ios_sandbox import IOSSandboxNotify
 from enums.engine import EngineCategory
 from common.logger import info_logger, exception_logger
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.aws_s3_remote_file_service import AWSS3RemoteFileService
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
+from notifcation.source.apple_notification_source import AppleNotificationSource
+from notifcation.source.apple_sandbox_notification_source import AppleSandBoxNotificationSource
+from notifcation.source.email_notification_source import EmailNotificationSource
+from notifcation.target.apple_notification_target import AppleNotificationTarget
+from notifcation.target.apple_sandbox_notification_target import AppleSandBoxNotificationTarget
+from notifcation.target.email_notification_target import EmailNotificationTarget
 
 alembic_cfg_path = BASE_DIR / 'alembic.ini'
 
@@ -47,6 +50,60 @@ if __name__ == '__main__':
     if not is_data_initialized(db):
         info_logger.info("Initialize the database data...")
         try:
+            db_email_notification_source = crud.notification.create_notification_source(
+                db=db,
+                uuid=EmailNotificationSource.uuid,
+                name=EmailNotificationSource.name,
+                name_zh=EmailNotificationSource.name_zh,
+                description=EmailNotificationSource.description,
+                description_zh=EmailNotificationSource.description_zh,
+                demo_config=EmailNotificationSource.demo_config
+            )
+            db_email_notification_target = crud.notification.create_notification_target(
+                db=db,
+                uuid=EmailNotificationTarget.uuid,
+                name=EmailNotificationTarget.name,
+                name_zh=EmailNotificationTarget.name_zh,
+                description=EmailNotificationTarget.description,
+                description_zh=EmailNotificationTarget.description_zh,
+                demo_config=EmailNotificationTarget.demo_config
+            )
+            db_apple_notification_source = crud.notification.create_notification_source(
+                db=db,
+                uuid=AppleNotificationSource.uuid,
+                name=AppleNotificationSource.name,
+                name_zh=AppleNotificationSource.name_zh,
+                description=AppleNotificationSource.description,
+                description_zh=AppleNotificationSource.description_zh,
+                demo_config=AppleNotificationSource.demo_config
+            )
+            db_apple_notification_target = crud.notification.create_notification_target(
+                db=db,
+                uuid=AppleNotificationTarget.uuid,
+                name=AppleNotificationTarget.name,
+                name_zh=AppleNotificationTarget.name_zh,
+                description=AppleNotificationTarget.description,
+                description_zh=AppleNotificationTarget.description_zh,
+                demo_config=AppleNotificationTarget.demo_config
+            )
+            db_apple_sand_box_notification_source = crud.notification.create_notification_source(
+                db=db,
+                uuid=AppleSandBoxNotificationSource.uuid,
+                name=AppleSandBoxNotificationSource.name,
+                name_zh=AppleSandBoxNotificationSource.name_zh,
+                description=AppleSandBoxNotificationSource.description,
+                description_zh=AppleSandBoxNotificationSource.description_zh,
+                demo_config=AppleSandBoxNotificationSource.demo_config
+            )
+            db_apple_sand_box_notification_target = crud.notification.create_notification_target(
+                db=db,
+                uuid=AppleSandBoxNotificationTarget.uuid,
+                name=AppleSandBoxNotificationTarget.name,
+                name_zh=AppleSandBoxNotificationTarget.name_zh,
+                description=AppleSandBoxNotificationTarget.description,
+                description_zh=AppleSandBoxNotificationTarget.description_zh,
+                demo_config=AppleSandBoxNotificationTarget.demo_config
+            )
             mineru_engine = MineruEngine()
             jina_engine = JinaEngine()
             markitdown_engine = MarkitdownEngine()
