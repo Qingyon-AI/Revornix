@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { getQueryClient } from '@/lib/get-query-client';
 import {
 	getMineNotificationTargetDetail,
+	getProvidedNotificationTargets,
 	updateNotificationTarget,
 } from '@/service/notification';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,7 +30,6 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import { NotificationSourceCategory } from '@/enums/notification';
 import {
 	Select,
 	SelectContent,
@@ -38,62 +38,46 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
+import { Textarea } from '../ui/textarea';
 
 const UpdateNotificationTarget = ({
-	notification_target_id,
+	user_notification_target_id,
 }: {
-	notification_target_id: number;
+	user_notification_target_id: number;
 }) => {
 	const { data, isFetching } = useQuery({
-		queryKey: ['notification-target-detail', notification_target_id],
+		queryKey: ['notification-target-detail', user_notification_target_id],
 		queryFn: async () => {
 			return await getMineNotificationTargetDetail({
-				notification_target_id: notification_target_id,
+				user_notification_target_id: user_notification_target_id,
 			});
 		},
 	});
 
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const formSchema = z
-		.object({
-			notification_target_id: z.number(),
-			title: z.string(),
-			description: z.string().nullable(),
-			category: z.number(),
-			email: z.string().email().optional(),
-			device_token: z.string().optional(),
-		})
-		.superRefine((data, ctx) => {
-			if (data.category === NotificationSourceCategory.EMAIL) {
-				if (!data.email) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						path: ['email'],
-						message: 'Email is required when category is 0',
-					});
-				}
-			}
-			if (data.category === NotificationSourceCategory.IOS) {
-				if (!data.device_token) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						path: ['device_token'],
-						message: 'Device token is required when category is 1',
-					});
-				}
-			}
-		});
+	const formSchema = z.object({
+		user_notification_target_id: z.number(),
+		title: z.string(),
+		description: z.string().optional().nullable(),
+		config_json: z.string().optional().nullable(),
+		notification_target_id: z.number().optional().nullable(),
+	});
 
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			notification_target_id,
+			user_notification_target_id: user_notification_target_id,
 			title: '',
 			description: '',
-			email: '',
+			config_json: '',
 		},
+	});
+
+	const { data: notificationTargets } = useQuery({
+		queryKey: ['provided-notification-target'],
+		queryFn: getProvidedNotificationTargets,
 	});
 
 	const onSubmitForm = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -115,7 +99,7 @@ const UpdateNotificationTarget = ({
 				queryKey: ['notification-target'],
 			});
 			queryClient.invalidateQueries({
-				queryKey: ['notification-target-detail', notification_target_id],
+				queryKey: ['notification-target-detail', user_notification_target_id],
 			});
 			setShowUpdateDialog(false);
 		},
@@ -136,16 +120,15 @@ const UpdateNotificationTarget = ({
 	useEffect(() => {
 		if (data) {
 			const defaultValues: z.infer<typeof formSchema> = {
-				notification_target_id,
+				user_notification_target_id,
 				title: data.title,
 				description: data.description,
-				category: data.category,
-				email: data.email_notification_target?.email,
-				device_token: data.ios_notification_target?.device_token,
+				notification_target_id: data.notification_target_id,
+				config_json: data.config_json,
 			};
 			form.reset(defaultValues);
 		}
-	}, [data, form, notification_target_id]);
+	}, [data, form, user_notification_target_id]);
 
 	return (
 		<>
@@ -206,7 +189,7 @@ const UpdateNotificationTarget = ({
 								}}
 							/>
 							<FormField
-								name='category'
+								name='notification_target_id'
 								control={form.control}
 								render={({ field }) => {
 									return (
@@ -214,7 +197,9 @@ const UpdateNotificationTarget = ({
 											<FormLabel>
 												{t('setting_notification_target_manage_form_category')}
 											</FormLabel>
-											<Select value={field.value.toString()} disabled>
+											<Select
+												value={field.value ? field.value.toString() : undefined}
+												disabled>
 												<SelectTrigger className='w-full'>
 													<SelectValue
 														placeholder={t(
@@ -224,8 +209,15 @@ const UpdateNotificationTarget = ({
 												</SelectTrigger>
 												<SelectContent className='w-full'>
 													<SelectGroup>
-														<SelectItem value='0'>email</SelectItem>
-														<SelectItem value='1'>ios</SelectItem>
+														{notificationTargets?.data.map((item) => {
+															return (
+																<SelectItem
+																	key={item.id}
+																	value={String(item.id)}>
+																	{item.name}
+																</SelectItem>
+															);
+														})}
 													</SelectGroup>
 												</SelectContent>
 											</Select>
@@ -234,54 +226,46 @@ const UpdateNotificationTarget = ({
 									);
 								}}
 							/>
-							{form.watch('category') === 0 && (
+							{notificationTargets?.data.find((item) => {
+								return item.id === form.watch('user_notification_target_id');
+							})?.demo_config && (
 								<>
 									<FormField
-										name='email'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<FormLabel>
-														{t('setting_notification_target_manage_form_email')}
-													</FormLabel>
-													<Input
-														{...field}
-														placeholder={t(
-															'setting_notification_target_manage_form_email_placeholder'
-														)}
-													/>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-								</>
-							)}
-							{form.watch('category') === 1 && (
-								<>
-									<FormField
-										name='device_token'
+										name='config_json'
 										control={form.control}
 										render={({ field }) => {
 											return (
 												<FormItem>
 													<FormLabel>
 														{t(
-															'setting_notification_target_manage_form_device_token'
+															'setting_notification_target_manage_form_config_json'
 														)}
 													</FormLabel>
-													<Input
-														{...field}
+													<Textarea
 														placeholder={t(
-															'setting_notification_target_manage_form_device_token_placeholder'
+															'setting_notification_target_manage_form_config_json_placeholder'
 														)}
+														className='font-mono break-all'
+														{...field}
+														value={field.value ?? ''}
 													/>
 													<FormMessage />
 												</FormItem>
 											);
 										}}
 									/>
+									<FormLabel>
+										{t('setting_notification_target_manage_form_config_demo')}
+									</FormLabel>
+									<div className='p-5 rounded bg-muted font-mono text-sm break-all'>
+										{
+											notificationTargets?.data.find((item) => {
+												return (
+													item.id === form.watch('user_notification_target_id')
+												);
+											})?.demo_config
+										}
+									</div>
 								</>
 							)}
 						</form>

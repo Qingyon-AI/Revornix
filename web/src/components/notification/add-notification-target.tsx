@@ -171,7 +171,7 @@ const AddNotificationTarget = () => {
 									return (
 										<FormItem>
 											<FormLabel>
-												{t('setting_notification_source_manage_form_category')}
+												{t('setting_notification_target_manage_form_category')}
 											</FormLabel>
 											<Select
 												onValueChange={(value) => field.onChange(Number(value))}
@@ -181,7 +181,7 @@ const AddNotificationTarget = () => {
 												<SelectTrigger className='w-full'>
 													<SelectValue
 														placeholder={t(
-															'setting_notification_source_manage_form_category_placeholder'
+															'setting_notification_target_manage_form_category_placeholder'
 														)}
 													/>
 												</SelectTrigger>
@@ -216,12 +216,12 @@ const AddNotificationTarget = () => {
 												<FormItem>
 													<FormLabel>
 														{t(
-															'setting_notification_source_manage_form_config_json'
+															'setting_notification_target_manage_form_config_json'
 														)}
 													</FormLabel>
 													<Textarea
 														placeholder={t(
-															'setting_notification_source_manage_form_json_placeholder'
+															'setting_notification_target_manage_form_config_json_placeholder'
 														)}
 														className='font-mono break-all'
 														{...field}

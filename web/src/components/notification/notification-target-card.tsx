@@ -1,4 +1,4 @@
-import { NotificationTarget } from '@/generated';
+import { UserNotificationTarget } from '@/generated';
 import { Button } from '@/components/ui/button';
 import {
 	AlertDialog,
@@ -29,7 +29,7 @@ import { useTranslations } from 'next-intl';
 const NotificationTargetCard = ({
 	notification_target,
 }: {
-	notification_target: NotificationTarget;
+	notification_target: UserNotificationTarget;
 }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
@@ -57,7 +57,9 @@ const NotificationTargetCard = ({
 				<CardDescription>{notification_target.description}</CardDescription>
 			</CardHeader>
 			<CardFooter className='flex flex-row items-center gap-1 justify-end'>
-				<UpdateNotificationTarget notification_target_id={notification_target.id} />
+				<UpdateNotificationTarget
+					user_notification_target_id={notification_target.id}
+				/>
 				<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 					<AlertDialogTrigger asChild>
 						<Button variant='destructive'>{t('delete')}</Button>
