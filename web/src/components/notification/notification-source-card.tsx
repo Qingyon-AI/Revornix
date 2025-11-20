@@ -1,4 +1,4 @@
-import { NotificationSource } from '@/generated';
+import { NotificationSource, UserNotificationSource } from '@/generated';
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -29,7 +29,7 @@ import { Loader2 } from 'lucide-react';
 const NotificationSourceCard = ({
 	notification_source,
 }: {
-	notification_source: NotificationSource;
+	notification_source: UserNotificationSource;
 }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
@@ -74,7 +74,7 @@ const NotificationSourceCard = ({
 								variant={'destructive'}
 								onClick={() => {
 									muteDeleteNotificationSource.mutateAsync({
-										notification_source_ids: [notification_source.id],
+										user_notification_source_ids: [notification_source.id],
 									});
 								}}
 								disabled={muteDeleteNotificationSource.isPending}>

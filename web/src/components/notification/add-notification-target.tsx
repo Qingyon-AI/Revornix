@@ -18,7 +18,10 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { getQueryClient } from '@/lib/get-query-client';
-import { addNotificationTarget } from '@/service/notification';
+import {
+	addNotificationTarget,
+	getProvidedNotificationTargets,
+} from '@/service/notification';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -33,41 +36,19 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Loader2, PlusCircleIcon } from 'lucide-react';
-import { NotificationSourceCategory } from '@/enums/notification';
+import { Textarea } from '../ui/textarea';
 
 const AddNotificationTarget = () => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const formSchema = z
-		.object({
-			title: z.string(),
-			description: z.string(),
-			category: z.number(),
-			email: z.string().email().optional(),
-			device_token: z.string().optional(),
-		})
-		.superRefine((data, ctx) => {
-			if (data.category === NotificationSourceCategory.EMAIL) {
-				if (!data.email) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						path: ['email'],
-						message: 'Email is required when category is 0',
-					});
-				}
-			}
-			if (data.category === NotificationSourceCategory.IOS) {
-				if (!data.device_token) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						path: ['device_token'],
-						message: 'Device token is required when category is 1',
-					});
-				}
-			}
-		});
+	const formSchema = z.object({
+		title: z.string(),
+		notification_target_id: z.number(),
+		description: z.string().optional().nullable(),
+		config_json: z.string().optional().nullable(),
+	});
 
 	const [showAddDialog, setShowAddDialog] = useState(false);
 	const form = useForm({
@@ -75,9 +56,13 @@ const AddNotificationTarget = () => {
 		defaultValues: {
 			title: '',
 			description: '',
-			category: 0,
-			device_token: '',
+			config_json: '',
 		},
+	});
+
+	const { data: notificationTargets } = useQuery({
+		queryKey: ['provided-notification-target'],
+		queryFn: getProvidedNotificationTargets,
 	});
 
 	const onSubmitForm = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -172,6 +157,7 @@ const AddNotificationTarget = () => {
 												placeholder={t(
 													'setting_notification_target_manage_form_description_placeholder'
 												)}
+												value={field.value || ''}
 											/>
 											<FormMessage />
 										</FormItem>
@@ -179,28 +165,37 @@ const AddNotificationTarget = () => {
 								}}
 							/>
 							<FormField
-								name='category'
+								name='notification_target_id'
 								control={form.control}
 								render={({ field }) => {
 									return (
 										<FormItem>
 											<FormLabel>
-												{t('setting_notification_target_manage_form_category')}
+												{t('setting_notification_source_manage_form_category')}
 											</FormLabel>
 											<Select
 												onValueChange={(value) => field.onChange(Number(value))}
-												defaultValue={String(field.value)}>
+												defaultValue={
+													field.value ? String(field.value) : undefined
+												}>
 												<SelectTrigger className='w-full'>
 													<SelectValue
 														placeholder={t(
-															'setting_notification_target_manage_form_category_placeholder'
+															'setting_notification_source_manage_form_category_placeholder'
 														)}
 													/>
 												</SelectTrigger>
 												<SelectContent className='w-full'>
 													<SelectGroup>
-														<SelectItem value='0'>email</SelectItem>
-														<SelectItem value='1'>ios</SelectItem>
+														{notificationTargets?.data.map((item) => {
+															return (
+																<SelectItem
+																	key={item.id}
+																	value={String(item.id)}>
+																	{item.name}
+																</SelectItem>
+															);
+														})}
 													</SelectGroup>
 												</SelectContent>
 											</Select>
@@ -209,54 +204,44 @@ const AddNotificationTarget = () => {
 									);
 								}}
 							/>
-							{form.watch('category') === 0 && (
+							{notificationTargets?.data.find((item) => {
+								return item.id === form.watch('notification_target_id');
+							})?.demo_config && (
 								<>
 									<FormField
-										name='email'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<FormLabel>
-														{t('setting_notification_target_manage_form_email')}
-													</FormLabel>
-													<Input
-														{...field}
-														placeholder={t(
-															'setting_notification_target_manage_form_email_placeholder'
-														)}
-													/>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-								</>
-							)}
-							{form.watch('category') === 1 && (
-								<>
-									<FormField
-										name='device_token'
+										name='config_json'
 										control={form.control}
 										render={({ field }) => {
 											return (
 												<FormItem>
 													<FormLabel>
 														{t(
-															'setting_notification_target_manage_form_device_token'
+															'setting_notification_source_manage_form_config_json'
 														)}
 													</FormLabel>
-													<Input
-														{...field}
+													<Textarea
 														placeholder={t(
-															'setting_notification_target_manage_form_device_token_placeholder'
+															'setting_notification_source_manage_form_json_placeholder'
 														)}
+														className='font-mono break-all'
+														{...field}
+														value={field.value ?? ''}
 													/>
 													<FormMessage />
 												</FormItem>
 											);
 										}}
 									/>
+									<FormLabel>
+										{t('setting_notification_target_manage_form_config_demo')}
+									</FormLabel>
+									<div className='p-5 rounded bg-muted font-mono text-sm break-all'>
+										{
+											notificationTargets?.data.find((item) => {
+												return item.id === form.watch('notification_target_id');
+											})?.demo_config
+										}
+									</div>
 								</>
 							)}
 						</form>

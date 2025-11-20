@@ -36,13 +36,25 @@ export interface NotificationSource {
      * @type {string}
      * @memberof NotificationSource
      */
-    title: string;
+    name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof NotificationSource
+     */
+    name_zh: string;
     /**
      * 
      * @type {string}
      * @memberof NotificationSource
      */
     description: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof NotificationSource
+     */
+    description_zh: string | null;
     /**
      * 
      * @type {Date}
@@ -69,8 +81,10 @@ export interface NotificationSource {
 export function instanceOfNotificationSource(value: object): value is NotificationSource {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('uuid' in value) || value['uuid'] === undefined) return false;
-    if (!('title' in value) || value['title'] === undefined) return false;
+    if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
+    if (!('description_zh' in value) || value['description_zh'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     if (!('demo_config' in value) || value['demo_config'] === undefined) return false;
@@ -89,8 +103,10 @@ export function NotificationSourceFromJSONTyped(json: any, ignoreDiscriminator: 
         
         'id': json['id'],
         'uuid': json['uuid'],
-        'title': json['title'],
+        'name': json['name'],
+        'name_zh': json['name_zh'],
         'description': json['description'],
+        'description_zh': json['description_zh'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
         'demo_config': json['demo_config'],
@@ -110,8 +126,10 @@ export function NotificationSourceToJSONTyped(value?: NotificationSource | null,
         
         'id': value['id'],
         'uuid': value['uuid'],
-        'title': value['title'],
+        'name': value['name'],
+        'name_zh': value['name_zh'],
         'description': value['description'],
+        'description_zh': value['description_zh'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'demo_config': value['demo_config'],

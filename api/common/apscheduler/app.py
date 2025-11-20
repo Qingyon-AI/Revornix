@@ -254,7 +254,7 @@ async def send_notification(
     if db_notification_source is None:
         raise schemas.error.CustomException(message="notification source not found", code=404)
     send_res = None
-    if db_notification_source.uuid == NotificationSourceUUID.EMAIL:
+    if db_notification_source.uuid == NotificationSourceUUID.EMAIL.value:
         email_notify = EmailNotificationTool()
         email_notify.set_source(
             source_id=db_notification_task.user_user_notification_source_id,
@@ -268,7 +268,7 @@ async def send_notification(
             title=title,
             content=content
         )
-    elif db_notification_source.uuid == NotificationSourceUUID.APPLE:
+    elif db_notification_source.uuid == NotificationSourceUUID.APPLE.value:
         apple_notify = AppleNotificationTool()
         apple_notify.set_source(
             source_id=db_notification_task.user_notification_source_id,
@@ -280,7 +280,7 @@ async def send_notification(
             title=title,
             content=content
         )
-    elif db_notification_source.uuid == NotificationSourceUUID.APPLE_SANDBOX:
+    elif db_notification_source.uuid == NotificationSourceUUID.APPLE_SANDBOX.value:
         ios_sandbox_notify = AppleSandboxNotificationTool()
         ios_sandbox_notify.set_source(
             source_id=db_notification_task.user_notification_source_id,

@@ -8,8 +8,10 @@ Name | Type
 ------------ | -------------
 `id` | number
 `uuid` | string
-`title` | string
+`name` | string
+`name_zh` | string
 `description` | string
+`description_zh` | string
 `create_time` | Date
 `update_time` | Date
 `demo_config` | string
@@ -23,8 +25,10 @@ import type { NotificationTarget } from ''
 const example = {
   "id": null,
   "uuid": null,
-  "title": null,
+  "name": null,
+  "name_zh": null,
   "description": null,
+  "description_zh": null,
   "create_time": null,
   "update_time": null,
   "demo_config": null,
