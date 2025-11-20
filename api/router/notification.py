@@ -405,15 +405,17 @@ async def delete_notification_target(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
+    now = datetime.now(tz=timezone.utc)
     for user_notification_target_id in delete_notification_target_request.user_notification_target_ids:
-        db_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
+        db_user_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
             db=db,
             user_notification_target_id=user_notification_target_id
         )
-        if db_notification_target is None:
+        if db_user_notification_target is None:
             raise schemas.error.CustomException(message="notification target not found", code=404)
-        if db_notification_target.creator_id != user.id:
+        if db_user_notification_target.creator_id != user.id:
             return schemas.error.CustomException(message="you don't have permission to delete this notification target", code=403)
+        db_user_notification_target.delete_at = now
     db.commit()
     return schemas.common.SuccessResponse()
 
@@ -579,6 +581,7 @@ async def delete_email_source(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
+    now = datetime.now(tz=timezone.utc)
     for user_notification_source_id in delete_email_source_request.user_notification_source_ids:
         db_user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
             db=db,
@@ -588,6 +591,7 @@ async def delete_email_source(
             raise schemas.error.CustomException(message="notification source not found", code=404)
         if db_user_notification_source.creator_id != user.id:
             raise schemas.error.CustomException(message="you don't have permission to delete this notification source", code=403)
+        db_user_notification_source.delete_at = now
     db.commit()
     return schemas.common.SuccessResponse()
 
