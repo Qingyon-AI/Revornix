@@ -23,4 +23,6 @@ export default {
     deleteNotificationTask: API_PREFIX + '/notification/task/delete',
     getNotificationTaskDetail: API_PREFIX + '/notification/task/detail',
     getNotificationTemplate: API_PREFIX + '/notification/template/all',
+    getProvidedNotificationSources: API_PREFIX + '/notification/source/provided',
+    getProvidedNotificationTargets: API_PREFIX + '/notification/target/provided',
 } 

@@ -30,19 +30,19 @@ export interface AddNotificationTaskRequest {
      * @type {number}
      * @memberof AddNotificationTaskRequest
      */
-    notification_source_id: number;
+    user_notification_source_id: number;
     /**
      * 
      * @type {number}
      * @memberof AddNotificationTaskRequest
      */
-    notification_target_id: number;
+    user_notification_target_id: number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof AddNotificationTaskRequest
      */
-    trigger_cron_expr: string;
+    trigger_type: number;
     /**
      * 
      * @type {boolean}
@@ -67,6 +67,18 @@ export interface AddNotificationTaskRequest {
      * @memberof AddNotificationTaskRequest
      */
     notification_template_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof AddNotificationTaskRequest
+     */
+    notification_trigger_event_id?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddNotificationTaskRequest
+     */
+    notification_trigger_scheduler_cron?: string | null;
 }
 
 /**
@@ -74,9 +86,9 @@ export interface AddNotificationTaskRequest {
  */
 export function instanceOfAddNotificationTaskRequest(value: object): value is AddNotificationTaskRequest {
     if (!('notification_content_type' in value) || value['notification_content_type'] === undefined) return false;
-    if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
-    if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
-    if (!('trigger_cron_expr' in value) || value['trigger_cron_expr'] === undefined) return false;
+    if (!('user_notification_source_id' in value) || value['user_notification_source_id'] === undefined) return false;
+    if (!('user_notification_target_id' in value) || value['user_notification_target_id'] === undefined) return false;
+    if (!('trigger_type' in value) || value['trigger_type'] === undefined) return false;
     if (!('enable' in value) || value['enable'] === undefined) return false;
     return true;
 }
@@ -92,13 +104,15 @@ export function AddNotificationTaskRequestFromJSONTyped(json: any, ignoreDiscrim
     return {
         
         'notification_content_type': json['notification_content_type'],
-        'notification_source_id': json['notification_source_id'],
-        'notification_target_id': json['notification_target_id'],
-        'trigger_cron_expr': json['trigger_cron_expr'],
+        'user_notification_source_id': json['user_notification_source_id'],
+        'user_notification_target_id': json['user_notification_target_id'],
+        'trigger_type': json['trigger_type'],
         'enable': json['enable'],
         'title': json['title'] == null ? undefined : json['title'],
         'content': json['content'] == null ? undefined : json['content'],
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
+        'notification_trigger_event_id': json['notification_trigger_event_id'] == null ? undefined : json['notification_trigger_event_id'],
+        'notification_trigger_scheduler_cron': json['notification_trigger_scheduler_cron'] == null ? undefined : json['notification_trigger_scheduler_cron'],
     };
 }
 
@@ -114,13 +128,15 @@ export function AddNotificationTaskRequestToJSONTyped(value?: AddNotificationTas
     return {
         
         'notification_content_type': value['notification_content_type'],
-        'notification_source_id': value['notification_source_id'],
-        'notification_target_id': value['notification_target_id'],
-        'trigger_cron_expr': value['trigger_cron_expr'],
+        'user_notification_source_id': value['user_notification_source_id'],
+        'user_notification_target_id': value['user_notification_target_id'],
+        'trigger_type': value['trigger_type'],
         'enable': value['enable'],
         'title': value['title'],
         'content': value['content'],
         'notification_template_id': value['notification_template_id'],
+        'notification_trigger_event_id': value['notification_trigger_event_id'],
+        'notification_trigger_scheduler_cron': value['notification_trigger_scheduler_cron'],
     };
 }
 

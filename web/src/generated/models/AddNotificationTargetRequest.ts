@@ -24,7 +24,7 @@ export interface AddNotificationTargetRequest {
      * @type {number}
      * @memberof AddNotificationTargetRequest
      */
-    category: number;
+    notification_target_id: number;
     /**
      * 
      * @type {string}
@@ -42,20 +42,14 @@ export interface AddNotificationTargetRequest {
      * @type {string}
      * @memberof AddNotificationTargetRequest
      */
-    email?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AddNotificationTargetRequest
-     */
-    device_token?: string | null;
+    config_json?: string | null;
 }
 
 /**
  * Check if a given object implements the AddNotificationTargetRequest interface.
  */
 export function instanceOfAddNotificationTargetRequest(value: object): value is AddNotificationTargetRequest {
-    if (!('category' in value) || value['category'] === undefined) return false;
+    if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
     return true;
 }
@@ -70,11 +64,10 @@ export function AddNotificationTargetRequestFromJSONTyped(json: any, ignoreDiscr
     }
     return {
         
-        'category': json['category'],
+        'notification_target_id': json['notification_target_id'],
         'title': json['title'],
         'description': json['description'] == null ? undefined : json['description'],
-        'email': json['email'] == null ? undefined : json['email'],
-        'device_token': json['device_token'] == null ? undefined : json['device_token'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
 }
 
@@ -89,11 +82,10 @@ export function AddNotificationTargetRequestToJSONTyped(value?: AddNotificationT
 
     return {
         
-        'category': value['category'],
+        'notification_target_id': value['notification_target_id'],
         'title': value['title'],
         'description': value['description'],
-        'email': value['email'],
-        'device_token': value['device_token'],
+        'config_json': value['config_json'],
     };
 }
 

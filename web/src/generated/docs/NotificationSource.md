@@ -7,10 +7,12 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`uuid` | string
 `title` | string
 `description` | string
 `create_time` | Date
 `update_time` | Date
+`demo_config` | string
 
 ## Example
 
@@ -20,10 +22,12 @@ import type { NotificationSource } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "uuid": null,
   "title": null,
   "description": null,
   "create_time": null,
   "update_time": null,
+  "demo_config": null,
 } satisfies NotificationSource
 
 console.log(example)

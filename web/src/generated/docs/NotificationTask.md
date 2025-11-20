@@ -7,16 +7,16 @@
 Name | Type
 ------------ | -------------
 `id` | number
-`trigger_cron_expr` | string
 `enable` | boolean
-`notification_source_id` | number
-`notification_target_id` | number
 `notification_content_type` | number
+`trigger_type` | number
+`trigger_event` | [NotificationTriggerEvent](NotificationTriggerEvent.md)
+`trigger_scheduler` | [NotificationTriggerScheduler](NotificationTriggerScheduler.md)
 `title` | string
 `content` | string
 `notification_template_id` | number
-`notification_source` | [NotificationSource](NotificationSource.md)
-`notification_target` | [NotificationTarget](NotificationTarget.md)
+`user_notification_source` | [UserNotificationSource](UserNotificationSource.md)
+`user_notification_target` | [UserNotificationTarget](UserNotificationTarget.md)
 `create_time` | Date
 `update_time` | Date
 
@@ -28,16 +28,16 @@ import type { NotificationTask } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
-  "trigger_cron_expr": null,
   "enable": null,
-  "notification_source_id": null,
-  "notification_target_id": null,
   "notification_content_type": null,
+  "trigger_type": null,
+  "trigger_event": null,
+  "trigger_scheduler": null,
   "title": null,
   "content": null,
   "notification_template_id": null,
-  "notification_source": null,
-  "notification_target": null,
+  "user_notification_source": null,
+  "user_notification_target": null,
   "create_time": null,
   "update_time": null,
 } satisfies NotificationTask

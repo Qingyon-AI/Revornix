@@ -10,11 +10,13 @@ Name | Type
 `notification_content_type` | number
 `enable` | boolean
 `notification_template_id` | number
-`trigger_cron_expr` | string
+`trigger_type` | number
+`notification_trigger_scheduler_cron` | string
+`notification_trigger_event_id` | number
 `title` | string
 `content` | string
-`notification_source_id` | number
-`notification_target_id` | number
+`user_notification_source_id` | number
+`user_notification_target_id` | number
 
 ## Example
 
@@ -27,11 +29,13 @@ const example = {
   "notification_content_type": null,
   "enable": null,
   "notification_template_id": null,
-  "trigger_cron_expr": null,
+  "trigger_type": null,
+  "notification_trigger_scheduler_cron": null,
+  "notification_trigger_event_id": null,
   "title": null,
   "content": null,
-  "notification_source_id": null,
-  "notification_target_id": null,
+  "user_notification_source_id": null,
+  "user_notification_target_id": null,
 } satisfies UpdateNotificationTaskRequest
 
 console.log(example)

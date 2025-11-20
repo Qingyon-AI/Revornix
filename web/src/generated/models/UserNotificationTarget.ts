@@ -16,92 +16,100 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface NotificationSource
+ * @interface UserNotificationTarget
  */
-export interface NotificationSource {
+export interface UserNotificationTarget {
     /**
      * 
      * @type {number}
-     * @memberof NotificationSource
+     * @memberof UserNotificationTarget
      */
     id: number;
     /**
      * 
      * @type {string}
-     * @memberof NotificationSource
-     */
-    uuid: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof NotificationSource
+     * @memberof UserNotificationTarget
      */
     title: string;
     /**
      * 
+     * @type {number}
+     * @memberof UserNotificationTarget
+     */
+    notification_target_id: number;
+    /**
+     * 
      * @type {string}
-     * @memberof NotificationSource
+     * @memberof UserNotificationTarget
      */
     description: string | null;
     /**
      * 
+     * @type {number}
+     * @memberof UserNotificationTarget
+     */
+    category: number;
+    /**
+     * 
      * @type {Date}
-     * @memberof NotificationSource
+     * @memberof UserNotificationTarget
      */
     create_time: Date;
     /**
      * 
      * @type {Date}
-     * @memberof NotificationSource
+     * @memberof UserNotificationTarget
      */
     update_time: Date | null;
     /**
      * 
      * @type {string}
-     * @memberof NotificationSource
+     * @memberof UserNotificationTarget
      */
-    demo_config: string | null;
+    config_json: string | null;
 }
 
 /**
- * Check if a given object implements the NotificationSource interface.
+ * Check if a given object implements the UserNotificationTarget interface.
  */
-export function instanceOfNotificationSource(value: object): value is NotificationSource {
+export function instanceOfUserNotificationTarget(value: object): value is UserNotificationTarget {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
+    if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
+    if (!('category' in value) || value['category'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
-    if (!('demo_config' in value) || value['demo_config'] === undefined) return false;
+    if (!('config_json' in value) || value['config_json'] === undefined) return false;
     return true;
 }
 
-export function NotificationSourceFromJSON(json: any): NotificationSource {
-    return NotificationSourceFromJSONTyped(json, false);
+export function UserNotificationTargetFromJSON(json: any): UserNotificationTarget {
+    return UserNotificationTargetFromJSONTyped(json, false);
 }
 
-export function NotificationSourceFromJSONTyped(json: any, ignoreDiscriminator: boolean): NotificationSource {
+export function UserNotificationTargetFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserNotificationTarget {
     if (json == null) {
         return json;
     }
     return {
         
         'id': json['id'],
-        'uuid': json['uuid'],
         'title': json['title'],
+        'notification_target_id': json['notification_target_id'],
         'description': json['description'],
+        'category': json['category'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
-        'demo_config': json['demo_config'],
+        'config_json': json['config_json'],
     };
 }
 
-export function NotificationSourceToJSON(json: any): NotificationSource {
-    return NotificationSourceToJSONTyped(json, false);
+export function UserNotificationTargetToJSON(json: any): UserNotificationTarget {
+    return UserNotificationTargetToJSONTyped(json, false);
 }
 
-export function NotificationSourceToJSONTyped(value?: NotificationSource | null, ignoreDiscriminator: boolean = false): any {
+export function UserNotificationTargetToJSONTyped(value?: UserNotificationTarget | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -109,12 +117,13 @@ export function NotificationSourceToJSONTyped(value?: NotificationSource | null,
     return {
         
         'id': value['id'],
-        'uuid': value['uuid'],
         'title': value['title'],
+        'notification_target_id': value['notification_target_id'],
         'description': value['description'],
+        'category': value['category'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
-        'demo_config': value['demo_config'],
+        'config_json': value['config_json'],
     };
 }
 

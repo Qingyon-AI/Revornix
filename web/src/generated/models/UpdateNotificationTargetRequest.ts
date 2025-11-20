@@ -24,7 +24,13 @@ export interface UpdateNotificationTargetRequest {
      * @type {number}
      * @memberof UpdateNotificationTargetRequest
      */
-    notification_target_id: number;
+    user_notification_target_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof UpdateNotificationTargetRequest
+     */
+    notification_target_id?: number | null;
     /**
      * 
      * @type {string}
@@ -42,20 +48,14 @@ export interface UpdateNotificationTargetRequest {
      * @type {string}
      * @memberof UpdateNotificationTargetRequest
      */
-    email?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateNotificationTargetRequest
-     */
-    device_token?: string | null;
+    config_json?: string | null;
 }
 
 /**
  * Check if a given object implements the UpdateNotificationTargetRequest interface.
  */
 export function instanceOfUpdateNotificationTargetRequest(value: object): value is UpdateNotificationTargetRequest {
-    if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
+    if (!('user_notification_target_id' in value) || value['user_notification_target_id'] === undefined) return false;
     return true;
 }
 
@@ -69,11 +69,11 @@ export function UpdateNotificationTargetRequestFromJSONTyped(json: any, ignoreDi
     }
     return {
         
-        'notification_target_id': json['notification_target_id'],
+        'user_notification_target_id': json['user_notification_target_id'],
+        'notification_target_id': json['notification_target_id'] == null ? undefined : json['notification_target_id'],
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
-        'email': json['email'] == null ? undefined : json['email'],
-        'device_token': json['device_token'] == null ? undefined : json['device_token'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
 }
 
@@ -88,11 +88,11 @@ export function UpdateNotificationTargetRequestToJSONTyped(value?: UpdateNotific
 
     return {
         
+        'user_notification_target_id': value['user_notification_target_id'],
         'notification_target_id': value['notification_target_id'],
         'title': value['title'],
         'description': value['description'],
-        'email': value['email'],
-        'device_token': value['device_token'],
+        'config_json': value['config_json'],
     };
 }
 

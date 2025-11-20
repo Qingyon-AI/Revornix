@@ -6,11 +6,11 @@
 
 Name | Type
 ------------ | -------------
+`user_notification_target_id` | number
 `notification_target_id` | number
 `title` | string
 `description` | string
-`email` | string
-`device_token` | string
+`config_json` | string
 
 ## Example
 
@@ -19,11 +19,11 @@ import type { UpdateNotificationTargetRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
+  "user_notification_target_id": null,
   "notification_target_id": null,
   "title": null,
   "description": null,
-  "email": null,
-  "device_token": null,
+  "config_json": null,
 } satisfies UpdateNotificationTargetRequest
 
 console.log(example)

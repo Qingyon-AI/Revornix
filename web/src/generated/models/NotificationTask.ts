@@ -13,20 +13,34 @@
  */
 
 import { mapValues } from '../runtime';
-import type { NotificationSource } from './NotificationSource';
+import type { NotificationTriggerEvent } from './NotificationTriggerEvent';
 import {
-    NotificationSourceFromJSON,
-    NotificationSourceFromJSONTyped,
-    NotificationSourceToJSON,
-    NotificationSourceToJSONTyped,
-} from './NotificationSource';
-import type { NotificationTarget } from './NotificationTarget';
+    NotificationTriggerEventFromJSON,
+    NotificationTriggerEventFromJSONTyped,
+    NotificationTriggerEventToJSON,
+    NotificationTriggerEventToJSONTyped,
+} from './NotificationTriggerEvent';
+import type { UserNotificationSource } from './UserNotificationSource';
 import {
-    NotificationTargetFromJSON,
-    NotificationTargetFromJSONTyped,
-    NotificationTargetToJSON,
-    NotificationTargetToJSONTyped,
-} from './NotificationTarget';
+    UserNotificationSourceFromJSON,
+    UserNotificationSourceFromJSONTyped,
+    UserNotificationSourceToJSON,
+    UserNotificationSourceToJSONTyped,
+} from './UserNotificationSource';
+import type { UserNotificationTarget } from './UserNotificationTarget';
+import {
+    UserNotificationTargetFromJSON,
+    UserNotificationTargetFromJSONTyped,
+    UserNotificationTargetToJSON,
+    UserNotificationTargetToJSONTyped,
+} from './UserNotificationTarget';
+import type { NotificationTriggerScheduler } from './NotificationTriggerScheduler';
+import {
+    NotificationTriggerSchedulerFromJSON,
+    NotificationTriggerSchedulerFromJSONTyped,
+    NotificationTriggerSchedulerToJSON,
+    NotificationTriggerSchedulerToJSONTyped,
+} from './NotificationTriggerScheduler';
 
 /**
  * 
@@ -42,12 +56,6 @@ export interface NotificationTask {
     id: number;
     /**
      * 
-     * @type {string}
-     * @memberof NotificationTask
-     */
-    trigger_cron_expr: string;
-    /**
-     * 
      * @type {boolean}
      * @memberof NotificationTask
      */
@@ -57,19 +65,25 @@ export interface NotificationTask {
      * @type {number}
      * @memberof NotificationTask
      */
-    notification_source_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof NotificationTask
-     */
-    notification_target_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof NotificationTask
-     */
     notification_content_type: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof NotificationTask
+     */
+    trigger_type: number;
+    /**
+     * 
+     * @type {NotificationTriggerEvent}
+     * @memberof NotificationTask
+     */
+    trigger_event?: NotificationTriggerEvent | null;
+    /**
+     * 
+     * @type {NotificationTriggerScheduler}
+     * @memberof NotificationTask
+     */
+    trigger_scheduler?: NotificationTriggerScheduler | null;
     /**
      * 
      * @type {string}
@@ -90,16 +104,16 @@ export interface NotificationTask {
     notification_template_id?: number | null;
     /**
      * 
-     * @type {NotificationSource}
+     * @type {UserNotificationSource}
      * @memberof NotificationTask
      */
-    notification_source?: NotificationSource | null;
+    user_notification_source?: UserNotificationSource | null;
     /**
      * 
-     * @type {NotificationTarget}
+     * @type {UserNotificationTarget}
      * @memberof NotificationTask
      */
-    notification_target?: NotificationTarget | null;
+    user_notification_target?: UserNotificationTarget | null;
     /**
      * 
      * @type {Date}
@@ -119,11 +133,9 @@ export interface NotificationTask {
  */
 export function instanceOfNotificationTask(value: object): value is NotificationTask {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('trigger_cron_expr' in value) || value['trigger_cron_expr'] === undefined) return false;
     if (!('enable' in value) || value['enable'] === undefined) return false;
-    if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
-    if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
     if (!('notification_content_type' in value) || value['notification_content_type'] === undefined) return false;
+    if (!('trigger_type' in value) || value['trigger_type'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
@@ -140,16 +152,16 @@ export function NotificationTaskFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
         
         'id': json['id'],
-        'trigger_cron_expr': json['trigger_cron_expr'],
         'enable': json['enable'],
-        'notification_source_id': json['notification_source_id'],
-        'notification_target_id': json['notification_target_id'],
         'notification_content_type': json['notification_content_type'],
+        'trigger_type': json['trigger_type'],
+        'trigger_event': json['trigger_event'] == null ? undefined : NotificationTriggerEventFromJSON(json['trigger_event']),
+        'trigger_scheduler': json['trigger_scheduler'] == null ? undefined : NotificationTriggerSchedulerFromJSON(json['trigger_scheduler']),
         'title': json['title'] == null ? undefined : json['title'],
         'content': json['content'] == null ? undefined : json['content'],
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
-        'notification_source': json['notification_source'] == null ? undefined : NotificationSourceFromJSON(json['notification_source']),
-        'notification_target': json['notification_target'] == null ? undefined : NotificationTargetFromJSON(json['notification_target']),
+        'user_notification_source': json['user_notification_source'] == null ? undefined : UserNotificationSourceFromJSON(json['user_notification_source']),
+        'user_notification_target': json['user_notification_target'] == null ? undefined : UserNotificationTargetFromJSON(json['user_notification_target']),
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
@@ -167,16 +179,16 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
     return {
         
         'id': value['id'],
-        'trigger_cron_expr': value['trigger_cron_expr'],
         'enable': value['enable'],
-        'notification_source_id': value['notification_source_id'],
-        'notification_target_id': value['notification_target_id'],
         'notification_content_type': value['notification_content_type'],
+        'trigger_type': value['trigger_type'],
+        'trigger_event': NotificationTriggerEventToJSON(value['trigger_event']),
+        'trigger_scheduler': NotificationTriggerSchedulerToJSON(value['trigger_scheduler']),
         'title': value['title'],
         'content': value['content'],
         'notification_template_id': value['notification_template_id'],
-        'notification_source': NotificationSourceToJSON(value['notification_source']),
-        'notification_target': NotificationTargetToJSON(value['notification_target']),
+        'user_notification_source': UserNotificationSourceToJSON(value['user_notification_source']),
+        'user_notification_target': UserNotificationTargetToJSON(value['user_notification_target']),
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
