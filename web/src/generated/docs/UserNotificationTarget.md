@@ -1,5 +1,5 @@
 
-# NotificationTarget
+# UserNotificationTarget
 
 
 ## Properties
@@ -7,28 +7,30 @@
 Name | Type
 ------------ | -------------
 `id` | number
-`uuid` | string
 `title` | string
+`notification_target_id` | number
 `description` | string
+`category` | number
 `create_time` | Date
 `update_time` | Date
-`demo_config` | string
+`config_json` | string
 
 ## Example
 
 ```typescript
-import type { NotificationTarget } from ''
+import type { UserNotificationTarget } from ''
 
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
-  "uuid": null,
   "title": null,
+  "notification_target_id": null,
   "description": null,
+  "category": null,
   "create_time": null,
   "update_time": null,
-  "demo_config": null,
-} satisfies NotificationTarget
+  "config_json": null,
+} satisfies UserNotificationTarget
 
 console.log(example)
 
@@ -37,7 +39,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as NotificationTarget
+const exampleParsed = JSON.parse(exampleJSON) as UserNotificationTarget
 console.log(exampleParsed)
 ```
 

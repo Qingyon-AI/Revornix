@@ -24,7 +24,13 @@ export interface UpdateNotificationSourceRequest {
      * @type {number}
      * @memberof UpdateNotificationSourceRequest
      */
-    notification_source_id: number;
+    user_notification_source_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof UpdateNotificationSourceRequest
+     */
+    notification_source_id?: number | null;
     /**
      * 
      * @type {string}
@@ -42,56 +48,14 @@ export interface UpdateNotificationSourceRequest {
      * @type {string}
      * @memberof UpdateNotificationSourceRequest
      */
-    email?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateNotificationSourceRequest
-     */
-    password?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateNotificationSourceRequest
-     */
-    server?: string | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof UpdateNotificationSourceRequest
-     */
-    port?: number | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateNotificationSourceRequest
-     */
-    key_id?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateNotificationSourceRequest
-     */
-    team_id?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateNotificationSourceRequest
-     */
-    private_key?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateNotificationSourceRequest
-     */
-    app_bundle_id?: string | null;
+    config_json?: string | null;
 }
 
 /**
  * Check if a given object implements the UpdateNotificationSourceRequest interface.
  */
 export function instanceOfUpdateNotificationSourceRequest(value: object): value is UpdateNotificationSourceRequest {
-    if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
+    if (!('user_notification_source_id' in value) || value['user_notification_source_id'] === undefined) return false;
     return true;
 }
 
@@ -105,17 +69,11 @@ export function UpdateNotificationSourceRequestFromJSONTyped(json: any, ignoreDi
     }
     return {
         
-        'notification_source_id': json['notification_source_id'],
+        'user_notification_source_id': json['user_notification_source_id'],
+        'notification_source_id': json['notification_source_id'] == null ? undefined : json['notification_source_id'],
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
-        'email': json['email'] == null ? undefined : json['email'],
-        'password': json['password'] == null ? undefined : json['password'],
-        'server': json['server'] == null ? undefined : json['server'],
-        'port': json['port'] == null ? undefined : json['port'],
-        'key_id': json['key_id'] == null ? undefined : json['key_id'],
-        'team_id': json['team_id'] == null ? undefined : json['team_id'],
-        'private_key': json['private_key'] == null ? undefined : json['private_key'],
-        'app_bundle_id': json['app_bundle_id'] == null ? undefined : json['app_bundle_id'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
 }
 
@@ -130,17 +88,11 @@ export function UpdateNotificationSourceRequestToJSONTyped(value?: UpdateNotific
 
     return {
         
+        'user_notification_source_id': value['user_notification_source_id'],
         'notification_source_id': value['notification_source_id'],
         'title': value['title'],
         'description': value['description'],
-        'email': value['email'],
-        'password': value['password'],
-        'server': value['server'],
-        'port': value['port'],
-        'key_id': value['key_id'],
-        'team_id': value['team_id'],
-        'private_key': value['private_key'],
-        'app_bundle_id': value['app_bundle_id'],
+        'config_json': value['config_json'],
     };
 }
 

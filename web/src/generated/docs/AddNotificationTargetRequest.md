@@ -6,11 +6,10 @@
 
 Name | Type
 ------------ | -------------
-`category` | number
+`notification_target_id` | number
 `title` | string
 `description` | string
-`email` | string
-`device_token` | string
+`config_json` | string
 
 ## Example
 
@@ -19,11 +18,10 @@ import type { AddNotificationTargetRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "category": null,
+  "notification_target_id": null,
   "title": null,
   "description": null,
-  "email": null,
-  "device_token": null,
+  "config_json": null,
 } satisfies AddNotificationTargetRequest
 
 console.log(example)

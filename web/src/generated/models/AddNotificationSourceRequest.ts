@@ -21,6 +21,12 @@ import { mapValues } from '../runtime';
 export interface AddNotificationSourceRequest {
     /**
      * 
+     * @type {number}
+     * @memberof AddNotificationSourceRequest
+     */
+    notification_source_id: number;
+    /**
+     * 
      * @type {string}
      * @memberof AddNotificationSourceRequest
      */
@@ -30,70 +36,21 @@ export interface AddNotificationSourceRequest {
      * @type {string}
      * @memberof AddNotificationSourceRequest
      */
-    description: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof AddNotificationSourceRequest
-     */
-    category: number;
+    description?: string | null;
     /**
      * 
      * @type {string}
      * @memberof AddNotificationSourceRequest
      */
-    email?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AddNotificationSourceRequest
-     */
-    password?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AddNotificationSourceRequest
-     */
-    server?: string | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof AddNotificationSourceRequest
-     */
-    port?: number | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AddNotificationSourceRequest
-     */
-    key_id?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AddNotificationSourceRequest
-     */
-    team_id?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AddNotificationSourceRequest
-     */
-    private_key?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AddNotificationSourceRequest
-     */
-    app_bundle_id?: string | null;
+    config_json?: string | null;
 }
 
 /**
  * Check if a given object implements the AddNotificationSourceRequest interface.
  */
 export function instanceOfAddNotificationSourceRequest(value: object): value is AddNotificationSourceRequest {
+    if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
-    if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('category' in value) || value['category'] === undefined) return false;
     return true;
 }
 
@@ -107,17 +64,10 @@ export function AddNotificationSourceRequestFromJSONTyped(json: any, ignoreDiscr
     }
     return {
         
+        'notification_source_id': json['notification_source_id'],
         'title': json['title'],
-        'description': json['description'],
-        'category': json['category'],
-        'email': json['email'] == null ? undefined : json['email'],
-        'password': json['password'] == null ? undefined : json['password'],
-        'server': json['server'] == null ? undefined : json['server'],
-        'port': json['port'] == null ? undefined : json['port'],
-        'key_id': json['key_id'] == null ? undefined : json['key_id'],
-        'team_id': json['team_id'] == null ? undefined : json['team_id'],
-        'private_key': json['private_key'] == null ? undefined : json['private_key'],
-        'app_bundle_id': json['app_bundle_id'] == null ? undefined : json['app_bundle_id'],
+        'description': json['description'] == null ? undefined : json['description'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
 }
 
@@ -132,17 +82,10 @@ export function AddNotificationSourceRequestToJSONTyped(value?: AddNotificationS
 
     return {
         
+        'notification_source_id': value['notification_source_id'],
         'title': value['title'],
         'description': value['description'],
-        'category': value['category'],
-        'email': value['email'],
-        'password': value['password'],
-        'server': value['server'],
-        'port': value['port'],
-        'key_id': value['key_id'],
-        'team_id': value['team_id'],
-        'private_key': value['private_key'],
-        'app_bundle_id': value['app_bundle_id'],
+        'config_json': value['config_json'],
     };
 }
 

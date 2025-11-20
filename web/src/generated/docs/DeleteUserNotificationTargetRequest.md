@@ -1,24 +1,22 @@
 
-# LabelSummaryItem
+# DeleteUserNotificationTargetRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`label_info` | [SchemasDocumentLabel](SchemasDocumentLabel.md)
-`count` | number
+`user_notification_target_ids` | Array&lt;number&gt;
 
 ## Example
 
 ```typescript
-import type { LabelSummaryItem } from ''
+import type { DeleteUserNotificationTargetRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "label_info": null,
-  "count": null,
-} satisfies LabelSummaryItem
+  "user_notification_target_ids": null,
+} satisfies DeleteUserNotificationTargetRequest
 
 console.log(example)
 
@@ -27,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as LabelSummaryItem
+const exampleParsed = JSON.parse(exampleJSON) as DeleteUserNotificationTargetRequest
 console.log(exampleParsed)
 ```
 

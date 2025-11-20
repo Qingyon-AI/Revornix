@@ -30,6 +30,12 @@ export interface NotificationTarget {
      * @type {string}
      * @memberof NotificationTarget
      */
+    uuid: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof NotificationTarget
+     */
     title: string;
     /**
      * 
@@ -37,12 +43,6 @@ export interface NotificationTarget {
      * @memberof NotificationTarget
      */
     description: string | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof NotificationTarget
-     */
-    category: number;
     /**
      * 
      * @type {Date}
@@ -55,6 +55,12 @@ export interface NotificationTarget {
      * @memberof NotificationTarget
      */
     update_time: Date | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof NotificationTarget
+     */
+    demo_config: string | null;
 }
 
 /**
@@ -62,11 +68,12 @@ export interface NotificationTarget {
  */
 export function instanceOfNotificationTarget(value: object): value is NotificationTarget {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('category' in value) || value['category'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
+    if (!('demo_config' in value) || value['demo_config'] === undefined) return false;
     return true;
 }
 
@@ -81,11 +88,12 @@ export function NotificationTargetFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'id': json['id'],
+        'uuid': json['uuid'],
         'title': json['title'],
         'description': json['description'],
-        'category': json['category'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
+        'demo_config': json['demo_config'],
     };
 }
 
@@ -101,11 +109,12 @@ export function NotificationTargetToJSONTyped(value?: NotificationTarget | null,
     return {
         
         'id': value['id'],
+        'uuid': value['uuid'],
         'title': value['title'],
         'description': value['description'],
-        'category': value['category'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
+        'demo_config': value['demo_config'],
     };
 }
 

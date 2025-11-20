@@ -6,17 +6,10 @@
 
 Name | Type
 ------------ | -------------
+`notification_source_id` | number
 `title` | string
 `description` | string
-`category` | number
-`email` | string
-`password` | string
-`server` | string
-`port` | number
-`key_id` | string
-`team_id` | string
-`private_key` | string
-`app_bundle_id` | string
+`config_json` | string
 
 ## Example
 
@@ -25,17 +18,10 @@ import type { AddNotificationSourceRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
+  "notification_source_id": null,
   "title": null,
   "description": null,
-  "category": null,
-  "email": null,
-  "password": null,
-  "server": null,
-  "port": null,
-  "key_id": null,
-  "team_id": null,
-  "private_key": null,
-  "app_bundle_id": null,
+  "config_json": null,
 } satisfies AddNotificationSourceRequest
 
 console.log(example)

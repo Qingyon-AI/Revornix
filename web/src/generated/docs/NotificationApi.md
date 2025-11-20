@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**addEmailSourceNotificationSourceAddPost**](NotificationApi.md#addemailsourcenotificationsourceaddpost) | **POST** /notification/source/add | Add Email Source |
+| [**addNotificationSourceNotificationSourceAddPost**](NotificationApi.md#addnotificationsourcenotificationsourceaddpost) | **POST** /notification/source/add | Add Notification Source |
 | [**addNotificationTargetNotificationTargetAddPost**](NotificationApi.md#addnotificationtargetnotificationtargetaddpost) | **POST** /notification/target/add | Add Notification Target |
 | [**addNotificationTaskNotificationTaskAddPost**](NotificationApi.md#addnotificationtasknotificationtaskaddpost) | **POST** /notification/task/add | Add Notification Task |
 | [**deleteEmailSourceNotificationSourceDeletePost**](NotificationApi.md#deleteemailsourcenotificationsourcedeletepost) | **POST** /notification/source/delete | Delete Email Source |
@@ -19,6 +19,8 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**getNotificationTargetDetailNotificationTargetDetailPost**](NotificationApi.md#getnotificationtargetdetailnotificationtargetdetailpost) | **POST** /notification/target/detail | Get Notification Target Detail |
 | [**getNotificationTaskNotificationTaskDetailPost**](NotificationApi.md#getnotificationtasknotificationtaskdetailpost) | **POST** /notification/task/detail | Get Notification Task |
 | [**getNotificationTemplatesNotificationTemplateAllPost**](NotificationApi.md#getnotificationtemplatesnotificationtemplateallpost) | **POST** /notification/template/all | Get Notification Templates |
+| [**getProvidedNotificationSourceNotificationSourceProvidedPost**](NotificationApi.md#getprovidednotificationsourcenotificationsourceprovidedpost) | **POST** /notification/source/provided | Get Provided Notification Source |
+| [**getProvidedNotificationTargetNotificationTargetProvidedPost**](NotificationApi.md#getprovidednotificationtargetnotificationtargetprovidedpost) | **POST** /notification/target/provided | Get Provided Notification Target |
 | [**readAllNotificationRecordNotificationRecordReadAllPost**](NotificationApi.md#readallnotificationrecordnotificationrecordreadallpost) | **POST** /notification/record/read-all | Read All Notification Record |
 | [**readNotificationRecordNotificationRecordReadPost**](NotificationApi.md#readnotificationrecordnotificationrecordreadpost) | **POST** /notification/record/read | Read Notification Record |
 | [**searchNotificationRecordNotificationRecordSearchPost**](NotificationApi.md#searchnotificationrecordnotificationrecordsearchpost) | **POST** /notification/record/search | Search Notification Record |
@@ -28,11 +30,11 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 
 
-## addEmailSourceNotificationSourceAddPost
+## addNotificationSourceNotificationSourceAddPost
 
-> NormalResponse addEmailSourceNotificationSourceAddPost(addNotificationSourceRequest, authorization, xForwardedFor)
+> NormalResponse addNotificationSourceNotificationSourceAddPost(addNotificationSourceRequest, authorization, xForwardedFor)
 
-Add Email Source
+Add Notification Source
 
 ### Example
 
@@ -41,7 +43,7 @@ import {
   Configuration,
   NotificationApi,
 } from '';
-import type { AddEmailSourceNotificationSourceAddPostRequest } from '';
+import type { AddNotificationSourceNotificationSourceAddPostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -54,10 +56,10 @@ async function example() {
     authorization: authorization_example,
     // string (optional)
     xForwardedFor: xForwardedFor_example,
-  } satisfies AddEmailSourceNotificationSourceAddPostRequest;
+  } satisfies AddNotificationSourceNotificationSourceAddPostRequest;
 
   try {
-    const data = await api.addEmailSourceNotificationSourceAddPost(body);
+    const data = await api.addNotificationSourceNotificationSourceAddPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -246,7 +248,7 @@ No authorization required
 
 ## deleteEmailSourceNotificationSourceDeletePost
 
-> NormalResponse deleteEmailSourceNotificationSourceDeletePost(deleteNotificationSourceRequest, authorization, xForwardedFor)
+> NormalResponse deleteEmailSourceNotificationSourceDeletePost(deleteUserNotificationSourceRequest, authorization, xForwardedFor)
 
 Delete Email Source
 
@@ -264,8 +266,8 @@ async function example() {
   const api = new NotificationApi();
 
   const body = {
-    // DeleteNotificationSourceRequest
-    deleteNotificationSourceRequest: ...,
+    // DeleteUserNotificationSourceRequest
+    deleteUserNotificationSourceRequest: ...,
     // string (optional)
     authorization: authorization_example,
     // string (optional)
@@ -289,7 +291,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **deleteNotificationSourceRequest** | [DeleteNotificationSourceRequest](DeleteNotificationSourceRequest.md) |  | |
+| **deleteUserNotificationSourceRequest** | [DeleteUserNotificationSourceRequest](DeleteUserNotificationSourceRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
@@ -390,7 +392,7 @@ No authorization required
 
 ## deleteNotificationTargetNotificationTargetDeletePost
 
-> NormalResponse deleteNotificationTargetNotificationTargetDeletePost(deleteNotificationTargetRequest, authorization, xForwardedFor)
+> NormalResponse deleteNotificationTargetNotificationTargetDeletePost(deleteUserNotificationTargetRequest, authorization, xForwardedFor)
 
 Delete Notification Target
 
@@ -408,8 +410,8 @@ async function example() {
   const api = new NotificationApi();
 
   const body = {
-    // DeleteNotificationTargetRequest
-    deleteNotificationTargetRequest: ...,
+    // DeleteUserNotificationTargetRequest
+    deleteUserNotificationTargetRequest: ...,
     // string (optional)
     authorization: authorization_example,
     // string (optional)
@@ -433,7 +435,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **deleteNotificationTargetRequest** | [DeleteNotificationTargetRequest](DeleteNotificationTargetRequest.md) |  | |
+| **deleteUserNotificationTargetRequest** | [DeleteUserNotificationTargetRequest](DeleteUserNotificationTargetRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
@@ -534,7 +536,7 @@ No authorization required
 
 ## getEmailSourceNotificationSourceMinePost
 
-> NotificationSourcesResponse getEmailSourceNotificationSourceMinePost(authorization, xForwardedFor)
+> UserNotificationSourcesResponse getEmailSourceNotificationSourceMinePost(authorization, xForwardedFor)
 
 Get Email Source
 
@@ -580,7 +582,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**NotificationSourcesResponse**](NotificationSourcesResponse.md)
+[**UserNotificationSourcesResponse**](UserNotificationSourcesResponse.md)
 
 ### Authorization
 
@@ -603,7 +605,7 @@ No authorization required
 
 ## getMineNotificationTargetNotificationTargetMinePost
 
-> NotificationTargetsResponse getMineNotificationTargetNotificationTargetMinePost(authorization, xForwardedFor)
+> UserNotificationTargetsResponse getMineNotificationTargetNotificationTargetMinePost(authorization, xForwardedFor)
 
 Get Mine Notification Target
 
@@ -649,7 +651,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**NotificationTargetsResponse**](NotificationTargetsResponse.md)
+[**UserNotificationTargetsResponse**](UserNotificationTargetsResponse.md)
 
 ### Authorization
 
@@ -744,7 +746,7 @@ No authorization required
 
 ## getNotificationDetailNotificationSourceDetailPost
 
-> NotificationSourceDetail getNotificationDetailNotificationSourceDetailPost(notificationSourceDetailRequest, authorization, xForwardedFor)
+> UserNotificationSource getNotificationDetailNotificationSourceDetailPost(userNotificationSourceDetailRequest, authorization, xForwardedFor)
 
 Get Notification Detail
 
@@ -762,8 +764,8 @@ async function example() {
   const api = new NotificationApi();
 
   const body = {
-    // NotificationSourceDetailRequest
-    notificationSourceDetailRequest: ...,
+    // UserNotificationSourceDetailRequest
+    userNotificationSourceDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
     // string (optional)
@@ -787,13 +789,13 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **notificationSourceDetailRequest** | [NotificationSourceDetailRequest](NotificationSourceDetailRequest.md) |  | |
+| **userNotificationSourceDetailRequest** | [UserNotificationSourceDetailRequest](UserNotificationSourceDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-[**NotificationSourceDetail**](NotificationSourceDetail.md)
+[**UserNotificationSource**](UserNotificationSource.md)
 
 ### Authorization
 
@@ -888,7 +890,7 @@ No authorization required
 
 ## getNotificationTargetDetailNotificationTargetDetailPost
 
-> NotificationTargetDetail getNotificationTargetDetailNotificationTargetDetailPost(notificationTargetDetailRequest)
+> UserNotificationTarget getNotificationTargetDetailNotificationTargetDetailPost(userNotificationTargetDetailRequest)
 
 Get Notification Target Detail
 
@@ -906,8 +908,8 @@ async function example() {
   const api = new NotificationApi();
 
   const body = {
-    // NotificationTargetDetailRequest
-    notificationTargetDetailRequest: ...,
+    // UserNotificationTargetDetailRequest
+    userNotificationTargetDetailRequest: ...,
   } satisfies GetNotificationTargetDetailNotificationTargetDetailPostRequest;
 
   try {
@@ -927,11 +929,11 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **notificationTargetDetailRequest** | [NotificationTargetDetailRequest](NotificationTargetDetailRequest.md) |  | |
+| **userNotificationTargetDetailRequest** | [UserNotificationTargetDetailRequest](UserNotificationTargetDetailRequest.md) |  | |
 
 ### Return type
 
-[**NotificationTargetDetail**](NotificationTargetDetail.md)
+[**UserNotificationTarget**](UserNotificationTarget.md)
 
 ### Authorization
 
@@ -1073,6 +1075,144 @@ example().catch(console.error);
 ### Return type
 
 [**NotificationTemplatesResponse**](NotificationTemplatesResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getProvidedNotificationSourceNotificationSourceProvidedPost
+
+> NotificationSourcesResponse getProvidedNotificationSourceNotificationSourceProvidedPost(authorization, xForwardedFor)
+
+Get Provided Notification Source
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { GetProvidedNotificationSourceNotificationSourceProvidedPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies GetProvidedNotificationSourceNotificationSourceProvidedPostRequest;
+
+  try {
+    const data = await api.getProvidedNotificationSourceNotificationSourceProvidedPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NotificationSourcesResponse**](NotificationSourcesResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getProvidedNotificationTargetNotificationTargetProvidedPost
+
+> NotificationTargetsResponse getProvidedNotificationTargetNotificationTargetProvidedPost(authorization, xForwardedFor)
+
+Get Provided Notification Target
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { GetProvidedNotificationTargetNotificationTargetProvidedPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies GetProvidedNotificationTargetNotificationTargetProvidedPostRequest;
+
+  try {
+    const data = await api.getProvidedNotificationTargetNotificationTargetProvidedPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NotificationTargetsResponse**](NotificationTargetsResponse.md)
 
 ### Authorization
 
