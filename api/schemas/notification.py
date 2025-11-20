@@ -8,8 +8,10 @@ class Message(BaseModel):
 class NotificationSource(BaseModel):
     id: int
     uuid: str
-    title: str
+    name: str
+    name_zh: str 
     description: str | None
+    description_zh: str | None
     create_time: datetime
     update_time: datetime | None
     demo_config: str | None
@@ -29,8 +31,10 @@ class NotificationSource(BaseModel):
 class NotificationTarget(BaseModel):
     id: int
     uuid: str
-    title: str
+    name: str
+    name_zh: str 
     description: str | None
+    description_zh: str | None
     create_time: datetime
     update_time: datetime | None
     demo_config: str | None
@@ -79,7 +83,6 @@ class UserNotificationTarget(BaseModel):
     title: str
     notification_target_id: int
     description: str | None
-    category: int
     create_time: datetime
     update_time: datetime | None
     config_json: str | None

@@ -47,62 +47,68 @@ if __name__ == '__main__':
     )
     # 仅在数据库数据未初始化时，执行数据初始化
     db = SessionLocal()
-    if not is_data_initialized(db):
+    if not is_data_initialized(db=db):
         info_logger.info("Initialize the database data...")
         try:
+            email_notification_source = EmailNotificationSource()
+            email_notification_target = EmailNotificationTarget()
+            apple_notification_source = AppleNotificationSource()
+            apple_notification_target = AppleNotificationTarget()
+            apple_sand_box_notification_source = AppleSandBoxNotificationSource()
+            apple_sand_box_notification_target = AppleSandBoxNotificationTarget()
             db_email_notification_source = crud.notification.create_notification_source(
                 db=db,
-                uuid=EmailNotificationSource.uuid,
-                name=EmailNotificationSource.name,
-                name_zh=EmailNotificationSource.name_zh,
-                description=EmailNotificationSource.description,
-                description_zh=EmailNotificationSource.description_zh,
-                demo_config=EmailNotificationSource.demo_config
+                uuid=email_notification_source.uuid,
+                name=email_notification_source.name,
+                name_zh=email_notification_source.name_zh,
+                description=email_notification_source.description,
+                description_zh=email_notification_source.description_zh,
+                demo_config=email_notification_source.demo_config
             )
             db_email_notification_target = crud.notification.create_notification_target(
                 db=db,
-                uuid=EmailNotificationTarget.uuid,
-                name=EmailNotificationTarget.name,
-                name_zh=EmailNotificationTarget.name_zh,
-                description=EmailNotificationTarget.description,
-                description_zh=EmailNotificationTarget.description_zh,
-                demo_config=EmailNotificationTarget.demo_config
+                uuid=email_notification_target.uuid,
+                name=email_notification_target.name,
+                name_zh=email_notification_target.name_zh,
+                description=email_notification_target.description,
+                description_zh=email_notification_target.description_zh,
+                demo_config=email_notification_target.demo_config
             )
             db_apple_notification_source = crud.notification.create_notification_source(
                 db=db,
-                uuid=AppleNotificationSource.uuid,
-                name=AppleNotificationSource.name,
-                name_zh=AppleNotificationSource.name_zh,
-                description=AppleNotificationSource.description,
-                description_zh=AppleNotificationSource.description_zh,
-                demo_config=AppleNotificationSource.demo_config
+                uuid=apple_notification_source.uuid,
+                name=apple_notification_source.name,
+                name_zh=apple_notification_source.name_zh,
+                description=apple_notification_source.description,
+                description_zh=apple_notification_source.description_zh,
+                demo_config=apple_notification_source.demo_config
             )
             db_apple_notification_target = crud.notification.create_notification_target(
                 db=db,
-                uuid=AppleNotificationTarget.uuid,
-                name=AppleNotificationTarget.name,
-                name_zh=AppleNotificationTarget.name_zh,
-                description=AppleNotificationTarget.description,
-                description_zh=AppleNotificationTarget.description_zh,
-                demo_config=AppleNotificationTarget.demo_config
+                uuid=apple_notification_target.uuid,
+                name=apple_notification_target.name,
+                name_zh=apple_notification_target.name_zh,
+                description=apple_notification_target.description,
+                description_zh=apple_notification_target.description_zh,
+                demo_config=apple_notification_target.demo_config
             )
             db_apple_sand_box_notification_source = crud.notification.create_notification_source(
                 db=db,
-                uuid=AppleSandBoxNotificationSource.uuid,
-                name=AppleSandBoxNotificationSource.name,
-                name_zh=AppleSandBoxNotificationSource.name_zh,
-                description=AppleSandBoxNotificationSource.description,
-                description_zh=AppleSandBoxNotificationSource.description_zh,
-                demo_config=AppleSandBoxNotificationSource.demo_config
+                uuid=apple_sand_box_notification_source.uuid,
+                name=apple_sand_box_notification_source.name,
+                name_zh=apple_sand_box_notification_source.name_zh,
+                description=apple_sand_box_notification_source.description,
+                description_zh=apple_sand_box_notification_source.description_zh,
+                demo_config=apple_sand_box_notification_source.demo_config
             )
             db_apple_sand_box_notification_target = crud.notification.create_notification_target(
                 db=db,
-                uuid=AppleSandBoxNotificationTarget.uuid,
-                name=AppleSandBoxNotificationTarget.name,
-                name_zh=AppleSandBoxNotificationTarget.name_zh,
-                description=AppleSandBoxNotificationTarget.description,
-                description_zh=AppleSandBoxNotificationTarget.description_zh,
-                demo_config=AppleSandBoxNotificationTarget.demo_config
+                uuid=apple_sand_box_notification_target.uuid,
+                name=apple_sand_box_notification_target.name,
+                name_zh=apple_sand_box_notification_target.name_zh,
+                description=apple_sand_box_notification_target.description,
+                description_zh=apple_sand_box_notification_target.description_zh,
+                demo_config=apple_sand_box_notification_target.demo_config
             )
             mineru_engine = MineruEngine()
             jina_engine = JinaEngine()
@@ -200,6 +206,7 @@ if __name__ == '__main__':
                 demo_config=generic_s3_remote_file_service.file_service_demo_config
             )
             db.commit()
+            info_logger.info("Initialize the sql database successfully")
         except Exception as e:
             exception_logger.error(f"Initialize the sql database failed: {e}")
             command.downgrade(
