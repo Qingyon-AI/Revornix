@@ -8,15 +8,15 @@ from common.logger import info_logger, exception_logger
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from apscheduler.triggers.cron import CronTrigger
-from notifcation.tool.email import EmailNotify
-from notifcation.tool.ios import IOSNotify
-from notifcation.tool.ios_sandbox import IOSSandboxNotify
+from notifcation.tool.email import EmailNotificationTool
+from notifcation.tool.apple import AppleNotificationTool
+from notifcation.tool.apple_sandbox import AppleSandboxNotificationTool
 from datetime import datetime, timezone
 from common.sql import SessionLocal
 from notifcation.template.daily_summary import DailySummaryNotificationTemplate
 from common.celery.app import start_process_document
 from enums.document import DocumentMdConvertStatus, UserDocumentAuthority, DocumentCategory
-from enums.notification import NotificationContentType, NotificationSourceCategory, NotifyTemplate
+from enums.notification import NotificationContentType, NotificationSourceUUID, NotifyTemplate
 from enums.section import SectionDocumentIntegration, UserSectionRole, UserSectionAuthority
 
 scheduler = AsyncIOScheduler()
@@ -71,9 +71,9 @@ async def fetch_and_save(
                             section_id=section.id,
                             status=SectionDocumentIntegration.WAIT_TO
                         )
-                if entry_updated and existing_doc.update_time >= entry_updated:
+                if entry_updated and existing_doc.update_time and existing_doc.update_time >= entry_updated:
                     continue
-                elif entry_published and existing_doc.update_time >= entry_published:
+                elif entry_published and existing_doc.update_time and existing_doc.update_time >= entry_published:
                     continue
                 else:
                     existing_doc.update_time = datetime.now()
@@ -241,56 +241,56 @@ async def send_notification(
             generate_res = await template.generate()
             title = generate_res.title
             content = generate_res.content
+    db_user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
+        db=db,
+        user_notification_source_id=db_notification_task.user_notification_source_id
+    )
+    if db_user_notification_source is None:
+        raise schemas.error.CustomException(message="user notification source not found", code=404)
     db_notification_source = crud.notification.get_notification_source_by_notification_source_id(
         db=db,
-        notification_source_id=db_notification_task.notification_source_id
+        notification_source_id=db_user_notification_source.notification_source_id
     )
     if db_notification_source is None:
         raise schemas.error.CustomException(message="notification source not found", code=404)
     send_res = None
-    if db_notification_source.category == NotificationSourceCategory.EMAIL:
-        email_notify = EmailNotify()
+    if db_notification_source.uuid == NotificationSourceUUID.EMAIL:
+        email_notify = EmailNotificationTool()
         email_notify.set_source(
-            source_id=db_notification_task.notification_source_id,
+            source_id=db_notification_task.user_user_notification_source_id,
         )
         email_notify.set_target(
-            target_id=db_notification_task.notification_target_id,
+            target_id=db_notification_task.user_notification_target_id,
         )
         if content:
             content = markdown.markdown(content)
         send_res = email_notify.send_notification(
-            message=schemas.notification.Message(
-                title=title,
-                content=content
-            )
+            title=title,
+            content=content
         )
-    elif db_notification_source.category == NotificationSourceCategory.IOS:
-        ios_notify = IOSNotify()
-        ios_notify.set_source(
-            source_id=db_notification_task.notification_source_id,
+    elif db_notification_source.uuid == NotificationSourceUUID.APPLE:
+        apple_notify = AppleNotificationTool()
+        apple_notify.set_source(
+            source_id=db_notification_task.user_notification_source_id,
         )
-        ios_notify.set_target(
-            target_id=db_notification_task.notification_target_id,
+        apple_notify.set_target(
+            target_id=db_notification_task.user_notification_target_id,
         )
-        send_res = ios_notify.send_notification(
-            message=schemas.notification.Message(
-                title=title,
-                content=content
-            )
+        send_res = apple_notify.send_notification(
+            title=title,
+            content=content
         )
-    elif db_notification_source.category == NotificationSourceCategory.IOS_SANDBOX:
-        ios_sandbox_notify = IOSSandboxNotify()
+    elif db_notification_source.uuid == NotificationSourceUUID.APPLE_SANDBOX:
+        ios_sandbox_notify = AppleSandboxNotificationTool()
         ios_sandbox_notify.set_source(
-            source_id=db_notification_task.notification_source_id,
+            source_id=db_notification_task.user_notification_source_id,
         )
         ios_sandbox_notify.set_target(
-            target_id=db_notification_task.notification_target_id,
+            target_id=db_notification_task.user_notification_target_id,
         )
         send_res = ios_sandbox_notify.send_notification(
-            message=schemas.notification.Message(
-                title=title,
-                content=content
-            )
+            title=title,
+            content=content
         )
     if not send_res:
         raise schemas.error.CustomException(message="send notification failed", code=500)
@@ -299,9 +299,7 @@ async def send_notification(
             db=db,
             user_id=user_id,
             title=title,
-            content=content,
-            notification_source_id=db_notification_task.notification_source_id,
-            notification_target_id=db_notification_task.notification_target_id
+            content=content
         )
         db.commit()
     db.close()  

@@ -8,10 +8,10 @@ from common.websocket import notificationManager
 from apscheduler.triggers.cron import CronTrigger
 from common.dependencies import get_current_user, get_db
 from fastapi import status, WebSocketException
-from datetime import datetime
+from datetime import datetime, timezone
 from common.apscheduler.app import send_notification
 from notifcation.template.daily_summary import DailySummaryNotificationTemplate
-from enums.notification import NotificationContentType, NotificationSourceCategory, NotificationTargetCategory
+from enums.notification import NotificationContentType, NotificationTriggerType
 from common.dependencies import decode_jwt_token
 
 notification_router = APIRouter()
@@ -69,8 +69,8 @@ async def get_notification_templates(
         schemas.notification.NotificationTemplate(
             id=daily_summary_template.template_id,
             name=daily_summary_template.template_name,
-            description=daily_summary_template.template_description,
             name_zh=daily_summary_template.template_name_zh,
+            description=daily_summary_template.template_description,
             description_zh=daily_summary_template.template_description_zh
         )
     )
@@ -87,9 +87,9 @@ async def add_notification_task(
         db=db,
         user_id=user.id,
         notification_content_type=add_notification_task_request.notification_content_type,
-        notification_target_id=add_notification_task_request.notification_target_id,
-        notification_source_id=add_notification_task_request.notification_source_id,
-        trigger_cron_expr=add_notification_task_request.trigger_cron_expr,
+        user_notification_target_id=add_notification_task_request.user_notification_target_id,
+        user_notification_source_id=add_notification_task_request.user_notification_source_id,
+        trigger_type=add_notification_task_request.trigger_type,
         enable=add_notification_task_request.enable
     )
     if add_notification_task_request.notification_content_type == NotificationContentType.CUSTOM:
@@ -109,17 +109,31 @@ async def add_notification_task(
             notification_task_id=db_notification_task.id,
             notification_template_id=add_notification_task_request.notification_template_id
         )
-    if add_notification_task_request.enable and add_notification_task_request.trigger_cron_expr:
-        scheduler.add_job(
-            func=send_notification,
-            trigger=CronTrigger.from_crontab(add_notification_task_request.trigger_cron_expr),
-            args=[db_notification_task.user_id,
-                  db_notification_task.id],
-            id=str(db_notification_task.id),
-            next_run_time=datetime.now()
-        )
+    if add_notification_task_request.enable:
+        if add_notification_task_request.trigger_type == NotificationTriggerType.SCHEDULER and add_notification_task_request.notification_trigger_scheduler_cron:
+            crud.notification.create_notification_task_trigger_scheduler(
+                db=db,
+                notification_task_id=db_notification_task.id,
+                cron_expr=add_notification_task_request.notification_trigger_scheduler_cron
+            )
+            scheduler.add_job(
+                func=send_notification,
+                trigger=CronTrigger.from_crontab(add_notification_task_request.notification_trigger_scheduler_cron),
+                args=[
+                    db_notification_task.user_id,
+                    db_notification_task.id
+                ],
+                id=str(db_notification_task.id),
+                next_run_time=datetime.now()
+            )
+        elif add_notification_task_request.trigger_type == NotificationTriggerType.EVENT and add_notification_task_request.notification_trigger_event_id:
+            crud.notification.create_notification_task_trigger_event(
+                db=db,
+                notification_task_id=db_notification_task.id,
+                trigger_event_id=add_notification_task_request.notification_trigger_event_id
+            )
     db.commit()
-    return schemas.common.NormalResponse(message="success")
+    return schemas.common.SuccessResponse()
 
 @notification_router.post('/task/detail', response_model=schemas.notification.NotificationTask)
 async def get_notification_task(
@@ -136,16 +150,7 @@ async def get_notification_task(
     if db_notification_task.user_id != user.id:
         raise schemas.error.CustomException(message="permission denied", code=403)
     
-    res = schemas.notification.NotificationTask(
-        id=db_notification_task.id,
-        notification_content_type=db_notification_task.notification_content_type,
-        notification_target_id=db_notification_task.notification_target_id,
-        notification_source_id=db_notification_task.notification_source_id,
-        trigger_cron_expr=db_notification_task.trigger_cron_expr,
-        create_time=db_notification_task.create_time,
-        update_time=db_notification_task.update_time,
-        enable=db_notification_task.enable,
-    )
+    res = schemas.notification.NotificationTask.model_validate(db_notification_task)
     
     if db_notification_task.notification_content_type == NotificationContentType.CUSTOM:
         db_notification_task_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(
@@ -163,33 +168,20 @@ async def get_notification_task(
         if db_notification_task_content_template is not None:
             res.notification_template_id = db_notification_task_content_template.notification_template_id
 
-    db_notification_source = crud.notification.get_notification_source_by_notification_source_id(
+    db_user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
         db=db,
-        notification_source_id=db_notification_task.notification_source_id
+        user_notification_source_id=db_notification_task.user_notification_source_id
     )
-    if db_notification_source is None:
-        raise schemas.error.CustomException(message="notification source not found", code=404)
-    db_notification_target = crud.notification.get_notification_target_by_notification_target_id(
+    if db_user_notification_source is None:
+        raise schemas.error.CustomException(message="user notification source not found", code=404)
+    res.user_notification_source = schemas.notification.UserNotificationSource.model_validate(db_user_notification_source)
+    db_user_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
         db=db,
-        notification_target_id=db_notification_task.notification_target_id
+        user_notification_target_id=db_notification_task.user_notification_target_id
     )
-    if db_notification_target is None:
-        raise schemas.error.CustomException(message="notification target not found", code=404)
-    res.notification_source = schemas.notification.NotificationSource(
-        id=db_notification_source.id,
-        title=db_notification_source.title,
-        description=db_notification_source.description,
-        create_time=db_notification_source.create_time,
-        update_time=db_notification_source.update_time
-    )
-    res.notification_target = schemas.notification.NotificationTarget(
-        id=db_notification_target.id,
-        title=db_notification_target.title,
-        description=db_notification_target.description,
-        category=db_notification_target.category,
-        create_time=db_notification_target.create_time,
-        update_time=db_notification_target.update_time
-    )
+    if db_user_notification_target is None:
+        raise schemas.error.CustomException(message="user notification target not found", code=404)
+    res.user_notification_target = schemas.notification.UserNotificationTarget.model_validate(db_user_notification_target)
     return res
 
 @notification_router.post('/task/delete', response_model=schemas.common.NormalResponse)
@@ -226,14 +218,15 @@ async def update_notification_task(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
+    now = datetime.now(tz=timezone.utc)
     db_notification_task = crud.notification.get_notification_task_by_notification_task_id(
         db=db,
         notification_task_id=update_notification_task_request.notification_task_id
     )
     if db_notification_task is None:
-        return schemas.common.NormalResponse(message="notification task not found")
+        raise schemas.error.CustomException(message="notification task not found", code=404)
     if db_notification_task.user_id != user.id:
-        return schemas.common.NormalResponse(message="permission denied")
+        raise schemas.error.CustomException(message="permission denied", code=403)
     
     if update_notification_task_request.notification_content_type is not None:
         db_notification_task.notification_content_type = update_notification_task_request.notification_content_type
@@ -271,12 +264,40 @@ async def update_notification_task(
         else:
             db_notification_task_content_template.notification_template_id = update_notification_task_request.notification_template_id
 
-    if update_notification_task_request.notification_target_id is not None:
-        db_notification_task.notification_target_id = update_notification_task_request.notification_target_id
-    if update_notification_task_request.notification_source_id is not None:
-        db_notification_task.notification_source_id = update_notification_task_request.notification_source_id
-    if update_notification_task_request.trigger_cron_expr is not None:
-        db_notification_task.trigger_cron_expr = update_notification_task_request.trigger_cron_expr
+    if update_notification_task_request.user_notification_source_id is not None:
+        db_notification_task.user_notification_source_id = update_notification_task_request.user_notification_source_id
+    if update_notification_task_request.user_notification_target_id is not None:
+        db_notification_task.user_notification_target_id = update_notification_task_request.user_notification_target_id
+        
+    if update_notification_task_request.trigger_type is not None:
+        db_notification_task.trigger_type = update_notification_task_request.trigger_type
+    if update_notification_task_request.notification_trigger_scheduler_cron is not None:
+        db_notification_task_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
+            db=db,
+            notification_task_id=update_notification_task_request.notification_task_id
+        )
+        if db_notification_task_trigger_scheduler is None:
+            crud.notification.create_notification_task_trigger_scheduler(
+                db=db,
+                notification_task_id=update_notification_task_request.notification_task_id,
+                cron_expr=update_notification_task_request.notification_trigger_scheduler_cron
+            )
+        else:
+            db_notification_task_trigger_scheduler.cron_expr = update_notification_task_request.notification_trigger_scheduler_cron
+    if update_notification_task_request.notification_trigger_event_id is not None:
+        db_notification_task_trigger_event = crud.notification.get_notification_task_trigger_event_by_notification_task_id(
+            db=db,
+            notification_task_id=update_notification_task_request.notification_task_id
+        )
+        if db_notification_task_trigger_event is None:
+            crud.notification.create_notification_task_trigger_event(
+                db=db,
+                notification_task_id=update_notification_task_request.notification_task_id,
+                trigger_event_id=update_notification_task_request.notification_trigger_event_id
+            )
+        else:
+            db_notification_task_trigger_event = update_notification_task_request.notification_trigger_event_id
+
     if update_notification_task_request.enable is not None:
         db_notification_task.enable = update_notification_task_request.enable
     
@@ -292,9 +313,10 @@ async def update_notification_task(
             id=str(db_notification_task.id),
             next_run_time=datetime.now()
         )
-    
+        
+    db_notification_task.update_time = now
     db.commit()
-    return schemas.common.NormalResponse(message="success")
+    return schemas.common.SuccessResponse()
 
 @notification_router.post('/task/mine', response_model=schemas.pagination.Pagination[schemas.notification.NotificationTask])
 async def get_mine_notification_task(
@@ -303,7 +325,7 @@ async def get_mine_notification_task(
     user: models.user.User = Depends(get_current_user)
 ):
     elements: list[schemas.notification.NotificationTask] = []
-    db_notification_tasks = crud.notification.get_notification_tasks_by_user_id(
+    db_notification_tasks = crud.notification.get_notification_tasks_for_user(
         db=db,
         user_id=user.id,
         page_num=get_mine_notification_task_request.page_num,
@@ -326,14 +348,24 @@ async def get_mine_notification_task(
             )
             if db_notification_task_content_template is not None:
                 task_data.notification_template_id = db_notification_task_content_template.notification_template_id
-        task_data.notification_source = crud.notification.get_notification_source_by_notification_source_id(
+        task_data.user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
             db=db,
-            notification_source_id=db_notification_task.notification_source_id
+            user_notification_source_id=db_notification_task.notification_source_id
         )
-        task_data.notification_target = crud.notification.get_notification_target_by_notification_target_id(
+        task_data.user_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
             db=db,
-            notification_target_id=db_notification_task.notification_target_id
+            user_notification_target_id=db_notification_task.notification_target_id
         )
+        if task_data.trigger_type == NotificationTriggerType.SCHEDULER:
+            task_data.trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
+                db=db,
+                notification_task_id=task_data.id
+            )
+        elif task_data.trigger_type == NotificationTriggerType.EVENT:
+            task_data.trigger_event = crud.notification.get_notification_task_trigger_event_by_notification_task_id(
+                db=db,
+                notification_task_id=task_data.id
+            )
         elements.append(task_data)
     count = crud.notification.count_notification_tasks_for_user(
         db=db, 
@@ -356,45 +388,34 @@ async def add_notification_target(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_target = crud.notification.create_notification_target(
+    crud.notification.create_user_notification_target(
         db=db,
+        notification_target_id=add_notification_target_request.notification_target_id,
         title=add_notification_target_request.title,
         description=add_notification_target_request.description,
         creator_id=user.id,
-        category=add_notification_target_request.category
+        config_json=add_notification_target_request.config_json
     )
-    if add_notification_target_request.category == NotificationTargetCategory.EMAIL:
-        if add_notification_target_request.email is None:
-            raise schemas.error.CustomException(message="email is required for email notification target", code=400)
-        crud.notification.create_email_notification_target(
-            db=db,
-            notification_target_id=db_notification_target.id,
-            email=add_notification_target_request.email
-        )
-    if add_notification_target_request.category == NotificationTargetCategory.IOS:
-        if add_notification_target_request.device_token is None:
-            raise schemas.error.CustomException(message="device_token is required for ios notification target", code=400)
-        crud.notification.create_ios_notification_target(
-            db=db,
-            notification_target_id=db_notification_target.id,
-            device_token=add_notification_target_request.device_token
-        )
     db.commit()
-    return schemas.common.NormalResponse(message="success")
+    return schemas.common.SuccessResponse()
 
 @notification_router.post('/target/delete', response_model=schemas.common.NormalResponse)
 async def delete_notification_target(
-    delete_notification_target_request: schemas.notification.DeleteNotificationTargetRequest,
+    delete_notification_target_request: schemas.notification.DeleteUserNotificationTargetRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    crud.notification.delete_notification_targets_by_notification_target_ids(
-        db=db,
-        creator_id=user.id,
-        notification_target_ids=delete_notification_target_request.notification_target_ids
-    )
+    for user_notification_target_id in delete_notification_target_request.user_notification_target_ids:
+        db_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
+            db=db,
+            user_notification_target_id=user_notification_target_id
+        )
+        if db_notification_target is None:
+            raise schemas.error.CustomException(message="notification target not found", code=404)
+        if db_notification_target.creator_id != user.id:
+            return schemas.error.CustomException(message="you don't have permission to delete this notification target", code=403)
     db.commit()
-    return schemas.common.NormalResponse(message="success")
+    return schemas.common.SuccessResponse()
 
 @notification_router.post('/target/update', response_model=schemas.common.NormalResponse)
 async def update_notification_target(
@@ -402,9 +423,9 @@ async def update_notification_target(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_target = crud.notification.get_notification_target_by_notification_target_id(
+    db_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
         db=db,
-        notification_target_id=update_notification_target_request.notification_target_id
+        user_notification_target_id=update_notification_target_request.user_notification_target_id
     )
     if db_notification_target is None:
         raise schemas.error.CustomException(message="notification target not found", code=404)
@@ -415,82 +436,38 @@ async def update_notification_target(
         db_notification_target.title = update_notification_target_request.title
     if update_notification_target_request.description is not None:
         db_notification_target.description = update_notification_target_request.description
-    
-    if db_notification_target.category == NotificationTargetCategory.EMAIL:
-        db_email_notification_target = crud.notification.get_email_notification_target_by_notification_target_id(
-            db=db,
-            notification_target_id=update_notification_target_request.notification_target_id
-        )
-        if db_email_notification_target is None:
-            raise schemas.error.CustomException(message="email notification target not found", code=404)
-        if update_notification_target_request.email is not None:
-            db_email_notification_target.email = update_notification_target_request.email
-    
-    if db_notification_target.category == NotificationTargetCategory.IOS:
-        db_ios_notification_target = crud.notification.get_ios_notification_target_by_notification_target_id(
-            db=db,
-            notification_target_id=update_notification_target_request.notification_target_id
-        )
-        if db_ios_notification_target is None:
-            raise schemas.error.CustomException(message="ios notification target not found", code=404)
-        if update_notification_target_request.device_token is not None:
-            db_ios_notification_target.device_token = update_notification_target_request.device_token
+    if update_notification_target_request.config_json is not None:
+        db_notification_target.config_json = update_notification_target_request.config_json
     db.commit()
-    return schemas.common.NormalResponse(message="success")
+    return schemas.common.SuccessResponse()
 
-@notification_router.post('/target/mine', response_model=schemas.notification.NotificationTargetsResponse)
+@notification_router.post('/target/mine', response_model=schemas.notification.UserNotificationTargetsResponse)
 async def get_mine_notification_target(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_targets = crud.notification.get_notification_targets_by_creator_id(
+    db_notification_targets = crud.notification.get_user_notification_targets_by_creator_id(
         db=db,
         creator_id=user.id
     )
     notification_targets = [
-        schemas.notification.NotificationTarget.model_validate(db_notification_target) for db_notification_target in db_notification_targets
+        schemas.notification.UserNotificationTarget.model_validate(db_notification_target) for db_notification_target in db_notification_targets
     ]
-    res = schemas.notification.NotificationTargetsResponse(data=notification_targets)
+    res = schemas.notification.UserNotificationTargetsResponse(data=notification_targets)
     return res
 
-@notification_router.post("/target/detail", response_model=schemas.notification.NotificationTargetDetail)
+@notification_router.post("/target/detail", response_model=schemas.notification.UserNotificationTarget)
 async def get_notification_target_detail(
-    notification_target_detail_request: schemas.notification.NotificationTargetDetailRequest,
+    notification_target_detail_request: schemas.notification.UserNotificationTargetDetailRequest,
     db: Session = Depends(get_db)
 ):
-    db_notification_target = crud.notification.get_notification_target_by_notification_target_id(
+    db_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
         db=db,
-        notification_target_id=notification_target_detail_request.notification_target_id
+        user_notification_target_id=notification_target_detail_request.user_notification_target_id
     )
     if db_notification_target is None:
         raise schemas.error.CustomException(message="notification target not found", code=404)
-    res = schemas.notification.NotificationTargetDetail(
-        id=db_notification_target.id,
-        category=db_notification_target.category,
-        title=db_notification_target.title,
-        description=db_notification_target.description
-    )
-    
-    if db_notification_target.category == NotificationTargetCategory.EMAIL:
-        db_email_notification_target = crud.notification.get_email_notification_target_by_notification_target_id(
-            db=db,
-            notification_target_id=db_notification_target.id
-        )
-        if db_email_notification_target is not None:
-            res.email_notification_target = schemas.notification.EmailNotificationTarget(
-                id=db_email_notification_target.id,
-                email=db_email_notification_target.email
-            )
-    if db_notification_target.category == NotificationTargetCategory.IOS:
-        db_ios_notification_target = crud.notification.get_ios_notification_target_by_notification_target_id(
-            db=db,
-            notification_target_id=db_notification_target.id
-        )
-        if db_ios_notification_target is not None:
-            res.ios_notification_target = schemas.notification.IOSNotificationTarget(
-                id=db_ios_notification_target.id,
-                device_token=db_ios_notification_target.device_token
-            )
+    res = schemas.notification.UserNotificationTarget.model_validate(db_notification_target)
     return res
 
 @notification_router.post("/source/update", response_model=schemas.common.NormalResponse)
@@ -499,9 +476,9 @@ async def update_email_source(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_source = crud.notification.get_notification_source_by_notification_source_id(
+    db_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
         db=db,
-        notification_source_id=update_notification_source_request.notification_source_id
+        user_notification_source_id=update_notification_source_request.user_notification_source_id
     )
     if db_notification_source is None:
         raise schemas.error.CustomException(message="notification source not found", code=404)
@@ -513,167 +490,106 @@ async def update_email_source(
         db_notification_source.title = update_notification_source_request.title
     if update_notification_source_request.description is not None:
         db_notification_source.description = update_notification_source_request.description
-        
-    if db_notification_source.category == NotificationSourceCategory.EMAIL:
-        db_email_notification_source = crud.notification.get_email_notification_source_by_notification_source_id(
-            db=db,
-            notification_source_id=update_notification_source_request.notification_source_id
-        )
-        if db_email_notification_source is None:
-            raise schemas.error.CustomException(message="email notification source not found", code=404)
-        if update_notification_source_request.email is not None:
-            db_email_notification_source.email = update_notification_source_request.email
-        if update_notification_source_request.password is not None:
-            db_email_notification_source.password = update_notification_source_request.password
-        if update_notification_source_request.server is not None:
-            db_email_notification_source.server = update_notification_source_request.server
-        if update_notification_source_request.port is not None:
-            db_email_notification_source.port = update_notification_source_request.port
+    if update_notification_source_request.config_json is not None:
+        db_notification_source.config_json = update_notification_source_request.config_json
     
-    if db_notification_source.category == NotificationSourceCategory.IOS:
-        db_ios_notification_source = crud.notification.get_ios_notification_source_by_notification_source_id(
-            db=db,
-            notification_source_id=update_notification_source_request.notification_source_id
-        )
-        if db_ios_notification_source is None:
-            raise schemas.error.CustomException(message="ios notification source not found", code=404)
-        if update_notification_source_request.app_bundle_id is not None:
-            db_ios_notification_source.app_bundle_id = update_notification_source_request.app_bundle_id
-        if update_notification_source_request.team_id is not None:
-            db_ios_notification_source.team_id = update_notification_source_request.team_id
-        if update_notification_source_request.key_id is not None:
-            db_ios_notification_source.key_id = update_notification_source_request.key_id
-        if update_notification_source_request.private_key is not None:
-            db_ios_notification_source.private_key = update_notification_source_request.private_key
-        
     db.commit()
     return schemas.common.NormalResponse(message="success")
 
-@notification_router.post("/source/mine", response_model=schemas.notification.NotificationSourcesResponse)
+@notification_router.post('/source/provided', response_model=schemas.notification.NotificationSourcesResponse)
+async def get_provided_notification_source(
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    db_notification_sources = crud.notification.get_all_provided_notification_sources(
+        db=db
+    )
+    notification_sources = [
+        schemas.notification.NotificationSource.model_validate(db_notification_source) for db_notification_source in db_notification_sources
+    ]
+    res = schemas.notification.NotificationSourcesResponse(data=notification_sources)
+    return res
+
+@notification_router.post("/target/provided", response_model=schemas.notification.NotificationTargetsResponse)
+async def get_provided_notification_target(
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    db_notification_targets = crud.notification.get_all_provided_notification_targets(
+        db=db
+    )
+    notification_targets = [
+        schemas.notification.NotificationTarget.model_validate(db_notification_target) for db_notification_target in db_notification_targets
+    ]
+    res = schemas.notification.NotificationTargetsResponse(data=notification_targets)
+    return res
+
+@notification_router.post("/source/mine", response_model=schemas.notification.UserNotificationSourcesResponse)
 async def get_email_source(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_sources = crud.notification.get_notification_sources_by_creator_id(
+    db_notification_sources = crud.notification.get_user_notification_sources_by_creator_id(
         db=db,
         creator_id=user.id
     )
     notification_sources = [
-        schemas.notification.NotificationSource.model_validate(notification_source) for notification_source in db_notification_sources
+        schemas.notification.UserNotificationSource.model_validate(notification_source) for notification_source in db_notification_sources
     ]
-    return schemas.notification.NotificationSourcesResponse(data=notification_sources)
+    return schemas.notification.UserNotificationSourcesResponse(data=notification_sources)
 
-@notification_router.post("/source/detail", response_model=schemas.notification.NotificationSourceDetail)
+@notification_router.post("/source/detail", response_model=schemas.notification.UserNotificationSource)
 async def get_notification_detail(
-    notification_source_detail_request: schemas.notification.NotificationSourceDetailRequest,
+    notification_source_detail_request: schemas.notification.UserNotificationSourceDetailRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    notification_source = crud.notification.get_notification_source_by_notification_source_id(
+    notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
         db=db,
-        notification_source_id=notification_source_detail_request.notification_source_id
+        user_notification_source_id=notification_source_detail_request.user_notification_source_id
     )
     if notification_source is None:
         raise schemas.error.CustomException(message="notification source not found", code=404)
     if notification_source.creator_id != user.id:
         raise schemas.error.CustomException(message="you don't have permission to access this notification source", code=403)
     
-    res = schemas.notification.NotificationSourceDetail(
-        id=notification_source.id,
-        title=notification_source.title,
-        description=notification_source.description,
-        category=notification_source.category
-    )
-    
-    if notification_source.category == NotificationSourceCategory.EMAIL:
-        email_notification_source = crud.notification.get_email_notification_source_by_notification_source_id(
-            db=db,
-            notification_source_id=notification_source_detail_request.notification_source_id
-        )
-        if email_notification_source is None:
-            raise schemas.error.CustomException(message="email notification source not found", code=404)
-        
-        res.email_notification_source = schemas.notification.EmailNotificationSource(
-            id=email_notification_source.id,
-            email=email_notification_source.email,
-            password=email_notification_source.password,
-            server=email_notification_source.server,
-            port=email_notification_source.port
-        )
-        
-    if notification_source.category == NotificationSourceCategory.IOS:
-        ios_notification_source = crud.notification.get_ios_notification_source_by_notification_source_id(
-            db=db,
-            notification_source_id=notification_source_detail_request.notification_source_id
-        )
-        if ios_notification_source is None:
-            raise schemas.error.CustomException(message="ios notification source not found", code=404)
-
-        res.ios_notification_source = schemas.notification.IOSNotificationSource(
-            id=ios_notification_source.id,
-            team_id=ios_notification_source.team_id,
-            key_id=ios_notification_source.key_id,
-            private_key=ios_notification_source.private_key,
-            app_bundle_id=ios_notification_source.app_bundle_id
-        )
-        
+    res = schemas.notification.UserNotificationSource.model_validate(notification_source)
     return res
 
 @notification_router.post("/source/add", response_model=schemas.common.NormalResponse)
-async def add_email_source(
+async def add_notification_source(
     add_notification_source_request: schemas.notification.AddNotificationSourceRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_source = crud.notification.create_notification_source(
+    crud.notification.create_user_notification_source(
         db=db, 
+        notification_source_id=add_notification_source_request.notification_source_id,
         creator_id=user.id, 
         title=add_notification_source_request.title,
         description=add_notification_source_request.description,
-        category=add_notification_source_request.category
+        config_json=add_notification_source_request.config_json
     )
-    if add_notification_source_request.category == NotificationSourceCategory.EMAIL:
-        if add_notification_source_request.email is None or add_notification_source_request.password is None or add_notification_source_request.server is None or add_notification_source_request.port is None:
-            raise schemas.error.CustomException(message="email notification source must have email, password, server and port", code=400)
-        crud.notification.create_email_notification_source(
-            db=db,
-            notification_source_id=db_notification_source.id,
-            email=add_notification_source_request.email,
-            password=add_notification_source_request.password,
-            server=add_notification_source_request.server,
-            port=add_notification_source_request.port
-        )
-    if add_notification_source_request.category == NotificationSourceCategory.IOS:
-        if add_notification_source_request.team_id is None or add_notification_source_request.key_id is None or add_notification_source_request.private_key is None or add_notification_source_request.app_bundle_id is None:
-            raise schemas.error.CustomException(message="ios notification source must have team_id, key_id, private_key and app_bundle_id", code=400)
-        crud.notification.create_ios_notification_source(
-            db=db,
-            notification_source_id=db_notification_source.id, 
-            team_id=add_notification_source_request.team_id,
-            key_id=add_notification_source_request.key_id,
-            private_key=add_notification_source_request.private_key,
-            app_bundle_id=add_notification_source_request.app_bundle_id)
     db.commit()
     return schemas.common.SuccessResponse()
 
 @notification_router.post("/source/delete", response_model=schemas.common.NormalResponse)
 async def delete_email_source(
-    delete_email_source_request: schemas.notification.DeleteNotificationSourceRequest,
+    delete_email_source_request: schemas.notification.DeleteUserNotificationSourceRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    crud.notification.delete_notification_sources_by_notification_source_ids(
-        db=db, 
-        creator_id=user.id,
-        notification_source_ids=delete_email_source_request.notification_source_ids
-    )
-    crud.notification.delete_email_notification_sources_by_notification_source_ids(
-        db=db,
-        creator_id=user.id,
-        notification_source_ids=delete_email_source_request.notification_source_ids
-    )
+    for user_notification_source_id in delete_email_source_request.user_notification_source_ids:
+        db_user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
+            db=db,
+            user_notification_source_id=user_notification_source_id
+        )
+        if db_user_notification_source is None:
+            raise schemas.error.CustomException(message="notification source not found", code=404)
+        if db_user_notification_source.creator_id != user.id:
+            raise schemas.error.CustomException(message="you don't have permission to delete this notification source", code=403)
     db.commit()
-    return schemas.common.NormalResponse(message="success")
+    return schemas.common.SuccessResponse()
 
 @notification_router.post('/record/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationRecord])
 async def search_notification_record(
@@ -753,13 +669,7 @@ async def get_notification_record_detail(
     )
     if db_notification_record is None:
         raise schemas.error.CustomException(message="notification record not found", code=404)
-    return schemas.notification.NotificationRecord(
-        id=db_notification_record.id,
-        title=db_notification_record.title,
-        content=db_notification_record.content,
-        read_at=db_notification_record.read_at,
-        create_time=db_notification_record.create_time
-    )
+    return schemas.notification.NotificationRecord.model_validate(db_notification_record)
 
 @notification_router.post('/record/read-all', response_model=schemas.common.NormalResponse)
 async def read_all_notification_record(
