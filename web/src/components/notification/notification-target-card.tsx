@@ -74,7 +74,7 @@ const NotificationTargetCard = ({
 								variant={'destructive'}
 								onClick={() => {
 									muteDeleteNotificationTarget.mutateAsync({
-										notification_target_ids: [notification_target.id],
+										user_notification_target_ids: [notification_target.id],
 									});
 								}}
 								disabled={muteDeleteNotificationTarget.isPending}>
