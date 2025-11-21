@@ -3,6 +3,27 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
+def create_notification_trigger_event(
+    db: Session,
+    uuid: str,
+    name: str,
+    name_zh: str,
+    description: str | None = None,
+    description_zh: str | None = None
+):
+    now = datetime.now(timezone.utc)
+    db_notification_trigger_event = models.notification.TriggerEvent(
+        uuid=uuid,
+        name=name,
+        name_zh=name_zh,
+        description=description,
+        description_zh=description_zh,
+        create_time=now
+    )
+    db.add(db_notification_trigger_event)
+    db.flush()
+    return db_notification_trigger_event
+
 def create_notification_task_content_custom(
     db: Session, 
     notification_task_id: int,

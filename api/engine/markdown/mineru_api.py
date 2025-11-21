@@ -11,7 +11,7 @@ from pathlib import Path
 from config.base import BASE_DIR
 from common.common import get_user_remote_file_system, extract_title_and_summary
 from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
-from enums.engine import EngineUUID
+from enums.engine import EngineUUID, EngineCategory
 from playwright.async_api import async_playwright
 from typing import Tuple
 from common.sql import SessionLocal
@@ -23,6 +23,7 @@ class MineruApiEngine(MarkdownEngineProtocol):
             engine_uuid=EngineUUID.MinerU_API.value,
             engine_name='MinerU API',
             engine_name_zh='MinerU API',
+            engine_category=EngineCategory.Markdown,
             engine_description='MinerU API is an AI-driven file parser provided by MinerU official, which can parse files such as webpages, PDFs, and images into Markdown format while retaining the original layout well.',
             engine_description_zh='MinerU API 是 MinerU官方提供的AI驱动的文件解析器，可以将网页、PDF、图片等文件解析为 Markdown 格式并且较好地保留原来的排版。',
             engine_demo_config='{"token": "******", "uid": "******"}'

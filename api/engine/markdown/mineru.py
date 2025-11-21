@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 from config.base import BASE_DIR
 from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
-from enums.engine import EngineUUID
+from enums.engine import EngineUUID, EngineCategory
 from playwright.async_api import async_playwright
 from common.common import get_user_remote_file_system, is_dir_empty, extract_title_and_summary
 from common.mineru import parse_doc
@@ -22,6 +22,7 @@ class MineruEngine(MarkdownEngineProtocol):
             engine_uuid=EngineUUID.MinerU.value,
             engine_name='MinerU',
             engine_name_zh='MinerU',
+            engine_category=EngineCategory.Markdown,
             engine_description='MinerU is an AI-driven file parser that converts web pages, PDFs, images, etc. into Markdown format with layout retention.',
             engine_description_zh='MinerU 是 AI驱动的文件解析器，可以将网页、PDF、图片等文件解析为 Markdown，并较好保留排版。'
         )

@@ -3,7 +3,7 @@ import time
 import json
 import websockets
 from protocol.tts_engine import TTSEngineProtocol
-from enums.engine import EngineUUID
+from enums.engine import EngineUUID, EngineCategory
 from pydantic import AnyUrl
 from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
 
@@ -16,6 +16,7 @@ class VolcTTSEngine(TTSEngineProtocol):
             engine_uuid=EngineUUID.Volc_TTS.value,
             engine_name="Volc Podcast Engine",
             engine_name_zh="豆包播客引擎",
+            engine_category=EngineCategory.TTS,
             engine_description="DouBao Podcast TTS, based on ByteDance's DouBao large model podcast generation engine.",
             engine_description_zh="豆包播客，基于字节跳动的豆包大模型的播客生成引擎。",
             engine_demo_config='{"appid":"","access_token":""}'

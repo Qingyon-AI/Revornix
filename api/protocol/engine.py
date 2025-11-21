@@ -8,6 +8,7 @@ class EngineProtocol(Protocol):
     engine_uuid: str
     engine_name: str
     engine_name_zh: str
+    engine_category: int
     engine_description: str | None
     engine_description_zh: str | None
     engine_demo_config: str | None
@@ -20,6 +21,7 @@ class EngineProtocol(Protocol):
         engine_uuid: str,
         engine_name: str,
         engine_name_zh: str, 
+        engine_category: int,
         engine_description: str | None = None, 
         engine_description_zh: str | None = None, 
         engine_demo_config: str | None = None,
@@ -28,6 +30,7 @@ class EngineProtocol(Protocol):
         self.engine_uuid = engine_uuid
         self.engine_name = engine_name
         self.engine_name_zh = engine_name_zh
+        self.engine_category = engine_category
         self.engine_description = engine_description
         self.engine_description_zh = engine_description_zh
         self.engine_demo_config = engine_demo_config
