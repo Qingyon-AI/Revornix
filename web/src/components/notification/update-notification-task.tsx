@@ -194,7 +194,7 @@ const UpdateNotificationTask = ({
 				notification_task_id: notification_task_id,
 				trigger_type: data.trigger_type,
 				trigger_scheduler_cron: data.trigger_scheduler?.cron_expr,
-				trigger_event_id: data.trigger_event?.id,
+				trigger_event_id: data.trigger_event?.trigger_event_id,
 				enable: data.enable,
 				notification_source_id: data.user_notification_source!.id,
 				notification_target_id: data.user_notification_target!.id,
@@ -204,6 +204,7 @@ const UpdateNotificationTask = ({
 				notification_template_id: data.notification_template_id ?? undefined,
 			};
 			form.reset(defaultValues, {});
+			console.log(data);
 		}
 	}, [data, notification_task_id]);
 
@@ -234,7 +235,7 @@ const UpdateNotificationTask = ({
 						<form
 							onSubmit={onSubmitForm}
 							className='space-y-3 flex-1 overflow-auto px-1'
-							id='add-form'>
+							id='update-notification-task-form'>
 							<FormField
 								name='notification_source_id'
 								control={form.control}
@@ -333,7 +334,9 @@ const UpdateNotificationTask = ({
 											<Select
 												onValueChange={(value) => field.onChange(Number(value))}
 												defaultValue={
-													field.value ? String(field.value) : undefined
+													field.value || field.value === 0
+														? field.value.toString()
+														: undefined
 												}>
 												<SelectTrigger className='w-full'>
 													<SelectValue
@@ -380,7 +383,9 @@ const UpdateNotificationTask = ({
 														field.onChange(Number(value))
 													}
 													defaultValue={
-														field.value ? String(field.value) : undefined
+														field.value || field.value === 0
+															? String(field.value)
+															: undefined
 													}>
 													<SelectTrigger className='w-full'>
 														<SelectValue

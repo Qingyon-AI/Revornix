@@ -24,21 +24,14 @@ export interface NotificationTriggerEvent {
      * @type {number}
      * @memberof NotificationTriggerEvent
      */
-    id: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof NotificationTriggerEvent
-     */
-    name: string;
+    trigger_event_id: number;
 }
 
 /**
  * Check if a given object implements the NotificationTriggerEvent interface.
  */
 export function instanceOfNotificationTriggerEvent(value: object): value is NotificationTriggerEvent {
-    if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('trigger_event_id' in value) || value['trigger_event_id'] === undefined) return false;
     return true;
 }
 
@@ -52,8 +45,7 @@ export function NotificationTriggerEventFromJSONTyped(json: any, ignoreDiscrimin
     }
     return {
         
-        'id': json['id'],
-        'name': json['name'],
+        'trigger_event_id': json['trigger_event_id'],
     };
 }
 
@@ -68,8 +60,7 @@ export function NotificationTriggerEventToJSONTyped(value?: NotificationTriggerE
 
     return {
         
-        'id': value['id'],
-        'name': value['name'],
+        'trigger_event_id': value['trigger_event_id'],
     };
 }
 

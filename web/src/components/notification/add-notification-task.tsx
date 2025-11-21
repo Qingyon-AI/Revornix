@@ -192,7 +192,7 @@ const AddNotificationTask = () => {
 						<form
 							onSubmit={onSubmitForm}
 							className='space-y-3 flex-1 overflow-auto px-1'
-							id='add-form'>
+							id='add-notification-task-form'>
 							<FormField
 								name='user_notification_source_id'
 								control={form.control}
@@ -552,7 +552,7 @@ const AddNotificationTask = () => {
 					<DialogFooter>
 						<Button
 							type='submit'
-							form='add-form'
+							form='add-notification-task-form'
 							disabled={mutateAddNotificationTask.isPending}>
 							{t('submit')}
 							{mutateAddNotificationTask.isPending && (

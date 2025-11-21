@@ -54,13 +54,13 @@ export interface UpdateNotificationTaskRequest {
      * @type {string}
      * @memberof UpdateNotificationTaskRequest
      */
-    notification_trigger_scheduler_cron?: string | null;
+    trigger_scheduler_cron?: string | null;
     /**
      * 
      * @type {number}
      * @memberof UpdateNotificationTaskRequest
      */
-    notification_trigger_event_id?: number | null;
+    trigger_event_id?: number | null;
     /**
      * 
      * @type {string}
@@ -110,8 +110,8 @@ export function UpdateNotificationTaskRequestFromJSONTyped(json: any, ignoreDisc
         'enable': json['enable'] == null ? undefined : json['enable'],
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
         'trigger_type': json['trigger_type'] == null ? undefined : json['trigger_type'],
-        'notification_trigger_scheduler_cron': json['notification_trigger_scheduler_cron'] == null ? undefined : json['notification_trigger_scheduler_cron'],
-        'notification_trigger_event_id': json['notification_trigger_event_id'] == null ? undefined : json['notification_trigger_event_id'],
+        'trigger_scheduler_cron': json['trigger_scheduler_cron'] == null ? undefined : json['trigger_scheduler_cron'],
+        'trigger_event_id': json['trigger_event_id'] == null ? undefined : json['trigger_event_id'],
         'title': json['title'] == null ? undefined : json['title'],
         'content': json['content'] == null ? undefined : json['content'],
         'user_notification_source_id': json['user_notification_source_id'] == null ? undefined : json['user_notification_source_id'],
@@ -135,8 +135,8 @@ export function UpdateNotificationTaskRequestToJSONTyped(value?: UpdateNotificat
         'enable': value['enable'],
         'notification_template_id': value['notification_template_id'],
         'trigger_type': value['trigger_type'],
-        'notification_trigger_scheduler_cron': value['notification_trigger_scheduler_cron'],
-        'notification_trigger_event_id': value['notification_trigger_event_id'],
+        'trigger_scheduler_cron': value['trigger_scheduler_cron'],
+        'trigger_event_id': value['trigger_event_id'],
         'title': value['title'],
         'content': value['content'],
         'user_notification_source_id': value['user_notification_source_id'],

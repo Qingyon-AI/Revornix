@@ -214,11 +214,9 @@ class NotificationTaskDetailRequest(BaseModel):
     notification_task_id: int
     
 class NotificationTriggerEvent(BaseModel):
-    id: int
-    name: str
+    trigger_event_id: int
     
 class NotificationTriggerScheduler(BaseModel):
-    id: int
     cron_expr: str
 
 class NotificationTask(BaseModel):
@@ -257,8 +255,8 @@ class UpdateNotificationTaskRequest(BaseModel):
     enable: bool | None = None
     notification_template_id: int | None = None
     trigger_type: int | None = None
-    notification_trigger_scheduler_cron: str | None = None
-    notification_trigger_event_id: int | None = None
+    trigger_scheduler_cron: str | None = None
+    trigger_event_id: int | None = None
     title: str | None = None
     content: str | None = None
     user_notification_source_id: int | None = None

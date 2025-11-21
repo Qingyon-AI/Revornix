@@ -125,29 +125,31 @@ async def add_notification_task(
             notification_task_id=db_notification_task.id,
             notification_template_id=add_notification_task_request.notification_template_id
         )
-    if add_notification_task_request.enable:
-        if add_notification_task_request.trigger_type == NotificationTriggerType.SCHEDULER and add_notification_task_request.trigger_scheduler_cron:
-            crud.notification.create_notification_task_trigger_scheduler(
-                db=db,
-                notification_task_id=db_notification_task.id,
-                cron_expr=add_notification_task_request.trigger_scheduler_cron
-            )
-            scheduler.add_job(
-                func=send_notification,
-                trigger=CronTrigger.from_crontab(add_notification_task_request.trigger_scheduler_cron),
-                args=[
-                    db_notification_task.user_id,
-                    db_notification_task.id
-                ],
-                id=str(db_notification_task.id),
-                next_run_time=datetime.now()
-            )
-        elif add_notification_task_request.trigger_type == NotificationTriggerType.EVENT and add_notification_task_request.trigger_event_id:
-            crud.notification.create_notification_task_trigger_event(
-                db=db,
-                notification_task_id=db_notification_task.id,
-                trigger_event_id=add_notification_task_request.trigger_event_id
-            )
+
+    if add_notification_task_request.trigger_type == NotificationTriggerType.SCHEDULER and add_notification_task_request.trigger_scheduler_cron:
+        crud.notification.create_notification_task_trigger_scheduler(
+            db=db,
+            notification_task_id=db_notification_task.id,
+            cron_expr=add_notification_task_request.trigger_scheduler_cron
+        )
+    elif add_notification_task_request.trigger_type == NotificationTriggerType.EVENT and add_notification_task_request.trigger_event_id:
+        crud.notification.create_notification_task_trigger_event(
+            db=db,
+            notification_task_id=db_notification_task.id,
+            trigger_event_id=add_notification_task_request.trigger_event_id
+        )
+
+    if add_notification_task_request.enable and add_notification_task_request.trigger_type == NotificationTriggerType.SCHEDULER:
+        scheduler.add_job(
+            func=send_notification,
+            trigger=CronTrigger.from_crontab(add_notification_task_request.trigger_scheduler_cron),
+            args=[
+                db_notification_task.user_id,
+                db_notification_task.id
+            ],
+            id=str(db_notification_task.id),
+            next_run_time=datetime.now()
+        )
     db.commit()
     return schemas.common.SuccessResponse()
 
@@ -198,6 +200,22 @@ async def get_notification_task(
     if db_user_notification_target is None:
         raise schemas.error.CustomException(message="user notification target not found", code=404)
     res.user_notification_target = schemas.notification.UserNotificationTarget.model_validate(db_user_notification_target)
+    
+    if db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
+        db_notification_task_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
+            db=db,
+            notification_task_id=db_notification_task.id
+        )
+        if db_notification_task_trigger_scheduler is not None:
+            res.trigger_scheduler = db_notification_task_trigger_scheduler
+    elif db_notification_task.trigger_type == NotificationTriggerType.EVENT:
+        db_notification_task_trigger_event = crud.notification.get_notification_task_trigger_event_by_notification_task_id(
+            db=db,
+            notification_task_id=db_notification_task.id
+        )
+        if db_notification_task_trigger_event is not None:
+            res.trigger_event = db_notification_task_trigger_event
+
     return res
 
 @notification_router.post('/task/delete', response_model=schemas.common.NormalResponse)
@@ -241,6 +259,15 @@ async def update_notification_task(
     )
     if db_notification_task is None:
         raise schemas.error.CustomException(message="notification task not found", code=404)
+    # 如果原先这个任务是scheduler类型，那么需要删除原先的scheduler安排
+    if db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
+        db_origin_notification_task_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
+            db=db,
+            notification_task_id=update_notification_task_request.notification_task_id
+        )
+        if db_origin_notification_task_trigger_scheduler is None:
+            raise schemas.error.CustomException(message="notification task trigger scheduler not found", code=404)
+        scheduler.remove_job(str(update_notification_task_request.notification_task_id))
     if db_notification_task.user_id != user.id:
         raise schemas.error.CustomException(message="permission denied", code=403)
     
@@ -287,7 +314,7 @@ async def update_notification_task(
         
     if update_notification_task_request.trigger_type is not None:
         db_notification_task.trigger_type = update_notification_task_request.trigger_type
-    if update_notification_task_request.notification_trigger_scheduler_cron is not None:
+    if update_notification_task_request.trigger_scheduler_cron is not None:
         db_notification_task_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
             db=db,
             notification_task_id=update_notification_task_request.notification_task_id
@@ -296,11 +323,11 @@ async def update_notification_task(
             crud.notification.create_notification_task_trigger_scheduler(
                 db=db,
                 notification_task_id=update_notification_task_request.notification_task_id,
-                cron_expr=update_notification_task_request.notification_trigger_scheduler_cron
+                cron_expr=update_notification_task_request.trigger_scheduler_cron
             )
         else:
-            db_notification_task_trigger_scheduler.cron_expr = update_notification_task_request.notification_trigger_scheduler_cron
-    if update_notification_task_request.notification_trigger_event_id is not None:
+            db_notification_task_trigger_scheduler.cron_expr = update_notification_task_request.trigger_scheduler_cron
+    if update_notification_task_request.trigger_event_id is not None:
         db_notification_task_trigger_event = crud.notification.get_notification_task_trigger_event_by_notification_task_id(
             db=db,
             notification_task_id=update_notification_task_request.notification_task_id
@@ -309,10 +336,10 @@ async def update_notification_task(
             crud.notification.create_notification_task_trigger_event(
                 db=db,
                 notification_task_id=update_notification_task_request.notification_task_id,
-                trigger_event_id=update_notification_task_request.notification_trigger_event_id
+                trigger_event_id=update_notification_task_request.trigger_event_id
             )
         else:
-            db_notification_task_trigger_event = update_notification_task_request.notification_trigger_event_id
+            db_notification_task_trigger_event = update_notification_task_request.trigger_event_id
 
     if update_notification_task_request.enable is not None:
         db_notification_task.enable = update_notification_task_request.enable
@@ -320,12 +347,14 @@ async def update_notification_task(
     exist_job = scheduler.get_job(str(db_notification_task.id))
     if exist_job is not None:
         scheduler.remove_job(str(db_notification_task.id))
-    if db_notification_task.enable:
+    if db_notification_task.enable and db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
         scheduler.add_job(
             func=send_notification,
             trigger=CronTrigger.from_crontab(db_notification_task.trigger_cron_expr),
-            args=[db_notification_task.user_id,
-                  db_notification_task.id],
+            args=[
+                db_notification_task.user_id,
+                db_notification_task.id
+            ],
             id=str(db_notification_task.id),
             next_run_time=datetime.now()
         )
@@ -366,11 +395,11 @@ async def get_mine_notification_task(
                 task_data.notification_template_id = db_notification_task_content_template.notification_template_id
         task_data.user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
             db=db,
-            user_notification_source_id=db_notification_task.notification_source_id
+            user_notification_source_id=db_notification_task.user_notification_source_id
         )
         task_data.user_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
             db=db,
-            user_notification_target_id=db_notification_task.notification_target_id
+            user_notification_target_id=db_notification_task.user_notification_target_id
         )
         if task_data.trigger_type == NotificationTriggerType.SCHEDULER:
             task_data.trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(

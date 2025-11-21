@@ -112,7 +112,7 @@ const NotificationTaskManagePage = () => {
 
 	const columns: ColumnDef<any>[] = [
 		{
-			accessorKey: 'notification_source',
+			accessorKey: 'user_notification_source',
 			header: () => {
 				return (
 					<div className='w-full'>
@@ -121,18 +121,18 @@ const NotificationTaskManagePage = () => {
 				);
 			},
 			cell: ({ row }) => {
-				const notification_source: NotificationSource = row.getValue(
-					'notification_source'
+				const user_notification_source: NotificationSource = row.getValue(
+					'user_notification_source'
 				);
 				return (
 					<div className='flex flex-row gap-2 items-center'>
-						{notification_source.title}
+						{user_notification_source.title}
 					</div>
 				);
 			},
 		},
 		{
-			accessorKey: 'notification_target',
+			accessorKey: 'user_notification_target',
 			header: () => {
 				return (
 					<div className='w-full'>
@@ -141,28 +141,30 @@ const NotificationTaskManagePage = () => {
 				);
 			},
 			cell: ({ row }) => {
-				const notification_target: NotificationTarget = row.getValue(
-					'notification_target'
+				const user_notification_target: NotificationTarget = row.getValue(
+					'user_notification_target'
 				);
 				return (
 					<div className='flex flex-row gap-2 items-center'>
-						{notification_target.title}
+						{user_notification_target.title}
 					</div>
 				);
 			},
 		},
 		{
-			accessorKey: 'trigger_cron_expr',
+			accessorKey: 'trigger_type',
 			header: () => {
 				return (
 					<div className='w-full'>
-						{t('setting_notification_task_manage_form_trigger_scheduler')}
+						{t('setting_notification_task_manage_form_trigger_type')}
 					</div>
 				);
 			},
 			cell: ({ row }) => (
 				<div className='flex flex-row gap-2 items-center'>
-					{row.getValue('trigger_cron_expr')}
+					{row.getValue('trigger_type') === 0
+						? t('setting_notification_task_manage_form_trigger_type_event')
+						: t('setting_notification_task_manage_form_trigger_type_scheduler')}
 				</div>
 			),
 		},

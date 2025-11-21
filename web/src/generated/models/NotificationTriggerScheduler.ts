@@ -21,12 +21,6 @@ import { mapValues } from '../runtime';
 export interface NotificationTriggerScheduler {
     /**
      * 
-     * @type {number}
-     * @memberof NotificationTriggerScheduler
-     */
-    id: number;
-    /**
-     * 
      * @type {string}
      * @memberof NotificationTriggerScheduler
      */
@@ -37,7 +31,6 @@ export interface NotificationTriggerScheduler {
  * Check if a given object implements the NotificationTriggerScheduler interface.
  */
 export function instanceOfNotificationTriggerScheduler(value: object): value is NotificationTriggerScheduler {
-    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('cron_expr' in value) || value['cron_expr'] === undefined) return false;
     return true;
 }
@@ -52,7 +45,6 @@ export function NotificationTriggerSchedulerFromJSONTyped(json: any, ignoreDiscr
     }
     return {
         
-        'id': json['id'],
         'cron_expr': json['cron_expr'],
     };
 }
@@ -68,7 +60,6 @@ export function NotificationTriggerSchedulerToJSONTyped(value?: NotificationTrig
 
     return {
         
-        'id': value['id'],
         'cron_expr': value['cron_expr'],
     };
 }
