@@ -72,8 +72,9 @@ const UpdateNotificationTask = ({
 	const formSchema = z
 		.object({
 			notification_task_id: z.number(),
-			title: z.string().optional(),
-			content: z.string().optional(),
+			title: z.string(),
+			notification_title: z.string().optional(),
+			notification_content: z.string().optional(),
 			notification_content_type: z.number(),
 			notification_template_id: z.coerce
 				.number({
@@ -84,12 +85,8 @@ const UpdateNotificationTask = ({
 			trigger_scheduler_cron: z.string().optional(),
 			trigger_event_id: z.number().optional(),
 			enable: z.boolean(),
-			notification_source_id: z.coerce.number({
-				required_error: 'Please select the source',
-			}),
-			notification_target_id: z.coerce.number({
-				required_error: 'Please select the target',
-			}),
+			user_notification_source_id: z.coerce.number().optional(),
+			user_notification_target_id: z.coerce.number().optional(),
 		})
 		.superRefine((data, ctx) => {
 			// If content type is 0 => title required
@@ -141,7 +138,8 @@ const UpdateNotificationTask = ({
 		defaultValues: {
 			notification_task_id: notification_task_id,
 			title: '',
-			content: '',
+			notification_title: '',
+			notification_content: '',
 			enable: true,
 			notification_content_type: 0,
 		},
@@ -192,15 +190,16 @@ const UpdateNotificationTask = ({
 		if (data) {
 			const defaultValues: z.infer<typeof formSchema> = {
 				notification_task_id: notification_task_id,
+				title: data.title,
 				trigger_type: data.trigger_type,
 				trigger_scheduler_cron: data.trigger_scheduler?.cron_expr,
 				trigger_event_id: data.trigger_event?.trigger_event_id,
 				enable: data.enable,
-				notification_source_id: data.user_notification_source!.id,
-				notification_target_id: data.user_notification_target!.id,
+				user_notification_source_id: data.user_notification_source?.id,
+				user_notification_target_id: data.user_notification_target?.id,
 				notification_content_type: data.notification_content_type,
-				title: data.title ?? undefined,
-				content: data.content ?? undefined,
+				notification_title: data.notification_title ?? undefined,
+				notification_content: data.notification_content ?? undefined,
 				notification_template_id: data.notification_template_id ?? undefined,
 			};
 			form.reset(defaultValues, {});
@@ -237,7 +236,27 @@ const UpdateNotificationTask = ({
 							className='space-y-3 flex-1 overflow-auto px-1'
 							id='update-notification-task-form'>
 							<FormField
-								name='notification_source_id'
+								name='title'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>
+												{t('setting_notification_task_manage_form_task_title')}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_notification_task_manage_form_task_title_placeholder'
+												)}
+											/>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
+							<FormField
+								name='user_notification_source_id'
 								control={form.control}
 								render={({ field }) => {
 									return (
@@ -279,7 +298,7 @@ const UpdateNotificationTask = ({
 								}}
 							/>
 							<FormField
-								name='notification_target_id'
+								name='user_notification_target_id'
 								control={form.control}
 								render={({ field }) => {
 									return (
@@ -475,7 +494,7 @@ const UpdateNotificationTask = ({
 								</TabsList>
 								<TabsContent value='0' className='space-y-3'>
 									<FormField
-										name='title'
+										name='notification_title'
 										control={form.control}
 										render={({ field }) => {
 											return (
@@ -495,7 +514,7 @@ const UpdateNotificationTask = ({
 										}}
 									/>
 									<FormField
-										name='content'
+										name='notification_content'
 										control={form.control}
 										render={({ field }) => {
 											return (

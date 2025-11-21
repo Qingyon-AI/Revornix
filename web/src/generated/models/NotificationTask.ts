@@ -56,6 +56,12 @@ export interface NotificationTask {
     id: number;
     /**
      * 
+     * @type {string}
+     * @memberof NotificationTask
+     */
+    title: string;
+    /**
+     * 
      * @type {boolean}
      * @memberof NotificationTask
      */
@@ -89,13 +95,13 @@ export interface NotificationTask {
      * @type {string}
      * @memberof NotificationTask
      */
-    title?: string | null;
+    notification_title?: string | null;
     /**
      * 
      * @type {string}
      * @memberof NotificationTask
      */
-    content?: string | null;
+    notification_content?: string | null;
     /**
      * 
      * @type {number}
@@ -133,6 +139,7 @@ export interface NotificationTask {
  */
 export function instanceOfNotificationTask(value: object): value is NotificationTask {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('title' in value) || value['title'] === undefined) return false;
     if (!('enable' in value) || value['enable'] === undefined) return false;
     if (!('notification_content_type' in value) || value['notification_content_type'] === undefined) return false;
     if (!('trigger_type' in value) || value['trigger_type'] === undefined) return false;
@@ -152,13 +159,14 @@ export function NotificationTaskFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
         
         'id': json['id'],
+        'title': json['title'],
         'enable': json['enable'],
         'notification_content_type': json['notification_content_type'],
         'trigger_type': json['trigger_type'],
         'trigger_event': json['trigger_event'] == null ? undefined : NotificationTriggerEventFromJSON(json['trigger_event']),
         'trigger_scheduler': json['trigger_scheduler'] == null ? undefined : NotificationTriggerSchedulerFromJSON(json['trigger_scheduler']),
-        'title': json['title'] == null ? undefined : json['title'],
-        'content': json['content'] == null ? undefined : json['content'],
+        'notification_title': json['notification_title'] == null ? undefined : json['notification_title'],
+        'notification_content': json['notification_content'] == null ? undefined : json['notification_content'],
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
         'user_notification_source': json['user_notification_source'] == null ? undefined : UserNotificationSourceFromJSON(json['user_notification_source']),
         'user_notification_target': json['user_notification_target'] == null ? undefined : UserNotificationTargetFromJSON(json['user_notification_target']),
@@ -179,13 +187,14 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
     return {
         
         'id': value['id'],
+        'title': value['title'],
         'enable': value['enable'],
         'notification_content_type': value['notification_content_type'],
         'trigger_type': value['trigger_type'],
         'trigger_event': NotificationTriggerEventToJSON(value['trigger_event']),
         'trigger_scheduler': NotificationTriggerSchedulerToJSON(value['trigger_scheduler']),
-        'title': value['title'],
-        'content': value['content'],
+        'notification_title': value['notification_title'],
+        'notification_content': value['notification_content'],
         'notification_template_id': value['notification_template_id'],
         'user_notification_source': UserNotificationSourceToJSON(value['user_notification_source']),
         'user_notification_target': UserNotificationTargetToJSON(value['user_notification_target']),

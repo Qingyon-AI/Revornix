@@ -1,6 +1,40 @@
 from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone
 
+class NotificationTaskBaseInfo(BaseModel):
+    id: int
+    title: str
+    create_time: datetime
+    update_time: datetime | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    class Config:
+        from_attributes = True
+
+class GetNotificationTargetRelatedTaskRequest(BaseModel):
+    user_notification_target_id: int
+
+class GetNotificationTargetRelatedTaskResponse(BaseModel):
+    data: list[NotificationTaskBaseInfo]
+    class Config:
+        from_attributes = True
+
+class GetNotificationSourceRelatedTaskRequest(BaseModel):
+    user_notification_source_id: int
+
+class GetNotificationSourceRelatedTaskResponse(BaseModel):
+    data: list[NotificationTaskBaseInfo]
+    class Config:
+        from_attributes = True
+
 class TriggerEvent(BaseModel):
     id: int
     uuid: str
@@ -221,13 +255,14 @@ class NotificationTriggerScheduler(BaseModel):
 
 class NotificationTask(BaseModel):
     id: int
+    title: str
     enable: bool
     notification_content_type: int
     trigger_type: int
     trigger_event: NotificationTriggerEvent | None = None
     trigger_scheduler: NotificationTriggerScheduler | None = None
-    title: str | None = None
-    content: str | None = None
+    notification_title: str | None = None
+    notification_content: str | None = None
     notification_template_id: int | None = None
     user_notification_source: UserNotificationSource | None = None
     user_notification_target: UserNotificationTarget | None = None
@@ -251,14 +286,15 @@ class DeleteNotificationTaskRequest(BaseModel):
     
 class UpdateNotificationTaskRequest(BaseModel):
     notification_task_id: int
+    title: str | None = None
     notification_content_type: int | None = None
     enable: bool | None = None
     notification_template_id: int | None = None
     trigger_type: int | None = None
     trigger_scheduler_cron: str | None = None
     trigger_event_id: int | None = None
-    title: str | None = None
-    content: str | None = None
+    notification_title: str | None = None
+    notification_content: str | None = None
     user_notification_source_id: int | None = None
     user_notification_target_id: int | None = None
     
@@ -266,10 +302,11 @@ class AddNotificationTaskRequest(BaseModel):
     user_notification_source_id: int
     user_notification_target_id: int
     enable: bool
+    title: str
     notification_content_type: int
     notification_template_id: int | None = None
-    title: str | None = None
-    content: str | None = None
+    notification_title: str | None = None
+    notification_content: str | None = None
     trigger_type: int
     trigger_event_id: int | None = None
     trigger_scheduler_cron: str | None = None

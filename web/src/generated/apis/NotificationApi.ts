@@ -22,6 +22,10 @@ import type {
   DeleteNotificationTaskRequest,
   DeleteUserNotificationSourceRequest,
   DeleteUserNotificationTargetRequest,
+  GetNotificationSourceRelatedTaskRequest,
+  GetNotificationSourceRelatedTaskResponse,
+  GetNotificationTargetRelatedTaskRequest,
+  GetNotificationTargetRelatedTaskResponse,
   HTTPValidationError,
   InifiniteScrollPagnitionNotificationRecord,
   NormalResponse,
@@ -62,6 +66,14 @@ import {
     DeleteUserNotificationSourceRequestToJSON,
     DeleteUserNotificationTargetRequestFromJSON,
     DeleteUserNotificationTargetRequestToJSON,
+    GetNotificationSourceRelatedTaskRequestFromJSON,
+    GetNotificationSourceRelatedTaskRequestToJSON,
+    GetNotificationSourceRelatedTaskResponseFromJSON,
+    GetNotificationSourceRelatedTaskResponseToJSON,
+    GetNotificationTargetRelatedTaskRequestFromJSON,
+    GetNotificationTargetRelatedTaskRequestToJSON,
+    GetNotificationTargetRelatedTaskResponseFromJSON,
+    GetNotificationTargetRelatedTaskResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     InifiniteScrollPagnitionNotificationRecordFromJSON,
@@ -182,8 +194,20 @@ export interface GetNotificationRecordDetailNotificationRecordDetailPostRequest 
     xForwardedFor?: string | null;
 }
 
+export interface GetNotificationSourceRelatedTaskNotificationSourceTaskPostRequest {
+    getNotificationSourceRelatedTaskRequest: GetNotificationSourceRelatedTaskRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface GetNotificationTargetDetailNotificationTargetDetailPostRequest {
     userNotificationTargetDetailRequest: UserNotificationTargetDetailRequest;
+}
+
+export interface GetNotificationTargetRelatedTaskNotificationTargetTaskPostRequest {
+    getNotificationTargetRelatedTaskRequest: GetNotificationTargetRelatedTaskRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
 }
 
 export interface GetNotificationTaskNotificationTaskDetailPostRequest {
@@ -797,6 +821,53 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
+     * Get Notification Source Related Task
+     */
+    async getNotificationSourceRelatedTaskNotificationSourceTaskPostRaw(requestParameters: GetNotificationSourceRelatedTaskNotificationSourceTaskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetNotificationSourceRelatedTaskResponse>> {
+        if (requestParameters['getNotificationSourceRelatedTaskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'getNotificationSourceRelatedTaskRequest',
+                'Required parameter "getNotificationSourceRelatedTaskRequest" was null or undefined when calling getNotificationSourceRelatedTaskNotificationSourceTaskPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/notification/source/task`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GetNotificationSourceRelatedTaskRequestToJSON(requestParameters['getNotificationSourceRelatedTaskRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetNotificationSourceRelatedTaskResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Notification Source Related Task
+     */
+    async getNotificationSourceRelatedTaskNotificationSourceTaskPost(requestParameters: GetNotificationSourceRelatedTaskNotificationSourceTaskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetNotificationSourceRelatedTaskResponse> {
+        const response = await this.getNotificationSourceRelatedTaskNotificationSourceTaskPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get Notification Target Detail
      */
     async getNotificationTargetDetailNotificationTargetDetailPostRaw(requestParameters: GetNotificationTargetDetailNotificationTargetDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserNotificationTarget>> {
@@ -832,6 +903,53 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async getNotificationTargetDetailNotificationTargetDetailPost(requestParameters: GetNotificationTargetDetailNotificationTargetDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserNotificationTarget> {
         const response = await this.getNotificationTargetDetailNotificationTargetDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Notification Target Related Task
+     */
+    async getNotificationTargetRelatedTaskNotificationTargetTaskPostRaw(requestParameters: GetNotificationTargetRelatedTaskNotificationTargetTaskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetNotificationTargetRelatedTaskResponse>> {
+        if (requestParameters['getNotificationTargetRelatedTaskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'getNotificationTargetRelatedTaskRequest',
+                'Required parameter "getNotificationTargetRelatedTaskRequest" was null or undefined when calling getNotificationTargetRelatedTaskNotificationTargetTaskPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/notification/target/task`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GetNotificationTargetRelatedTaskRequestToJSON(requestParameters['getNotificationTargetRelatedTaskRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetNotificationTargetRelatedTaskResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Notification Target Related Task
+     */
+    async getNotificationTargetRelatedTaskNotificationTargetTaskPost(requestParameters: GetNotificationTargetRelatedTaskNotificationTargetTaskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetNotificationTargetRelatedTaskResponse> {
+        const response = await this.getNotificationTargetRelatedTaskNotificationTargetTaskPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

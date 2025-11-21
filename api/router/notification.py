@@ -102,6 +102,7 @@ async def add_notification_task(
     db_notification_task = crud.notification.create_notification_task(
         db=db,
         user_id=user.id,
+        title=add_notification_task_request.title,
         notification_content_type=add_notification_task_request.notification_content_type,
         user_notification_target_id=add_notification_task_request.user_notification_target_id,
         user_notification_source_id=add_notification_task_request.user_notification_source_id,
@@ -109,13 +110,13 @@ async def add_notification_task(
         enable=add_notification_task_request.enable
     )
     if add_notification_task_request.notification_content_type == NotificationContentType.CUSTOM:
-        if add_notification_task_request.title is None or add_notification_task_request.content is None:
+        if add_notification_task_request.notification_title is None or add_notification_task_request.notification_content is None:
             raise schemas.error.CustomException(message="The title of the notification is None", code=400)
         crud.notification.create_notification_task_content_custom(
             db=db,
             notification_task_id=db_notification_task.id,
-            title=add_notification_task_request.title,
-            content=add_notification_task_request.content
+            title=add_notification_task_request.notification_title,
+            content=add_notification_task_request.notification_content
         )
     elif add_notification_task_request.notification_content_type == NotificationContentType.TEMPLATE:
         if add_notification_task_request.notification_template_id is None:
@@ -176,8 +177,8 @@ async def get_notification_task(
             notification_task_id=db_notification_task.id
         )
         if db_notification_task_content_custom is not None:
-            res.title = db_notification_task_content_custom.title
-            res.content = db_notification_task_content_custom.content
+            res.notification_title = db_notification_task_content_custom.title
+            res.notification_content = db_notification_task_content_custom.content
     elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
         db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
             db=db,
@@ -190,16 +191,14 @@ async def get_notification_task(
         db=db,
         user_notification_source_id=db_notification_task.user_notification_source_id
     )
-    if db_user_notification_source is None:
-        raise schemas.error.CustomException(message="user notification source not found", code=404)
-    res.user_notification_source = schemas.notification.UserNotificationSource.model_validate(db_user_notification_source)
+    if db_user_notification_source is not None:
+        res.user_notification_source = schemas.notification.UserNotificationSource.model_validate(db_user_notification_source)
     db_user_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
         db=db,
         user_notification_target_id=db_notification_task.user_notification_target_id
     )
-    if db_user_notification_target is None:
-        raise schemas.error.CustomException(message="user notification target not found", code=404)
-    res.user_notification_target = schemas.notification.UserNotificationTarget.model_validate(db_user_notification_target)
+    if db_user_notification_target is not None:
+        res.user_notification_target = schemas.notification.UserNotificationTarget.model_validate(db_user_notification_target)
     
     if db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
         db_notification_task_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
@@ -259,6 +258,8 @@ async def update_notification_task(
     )
     if db_notification_task is None:
         raise schemas.error.CustomException(message="notification task not found", code=404)
+    if update_notification_task_request.title is not None:
+        db_notification_task.title = update_notification_task_request.title
     # 如果原先这个任务是scheduler类型，那么需要删除原先的scheduler安排
     if db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
         db_origin_notification_task_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
@@ -279,18 +280,18 @@ async def update_notification_task(
             db=db,
             notification_task_id=update_notification_task_request.notification_task_id
         )
-        if update_notification_task_request.title is None or update_notification_task_request.content is None:
+        if update_notification_task_request.notification_title is None or update_notification_task_request.notification_content is None:
                 raise schemas.error.CustomException(message="title cannot be empty for custom notification", code=400)
         if db_notification_task_content_custom is None:
             crud.notification.create_notification_task_content_custom(
                 db=db,
                 notification_task_id=update_notification_task_request.notification_task_id,
-                title=update_notification_task_request.title,
-                content=update_notification_task_request.content
+                title=update_notification_task_request.notification_title,
+                content=update_notification_task_request.notification_content
             )
         else:
-            db_notification_task_content_custom.title = update_notification_task_request.title
-            db_notification_task_content_custom.content = update_notification_task_request.content
+            db_notification_task_content_custom.title = update_notification_task_request.notification_title
+            db_notification_task_content_custom.content = update_notification_task_request.notification_content
     elif update_notification_task_request.notification_content_type == NotificationContentType.TEMPLATE:
         if update_notification_task_request.notification_template_id is None:
             raise schemas.error.CustomException(message="notification template id cannot be empty for template notification", code=400)
@@ -384,8 +385,8 @@ async def get_mine_notification_task(
                 notification_task_id=task_data.id
             )
             if db_notification_content_custom is not None:
-                task_data.title = db_notification_content_custom.title
-                task_data.content = db_notification_content_custom.content
+                task_data.notification_title = db_notification_content_custom.title
+                task_data.notification_content = db_notification_content_custom.content
         elif task_data.notification_content_type == NotificationContentType.TEMPLATE:
             db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
                 db=db,
@@ -443,6 +444,39 @@ async def add_notification_target(
     )
     db.commit()
     return schemas.common.SuccessResponse()
+
+@notification_router.post('/target/task', response_model=schemas.notification.GetNotificationTargetRelatedTaskResponse)
+async def get_notification_target_related_task(
+    get_notification_target_related_task_request: schemas.notification.GetNotificationTargetRelatedTaskRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    db_user_notification_targets = crud.notification.get_notification_task_by_user_notification_target_id(
+        db=db,
+        user_notification_target_id=get_notification_target_related_task_request.user_notification_target_id
+    )
+    data = [
+        schemas.notification.NotificationTaskBaseInfo.model_validate(db_user_notification_target)
+        for db_user_notification_target in db_user_notification_targets
+    ]
+    return schemas.notification.GetNotificationTargetRelatedTaskResponse(data=data)
+
+@notification_router.post('/source/task', response_model=schemas.notification.GetNotificationSourceRelatedTaskResponse)
+async def get_notification_source_related_task(
+    get_notification_source_related_task_request: schemas.notification.GetNotificationSourceRelatedTaskRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    db_user_notification_sources = crud.notification.get_notification_task_by_user_notification_source_id(
+        db=db,
+        user_notification_source_id=get_notification_source_related_task_request.user_notification_source_id
+    )
+    data = [
+        schemas.notification.NotificationTaskBaseInfo.model_validate(db_user_notification_source)
+        for db_user_notification_source in db_user_notification_sources
+    ]
+    return schemas.notification.GetNotificationTargetRelatedTaskResponse(data=data)
+    
 
 @notification_router.post('/target/delete', response_model=schemas.common.NormalResponse)
 async def delete_notification_target(

@@ -26,4 +26,6 @@ export default {
     getProvidedNotificationSources: API_PREFIX + '/notification/source/provided',
     getProvidedNotificationTargets: API_PREFIX + '/notification/target/provided',
     getTriggerEvents: API_PREFIX + '/notification/trigger-event/all',
+    getNotificationSourceRelatedTasks: API_PREFIX + '/notification/source/task',
+    getNotificationTargetRelatedTasks: API_PREFIX + '/notification/target/task',
 } 

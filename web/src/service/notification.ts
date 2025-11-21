@@ -1,6 +1,18 @@
 import notificationApi from '@/api/notification'
-import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, DeleteUserNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, UserNotificationSourceDetailRequest, AddNotificationTargetRequest, DeleteUserNotificationTargetRequest, UserNotificationTargetDetailRequest, UpdateNotificationTargetRequest, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, NotificationTargetsResponse, PaginationNotificationTask, PageableRequest, UserNotificationSourcesResponse, UserNotificationTargetsResponse, UserNotificationSource, UserNotificationTarget, TriggerEventsResponse } from '@/generated';
+import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, DeleteUserNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, UserNotificationSourceDetailRequest, AddNotificationTargetRequest, DeleteUserNotificationTargetRequest, UserNotificationTargetDetailRequest, UpdateNotificationTargetRequest, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, NotificationTargetsResponse, PaginationNotificationTask, PageableRequest, UserNotificationSourcesResponse, UserNotificationTargetsResponse, UserNotificationSource, UserNotificationTarget, TriggerEventsResponse, GetNotificationSourceRelatedTaskResponse, GetNotificationTargetRelatedTaskResponse, GetNotificationTargetRelatedTaskRequest, GetNotificationSourceRelatedTaskRequest } from '@/generated';
 import { request } from '@/lib/request';
+
+export const getNotificationSourceRelatedTasks = async (data: GetNotificationSourceRelatedTaskRequest): Promise<GetNotificationSourceRelatedTaskResponse> => {
+    return await request(notificationApi.getNotificationSourceRelatedTasks, {
+        data
+    })
+}
+
+export const getNotificationTargetRelatedTasks = async (data: GetNotificationTargetRelatedTaskRequest): Promise<GetNotificationTargetRelatedTaskResponse> => {
+    return await request(notificationApi.getNotificationTargetRelatedTasks, {
+        data
+    })
+}
 
 export const getTriggerEvents = async (): Promise<TriggerEventsResponse> => {
     return await request(notificationApi.getTriggerEvents)

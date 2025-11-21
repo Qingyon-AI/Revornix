@@ -12,6 +12,7 @@ class NotificationTask(Base):
     __tablename__ = "notification_task"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     user_notification_source_id: Mapped[int] = mapped_column(ForeignKey("user_notification_source.id"), index=True, nullable=False)
     user_notification_target_id: Mapped[int] = mapped_column(ForeignKey("user_notification_target.id"), index=True, nullable=False)

@@ -58,8 +58,9 @@ const AddNotificationTask = () => {
 	const queryClient = getQueryClient();
 	const formSchema = z
 		.object({
-			title: z.string().optional(),
-			content: z.string().optional(),
+			title: z.string(),
+			notification_title: z.string().optional(),
+			notification_content: z.string().optional(),
 			notification_content_type: z.number(),
 			notification_template_id: z.coerce
 				.number({
@@ -122,7 +123,8 @@ const AddNotificationTask = () => {
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			title: '',
-			content: '',
+			notification_title: '',
+			notification_content: '',
 			enable: true,
 			notification_content_type: 0,
 		},
@@ -193,6 +195,26 @@ const AddNotificationTask = () => {
 							onSubmit={onSubmitForm}
 							className='space-y-3 flex-1 overflow-auto px-1'
 							id='add-notification-task-form'>
+							<FormField
+								name='title'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>
+												{t('setting_notification_task_manage_form_task_title')}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_notification_task_manage_form_task_title_placeholder'
+												)}
+											/>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
 							<FormField
 								name='user_notification_source_id'
 								control={form.control}
@@ -448,7 +470,7 @@ const AddNotificationTask = () => {
 										}}
 									/>
 									<FormField
-										name='content'
+										name='notification_content'
 										control={form.control}
 										render={({ field }) => {
 											return (

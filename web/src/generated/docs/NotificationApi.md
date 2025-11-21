@@ -16,7 +16,9 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**getMineNotificationTaskNotificationTaskMinePost**](NotificationApi.md#getminenotificationtasknotificationtaskminepost) | **POST** /notification/task/mine | Get Mine Notification Task |
 | [**getNotificationDetailNotificationSourceDetailPost**](NotificationApi.md#getnotificationdetailnotificationsourcedetailpost) | **POST** /notification/source/detail | Get Notification Detail |
 | [**getNotificationRecordDetailNotificationRecordDetailPost**](NotificationApi.md#getnotificationrecorddetailnotificationrecorddetailpost) | **POST** /notification/record/detail | Get Notification Record Detail |
+| [**getNotificationSourceRelatedTaskNotificationSourceTaskPost**](NotificationApi.md#getnotificationsourcerelatedtasknotificationsourcetaskpost) | **POST** /notification/source/task | Get Notification Source Related Task |
 | [**getNotificationTargetDetailNotificationTargetDetailPost**](NotificationApi.md#getnotificationtargetdetailnotificationtargetdetailpost) | **POST** /notification/target/detail | Get Notification Target Detail |
+| [**getNotificationTargetRelatedTaskNotificationTargetTaskPost**](NotificationApi.md#getnotificationtargetrelatedtasknotificationtargettaskpost) | **POST** /notification/target/task | Get Notification Target Related Task |
 | [**getNotificationTaskNotificationTaskDetailPost**](NotificationApi.md#getnotificationtasknotificationtaskdetailpost) | **POST** /notification/task/detail | Get Notification Task |
 | [**getNotificationTemplatesNotificationTemplateAllPost**](NotificationApi.md#getnotificationtemplatesnotificationtemplateallpost) | **POST** /notification/template/all | Get Notification Templates |
 | [**getProvidedNotificationSourceNotificationSourceProvidedPost**](NotificationApi.md#getprovidednotificationsourcenotificationsourceprovidedpost) | **POST** /notification/source/provided | Get Provided Notification Source |
@@ -889,6 +891,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## getNotificationSourceRelatedTaskNotificationSourceTaskPost
+
+> GetNotificationSourceRelatedTaskResponse getNotificationSourceRelatedTaskNotificationSourceTaskPost(getNotificationSourceRelatedTaskRequest, authorization, xForwardedFor)
+
+Get Notification Source Related Task
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { GetNotificationSourceRelatedTaskNotificationSourceTaskPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // GetNotificationSourceRelatedTaskRequest
+    getNotificationSourceRelatedTaskRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies GetNotificationSourceRelatedTaskNotificationSourceTaskPostRequest;
+
+  try {
+    const data = await api.getNotificationSourceRelatedTaskNotificationSourceTaskPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **getNotificationSourceRelatedTaskRequest** | [GetNotificationSourceRelatedTaskRequest](GetNotificationSourceRelatedTaskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**GetNotificationSourceRelatedTaskResponse**](GetNotificationSourceRelatedTaskResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## getNotificationTargetDetailNotificationTargetDetailPost
 
 > UserNotificationTarget getNotificationTargetDetailNotificationTargetDetailPost(userNotificationTargetDetailRequest)
@@ -935,6 +1009,78 @@ example().catch(console.error);
 ### Return type
 
 [**UserNotificationTarget**](UserNotificationTarget.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getNotificationTargetRelatedTaskNotificationTargetTaskPost
+
+> GetNotificationTargetRelatedTaskResponse getNotificationTargetRelatedTaskNotificationTargetTaskPost(getNotificationTargetRelatedTaskRequest, authorization, xForwardedFor)
+
+Get Notification Target Related Task
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { GetNotificationTargetRelatedTaskNotificationTargetTaskPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // GetNotificationTargetRelatedTaskRequest
+    getNotificationTargetRelatedTaskRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies GetNotificationTargetRelatedTaskNotificationTargetTaskPostRequest;
+
+  try {
+    const data = await api.getNotificationTargetRelatedTaskNotificationTargetTaskPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **getNotificationTargetRelatedTaskRequest** | [GetNotificationTargetRelatedTaskRequest](GetNotificationTargetRelatedTaskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**GetNotificationTargetRelatedTaskResponse**](GetNotificationTargetRelatedTaskResponse.md)
 
 ### Authorization
 

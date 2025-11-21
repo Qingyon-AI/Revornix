@@ -56,6 +56,7 @@ def create_notification_task_content_template(
 def create_notification_task(
     db: Session, 
     user_id: int,
+    title: str,
     notification_content_type: int,
     user_notification_source_id: int,
     user_notification_target_id: int,
@@ -65,6 +66,7 @@ def create_notification_task(
     now = datetime.now(timezone.utc)
     notification_task = models.notification.NotificationTask(
         user_id=user_id,
+        title=title,
         notification_content_type=notification_content_type,
         user_notification_source_id=user_notification_source_id,
         user_notification_target_id=user_notification_target_id,
@@ -208,6 +210,28 @@ def create_notification_record(
     db.add(notification)
     db.flush()
     return notification
+
+def get_notification_task_by_user_notification_target_id(
+    db: Session,
+    user_notification_target_id: int
+):
+    query = db.query(models.notification.NotificationTask)
+    query = query.filter(
+        models.notification.NotificationTask.delete_at == None,
+        models.notification.NotificationTask.user_notification_target_id == user_notification_target_id
+    )
+    return query.all()
+
+def get_notification_task_by_user_notification_source_id(
+    db: Session,
+    user_notification_source_id: int
+):
+    query = db.query(models.notification.NotificationTask)
+    query = query.filter(
+        models.notification.NotificationTask.delete_at == None,
+        models.notification.NotificationTask.user_notification_source_id == user_notification_source_id
+    )
+    return query.all()
 
 def get_all_provided_notification_sources(
     db: Session
