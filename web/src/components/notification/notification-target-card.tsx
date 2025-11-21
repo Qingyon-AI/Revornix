@@ -21,10 +21,15 @@ import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
 import UpdateNotificationTarget from '@/components/notification/update-notification-target';
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { deleteNotificationTarget } from '@/service/notification';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+	deleteNotificationTarget,
+	getNotificationTargetRelatedTasks,
+} from '@/service/notification';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { Skeleton } from '../ui/skeleton';
+import Link from 'next/link';
 
 const NotificationTargetCard = ({
 	notification_target,
@@ -35,6 +40,15 @@ const NotificationTargetCard = ({
 	const queryClient = getQueryClient();
 
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+	const { data: notificationTargetRelatedTasks, isFetching } = useQuery({
+		queryKey: ['notification-source-related-tasks'],
+		queryFn: async () => {
+			return await getNotificationTargetRelatedTasks({
+				user_notification_target_id: notification_target.id,
+			});
+		},
+	});
 
 	const muteDeleteNotificationTarget = useMutation({
 		mutationFn: deleteNotificationTarget,
@@ -71,6 +85,36 @@ const NotificationTargetCard = ({
 								{t('setting_notification_target_manage_delete_alert')}
 							</AlertDialogDescription>
 						</AlertDialogHeader>
+						{isFetching && <Skeleton className='w-full h-20' />}
+						{!isFetching && notificationTargetRelatedTasks && (
+							<>
+								<div className='text-sm font-bold'>
+									{t('setting_notification_target_related_tasks')}
+								</div>
+								<div className='bg-muted px-5 py-3 rounded-lg max-h-40 overflow-auto'>
+									{notificationTargetRelatedTasks.data.length === 0 ? (
+										<div className='text-xs text-center text-muted-foreground'>
+											{t('setting_notification_target_related_tasks_empty')}
+										</div>
+									) : (
+										<div className='flex flex-col divide-y'>
+											{notificationTargetRelatedTasks?.data.map(
+												(task, index) => {
+													return (
+														<Link
+															key={index}
+															href={`/setting/notification/task-manage#${task.id}`}
+															className='text-sm font-bold py-2 line-clamp-1'>
+															{task.title}
+														</Link>
+													);
+												}
+											)}
+										</div>
+									)}
+								</div>
+							</>
+						)}
 						<AlertDialogFooter>
 							<Button
 								variant={'destructive'}

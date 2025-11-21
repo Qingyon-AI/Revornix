@@ -9,10 +9,11 @@ Name | Type
 `user_notification_source_id` | number
 `user_notification_target_id` | number
 `enable` | boolean
+`title` | string
 `notification_content_type` | number
 `notification_template_id` | number
-`title` | string
-`content` | string
+`notification_title` | string
+`notification_content` | string
 `trigger_type` | number
 `trigger_event_id` | number
 `trigger_scheduler_cron` | string
@@ -27,10 +28,11 @@ const example = {
   "user_notification_source_id": null,
   "user_notification_target_id": null,
   "enable": null,
+  "title": null,
   "notification_content_type": null,
   "notification_template_id": null,
-  "title": null,
-  "content": null,
+  "notification_title": null,
+  "notification_content": null,
   "trigger_type": null,
   "trigger_event_id": null,
   "trigger_scheduler_cron": null,

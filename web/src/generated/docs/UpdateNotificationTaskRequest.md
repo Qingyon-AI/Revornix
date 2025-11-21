@@ -7,14 +7,15 @@
 Name | Type
 ------------ | -------------
 `notification_task_id` | number
+`title` | string
 `notification_content_type` | number
 `enable` | boolean
 `notification_template_id` | number
 `trigger_type` | number
 `trigger_scheduler_cron` | string
 `trigger_event_id` | number
-`title` | string
-`content` | string
+`notification_title` | string
+`notification_content` | string
 `user_notification_source_id` | number
 `user_notification_target_id` | number
 
@@ -26,14 +27,15 @@ import type { UpdateNotificationTaskRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "notification_task_id": null,
+  "title": null,
   "notification_content_type": null,
   "enable": null,
   "notification_template_id": null,
   "trigger_type": null,
   "trigger_scheduler_cron": null,
   "trigger_event_id": null,
-  "title": null,
-  "content": null,
+  "notification_title": null,
+  "notification_content": null,
   "user_notification_source_id": null,
   "user_notification_target_id": null,
 } satisfies UpdateNotificationTaskRequest

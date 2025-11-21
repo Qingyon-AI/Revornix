@@ -90,6 +90,10 @@ docs/FollowUserRequest.md
 docs/GenerateDocumentPodcastRequest.md
 docs/GenerateSectionPodcastRequest.md
 docs/GenericFileSystemUploadResponse.md
+docs/GetNotificationSourceRelatedTaskRequest.md
+docs/GetNotificationSourceRelatedTaskResponse.md
+docs/GetNotificationTargetRelatedTaskRequest.md
+docs/GetNotificationTargetRelatedTaskResponse.md
 docs/GetRssServerDetailRequest.md
 docs/GetRssServerDocumentRequest.md
 docs/GithubInfo.md
@@ -148,6 +152,7 @@ docs/NotificationSourcesResponse.md
 docs/NotificationTarget.md
 docs/NotificationTargetsResponse.md
 docs/NotificationTask.md
+docs/NotificationTaskBaseInfo.md
 docs/NotificationTaskDetailRequest.md
 docs/NotificationTemplate.md
 docs/NotificationTemplatesResponse.md
@@ -332,6 +337,10 @@ models/FollowUserRequest.ts
 models/GenerateDocumentPodcastRequest.ts
 models/GenerateSectionPodcastRequest.ts
 models/GenericFileSystemUploadResponse.ts
+models/GetNotificationSourceRelatedTaskRequest.ts
+models/GetNotificationSourceRelatedTaskResponse.ts
+models/GetNotificationTargetRelatedTaskRequest.ts
+models/GetNotificationTargetRelatedTaskResponse.ts
 models/GetRssServerDetailRequest.ts
 models/GetRssServerDocumentRequest.ts
 models/GithubInfo.ts
@@ -387,6 +396,7 @@ models/NotificationSourcesResponse.ts
 models/NotificationTarget.ts
 models/NotificationTargetsResponse.ts
 models/NotificationTask.ts
+models/NotificationTaskBaseInfo.ts
 models/NotificationTaskDetailRequest.ts
 models/NotificationTemplate.ts
 models/NotificationTemplatesResponse.ts

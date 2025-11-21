@@ -7,13 +7,14 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`title` | string
 `enable` | boolean
 `notification_content_type` | number
 `trigger_type` | number
 `trigger_event` | [NotificationTriggerEvent](NotificationTriggerEvent.md)
 `trigger_scheduler` | [NotificationTriggerScheduler](NotificationTriggerScheduler.md)
-`title` | string
-`content` | string
+`notification_title` | string
+`notification_content` | string
 `notification_template_id` | number
 `user_notification_source` | [UserNotificationSource](UserNotificationSource.md)
 `user_notification_target` | [UserNotificationTarget](UserNotificationTarget.md)
@@ -28,13 +29,14 @@ import type { NotificationTask } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "title": null,
   "enable": null,
   "notification_content_type": null,
   "trigger_type": null,
   "trigger_event": null,
   "trigger_scheduler": null,
-  "title": null,
-  "content": null,
+  "notification_title": null,
+  "notification_content": null,
   "notification_template_id": null,
   "user_notification_source": null,
   "user_notification_target": null,

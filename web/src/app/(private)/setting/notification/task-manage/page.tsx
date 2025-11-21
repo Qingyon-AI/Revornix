@@ -112,6 +112,23 @@ const NotificationTaskManagePage = () => {
 
 	const columns: ColumnDef<any>[] = [
 		{
+			accessorKey: 'title',
+			header: () => {
+				return (
+					<div className='w-full'>
+						{t('setting_notification_task_manage_form_task_title')}
+					</div>
+				);
+			},
+			cell: ({ row }) => {
+				return (
+					<div className='flex flex-row gap-2 items-center'>
+						{row.getValue('title')}
+					</div>
+				);
+			},
+		},
+		{
 			accessorKey: 'user_notification_source',
 			header: () => {
 				return (
@@ -121,12 +138,11 @@ const NotificationTaskManagePage = () => {
 				);
 			},
 			cell: ({ row }) => {
-				const user_notification_source: NotificationSource = row.getValue(
-					'user_notification_source'
-				);
+				const user_notification_source: NotificationSource | undefined =
+					row.getValue('user_notification_source');
 				return (
 					<div className='flex flex-row gap-2 items-center'>
-						{user_notification_source.title}
+						{user_notification_source ? user_notification_source.title : 'N/A'}
 					</div>
 				);
 			},
@@ -141,12 +157,11 @@ const NotificationTaskManagePage = () => {
 				);
 			},
 			cell: ({ row }) => {
-				const user_notification_target: NotificationTarget = row.getValue(
-					'user_notification_target'
-				);
+				const user_notification_target: NotificationTarget | undefined =
+					row.getValue('user_notification_target');
 				return (
 					<div className='flex flex-row gap-2 items-center'>
-						{user_notification_target.title}
+						{user_notification_target ? user_notification_target.title : 'N/A'}
 					</div>
 				);
 			},
@@ -261,7 +276,8 @@ const NotificationTaskManagePage = () => {
 								table.getRowModel().rows.map((row) => (
 									<TableRow
 										key={row.id}
-										data-state={row.getIsSelected() && 'selected'}>
+										data-state={row.getIsSelected() && 'selected'}
+										id={row.original.id}>
 										{row.getVisibleCells().map((cell) => (
 											<TableCell key={cell.id}>
 												{flexRender(
