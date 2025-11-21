@@ -1,7 +1,7 @@
 import io
 import asyncio
 from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
-from enums.engine import EngineUUID
+from enums.engine import EngineUUID, EngineCategory
 from common.common import extract_title_and_summary
 from bs4 import BeautifulSoup
 from markitdown import MarkItDown
@@ -15,6 +15,7 @@ class MarkitdownEngine(MarkdownEngineProtocol):
             engine_uuid=EngineUUID.MarkitDown.value,
             engine_name="Markitdown",
             engine_name_zh="Markitdown",
+            engine_category=EngineCategory.Markdown,
             engine_description="Markitdown is a tool that converts file to Markdown.",
             engine_description_zh="Markitdown 是一个将文件转换为 Markdown 的工具。",
             engine_demo_config='{"openai_api_key": "sk-proj-******"}'

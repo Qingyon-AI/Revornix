@@ -13,7 +13,6 @@ from engine.markdown.markitdown import MarkitdownEngine
 from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
-from enums.engine import EngineCategory
 from common.logger import info_logger, exception_logger
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
@@ -25,6 +24,14 @@ from notifcation.source.email_notification_source import EmailNotificationSource
 from notifcation.target.apple_notification_target import AppleNotificationTarget
 from notifcation.target.apple_sandbox_notification_target import AppleSandBoxNotificationTarget
 from notifcation.target.email_notification_target import EmailNotificationTarget
+from notifcation.trigger_event.removed_from_section import RemovedFromSectionNotificationTriggerEvent
+from notifcation.trigger_event.section_updated import SectionUpdatedNotificationTriggerEvent
+from notifcation.trigger_event.section_commented import SectionCommentedNotificationTriggerEvent
+from protocol.notification_trigger import NotificationTriggerEventProtocol
+from protocol.notification_source import NotificationSourceProtocol
+from protocol.notification_target import NotificationTargetProtocol
+from protocol.engine import EngineProtocol
+from protocol.remote_file_service import RemoteFileServiceProtocol
 
 alembic_cfg_path = BASE_DIR / 'alembic.ini'
 
@@ -45,175 +52,127 @@ if __name__ == '__main__':
         config=alembic_cfg, 
         revision='head'
     )
-    # 仅在数据库数据未初始化时，执行数据初始化
     db = SessionLocal()
-    if not is_data_initialized(db=db):
-        info_logger.info("Initialize the database data...")
-        try:
-            email_notification_source = EmailNotificationSource()
-            email_notification_target = EmailNotificationTarget()
-            apple_notification_source = AppleNotificationSource()
-            apple_notification_target = AppleNotificationTarget()
-            apple_sand_box_notification_source = AppleSandBoxNotificationSource()
-            apple_sand_box_notification_target = AppleSandBoxNotificationTarget()
-            db_email_notification_source = crud.notification.create_notification_source(
-                db=db,
-                uuid=email_notification_source.uuid,
-                name=email_notification_source.name,
-                name_zh=email_notification_source.name_zh,
-                description=email_notification_source.description,
-                description_zh=email_notification_source.description_zh,
-                demo_config=email_notification_source.demo_config
-            )
-            db_email_notification_target = crud.notification.create_notification_target(
-                db=db,
-                uuid=email_notification_target.uuid,
-                name=email_notification_target.name,
-                name_zh=email_notification_target.name_zh,
-                description=email_notification_target.description,
-                description_zh=email_notification_target.description_zh,
-                demo_config=email_notification_target.demo_config
-            )
-            db_apple_notification_source = crud.notification.create_notification_source(
-                db=db,
-                uuid=apple_notification_source.uuid,
-                name=apple_notification_source.name,
-                name_zh=apple_notification_source.name_zh,
-                description=apple_notification_source.description,
-                description_zh=apple_notification_source.description_zh,
-                demo_config=apple_notification_source.demo_config
-            )
-            db_apple_notification_target = crud.notification.create_notification_target(
-                db=db,
-                uuid=apple_notification_target.uuid,
-                name=apple_notification_target.name,
-                name_zh=apple_notification_target.name_zh,
-                description=apple_notification_target.description,
-                description_zh=apple_notification_target.description_zh,
-                demo_config=apple_notification_target.demo_config
-            )
-            db_apple_sand_box_notification_source = crud.notification.create_notification_source(
-                db=db,
-                uuid=apple_sand_box_notification_source.uuid,
-                name=apple_sand_box_notification_source.name,
-                name_zh=apple_sand_box_notification_source.name_zh,
-                description=apple_sand_box_notification_source.description,
-                description_zh=apple_sand_box_notification_source.description_zh,
-                demo_config=apple_sand_box_notification_source.demo_config
-            )
-            db_apple_sand_box_notification_target = crud.notification.create_notification_target(
-                db=db,
-                uuid=apple_sand_box_notification_target.uuid,
-                name=apple_sand_box_notification_target.name,
-                name_zh=apple_sand_box_notification_target.name_zh,
-                description=apple_sand_box_notification_target.description,
-                description_zh=apple_sand_box_notification_target.description_zh,
-                demo_config=apple_sand_box_notification_target.demo_config
-            )
-            mineru_engine = MineruEngine()
-            jina_engine = JinaEngine()
-            markitdown_engine = MarkitdownEngine()
-            mineru_api_engine = MineruApiEngine()
-            volc_tts_engine = VolcTTSEngine()
-            db_engine_mineru = crud.engine.create_engine(
-                db=db,
-                category=EngineCategory.Markdown,
-                uuid=mineru_engine.engine_uuid,
-                name=mineru_engine.engine_name,
-                name_zh=mineru_engine.engine_name_zh,
-                description=mineru_engine.engine_description,
-                description_zh=mineru_engine.engine_description_zh,
-                demo_config=mineru_engine.engine_demo_config
-            )
-            db_engine_jina = crud.engine.create_engine(
-                db=db,
-                category=EngineCategory.Markdown,
-                uuid=jina_engine.engine_uuid,
-                name=jina_engine.engine_name,
-                name_zh=jina_engine.engine_name_zh,
-                description=jina_engine.engine_description,
-                description_zh=jina_engine.engine_description_zh,
-                demo_config=jina_engine.engine_demo_config
-            )
-            db_engine_markitdown = crud.engine.create_engine(
-                db=db,
-                category=EngineCategory.Markdown,
-                uuid=markitdown_engine.engine_uuid,
-                name=markitdown_engine.engine_name,
-                name_zh=markitdown_engine.engine_name_zh,
-                description=markitdown_engine.engine_description,
-                description_zh=markitdown_engine.engine_description_zh,
-                demo_config=markitdown_engine.engine_demo_config
-            )
-            db_engine_mineru_api = crud.engine.create_engine(
-                db=db,
-                category=EngineCategory.Markdown,
-                uuid=mineru_api_engine.engine_uuid,
-                name=mineru_api_engine.engine_name,
-                name_zh=mineru_api_engine.engine_name_zh,
-                description=mineru_api_engine.engine_description,
-                description_zh=mineru_api_engine.engine_description_zh,
-                demo_config=mineru_api_engine.engine_demo_config
-            )
-            db_engine_volc_tts = crud.engine.create_engine(
-                db=db,
-                category=EngineCategory.TTS,
-                uuid=volc_tts_engine.engine_uuid,
-                name=volc_tts_engine.engine_name,
-                name_zh=volc_tts_engine.engine_name_zh,
-                description=volc_tts_engine.engine_description_zh,
-                description_zh=volc_tts_engine.engine_description_zh,
-                demo_config=volc_tts_engine.engine_demo_config
-            )
-            built_in_remote_file_service = BuiltInRemoteFileService()
-            aliyun_oss_remote_file_service = AliyunOSSRemoteFileService()
-            aws_s3_remote_file_service = AWSS3RemoteFileService()
-            generic_s3_remote_file_service = GenericS3RemoteFileService()
-            db_built_in_remote_file_service = crud.file_system.create_file_system(
-                db=db,
-                uuid=built_in_remote_file_service.file_service_uuid,
-                name=built_in_remote_file_service.file_service_name,
-                name_zh=built_in_remote_file_service.file_service_name_zh,
-                description=built_in_remote_file_service.file_service_description,
-                description_zh=built_in_remote_file_service.file_service_description_zh,
-                demo_config=built_in_remote_file_service.file_service_demo_config
-            )
-            db_aliyun_oss_remote_file_service = crud.file_system.create_file_system(
-                db=db,
-                uuid=aliyun_oss_remote_file_service.file_service_uuid,
-                name=aliyun_oss_remote_file_service.file_service_name,
-                name_zh=aliyun_oss_remote_file_service.file_service_name_zh,
-                description=aliyun_oss_remote_file_service.file_service_description,
-                description_zh=aliyun_oss_remote_file_service.file_service_description_zh,
-                demo_config=aliyun_oss_remote_file_service.file_service_demo_config
-            )
-            db_aws_s3_remote_file_service = crud.file_system.create_file_system(
-                db=db,
-                uuid=aws_s3_remote_file_service.file_service_uuid,
-                name=aws_s3_remote_file_service.file_service_name,
-                name_zh=aws_s3_remote_file_service.file_service_name_zh,
-                description=aws_s3_remote_file_service.file_service_description,
-                description_zh=aws_s3_remote_file_service.file_service_description_zh,
-                demo_config=aws_s3_remote_file_service.file_service_demo_config
-            )
-            db_generic_s3_remote_file_service = crud.file_system.create_file_system(
-                db=db,
-                uuid=generic_s3_remote_file_service.file_service_uuid,
-                name=generic_s3_remote_file_service.file_service_name,
-                name_zh=generic_s3_remote_file_service.file_service_name_zh,
-                description=generic_s3_remote_file_service.file_service_description,
-                description_zh=generic_s3_remote_file_service.file_service_description_zh,
-                demo_config=generic_s3_remote_file_service.file_service_demo_config
-            )
-            db.commit()
-            info_logger.info("Initialize the sql database successfully")
-        except Exception as e:
-            exception_logger.error(f"Initialize the sql database failed: {e}")
-            command.downgrade(
-                config=alembic_cfg, 
-                revision='head'
-            )
-            db.rollback()
-        finally:
-            db.close()
-            
+    try:
+        removed_from_section_notification_trigger = RemovedFromSectionNotificationTriggerEvent()
+        section_updated_notification_trigger = SectionUpdatedNotificationTriggerEvent()
+        section_commented_notification_trigger = SectionCommentedNotificationTriggerEvent()
+        triggers: list[NotificationTriggerEventProtocol] = [
+            removed_from_section_notification_trigger,
+            section_updated_notification_trigger,
+            section_commented_notification_trigger
+        ]
+        for trigger in triggers:
+            if crud.notification.get_trigger_event_by_uuid(
+                db=db, 
+                uuid=trigger.uuid
+            ) is None:
+                crud.notification.create_notification_trigger_event(
+                    db=db,
+                    uuid=trigger.uuid,
+                    name=trigger.name,
+                    name_zh=trigger.name_zh,
+                    description=trigger.description,
+                    description_zh=trigger.description_zh
+                )
+        email_notification_source = EmailNotificationSource()
+        apple_notification_source = AppleNotificationSource()
+        apple_sand_box_notification_source = AppleSandBoxNotificationSource()
+        notification_sources: list[NotificationSourceProtocol] = [
+            email_notification_source,
+            apple_notification_source,
+            apple_sand_box_notification_source
+        ]
+        for notification_source in notification_sources:
+            if crud.notification.get_notification_source_by_uuid(
+                db=db, 
+                uuid=notification_source.uuid
+            ) is None:
+                crud.notification.create_notification_source(
+                    db=db,
+                    uuid=notification_source.uuid,
+                    name=notification_source.name,
+                    name_zh=notification_source.name_zh,
+                    description=notification_source.description,
+                    description_zh=notification_source.description_zh,
+                    demo_config=notification_source.demo_config
+                )
+        email_notification_target = EmailNotificationTarget()
+        apple_notification_target = AppleNotificationTarget()
+        apple_sand_box_notification_target = AppleSandBoxNotificationTarget()
+        notification_targets: list[NotificationTargetProtocol] = [
+            email_notification_target,
+            apple_notification_target,
+            apple_sand_box_notification_target
+        ]
+        for notification_target in notification_targets:
+            if crud.notification.get_notification_target_by_uuid(
+                db=db, 
+                uuid=notification_target.uuid
+            ) is None:
+                crud.notification.create_notification_target(
+                    db=db,
+                    uuid=notification_target.uuid,
+                    name=notification_target.name,
+                    name_zh=notification_target.name_zh,
+                    description=notification_target.description,
+                    description_zh=notification_target.description_zh,
+                    demo_config=notification_target.demo_config
+                )
+        mineru_engine = MineruEngine()
+        jina_engine = JinaEngine()
+        markitdown_engine = MarkitdownEngine()
+        mineru_api_engine = MineruApiEngine()
+        volc_tts_engine = VolcTTSEngine()
+        engines: list[EngineProtocol] = [
+            mineru_engine,
+            jina_engine,
+            markitdown_engine,
+            mineru_api_engine,
+            volc_tts_engine
+        ]
+        for engine in engines:
+            if crud.engine.get_engine_by_uuid(
+                db=db, 
+                uuid=engine.engine_uuid
+            ) is None:
+                crud.engine.create_engine(
+                    db=db,
+                    category=engine.engine_category,
+                    uuid=engine.engine_uuid,
+                    name=engine.engine_name,
+                    name_zh=engine.engine_name_zh,
+                    description=engine.engine_description,
+                    description_zh=engine.engine_description_zh,
+                    demo_config=engine.engine_demo_config
+                )
+        built_in_remote_file_service = BuiltInRemoteFileService()
+        aliyun_oss_remote_file_service = AliyunOSSRemoteFileService()
+        aws_s3_remote_file_service = AWSS3RemoteFileService()
+        generic_s3_remote_file_service = GenericS3RemoteFileService()
+        remote_file_services: list[RemoteFileServiceProtocol] = [
+            built_in_remote_file_service,
+            aliyun_oss_remote_file_service,
+            aws_s3_remote_file_service,
+            generic_s3_remote_file_service
+        ]
+        for remote_file_service in remote_file_services:
+            if crud.file_system.get_file_system_by_uuid(
+                db=db, 
+                uuid=remote_file_service.file_service_uuid
+            ) is None:
+                crud.file_system.create_file_system(
+                    db=db,
+                    uuid=remote_file_service.file_service_uuid,
+                    name=remote_file_service.file_service_name,
+                    name_zh=remote_file_service.file_service_name_zh,
+                    description=remote_file_service.file_service_description,
+                    description_zh=remote_file_service.file_service_description_zh,
+                    demo_config=remote_file_service.file_service_demo_config
+                )
+        db.commit()
+        info_logger.info("Initialize the sql database successfully")
+    except Exception as e:
+        exception_logger.error(f"Initialize the sql database failed: {e}")
+    finally:
+        db.close()

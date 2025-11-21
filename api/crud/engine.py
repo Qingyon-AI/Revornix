@@ -54,6 +54,15 @@ def get_engine_by_id(
                          models.engine.Engine.delete_at == None)
     return query.one_or_none()
 
+def get_engine_by_uuid(
+    db: Session, 
+    uuid: str
+):
+    query = db.query(models.engine.Engine)
+    query = query.filter(models.engine.Engine.uuid == uuid,
+                         models.engine.Engine.delete_at == None)
+    return query.one_or_none()
+
 def get_user_engine_by_user_engine_id(
     db: Session, 
     user_engine_id: int

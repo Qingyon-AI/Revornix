@@ -52,6 +52,15 @@ def get_all_file_systems(
         query = query.filter(models.file_system.FileSystem.name.like(f'%{keyword}%'))
     return query.all()
 
+def get_file_system_by_uuid(
+    db: Session, 
+    uuid: str
+):
+    query = db.query(models.file_system.FileSystem)
+    query = query.filter(models.file_system.FileSystem.uuid == uuid,
+                         models.file_system.FileSystem.delete_at == None)
+    return query.one_or_none()
+
 def get_user_file_systems_by_user_id(
     db: Session, 
     user_id: int, 

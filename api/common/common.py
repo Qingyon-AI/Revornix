@@ -1,7 +1,12 @@
 import re
 import crud
 import json
+import pkgutil
+import importlib
+import inspect
+from typing import Type
 from pathlib import Path
+from sqlalchemy.orm import Session
 from common.hash import verify_password
 from common.sql import SessionLocal
 from enums.file import RemoteFileServiceUUID
@@ -10,21 +15,57 @@ from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.aws_s3_remote_file_service import AWSS3RemoteFileService
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 
-def authenticate_user(db, 
-                      user_uuid: str, 
-                      password: str):
-    user = crud.user.get_user_by_uuid(db, 
-                                      user_uuid=user_uuid)
+def collect_classes(
+    package_name: str, 
+    base_class: Type
+):
+    """获取指定包下的所有指定类型的类
+
+    Args:
+        package_name (str): 包位置
+        base_class (Type): 类的筛选
+
+    Returns:
+        _type_: 一个列表，包含所有指定类型的类
+    """
+    package = importlib.import_module(package_name)
+    result = []
+
+    for module_info in pkgutil.iter_modules(package.__path__, package_name + "."):
+        module = importlib.import_module(module_info.name)
+
+        for _, obj in inspect.getmembers(module, inspect.isclass):
+            if obj.__module__ != module.__name__:
+                continue
+
+            if issubclass(obj, base_class) and obj is not base_class:
+                result.append(obj)
+
+    return result
+
+def authenticate_user(
+    db: Session, 
+    user_uuid: str, 
+    password: str
+):
+    user = crud.user.get_user_by_uuid(
+        db, 
+        user_uuid=user_uuid
+    )
     if not user:
         return False
     if not verify_password(user.hashed_password, password):
         return False
     return user
 
-def is_dir_empty(path: Path):
+def is_dir_empty(
+    path: Path
+):
     return not any(Path(path).iterdir())
 
-def extract_title_and_summary(content: str):
+def extract_title_and_summary(
+    content: str
+):
     # 提取第一个 Markdown 标题（# 开头）
     title_match = re.search(r'^#\s+(.+)', content, re.MULTILINE)
     title = title_match.group(1).strip() if title_match else "Untitled"
@@ -78,7 +119,9 @@ async def get_user_remote_file_system(
     db.close()
     return remote_file_service
 
-def to_serializable(obj):
+def to_serializable(
+    obj
+):
     """把无法直接JSON化的对象转成可序列化形式"""
     if isinstance(obj, (str, int, float, bool)) or obj is None:
         return obj
@@ -91,7 +134,10 @@ def to_serializable(obj):
     else:
         return str(obj)
 
-def safe_json_loads(data, default):
+def safe_json_loads(
+    data, 
+    default
+):
     if not data:
         return default
     try:
