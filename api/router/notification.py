@@ -258,8 +258,12 @@ async def update_notification_task(
     )
     if db_notification_task is None:
         raise schemas.error.CustomException(message="notification task not found", code=404)
+    if db_notification_task.user_id != user.id:
+        raise schemas.error.CustomException(message="permission denied", code=403)
+    
     if update_notification_task_request.title is not None:
         db_notification_task.title = update_notification_task_request.title
+    
     # 如果原先这个任务是scheduler类型，那么需要删除原先的scheduler安排
     if db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
         db_origin_notification_task_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
@@ -269,8 +273,6 @@ async def update_notification_task(
         if db_origin_notification_task_trigger_scheduler is None:
             raise schemas.error.CustomException(message="notification task trigger scheduler not found", code=404)
         scheduler.remove_job(str(update_notification_task_request.notification_task_id))
-    if db_notification_task.user_id != user.id:
-        raise schemas.error.CustomException(message="permission denied", code=403)
     
     if update_notification_task_request.notification_content_type is not None:
         db_notification_task.notification_content_type = update_notification_task_request.notification_content_type
@@ -315,32 +317,34 @@ async def update_notification_task(
         
     if update_notification_task_request.trigger_type is not None:
         db_notification_task.trigger_type = update_notification_task_request.trigger_type
-    if update_notification_task_request.trigger_scheduler_cron is not None:
-        db_notification_task_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
-            db=db,
-            notification_task_id=update_notification_task_request.notification_task_id
-        )
-        if db_notification_task_trigger_scheduler is None:
-            crud.notification.create_notification_task_trigger_scheduler(
+    if update_notification_task_request.trigger_type == NotificationTriggerType.SCHEDULER:
+        if update_notification_task_request.trigger_scheduler_cron is not None:
+            db_notification_task_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
                 db=db,
-                notification_task_id=update_notification_task_request.notification_task_id,
-                cron_expr=update_notification_task_request.trigger_scheduler_cron
+                notification_task_id=update_notification_task_request.notification_task_id
             )
-        else:
-            db_notification_task_trigger_scheduler.cron_expr = update_notification_task_request.trigger_scheduler_cron
-    if update_notification_task_request.trigger_event_id is not None:
-        db_notification_task_trigger_event = crud.notification.get_notification_task_trigger_event_by_notification_task_id(
-            db=db,
-            notification_task_id=update_notification_task_request.notification_task_id
-        )
-        if db_notification_task_trigger_event is None:
-            crud.notification.create_notification_task_trigger_event(
+            if db_notification_task_trigger_scheduler is None:
+                crud.notification.create_notification_task_trigger_scheduler(
+                    db=db,
+                    notification_task_id=update_notification_task_request.notification_task_id,
+                    cron_expr=update_notification_task_request.trigger_scheduler_cron
+                )
+            else:
+                db_notification_task_trigger_scheduler.cron_expr = update_notification_task_request.trigger_scheduler_cron
+    elif update_notification_task_request.trigger_type == NotificationTriggerType.EVENT:
+        if update_notification_task_request.trigger_event_id is not None:
+            db_notification_task_trigger_event = crud.notification.get_notification_task_trigger_event_by_notification_task_id(
                 db=db,
-                notification_task_id=update_notification_task_request.notification_task_id,
-                trigger_event_id=update_notification_task_request.trigger_event_id
+                notification_task_id=update_notification_task_request.notification_task_id
             )
-        else:
-            db_notification_task_trigger_event = update_notification_task_request.trigger_event_id
+            if db_notification_task_trigger_event is None:
+                crud.notification.create_notification_task_trigger_event(
+                    db=db,
+                    notification_task_id=update_notification_task_request.notification_task_id,
+                    trigger_event_id=update_notification_task_request.trigger_event_id
+                )
+            else:
+                db_notification_task_trigger_event.trigger_event_id = update_notification_task_request.trigger_event_id
 
     if update_notification_task_request.enable is not None:
         db_notification_task.enable = update_notification_task_request.enable

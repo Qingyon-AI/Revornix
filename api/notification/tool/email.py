@@ -20,9 +20,9 @@ class EmailNotificationTool(NotificationToolProtocol):
         target_config = self.get_target_config()
         if source_config is None or target_config is None:
             raise Exception("The source or target config of the notification is not set")
-        smtp_server = source_config.get('server')
+        smtp_server = source_config.get('host')
         smtp_port = source_config.get('port')
-        username = source_config.get('email')
+        username = source_config.get('username')
         password = source_config.get('password')
         recipient = target_config.get('email')
 

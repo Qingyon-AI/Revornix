@@ -1233,6 +1233,13 @@ async def create_section_comment(
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
 ):
+    db_section = crud.section.get_section_by_section_id(
+        db=db,
+        section_id=section_comment_create_request.section_id
+    )
+    if db_section is None:
+        raise Exception("Section not found")
+    
     crud.section.create_section_comment(
         db=db,
         section_id=section_comment_create_request.section_id,
@@ -1242,7 +1249,7 @@ async def create_section_comment(
     db.commit()
     trigger_user_notification_event(
         db=db,
-        user_id=user.id,
+        user_id=db_section.creator_id,
         trigger_event_uuid=NotificationTriggerEventUUID.SECTION_COMMENTED.value,
     )
     return schemas.common.SuccessResponse()
