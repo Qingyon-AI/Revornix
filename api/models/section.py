@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, date as datetime_date
+from datetime import datetime, date as date_type
 from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Boolean, Date
@@ -65,7 +65,7 @@ class DaySection(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
-    date: Mapped[datetime_date] = mapped_column(Date, nullable=False)
+    date: Mapped[date_type] = mapped_column(Date, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))

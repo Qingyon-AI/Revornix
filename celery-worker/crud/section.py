@@ -1,8 +1,8 @@
 import models
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date as date_type
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from enums.section import UserSectionRole, SectionDocumentIntegration
+from enums.section import SectionDocumentIntegration
 
 def create_or_update_section_document(
     db: Session,
@@ -46,6 +46,21 @@ def get_sections_by_document_id(
                          models.section.SectionDocument.delete_at == None,
                          models.section.Section.delete_at == None)
     return query.all()
+
+def get_section_by_user_and_date(
+    db: Session,
+    user_id: int, 
+    date: date_type
+):
+    query = db.query(models.section.Section)
+    query = query.join(models.section.DaySection)
+    query = query.join(models.section.SectionUser)
+    query = query.filter(models.section.DaySection.date == date, 
+                         models.section.DaySection.delete_at == None,
+                         models.section.Section.delete_at == None,
+                         models.section.SectionUser.delete_at == None,
+                         models.section.SectionUser.user_id == user_id)
+    return query.one_or_none()
 
 def get_section_user_by_section_id_and_user_id(
     db: Session, 

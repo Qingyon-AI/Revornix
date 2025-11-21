@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import or_
 from enums.section import UserSectionRole, SectionDocumentIntegration
-from datetime import date as datetime_date
+from datetime import date as date_type
 
 def create_publish_section(
     db: Session,
@@ -125,7 +125,7 @@ def create_or_update_section_document(
 def create_date_section(
     db: Session,
     section_id: int, 
-    date: datetime_date
+    date: date_type
 ):
     now = datetime.now(timezone.utc)
     db_day_section = models.section.DaySection(date=date,
@@ -675,7 +675,7 @@ def get_section_user_by_section_id_and_user_id(
 def get_section_by_user_and_date(
     db: Session,
     user_id: int, 
-    date: datetime_date
+    date: date_type
 ):
     query = db.query(models.section.Section)
     query = query.join(models.section.DaySection)
