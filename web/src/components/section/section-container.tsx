@@ -25,6 +25,8 @@ import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import { useEffect, useState } from 'react';
 import { useInterval } from 'ahooks';
 import { useUserContext } from '@/provider/user-provider';
+import { Separator } from '../ui/separator';
+import SectionOperate from './section-operate';
 
 const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -81,8 +83,12 @@ const SectionContainer = ({ id }: { id: number }) => {
 
 	return (
 		<div className='px-5 pb-5 h-full w-full grid grid-cols-12 gap-5 relative'>
-			<div className='col-span-8 h-full relative min-h-0'>
-				<SectionMarkdown id={id} />
+			<div className='col-span-8 h-full relative min-h-0 flex flex-col'>
+				<div className='flex-1 overflow-auto'>
+					<SectionMarkdown id={id} />
+				</div>
+				<Separator className='mb-5' />
+				<SectionOperate id={id} />
 			</div>
 
 			<div className='col-span-4 py-0 h-full flex flex-col gap-5 min-h-0 relative'>

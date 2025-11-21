@@ -102,38 +102,30 @@ const SectionMarkdown = ({
 
 			{(isError || markdownGetError) && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-sm relative'>
-					{error?.message ?? (
-						<div className='flex flex-col text-center gap-2 w-full'>
-							<p>{markdownGetError}</p>
-							<Separator />
-							<SectionOperate id={id} />
-						</div>
-					)}
+					{error?.message ?? <p>{markdownGetError}</p>}
 				</div>
 			)}
 
 			{markdown && (
-				<div className={cn('h-full w-full relative', className)}>
-					<div className='w-full h-full flex flex-col'>
-						<div className='flex-1 overflow-auto relative'>
-							<div className='prose dark:prose-invert mx-auto pb-5'>
-								<Markdown
-									components={{
-										img: (props) => {
-											return <CustomImage {...props} />;
-										},
-									}}
-									remarkPlugins={[remarkMath, remarkGfm]}
-									rehypePlugins={[rehypeKatex, rehypeRaw]}>
-									{markdown}
-								</Markdown>
-								<p className='text-sm text-center text-muted-foreground bg-muted rounded py-2'>
-									{t('section_ai_tips')}
-								</p>
-							</div>
-						</div>
-						<Separator className='mb-5' />
-						<SectionOperate id={id} />
+				<div
+					className={cn(
+						'h-full w-full relative flex flex-col overflow-auto',
+						className
+					)}>
+					<div className='prose dark:prose-invert mx-auto py-5'>
+						<Markdown
+							components={{
+								img: (props) => {
+									return <CustomImage {...props} />;
+								},
+							}}
+							remarkPlugins={[remarkMath, remarkGfm]}
+							rehypePlugins={[rehypeKatex, rehypeRaw]}>
+							{markdown}
+						</Markdown>
+						<p className='text-sm text-center text-muted-foreground bg-muted rounded py-2'>
+							{t('section_ai_tips')}
+						</p>
 					</div>
 				</div>
 			)}
