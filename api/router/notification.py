@@ -10,7 +10,7 @@ from common.dependencies import get_current_user, get_db
 from fastapi import status, WebSocketException
 from datetime import datetime, timezone
 from common.apscheduler.app import send_notification
-from notifcation.template.daily_summary import DailySummaryNotificationTemplate
+from notification.template.daily_summary import DailySummaryNotificationTemplate
 from enums.notification import NotificationContentType, NotificationTriggerType
 from common.dependencies import decode_jwt_token
 

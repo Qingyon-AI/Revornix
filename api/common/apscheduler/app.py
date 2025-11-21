@@ -8,15 +8,15 @@ from common.logger import info_logger, exception_logger
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from apscheduler.triggers.cron import CronTrigger
-from notifcation.tool.email import EmailNotificationTool
-from notifcation.tool.apple import AppleNotificationTool
-from notifcation.tool.apple_sandbox import AppleSandboxNotificationTool
+from notification.tool.email import EmailNotificationTool
+from notification.tool.apple import AppleNotificationTool
+from notification.tool.apple_sandbox import AppleSandboxNotificationTool
 from datetime import datetime, timezone
 from common.sql import SessionLocal
-from notifcation.template.daily_summary import DailySummaryNotificationTemplate
+from notification.template.daily_summary import DailySummaryNotificationTemplate
 from common.celery.app import start_process_document
 from enums.document import DocumentMdConvertStatus, UserDocumentAuthority, DocumentCategory
-from enums.notification import NotificationContentType, NotificationSourceUUID, NotifyTemplate, NotificationTriggerType
+from enums.notification import NotificationContentType, NotificationSourceUUID, NotificationTemplate, NotificationTriggerType
 from enums.section import SectionDocumentIntegration, UserSectionRole, UserSectionAuthority
 
 scheduler = AsyncIOScheduler()
@@ -232,7 +232,7 @@ async def send_notification(
         )
         if db_notification_content_template is None:
             raise schemas.error.CustomException(message="notification content template not found", code=404)
-        if db_notification_content_template.notification_template_id == NotifyTemplate.DAILY_SUMMARY:
+        if db_notification_content_template.notification_template_id == NotificationTemplate.DAILY_SUMMARY:
             template = DailySummaryNotificationTemplate()
             template.set_user_and_date(
                 user_id=user_id,

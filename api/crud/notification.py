@@ -2,6 +2,7 @@ import models
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from enums.notification import NotificationTriggerType
 
 def create_notification_trigger_event(
     db: Session,
@@ -216,6 +217,34 @@ def get_all_provided_notification_sources(
         models.notification.NotificationSource.delete_at == None
     )
     return query.all()
+
+def get_notification_target_by_notification_target_id(
+    db: Session,
+    notification_target_id: int
+):
+    query = db.query(models.notification.NotificationTarget)
+    query = query.filter(
+        models.notification.NotificationTarget.id == notification_target_id,
+        models.notification.NotificationTarget.delete_at == None
+    )
+    return query.one_or_none()
+
+def get_notification_task_by_user_id_and_notification_trigger_event(
+    db: Session,
+    user_id: int,
+    trigger_event_uuid: str
+):
+    query = db.query(models.notification.NotificationTask)
+    query = query.join(models.notification.NotificationTaskTriggerEvent)
+    query = query.join(models.notification.TriggerEvent)
+    query = query.filter(
+        models.notification.NotificationTask.user_id == user_id,
+        models.notification.NotificationTask.trigger_type == NotificationTriggerType.EVENT,
+        models.notification.NotificationTask.delete_at == None,
+        models.notification.NotificationTaskTriggerEvent.delete_at == None,
+        models.notification.TriggerEvent.uuid == trigger_event_uuid
+    )
+    return query.one_or_none()
 
 def get_notification_source_by_uuid(
     db: Session,
