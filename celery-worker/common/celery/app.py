@@ -25,6 +25,8 @@ from engine.tts.volc.tts import VolcTTSEngine
 from enums.engine import EngineUUID
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus
 from enums.section import UserSectionAuthority, SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus
+from notification.common import trigger_user_notification_event
+from enums.notification import NotificationTriggerEventUUID
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 

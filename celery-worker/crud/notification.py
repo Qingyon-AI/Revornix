@@ -253,7 +253,7 @@ def get_notification_target_by_notification_target_id(
     )
     return query.one_or_none()
 
-def get_notification_task_by_user_id_and_notification_trigger_event(
+def get_notification_tasks_by_user_id_and_notification_trigger_event(
     db: Session,
     user_id: int,
     trigger_event_uuid: str
@@ -270,7 +270,7 @@ def get_notification_task_by_user_id_and_notification_trigger_event(
         models.notification.NotificationTaskTriggerEvent.delete_at == None,
         models.notification.TriggerEvent.uuid == trigger_event_uuid
     )
-    return query.one_or_none()
+    return query.all()
 
 def get_notification_source_by_uuid(
     db: Session,
