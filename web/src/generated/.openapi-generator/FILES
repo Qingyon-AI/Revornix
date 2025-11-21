@@ -228,6 +228,8 @@ docs/SummaryItem.md
 docs/TokenResponse.md
 docs/TokenUpdateRequest.md
 docs/TpApi.md
+docs/TriggerEvent.md
+docs/TriggerEventsResponse.md
 docs/UpdateNotificationSourceRequest.md
 docs/UpdateNotificationTargetRequest.md
 docs/UpdateNotificationTaskRequest.md
@@ -462,6 +464,8 @@ models/SuccessResponse.ts
 models/SummaryItem.ts
 models/TokenResponse.ts
 models/TokenUpdateRequest.ts
+models/TriggerEvent.ts
+models/TriggerEventsResponse.ts
 models/UpdateNotificationSourceRequest.ts
 models/UpdateNotificationTargetRequest.ts
 models/UpdateNotificationTaskRequest.ts

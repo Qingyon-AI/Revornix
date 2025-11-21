@@ -156,7 +156,7 @@ const NotificationTaskManagePage = () => {
 			header: () => {
 				return (
 					<div className='w-full'>
-						{t('setting_notification_task_manage_form_cron_expr')}
+						{t('setting_notification_task_manage_form_trigger_scheduler')}
 					</div>
 				);
 			},

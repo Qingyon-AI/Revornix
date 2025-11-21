@@ -1,6 +1,10 @@
 import notificationApi from '@/api/notification'
-import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, DeleteUserNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, NotificationSource, UserNotificationSourceDetailRequest, AddNotificationTargetRequest, DeleteUserNotificationTargetRequest, UserNotificationTargetDetailRequest, UpdateNotificationTargetRequest, NotificationTarget, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, NotificationTargetsResponse, PaginationNotificationTask, PageableRequest, UserNotificationSourcesResponse, UserNotificationTargetsResponse, UserNotificationSource, UserNotificationTarget } from '@/generated';
+import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, DeleteUserNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, UserNotificationSourceDetailRequest, AddNotificationTargetRequest, DeleteUserNotificationTargetRequest, UserNotificationTargetDetailRequest, UpdateNotificationTargetRequest, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, NotificationTargetsResponse, PaginationNotificationTask, PageableRequest, UserNotificationSourcesResponse, UserNotificationTargetsResponse, UserNotificationSource, UserNotificationTarget, TriggerEventsResponse } from '@/generated';
 import { request } from '@/lib/request';
+
+export const getTriggerEvents = async (): Promise<TriggerEventsResponse> => {
+    return await request(notificationApi.getTriggerEvents)
+}
 
 export const getProvidedNotificationSources = async (): Promise<NotificationSourcesResponse> => {
     return await request(notificationApi.getProvidedNotificationSources)
