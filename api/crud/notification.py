@@ -259,8 +259,10 @@ def get_notification_task_by_user_id_and_notification_trigger_event(
     trigger_event_uuid: str
 ):
     query = db.query(models.notification.NotificationTask)
-    query = query.join(models.notification.NotificationTaskTriggerEvent)
-    query = query.join(models.notification.TriggerEvent)
+    query = query.join(models.notification.NotificationTaskTriggerEvent, 
+                       models.notification.NotificationTask.id == models.notification.NotificationTaskTriggerEvent.notification_task_id)
+    query = query.join(models.notification.TriggerEvent,
+                       models.notification.TriggerEvent.id == models.notification.NotificationTaskTriggerEvent.trigger_event_id)
     query = query.filter(
         models.notification.NotificationTask.user_id == user_id,
         models.notification.NotificationTask.trigger_type == NotificationTriggerType.EVENT,

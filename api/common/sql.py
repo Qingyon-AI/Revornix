@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 import os
 from sqlalchemy import create_engine as create_sqlalchemy_engine
 from sqlalchemy.ext.declarative import declarative_base
