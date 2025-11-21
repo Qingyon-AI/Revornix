@@ -11,8 +11,8 @@ Name | Type
 `enable` | boolean
 `notification_template_id` | number
 `trigger_type` | number
-`notification_trigger_scheduler_cron` | string
-`notification_trigger_event_id` | number
+`trigger_scheduler_cron` | string
+`trigger_event_id` | number
 `title` | string
 `content` | string
 `user_notification_source_id` | number
@@ -30,8 +30,8 @@ const example = {
   "enable": null,
   "notification_template_id": null,
   "trigger_type": null,
-  "notification_trigger_scheduler_cron": null,
-  "notification_trigger_event_id": null,
+  "trigger_scheduler_cron": null,
+  "trigger_event_id": null,
   "title": null,
   "content": null,
   "user_notification_source_id": null,

@@ -6,8 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`id` | number
-`name` | string
+`trigger_event_id` | number
 
 ## Example
 
@@ -16,8 +15,7 @@ import type { NotificationTriggerEvent } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": null,
-  "name": null,
+  "trigger_event_id": null,
 } satisfies NotificationTriggerEvent
 
 console.log(example)

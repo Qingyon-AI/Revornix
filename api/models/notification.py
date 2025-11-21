@@ -28,6 +28,7 @@ class NotificationTaskTriggerScheduler(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     notification_task_id: Mapped[int] = mapped_column(ForeignKey("notification_task.id"), index=True, nullable=False)
     cron_expr: Mapped[str] = mapped_column(String(100), nullable=False)
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
 
 class NotificationTaskTriggerEvent(Base):
@@ -36,6 +37,7 @@ class NotificationTaskTriggerEvent(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     notification_task_id: Mapped[int] = mapped_column(ForeignKey("notification_task.id"), index=True, nullable=False)
     trigger_event_id: Mapped[int] = mapped_column(ForeignKey("trigger_event.id"), index=True, nullable=False)
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
 
 class TriggerEvent(Base):

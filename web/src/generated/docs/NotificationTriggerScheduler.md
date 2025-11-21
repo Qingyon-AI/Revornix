@@ -6,7 +6,6 @@
 
 Name | Type
 ------------ | -------------
-`id` | number
 `cron_expr` | string
 
 ## Example
@@ -16,7 +15,6 @@ import type { NotificationTriggerScheduler } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": null,
   "cron_expr": null,
 } satisfies NotificationTriggerScheduler
 

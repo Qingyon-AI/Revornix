@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`data` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
+`data` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
 
 ## Example
 

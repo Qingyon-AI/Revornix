@@ -16,7 +16,7 @@ from common.sql import SessionLocal
 from notifcation.template.daily_summary import DailySummaryNotificationTemplate
 from common.celery.app import start_process_document
 from enums.document import DocumentMdConvertStatus, UserDocumentAuthority, DocumentCategory
-from enums.notification import NotificationContentType, NotificationSourceUUID, NotifyTemplate
+from enums.notification import NotificationContentType, NotificationSourceUUID, NotifyTemplate, NotificationTriggerType
 from enums.section import SectionDocumentIntegration, UserSectionRole, UserSectionAuthority
 
 scheduler = AsyncIOScheduler()
@@ -315,13 +315,21 @@ db_notification_tasks = crud.notification.get_all_notification_tasks(db=db)
 # TODO 如果用户任务多了之后 这个任务队列会非常的庞大 极其占用内存 考虑使用缓存优化
 
 for db_notification_task in db_notification_tasks:
-    if not db_notification_task.enable or not db_notification_task.trigger_cron_expr: 
+    if not db_notification_task.enable or db_notification_task.trigger_type != NotificationTriggerType.SCHEDULER:
+        continue
+    db_notification_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
+        db=db,
+        notification_task_id=db_notification_task.id
+    )
+    if db_notification_trigger_scheduler is None:
         continue
     scheduler.add_job(
         func=send_notification,
-        trigger=CronTrigger.from_crontab(db_notification_task.trigger_cron_expr),
-        args=[db_notification_task.user_id,
-                db_notification_task.id],
+        trigger=CronTrigger.from_crontab(db_notification_trigger_scheduler.cron_expr),
+        args=[
+            db_notification_task.user_id,
+            db_notification_task.id
+        ],
         id=str(db_notification_task.id),
         next_run_time=datetime.now()
     )
