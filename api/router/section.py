@@ -483,6 +483,10 @@ async def delete_section_user(
         user_id=section_user_delete_request.user_id
     )
     db.commit()
+    trigger_user_notification_event(
+        user_id=section_user_delete_request.user_id,
+        trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value
+    )
     return schemas.common.SuccessResponse()
 
 @section_router.post('/label/create', response_model=schemas.section.CreateLabelResponse)
@@ -1218,13 +1222,16 @@ async def delete_section(
         section_id=section_delete_request.section_id
     )
     db.commit()
-    # TODO 完善通知订阅用户以及参与共建的用户，专栏已删除
-    # db_users = crud.section.get_users_for_section_by_section_id(db=db,
-    #                                                                 section_id=section_delete_request.section_id)
-    # for db_user in db_section_users:
-    #     if db_user.id != user.id:
-    #         # TODO 通知用户
-    #         pass
+    db_users = crud.section.get_users_for_section_by_section_id(
+        db=db,
+        section_id=section_delete_request.section_id
+    )
+    for db_user in db_users:
+        if db_user.id != user.id:
+            trigger_user_notification_event(
+                user_id=db_user.id,
+                trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value,
+            )
     return schemas.common.SuccessResponse()
     
 @section_router.post('/comment/create', response_model=schemas.common.NormalResponse)
@@ -1248,7 +1255,6 @@ async def create_section_comment(
     )
     db.commit()
     trigger_user_notification_event(
-        db=db,
         user_id=db_section.creator_id,
         trigger_event_uuid=NotificationTriggerEventUUID.SECTION_COMMENTED.value,
     )

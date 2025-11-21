@@ -227,7 +227,7 @@ const UpdateNotificationTarget = ({
 								}}
 							/>
 							{notificationTargets?.data.find((item) => {
-								return item.id === form.watch('user_notification_target_id');
+								return item.id === form.watch('notification_target_id');
 							})?.demo_config && (
 								<>
 									<FormField
@@ -261,7 +261,7 @@ const UpdateNotificationTarget = ({
 										{
 											notificationTargets?.data.find((item) => {
 												return (
-													item.id === form.watch('user_notification_target_id')
+													item.id === form.watch('notification_target_id')
 												);
 											})?.demo_config
 										}
