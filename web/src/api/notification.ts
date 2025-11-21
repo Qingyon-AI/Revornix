@@ -25,4 +25,5 @@ export default {
     getNotificationTemplate: API_PREFIX + '/notification/template/all',
     getProvidedNotificationSources: API_PREFIX + '/notification/source/provided',
     getProvidedNotificationTargets: API_PREFIX + '/notification/target/provided',
+    getTriggerEvents: API_PREFIX + '/notification/trigger-event/all',
 } 

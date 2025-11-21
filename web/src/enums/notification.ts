@@ -8,3 +8,8 @@ export enum NotificationContentType {
     CUSTOM = 0,
     TEMPLATE = 1
 }
+
+export enum NotificationTriggerType {
+    EVENT = 0,
+    SCHEDULER = 1
+}

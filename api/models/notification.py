@@ -42,6 +42,7 @@ class TriggerEvent(Base):
     __tablename__ = "trigger_event"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     name_zh: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(500))

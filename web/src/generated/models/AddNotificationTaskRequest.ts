@@ -24,12 +24,6 @@ export interface AddNotificationTaskRequest {
      * @type {number}
      * @memberof AddNotificationTaskRequest
      */
-    notification_content_type: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof AddNotificationTaskRequest
-     */
     user_notification_source_id: number;
     /**
      * 
@@ -39,16 +33,22 @@ export interface AddNotificationTaskRequest {
     user_notification_target_id: number;
     /**
      * 
-     * @type {number}
-     * @memberof AddNotificationTaskRequest
-     */
-    trigger_type: number;
-    /**
-     * 
      * @type {boolean}
      * @memberof AddNotificationTaskRequest
      */
     enable: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof AddNotificationTaskRequest
+     */
+    notification_content_type: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AddNotificationTaskRequest
+     */
+    notification_template_id?: number | null;
     /**
      * 
      * @type {string}
@@ -66,30 +66,30 @@ export interface AddNotificationTaskRequest {
      * @type {number}
      * @memberof AddNotificationTaskRequest
      */
-    notification_template_id?: number | null;
+    trigger_type: number;
     /**
      * 
      * @type {number}
      * @memberof AddNotificationTaskRequest
      */
-    notification_trigger_event_id?: number | null;
+    trigger_event_id?: number | null;
     /**
      * 
      * @type {string}
      * @memberof AddNotificationTaskRequest
      */
-    notification_trigger_scheduler_cron?: string | null;
+    trigger_scheduler_cron?: string | null;
 }
 
 /**
  * Check if a given object implements the AddNotificationTaskRequest interface.
  */
 export function instanceOfAddNotificationTaskRequest(value: object): value is AddNotificationTaskRequest {
-    if (!('notification_content_type' in value) || value['notification_content_type'] === undefined) return false;
     if (!('user_notification_source_id' in value) || value['user_notification_source_id'] === undefined) return false;
     if (!('user_notification_target_id' in value) || value['user_notification_target_id'] === undefined) return false;
-    if (!('trigger_type' in value) || value['trigger_type'] === undefined) return false;
     if (!('enable' in value) || value['enable'] === undefined) return false;
+    if (!('notification_content_type' in value) || value['notification_content_type'] === undefined) return false;
+    if (!('trigger_type' in value) || value['trigger_type'] === undefined) return false;
     return true;
 }
 
@@ -103,16 +103,16 @@ export function AddNotificationTaskRequestFromJSONTyped(json: any, ignoreDiscrim
     }
     return {
         
-        'notification_content_type': json['notification_content_type'],
         'user_notification_source_id': json['user_notification_source_id'],
         'user_notification_target_id': json['user_notification_target_id'],
-        'trigger_type': json['trigger_type'],
         'enable': json['enable'],
+        'notification_content_type': json['notification_content_type'],
+        'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
         'title': json['title'] == null ? undefined : json['title'],
         'content': json['content'] == null ? undefined : json['content'],
-        'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
-        'notification_trigger_event_id': json['notification_trigger_event_id'] == null ? undefined : json['notification_trigger_event_id'],
-        'notification_trigger_scheduler_cron': json['notification_trigger_scheduler_cron'] == null ? undefined : json['notification_trigger_scheduler_cron'],
+        'trigger_type': json['trigger_type'],
+        'trigger_event_id': json['trigger_event_id'] == null ? undefined : json['trigger_event_id'],
+        'trigger_scheduler_cron': json['trigger_scheduler_cron'] == null ? undefined : json['trigger_scheduler_cron'],
     };
 }
 
@@ -127,16 +127,16 @@ export function AddNotificationTaskRequestToJSONTyped(value?: AddNotificationTas
 
     return {
         
-        'notification_content_type': value['notification_content_type'],
         'user_notification_source_id': value['user_notification_source_id'],
         'user_notification_target_id': value['user_notification_target_id'],
-        'trigger_type': value['trigger_type'],
         'enable': value['enable'],
+        'notification_content_type': value['notification_content_type'],
+        'notification_template_id': value['notification_template_id'],
         'title': value['title'],
         'content': value['content'],
-        'notification_template_id': value['notification_template_id'],
-        'notification_trigger_event_id': value['notification_trigger_event_id'],
-        'notification_trigger_scheduler_cron': value['notification_trigger_scheduler_cron'],
+        'trigger_type': value['trigger_type'],
+        'trigger_event_id': value['trigger_event_id'],
+        'trigger_scheduler_cron': value['trigger_scheduler_cron'],
     };
 }
 

@@ -1,6 +1,33 @@
 from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone
 
+class TriggerEvent(BaseModel):
+    id: int
+    uuid: str
+    name: str
+    name_zh: str
+    description: str | None
+    description_zh: str | None
+    create_time: datetime
+    update_time: datetime | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is not None and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+    class Config:
+        from_attributes = True
+
+class TriggerEventsResponse(BaseModel):
+    data: list[TriggerEvent]
+    class Config:
+        from_attributes = True
+
 class Message(BaseModel):
     title: str
     content: str | None = None
@@ -238,16 +265,16 @@ class UpdateNotificationTaskRequest(BaseModel):
     user_notification_target_id: int | None = None
     
 class AddNotificationTaskRequest(BaseModel):
-    notification_content_type: int
     user_notification_source_id: int
     user_notification_target_id: int
-    trigger_type: int
     enable: bool
+    notification_content_type: int
+    notification_template_id: int | None = None
     title: str | None = None
     content: str | None = None
-    notification_template_id: int | None = None
-    notification_trigger_event_id: int | None = None
-    notification_trigger_scheduler_cron: str | None = None
+    trigger_type: int
+    trigger_event_id: int | None = None
+    trigger_scheduler_cron: str | None = None
     
 class NotificationTemplate(BaseModel):
     id: int

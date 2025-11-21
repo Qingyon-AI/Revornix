@@ -204,6 +204,8 @@ export * from './SuccessResponse';
 export * from './SummaryItem';
 export * from './TokenResponse';
 export * from './TokenUpdateRequest';
+export * from './TriggerEvent';
+export * from './TriggerEventsResponse';
 export * from './UpdateNotificationSourceRequest';
 export * from './UpdateNotificationTargetRequest';
 export * from './UpdateNotificationTaskRequest';

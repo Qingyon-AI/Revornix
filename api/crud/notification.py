@@ -196,6 +196,48 @@ def get_all_provided_notification_sources(
     )
     return query.all()
 
+def get_notification_source_by_uuid(
+    db: Session,
+    uuid: str
+):
+    query = db.query(models.notification.NotificationSource)
+    query = query.filter(
+        models.notification.NotificationSource.uuid == uuid,
+        models.notification.NotificationSource.delete_at == None
+    )
+    return query.one_or_none()
+
+def get_notification_target_by_uuid(
+    db: Session,
+    uuid: str
+):
+    query = db.query(models.notification.NotificationTarget)
+    query = query.filter(
+        models.notification.NotificationTarget.uuid == uuid,
+        models.notification.NotificationTarget.delete_at == None
+    )
+    return query.one_or_none()
+
+def get_trigger_event_by_uuid(
+    db: Session,
+    uuid: str
+):
+    query = db.query(models.notification.TriggerEvent)
+    query = query.filter(
+        models.notification.TriggerEvent.uuid == uuid,
+        models.notification.TriggerEvent.delete_at == None
+    )
+    return query.one_or_none()
+
+def get_all_trigger_events(
+    db: Session
+):
+    query = db.query(models.notification.TriggerEvent)
+    query = query.filter(
+        models.notification.TriggerEvent.delete_at == None
+    )
+    return query.all()
+
 def get_all_provided_notification_targets(
     db: Session
 ):

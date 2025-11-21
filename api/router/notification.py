@@ -76,6 +76,22 @@ async def get_notification_templates(
     )
     res = schemas.notification.NotificationTemplatesResponse(data=data)
     return res
+
+@notification_router.post('/trigger-event/all', response_model=schemas.notification.TriggerEventsResponse)
+async def get_trigger_events(
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    data = []
+    db_trigger_events = crud.notification.get_all_trigger_events(
+        db=db
+    )
+    for db_trigger_event in db_trigger_events:
+        data.append(
+            schemas.notification.TriggerEvent.model_validate(db_trigger_event)
+        )
+    res = schemas.notification.TriggerEventsResponse(data=data)
+    return res
         
 @notification_router.post('/task/add', response_model=schemas.common.NormalResponse)
 async def add_notification_task(
@@ -110,15 +126,15 @@ async def add_notification_task(
             notification_template_id=add_notification_task_request.notification_template_id
         )
     if add_notification_task_request.enable:
-        if add_notification_task_request.trigger_type == NotificationTriggerType.SCHEDULER and add_notification_task_request.notification_trigger_scheduler_cron:
+        if add_notification_task_request.trigger_type == NotificationTriggerType.SCHEDULER and add_notification_task_request.trigger_scheduler_cron:
             crud.notification.create_notification_task_trigger_scheduler(
                 db=db,
                 notification_task_id=db_notification_task.id,
-                cron_expr=add_notification_task_request.notification_trigger_scheduler_cron
+                cron_expr=add_notification_task_request.trigger_scheduler_cron
             )
             scheduler.add_job(
                 func=send_notification,
-                trigger=CronTrigger.from_crontab(add_notification_task_request.notification_trigger_scheduler_cron),
+                trigger=CronTrigger.from_crontab(add_notification_task_request.trigger_scheduler_cron),
                 args=[
                     db_notification_task.user_id,
                     db_notification_task.id
@@ -126,11 +142,11 @@ async def add_notification_task(
                 id=str(db_notification_task.id),
                 next_run_time=datetime.now()
             )
-        elif add_notification_task_request.trigger_type == NotificationTriggerType.EVENT and add_notification_task_request.notification_trigger_event_id:
+        elif add_notification_task_request.trigger_type == NotificationTriggerType.EVENT and add_notification_task_request.trigger_event_id:
             crud.notification.create_notification_task_trigger_event(
                 db=db,
                 notification_task_id=db_notification_task.id,
-                trigger_event_id=add_notification_task_request.notification_trigger_event_id
+                trigger_event_id=add_notification_task_request.trigger_event_id
             )
     db.commit()
     return schemas.common.SuccessResponse()

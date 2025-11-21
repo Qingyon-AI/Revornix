@@ -36,6 +36,7 @@ import type {
   PaginationNotificationTask,
   ReadNotificationRecordRequest,
   SearchNotificationRecordRequest,
+  TriggerEventsResponse,
   UpdateNotificationSourceRequest,
   UpdateNotificationTargetRequest,
   UpdateNotificationTaskRequest,
@@ -89,6 +90,8 @@ import {
     ReadNotificationRecordRequestToJSON,
     SearchNotificationRecordRequestFromJSON,
     SearchNotificationRecordRequestToJSON,
+    TriggerEventsResponseFromJSON,
+    TriggerEventsResponseToJSON,
     UpdateNotificationSourceRequestFromJSON,
     UpdateNotificationSourceRequestToJSON,
     UpdateNotificationTargetRequestFromJSON,
@@ -200,6 +203,11 @@ export interface GetProvidedNotificationSourceNotificationSourceProvidedPostRequ
 }
 
 export interface GetProvidedNotificationTargetNotificationTargetProvidedPostRequest {
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GetTriggerEventsNotificationTriggerEventAllPostRequest {
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -982,6 +990,43 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async getProvidedNotificationTargetNotificationTargetProvidedPost(requestParameters: GetProvidedNotificationTargetNotificationTargetProvidedPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTargetsResponse> {
         const response = await this.getProvidedNotificationTargetNotificationTargetProvidedPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Trigger Events
+     */
+    async getTriggerEventsNotificationTriggerEventAllPostRaw(requestParameters: GetTriggerEventsNotificationTriggerEventAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TriggerEventsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/notification/trigger-event/all`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TriggerEventsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Trigger Events
+     */
+    async getTriggerEventsNotificationTriggerEventAllPost(requestParameters: GetTriggerEventsNotificationTriggerEventAllPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TriggerEventsResponse> {
+        const response = await this.getTriggerEventsNotificationTriggerEventAllPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

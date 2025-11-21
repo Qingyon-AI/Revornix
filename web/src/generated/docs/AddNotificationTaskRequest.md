@@ -6,16 +6,16 @@
 
 Name | Type
 ------------ | -------------
-`notification_content_type` | number
 `user_notification_source_id` | number
 `user_notification_target_id` | number
-`trigger_type` | number
 `enable` | boolean
+`notification_content_type` | number
+`notification_template_id` | number
 `title` | string
 `content` | string
-`notification_template_id` | number
-`notification_trigger_event_id` | number
-`notification_trigger_scheduler_cron` | string
+`trigger_type` | number
+`trigger_event_id` | number
+`trigger_scheduler_cron` | string
 
 ## Example
 
@@ -24,16 +24,16 @@ import type { AddNotificationTaskRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "notification_content_type": null,
   "user_notification_source_id": null,
   "user_notification_target_id": null,
-  "trigger_type": null,
   "enable": null,
+  "notification_content_type": null,
+  "notification_template_id": null,
   "title": null,
   "content": null,
-  "notification_template_id": null,
-  "notification_trigger_event_id": null,
-  "notification_trigger_scheduler_cron": null,
+  "trigger_type": null,
+  "trigger_event_id": null,
+  "trigger_scheduler_cron": null,
 } satisfies AddNotificationTaskRequest
 
 console.log(example)

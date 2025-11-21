@@ -24,6 +24,7 @@ import {
 	getMineNotificationTargets,
 	getNotificationTaskDetail,
 	getNotificationTemplate,
+	getTriggerEvents,
 	updateNotificationTask,
 } from '@/service/notification';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -50,6 +51,7 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Label } from '../ui/label';
+import { NotificationTriggerType } from '@/enums/notification';
 
 const UpdateNotificationTask = ({
 	notification_task_id,
@@ -78,10 +80,16 @@ const UpdateNotificationTask = ({
 					required_error: 'Please select the template',
 				})
 				.optional(),
-			trigger_cron_expr: z.string(),
+			trigger_type: z.number(),
+			trigger_scheduler_cron: z.string().optional(),
+			trigger_event_id: z.number().optional(),
 			enable: z.boolean(),
-			notification_source_id: z.number(),
-			notification_target_id: z.number(),
+			notification_source_id: z.coerce.number({
+				required_error: 'Please select the source',
+			}),
+			notification_target_id: z.coerce.number({
+				required_error: 'Please select the target',
+			}),
 		})
 		.superRefine((data, ctx) => {
 			// If content type is 0 => title required
@@ -107,6 +115,11 @@ const UpdateNotificationTask = ({
 			}
 		});
 
+	const { data: triggerEvents } = useQuery({
+		queryKey: ['notification-trigger-event'],
+		queryFn: getTriggerEvents,
+	});
+
 	const { data: notificationTemplates } = useQuery({
 		queryKey: ['notification-template'],
 		queryFn: getNotificationTemplate,
@@ -127,8 +140,10 @@ const UpdateNotificationTask = ({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			notification_task_id: notification_task_id,
-			trigger_cron_expr: '',
+			title: '',
+			content: '',
 			enable: true,
+			notification_content_type: 0,
 		},
 	});
 
@@ -177,10 +192,12 @@ const UpdateNotificationTask = ({
 		if (data) {
 			const defaultValues: z.infer<typeof formSchema> = {
 				notification_task_id: notification_task_id,
-				trigger_cron_expr: data.trigger_cron_expr,
+				trigger_type: data.trigger_type,
+				trigger_scheduler_cron: data.trigger_scheduler?.cron_expr,
+				trigger_event_id: data.trigger_event?.id,
 				enable: data.enable,
-				notification_source_id: data.notification_source_id,
-				notification_target_id: data.notification_target_id,
+				notification_source_id: data.user_notification_source!.id,
+				notification_target_id: data.user_notification_target!.id,
 				notification_content_type: data.notification_content_type,
 				title: data.title ?? undefined,
 				content: data.content ?? undefined,
@@ -217,7 +234,223 @@ const UpdateNotificationTask = ({
 						<form
 							onSubmit={onSubmitForm}
 							className='space-y-3 flex-1 overflow-auto px-1'
-							id='update-notification-task-form'>
+							id='add-form'>
+							<FormField
+								name='notification_source_id'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>
+												{t('setting_notification_task_manage_form_source')}
+											</FormLabel>
+											<Select
+												value={field.value ? String(field.value) : undefined}
+												onValueChange={(e) => {
+													field.onChange(Number(e));
+												}}>
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'setting_notification_task_manage_form_source_placeholder'
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														{mineNotificationSources?.data.map(
+															(item, index) => {
+																return (
+																	<SelectItem
+																		value={item.id.toString()}
+																		key={index}>
+																		{item.title}
+																	</SelectItem>
+																);
+															}
+														)}
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
+							<FormField
+								name='notification_target_id'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>
+												{t('setting_notification_task_manage_form_target')}
+											</FormLabel>
+											<Select
+												value={field.value ? String(field.value) : undefined}
+												onValueChange={(e) => {
+													field.onChange(Number(e));
+												}}>
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'setting_notification_task_manage_form_target_placeholder'
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														{mineNotificationTargets?.data.map(
+															(item, index) => {
+																return (
+																	<SelectItem
+																		value={item.id.toString()}
+																		key={index}>
+																		{item.title}
+																	</SelectItem>
+																);
+															}
+														)}
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
+							<FormField
+								name='trigger_type'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>
+												{t(
+													'setting_notification_task_manage_form_trigger_type'
+												)}
+											</FormLabel>
+											<Select
+												onValueChange={(value) => field.onChange(Number(value))}
+												defaultValue={
+													field.value ? String(field.value) : undefined
+												}>
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'setting_notification_task_manage_form_trigger_type_placeholder'
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent className='w-full'>
+													<SelectGroup>
+														<SelectItem value={'0'}>
+															{t(
+																'setting_notification_task_manage_form_trigger_type_event'
+															)}
+														</SelectItem>
+														<SelectItem value={'1'}>
+															{t(
+																'setting_notification_task_manage_form_trigger_type_scheduler'
+															)}
+														</SelectItem>
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
+
+							{form.watch('trigger_type') === NotificationTriggerType.EVENT && (
+								<FormField
+									name='trigger_event_id'
+									control={form.control}
+									render={({ field }) => {
+										return (
+											<FormItem>
+												<FormLabel>
+													{t(
+														'setting_notification_task_manage_form_trigger_event_id'
+													)}
+												</FormLabel>
+												<Select
+													onValueChange={(value) =>
+														field.onChange(Number(value))
+													}
+													defaultValue={
+														field.value ? String(field.value) : undefined
+													}>
+													<SelectTrigger className='w-full'>
+														<SelectValue
+															placeholder={t(
+																'setting_notification_task_manage_form_trigger_event_id_placeholder'
+															)}
+														/>
+													</SelectTrigger>
+													<SelectContent className='w-full'>
+														<SelectGroup>
+															{triggerEvents?.data.map((item, index) => {
+																return (
+																	<SelectItem
+																		key={index}
+																		value={item.id.toString()}>
+																		{item.name}
+																	</SelectItem>
+																);
+															})}
+														</SelectGroup>
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										);
+									}}
+								/>
+							)}
+
+							{form.watch('trigger_type') ===
+								NotificationTriggerType.SCHEDULER && (
+								<FormField
+									name='trigger_scheduler_cron'
+									control={form.control}
+									render={({ field }) => {
+										return (
+											<FormItem>
+												<FormLabel>
+													{t(
+														'setting_notification_task_manage_form_trigger_scheduler'
+													)}
+													<Tooltip>
+														<TooltipTrigger>
+															<Info size={15} />
+														</TooltipTrigger>
+														<TooltipContent>
+															{t(
+																'setting_notification_task_manage_form_trigger_scheduler_alert'
+															)}
+															<Link
+																className='ml-1 underline underline-offset-2'
+																href={'https://en.wikipedia.org/wiki/Cron'}>
+																Cron wiki
+															</Link>
+														</TooltipContent>
+													</Tooltip>
+												</FormLabel>
+												<Input
+													className='font-mono'
+													placeholder={t(
+														'setting_notification_task_manage_form_trigger_scheduler_placeholder'
+													)}
+													{...field}
+												/>
+												<FormMessage />
+											</FormItem>
+										);
+									}}
+								/>
+							)}
 							<Tabs
 								value={form.watch('notification_content_type')?.toString()}
 								onValueChange={(value) => {
@@ -330,126 +563,6 @@ const UpdateNotificationTask = ({
 									/>
 								</TabsContent>
 							</Tabs>
-							<FormField
-								name='trigger_cron_expr'
-								control={form.control}
-								render={({ field }) => {
-									return (
-										<FormItem>
-											<FormLabel>
-												{t('setting_notification_task_manage_form_cron_expr')}
-												<Tooltip>
-													<TooltipTrigger>
-														<Info size={15} />
-													</TooltipTrigger>
-													<TooltipContent>
-														{t(
-															'setting_notification_task_manage_form_cron_expr_alert'
-														)}
-														<Link
-															className='ml-1 underline underline-offset-2'
-															href={'https://en.wikipedia.org/wiki/Cron'}>
-															Cron wiki
-														</Link>
-													</TooltipContent>
-												</Tooltip>
-											</FormLabel>
-											<Input
-												className='font-mono'
-												placeholder={t(
-													'setting_notification_task_manage_form_cron_expr_placeholder'
-												)}
-												{...field}
-											/>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-							<FormField
-								name='notification_source_id'
-								control={form.control}
-								render={({ field }) => {
-									return (
-										<FormItem>
-											<FormLabel>
-												{t('setting_notification_task_manage_form_source')}
-											</FormLabel>
-											<Select
-												value={field.value ? String(field.value) : undefined}
-												onValueChange={(e) => {
-													field.onChange(Number(e));
-												}}>
-												<SelectTrigger className='w-full'>
-													<SelectValue
-														placeholder={t(
-															'setting_notification_task_manage_form_source_placeholder'
-														)}
-													/>
-												</SelectTrigger>
-												<SelectContent>
-													<SelectGroup>
-														{mineNotificationSources?.data.map(
-															(item, index) => {
-																return (
-																	<SelectItem
-																		value={item.id.toString()}
-																		key={index}>
-																		{item.title}
-																	</SelectItem>
-																);
-															}
-														)}
-													</SelectGroup>
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-							<FormField
-								name='notification_target_id'
-								control={form.control}
-								render={({ field }) => {
-									return (
-										<FormItem>
-											<FormLabel>
-												{t('setting_notification_task_manage_form_target')}
-											</FormLabel>
-											<Select
-												value={field.value ? String(field.value) : undefined}
-												onValueChange={(e) => {
-													field.onChange(e);
-												}}>
-												<SelectTrigger className='w-full'>
-													<SelectValue
-														placeholder={t(
-															'setting_notification_task_manage_form_target_placeholder'
-														)}
-													/>
-												</SelectTrigger>
-												<SelectContent>
-													<SelectGroup>
-														{mineNotificationTargets?.data.map(
-															(item, index) => {
-																return (
-																	<SelectItem
-																		value={item.id.toString()}
-																		key={index}>
-																		{item.title}
-																	</SelectItem>
-																);
-															}
-														)}
-													</SelectGroup>
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
 							<FormField
 								name='enable'
 								control={form.control}
