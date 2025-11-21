@@ -11,6 +11,8 @@ from common.common import get_user_remote_file_system
 from enums.section import UserSectionAuthority, UserSectionRole, SectionPodcastStatus, SectionProcessStatus
 from common.celery.app import start_process_section_podcast, update_section_process_status
 from celery import chain
+from notification.common import trigger_user_notification_event
+from enums.notification import NotificationTriggerEventUUID
 
 section_router = APIRouter()
 
@@ -1238,6 +1240,11 @@ async def create_section_comment(
         content=section_comment_create_request.content
     )
     db.commit()
+    trigger_user_notification_event(
+        db=db,
+        user_id=user.id,
+        trigger_event_uuid=NotificationTriggerEventUUID.SECTION_COMMENTED.value,
+    )
     return schemas.common.SuccessResponse()
 
 @section_router.post('/comment/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionCommentInfo])

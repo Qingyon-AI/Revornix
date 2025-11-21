@@ -1,5 +1,10 @@
 from enum import IntEnum, Enum
 
+class NotificationTriggerEventUUID(Enum):
+    REMOVED_FROM_SECTION = 'bf860113d5ee4486a23a6692888d27f3'
+    SECTION_COMMENTED = '2840a3b104124bd59afbae2a57c93dbf'
+    SECTION_UPDATED = '97072bb797d148d2a1607f10cb1ebf83'
+
 class NotificationTriggerType(IntEnum):
     EVENT = 0
     SCHEDULER = 1
@@ -13,5 +18,5 @@ class NotificationContentType(IntEnum):
     CUSTOM = 0
     TEMPLATE = 1
 
-class NotifyTemplate(IntEnum):
+class NotificationTemplate(IntEnum):
     DAILY_SUMMARY = 1
