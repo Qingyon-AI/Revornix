@@ -48,4 +48,4 @@ class SectinoUpdatedNotificationTemplate(NotificationTemplate):
                 link=f'/section/detail/{section_id}'
             )
         else:
-            raise Exception("user not in section")
+            raise Exception("invalid user section role")

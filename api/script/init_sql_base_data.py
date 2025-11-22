@@ -38,6 +38,7 @@ from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.section_updated import SectinoUpdatedNotificationTemplate
 from notification.template.section_commented import SectinoCommentedNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
+from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 
 alembic_cfg_path = BASE_DIR / 'alembic.ini'
 
@@ -64,11 +65,13 @@ if __name__ == '__main__':
         section_updated_notification_template = SectinoUpdatedNotificationTemplate()
         daily_summary_notification_template = DailySummaryNotificationTemplate()
         section_subscribed_notification_template = SectionSubscribedNotificationTemplate()
+        removed_from_section_notification_template = RemovedFromSectionNotificationTemplate()
         notification_templates: list[NotificationTemplate] = [
             section_commented_notification_template,
             section_updated_notification_template,
             daily_summary_notification_template,
-            section_subscribed_notification_template
+            section_subscribed_notification_template,
+            removed_from_section_notification_template
         ]
         for notification_template in notification_templates:
             if crud.notification.get_notification_template_by_uuid(

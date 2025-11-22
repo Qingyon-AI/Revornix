@@ -41,11 +41,5 @@ class SectinoCommentedNotificationTemplate(NotificationTemplate):
                 content="有人评价了你参与的专栏，快去查看吧",
                 link=f'/section/detail/{section_id}'
             )
-        elif db_user_section.role == UserSectionRole.SUBSCRIBER:
-            return schemas.notification.Message(
-                title=f"Section Commented",
-                content="有人评价了你参与的专栏，快去查看吧",
-                link=f'/section/detail/{section_id}'
-            )
         else:
-            return None
+            raise Exception("user is not a member of the section")
