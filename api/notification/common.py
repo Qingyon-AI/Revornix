@@ -34,6 +34,7 @@ async def trigger_user_notification_event(
                 title = 'Unknown Message'
                 content = None
                 cover = None
+                link = None
                 if db_notification_task.notification_content_type == NotificationContentType.CUSTOM:
                     db_notification_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(
                         db=db,
@@ -73,6 +74,7 @@ async def trigger_user_notification_event(
                         raise Exception("Message not found")
                     title = message.title
                     content = message.content
+                    link = message.link
                 user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
                     db=db,
                     user_notification_source_id=db_notification_task.user_notification_source_id
@@ -111,6 +113,8 @@ async def trigger_user_notification_event(
                     notification_tool.send_notification(
                         title=title,
                         content=content,
+                        cover=cover,
+                        link=link
                     )
                 elif notification_source.uuid == NotificationSourceUUID.APPLE.value:
                     notification_tool = AppleNotificationTool()
@@ -120,6 +124,7 @@ async def trigger_user_notification_event(
                         title=title,
                         content=content,
                         cover=cover,
+                        link=link
                     )
                 elif notification_source.uuid == NotificationSourceUUID.APPLE_SANDBOX.value:
                     notification_tool = AppleSandboxNotificationTool()
@@ -129,6 +134,7 @@ async def trigger_user_notification_event(
                         title=title,
                         content=content,
                         cover=cover,
+                        link=link
                     )
                 else:
                     raise Exception("Notification source not supported")

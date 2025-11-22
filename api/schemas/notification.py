@@ -66,6 +66,7 @@ class Message(BaseModel):
     title: str
     content: str | None = None
     link: str | None = None
+    cover: str | None = None
 
 class NotificationSource(BaseModel):
     id: int

@@ -52,6 +52,7 @@ class NotificationToolProtocol(Protocol):
         self, 
         title: str,
         content: str | None = None,
-        cover: str | None = None
+        cover: str | None = None,
+        link: str | None = None
     ):
         raise NotImplementedError("Method not implemented")
