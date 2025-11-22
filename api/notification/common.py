@@ -9,6 +9,7 @@ from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
 from notification.template.section_updated import SectionUpdatedNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
+from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 from enums.notification import NotificationTemplateUUID
 
 async def trigger_user_notification_event(
@@ -65,6 +66,8 @@ async def trigger_user_notification_event(
                         notification_template = SectionUpdatedNotificationTemplate()
                     elif db_notification_template.uuid == NotificationTemplateUUID.SECTION_SUBSCRIBED.value:
                         notification_template = SectionSubscribedNotificationTemplate()
+                    elif db_notification_template.uuid == NotificationTemplateUUID.REMOVED_FROM_SECTION.value:
+                        notification_template = RemovedFromSectionNotificationTemplate()
                     else:
                         raise Exception("Unsupported notification template")
                     message = await notification_template.generate(
