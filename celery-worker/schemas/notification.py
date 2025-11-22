@@ -64,6 +64,7 @@ class TriggerEventsResponse(BaseModel):
 
 class Message(BaseModel):
     title: str
+    cover: str | None = None
     content: str | None = None
     link: str | None = None
 

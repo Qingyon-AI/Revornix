@@ -13,6 +13,7 @@ class EmailNotificationTool(NotificationToolProtocol):
         title: str,
         content: str | None = None,
         cover: str | None = None,
+        link: str | None = None
     ):
         if self.source is None or self.target is None:
             raise Exception("The source or target of the notification is not set")

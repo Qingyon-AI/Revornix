@@ -44,7 +44,8 @@ class RemovedFromSectionNotificationTemplate(NotificationTemplate):
         elif db_user_section.role == UserSectionRole.SUBSCRIBER:
             return schemas.notification.Message(
                 title=f"You are removed from Section",
-                content="您已经被移出了专栏，后续将无法收到该专栏的更新通知，如有异议，请联系专栏所有者"
+                content="您已经被移出了专栏，后续将无法收到该专栏的更新通知，如有异议，请联系专栏所有者",
+                link=f'/section/detail/{section_id}'
             )
         else:
             raise Exception("invalid user section role")
