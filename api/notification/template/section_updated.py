@@ -13,18 +13,10 @@ class SectinoUpdatedNotificationTemplate(NotificationTemplate):
         super().__init__(
             uuid='4b655b12996540e1b6ee23d16a093bf6',
             name="Section Updated Template",
-            description="This is a section updated template",
             name_zh="专栏更新通知模版",
+            description="This is a section updated template",
             description_zh="这是一个专栏更新通知模板"
         )
-    
-    def set_section_and_user(
-        self,
-        section_id: int,
-        user_id: int
-    ):
-        self.section_id = section_id
-        self.user_id = user_id
         
     async def generate(
         self,

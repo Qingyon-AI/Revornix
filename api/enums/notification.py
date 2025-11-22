@@ -4,6 +4,7 @@ class NotificationTriggerEventUUID(Enum):
     REMOVED_FROM_SECTION = 'bf860113d5ee4486a23a6692888d27f3'
     SECTION_COMMENTED = '2840a3b104124bd59afbae2a57c93dbf'
     SECTION_UPDATED = '97072bb797d148d2a1607f10cb1ebf83'
+    SECTION_SUBSCRIBED = '8c79f93f9dbd4b20bddb3c3a1bd57377'
 
 class NotificationTriggerType(IntEnum):
     EVENT = 0
@@ -22,3 +23,4 @@ class NotificationTemplateUUID(Enum):
     DAILY_SUMMARY = '8f5016dc375e447f82729df765b12847'
     SECTION_COMMENTED = '1ba024dfd7c249d8a09bb873dca708e6'
     SECTION_UPDATED = '4b655b12996540e1b6ee23d16a093bf6'
+    SECTION_SUBSCRIBED = 'dd4726e202d543cd9eca59e2311d0f11'

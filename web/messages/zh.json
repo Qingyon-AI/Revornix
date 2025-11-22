@@ -176,6 +176,7 @@
     "setting_notification_task_manage_form_content_type_custom": "自定义内容",
     "setting_notification_task_manage_form_content_type_template": "模版内容",
     "setting_notification_task_manage_form_template": "通知模板",
+    "setting_notification_task_manage_form_template_placeholder": "请选择通知模板",
     "setting_notification_task_manage_form_content": "通知内容",
     "setting_notification_task_manage_form_content_placeholder": "请输入通知内容",
     "setting_notification_task_manage_form_source": "通知源",

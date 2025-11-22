@@ -176,6 +176,7 @@
     "setting_notification_task_manage_form_content_type_custom": "Custom Content",
     "setting_notification_task_manage_form_content_type_template": "Template Content",
     "setting_notification_task_manage_form_template": "Notification Content Template",
+    "setting_notification_task_manage_form_template_placeholder": "Please select the notification content template",
     "setting_notification_task_manage_form_content": "Notification Content",
     "setting_notification_task_manage_form_content_placeholder": "Please enter the notification content",
     "setting_notification_task_manage_form_source": "Notification Source",
