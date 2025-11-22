@@ -37,15 +37,9 @@ class SectionSubscribedNotificationTemplate(NotificationTemplate):
         db.close()
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
-                title=f"Section Commented",
+                title=f"Section Subscribed",
                 content="有人订阅了你参与的专栏，点击前往查看",
                 link=f'/section/detail/{section_id}'
             )
-        elif db_user_section.role == UserSectionRole.SUBSCRIBER:
-            return schemas.notification.Message(
-                title=f"Section Commented",
-                content="有人评价了你参与的专栏，点击前往查看",
-                link=f'/section/detail/{section_id}'
-            )
         else:
-            return None
+            raise Exception("user is not a member of the section")

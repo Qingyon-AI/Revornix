@@ -5,19 +5,19 @@ from common.sql import SessionLocal
 from enums.section import UserSectionRole
 from protocol.notification_template import NotificationTemplate
 
-class SectionSubscribedNotificationTemplate(NotificationTemplate):
+class RemovedFromSectionNotificationTemplate(NotificationTemplate):
     
     def __init__(
         self
     ):
         super().__init__(
-            uuid='dd4726e202d543cd9eca59e2311d0f11',
-            name="Section Subscribed Template",
-            name_zh="专栏被订阅通知模版",
-            description="This is a section subscribed template",
-            description_zh="这是一个专栏被订阅的通知模板"
+            uuid='25a2b86e0ed24ef1964ea94d906ebbd7',
+            name="Removed From Section Template",
+            name_zh="被移出专栏通知模版",
+            description="This is a user removed by the section participants notification template",
+            description_zh="这是一个你被移出专栏的通知模板"
         )
-    
+        
     async def generate(
         self,
         params: dict | None
@@ -37,9 +37,14 @@ class SectionSubscribedNotificationTemplate(NotificationTemplate):
         db.close()
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
-                title=f"Section Subscribed",
-                content="有人订阅了你参与的专栏，点击前往查看",
+                title=f"You are removed from Section",
+                content="您已经被移出了专栏，后续将无法参与该专栏的协作和收到更新通知，如有异议，请联系专栏所有者",
                 link=f'/section/detail/{section_id}'
             )
+        elif db_user_section.role == UserSectionRole.SUBSCRIBER:
+            return schemas.notification.Message(
+                title=f"You are removed from Section",
+                content="您已经被移出了专栏，后续将无法收到该专栏的更新通知，如有异议，请联系专栏所有者"
+            )
         else:
-            raise Exception("user is not a member of the section")
+            raise Exception("invalid user section role")
