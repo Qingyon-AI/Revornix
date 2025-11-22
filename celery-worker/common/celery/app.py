@@ -28,7 +28,7 @@ from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEm
 from enums.section import UserSectionAuthority, SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus, UserSectionRole
 from enums.notification import NotificationTriggerEventUUID
 
-celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
+celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
 async def get_markdown_content_by_section_id(
     section_id: int, 
