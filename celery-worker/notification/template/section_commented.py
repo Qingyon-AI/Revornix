@@ -27,6 +27,12 @@ class SectionCommentedNotificationTemplate(NotificationTemplate):
         user_id = cast(int, params.get('user_id'))
         section_id = cast(int, params.get('section_id'))
         db = SessionLocal()
+        db_section = crud.section.get_section_by_section_id(
+            db=db, 
+            section_id=section_id
+        )
+        if not db_section:
+            raise Exception("section not found")
         db_user_section = crud.section.get_section_user_by_section_id_and_user_id(
             db=db,
             user_id=user_id,
@@ -38,13 +44,13 @@ class SectionCommentedNotificationTemplate(NotificationTemplate):
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
                 title=f"Section Commented",
-                content="有人评价了你参与的专栏，快去查看吧",
+                content=f"有人评价了你参与的专栏{db_section.title}，快去查看吧",
                 link=f'/section/detail/{section_id}'
             )
         elif db_user_section.role == UserSectionRole.CREATOR:
             return schemas.notification.Message(
                 title=f"Section Commented",
-                content="有人评价了你创建的专栏，快去查看吧",
+                content=f"有人评价了你创建的专栏{db_section.title}，快去查看吧",
                 link=f'/section/detail/{section_id}'
             )
         else:

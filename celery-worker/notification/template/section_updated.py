@@ -27,6 +27,12 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
         user_id = cast(int, params.get('user_id'))
         section_id = cast(int, params.get('section_id'))
         db = SessionLocal()
+        db_section = crud.section.get_section_by_section_id(
+            db=db, 
+            section_id=section_id
+        )
+        if not db_section:
+            raise Exception("section not found")
         db_user_section = crud.section.get_section_user_by_section_id_and_user_id(
             db=db,
             user_id=user_id,
@@ -38,13 +44,13 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
                 title=f"Section Updated",
-                content="你参与的专栏有了新的更新，点击前往查看",
+                content=f"你参与的专栏{db_section.title}有了新的更新，点击前往查看",
                 link=f'/section/detail/{section_id}'
             )
         elif db_user_section.role == UserSectionRole.SUBSCRIBER:
             return schemas.notification.Message(
                 title=f"Section Updated",
-                content="你订阅的专栏已经发生更新，点击前往查看",
+                content=f"你订阅的专栏{db_section.title}有了新的更新，点击前往查看",
                 link=f'/section/detail/{section_id}'
             )
         else:
