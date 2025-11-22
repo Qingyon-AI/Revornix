@@ -132,6 +132,7 @@ class AppleNotificationTool(NotificationToolProtocol):
         title: str,
         content: str | None = None,
         cover: str | None = None,
+        link: str | None = None
     ):
         if self.source is None or self.target is None:
             raise Exception("The source or target of the notification is not set")
@@ -158,8 +159,11 @@ class AppleNotificationTool(NotificationToolProtocol):
                 },
                 "mutable-content": 1,
             },
+            "link": link,
             "content-available": 1
         }
+        if cover is not None:
+            data.update({'sender_avatar': cover})
         with httpx.Client(http2=True) as client:
             try:
                 res = client.post(url=url, headers=headers, json=data)
