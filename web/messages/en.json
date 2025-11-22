@@ -778,6 +778,7 @@
     "account_delete_cancel": "Cancel",
     "account_delete_alert": "Are you sure you want to delete your account?",
     "account_delete_alert_description": "Once deleted, all your account information will be permanently erased. This action cannot be undone!",
+    "notification_record_go_to_link": "Click to View",
     "follows_empty": "You haven't followed anyone yet. Start publishing sections to gain popularity!",
     "fans_empty": "You don't have any fans yet. Start publishing sections to attract attention!",
     "user_slogan_empty": "This user has no signature yet",

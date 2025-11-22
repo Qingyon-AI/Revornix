@@ -779,6 +779,7 @@
     "account_delete_cancel": "取消",
     "account_delete_alert": "确认注销账户吗？",
     "account_delete_alert_description": "一旦注销，你账户的所有相关信息将会删除，此操作不可撤销！",
+    "notification_record_go_to_link": "点击前往详情页",
     "follows_empty": "你还没有粉丝哦，快去发布一些专栏增加人气吧",
     "fans_empty": "你还没有粉丝哦，快去发布一些专栏增加人气吧",
     "user_slogan_empty": "该用户暂无签名",

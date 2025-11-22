@@ -11,10 +11,10 @@ import {
 } from '@/components/ui/dialog';
 import { useMutation } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { CardDescription } from '../ui/card';
 import { useTranslations } from 'next-intl';
 import { NotificationRecord } from '@/generated';
 import { Separator } from '../ui/separator';
+import Link from 'next/link';
 
 const NotificationRecordCard = ({
 	notification,
@@ -56,7 +56,24 @@ const NotificationRecordCard = ({
 					<DialogHeader>
 						<DialogTitle>{notification.title}</DialogTitle>
 					</DialogHeader>
+					{notification.cover && (
+						<img
+							src={notification.cover}
+							alt='notification cover'
+							className='rounded aspect-video w-40 object-cover'
+						/>
+					)}
 					<div className='flex-1 overflow-auto'>{notification.content}</div>
+					{notification.link && (
+						<Link href={notification.link}>
+							<Button
+								size='sm'
+								variant={'link'}
+								className='p-0 m-0 w-fit h-fit underline'>
+								{t('notification_record_go_to_link')}
+							</Button>
+						</Link>
+					)}
 					<Separator />
 					<DialogFooter className='flex !justify-between items-center'>
 						<div className='text-muted-foreground text-xs'>
@@ -92,20 +109,47 @@ const NotificationRecordCard = ({
 				className='flex flex-row items-center justify-between rounded px-3 py-2 bg-muted cursor-pointer'
 				onClick={() => setShowNotification(true)}>
 				<div className='flex flex-col gap-2 w-full'>
-					<p className='font-bold'>{notification.title}</p>
-					<p className='text-sm font-semibold line-clamp-3'>
-						{notification.content}
-					</p>
-					<div className='text-muted-foreground text-xs'>
-						{format(notification.create_time as Date, 'yyyy-MM-dd HH:mm:ss')}
+					<div className='flex flex-row justify-between items-start'>
+						<div className='flex flex-col gap-2 w-full flex-1'>
+							<p className='font-bold'>{notification.title}</p>
+							<p className='text-sm font-semibold line-clamp-3'>
+								{notification.content}
+							</p>
+							{notification.link && (
+								<Link href={notification.link}>
+									<Button
+										size='sm'
+										variant={'link'}
+										className='p-0 m-0 w-fit h-fit underline'>
+										{t('notification_record_go_to_link')}
+									</Button>
+								</Link>
+							)}
+						</div>
+						{notification.cover && (
+							<img
+								src={notification.cover}
+								alt='notification cover'
+								className='rounded aspect-video w-40 object-cover my-1'
+							/>
+						)}
 					</div>
-				</div>
-				<div className='text-xs w-12 text-center'>
-					{notification.read_at ? (
-						<p className='text-muted-foreground'>{t('notification_read')}</p>
-					) : (
-						<p className='text-red-500 font-bold'>{t('notification_unread')}</p>
-					)}
+
+					<Separator className='my-1' />
+					<div className='flex justify-between items-center'>
+						<div className='text-muted-foreground text-xs'>
+							{format(notification.create_time as Date, 'yyyy-MM-dd HH:mm:ss')}
+						</div>
+						{notification.read_at ? (
+							<p className='text-muted-foreground text-xs'>
+								{t('notification_read')}
+							</p>
+						) : (
+							<p className='text-red-500 font-bold text-xs'>
+								{t('notification_unread')}
+							</p>
+						)}
+					</div>
 				</div>
 			</div>
 		</>
