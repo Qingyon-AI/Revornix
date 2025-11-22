@@ -1194,7 +1194,7 @@ async def subscribe_section(
             db_users = crud.section.get_users_for_section_by_section_id(
                 db=db,
                 section_id=section_subscribe_request.section_id,
-                filter_roles=[UserSectionRole.MEMBER]
+                filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR]
             )
             for db_user in db_users:
                 start_trigger_user_notification_event.delay(
