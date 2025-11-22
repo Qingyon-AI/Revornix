@@ -94,6 +94,7 @@ class NotificationRecord(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     cover: Mapped[Optional[str]] = mapped_column(String(2000))
+    link: Mapped[Optional[str]] = mapped_column(String(2000))
     title: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
     content: Mapped[Optional[str]] = mapped_column(Text())
     read_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))

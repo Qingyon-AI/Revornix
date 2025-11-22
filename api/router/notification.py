@@ -707,14 +707,8 @@ async def search_notification_record(
         keyword=search_notification_record_request.keyword
     )
     notification_records = [
-        schemas.notification.NotificationRecord(
-            id=db_notification_record.id,
-            title=db_notification_record.title,
-            content=db_notification_record.content,
-            read_at=db_notification_record.read_at,
-            create_time=db_notification_record.create_time,
-            update_time=db_notification_record.update_time
-        ) for db_notification_record in db_notification_records
+        schemas.notification.NotificationRecord.model_validate(db_notification_record)
+        for db_notification_record in db_notification_records
     ]
     res = schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationRecord](
         start=search_notification_record_request.start, 

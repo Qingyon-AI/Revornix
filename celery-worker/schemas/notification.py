@@ -223,6 +223,8 @@ class NotificationRecord(BaseModel):
     title: str
     content: str | None
     read_at: datetime | None
+    link: str | None
+    cover: str | None
     create_time: datetime
     update_time: datetime | None
     @field_serializer("read_at")
