@@ -107,7 +107,8 @@ async def trigger_user_notification_event(
                     user_id=user_id,
                     title=title,
                     content=content,
-                    cover=cover
+                    cover=cover,
+                    link=link,
                 )
                 if notification_source.uuid == NotificationSourceUUID.EMAIL.value:
                     notification_tool = EmailNotificationTool()
@@ -141,6 +142,7 @@ async def trigger_user_notification_event(
                     )
                 else:
                     raise Exception("Notification source not supported")
+        db.commit()
     except Exception as e:
         exception_logger.error(f'Error sending notification: {str(e)}')
     finally:

@@ -218,7 +218,8 @@ def create_notification_record(
     user_id: int, 
     title: str,
     content: str | None = None,
-    cover: str | None = None
+    cover: str | None = None,
+    link: str | None = None
 ):
     now = datetime.now(timezone.utc)
     notification = models.notification.NotificationRecord(
@@ -226,6 +227,7 @@ def create_notification_record(
         title=title,
         content=content, 
         cover=cover,
+        link=link,
         create_time=now
     )
     db.add(notification)
