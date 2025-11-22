@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`uuid` | string
 `name` | string
 `name_zh` | string
 `description` | string
@@ -20,6 +21,7 @@ import type { NotificationTemplate } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "uuid": null,
   "name": null,
   "name_zh": null,
   "description": null,

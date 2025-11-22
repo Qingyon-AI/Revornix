@@ -73,13 +73,17 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 				<div className='flex flex-row gap-1'>
 					<p>
 						{t('section_card_documents_count', {
-							section_documents_count: section.documents_count,
+							section_documents_count: section.documents_count
+								? section.documents_count
+								: 0,
 						})}
 					</p>
 					<p>,</p>
 					<p>
 						{t('section_card_subscribers_count', {
-							section_subscribers_count: section.subscribers_count,
+							section_subscribers_count: section.subscribers_count
+								? section.subscribers_count
+								: 0,
 						})}
 					</p>
 				</div>

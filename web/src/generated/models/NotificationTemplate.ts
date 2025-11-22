@@ -30,6 +30,12 @@ export interface NotificationTemplate {
      * @type {string}
      * @memberof NotificationTemplate
      */
+    uuid: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof NotificationTemplate
+     */
     name: string;
     /**
      * 
@@ -56,6 +62,7 @@ export interface NotificationTemplate {
  */
 export function instanceOfNotificationTemplate(value: object): value is NotificationTemplate {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
     return true;
@@ -72,6 +79,7 @@ export function NotificationTemplateFromJSONTyped(json: any, ignoreDiscriminator
     return {
         
         'id': json['id'],
+        'uuid': json['uuid'],
         'name': json['name'],
         'name_zh': json['name_zh'],
         'description': json['description'] == null ? undefined : json['description'],
@@ -91,6 +99,7 @@ export function NotificationTemplateToJSONTyped(value?: NotificationTemplate | n
     return {
         
         'id': value['id'],
+        'uuid': value['uuid'],
         'name': value['name'],
         'name_zh': value['name_zh'],
         'description': value['description'],

@@ -127,6 +127,9 @@ const FileDocumentDetail = ({
 		}
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
+			if (!document.convert_task?.md_file_name) {
+				throw new Error('No md file name found');
+			}
 			let [res, err] = await utils.to(
 				fileService.getFileContent(document.convert_task?.md_file_name)
 			);
