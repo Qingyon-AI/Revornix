@@ -35,8 +35,8 @@ from protocol.engine import EngineProtocol
 from protocol.notification_template import NotificationTemplate
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from notification.template.daily_summary import DailySummaryNotificationTemplate
-from notification.template.section_updated import SectinoUpdatedNotificationTemplate
-from notification.template.section_commented import SectinoCommentedNotificationTemplate
+from notification.template.section_updated import SectionUpdatedNotificationTemplate
+from notification.template.section_commented import SectionCommentedNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 
@@ -61,8 +61,8 @@ if __name__ == '__main__':
     )
     db = SessionLocal()
     try:
-        section_commented_notification_template = SectinoCommentedNotificationTemplate()
-        section_updated_notification_template = SectinoUpdatedNotificationTemplate()
+        section_commented_notification_template = SectionCommentedNotificationTemplate()
+        section_updated_notification_template = SectionUpdatedNotificationTemplate()
         daily_summary_notification_template = DailySummaryNotificationTemplate()
         section_subscribed_notification_template = SectionSubscribedNotificationTemplate()
         removed_from_section_notification_template = RemovedFromSectionNotificationTemplate()

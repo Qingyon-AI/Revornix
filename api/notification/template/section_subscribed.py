@@ -41,5 +41,11 @@ class SectionSubscribedNotificationTemplate(NotificationTemplate):
                 content="有人订阅了你参与的专栏，点击前往查看",
                 link=f'/section/detail/{section_id}'
             )
+        elif db_user_section.role == UserSectionRole.CREATOR:
+            return schemas.notification.Message(
+                title=f"Section Subscribed",
+                content="有人订阅了你创建的专栏，点击前往查看",
+                link=f'/section/detail/{section_id}'
+            )
         else:
-            raise Exception("user is not a member of the section")
+            raise Exception("user is not a member or creator of the section")

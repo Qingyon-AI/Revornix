@@ -6,8 +6,8 @@ from notification.tool.apple_sandbox import AppleSandboxNotificationTool
 from notification.tool.email import EmailNotificationTool
 from enums.notification import NotificationSourceUUID, NotificationContentType
 from notification.template.daily_summary import DailySummaryNotificationTemplate
-from notification.template.section_commented import SectinoCommentedNotificationTemplate
-from notification.template.section_updated import SectinoUpdatedNotificationTemplate
+from notification.template.section_commented import SectionCommentedNotificationTemplate
+from notification.template.section_updated import SectionUpdatedNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 from enums.notification import NotificationTemplateUUID
 
@@ -44,28 +44,28 @@ async def trigger_user_notification_event(
                     title = db_notification_custom.title
                     content = db_notification_custom.content
                 elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
-                    db_notification_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
+                    db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
                         db=db,
                         notification_task_id=db_notification_task.id
                     )
-                    if db_notification_template is None:
-                        raise Exception("Notification template not found")
+                    if db_notification_task_content_template is None:
+                        raise Exception("db_notification_task_content_template not found")
                     db_notification_template = crud.notification.get_notification_template_by_id(
                         db=db,
-                        notification_template_id=db_notification_template.notification_template_id
+                        notification_template_id=db_notification_task_content_template.notification_template_id
                     )
                     if db_notification_template is None:
                         raise Exception("Notification template not found")
                     if db_notification_template.uuid == NotificationTemplateUUID.DAILY_SUMMARY.value:
                         notification_template = DailySummaryNotificationTemplate()
                     elif db_notification_template.uuid == NotificationTemplateUUID.SECTION_COMMENTED.value:
-                        notification_template = SectinoCommentedNotificationTemplate()
+                        notification_template = SectionCommentedNotificationTemplate()
                     elif db_notification_template.uuid == NotificationTemplateUUID.SECTION_UPDATED.value:
-                        notification_template = SectinoUpdatedNotificationTemplate()
+                        notification_template = SectionUpdatedNotificationTemplate()
                     elif db_notification_template.uuid == NotificationTemplateUUID.SECTION_SUBSCRIBED.value:
                         notification_template = SectionSubscribedNotificationTemplate()
                     else:
-                        raise Exception("Notification template not found")
+                        raise Exception("Unsupported notification template")
                     message = await notification_template.generate(
                         params=params
                     )
