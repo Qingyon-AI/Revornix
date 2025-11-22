@@ -320,5 +320,8 @@ class NotificationTemplate(BaseModel):
     description: str | None = None
     description_zh: str | None = None
     
+    class Config:
+        from_attributes = True
+    
 class NotificationTemplatesResponse(BaseModel):
     data: list[NotificationTemplate]
