@@ -5,7 +5,7 @@ from common.sql import SessionLocal
 from enums.section import UserSectionRole
 from protocol.notification_template import NotificationTemplate
 
-class SectinoUpdatedNotificationTemplate(NotificationTemplate):
+class SectionUpdatedNotificationTemplate(NotificationTemplate):
     
     def __init__(
         self
