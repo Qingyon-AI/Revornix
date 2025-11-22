@@ -114,7 +114,7 @@ async def trigger_user_notification_event(
                         title=title,
                         content=content,
                         cover=cover,
-                        link=link
+                        link=link,
                     )
                 elif notification_source.uuid == NotificationSourceUUID.APPLE.value:
                     notification_tool = AppleNotificationTool()
