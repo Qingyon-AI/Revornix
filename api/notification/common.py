@@ -69,6 +69,13 @@ def trigger_user_notification_event(
                 )
                 if notification_target is None:
                     raise Exception("Notification target not found")
+                crud.notification.create_notification_record(
+                    db=db,
+                    user_id=user_id,
+                    title=title,
+                    content=content,
+                    cover=cover
+                )
                 if notification_source.uuid == NotificationSourceUUID.EMAIL.value:
                     notification_tool = EmailNotificationTool()
                     notification_tool.set_source(user_notification_source.id)
