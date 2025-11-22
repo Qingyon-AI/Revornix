@@ -79,6 +79,23 @@ def get_section_user_by_section_id_and_user_id(
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     return query.one_or_none()
 
+def get_users_for_section_by_section_id(
+    db: Session,
+    section_id: int,
+    filter_roles: list[int] | None = None
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.user.User)
+    query = query.join(models.section.SectionUser)
+    query = query.filter(models.user.User.delete_at == None,
+                         models.section.SectionUser.delete_at == None,
+                         models.section.SectionUser.section_id == section_id)
+    query = query.filter(or_(models.section.SectionUser.expire_time > now,
+                             models.section.SectionUser.expire_time == None))
+    if filter_roles is not None:
+        query = query.filter(models.section.SectionUser.role.in_(filter_roles))
+    return query.all()
+
 def get_section_by_section_id(
     db: Session, 
     section_id: int

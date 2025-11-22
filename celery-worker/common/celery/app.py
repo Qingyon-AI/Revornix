@@ -25,7 +25,8 @@ from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
 from enums.engine import EngineUUID
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus
-from enums.section import UserSectionAuthority, SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus
+from enums.section import UserSectionAuthority, SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus, UserSectionRole
+from enums.notification import NotificationTriggerEventUUID
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
@@ -796,6 +797,23 @@ async def handle_update_sections_for_document(
                 )
             db_section_process_task.status = SectionProcessStatus.SUCCESS
             db.commit()
+            db_users = crud.section.get_users_for_section_by_section_id(
+                db=db,
+                section_id=section_id,
+                filter_roles=[
+                    UserSectionRole.MEMBER,
+                    UserSectionRole.SUBSCRIBER
+                ]
+            )
+            for db_user in db_users:
+                start_trigger_user_notification_event.delay(
+                    user_id=db_user.id,
+                    trigger_event_uuid=NotificationTriggerEventUUID.SECTION_UPDATED,
+                    params={
+                        "user_id": db_user.id,
+                        "section_id": section_id
+                    }
+                )
         except Exception as e:
             exception_logger.error(f"Something is error while updating the section: {e}")
             db_section_document.status = SectionDocumentIntegration.FAILED
