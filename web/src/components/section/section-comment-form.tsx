@@ -49,7 +49,12 @@ const SectionCommentForm = ({ section_id }: { section_id: number }) => {
 		onSuccess(data, variables, context) {
 			setCommentSubmitting(false);
 			queryClient.invalidateQueries({
-				queryKey: ['searchSectionComment', ''],
+				predicate(query) {
+					return (
+						query.queryKey[0] === 'searchSectionComment' &&
+						query.queryKey[2] === section_id
+					);
+				},
 			});
 			toast.success(t('section_comment_submit_success'));
 			form.reset();

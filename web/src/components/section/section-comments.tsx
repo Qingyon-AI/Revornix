@@ -16,7 +16,7 @@ const SectionComments = ({ section_id }: { section_id: number }) => {
 	const { ref: bottomRef, inView } = useInView();
 
 	const { isFetching, fetchNextPage, hasNextPage } = useInfiniteQuery({
-		queryKey: ['searchSectionComment', keyword],
+		queryKey: ['searchSectionComment', keyword, section_id],
 		queryFn: (pageParam) => searchSectionComment({ ...pageParam.pageParam }),
 		initialPageParam: {
 			limit: 10,
