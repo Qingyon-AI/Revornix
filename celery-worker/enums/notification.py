@@ -18,5 +18,7 @@ class NotificationContentType(IntEnum):
     CUSTOM = 0
     TEMPLATE = 1
 
-class NotificationTemplate(IntEnum):
-    DAILY_SUMMARY = 1
+class NotificationTemplateUUID(Enum):
+    DAILY_SUMMARY = '8f5016dc375e447f82729df765b12847'
+    SECTION_COMMENTED = '1ba024dfd7c249d8a09bb873dca708e6'
+    SECTION_UPDATED = '4b655b12996540e1b6ee23d16a093bf6'

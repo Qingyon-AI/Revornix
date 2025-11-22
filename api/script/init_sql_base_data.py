@@ -31,7 +31,11 @@ from protocol.notification_trigger import NotificationTriggerEventProtocol
 from protocol.notification_source import NotificationSourceProtocol
 from protocol.notification_target import NotificationTargetProtocol
 from protocol.engine import EngineProtocol
+from protocol.notification_template import NotificationTemplate
 from protocol.remote_file_service import RemoteFileServiceProtocol
+from notification.template.daily_summary import DailySummaryNotificationTemplate
+from notification.template.section_updated import SectinoUpdatedNotificationTemplate
+from notification.template.section_commented import SectinoCommentedNotificationTemplate
 
 alembic_cfg_path = BASE_DIR / 'alembic.ini'
 
@@ -54,6 +58,27 @@ if __name__ == '__main__':
     )
     db = SessionLocal()
     try:
+        section_commented_notification_template = SectinoCommentedNotificationTemplate()
+        section_updated_notification_template = SectinoUpdatedNotificationTemplate()
+        daily_summary_notification_template = DailySummaryNotificationTemplate()
+        notification_templates: list[NotificationTemplate] = [
+            section_commented_notification_template,
+            section_updated_notification_template,
+            daily_summary_notification_template
+        ]
+        for notification_template in notification_templates:
+            if crud.notification.get_notification_template_by_uuid(
+                db=db, 
+                uuid=notification_template.uuid
+            ) is None:
+                crud.notification.create_notification_template(
+                    db=db,
+                    uuid=notification_template.uuid,
+                    name=notification_template.name,
+                    name_zh=notification_template.name_zh,
+                    description=notification_template.description,
+                    description_zh=notification_template.description_zh,
+                )
         removed_from_section_notification_trigger = RemovedFromSectionNotificationTriggerEvent()
         section_updated_notification_trigger = SectionUpdatedNotificationTriggerEvent()
         section_commented_notification_trigger = SectionCommentedNotificationTriggerEvent()

@@ -5,6 +5,14 @@ from schemas.task import DocumentOverrideProperty, SectionOverrideProperty
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
 @celery_app.task
+def start_trigger_user_notification_event(
+    user_id: int,
+    trigger_event_uuid: str,
+    params: dict | None = None
+):
+    ...
+
+@celery_app.task
 def start_process_document(
     document_id: int,
     user_id: int,

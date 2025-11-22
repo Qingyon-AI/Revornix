@@ -7,6 +7,7 @@ import httpx
 import uuid
 import crud
 import asyncio
+from notification.common import trigger_user_notification_event
 from celery import Celery
 from schemas.task import DocumentOverrideProperty, SectionOverrideProperty
 from enums.document import DocumentProcessStatus
@@ -25,8 +26,6 @@ from engine.tts.volc.tts import VolcTTSEngine
 from enums.engine import EngineUUID
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus
 from enums.section import UserSectionAuthority, SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus
-from notification.common import trigger_user_notification_event
-from enums.notification import NotificationTriggerEventUUID
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
@@ -915,3 +914,17 @@ def update_section_process_status(
         db_section_process_task.status = status
         db.commit()
     db.close()
+
+@celery_app.task
+def start_trigger_user_notification_event(
+    user_id: int,
+    trigger_event_uuid: str,
+    params: dict | None = None
+):
+    asyncio.run(
+        trigger_user_notification_event(
+            user_id=user_id,
+            trigger_event_uuid=trigger_event_uuid,
+            params=params
+        )
+    )

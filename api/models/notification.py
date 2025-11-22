@@ -8,6 +8,20 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from common.sql import Base
 
+class NotificationTemplate(Base):
+    __tablename__ = "notification_template"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    name_zh: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(500))
+    description_zh: Mapped[Optional[str]] = mapped_column(String(500))
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
 class NotificationTask(Base):
     __tablename__ = "notification_task"
 

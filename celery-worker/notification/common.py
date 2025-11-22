@@ -5,10 +5,15 @@ from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
 from notification.tool.email import EmailNotificationTool
 from enums.notification import NotificationSourceUUID, NotificationContentType
+from notification.template.daily_summary import DailySummaryNotificationTemplate
+from notification.template.section_commented import SectinoCommentedNotificationTemplate
+from notification.template.section_updated import SectinoUpdatedNotificationTemplate
+from enums.notification import NotificationTemplateUUID
 
-def trigger_user_notification_event(
+async def trigger_user_notification_event(
     user_id: int,
-    trigger_event_uuid: str
+    trigger_event_uuid: str,
+    params: dict | None = None
 ):
     db = SessionLocal()
     try:
@@ -18,12 +23,12 @@ def trigger_user_notification_event(
         )
         if db_user is None:
             raise Exception("User not found")
-        db_notification_task = crud.notification.get_notification_tasks_by_user_id_and_notification_trigger_event(
+        db_notification_tasks = crud.notification.get_notification_tasks_by_user_id_and_notification_trigger_event(
             db=db,
             user_id=user_id,
             trigger_event_uuid=trigger_event_uuid
         )
-        for db_notification_task in db_notification_task:
+        for db_notification_task in db_notification_tasks:
             if db_notification_task.enable:
                 title = 'Unknown Message'
                 content = None
@@ -44,7 +49,27 @@ def trigger_user_notification_event(
                     )
                     if db_notification_template is None:
                         raise Exception("Notification template not found")
-                    raise Exception("Not implemented")
+                    db_notification_template = crud.notification.get_notification_template_by_id(
+                        db=db,
+                        notification_template_id=db_notification_template.notification_template_id
+                    )
+                    if db_notification_template is None:
+                        raise Exception("Notification template not found")
+                    if db_notification_template.uuid == NotificationTemplateUUID.DAILY_SUMMARY.value:
+                        notification_template = DailySummaryNotificationTemplate()
+                    elif db_notification_template.uuid == NotificationTemplateUUID.SECTION_COMMENTED.value:
+                        notification_template = SectinoCommentedNotificationTemplate()
+                    elif db_notification_template.uuid == NotificationTemplateUUID.SECTION_UPDATED.value:
+                        notification_template = SectinoUpdatedNotificationTemplate()
+                    else:
+                        raise Exception("Notification template not found")
+                    message = await notification_template.generate(
+                        params=params
+                    )
+                    if message is None:
+                        raise Exception("Message not found")
+                    title = message.title
+                    content = message.content
                 user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
                     db=db,
                     user_notification_source_id=db_notification_task.user_notification_source_id
@@ -69,6 +94,13 @@ def trigger_user_notification_event(
                 )
                 if notification_target is None:
                     raise Exception("Notification target not found")
+                crud.notification.create_notification_record(
+                    db=db,
+                    user_id=user_id,
+                    title=title,
+                    content=content,
+                    cover=cover
+                )
                 if notification_source.uuid == NotificationSourceUUID.EMAIL.value:
                     notification_tool = EmailNotificationTool()
                     notification_tool.set_source(user_notification_source.id)

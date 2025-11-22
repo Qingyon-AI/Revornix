@@ -4,6 +4,27 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from enums.notification import NotificationTriggerType
 
+def create_notification_template(
+    db: Session,
+    uuid: str,
+    name: str,
+    name_zh: str,
+    description: str | None = None,
+    description_zh: str | None = None,
+):
+    now = datetime.now(timezone.utc)
+    db_notification_template = models.notification.NotificationTemplate(
+        uuid=uuid,
+        name=name,
+        name_zh=name_zh,
+        description=description,
+        description_zh=description_zh,
+        create_time=now
+    )
+    db.add(db_notification_template)
+    db.flush()
+    return db_notification_template
+
 def create_notification_trigger_event(
     db: Session,
     uuid: str,
@@ -210,6 +231,37 @@ def create_notification_record(
     db.add(notification)
     db.flush()
     return notification
+
+def get_notification_template_by_id(
+    db: Session,
+    notification_template_id: int
+):
+    query = db.query(models.notification.NotificationTemplate)
+    query = query.filter(
+        models.notification.NotificationTemplate.id == notification_template_id,
+        models.notification.NotificationTemplate.delete_at == None
+    )
+    return query.one_or_none()
+
+def get_all_notification_templates(
+    db: Session
+):
+    query = db.query(models.notification.NotificationTemplate)
+    query = query.filter(
+        models.notification.NotificationTemplate.delete_at == None
+    )
+    return query.all()
+
+def get_notification_template_by_uuid(
+    db: Session,
+    uuid: str
+):
+    query = db.query(models.notification.NotificationTemplate)
+    query = query.filter(
+        models.notification.NotificationTemplate.uuid == uuid,
+        models.notification.NotificationTemplate.delete_at == None
+    )
+    return query.one_or_none()
 
 def get_notification_task_by_user_notification_target_id(
     db: Session,

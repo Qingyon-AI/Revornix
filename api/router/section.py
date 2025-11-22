@@ -9,9 +9,8 @@ from sqlalchemy.orm import Session
 from common.dependencies import get_db, get_current_user, get_current_user_without_throw
 from common.common import get_user_remote_file_system
 from enums.section import UserSectionAuthority, UserSectionRole, SectionPodcastStatus, SectionProcessStatus
-from common.celery.app import start_process_section_podcast, update_section_process_status
+from common.celery.app import start_process_section_podcast, update_section_process_status, start_trigger_user_notification_event
 from celery import chain
-from notification.common import trigger_user_notification_event
 from enums.notification import NotificationTriggerEventUUID
 
 section_router = APIRouter()
@@ -483,9 +482,13 @@ async def delete_section_user(
         user_id=section_user_delete_request.user_id
     )
     db.commit()
-    trigger_user_notification_event(
+    start_trigger_user_notification_event.delay(
         user_id=section_user_delete_request.user_id,
-        trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value
+        trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value,
+        params={
+            "section_id": section_user_delete_request.section_id,
+            "user_id": user.id
+        }
     )
     return schemas.common.SuccessResponse()
 
@@ -1228,9 +1231,13 @@ async def delete_section(
     )
     for db_user in db_users:
         if db_user.id != user.id:
-            trigger_user_notification_event(
+            start_trigger_user_notification_event.delay(
                 user_id=db_user.id,
                 trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value,
+                params={
+                    "section_id": section_delete_request.section_id,
+                    "user_id": db_user.id
+                }
             )
     return schemas.common.SuccessResponse()
     
@@ -1254,9 +1261,13 @@ async def create_section_comment(
         content=section_comment_create_request.content
     )
     db.commit()
-    trigger_user_notification_event(
+    start_trigger_user_notification_event.delay(
         user_id=db_section.creator_id,
         trigger_event_uuid=NotificationTriggerEventUUID.SECTION_COMMENTED.value,
+        params={
+            "section_id": section_comment_create_request.section_id,
+            "user_id": db_section.creator_id
+        }
     )
     return schemas.common.SuccessResponse()
 
