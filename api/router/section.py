@@ -481,15 +481,18 @@ async def delete_section_user(
         section_id=section_user_delete_request.section_id,
         user_id=section_user_delete_request.user_id
     )
-    db.commit()
+    
+    # 由于删除用户之后就该用户和该专栏的记录就被删除了，后续发送通知的时候无法判断用户专栏关系，所以此处先发送通知再提交事务
     start_trigger_user_notification_event.delay(
         user_id=section_user_delete_request.user_id,
         trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value,
         params={
             "section_id": section_user_delete_request.section_id,
-            "user_id": user.id
+            "user_id": section_user_delete_request.user_id
         }
-    )
+    ).get()
+    
+    db.commit()
     return schemas.common.SuccessResponse()
 
 @section_router.post('/label/create', response_model=schemas.section.CreateLabelResponse)
@@ -1241,7 +1244,8 @@ async def delete_section(
     db.commit()
     db_users = crud.section.get_users_for_section_by_section_id(
         db=db,
-        section_id=section_delete_request.section_id
+        section_id=section_delete_request.section_id,
+        filter_roles=[UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER]
     )
     for db_user in db_users:
         if db_user.id != user.id:
@@ -1275,14 +1279,20 @@ async def create_section_comment(
         content=section_comment_create_request.content
     )
     db.commit()
-    start_trigger_user_notification_event.delay(
-        user_id=db_section.creator_id,
-        trigger_event_uuid=NotificationTriggerEventUUID.SECTION_COMMENTED.value,
-        params={
-            "section_id": section_comment_create_request.section_id,
-            "user_id": db_section.creator_id
-        }
+    db_users = crud.section.get_users_for_section_by_section_id(
+        db=db,
+        section_id=section_comment_create_request.section_id,
+        filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR]
     )
+    for db_user in db_users:
+        start_trigger_user_notification_event.delay(
+            user_id=db_user.id,
+            trigger_event_uuid=NotificationTriggerEventUUID.SECTION_COMMENTED.value,
+            params={
+                "section_id": section_comment_create_request.section_id,
+                "user_id": db_user.id
+            }
+        )
     return schemas.common.SuccessResponse()
 
 @section_router.post('/comment/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionCommentInfo])

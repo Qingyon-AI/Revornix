@@ -2,7 +2,7 @@ from celery import Celery
 from config.redis import REDIS_PORT, REDIS_URL
 from schemas.task import DocumentOverrideProperty, SectionOverrideProperty
 
-celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
+celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
 @celery_app.task
 def start_trigger_user_notification_event(
