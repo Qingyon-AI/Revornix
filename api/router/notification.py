@@ -10,7 +10,6 @@ from common.dependencies import get_current_user, get_db
 from fastapi import status, WebSocketException
 from datetime import datetime, timezone
 from common.apscheduler.app import send_notification
-from notification.template.daily_summary import DailySummaryNotificationTemplate
 from enums.notification import NotificationContentType, NotificationTriggerType
 from common.dependencies import decode_jwt_token
 
@@ -61,19 +60,17 @@ async def websocket_ask(
         
 @notification_router.post('/template/all', response_model=schemas.notification.NotificationTemplatesResponse)
 async def get_notification_templates(
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     data = []
-    daily_summary_template = DailySummaryNotificationTemplate()
-    data.append(
-        schemas.notification.NotificationTemplate(
-            id=daily_summary_template.template_id,
-            name=daily_summary_template.template_name,
-            name_zh=daily_summary_template.template_name_zh,
-            description=daily_summary_template.template_description,
-            description_zh=daily_summary_template.template_description_zh
-        )
+    db_notification_templates = crud.notification.get_all_notification_templates(
+        db=db
     )
+    data = [
+        schemas.notification.NotificationTemplate.model_validate(db_notification_template)
+        for db_notification_template in db_notification_templates
+    ]
     res = schemas.notification.NotificationTemplatesResponse(data=data)
     return res
 

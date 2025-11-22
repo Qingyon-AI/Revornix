@@ -16,7 +16,7 @@ from common.sql import SessionLocal
 from notification.template.daily_summary import DailySummaryNotificationTemplate
 from common.celery.app import start_process_document
 from enums.document import DocumentMdConvertStatus, UserDocumentAuthority, DocumentCategory
-from enums.notification import NotificationContentType, NotificationSourceUUID, NotificationTemplate, NotificationTriggerType
+from enums.notification import NotificationContentType, NotificationSourceUUID, NotificationTemplateUUID, NotificationTriggerType
 from enums.section import SectionDocumentIntegration, UserSectionRole, UserSectionAuthority
 
 scheduler = AsyncIOScheduler()
@@ -215,14 +215,14 @@ async def send_notification(
         notification_task_id=notification_task_id
     )
     if db_notification_task is None:
-        raise schemas.error.CustomException(message="notification task not found", code=404)
+        raise schemas.error.CustomException(message="notification task not found", code=500)
     if db_notification_task.notification_content_type == NotificationContentType.CUSTOM:
         db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(
             db=db,
             notification_task_id=notification_task_id
         )
         if db_notification_content_custom is None:
-            raise schemas.error.CustomException(message="notification content custom not found", code=404)
+            raise schemas.error.CustomException(message="notification content custom not found", code=500)
         title = db_notification_content_custom.title
         content = db_notification_content_custom.content
     elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
@@ -231,14 +231,21 @@ async def send_notification(
             notification_task_id=notification_task_id
         )
         if db_notification_content_template is None:
-            raise schemas.error.CustomException(message="notification content template not found", code=404)
-        if db_notification_content_template.notification_template_id == NotificationTemplate.DAILY_SUMMARY:
+            raise schemas.error.CustomException(message="notification content template not found", code=500)
+        db_notification_template = crud.notification.get_notification_template_by_id(
+            db=db,
+            notification_template_id=db_notification_content_template.notification_template_id
+        )
+        if db_notification_template is None:
+            raise schemas.error.CustomException(message="notification template not found", code=500)
+        if db_notification_template.uuid == NotificationTemplateUUID.DAILY_SUMMARY.value:
             template = DailySummaryNotificationTemplate()
-            template.set_user_and_date(
-                user_id=user_id,
-                date=datetime.now().date()
+            generate_res = await template.generate(
+                params={
+                    "user_id": user_id,
+                    "date": datetime.now().date(),
+                }
             )
-            generate_res = await template.generate()
             title = generate_res.title
             content = generate_res.content
     db_user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
@@ -246,13 +253,13 @@ async def send_notification(
         user_notification_source_id=db_notification_task.user_notification_source_id
     )
     if db_user_notification_source is None:
-        raise schemas.error.CustomException(message="user notification source not found", code=404)
+        raise schemas.error.CustomException(message="user notification source not found", code=500)
     db_notification_source = crud.notification.get_notification_source_by_notification_source_id(
         db=db,
         notification_source_id=db_user_notification_source.notification_source_id
     )
     if db_notification_source is None:
-        raise schemas.error.CustomException(message="notification source not found", code=404)
+        raise schemas.error.CustomException(message="notification source not found", code=500)
     send_res = None
     if db_notification_source.uuid == NotificationSourceUUID.EMAIL.value:
         email_notify = EmailNotificationTool()

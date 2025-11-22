@@ -65,6 +65,7 @@ class TriggerEventsResponse(BaseModel):
 class Message(BaseModel):
     title: str
     content: str | None = None
+    link: str | None = None
 
 class NotificationSource(BaseModel):
     id: int
@@ -313,6 +314,7 @@ class AddNotificationTaskRequest(BaseModel):
     
 class NotificationTemplate(BaseModel):
     id: int
+    uuid: str
     name: str
     name_zh: str
     description: str | None = None
