@@ -45,6 +45,18 @@ export interface NotificationRecord {
     read_at: Date | null;
     /**
      * 
+     * @type {string}
+     * @memberof NotificationRecord
+     */
+    link: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof NotificationRecord
+     */
+    cover: string | null;
+    /**
+     * 
      * @type {Date}
      * @memberof NotificationRecord
      */
@@ -65,6 +77,8 @@ export function instanceOfNotificationRecord(value: object): value is Notificati
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('content' in value) || value['content'] === undefined) return false;
     if (!('read_at' in value) || value['read_at'] === undefined) return false;
+    if (!('link' in value) || value['link'] === undefined) return false;
+    if (!('cover' in value) || value['cover'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
@@ -84,6 +98,8 @@ export function NotificationRecordFromJSONTyped(json: any, ignoreDiscriminator: 
         'title': json['title'],
         'content': json['content'],
         'read_at': (json['read_at'] == null ? null : new Date(json['read_at'])),
+        'link': json['link'],
+        'cover': json['cover'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
@@ -104,6 +120,8 @@ export function NotificationRecordToJSONTyped(value?: NotificationRecord | null,
         'title': value['title'],
         'content': value['content'],
         'read_at': value['read_at'] == null ? value['read_at'] : value['read_at'].toISOString(),
+        'link': value['link'],
+        'cover': value['cover'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };

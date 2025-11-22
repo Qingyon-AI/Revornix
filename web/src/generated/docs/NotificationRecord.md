@@ -10,6 +10,8 @@ Name | Type
 `title` | string
 `content` | string
 `read_at` | Date
+`link` | string
+`cover` | string
 `create_time` | Date
 `update_time` | Date
 
@@ -24,6 +26,8 @@ const example = {
   "title": null,
   "content": null,
   "read_at": null,
+  "link": null,
+  "cover": null,
   "create_time": null,
   "update_time": null,
 } satisfies NotificationRecord
