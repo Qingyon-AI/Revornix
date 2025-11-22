@@ -1201,7 +1201,7 @@ async def subscribe_section(
             )
             for db_user in db_users:
                 start_trigger_user_notification_event.delay(
-                    user_id=user.id,
+                    user_id=db_user.id,
                     trigger_event_uuid=NotificationTriggerEventUUID.SECTION_SUBSCRIBED.value,
                     params={
                         "section_id": section_subscribe_request.section_id,
