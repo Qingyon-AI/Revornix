@@ -1191,6 +1191,20 @@ async def subscribe_section(
                 role=UserSectionRole.SUBSCRIBER,
                 authority=UserSectionAuthority.READ_ONLY
             )
+            db_users = crud.section.get_users_for_section_by_section_id(
+                db=db,
+                section_id=section_subscribe_request.section_id,
+                filter_roles=[UserSectionRole.MEMBER]
+            )
+            for db_user in db_users:
+                start_trigger_user_notification_event.delay(
+                    user_id=user.id,
+                    trigger_event_uuid=NotificationTriggerEventUUID.SECTION_SUBSCRIBED.value,
+                    params={
+                        "section_id": section_subscribe_request.section_id,
+                        "user_id": db_user.id
+                    }
+                )
     db.commit()
     return schemas.common.SuccessResponse()    
 

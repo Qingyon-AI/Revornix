@@ -27,6 +27,7 @@ from notification.target.email_notification_target import EmailNotificationTarge
 from notification.trigger_event.removed_from_section import RemovedFromSectionNotificationTriggerEvent
 from notification.trigger_event.section_updated import SectionUpdatedNotificationTriggerEvent
 from notification.trigger_event.section_commented import SectionCommentedNotificationTriggerEvent
+from notification.trigger_event.section_subscribed import SectionSubscribedNotificationTriggerEvent
 from protocol.notification_trigger import NotificationTriggerEventProtocol
 from protocol.notification_source import NotificationSourceProtocol
 from protocol.notification_target import NotificationTargetProtocol
@@ -36,6 +37,7 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.section_updated import SectinoUpdatedNotificationTemplate
 from notification.template.section_commented import SectinoCommentedNotificationTemplate
+from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 
 alembic_cfg_path = BASE_DIR / 'alembic.ini'
 
@@ -61,10 +63,12 @@ if __name__ == '__main__':
         section_commented_notification_template = SectinoCommentedNotificationTemplate()
         section_updated_notification_template = SectinoUpdatedNotificationTemplate()
         daily_summary_notification_template = DailySummaryNotificationTemplate()
+        section_subscribed_notification_template = SectionSubscribedNotificationTemplate()
         notification_templates: list[NotificationTemplate] = [
             section_commented_notification_template,
             section_updated_notification_template,
-            daily_summary_notification_template
+            daily_summary_notification_template,
+            section_subscribed_notification_template
         ]
         for notification_template in notification_templates:
             if crud.notification.get_notification_template_by_uuid(
@@ -82,10 +86,12 @@ if __name__ == '__main__':
         removed_from_section_notification_trigger = RemovedFromSectionNotificationTriggerEvent()
         section_updated_notification_trigger = SectionUpdatedNotificationTriggerEvent()
         section_commented_notification_trigger = SectionCommentedNotificationTriggerEvent()
+        section_subscribed_notification_trigger = SectionSubscribedNotificationTriggerEvent()
         triggers: list[NotificationTriggerEventProtocol] = [
             removed_from_section_notification_trigger,
             section_updated_notification_trigger,
-            section_commented_notification_trigger
+            section_commented_notification_trigger,
+            section_subscribed_notification_trigger
         ]
         for trigger in triggers:
             if crud.notification.get_trigger_event_by_uuid(

@@ -48,8 +48,6 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { Info, Loader2, PlusCircleIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import Link from 'next/link';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { Label } from '../ui/label';
 import { NotificationTriggerType } from '@/enums/notification';
 
 const AddNotificationTask = () => {
@@ -126,7 +124,8 @@ const AddNotificationTask = () => {
 			notification_title: '',
 			notification_content: '',
 			enable: true,
-			notification_content_type: 0,
+			notification_content_type: 1,
+			trigger_type: NotificationTriggerType.EVENT,
 		},
 	});
 
@@ -313,7 +312,9 @@ const AddNotificationTask = () => {
 											<Select
 												onValueChange={(value) => field.onChange(Number(value))}
 												defaultValue={
-													field.value ? String(field.value) : undefined
+													field.value || field.value === 0
+														? String(field.value)
+														: undefined
 												}>
 												<SelectTrigger className='w-full'>
 													<SelectValue
@@ -366,8 +367,18 @@ const AddNotificationTask = () => {
 														<SelectValue
 															placeholder={t(
 																'setting_notification_task_manage_form_trigger_event_id_placeholder'
-															)}
-														/>
+															)}>
+															{(() => {
+																const sel = triggerEvents?.data.find(
+																	(item) => item.id === field.value
+																);
+																return sel
+																	? locale === 'zh'
+																		? sel.name_zh
+																		: sel.name
+																	: null;
+															})()}
+														</SelectValue>
 													</SelectTrigger>
 													<SelectContent className='w-full'>
 														<SelectGroup>
@@ -376,7 +387,18 @@ const AddNotificationTask = () => {
 																	<SelectItem
 																		key={index}
 																		value={item.id.toString()}>
-																		{item.name}
+																		<div className='flex flex-col w-fit'>
+																			<div className='font-bold text-xs w-fit'>
+																				{locale === 'zh'
+																					? item.name_zh
+																					: item.name}
+																			</div>
+																			<div className='font-bold text-xs text-muted-foreground w-fit'>
+																				{locale === 'zh'
+																					? item.description_zh
+																					: item.description}
+																			</div>
+																		</div>
 																	</SelectItem>
 																);
 															})}
@@ -437,20 +459,89 @@ const AddNotificationTask = () => {
 									form.setValue('notification_content_type', Number(value));
 								}}>
 								<TabsList className='w-full mb-1'>
-									<TabsTrigger value='0'>
-										{t(
-											'setting_notification_task_manage_form_content_type_custom'
-										)}
-									</TabsTrigger>
 									<TabsTrigger value='1'>
 										{t(
 											'setting_notification_task_manage_form_content_type_template'
 										)}
 									</TabsTrigger>
+									<TabsTrigger value='0'>
+										{t(
+											'setting_notification_task_manage_form_content_type_custom'
+										)}
+									</TabsTrigger>
 								</TabsList>
+								<TabsContent value='1'>
+									<FormField
+										name='notification_template_id'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t(
+															'setting_notification_task_manage_form_template'
+														)}
+													</FormLabel>
+													<Select
+														onValueChange={(value) =>
+															field.onChange(Number(value))
+														}
+														defaultValue={
+															field.value ? String(field.value) : undefined
+														}>
+														<SelectTrigger className='w-full'>
+															<SelectValue
+																placeholder={t(
+																	'setting_notification_task_manage_form_template_placeholder'
+																)}>
+																{(() => {
+																	const sel = notificationTemplates?.data.find(
+																		(item) => item.id === field.value
+																	);
+																	return sel
+																		? locale === 'zh'
+																			? sel.name_zh
+																			: sel.name
+																		: null;
+																})()}
+															</SelectValue>
+														</SelectTrigger>
+														<SelectContent className='w-full'>
+															<SelectGroup>
+																{notificationTemplates?.data.map(
+																	(item, index) => {
+																		return (
+																			<SelectItem
+																				key={index}
+																				value={item.id.toString()}>
+																				<div className='flex flex-col w-fit'>
+																					<div className='font-bold text-xs w-fit'>
+																						{locale === 'zh'
+																							? item.name_zh
+																							: item.name}
+																					</div>
+																					<div className='font-bold text-xs text-muted-foreground w-fit'>
+																						{locale === 'zh'
+																							? item.description_zh
+																							: item.description}
+																					</div>
+																				</div>
+																			</SelectItem>
+																		);
+																	}
+																)}
+															</SelectGroup>
+														</SelectContent>
+													</Select>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+								</TabsContent>
 								<TabsContent value='0' className='space-y-3'>
 									<FormField
-										name='title'
+										name='notification_title'
 										control={form.control}
 										render={({ field }) => {
 											return (
@@ -484,58 +575,6 @@ const AddNotificationTask = () => {
 															'setting_notification_task_manage_form_content_placeholder'
 														)}
 													/>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-								</TabsContent>
-								<TabsContent value='1'>
-									<FormField
-										name='notification_template_id'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<FormLabel>
-														{t(
-															'setting_notification_task_manage_form_template'
-														)}
-													</FormLabel>
-													<div className='p-3 border rounded-md max-h-40 overflow-auto grid grid-cols-1'>
-														<RadioGroup
-															onValueChange={field.onChange}
-															value={String(field.value)}>
-															{notificationTemplates?.data.map(
-																(item, index) => {
-																	return (
-																		<div
-																			key={index}
-																			className='bg-muted rounded p-3 flex flex-row justify-between items-center space-x-2'>
-																			<Label
-																				htmlFor={item.id.toString()}
-																				className='flex flex-col text-left items-start flex-1'>
-																				<p className='text-sm font-bold'>
-																					{locale === 'zh'
-																						? item.name_zh
-																						: item.name}
-																				</p>
-																				<p className='text-muted-foreground text-xs'>
-																					{locale === 'zh'
-																						? item.description_zh
-																						: item.description}
-																				</p>
-																			</Label>
-																			<RadioGroupItem
-																				value={item.id.toString()}
-																				id={item.id.toString()}
-																			/>
-																		</div>
-																	);
-																}
-															)}
-														</RadioGroup>
-													</div>
 													<FormMessage />
 												</FormItem>
 											);

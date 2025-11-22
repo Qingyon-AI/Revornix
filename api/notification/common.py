@@ -8,6 +8,7 @@ from enums.notification import NotificationSourceUUID, NotificationContentType
 from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.section_commented import SectinoCommentedNotificationTemplate
 from notification.template.section_updated import SectinoUpdatedNotificationTemplate
+from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 from enums.notification import NotificationTemplateUUID
 
 async def trigger_user_notification_event(
@@ -61,6 +62,8 @@ async def trigger_user_notification_event(
                         notification_template = SectinoCommentedNotificationTemplate()
                     elif db_notification_template.uuid == NotificationTemplateUUID.SECTION_UPDATED.value:
                         notification_template = SectinoUpdatedNotificationTemplate()
+                    elif db_notification_template.uuid == NotificationTemplateUUID.SECTION_SUBSCRIBED.value:
+                        notification_template = SectionSubscribedNotificationTemplate()
                     else:
                         raise Exception("Notification template not found")
                     message = await notification_template.generate(

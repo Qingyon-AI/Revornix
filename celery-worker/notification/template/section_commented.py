@@ -13,18 +13,10 @@ class SectinoCommentedNotificationTemplate(NotificationTemplate):
         super().__init__(
             uuid='1ba024dfd7c249d8a09bb873dca708e6',
             name="Section Commented Template",
-            description="This is a section commented template",
             name_zh="专栏被评论通知模版",
+            description="This is a section commented template",
             description_zh="这是一个专栏被评论的通知模板"
         )
-    
-    def set_section_and_user(
-        self,
-        section_id: int,
-        user_id: int
-    ):
-        self.section_id = section_id
-        self.user_id = user_id
         
     async def generate(
         self,

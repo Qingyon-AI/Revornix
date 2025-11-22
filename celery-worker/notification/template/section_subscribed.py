@@ -5,19 +5,19 @@ from common.sql import SessionLocal
 from enums.section import UserSectionRole
 from protocol.notification_template import NotificationTemplate
 
-class SectinoCommentedNotificationTemplate(NotificationTemplate):
+class SectionSubscribedNotificationTemplate(NotificationTemplate):
     
     def __init__(
         self
     ):
         super().__init__(
-            uuid='1ba024dfd7c249d8a09bb873dca708e6',
-            name="Section Commented Template",
-            name_zh="专栏被评论通知模版",
-            description="This is a section commented template",
-            description_zh="这是一个专栏被评论的通知模板"
+            uuid='dd4726e202d543cd9eca59e2311d0f11',
+            name="Section Subscribed Template",
+            name_zh="专栏被订阅通知模版",
+            description="This is a section subscribed template",
+            description_zh="这是一个专栏被订阅的通知模板"
         )
-        
+    
     async def generate(
         self,
         params: dict | None
@@ -38,13 +38,13 @@ class SectinoCommentedNotificationTemplate(NotificationTemplate):
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
                 title=f"Section Commented",
-                content="有人评价了你参与的专栏，快去查看吧",
+                content="有人订阅了你参与的专栏，点击前往查看",
                 link=f'/section/detail/{section_id}'
             )
         elif db_user_section.role == UserSectionRole.SUBSCRIBER:
             return schemas.notification.Message(
                 title=f"Section Commented",
-                content="有人评价了你参与的专栏，快去查看吧",
+                content="有人评价了你参与的专栏，点击前往查看",
                 link=f'/section/detail/{section_id}'
             )
         else:
