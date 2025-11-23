@@ -27,7 +27,7 @@ class DingTalkNotificationTool(NotificationToolProtocol):
         sign = urllib.parse.quote_plus(base64.b64encode(hmac_code).decode("utf-8"))
         return sign
 
-    def send_notification(
+    async def send_notification(
         self,
         title: str,
         content: Optional[str] = None,

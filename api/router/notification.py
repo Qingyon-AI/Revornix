@@ -9,7 +9,7 @@ from apscheduler.triggers.cron import CronTrigger
 from common.dependencies import get_current_user, get_db
 from fastapi import status, WebSocketException
 from datetime import datetime, timezone
-from common.apscheduler.app import send_notification
+from common.apscheduler.app import send_notification_scheduler
 from enums.notification import NotificationContentType, NotificationTriggerType
 from common.dependencies import decode_jwt_token
 
@@ -141,7 +141,7 @@ async def add_notification_task(
 
     if add_notification_task_request.enable and add_notification_task_request.trigger_type == NotificationTriggerType.SCHEDULER:
         scheduler.add_job(
-            func=send_notification,
+            func=send_notification_scheduler,
             trigger=CronTrigger.from_crontab(add_notification_task_request.trigger_scheduler_cron),
             args=[
                 db_notification_task.user_id,
@@ -359,7 +359,7 @@ async def update_notification_task(
         scheduler.remove_job(str(db_notification_task.id))
     if db_notification_task.enable and db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
         scheduler.add_job(
-            func=send_notification,
+            func=send_notification_scheduler,
             trigger=CronTrigger.from_crontab(db_notification_task.trigger_cron_expr),
             args=[
                 db_notification_task.user_id,

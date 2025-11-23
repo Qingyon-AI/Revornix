@@ -205,7 +205,7 @@ async def fetch_all_rss_sources_and_update():
         await fetch_and_save(rss_server_info)
     db.close()
 
-async def send_notification(
+async def send_notification_scheduler(
     user_id:int,
     notification_task_id: int
 ):
@@ -271,7 +271,7 @@ async def send_notification(
         )
         if content:
             content = markdown.markdown(content)
-        send_res = email_notify.send_notification(
+        send_res = await email_notify.send_notification(
             title=title,
             content=content
         )
@@ -283,7 +283,7 @@ async def send_notification(
         apple_notify.set_target(
             target_id=db_notification_task.user_notification_target_id,
         )
-        send_res = apple_notify.send_notification(
+        send_res = await apple_notify.send_notification(
             title=title,
             content=content
         )
@@ -295,7 +295,7 @@ async def send_notification(
         ios_sandbox_notify.set_target(
             target_id=db_notification_task.user_notification_target_id,
         )
-        send_res = ios_sandbox_notify.send_notification(
+        send_res = await ios_sandbox_notify.send_notification(
             title=title,
             content=content
         )
@@ -331,7 +331,7 @@ for db_notification_task in db_notification_tasks:
     if db_notification_trigger_scheduler is None:
         continue
     scheduler.add_job(
-        func=send_notification,
+        func=send_notification_scheduler,
         trigger=CronTrigger.from_crontab(db_notification_trigger_scheduler.cron_expr),
         args=[
             db_notification_task.user_id,
