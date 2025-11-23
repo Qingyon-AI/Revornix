@@ -37,7 +37,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					<div className='h-full overflow-auto pb-5'>
 						<div className='mb-5'>
 							<img
-								className='w-full h-64 relative object-cover'
+								className='w-full h-40 relative object-cover'
 								alt='cover'
 								src={data.cover ? data.cover : '/images/cover.jpg'}
 							/>
