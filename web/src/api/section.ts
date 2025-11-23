@@ -27,4 +27,6 @@ export default {
     getSectionPublish: API_PREFIX + "/section/publish/get",
     searchSectionDocuments: API_PREFIX + "/section/documents",
     generateSectionPodcast: API_PREFIX + '/section/podcast/generate',
+    getSectionUserRoleAndAuthority: API_PREFIX + '/section/user/role-and-authority',
+    getMineSectionRoleAndAuthority: API_PREFIX + '/section/mine/role-and-authority'
 }

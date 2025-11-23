@@ -5,6 +5,19 @@ from schemas.user import UserPublicInfo, SectionUserPublicInfo
 from schemas.task import SectionPodcastTask, SectionProcessTask
 from enums.section import UserSectionRole
 
+class MineSectionRoleAndAuthorityRequest(BaseModel):
+    section_id: int
+    
+class SectionUserRoleAndAuthorityRequest(BaseModel):
+    section_id: int
+    user_id: int
+
+class SectionUserRoleAndAuthorityResponse(BaseModel):
+    section_id: int
+    user_id: int
+    role: int
+    authority: int
+
 class GenerateSectionPodcastRequest(BaseModel):
     section_id: int
 
