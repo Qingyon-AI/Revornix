@@ -4,6 +4,7 @@ from common.sql import SessionLocal
 from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
 from notification.tool.email import EmailNotificationTool
+from notification.tool.feishu import FeishuNotificationTool
 from enums.notification import NotificationSourceUUID, NotificationContentType
 from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
@@ -138,6 +139,16 @@ async def trigger_user_notification_event(
                     )
                 elif notification_source.uuid == NotificationSourceUUID.APPLE_SANDBOX.value:
                     notification_tool = AppleSandboxNotificationTool()
+                    notification_tool.set_source(user_notification_source.id)
+                    notification_tool.set_target(user_notification_target.id)
+                    notification_tool.send_notification(
+                        title=title,
+                        content=content,
+                        cover=cover,
+                        link=link
+                    )
+                elif notification_source.uuid == NotificationSourceUUID.FEISHU.value:
+                    notification_tool = FeishuNotificationTool()
                     notification_tool.set_source(user_notification_source.id)
                     notification_tool.set_target(user_notification_target.id)
                     notification_tool.send_notification(

@@ -4,6 +4,7 @@ from common.sql import SessionLocal
 from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
 from notification.tool.email import EmailNotificationTool
+from notification.tool.feishu import FeishuNotificationTool
 from enums.notification import NotificationSourceUUID, NotificationContentType
 from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
@@ -46,6 +47,7 @@ async def trigger_user_notification_event(
                         raise Exception("Notification custom not found")
                     title = db_notification_custom.title
                     content = db_notification_custom.content
+                    cover = db_notification_custom.cover
                     if db_notification_custom.cover is not None:
                         cover = f'{RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=db_notification_task.user_id)}/{db_notification_custom.cover}'
                     link = db_notification_custom.link
@@ -61,7 +63,7 @@ async def trigger_user_notification_event(
                         notification_template_id=db_notification_task_content_template.notification_template_id
                     )
                     if db_notification_template is None:
-                        raise Exception("db_notification_template not found")
+                        raise Exception("Notification template not found")
                     if db_notification_template.uuid == NotificationTemplateUUID.DAILY_SUMMARY.value:
                         notification_template = DailySummaryNotificationTemplate()
                     elif db_notification_template.uuid == NotificationTemplateUUID.SECTION_COMMENTED.value:
@@ -117,36 +119,22 @@ async def trigger_user_notification_event(
                 )
                 if notification_source.uuid == NotificationSourceUUID.EMAIL.value:
                     notification_tool = EmailNotificationTool()
-                    notification_tool.set_source(user_notification_source.id)
-                    notification_tool.set_target(user_notification_target.id)
-                    notification_tool.send_notification(
-                        title=title,
-                        content=content,
-                        cover=cover,
-                        link=link,
-                    )
                 elif notification_source.uuid == NotificationSourceUUID.APPLE.value:
                     notification_tool = AppleNotificationTool()
-                    notification_tool.set_source(user_notification_source.id)
-                    notification_tool.set_target(user_notification_target.id)
-                    notification_tool.send_notification(
-                        title=title,
-                        content=content,
-                        cover=cover,
-                        link=link
-                    )
                 elif notification_source.uuid == NotificationSourceUUID.APPLE_SANDBOX.value:
                     notification_tool = AppleSandboxNotificationTool()
-                    notification_tool.set_source(user_notification_source.id)
-                    notification_tool.set_target(user_notification_target.id)
-                    notification_tool.send_notification(
-                        title=title,
-                        content=content,
-                        cover=cover,
-                        link=link
-                    )
+                elif notification_source.uuid == NotificationSourceUUID.FEISHU.value:
+                    notification_tool = FeishuNotificationTool()
                 else:
                     raise Exception("Notification source not supported")
+                notification_tool.set_source(user_notification_source.id)
+                notification_tool.set_target(user_notification_target.id)
+                notification_tool.send_notification(
+                    title=title,
+                    content=content,
+                    cover=cover,
+                    link=link
+                )
         db.commit()
     except Exception as e:
         exception_logger.error(f'Error sending notification: {str(e)}')

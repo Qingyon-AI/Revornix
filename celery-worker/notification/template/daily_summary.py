@@ -59,6 +59,6 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
         return schemas.notification.Message(
             title=f"Daily Summary Of {date.isoformat()}",
             content=markdown_content,
-            link=f'/section/today'
+            link='/section/today'
         )
         

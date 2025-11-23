@@ -36,3 +36,4 @@ tenacity==9.1.2
 mcp_use==1.4.0
 fastmcp==2.12.5
 websockets==15.0.1
+lark_oapi==1.4.24
