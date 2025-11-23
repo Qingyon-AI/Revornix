@@ -1,5 +1,5 @@
 import crud
-from common.logger import exception_logger
+from common.logger import exception_logger, log_exception
 from common.sql import SessionLocal
 from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
@@ -135,7 +135,7 @@ async def trigger_user_notification_event(
                     raise Exception("Notification source not supported")
                 notification_tool.set_source(user_notification_source.id)
                 notification_tool.set_target(user_notification_target.id)
-                notification_tool.send_notification(
+                await notification_tool.send_notification(
                     title=title,
                     content=content,
                     cover=cover,
@@ -144,5 +144,6 @@ async def trigger_user_notification_event(
         db.commit()
     except Exception as e:
         exception_logger.error(f'Error sending notification: {str(e)}')
+        log_exception()
     finally:
         db.close()

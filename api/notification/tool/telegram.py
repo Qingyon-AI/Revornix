@@ -1,10 +1,25 @@
 import telegram
-import asyncio
 from protocol.notification_tool import NotificationToolProtocol
 
 class TelegramNotificationTool(NotificationToolProtocol):
 
-    def send_notification(
+    def escape_markdown_v2(
+        self,
+        text: str
+    ) -> str:
+        """
+        转义 Telegram MarkdownV2 需要的特殊字符
+        """
+        escape_chars = r"_*[]()~`>#+-=|{}.!"
+        result = ""
+        for char in text:
+            if char in escape_chars:
+                result += "\\" + char
+            else:
+                result += char
+        return result
+
+    async def send_notification(
         self, 
         title: str,
         content: str | None = None,
@@ -22,7 +37,7 @@ class TelegramNotificationTool(NotificationToolProtocol):
         bot_token = source_config.get('bot_token')
 
         bot = telegram.Bot(token=bot_token)
-        
+
         text = f"""
         # {title}
         """
@@ -41,11 +56,11 @@ class TelegramNotificationTool(NotificationToolProtocol):
             text += f"""
             ![Cover]({cover})
             """
-            
-        asyncio.run(
-            bot.send_message(
-                chat_id=chat_id, 
-                text=text,
-                parse_mode='MarkdownV2'
-            )
+
+        text = self.escape_markdown_v2(text)
+        
+        await bot.send_message(
+            chat_id=chat_id, 
+            text=text,
+            parse_mode='MarkdownV2'
         )

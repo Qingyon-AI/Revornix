@@ -27,7 +27,7 @@ class EmailNotificationTool(NotificationToolProtocol):
             autoescape=select_autoescape(['html', 'xml'])
         )
 
-    def send_notification(
+    async def send_notification(
         self,
         title: str,
         content: Optional[str] = None,

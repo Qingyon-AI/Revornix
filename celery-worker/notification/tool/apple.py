@@ -127,7 +127,7 @@ class AppleNotificationTool(NotificationToolProtocol):
         )
         return res
 
-    def send_notification(
+    async def send_notification(
         self, 
         title: str,
         content: str | None = None,
