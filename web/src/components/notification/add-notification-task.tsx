@@ -49,6 +49,7 @@ import { Info, Loader2, PlusCircleIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import Link from 'next/link';
 import { NotificationTriggerType } from '@/enums/notification';
+import FileUpload from '../document/file-upload';
 
 const AddNotificationTask = () => {
 	const locale = useLocale();
@@ -57,8 +58,10 @@ const AddNotificationTask = () => {
 	const formSchema = z
 		.object({
 			title: z.string(),
-			notification_title: z.string().optional(),
-			notification_content: z.string().optional(),
+			notification_title: z.string().optional().nullable(),
+			notification_content: z.string().optional().nullable(),
+			notification_link: z.string().optional().nullable(),
+			notification_cover: z.string().optional().nullable(),
 			notification_content_type: z.number(),
 			notification_template_id: z.coerce
 				.number({
@@ -554,6 +557,7 @@ const AddNotificationTask = () => {
 														placeholder={t(
 															'setting_notification_task_manage_form_title_placeholder'
 														)}
+														value={field.value || ''}
 													/>
 													<FormMessage />
 												</FormItem>
@@ -574,6 +578,50 @@ const AddNotificationTask = () => {
 														placeholder={t(
 															'setting_notification_task_manage_form_content_placeholder'
 														)}
+														value={field.value || ''}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormField
+										name='notification_link'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t('setting_notification_task_manage_form_link')}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'setting_notification_task_manage_form_link_placeholder'
+														)}
+														value={field.value || ''}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormField
+										name='notification_cover'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t('setting_notification_task_manage_form_cover')}
+													</FormLabel>
+													<FileUpload
+														accept='.jpg, .jpeg, .png, .pdf, .doc, .docx, .ppt, .pptx'
+														className='h-20'
+														onSuccess={(file_name) => {
+															field.onChange(file_name);
+														}}
+														onDelete={() => field.onChange(null)}
 													/>
 													<FormMessage />
 												</FormItem>

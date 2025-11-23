@@ -85,6 +85,8 @@ class NotificationTaskContentCustom(Base):
     notification_task_id: Mapped[int] = mapped_column(ForeignKey("notification_task.id"), index=True, nullable=False)
     title: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
     content: Mapped[Optional[str]] = mapped_column(Text())
+    cover: Mapped[Optional[str]] = mapped_column(String(2000))
+    link: Mapped[Optional[str]] = mapped_column(String(2000))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
 

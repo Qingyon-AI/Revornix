@@ -15,6 +15,8 @@ Name | Type
 `trigger_scheduler` | [NotificationTriggerScheduler](NotificationTriggerScheduler.md)
 `notification_title` | string
 `notification_content` | string
+`notification_link` | string
+`notification_cover` | string
 `notification_template_id` | number
 `user_notification_source` | [UserNotificationSource](UserNotificationSource.md)
 `user_notification_target` | [UserNotificationTarget](UserNotificationTarget.md)
@@ -37,6 +39,8 @@ const example = {
   "trigger_scheduler": null,
   "notification_title": null,
   "notification_content": null,
+  "notification_link": null,
+  "notification_cover": null,
   "notification_template_id": null,
   "user_notification_source": null,
   "user_notification_target": null,

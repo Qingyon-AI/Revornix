@@ -50,6 +50,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { NotificationTriggerType } from '@/enums/notification';
+import FileUpload from '../document/file-upload';
 
 const UpdateNotificationTask = ({
 	notification_task_id,
@@ -71,8 +72,10 @@ const UpdateNotificationTask = ({
 		.object({
 			notification_task_id: z.number(),
 			title: z.string(),
-			notification_title: z.string().optional(),
-			notification_content: z.string().optional(),
+			notification_title: z.string().optional().nullable(),
+			notification_content: z.string().optional().nullable(),
+			notification_cover: z.string().optional().nullable(),
+			notification_link: z.string().optional().nullable(),
 			notification_content_type: z.number(),
 			notification_template_id: z.coerce
 				.number({
@@ -199,9 +202,10 @@ const UpdateNotificationTask = ({
 				notification_title: data.notification_title ?? undefined,
 				notification_content: data.notification_content ?? undefined,
 				notification_template_id: data.notification_template_id ?? undefined,
+				notification_cover: data.notification_cover ?? undefined,
+				notification_link: data.notification_link ?? undefined,
 			};
 			form.reset(defaultValues, {});
-			console.log(data);
 		}
 	}, [data, notification_task_id]);
 
@@ -595,6 +599,7 @@ const UpdateNotificationTask = ({
 														placeholder={t(
 															'setting_notification_task_manage_form_title_placeholder'
 														)}
+														value={field.value || ''}
 													/>
 													<FormMessage />
 												</FormItem>
@@ -615,6 +620,51 @@ const UpdateNotificationTask = ({
 														placeholder={t(
 															'setting_notification_task_manage_form_content_placeholder'
 														)}
+														value={field.value || ''}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormField
+										name='notification_link'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t('setting_notification_task_manage_form_link')}
+													</FormLabel>
+													<Input
+														{...field}
+														placeholder={t(
+															'setting_notification_task_manage_form_link_placeholder'
+														)}
+														value={field.value || ''}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormField
+										name='notification_cover'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t('setting_notification_task_manage_form_cover')}
+													</FormLabel>
+													<FileUpload
+														accept='.jpg, .jpeg, .png, .pdf, .doc, .docx, .ppt, .pptx'
+														className='h-20'
+														defaultFileName={field.value || ''}
+														onSuccess={(file_name) => {
+															field.onChange(file_name);
+														}}
+														onDelete={() => field.onChange(null)}
 													/>
 													<FormMessage />
 												</FormItem>

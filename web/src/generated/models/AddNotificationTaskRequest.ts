@@ -69,6 +69,18 @@ export interface AddNotificationTaskRequest {
     notification_content?: string | null;
     /**
      * 
+     * @type {string}
+     * @memberof AddNotificationTaskRequest
+     */
+    notification_cover?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddNotificationTaskRequest
+     */
+    notification_link?: string | null;
+    /**
+     * 
      * @type {number}
      * @memberof AddNotificationTaskRequest
      */
@@ -118,6 +130,8 @@ export function AddNotificationTaskRequestFromJSONTyped(json: any, ignoreDiscrim
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
         'notification_title': json['notification_title'] == null ? undefined : json['notification_title'],
         'notification_content': json['notification_content'] == null ? undefined : json['notification_content'],
+        'notification_cover': json['notification_cover'] == null ? undefined : json['notification_cover'],
+        'notification_link': json['notification_link'] == null ? undefined : json['notification_link'],
         'trigger_type': json['trigger_type'],
         'trigger_event_id': json['trigger_event_id'] == null ? undefined : json['trigger_event_id'],
         'trigger_scheduler_cron': json['trigger_scheduler_cron'] == null ? undefined : json['trigger_scheduler_cron'],
@@ -143,6 +157,8 @@ export function AddNotificationTaskRequestToJSONTyped(value?: AddNotificationTas
         'notification_template_id': value['notification_template_id'],
         'notification_title': value['notification_title'],
         'notification_content': value['notification_content'],
+        'notification_cover': value['notification_cover'],
+        'notification_link': value['notification_link'],
         'trigger_type': value['trigger_type'],
         'trigger_event_id': value['trigger_event_id'],
         'trigger_scheduler_cron': value['trigger_scheduler_cron'],

@@ -104,6 +104,18 @@ export interface NotificationTask {
     notification_content?: string | null;
     /**
      * 
+     * @type {string}
+     * @memberof NotificationTask
+     */
+    notification_link?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof NotificationTask
+     */
+    notification_cover?: string | null;
+    /**
+     * 
      * @type {number}
      * @memberof NotificationTask
      */
@@ -167,6 +179,8 @@ export function NotificationTaskFromJSONTyped(json: any, ignoreDiscriminator: bo
         'trigger_scheduler': json['trigger_scheduler'] == null ? undefined : NotificationTriggerSchedulerFromJSON(json['trigger_scheduler']),
         'notification_title': json['notification_title'] == null ? undefined : json['notification_title'],
         'notification_content': json['notification_content'] == null ? undefined : json['notification_content'],
+        'notification_link': json['notification_link'] == null ? undefined : json['notification_link'],
+        'notification_cover': json['notification_cover'] == null ? undefined : json['notification_cover'],
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
         'user_notification_source': json['user_notification_source'] == null ? undefined : UserNotificationSourceFromJSON(json['user_notification_source']),
         'user_notification_target': json['user_notification_target'] == null ? undefined : UserNotificationTargetFromJSON(json['user_notification_target']),
@@ -195,6 +209,8 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
         'trigger_scheduler': NotificationTriggerSchedulerToJSON(value['trigger_scheduler']),
         'notification_title': value['notification_title'],
         'notification_content': value['notification_content'],
+        'notification_link': value['notification_link'],
+        'notification_cover': value['notification_cover'],
         'notification_template_id': value['notification_template_id'],
         'user_notification_source': UserNotificationSourceToJSON(value['user_notification_source']),
         'user_notification_target': UserNotificationTargetToJSON(value['user_notification_target']),

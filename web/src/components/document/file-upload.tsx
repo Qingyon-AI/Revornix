@@ -1,6 +1,6 @@
 import { utils } from '@kinda/utils';
 import { FileIcon, Loader2, Trash2 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
@@ -15,8 +15,10 @@ const FileUpload = ({
 	onDelete,
 	className,
 	accept,
+	defaultFileName, // ⭐新增：默认文件路径（字符串）
 }: {
 	accept?: string;
+	defaultFileName?: string; // ⭐ 接收默认值
 	onSuccess?: (fileName: string) => void;
 	onDelete?: () => void;
 	className?: string;
@@ -24,9 +26,11 @@ const FileUpload = ({
 	const t = useTranslations();
 	const { userInfo } = useUserContext();
 	const [file, setFile] = useState<File | null>(null);
+	const [fileName, setFileName] = useState<string | null>(null); // ⭐保存文件路径
 	const upload = useRef<HTMLInputElement>(null);
-	const [uploadingStatus, setUploadingStatus] = useState<string | null>();
+	const [uploadingStatus, setUploadingStatus] = useState<string | null>(null);
 
+	// 加载用户文件系统信息
 	const { data: userFileSystemDetail } = useQuery({
 		queryKey: ['getUserFileSystemDetail', userInfo?.id],
 		queryFn: () =>
@@ -38,34 +42,54 @@ const FileUpload = ({
 			userInfo?.default_user_file_system !== undefined,
 	});
 
+	// ⭐初始化默认值（仅初始化一次）
+	useEffect(() => {
+		if (defaultFileName && !fileName) {
+			setFileName(defaultFileName);
+			setUploadingStatus('done'); // 已上传状态
+		}
+	}, [defaultFileName]);
+
 	const handleOnUploadFile = () => {
 		upload.current?.click();
 	};
+
 	const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
-		if (!file) {
-			return;
-		}
+		if (!file) return;
+
 		if (!userInfo?.default_user_file_system) {
 			toast.error('No user default file system found');
 			return;
 		}
+
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
+
 		setUploadingStatus('uploading');
 		setFile(file);
+
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();
-		const fileName = `files/${name}.${suffix}`;
+		const newFileName = `files/${name}.${suffix}`;
+
 		await utils.sleep(2000);
-		await fileService.uploadFile(fileName, file);
-		onSuccess && onSuccess(fileName);
+		await fileService.uploadFile(newFileName, file);
+
+		// ⭐更新文件路径
+		setFileName(newFileName);
+
+		onSuccess && onSuccess(newFileName);
+
 		setUploadingStatus('done');
 	};
+
 	const handleDeleteFile = () => {
 		setFile(null);
+		setFileName(null);
 		setUploadingStatus(null);
 		onDelete && onDelete();
 	};
+
 	return (
 		<div
 			onClick={handleOnUploadFile}
@@ -75,7 +99,7 @@ const FileUpload = ({
 			)}>
 			{uploadingStatus && (
 				<>
-					<div>{file?.name}</div>
+					<div>{file?.name || fileName}</div>
 					{uploadingStatus === 'done' && (
 						<Button
 							type='button'
@@ -87,17 +111,18 @@ const FileUpload = ({
 					)}
 				</>
 			)}
+
 			{uploadingStatus === 'uploading' && (
-				<>
-					<Loader2 className='size-4 animate-spin' />
-				</>
+				<Loader2 className='size-4 animate-spin' />
 			)}
+
 			{!uploadingStatus && (
 				<>
 					<FileIcon />
 					{t('document_create_file_upload')}
 				</>
 			)}
+
 			<input
 				disabled={!!uploadingStatus}
 				ref={upload}

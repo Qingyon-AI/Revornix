@@ -14,6 +14,8 @@ Name | Type
 `notification_template_id` | number
 `notification_title` | string
 `notification_content` | string
+`notification_cover` | string
+`notification_link` | string
 `trigger_type` | number
 `trigger_event_id` | number
 `trigger_scheduler_cron` | string
@@ -33,6 +35,8 @@ const example = {
   "notification_template_id": null,
   "notification_title": null,
   "notification_content": null,
+  "notification_cover": null,
+  "notification_link": null,
   "trigger_type": null,
   "trigger_event_id": null,
   "trigger_scheduler_cron": null,

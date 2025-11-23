@@ -16,6 +16,8 @@ Name | Type
 `trigger_event_id` | number
 `notification_title` | string
 `notification_content` | string
+`notification_link` | string
+`notification_cover` | string
 `user_notification_source_id` | number
 `user_notification_target_id` | number
 
@@ -36,6 +38,8 @@ const example = {
   "trigger_event_id": null,
   "notification_title": null,
   "notification_content": null,
+  "notification_link": null,
+  "notification_cover": null,
   "user_notification_source_id": null,
   "user_notification_target_id": null,
 } satisfies UpdateNotificationTaskRequest

@@ -45,6 +45,8 @@ async def trigger_user_notification_event(
                         raise Exception("Notification custom not found")
                     title = db_notification_custom.title
                     content = db_notification_custom.content
+                    cover = db_notification_custom.cover
+                    link = db_notification_custom.link
                 elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
                     db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
                         db=db,

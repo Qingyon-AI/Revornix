@@ -267,6 +267,8 @@ class NotificationTask(BaseModel):
     trigger_scheduler: NotificationTriggerScheduler | None = None
     notification_title: str | None = None
     notification_content: str | None = None
+    notification_link: str | None = None
+    notification_cover: str | None = None
     notification_template_id: int | None = None
     user_notification_source: UserNotificationSource | None = None
     user_notification_target: UserNotificationTarget | None = None
@@ -299,6 +301,8 @@ class UpdateNotificationTaskRequest(BaseModel):
     trigger_event_id: int | None = None
     notification_title: str | None = None
     notification_content: str | None = None
+    notification_link: str | None = None
+    notification_cover: str | None = None
     user_notification_source_id: int | None = None
     user_notification_target_id: int | None = None
     
@@ -311,6 +315,8 @@ class AddNotificationTaskRequest(BaseModel):
     notification_template_id: int | None = None
     notification_title: str | None = None
     notification_content: str | None = None
+    notification_cover: str | None = None
+    notification_link: str | None = None
     trigger_type: int
     trigger_event_id: int | None = None
     trigger_scheduler_cron: str | None = None
