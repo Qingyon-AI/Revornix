@@ -1,4 +1,7 @@
-import { readNotificationRecords } from '@/service/notification';
+import {
+	deleteNotificationRecords,
+	readNotificationRecords,
+} from '@/service/notification';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -9,12 +12,17 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { useMutation } from '@tanstack/react-query';
+import { InfiniteData, useMutation } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
-import { NotificationRecord } from '@/generated';
+import {
+	InifiniteScrollPagnitionNotificationRecord,
+	NotificationRecord,
+} from '@/generated';
 import { Separator } from '../ui/separator';
 import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
+import { getQueryClient } from '@/lib/get-query-client';
 
 const NotificationRecordCard = ({
 	notification,
@@ -22,7 +30,8 @@ const NotificationRecordCard = ({
 	notification: NotificationRecord;
 }) => {
 	const t = useTranslations();
-	const mutate = useMutation({
+	const queryClient = getQueryClient();
+	const mutateRead = useMutation({
 		mutationKey: ['readNotification', notification.id],
 		mutationFn: readNotificationRecords,
 		onMutate: async (variables) => {
@@ -45,6 +54,34 @@ const NotificationRecordCard = ({
 		onError: (error, variables, context) => {
 			if (!notification || !context?.prevNotification) return;
 			notification = context?.prevNotification;
+			toast.error(error.message);
+		},
+	});
+	const mutateDelete = useMutation({
+		mutationKey: ['deleteNotification', notification.id],
+		mutationFn: deleteNotificationRecords,
+		onSuccess: (_, variables) => {
+			// variables 通常是你 deleteNotificationRecords 的参数
+			const deletedId = notification.id;
+
+			queryClient.setQueryData<
+				InfiniteData<InifiniteScrollPagnitionNotificationRecord>
+			>(['searchMyNotifications', ''], (oldData) => {
+				if (!oldData) return oldData;
+
+				return {
+					...oldData,
+					pages: oldData.pages.map((page) => ({
+						...page,
+						elements: page.elements.filter((item) => {
+							return item.id !== deletedId;
+						}),
+					})),
+				};
+			});
+			setShowNotification(false);
+		},
+		onError: (error) => {
 			toast.error(error.message);
 		},
 	});
@@ -82,28 +119,43 @@ const NotificationRecordCard = ({
 						<div className='text-muted-foreground text-xs'>
 							{format(notification.create_time as Date, 'yyyy-MM-dd HH:mm:ss')}
 						</div>
-						{notification.read_at ? (
+						<div className='flex flex-row gap-2 items-center'>
 							<Button
-								variant={'destructive'}
+								variant={'secondary'}
+								disabled={mutateDelete.isPending}
 								onClick={() => {
-									mutate.mutate({
+									mutateDelete.mutate({
 										notification_record_ids: [notification.id],
-										status: false,
 									});
 								}}>
-								{t('notification_mark_as_unread')}
+								{t('delete')}
+								{mutateDelete.isPending && (
+									<Loader2 className='size-4 animate-spin' />
+								)}
 							</Button>
-						) : (
-							<Button
-								onClick={() => {
-									mutate.mutate({
-										notification_record_ids: [notification.id],
-										status: true,
-									});
-								}}>
-								{t('notification_mark_as_read')}
-							</Button>
-						)}
+							{notification.read_at ? (
+								<Button
+									variant={'destructive'}
+									onClick={() => {
+										mutateRead.mutate({
+											notification_record_ids: [notification.id],
+											status: false,
+										});
+									}}>
+									{t('notification_mark_as_unread')}
+								</Button>
+							) : (
+								<Button
+									onClick={() => {
+										mutateRead.mutate({
+											notification_record_ids: [notification.id],
+											status: true,
+										});
+									}}>
+									{t('notification_mark_as_read')}
+								</Button>
+							)}
+						</div>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
