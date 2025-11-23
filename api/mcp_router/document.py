@@ -1,8 +1,3 @@
-import os
-from dotenv import load_dotenv
-if os.environ.get("ENV") == "dev":
-    load_dotenv(override=True)
-
 import crud
 from data.neo4j.search import global_search
 from fastmcp import FastMCP, Context

@@ -17,8 +17,6 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage, HumanMessage
 from common.common import to_serializable, safe_json_loads
 from enums.mcp import MCPCategory
-from dotenv import load_dotenv
-load_dotenv(override=True)
 
 ai_router = APIRouter()
 

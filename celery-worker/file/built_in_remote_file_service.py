@@ -1,7 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv(override=True)
-
-from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL 
 
 import boto3
 import crud
@@ -12,6 +8,7 @@ from botocore.client import Config
 from botocore.exceptions import ClientError
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from enums.file import RemoteFileServiceUUID
+from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL 
 
 class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     

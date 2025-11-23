@@ -1,16 +1,5 @@
-import os
 from dotenv import load_dotenv
-if os.environ.get('ENV') == 'dev':
-    load_dotenv(override=True)
-
-import logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
-from uvicorn.config import LOGGING_CONFIG
-LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s - %(name)s - %(levelprefix)s - %(message)s"
-LOGGING_CONFIG["formatters"]["access"]["fmt"] = "%(asctime)s - %(name)s - %(levelprefix)s - %(client_addr)s - %(request_line)s %(status_code)s"
+load_dotenv(override=True)
 
 import sentry_sdk
 import io
@@ -44,10 +33,6 @@ from common.logger import exception_logger, info_logger, exception_logger
 common_mcp_app = common_mcp_router.http_app()
 document_mcp_app = document_mcp_router.http_app()
 
-root_path = '/api/main-service'
-
-if os.getenv('ENV') == 'dev':
-    root_path = ''
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -70,9 +55,8 @@ async def lifespan(app: FastAPI):
         info_logger.info("✅ Redis connection closed.")
     
 app = FastAPI(
-        root_path=root_path,
         title="Revornix Main Backend",
-        version="0.0.1",
+        version="0.5.1",
         contact={
             "name": "Kinda Hall",
             "url": "https://alndaly.github.io",

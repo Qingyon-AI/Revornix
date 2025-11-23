@@ -1,7 +1,5 @@
-import os
 from dotenv import load_dotenv
-if os.environ.get('ENV') == 'dev':
-    load_dotenv(override=True)
+load_dotenv(override=True)
 
 import httpx
 import uuid

@@ -1,8 +1,7 @@
 import sys
 import os
 from dotenv import load_dotenv
-if os.getenv('ENV') == 'dev':
-    load_dotenv(override=True)
+load_dotenv(override=True)
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
 

@@ -1,8 +1,3 @@
-import os
-from dotenv import load_dotenv
-if os.environ.get('ENV') == 'dev':
-    load_dotenv(override=True)
-    
 from pymilvus import MilvusClient
 from config.milvus import MILVUS_CLUSTER_ENDPOINT, MILVUS_TOKEN
 
