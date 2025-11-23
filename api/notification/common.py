@@ -78,6 +78,7 @@ async def trigger_user_notification_event(
                     title = message.title
                     content = message.content
                     link = message.link
+                    cover = message.cover
                 user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
                     db=db,
                     user_notification_source_id=db_notification_task.user_notification_source_id

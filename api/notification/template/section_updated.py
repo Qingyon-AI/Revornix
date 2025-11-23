@@ -4,6 +4,7 @@ from typing import cast
 from common.sql import SessionLocal
 from enums.section import UserSectionRole
 from protocol.notification_template import NotificationTemplate
+from protocol.remote_file_service import RemoteFileServiceProtocol
 
 class SectionUpdatedNotificationTemplate(NotificationTemplate):
     
@@ -41,17 +42,22 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
         if not db_user_section:
             raise Exception("user not in section")
         db.close()
+        cover = None
+        if db_section.cover is not None:
+            cover = f'{RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=db_section.creator_id)}/{db_section.cover}'
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
                 title=f"Section Updated",
                 content=f"你参与的专栏{db_section.title}有了新的更新，点击前往查看",
-                link=f'/section/detail/{section_id}'
+                link=f'/section/detail/{section_id}',
+                cover=cover
             )
         elif db_user_section.role == UserSectionRole.SUBSCRIBER:
             return schemas.notification.Message(
                 title=f"Section Updated",
                 content=f"你订阅的专栏{db_section.title}有了新的更新，点击前往查看",
-                link=f'/section/detail/{section_id}'
+                link=f'/section/detail/{section_id}',
+                cover=cover
             )
         else:
             raise Exception("invalid user section role")
