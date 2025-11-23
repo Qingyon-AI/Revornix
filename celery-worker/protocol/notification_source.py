@@ -16,7 +16,7 @@ class NotificationSourceProtocol(Protocol):
         name_zh: str,
         description: str | None,
         description_zh: str | None,
-        demo_config: str | None
+        demo_config: str | None = None
     ):
         self.uuid = uuid
         self.name = name
