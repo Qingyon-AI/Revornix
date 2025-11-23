@@ -4,6 +4,7 @@ from typing import cast
 from common.sql import SessionLocal
 from enums.section import UserSectionRole
 from protocol.notification_template import NotificationTemplate
+from protocol.remote_file_service import RemoteFileServiceProtocol
 
 class RemovedFromSectionNotificationTemplate(NotificationTemplate):
     
@@ -41,17 +42,22 @@ class RemovedFromSectionNotificationTemplate(NotificationTemplate):
         if not db_user_section:
             raise Exception("user not in section")
         db.close()
+        cover = None
+        if db_section.cover is not None:
+            cover = f'{RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=db_section.creator_id)}/{db_section.cover}'
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
                 title=f"You are removed from Section",
                 content=f"您已经从专栏{db_section.title}被移出，后续将无法参与该专栏的协作和收到更新通知，如有异议，请联系专栏所有者",
-                link=f'/section/detail/{section_id}'
+                link=f'/section/detail/{section_id}',
+                cover=cover
             )
         elif db_user_section.role == UserSectionRole.SUBSCRIBER:
             return schemas.notification.Message(
                 title=f"You are removed from Section",
                 content=f"您已经从专栏{db_section.title}被移出，后续将无法收到该专栏的更新通知，如有异议，请联系专栏所有者",
-                link=f'/section/detail/{section_id}'
+                link=f'/section/detail/{section_id}',
+                cover=cover
             )
         else:
             raise Exception("invalid user section role")

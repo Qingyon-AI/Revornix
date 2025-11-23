@@ -4,6 +4,7 @@ from typing import cast
 from common.sql import SessionLocal
 from enums.section import UserSectionRole
 from protocol.notification_template import NotificationTemplate
+from protocol.remote_file_service import RemoteFileServiceProtocol
 
 class SectionSubscribedNotificationTemplate(NotificationTemplate):
     
@@ -41,17 +42,22 @@ class SectionSubscribedNotificationTemplate(NotificationTemplate):
         if not db_user_section:
             raise Exception("user not in section")
         db.close()
+        cover = None
+        if db_section.cover is not None:
+            cover = f'{RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=db_section.creator_id)}/{db_section.cover}'
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
                 title=f"Section Subscribed",
                 content=f"有人订阅了你参与的专栏{db_section.title}，点击前往查看",
-                link=f'/section/detail/{section_id}'
+                link=f'/section/detail/{section_id}',
+                cover=cover
             )
         elif db_user_section.role == UserSectionRole.CREATOR:
             return schemas.notification.Message(
                 title=f"Section Subscribed",
                 content=f"有人订阅了创建的专栏{db_section.title}，点击前往查看",
-                link=f'/section/detail/{section_id}'
+                link=f'/section/detail/{section_id}',
+                cover=cover
             )
         else:
             raise Exception("user is not a member or creator of the section")
