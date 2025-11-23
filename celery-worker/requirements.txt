@@ -37,3 +37,4 @@ mcp_use==1.4.0
 fastmcp==2.12.5
 websockets==15.0.1
 lark_oapi==1.4.24
+python-telegram-bot==22.5

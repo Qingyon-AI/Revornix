@@ -1,11 +1,12 @@
 import crud
-from common.logger import exception_logger, log_exception
+from common.logger import exception_logger
 from common.sql import SessionLocal
 from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
 from notification.tool.email import EmailNotificationTool
 from notification.tool.feishu import FeishuNotificationTool
 from notification.tool.dingtalk import DingTalkNotificationTool
+from notification.tool.telegram import TelegramNotificationTool
 from enums.notification import NotificationSourceUUID, NotificationContentType
 from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
@@ -128,6 +129,8 @@ async def trigger_user_notification_event(
                     notification_tool = FeishuNotificationTool()
                 elif notification_source.uuid == NotificationSourceUUID.DINGTALK.value:
                     notification_tool = DingTalkNotificationTool()
+                elif notification_source.uuid == NotificationSourceUUID.TELEGRAM.value:
+                    notification_tool = TelegramNotificationTool()
                 else:
                     raise Exception("Notification source not supported")
                 notification_tool.set_source(user_notification_source.id)
