@@ -35,7 +35,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 				<img
 					src={section?.cover ? section.cover : '/images/cover.jpg'}
 					alt='cover'
-					className='w-full h-52 object-cover'
+					className='w-full h-40 object-cover'
 				/>
 			</div>
 
