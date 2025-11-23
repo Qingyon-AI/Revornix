@@ -22,6 +22,8 @@ from notification.source.apple_notification_source import AppleNotificationSourc
 from notification.source.apple_sandbox_notification_source import AppleSandBoxNotificationSource
 from notification.source.email_notification_source import EmailNotificationSource
 from notification.source.feishu_notification_source import FeishuNotificationSource
+from notification.source.dingtalk_notification_source import DingTalkNotificationSource
+from notification.target.dingtalk_notification_target import DingTalkNotificationTarget
 from notification.target.feishu_notification_target import FeishuNotificationTarget
 from notification.target.apple_notification_target import AppleNotificationTarget
 from notification.target.apple_sandbox_notification_target import AppleSandBoxNotificationTarget
@@ -115,11 +117,13 @@ if __name__ == '__main__':
         apple_notification_source = AppleNotificationSource()
         apple_sand_box_notification_source = AppleSandBoxNotificationSource()
         feishu_notification_source = FeishuNotificationSource()
+        dingtalk_notification_source = DingTalkNotificationSource()
         notification_sources: list[NotificationSourceProtocol] = [
             email_notification_source,
             apple_notification_source,
             apple_sand_box_notification_source,
-            feishu_notification_source
+            feishu_notification_source,
+            dingtalk_notification_source
         ]
         for notification_source in notification_sources:
             if crud.notification.get_notification_source_by_uuid(
@@ -139,11 +143,13 @@ if __name__ == '__main__':
         apple_notification_target = AppleNotificationTarget()
         apple_sand_box_notification_target = AppleSandBoxNotificationTarget()
         feishu_notification_target = FeishuNotificationTarget()
+        dingtalk_notification_target = DingTalkNotificationTarget()
         notification_targets: list[NotificationTargetProtocol] = [
             email_notification_target,
             apple_notification_target,
             apple_sand_box_notification_target,
-            feishu_notification_target
+            feishu_notification_target,
+            dingtalk_notification_target
         ]
         for notification_target in notification_targets:
             if crud.notification.get_notification_target_by_uuid(

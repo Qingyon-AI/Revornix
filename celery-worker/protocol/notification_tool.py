@@ -36,7 +36,7 @@ class NotificationToolProtocol(Protocol):
         config = None
         if self.source is None:
             raise Exception("notification source not found")
-        if self.source.config_json is not None:
+        if self.source.config_json:
             config = json.loads(self.source.config_json)
         return config
 
@@ -44,7 +44,7 @@ class NotificationToolProtocol(Protocol):
         config = None
         if self.target is None:
             raise Exception("notification target not found")
-        if self.target.config_json is not None:
+        if self.target.config_json:
             config = json.loads(self.target.config_json)
         return config
 
