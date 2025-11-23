@@ -21,6 +21,8 @@ from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 from notification.source.apple_notification_source import AppleNotificationSource
 from notification.source.apple_sandbox_notification_source import AppleSandBoxNotificationSource
 from notification.source.email_notification_source import EmailNotificationSource
+from notification.source.feishu_notification_source import FeishuNotificationSource
+from notification.target.feishu_notification_target import FeishuNotificationTarget
 from notification.target.apple_notification_target import AppleNotificationTarget
 from notification.target.apple_sandbox_notification_target import AppleSandBoxNotificationTarget
 from notification.target.email_notification_target import EmailNotificationTarget
@@ -112,10 +114,12 @@ if __name__ == '__main__':
         email_notification_source = EmailNotificationSource()
         apple_notification_source = AppleNotificationSource()
         apple_sand_box_notification_source = AppleSandBoxNotificationSource()
+        feishu_notification_source = FeishuNotificationSource()
         notification_sources: list[NotificationSourceProtocol] = [
             email_notification_source,
             apple_notification_source,
-            apple_sand_box_notification_source
+            apple_sand_box_notification_source,
+            feishu_notification_source
         ]
         for notification_source in notification_sources:
             if crud.notification.get_notification_source_by_uuid(
@@ -134,10 +138,12 @@ if __name__ == '__main__':
         email_notification_target = EmailNotificationTarget()
         apple_notification_target = AppleNotificationTarget()
         apple_sand_box_notification_target = AppleSandBoxNotificationTarget()
+        feishu_notification_target = FeishuNotificationTarget()
         notification_targets: list[NotificationTargetProtocol] = [
             email_notification_target,
             apple_notification_target,
-            apple_sand_box_notification_target
+            apple_sand_box_notification_target,
+            feishu_notification_target
         ]
         for notification_target in notification_targets:
             if crud.notification.get_notification_target_by_uuid(
