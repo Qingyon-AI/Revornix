@@ -1,12 +1,8 @@
-from dotenv import load_dotenv
-load_dotenv(override=True)
-
-from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL 
-
 import boto3
 import crud
 import json
 from typing import Any
+from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL 
 from common.sql import SessionLocal
 from botocore.client import Config
 from botocore.exceptions import ClientError
