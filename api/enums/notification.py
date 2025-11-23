@@ -16,6 +16,7 @@ class NotificationSourceUUID(Enum):
     APPLE_SANDBOX = 'f5940f2602b14d31b40fb324e7b7df78'
     FEISHU = 'bbaea160e9084a04abdc12742110111e'
     DINGTALK = 'e88984e3bb3745fbb42ea60b4167d3b5'
+    TELEGRAM = 'b8d1c80d974a468d8206b717f2ed02fc'
 
 class NotificationContentType(IntEnum):
     CUSTOM = 0
