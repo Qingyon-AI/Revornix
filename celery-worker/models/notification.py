@@ -27,7 +27,7 @@ class NotificationTask(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
-    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     user_notification_source_id: Mapped[int] = mapped_column(ForeignKey("user_notification_source.id"), index=True, nullable=False)
     user_notification_target_id: Mapped[int] = mapped_column(ForeignKey("user_notification_target.id"), index=True, nullable=False)
     notification_content_type: Mapped[int] = mapped_column(Integer, index=True, comment='0: custom, 1: template', nullable=False)

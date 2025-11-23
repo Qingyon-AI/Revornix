@@ -56,14 +56,17 @@ const NotificationRecordCard = ({
 					<DialogHeader>
 						<DialogTitle>{notification.title}</DialogTitle>
 					</DialogHeader>
-					{notification.cover && (
-						<img
-							src={notification.cover}
-							alt='notification cover'
-							className='rounded aspect-video w-40 object-cover'
-						/>
-					)}
-					<div className='flex-1 overflow-auto'>{notification.content}</div>
+
+					<div className='flex-1 overflow-auto flex flex-col gap-2'>
+						{notification.cover && (
+							<img
+								src={notification.cover}
+								alt='notification cover'
+								className='rounded aspect-video w-full object-cover'
+							/>
+						)}
+						<div>{notification.content}</div>
+					</div>
 					{notification.link && (
 						<Link href={notification.link}>
 							<Button
@@ -116,7 +119,7 @@ const NotificationRecordCard = ({
 								{notification.content}
 							</p>
 							{notification.link && (
-								<Link href={notification.link}>
+								<Link href={notification.link} className='w-fit'>
 									<Button
 										size='sm'
 										variant={'link'}
