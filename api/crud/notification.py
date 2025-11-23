@@ -50,12 +50,16 @@ def create_notification_task_content_custom(
     db: Session, 
     notification_task_id: int,
     title: str,
-    content: str | None = None
+    content: str | None = None,
+    link: str | None = None,
+    cover: str | None = None
 ):
     db_notification_task_content_custom = models.notification.NotificationTaskContentCustom(
         notification_task_id=notification_task_id,
         title=title,
-        content=content
+        content=content,
+        link=link,
+        cover=cover
     )
     db.add(db_notification_task_content_custom)
     db.flush()

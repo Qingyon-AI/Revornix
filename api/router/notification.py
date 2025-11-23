@@ -113,7 +113,9 @@ async def add_notification_task(
             db=db,
             notification_task_id=db_notification_task.id,
             title=add_notification_task_request.notification_title,
-            content=add_notification_task_request.notification_content
+            content=add_notification_task_request.notification_content,
+            link=add_notification_task_request.notification_link,
+            cover=add_notification_task_request.notification_cover
         )
     elif add_notification_task_request.notification_content_type == NotificationContentType.TEMPLATE:
         if add_notification_task_request.notification_template_id is None:
@@ -176,6 +178,8 @@ async def get_notification_task(
         if db_notification_task_content_custom is not None:
             res.notification_title = db_notification_task_content_custom.title
             res.notification_content = db_notification_task_content_custom.content
+            res.notification_cover = db_notification_task_content_custom.cover
+            res.notification_link = db_notification_task_content_custom.link
     elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
         db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
             db=db,
@@ -286,11 +290,15 @@ async def update_notification_task(
                 db=db,
                 notification_task_id=update_notification_task_request.notification_task_id,
                 title=update_notification_task_request.notification_title,
-                content=update_notification_task_request.notification_content
+                content=update_notification_task_request.notification_content,
+                link=update_notification_task_request.notification_link,
+                cover=update_notification_task_request.notification_cover
             )
         else:
             db_notification_task_content_custom.title = update_notification_task_request.notification_title
             db_notification_task_content_custom.content = update_notification_task_request.notification_content
+            db_notification_task_content_custom.cover = update_notification_task_request.notification_cover
+            db_notification_task_content_custom.link = update_notification_task_request.notification_link
     elif update_notification_task_request.notification_content_type == NotificationContentType.TEMPLATE:
         if update_notification_task_request.notification_template_id is None:
             raise schemas.error.CustomException(message="notification template id cannot be empty for template notification", code=400)

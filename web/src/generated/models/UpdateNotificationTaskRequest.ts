@@ -81,6 +81,18 @@ export interface UpdateNotificationTaskRequest {
     notification_content?: string | null;
     /**
      * 
+     * @type {string}
+     * @memberof UpdateNotificationTaskRequest
+     */
+    notification_link?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateNotificationTaskRequest
+     */
+    notification_cover?: string | null;
+    /**
+     * 
      * @type {number}
      * @memberof UpdateNotificationTaskRequest
      */
@@ -121,6 +133,8 @@ export function UpdateNotificationTaskRequestFromJSONTyped(json: any, ignoreDisc
         'trigger_event_id': json['trigger_event_id'] == null ? undefined : json['trigger_event_id'],
         'notification_title': json['notification_title'] == null ? undefined : json['notification_title'],
         'notification_content': json['notification_content'] == null ? undefined : json['notification_content'],
+        'notification_link': json['notification_link'] == null ? undefined : json['notification_link'],
+        'notification_cover': json['notification_cover'] == null ? undefined : json['notification_cover'],
         'user_notification_source_id': json['user_notification_source_id'] == null ? undefined : json['user_notification_source_id'],
         'user_notification_target_id': json['user_notification_target_id'] == null ? undefined : json['user_notification_target_id'],
     };
@@ -147,6 +161,8 @@ export function UpdateNotificationTaskRequestToJSONTyped(value?: UpdateNotificat
         'trigger_event_id': value['trigger_event_id'],
         'notification_title': value['notification_title'],
         'notification_content': value['notification_content'],
+        'notification_link': value['notification_link'],
+        'notification_cover': value['notification_cover'],
         'user_notification_source_id': value['user_notification_source_id'],
         'user_notification_target_id': value['user_notification_target_id'],
     };
