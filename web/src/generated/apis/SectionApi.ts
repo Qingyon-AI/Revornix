@@ -24,6 +24,7 @@ import type {
   InifiniteScrollPagnitionSectionDocumentInfo,
   InifiniteScrollPagnitionSectionInfo,
   InifiniteScrollPagnitionSectionUserPublicInfo,
+  MineSectionRoleAndAuthorityRequest,
   NormalResponse,
   SchemasDocumentCreateLabelResponse,
   SchemasDocumentLabelAddRequest,
@@ -53,6 +54,8 @@ import type {
   SectionUserDeleteRequest,
   SectionUserModifyRequest,
   SectionUserRequest,
+  SectionUserRoleAndAuthorityRequest,
+  SectionUserRoleAndAuthorityResponse,
 } from '../models/index';
 import {
     AllMySectionsResponseFromJSON,
@@ -73,6 +76,8 @@ import {
     InifiniteScrollPagnitionSectionInfoToJSON,
     InifiniteScrollPagnitionSectionUserPublicInfoFromJSON,
     InifiniteScrollPagnitionSectionUserPublicInfoToJSON,
+    MineSectionRoleAndAuthorityRequestFromJSON,
+    MineSectionRoleAndAuthorityRequestToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
     SchemasDocumentCreateLabelResponseFromJSON,
@@ -131,6 +136,10 @@ import {
     SectionUserModifyRequestToJSON,
     SectionUserRequestFromJSON,
     SectionUserRequestToJSON,
+    SectionUserRoleAndAuthorityRequestFromJSON,
+    SectionUserRoleAndAuthorityRequestToJSON,
+    SectionUserRoleAndAuthorityResponseFromJSON,
+    SectionUserRoleAndAuthorityResponseToJSON,
 } from '../models/index';
 
 export interface AddLabelSectionLabelCreatePostRequest {
@@ -192,6 +201,12 @@ export interface GetDateSectionInfoSectionDatePostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface GetMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequest {
+    mineSectionRoleAndAuthorityRequest: MineSectionRoleAndAuthorityRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
 export interface GetMySubscribedSectionsSectionSubscribedPostRequest {
     searchSubscribedSectionRequest: SearchSubscribedSectionRequest;
     authorization?: string | null;
@@ -200,6 +215,12 @@ export interface GetMySubscribedSectionsSectionSubscribedPostRequest {
 
 export interface GetSectionDetailSectionDetailPostRequest {
     sectionDetailRequest: SectionDetailRequest;
+    authorization?: string | null;
+    xForwardedFor?: string | null;
+}
+
+export interface GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest {
+    sectionUserRoleAndAuthorityRequest: SectionUserRoleAndAuthorityRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
 }
@@ -759,6 +780,53 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
+     * Get Mine Section Role And Authority
+     */
+    async getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRaw(requestParameters: GetMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionUserRoleAndAuthorityResponse>> {
+        if (requestParameters['mineSectionRoleAndAuthorityRequest'] == null) {
+            throw new runtime.RequiredError(
+                'mineSectionRoleAndAuthorityRequest',
+                'Required parameter "mineSectionRoleAndAuthorityRequest" was null or undefined when calling getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/mine/role-and-authority`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MineSectionRoleAndAuthorityRequestToJSON(requestParameters['mineSectionRoleAndAuthorityRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SectionUserRoleAndAuthorityResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Mine Section Role And Authority
+     */
+    async getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost(requestParameters: GetMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SectionUserRoleAndAuthorityResponse> {
+        const response = await this.getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get My Subscribed Sections
      */
     async getMySubscribedSectionsSectionSubscribedPostRaw(requestParameters: GetMySubscribedSectionsSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
@@ -849,6 +917,53 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async getSectionDetailSectionDetailPost(requestParameters: GetSectionDetailSectionDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SectionInfo> {
         const response = await this.getSectionDetailSectionDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Section User Role And Authority
+     */
+    async getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRaw(requestParameters: GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionUserRoleAndAuthorityResponse>> {
+        if (requestParameters['sectionUserRoleAndAuthorityRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionUserRoleAndAuthorityRequest',
+                'Required parameter "sectionUserRoleAndAuthorityRequest" was null or undefined when calling getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/section/user/role-and-authority`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionUserRoleAndAuthorityRequestToJSON(requestParameters['sectionUserRoleAndAuthorityRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SectionUserRoleAndAuthorityResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Section User Role And Authority
+     */
+    async getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost(requestParameters: GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SectionUserRoleAndAuthorityResponse> {
+        const response = await this.getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

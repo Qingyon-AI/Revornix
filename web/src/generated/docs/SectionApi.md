@@ -14,8 +14,10 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**generatePodcastSectionPodcastGeneratePost**](SectionApi.md#generatepodcastsectionpodcastgeneratepost) | **POST** /section/podcast/generate | Generate Podcast |
 | [**getAllMineSectionsSectionMineAllPost**](SectionApi.md#getallminesectionssectionmineallpost) | **POST** /section/mine/all | Get All Mine Sections |
 | [**getDateSectionInfoSectionDatePost**](SectionApi.md#getdatesectioninfosectiondatepost) | **POST** /section/date | Get Date Section Info |
+| [**getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost**](SectionApi.md#getminesectionroleandauthoritysectionmineroleandauthoritypost) | **POST** /section/mine/role-and-authority | Get Mine Section Role And Authority |
 | [**getMySubscribedSectionsSectionSubscribedPost**](SectionApi.md#getmysubscribedsectionssectionsubscribedpost) | **POST** /section/subscribed | Get My Subscribed Sections |
 | [**getSectionDetailSectionDetailPost**](SectionApi.md#getsectiondetailsectiondetailpost) | **POST** /section/detail | Get Section Detail |
+| [**getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost**](SectionApi.md#getsectionuserroleandauthoritysectionuserroleandauthoritypost) | **POST** /section/user/role-and-authority | Get Section User Role And Authority |
 | [**listLabelSectionLabelListPost**](SectionApi.md#listlabelsectionlabellistpost) | **POST** /section/label/list | List Label |
 | [**publicSectionsSectionPublicSearchPost**](SectionApi.md#publicsectionssectionpublicsearchpost) | **POST** /section/public/search | Public Sections |
 | [**searchMineSectionsSectionMineSearchPost**](SectionApi.md#searchminesectionssectionminesearchpost) | **POST** /section/mine/search | Search Mine Sections |
@@ -751,6 +753,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost
+
+> SectionUserRoleAndAuthorityResponse getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost(mineSectionRoleAndAuthorityRequest, authorization, xForwardedFor)
+
+Get Mine Section Role And Authority
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { GetMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // MineSectionRoleAndAuthorityRequest
+    mineSectionRoleAndAuthorityRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies GetMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequest;
+
+  try {
+    const data = await api.getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **mineSectionRoleAndAuthorityRequest** | [MineSectionRoleAndAuthorityRequest](MineSectionRoleAndAuthorityRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**SectionUserRoleAndAuthorityResponse**](SectionUserRoleAndAuthorityResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## getMySubscribedSectionsSectionSubscribedPost
 
 > InifiniteScrollPagnitionSectionInfo getMySubscribedSectionsSectionSubscribedPost(searchSubscribedSectionRequest, authorization, xForwardedFor)
@@ -875,6 +949,78 @@ example().catch(console.error);
 ### Return type
 
 [**SectionInfo**](SectionInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost
+
+> SectionUserRoleAndAuthorityResponse getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost(sectionUserRoleAndAuthorityRequest, authorization, xForwardedFor)
+
+Get Section User Role And Authority
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // SectionUserRoleAndAuthorityRequest
+    sectionUserRoleAndAuthorityRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest;
+
+  try {
+    const data = await api.getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **sectionUserRoleAndAuthorityRequest** | [SectionUserRoleAndAuthorityRequest](SectionUserRoleAndAuthorityRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**SectionUserRoleAndAuthorityResponse**](SectionUserRoleAndAuthorityResponse.md)
 
 ### Authorization
 

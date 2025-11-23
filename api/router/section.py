@@ -310,6 +310,46 @@ async def section_publish_get_request(
         create_time=db_publish_section.create_time
     )
 
+@section_router.post('/mine/role-and-authority', response_model=schemas.section.SectionUserRoleAndAuthorityResponse)
+async def get_mine_section_role_and_authority(
+    section_user_get_request: schemas.section.MineSectionRoleAndAuthorityRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    db_section_user = crud.section.get_section_user_by_section_id_and_user_id(
+        db=db,
+        section_id=section_user_get_request.section_id,
+        user_id=user.id
+    )
+    if db_section_user is None:
+        raise Exception("Section not found")
+    return schemas.section.SectionUserRoleAndAuthorityResponse(
+        section_id=section_user_get_request.section_id,
+        user_id=user.id,
+        role=db_section_user.role,
+        authority=db_section_user.authority
+    )
+
+@section_router.post('/user/role-and-authority', response_model=schemas.section.SectionUserRoleAndAuthorityResponse)
+async def get_section_user_role_and_authority(
+    section_user_get_request: schemas.section.SectionUserRoleAndAuthorityRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    db_section_user = crud.section.get_section_user_by_section_id_and_user_id(
+        db=db,
+        section_id=section_user_get_request.section_id,
+        user_id=section_user_get_request.user_id
+    )
+    if db_section_user is None:
+        raise Exception("Section not found")
+    return schemas.section.SectionUserRoleAndAuthorityResponse(
+        section_id=section_user_get_request.section_id,
+        user_id=section_user_get_request.user_id,
+        role=db_section_user.role,
+        authority=db_section_user.authority
+    )
+
 @section_router.post('/user', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionUserPublicInfo])
 async def section_user_request(
     section_user_request: schemas.section.SectionUserRequest,

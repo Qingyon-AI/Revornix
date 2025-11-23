@@ -128,6 +128,7 @@ docs/McpApi.md
 docs/Message.md
 docs/MineEngineSearchResponse.md
 docs/MineFileSystemSearchResponse.md
+docs/MineSectionRoleAndAuthorityRequest.md
 docs/Model.md
 docs/ModelCreateRequest.md
 docs/ModelCreateResponse.md
@@ -178,10 +179,10 @@ docs/S3PresignUploadURLRequest.md
 docs/S3PresignUploadURLResponse.md
 docs/SchemasDocumentBaseSectionInfo.md
 docs/SchemasDocumentCreateLabelResponse.md
+docs/SchemasDocumentLabel.md
 docs/SchemasDocumentLabelAddRequest.md
 docs/SchemasDocumentLabelListResponse.md
 docs/SchemasSectionBaseSectionInfo.md
-docs/SchemasSectionLabel.md
 docs/SchemasSectionLabelDeleteRequest.md
 docs/SearchAllMyDocumentsRequest.md
 docs/SearchApiKeysRequest.md
@@ -225,6 +226,8 @@ docs/SectionUserDeleteRequest.md
 docs/SectionUserModifyRequest.md
 docs/SectionUserPublicInfo.md
 docs/SectionUserRequest.md
+docs/SectionUserRoleAndAuthorityRequest.md
+docs/SectionUserRoleAndAuthorityResponse.md
 docs/SmsUserCodeCreateRequest.md
 docs/SmsUserCodeVerifyCreate.md
 docs/StarRequest.md
@@ -373,6 +376,7 @@ models/MCPServerUpdateRequest.ts
 models/Message.ts
 models/MineEngineSearchResponse.ts
 models/MineFileSystemSearchResponse.ts
+models/MineSectionRoleAndAuthorityRequest.ts
 models/Model.ts
 models/ModelCreateRequest.ts
 models/ModelCreateResponse.ts
@@ -421,10 +425,10 @@ models/S3PresignUploadURLRequest.ts
 models/S3PresignUploadURLResponse.ts
 models/SchemasDocumentBaseSectionInfo.ts
 models/SchemasDocumentCreateLabelResponse.ts
+models/SchemasDocumentLabel.ts
 models/SchemasDocumentLabelAddRequest.ts
 models/SchemasDocumentLabelListResponse.ts
 models/SchemasSectionBaseSectionInfo.ts
-models/SchemasSectionLabel.ts
 models/SchemasSectionLabelDeleteRequest.ts
 models/SearchAllMyDocumentsRequest.ts
 models/SearchApiKeysRequest.ts
@@ -467,6 +471,8 @@ models/SectionUserDeleteRequest.ts
 models/SectionUserModifyRequest.ts
 models/SectionUserPublicInfo.ts
 models/SectionUserRequest.ts
+models/SectionUserRoleAndAuthorityRequest.ts
+models/SectionUserRoleAndAuthorityResponse.ts
 models/SmsUserCodeCreateRequest.ts
 models/SmsUserCodeVerifyCreate.ts
 models/StarRequest.ts

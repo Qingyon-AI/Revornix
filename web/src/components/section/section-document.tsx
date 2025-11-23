@@ -6,8 +6,11 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from '@/components/ui/sheet';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { searchSectionDocuments } from '@/service/section';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+	getMineUserRoleAndAuthority,
+	searchSectionDocuments,
+} from '@/service/section';
 import SectionDocumentCard from './section-document-card';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
@@ -16,6 +19,7 @@ import { useRouter } from 'nextjs-toploader/app';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
 import { Skeleton } from '../ui/skeleton';
+import { UserSectionRole } from '@/enums/section';
 
 const SectionDocument = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
@@ -57,7 +61,13 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 				: undefined;
 		},
 	});
+
 	const documents = data?.pages.flatMap((page) => page.elements) || [];
+
+	const { data: sectionUserRoleAndAuthority } = useQuery({
+		queryKey: ['getMineUserRoleAndAuthority', section_id],
+		queryFn: () => getMineUserRoleAndAuthority({ section_id: section_id }),
+	});
 
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
@@ -103,12 +113,15 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 					)}
 					<div ref={bottomRef}></div>
 				</div>
-				<div className='p-5 w-full'>
-					<Button className='w-full' onClick={handleAddDocument}>
-						{t('section_documents_add')}
-						<PlusCircleIcon />
-					</Button>
-				</div>
+				{(sectionUserRoleAndAuthority?.role === UserSectionRole.CERATOR ||
+					sectionUserRoleAndAuthority?.role === UserSectionRole.MEMBER) && (
+					<div className='p-5 w-full'>
+						<Button className='w-full' onClick={handleAddDocument}>
+							{t('section_documents_add')}
+							<PlusCircleIcon />
+						</Button>
+					</div>
+				)}
 			</SheetContent>
 		</Sheet>
 	);
