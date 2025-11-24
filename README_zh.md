@@ -110,13 +110,11 @@ pnpm start
 
 ### 启动 celery 任务序列
 
-目前仅支持pool=solo，即单进程模式，后续会支持多进程模式。
-
 ```shell
 cd celery-worker
 conda create -n celery-worker python=3.11 -y
 pip install -r ./requirements.txt
-celery -A common.celery.app.celery_app worker --pool=solo
+celery -A common.celery.app worker --pool=threads --concurrency=10 --loglevel=info -E
 ```
 
 ### 启动前端服务

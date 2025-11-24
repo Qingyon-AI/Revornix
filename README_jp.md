@@ -109,13 +109,11 @@ pnpm start
 
 ### Celery ワーカーを起動
 
-現在サポートされているのは `pool=solo`（単一プロセスモード）のみです。マルチプロセス対応は今後の予定です。
-
 ```shell
 cd celery-worker
 conda create -n celery-worker python=3.11 -y
 pip install -r ./requirements.txt
-celery -A common.celery.app.celery_app worker --pool=solo
+celery -A common.celery.app worker --pool=threads --concurrency=10 --loglevel=info -E
 ```
 
 ### フロントエンドを起動
