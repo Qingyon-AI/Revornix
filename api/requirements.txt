@@ -1,5 +1,5 @@
-fastapi[standard]==0.120.4
-alembic==1.16.5
+fastapi[standard]==0.121.3
+alembic==1.17.2
 alibabacloud-sts20150401==1.1.6
 aliyun-python-sdk-sts==3.1.3
 aliyun-python-sdk-core-v3==2.13.33
@@ -8,7 +8,7 @@ beautifulsoup4==4.14.2
 httpx==0.28.1
 openai==1.109.1
 pydantic==2.11.10
-pymilvus[model]==2.6.2
+pymilvus[model]==2.6.3
 python-dotenv==1.1.1
 redis==6.4.0
 SQLAlchemy==2.0.43
@@ -19,14 +19,14 @@ apscheduler==3.11.0
 pyJWT==2.10.1
 python-jose==3.5.0
 opencv-python-headless==4.12.0.88
-playwright==1.55.0
+playwright==1.56.0
 markitdown==0.1.3
 mineru[core]==2.6.4
 boto3==1.40.72
 psycopg2-binary==2.9.10
 markdown==3.9
 feedparser==6.0.12
-mcp_use==1.4.0
+mcp_use==1.4.1
 jwcrypto==1.5.6
 torch==2.8.0
 langchain_openai==0.3.34
@@ -34,8 +34,8 @@ lightrag-hku==1.4.9
 google-auth==2.41.1
 tencentcloud-sdk-python==3.0.1470
 sentence_transformers==5.1.1
-neo4j==6.0.2
-fastmcp==2.12.5
+neo4j==6.0.3
+fastmcp==2.13.1
 websockets==15.0.1
 sentry-sdk==2.44.0
 lark_oapi==1.4.24
