@@ -110,13 +110,11 @@ pnpm start
 
 ### Launch the Celery worker queue
 
-Currently only `pool=solo` (single-process mode) is supported. Multi-process support is on the roadmap.
-
 ```shell
 cd celery-worker
 conda create -n celery-worker python=3.11 -y
 pip install -r ./requirements.txt
-celery -A common.celery.app.celery_app worker --pool=solo
+celery -A common.celery.app worker --pool=threads --concurrency=10 --loglevel=info -E
 ```
 
 ### Launch the frontend
