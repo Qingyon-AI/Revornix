@@ -13,7 +13,7 @@ from common.dependencies import get_current_user, get_db
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 from enums.file import RemoteFileServiceUUID
-from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL, FILE_SYSTEM_SERVER_PUBLIC_URL
+from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 from common.common import get_user_remote_file_system
@@ -40,7 +40,7 @@ def get_built_in_presigned_url(
 ):
     sts = boto3.client(
         'sts',
-        endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
+        endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
         aws_access_key_id=FILE_SYSTEM_USER_NAME,
         aws_secret_access_key=FILE_SYSTEM_PASSWORD,
         config=Config(signature_version='s3v4'),
@@ -54,7 +54,7 @@ def get_built_in_presigned_url(
     creds = resp['Credentials']
     s3 = boto3.client(
         's3',
-        endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
+        endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
         aws_access_key_id=creds['AccessKeyId'],
         aws_secret_access_key=creds['SecretAccessKey'],
         aws_session_token=creds['SessionToken'],
@@ -78,7 +78,7 @@ def get_built_in_presigned_url(
         ExpiresIn=expires_in,
     )
     return schemas.file_system.S3PresignUploadURLResponse(
-        upload_url=response.get('url').replace(FILE_SYSTEM_SERVER_PRIVATE_URL, FILE_SYSTEM_SERVER_PUBLIC_URL),
+        upload_url=response.get('url').replace(FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_SERVER_PUBLIC_URL),
         file_path=s3_presign_upload_url_request.file_path,
         fields=response.get('fields'),
         expiration=expiration

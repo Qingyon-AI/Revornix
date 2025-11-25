@@ -2,7 +2,7 @@ import boto3
 import crud
 import json
 from typing import Any
-from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PRIVATE_URL 
+from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL
 from common.sql import SessionLocal
 from botocore.client import Config
 from botocore.exceptions import ClientError
@@ -29,7 +29,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     ):
         s3 = boto3.resource(
             's3',
-            endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
+            endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
             aws_access_key_id=FILE_SYSTEM_USER_NAME,
             aws_secret_access_key=FILE_SYSTEM_PASSWORD,
             config=Config(signature_version='s3v4'),
@@ -49,7 +49,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     ):
         BuiltInRemoteFileService.empty_bucket(bucket_name)
         s3 = boto3.resource('s3',
-            endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
+            endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
             aws_access_key_id=FILE_SYSTEM_USER_NAME,
             aws_secret_access_key=FILE_SYSTEM_PASSWORD,
             config=Config(signature_version='s3v4'),
@@ -67,7 +67,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     def ensure_bucket_exists(bucket_name: str):
         s3 = boto3.client(
             's3',
-            endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
+            endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
             aws_access_key_id=FILE_SYSTEM_USER_NAME,
             aws_secret_access_key=FILE_SYSTEM_PASSWORD,
             config=Config(signature_version='s3v4'),
@@ -117,7 +117,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         self.bucket = user.uuid
         sts = boto3.client(
             'sts',
-            endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
+            endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
             aws_access_key_id=FILE_SYSTEM_USER_NAME,
             aws_secret_access_key=FILE_SYSTEM_PASSWORD,
             config=Config(signature_version='s3v4'),
@@ -131,7 +131,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         creds = resp['Credentials']
         s3 = boto3.client(
             's3',
-            endpoint_url=FILE_SYSTEM_SERVER_PRIVATE_URL,
+            endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
             aws_access_key_id=creds['AccessKeyId'],
             aws_secret_access_key=creds['SecretAccessKey'],
             aws_session_token=creds['SessionToken'],
