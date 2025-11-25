@@ -2,7 +2,7 @@ import crud
 import json
 from typing import Protocol
 from common.sql import SessionLocal
-from config.file_system import FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_SERVER_PRIVATE_URL
+from config.file_system import FILE_SYSTEM_SERVER_PUBLIC_URL
 from enums.file import RemoteFileServiceUUID
 
 class RemoteFileServiceProtocol(Protocol):
@@ -35,8 +35,7 @@ class RemoteFileServiceProtocol(Protocol):
         
     @staticmethod
     def get_user_file_system_url_prefix(
-        user_id: int, 
-        private: bool | None = False
+        user_id: int
     ):
         """本函数默认用来返回任何前端需要url_prefix的情况，如果传参数private为True，则返回Revornix docker架构组内访问文件系统的url_prefix，否则返回公网访问文件系统的url_prefix
         """
@@ -64,7 +63,7 @@ class RemoteFileServiceProtocol(Protocol):
                 raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")
 
             if db_file_system.uuid == RemoteFileServiceUUID.Built_In.value:
-                return f'{FILE_SYSTEM_SERVER_PUBLIC_URL if not private else FILE_SYSTEM_SERVER_PRIVATE_URL}/{db_user.uuid}'
+                return f'{FILE_SYSTEM_SERVER_PUBLIC_URL}/{db_user.uuid}'
             elif db_file_system.uuid == RemoteFileServiceUUID.AliyunOSS.value:
                 config_str = db_user_file_system.config_json
             elif db_file_system.uuid == RemoteFileServiceUUID.AWS_S3.value:
