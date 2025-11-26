@@ -43,21 +43,6 @@ def collect_classes(
 
     return result
 
-def authenticate_user(
-    db: Session, 
-    user_uuid: str, 
-    password: str
-):
-    user = crud.user.get_user_by_uuid(
-        db, 
-        user_uuid=user_uuid
-    )
-    if not user:
-        return False
-    if not verify_password(user.hashed_password, password):
-        return False
-    return user
-
 def is_dir_empty(
     path: Path
 ):
