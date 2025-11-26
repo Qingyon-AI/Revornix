@@ -32,12 +32,12 @@ class RemoteFileServiceProtocol(Protocol):
         self.file_service_description_zh = file_service_description_zh
         self.file_service_demo_config = file_service_demo_config
         self.file_service_config = file_service_config
-        
+
     @staticmethod
     def get_user_file_system_url_prefix(
         user_id: int
     ):
-        """本函数默认用来返回任何前端需要url_prefix的情况，如果传参数private为True，则返回Revornix docker架构组内访问文件系统的url_prefix，否则返回公网访问文件系统的url_prefix
+        """本函数默认用来返回任何前端需要url_prefix的情况，注意这个url_prefix是公网访问文件系统的url_prefix
         """
         db = SessionLocal()
         try:
