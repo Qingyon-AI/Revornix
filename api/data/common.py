@@ -23,7 +23,8 @@ from sqlalchemy.orm import Session
 def make_chunk_id(
     doc_id: int, 
     idx: int, 
-text: str) -> str:
+    text: str
+) -> str:
     h = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
     return f"DOC_{doc_id}_IDX_{idx}_H_{h}"
 
@@ -91,10 +92,14 @@ async def stream_chunk_document(
         global_idx = 0
         for seg_idx, segment in enumerate(segments):
             # ✅ 在后台线程中执行 CPU 密集的 chunking
-            loop = asyncio.get_event_loop()
-            chunks: list[Chunk] = await loop.run_in_executor(
-                None, lambda: cast(list[Chunk], chunker(segment))
-            )
+            raw_chunks = await asyncio.to_thread(chunker, segment)
+
+            # 展平成一维 List[Chunk]
+            chunks: list[Chunk] = [
+                c
+                for group in raw_chunks
+                for c in (group if isinstance(group, list) else [group])
+            ]
 
             for idx, chunk in enumerate(chunks):
                 chunk_info = ChunkInfo(
@@ -180,6 +185,7 @@ def embedding_chunks(
 # ----------------------------
 def extract_entities_relations(
     llm_client: openai.OpenAI, 
+    llm_model: str,
     chunk: ChunkInfo
 ) -> tuple[list[EntityInfo], list[RelationInfo]]:
     """
@@ -187,7 +193,7 @@ def extract_entities_relations(
     """
     prompt = entity_and_relation_extraction_prompt(chunk=chunk)
     resp = llm_client.chat.completions.create(
-        model="kimi-latest",
+        model=llm_model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0,
         response_format={"type": "json_object"},
@@ -257,7 +263,7 @@ def merge_entitys_and_relations(
 
 def get_extract_llm_client(
     user_id: int
-) -> openai.OpenAI:
+):
     db = SessionLocal()
     db_user = crud.user.get_user_by_id(
         db=db, 
@@ -308,6 +314,21 @@ async def process_document(
     llm_client = get_extract_llm_client(
         user_id=user_id
     )
+    db_user = crud.user.get_user_by_id(
+        db=db,
+        user_id=user_id
+    )
+    if db_user is None:
+        raise Exception("User not found")
+    llm_model_id = db_user.default_document_reader_model_id
+    if llm_model_id is None:
+        raise Exception("Default document reader model id not found")
+    db_model = crud.model.get_ai_model_by_id(
+        db=db,
+        model_id=llm_model_id
+    )
+    if db_model is None:
+        raise Exception("Model not found")
     db_doc = crud.document.get_document_by_document_id(
         db=db,
         document_id=doc_id
@@ -350,6 +371,7 @@ async def process_document(
         for chunk in chunks:
             sub_entities, sub_relations = extract_entities_relations(
                 llm_client=llm_client, 
+                llm_model=db_model.name,
                 chunk=chunk
             )
             entities.extend(sub_entities)
