@@ -180,6 +180,7 @@ def embedding_chunks(
 # ----------------------------
 def extract_entities_relations(
     llm_client: openai.OpenAI, 
+    llm_model: str,
     chunk: ChunkInfo
 ) -> tuple[list[EntityInfo], list[RelationInfo]]:
     """
@@ -187,7 +188,7 @@ def extract_entities_relations(
     """
     prompt = entity_and_relation_extraction_prompt(chunk=chunk)
     resp = llm_client.chat.completions.create(
-        model="kimi-latest",
+        model=llm_model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0,
         response_format={"type": "json_object"},
@@ -308,6 +309,21 @@ async def process_document(
     llm_client = get_extract_llm_client(
         user_id=user_id
     )
+    db_user = crud.user.get_user_by_id(
+        db=db,
+        user_id=user_id
+    )
+    if db_user is None:
+        raise Exception("User not found")
+    llm_model_id = db_user.default_document_reader_model_id
+    if llm_model_id is None:
+        raise Exception("Default document reader model id not found")
+    db_model = crud.model.get_ai_model_by_id(
+        db=db,
+        model_id=llm_model_id
+    )
+    if db_model is None:
+        raise Exception("Model not found")
     db_doc = crud.document.get_document_by_document_id(
         db=db,
         document_id=doc_id
@@ -350,6 +366,7 @@ async def process_document(
         for chunk in chunks:
             sub_entities, sub_relations = extract_entities_relations(
                 llm_client=llm_client, 
+                llm_model=db_model.name,
                 chunk=chunk
             )
             entities.extend(sub_entities)
