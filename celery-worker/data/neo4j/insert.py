@@ -48,7 +48,7 @@ def upsert_doc_chunk_relations():
     """
     with neo4j_driver.session() as session:
         session.run(cypher)
-        
+
 # -----------------------------
 # 4) 批量 upsert Chunk 节点
 # -----------------------------
@@ -68,14 +68,17 @@ def upsert_chunks_neo4j(
     now = now_str()
     rows = [
         {
-            **c.model_dump(),
+            "doc_id": c.doc_id,
+            "id": c.id,
+            "text": c.text,
+            "idx": c.idx,
             "created_at": now,
             "updated_at": now
         } for c in chunks_info
     ]
     with neo4j_driver.session() as session:
-        session.run(cypher, rows=rows)
-
+        result = session.run(cypher, rows=rows)
+        
 # -----------------------------
 # 7) 批量 upsert Entity 节点
 # -----------------------------

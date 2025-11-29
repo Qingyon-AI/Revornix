@@ -18,8 +18,10 @@ from common.ai import summary_section_with_origin, summary_section, summary_cont
 from common.common import get_user_remote_file_system
 from common.sql import SessionLocal
 from common.ai import reducer_summary
-from data.neo4j.insert import upsert_entities_neo4j, upsert_relations_neo4j, upsert_chunk_entity_relations, create_communities_from_chunks, create_community_nodes_and_relationships_with_size, annotate_node_degrees
+from data.neo4j.insert import upsert_entities_neo4j, upsert_relations_neo4j, upsert_chunk_entity_relations, create_communities_from_chunks, create_community_nodes_and_relationships_with_size, annotate_node_degrees, upsert_chunks_neo4j, upsert_doc_chunk_relations, upsert_doc_neo4j
+from data.milvus.insert import upsert_milvus
 from data.common import extract_entities_relations, get_extract_llm_client
+from data.custom_types.all import DocumentInfo
 from engine.markdown.markitdown import MarkitdownEngine
 from engine.markdown.jina import JinaEngine
 from engine.markdown.mineru import MineruEngine
@@ -296,6 +298,8 @@ async def handle_convert_document_md(
         await engine.init_engine_config_by_user_engine_id(
             user_engine_id=db_user.default_file_document_parse_user_engine_id
         )
+        
+        md_file_name = None
 
         if db_document.category == DocumentCategory.QUICK_NOTE:
             # 目前的设计架构 速记模式在api请求时候已经填充了数据，后台任务不需要convert处理
@@ -518,9 +522,16 @@ async def handle_process_document(
                         new_entities=sub_entities,
                         new_relations=sub_relations
                     ).summary
+                upsert_milvus(
+                    user_id=user_id,
+                    chunks_info=[chunk_info]
+                )
+                upsert_chunks_neo4j(
+                    chunks_info=[chunk_info]
+                )
             db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
             if auto_summary:
-                db_document.summary = final_summary
+                db_document.ai_summary = final_summary
         except Exception as e:
             exception_logger.error(f"Something is error while embedding document info: {e}")
             db_embedding_task.status = DocumentEmbeddingStatus.FAILED
@@ -529,6 +540,18 @@ async def handle_process_document(
             db.commit()
         
         # graphing
+        upsert_doc_neo4j(
+            docs_info=[
+                DocumentInfo(
+                    id=db_document.id,
+                    title=db_document.title,
+                    description=db_document.description,
+                    creator_id=db_document.creator_id,
+                    update_time=db_document.update_time,
+                    create_time=db_document.create_time
+                )
+            ]
+        )
         db_graph_task_id = crud.task.create_document_graph_task(
             db=db,
             user_id=user_id,
@@ -538,6 +561,7 @@ async def handle_process_document(
         try:
             db_graph_task_id.status = DocumentGraphStatus.BUILDING.value
             db.commit()
+            upsert_doc_chunk_relations()
             upsert_entities_neo4j(entities)
             upsert_relations_neo4j(relations)
             upsert_chunk_entity_relations()
