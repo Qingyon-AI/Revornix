@@ -5,6 +5,8 @@ import httpx
 import uuid
 import crud
 import asyncio
+from embedding.qwen import get_embedding_model
+from data.common import stream_chunk_document
 from notification.common import trigger_user_notification_event
 from celery import Celery
 from schemas.task import DocumentOverrideProperty, SectionOverrideProperty
@@ -12,17 +14,19 @@ from enums.document import DocumentProcessStatus
 from config.redis import REDIS_PORT, REDIS_URL
 from config.base import BASE_DIR
 from common.logger import exception_logger
-from common.ai import summary_section_with_origin, summary_document, summary_section
-from data.common import process_document
+from common.ai import summary_section_with_origin, summary_section, summary_content
 from common.common import get_user_remote_file_system
 from common.sql import SessionLocal
+from common.ai import reducer_summary
+from data.neo4j.insert import upsert_entities_neo4j, upsert_relations_neo4j, upsert_chunk_entity_relations, create_communities_from_chunks, create_community_nodes_and_relationships_with_size, annotate_node_degrees
+from data.common import extract_entities_relations, get_extract_llm_client
 from engine.markdown.markitdown import MarkitdownEngine
 from engine.markdown.jina import JinaEngine
 from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
 from enums.engine import EngineUUID
-from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus
+from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentGraphStatus
 from enums.section import UserSectionAuthority, SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus, UserSectionRole
 from enums.notification import NotificationTriggerEventUUID
 
@@ -220,49 +224,6 @@ async def handle_update_document_ai_podcast(
         raise e
     finally:
         db.close()
-        
-async def handle_update_document_ai_summary(
-    document_id: int, 
-    user_id: int
-):
-    db = SessionLocal()
-    try:
-        db_document = crud.document.get_document_by_document_id(
-            db=db,
-            document_id=document_id
-        )
-        if db_document is None:
-            raise Exception("The document which you want to create the ai summary is not found")
-        db_user = crud.user.get_user_by_id(
-            db=db, 
-            user_id=user_id
-        )
-        if db_user is None:
-            raise Exception("The user who want to create the ai summary for document is not found")
-        if db_user.default_document_reader_model_id is None:
-            raise Exception("The user who want to create the ai summary for document has not set the default document reader model")
-        
-        markdown_content = await get_markdown_content_by_document_id(
-            document_id=db_document.id,
-            user_id=user_id
-        )
-        
-        ai_summary_result = summary_document(
-            user_id=user_id, 
-            model_id=db_user.default_document_reader_model_id, 
-            markdown_content=markdown_content
-        )
-        
-        db_document.title = ai_summary_result.title
-        db_document.description = ai_summary_result.description
-        db_document.ai_summary = ai_summary_result.summary
-        
-        db.commit()
-    except Exception as e:
-        exception_logger.error(f"Something is error while updating the ai summary: {e}")
-        raise e
-    finally:
-        db.close()
 
 async def handle_convert_document_md(
     document_id: int,
@@ -420,40 +381,6 @@ async def handle_convert_document_md(
         raise e
     finally:
         db.close()
-        
-async def handle_add_embedding(
-    document_id: int, 
-    user_id: int
-):
-    db = SessionLocal()
-    db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
-        db=db,
-        document_id=document_id
-    )
-    if db_embedding_task is None:                                                                 
-        db_embedding_task = crud.task.create_document_embedding_task(
-            db=db,
-            user_id=user_id,
-            document_id=document_id
-        )
-    else:
-        if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
-            db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
-    db.commit()
-    try:
-        await process_document(
-            user_id=user_id, 
-            doc_id=document_id
-        )
-        db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
-        db.commit()
-    except Exception as e:
-        exception_logger.error(f"Something is error while embedding the document and write into the milvus: {e}")
-        db_embedding_task.status = DocumentEmbeddingStatus.FAILED
-        db.commit()
-        raise e
-    finally:
-        db.close()
 
 async def handle_process_document(
     document_id: int, 
@@ -490,6 +417,16 @@ async def handle_process_document(
             raise Exception("The user which you want to process document has not set default user file system")
         if db_user.default_file_document_parse_user_engine_id is None:
             raise Exception("The user which you want to process document has not set default file document parse user engine")
+        if db_user.default_document_reader_model_id is None:
+            raise Exception("The user which you want to process document has not set default document reader model")
+        if db_user.default_document_reader_model_id is None:
+            raise Exception("Default document reader model id not found")
+        db_model = crud.model.get_ai_model_by_id(
+            db=db,
+            model_id=db_user.default_document_reader_model_id
+        )
+        if db_model is None:
+            raise Exception(f"The defaul document reader model is not found for the user with id: {user_id}")
         db_document = crud.document.get_document_by_document_id(
             db=db,
             document_id=document_id
@@ -530,19 +467,89 @@ async def handle_process_document(
             if override.description is not None:
                 db_document.description = override.description
             db.commit()
+            
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_embedding_task is None:                                                                 
+            db_embedding_task = crud.task.create_document_embedding_task(
+                db=db,
+                user_id=user_id,
+                document_id=document_id
+            )
+        else:
+            if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
+                db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
+        db.commit()
 
-        # embedding
-        await handle_add_embedding(
-            document_id=db_document.id,
+        llm_client = get_extract_llm_client(
             user_id=user_id
         )
+        entities = []
+        relations = []
         
-        # summary
-        if auto_summary:
-            await handle_update_document_ai_summary(
-                document_id=db_document.id,
-                user_id=user_id
-            )
+        final_summary = None
+        # chunking & embedding
+        try:
+            async for chunk_info in stream_chunk_document(doc_id=document_id):
+                embedding_model = get_embedding_model()
+                embedding = embedding_model.encode(chunk_info.text)
+                chunk_info.embedding = embedding.tolist()
+                sub_entities, sub_relations = extract_entities_relations(
+                    llm_client=llm_client, 
+                    llm_model=db_model.name,
+                    chunk=chunk_info
+                )
+                entities.extend(sub_entities)
+                relations.extend(sub_relations)
+                # map summary
+                chunk_info.summary = summary_content(
+                    user_id=user_id, 
+                    model_id=db_user.default_document_reader_model_id, 
+                    content=chunk_info.text
+                ).summary
+                if auto_summary:
+                    final_summary = reducer_summary(
+                        user_id=user_id,
+                        model_id=db_user.default_document_reader_model_id,
+                        current_summary=final_summary, 
+                        new_summary_to_append=chunk_info.summary,
+                        new_entities=sub_entities,
+                        new_relations=sub_relations
+                    ).summary
+            db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+            if auto_summary:
+                db_document.summary = final_summary
+        except Exception as e:
+            exception_logger.error(f"Something is error while embedding document info: {e}")
+            db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+            raise e
+        finally:
+            db.commit()
+        
+        # graphing
+        db_graph_task_id = crud.task.create_document_graph_task(
+            db=db,
+            user_id=user_id,
+            document_id=document_id
+        )
+        db.commit()
+        try:
+            db_graph_task_id.status = DocumentGraphStatus.BUILDING.value
+            db.commit()
+            upsert_entities_neo4j(entities)
+            upsert_relations_neo4j(relations)
+            upsert_chunk_entity_relations()
+            create_communities_from_chunks()
+            create_community_nodes_and_relationships_with_size()
+            annotate_node_degrees()
+            db_graph_task_id.status = DocumentGraphStatus.SUCCESS.value
+            db.commit()
+        except Exception as e:
+            db_graph_task_id.status = DocumentGraphStatus.FAILED.value
+            db.commit()
+            raise e
 
         # podcast
         if auto_podcast:
@@ -752,6 +759,7 @@ async def handle_update_sections_for_document(
                 )
                 # TODO 优化专栏的文档生成 让文档更加专业一些 结合多agent 需要图文并茂 当前只有文字总结
                 # generate the new summary using the document
+                assert db_user.default_document_reader_model_id is not None
                 summary_res = summary_section_with_origin(
                     user_id=user_id,
                     model_id=db_user.default_document_reader_model_id,
@@ -770,6 +778,7 @@ async def handle_update_sections_for_document(
             else:
                 # summary the section of the document
                 # TODO 优化专栏的文档生成 让文档更加专业一些 结合多agent 需要图文并茂 当前只有文字总结
+                assert db_user.default_document_reader_model_id is not None
                 summary_res = summary_section(
                     user_id=user_id, 
                     model_id=db_user.default_document_reader_model_id, 

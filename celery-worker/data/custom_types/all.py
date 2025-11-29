@@ -23,10 +23,11 @@ class DocumentInfo(BaseModel):
 
 class ChunkInfo(BaseModel):
     id: str
-    embedding: list[float] | None = None
     text: str
     idx: int
     doc_id: int
+    summary: str | None = None
+    embedding: list[float] | None = None
     
 class RelationInfo(BaseModel):
     src_node: str

@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from schemas.common import SuccessResponse
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
-from common.ai import summary_document
+from common.ai import summary_content
 from common.dependencies import get_db
 from data.milvus.search import naive_search
 from data.milvus.create import milvus_client
@@ -195,10 +195,10 @@ async def create_ai_summary(
     model_id = user.default_document_reader_model_id
     if model_id is None:
         raise Exception('Please set the default document reader model for the user first.')
-    ai_summary_result = summary_document(
+    ai_summary_result = summary_content(
         user_id=user.id, 
         model_id=model_id, 
-        markdown_content=markdown_content
+        content=markdown_content
     )
     db_document = crud.document.get_document_by_document_id(
         db=db,
@@ -1063,7 +1063,7 @@ async def delete_document(
         )
         if db_document is None:
             raise Exception("The document is not found")
-        if db_document.user_id != user.id:
+        if db_document.creator_id != user.id:
             raise Exception("You are not the owner of the document")
     # TODO 需要补充一些删除附属资源的逻辑
     crud.document.delete_user_documents_by_document_ids(
