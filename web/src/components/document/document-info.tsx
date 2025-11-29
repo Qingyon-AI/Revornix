@@ -11,8 +11,10 @@ import CustomImage from '../ui/custom-image';
 import {
 	DocumentCategory,
 	DocumentEmbeddingConvertStatus,
+	DocumentGraphStatus,
 	DocumentMdConvertStatus,
 	DocumentPodcastStatus,
+	DocumentProcessStatus,
 } from '@/enums/document';
 
 const DocumentInfo = ({ id }: { id: number }) => {
@@ -127,6 +129,20 @@ const DocumentInfo = ({ id }: { id: number }) => {
 									</div>
 								</div>
 							)}
+							{data.graph_task && (
+								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
+									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
+										{t('document_graph_status') + ': '}
+										{data.graph_task?.status === DocumentGraphStatus.WAIT_TO
+											? t('document_graph_status_todo')
+											: data.graph_task?.status === DocumentGraphStatus.BUILDING
+											? t('document_graph_status_doing')
+											: data.graph_task?.status === DocumentGraphStatus.SUCCESS
+											? t('document_graph_status_success')
+											: t('document_graph_status_failed')}
+									</div>
+								</div>
+							)}
 							{data.convert_task && (
 								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
 									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
@@ -157,6 +173,22 @@ const DocumentInfo = ({ id }: { id: number }) => {
 											  DocumentPodcastStatus.SUCCESS
 											? t('document_podcast_status_success')
 											: t('document_podcast_status_failed')}
+									</div>
+								</div>
+							)}
+							{data.process_task && (
+								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
+									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
+										{t('document_process_status') + ': '}
+										{data.process_task?.status === DocumentProcessStatus.WAIT_TO
+											? t('document_process_status_todo')
+											: data.process_task?.status ===
+											  DocumentProcessStatus.PROCESSING
+											? t('document_process_status_doing')
+											: data.process_task?.status ===
+											  DocumentProcessStatus.SUCCESS
+											? t('document_process_status_success')
+											: t('document_process_status_failed')}
 									</div>
 								</div>
 							)}
