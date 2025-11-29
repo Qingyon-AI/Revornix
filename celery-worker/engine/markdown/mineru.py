@@ -139,8 +139,15 @@ class MineruEngine(MarkdownEngineProtocol):
         temp_file_path = BASE_DIR / "temp" / f"{temp_id}{suffix}"
         md_output_dir = BASE_DIR / "temp" / temp_id / "auto"
         os.makedirs(BASE_DIR / "temp", exist_ok=True)
-
+        
+        db = SessionLocal()
         try:
+            db_user = crud.user.get_user_by_id(db=db, user_id=self.user_id)
+            if not db_user:
+                raise Exception("The owner of the engine is not found.")
+            if db_user.default_user_file_system is None:
+                raise Exception("The owner of the engine has not set a default file system yet.")
+            
             # 1. Copy to temp
             shutil.copy(file_path, temp_file_path)
 
@@ -158,6 +165,7 @@ class MineruEngine(MarkdownEngineProtocol):
             images_dir = md_output_dir / "images"
             if images_dir.exists() and images_dir.is_dir() and not is_dir_empty(images_dir):
                 remote_fs = await get_user_remote_file_system(self.user_id)
+                await remote_fs.init_client_by_user_file_system_id(db_user.default_user_file_system)
 
                 for img_file in images_dir.iterdir():
                     async with aiofiles.open(img_file, "rb") as f:
