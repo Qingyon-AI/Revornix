@@ -38,3 +38,10 @@ export enum DocumentGraphStatus {
     SUCCESS = 2,
     FAILED = 3
 }
+
+export enum SectionDocumentIntegration {
+    WAIT_TO = 0,
+    SUPPLEMENTING = 1,
+    SUCCESS = 2,
+    FAILED = 3
+}

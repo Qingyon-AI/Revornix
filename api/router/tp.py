@@ -4,9 +4,9 @@
 
 import schemas
 import crud
-from celery import chain
+from celery import chain, group
 from datetime import datetime, timezone
-from common.celery.app import start_process_document, update_sections_for_document
+from common.celery.app import start_process_document, start_process_section
 from common.dependencies import get_db, get_current_user_with_api_key
 from common.common import get_user_remote_file_system
 from sqlalchemy.orm import Session
@@ -252,6 +252,22 @@ async def create_document(
         )
     db.commit()
     
+    # 开始后台处理
+    # 获取所有关联的 section（此时已经写入 WAIT_TO 状态）
+    db_sections = crud.section.get_sections_by_document_id(
+        db=db,
+        document_id=db_document.id
+    )
+    # 构造每个 Section 的 Celery 任务
+    section_process_tasks = group(
+        start_process_section.si(
+            section_id=sec.id,
+            user_id=user.id,
+            auto_podcast=sec.auto_podcast
+        )
+        for sec in db_sections
+    )
+    
     background_tasks = chain(
         start_process_document.si(
             document_id=db_document.id, 
@@ -264,10 +280,7 @@ async def create_document(
                 cover=document_create_request.cover
             )
         ),
-        update_sections_for_document.si(
-            document_id=db_document.id, 
-            user_id=user.id
-        )
+        section_process_tasks
     )
     background_tasks.apply_async()
     

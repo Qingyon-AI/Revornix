@@ -5,6 +5,7 @@ from prompts.summary_section import summary_section_prompt
 from prompts.summary_section_with_origin import summary_section_with_origin_prompt
 from prompts.summary_content import summary_content_prompt
 from prompts.reducer_summary import reducer_summary_prompt
+from prompts.make_section_markdown import make_section_markdown_prompt
 from common.sql import SessionLocal
 from pydantic import BaseModel
 from data.custom_types.all import *
@@ -128,6 +129,68 @@ def summary_section_with_origin(
     summary = content.get('summary')
     db.close()
     return SummaryResult(summary=summary)
+
+def make_section_markdown(
+    user_id: int,
+    model_id: int,
+    current_markdown_content: str | None,
+    new_markdown_contents_to_append: str,
+    entities: list[EntityInfo],
+    relations: list[RelationInfo]
+):
+    db = SessionLocal()
+    db_model = crud.model.get_ai_model_by_id(
+        db=db, 
+        model_id=model_id
+    )
+    db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
+        db=db, 
+        user_id=user_id, 
+        ai_model_id=model_id
+    )
+    if db_model is None:
+        raise Exception("Model not found")
+    if db_user_model is None:
+        raise Exception("User model not found")
+    db_model_provider = crud.model.get_ai_model_provider_by_id(
+        db=db, 
+        provider_id=db_model.provider_id
+    )
+    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
+        db=db, 
+        user_id=user_id, 
+        ai_model_provider_id=db_model.provider_id
+    )
+    if db_model_provider is None:
+        raise Exception("Model provider not found")
+    if db_user_model_provider is None:
+        raise Exception("User model provider not found")
+    
+    prompt = make_section_markdown_prompt(
+        current_markdown_content=current_markdown_content,
+        new_markdown_contents_to_append=new_markdown_contents_to_append,
+        entities=entities,
+        relations=relations
+    )
+
+    client = OpenAI(
+        api_key=db_user_model.api_key if db_user_model.api_key else db_user_model_provider.api_key,
+        base_url=db_user_model.api_url if db_user_model.api_url else db_user_model_provider.api_url,
+    )
+    completion = client.chat.completions.create(
+        model=db_model.name,
+        messages=[
+            {"role": "system", "content": "You are an expert in summarizing document content."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.3,
+        max_tokens=8192
+    )
+    content = completion.choices[0].message.content
+    if content is None:
+        raise Exception("No content returned for ai")
+    db.close()
+    return content
 
 def summary_content(
     user_id: int,

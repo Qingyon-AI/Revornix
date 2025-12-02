@@ -1,6 +1,10 @@
 'use client';
 
-import { DocumentCategory, DocumentMdConvertStatus } from '@/enums/document';
+import {
+	DocumentCategory,
+	DocumentMdConvertStatus,
+	SectionDocumentIntegration,
+} from '@/enums/document';
 import { SectionDocumentInfo } from '@/generated';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
@@ -41,13 +45,13 @@ const SectionDocumentCard = ({
 					</div>
 					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
 						{t('section_document_card_section_supplement') + ': '}
-						{document.status === DocumentMdConvertStatus.WAIT_TO
+						{document.status === SectionDocumentIntegration.WAIT_TO
 							? t('section_document_card_section_supplement_todo')
-							: document.status === DocumentMdConvertStatus.CONVERTING
+							: document.status === SectionDocumentIntegration.SUPPLEMENTING
 							? t('section_document_card_section_supplement_doing')
-							: document.status === DocumentMdConvertStatus.SUCCESS
+							: document.status === SectionDocumentIntegration.SUCCESS
 							? t('section_document_card_section_supplement_done')
-							: document.status === DocumentMdConvertStatus.FAILED
+							: document.status === SectionDocumentIntegration.FAILED
 							? t('section_document_card_section_supplement_failed')
 							: t('section_document_card_section_supplement_unknown')}
 					</div>

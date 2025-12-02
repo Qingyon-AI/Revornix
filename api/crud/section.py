@@ -144,8 +144,10 @@ def get_user_labels_by_user_id(
                          models.section.Label.user_id == user_id)
     return query.all()
 
-def get_sections_by_document_id(db: Session,
-                                document_id: int):
+def get_sections_by_document_id(
+    db: Session,
+    document_id: int
+):
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.document_id == document_id,
@@ -714,6 +716,16 @@ def get_section_labels_by_section_id(
     query = db.query(models.section.SectionLabel)
     query = query.filter(models.section.SectionLabel.section_id == section_id,
                          models.section.SectionLabel.delete_at == None)
+    return query.all()
+
+def get_section_documents_and_sections_by_document_id(
+    db: Session,
+    document_id: int
+):
+    query = db.query(models.section.SectionDocument, models.section.Section)
+    query = query.filter(models.section.SectionDocument.document_id == document_id,
+                         models.section.SectionDocument.delete_at == None,
+                         models.section.Section.delete_at == None)
     return query.all()
 
 def get_section_documents_by_section_id(

@@ -1,7 +1,7 @@
 import crud
 import models
 import schemas
-from celery import chain
+from celery import chain, group
 from datetime import datetime, timezone
 from schemas.common import SuccessResponse
 from sqlalchemy.orm import Session
@@ -13,7 +13,7 @@ from data.milvus.create import milvus_client
 from typing import cast
 from common.dependencies import get_db, get_current_user
 from common.common import get_user_remote_file_system
-from common.celery.app import start_process_document, update_sections_for_document, start_process_document_podcast, update_document_process_status
+from common.celery.app import start_process_document, start_process_document_podcast, update_document_process_status, start_process_section
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus, UserDocumentAuthority
 from enums.section import UserSectionRole, UserSectionAuthority, SectionDocumentIntegration
 
@@ -395,6 +395,20 @@ async def create_document(
         )
     db.commit()
     # 开始后台处理
+    # 获取所有关联的 section（此时已经写入 WAIT_TO 状态）
+    db_sections = crud.section.get_sections_by_document_id(
+        db=db,
+        document_id=db_document.id
+    )
+    # 构造每个 Section 的 Celery 任务
+    section_process_tasks = group(
+        start_process_section.si(
+            section_id=db_section.id,
+            user_id=user.id,
+            auto_podcast=db_section.auto_podcast
+        )
+        for db_section in db_sections
+    )
     background_tasks = chain(
         start_process_document.si(
             document_id=db_document.id, 
@@ -402,10 +416,7 @@ async def create_document(
             auto_summary=document_create_request.auto_summary,
             auto_podcast=document_create_request.auto_podcast
         ),
-        update_sections_for_document.si(
-            document_id=db_document.id, 
-            user_id=user.id
-        )
+        section_process_tasks
     )
     background_tasks.apply_async()
     return schemas.document.DocumentCreateResponse(document_id=db_document.id)
@@ -540,10 +551,20 @@ async def update_document(
                 document_id=document_update_request.document_id
             )
         if sorted(exist_document_section_ids) != sorted(document_update_request.sections):
-            update_sections_for_document.delay(
-                document_id=db_document.id, 
-                user_id=user.id
+            db_section_documents_and_sections = crud.section.get_section_documents_and_sections_by_document_id(
+                db=db, 
+                document_id=document_update_request.document_id
             )
+            # 构造每个 Section 的 Celery 任务
+            section_process_tasks = group(
+                start_process_section.si(
+                    section_id=db_section_document.section_id,
+                    user_id=user.id,
+                    auto_podcast=db_section.auto_podcast
+                )
+                for db_section_document, db_section in db_section_documents_and_sections
+            )
+            section_process_tasks.apply_async()
     db_document.update_time = now
     db.commit()
     return schemas.common.NormalResponse()

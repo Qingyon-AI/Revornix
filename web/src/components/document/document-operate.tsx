@@ -142,7 +142,8 @@ const DocumentOperate = ({ id }: { id: number }) => {
 			toast.success(t('document_delete_success'));
 			queryClient.invalidateQueries({
 				predicate: (query) =>
-					query.queryKey.includes('searchUserUnreadDocument'),
+					query.queryKey.includes('searchUserUnreadDocument') ||
+					query.queryKey.includes('searchMyDocument'),
 			});
 			setShowDeleteDocumentDialog(false);
 			router.back();

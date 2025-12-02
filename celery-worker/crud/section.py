@@ -25,6 +25,30 @@ def create_or_update_section_document(
     db.flush()
     return db_section_document
 
+def get_section_documents_by_section_id(
+    db: Session,
+    section_id: int,
+    filter_status: SectionDocumentIntegration | None = None
+):
+    query = db.query(models.section.SectionDocument)
+    query = query.filter(models.section.SectionDocument.section_id == section_id,
+                         models.section.SectionDocument.delete_at == None)
+    if filter_status is not None:
+        query = query.filter(models.section.SectionDocument.status == filter_status)
+    return query.all()
+
+def get_documents_for_section_by_section_id(
+    db: Session, 
+    section_id: int
+):
+    query = db.query(models.document.Document)
+    query = query.join(models.section.SectionDocument).join(models.section.Section)
+    query = query.filter(models.section.SectionDocument.section_id == section_id,
+                         models.section.SectionDocument.delete_at == None,
+                         models.document.Document.delete_at == None,
+                         models.section.Section.delete_at == None)
+    return query.all()
+
 def get_section_document_by_section_id_and_document_id(
     db: Session,
     section_id: int,

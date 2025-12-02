@@ -3,8 +3,10 @@ load_dotenv(override=True)
 
 import httpx
 import uuid
+from data.custom_types.all import EntityInfo, RelationInfo
 import crud
 import asyncio
+from data.neo4j.base import neo4j_driver
 from embedding.qwen import get_embedding_model
 from data.common import stream_chunk_document
 from notification.common import trigger_user_notification_event
@@ -14,7 +16,7 @@ from enums.document import DocumentProcessStatus
 from config.redis import REDIS_PORT, REDIS_URL
 from config.base import BASE_DIR
 from common.logger import exception_logger
-from common.ai import summary_section_with_origin, summary_section, summary_content
+from common.ai import summary_content
 from common.common import get_user_remote_file_system
 from common.sql import SessionLocal
 from common.ai import reducer_summary
@@ -28,9 +30,9 @@ from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
 from enums.engine import EngineUUID
+from common.ai import make_section_markdown
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentGraphStatus
-from enums.section import UserSectionAuthority, SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus, UserSectionRole
-from enums.notification import NotificationTriggerEventUUID
+from enums.section import SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
@@ -256,18 +258,26 @@ async def handle_convert_document_md(
             raise Exception("The user which you want to process document is not found")
         if db_user.default_user_file_system is None:
             raise Exception("The user which you want to process document has not set default user file system")
-        if db_user.default_file_document_parse_user_engine_id is None:
-            raise Exception("The user which you want to process document has not set default file document parse user engine")
         db_document = crud.document.get_document_by_document_id(
             db=db,
             document_id=document_id
         )
         if db_document is None:
             raise Exception("The document you want to process is not found")
-        md_extractor = crud.engine.get_user_engine_by_user_engine_id(
-            db=db, 
-            user_engine_id=db_user.default_file_document_parse_user_engine_id
-        )
+        if db_document.category == DocumentCategory.FILE:
+            if db_user.default_file_document_parse_user_engine_id is None:
+                raise Exception("The user which you want to process document has not set default file document parse user engine")
+            md_extractor = crud.engine.get_user_engine_by_user_engine_id(
+                db=db, 
+                user_engine_id=db_user.default_file_document_parse_user_engine_id
+            )
+        elif db_document.category == DocumentCategory.WEBSITE:
+            if db_user.default_website_document_parse_user_engine_id is None:
+                raise Exception("The user which you want to process document has not set default website document parse user engine")
+            md_extractor = crud.engine.get_user_engine_by_user_engine_id(
+                db=db, 
+                user_engine_id=db_user.default_website_document_parse_user_engine_id
+            )
         if md_extractor is None:
             raise Exception("There are something wrong with the user's markdown convert engine")
         db_engine = crud.engine.get_engine_by_id(
@@ -295,9 +305,16 @@ async def handle_convert_document_md(
         else:
             raise Exception("The convert engine is not supported")
         
-        await engine.init_engine_config_by_user_engine_id(
-            user_engine_id=db_user.default_file_document_parse_user_engine_id
-        )
+        if db_document.category == DocumentCategory.FILE:
+            assert db_user.default_file_document_parse_user_engine_id is not None
+            await engine.init_engine_config_by_user_engine_id(
+                user_engine_id=db_user.default_file_document_parse_user_engine_id
+            )
+        elif db_document.category == DocumentCategory.WEBSITE:
+            assert db_user.default_website_document_parse_user_engine_id is not None
+            await engine.init_engine_config_by_user_engine_id(
+                user_engine_id=db_user.default_website_document_parse_user_engine_id
+            )
         
         md_file_name = None
 
@@ -419,8 +436,6 @@ async def handle_process_document(
             raise Exception("The user which you want to process document is not found")
         if db_user.default_user_file_system is None:
             raise Exception("The user which you want to process document has not set default user file system")
-        if db_user.default_file_document_parse_user_engine_id is None:
-            raise Exception("The user which you want to process document has not set default file document parse user engine")
         if db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to process document has not set default document reader model")
         if db_user.default_document_reader_model_id is None:
@@ -437,10 +452,20 @@ async def handle_process_document(
         )
         if db_document is None:
             raise Exception("The document you want to process is not found")
-        md_extractor = crud.engine.get_user_engine_by_user_engine_id(
-            db=db, 
-            user_engine_id=db_user.default_file_document_parse_user_engine_id
-        )
+        if db_document.category == DocumentCategory.WEBSITE:
+            if db_user.default_website_document_parse_user_engine_id is None:
+                raise Exception("The user which you want to process document has not set default website document parse user engine")
+            md_extractor = crud.engine.get_user_engine_by_user_engine_id(
+                db=db, 
+                user_engine_id=db_user.default_website_document_parse_user_engine_id
+            )
+        elif db_document.category == DocumentCategory.FILE:
+            if db_user.default_file_document_parse_user_engine_id is None:
+                raise Exception("The user which you want to process document has not set default file document parse user engine")
+            md_extractor = crud.engine.get_user_engine_by_user_engine_id(
+                db=db, 
+                user_engine_id=db_user.default_file_document_parse_user_engine_id
+            )
         if md_extractor is None:
             raise Exception("There are something wrong with the user's markdown convert engine")
         db_engine = crud.engine.get_engine_by_id(
@@ -680,14 +705,30 @@ async def handle_update_section_ai_podcast(
     finally:
         db.close()
 
-async def handle_start_section_process(
+async def handle_process_section(
     section_id: int,
     user_id: int,
-    auto_summary: bool = False,
     auto_podcast: bool = False,
     override: SectionOverrideProperty | None = None
 ):
     db = SessionLocal()
+    db_user = crud.user.get_user_by_id(
+        db=db, 
+        user_id=user_id
+    )
+    if db_user is None:
+        raise Exception("The user who want to process section is not found")
+    if db_user.default_document_reader_model_id is None:
+        raise Exception("The user who want to process section has not set default document reader model")
+    if db_user.default_user_file_system is None:
+        raise Exception("The user who want to process section has not set default user file system")
+    db_section = crud.section.get_section_by_section_id(
+        db=db,
+        section_id=section_id
+    )
+    if db_section is None:
+        raise Exception("The section which will be processed is not found.")
+    
     db_section_process_task = crud.task.get_section_process_task_by_section_id(
         db=db,
         section_id=section_id
@@ -700,157 +741,135 @@ async def handle_start_section_process(
             status=SectionProcessStatus.PROCESSING
         )
     db.commit()
-    # TODO
-
-async def handle_update_sections_for_document(
-    section_ids: list[int], 
-    document_id: int, 
-    user_id: int
-):
-    db = SessionLocal()
-    db_user = crud.user.get_user_by_id(
-        db=db, 
-        user_id=user_id
-    )
-    if db_user is None:
-        raise Exception("The user who is about to update the his/her sections is not found")
-    if db_user.default_user_file_system is None:
-        raise Exception("The user who is about to update the his/her sections havn't set a default file system")
-    if db_user.default_document_reader_model_id is None:
-        raise Exception("The user who is about to update the his/her sections havn't set a default document reader model")
-    db_document = crud.document.get_document_by_document_id(
+    db_section_documents_all = crud.section.get_section_documents_by_section_id(
         db=db,
-        document_id=document_id
+        section_id=section_id,
     )
-    if db_document is None:
-        raise Exception("The document which will be used to update the sections is not found.")
-    
+    db_section_documents_wait_to = crud.section.get_section_documents_by_section_id(
+        db=db,
+        section_id=section_id,
+        filter_status=SectionDocumentIntegration.WAIT_TO
+    )
+    markdown_contents = []
+    entities = []
+    relations = []
+    entity_query = """
+        MATCH (d:Document)
+        WHERE d.creator_id = $user_id
+        MATCH (d)-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
+        RETURN DISTINCT e.id AS id, e.text AS text, e.entity_type AS entity_type
+    """
+    edge_query = """
+        MATCH (d:Document)
+        WHERE d.creator_id = $user_id
+        MATCH (d)-[:HAS_CHUNK]->(c1:Chunk)-[:MENTIONS]->(e1:Entity)
+        MATCH (d)-[:HAS_CHUNK]->(c2:Chunk)-[:MENTIONS]->(e2:Entity)
+        MATCH (e1)-[r]->(e2)
+        RETURN DISTINCT e1.id AS src_id, e2.id AS tgt_id, type(r) AS relation_type
+    """
+    if db_section.md_file_name is None:
+        # 基于当前所有的专栏生成总结 新的md
+        for section_document in db_section_documents_all:
+            section_document.status = SectionDocumentIntegration.SUPPLEMENTING
+            markdown_content = await get_markdown_content_by_document_id(
+                document_id=section_document.document_id,
+                user_id=user_id
+            )
+            markdown_contents.append(markdown_content)
+            with neo4j_driver.session() as session:
+                entities_result = session.run(entity_query, user_id=user_id)
+                for record in entities_result:
+                    entities.append(
+                        EntityInfo(
+                            id=record["id"],
+                            text=record["text"],
+                            entity_type=record["entity_type"],
+                            chunks=[]
+                        )
+                    )
+                relations_result = session.run(edge_query, user_id=user_id)
+                for record in relations_result:
+                    relations.append(
+                        RelationInfo(
+                            src_node=record["src_id"],
+                            tgt_node=record["tgt_id"],
+                            relation_type=record["relation_type"]
+                        )
+                    )
+    else:
+        # 基于当前没有被整合进专栏的文档和现有的专栏md 生成新的md
+        for section_document in db_section_documents_wait_to:
+            section_document.status = SectionDocumentIntegration.SUPPLEMENTING
+            markdown_content = await get_markdown_content_by_document_id(
+                document_id=section_document.document_id,
+                user_id=user_id
+            )
+            markdown_contents.append(markdown_content)
+            with neo4j_driver.session() as session:
+                entities_result = session.run(entity_query, user_id=user_id)
+                relations_result = session.run(edge_query, user_id=user_id)
+                for record in entities_result:
+                    entities.append(
+                        EntityInfo(
+                            id=record["id"],
+                            text=record["text"],
+                            entity_type=record["entity_type"],
+                            chunks=[]
+                        )
+                    )
+                relations_result = session.run(edge_query, user_id=user_id)
+                for record in relations_result:
+                    relations.append(
+                        RelationInfo(
+                            src_node=record["src_id"],
+                            tgt_node=record["tgt_id"],
+                            relation_type=record["relation_type"]
+                        )
+                    )
+    content = make_section_markdown(
+        user_id=user_id,
+        model_id=db_user.default_document_reader_model_id,
+        current_markdown_content=db_section.md_file_name,
+        new_markdown_contents_to_append="\n".join(markdown_contents),
+        entities=entities,
+        relations=relations
+    )
     remote_file_service = await get_user_remote_file_system(
         user_id=user_id
     )
     await remote_file_service.init_client_by_user_file_system_id(
         user_file_system_id=db_user.default_user_file_system
     )
-
-    markdown_content = await get_markdown_content_by_document_id(
-        document_id=document_id,
-        user_id=user_id
+    # put the new summary into the file system
+    md_file_name = f"markdown/{uuid.uuid4().hex}.md"
+    await remote_file_service.upload_raw_content_to_path(
+        file_path=md_file_name, 
+        content=content.encode('utf-8'),
+        content_type='text/plain'
     )
-    for section_id in section_ids:
-        try:
-            db_section = crud.section.get_section_by_section_id(
-                db=db,
-                section_id=section_id
-            )
-            if db_section is None:
-                raise Exception("The section which will be updated is not found.")
-            db_user_section = crud.section.get_section_user_by_section_id_and_user_id(
-                db=db,
-                section_id=section_id,
-                user_id=user_id
-            )
-            if db_user_section is None or db_user_section.authority == UserSectionAuthority.READ_ONLY:
-                raise Exception("User does not have permission to modify this section")
-            
-            db_section_process_task = crud.task.get_section_process_task_by_section_id(
-                db=db,
-                section_id=section_id
-            )
-            if db_section_process_task is None:
-                db_section_process_task = crud.task.create_section_process_task(
-                    db=db,
-                    user_id=user_id,
-                    section_id=section_id,
-                    status=SectionProcessStatus.PROCESSING
-                )
-            else:
-                if db_section_process_task.status != SectionProcessStatus.PROCESSING:
-                    db_section_process_task.status = SectionProcessStatus.PROCESSING
-                    
-            db_section_document = crud.section.create_or_update_section_document(
-                db=db,
-                section_id=section_id,
-                document_id=document_id,
-                status=SectionDocumentIntegration.SUPPLEMENTING
-            )
-            db.commit()
-
-            # as the section may have no document binded, we need to check if it has documents
-            if db_section.md_file_name is not None:
-                # get the original section summary
-                origin_section_content = await remote_file_service.get_file_content_by_file_path(
-                    file_path=db_section.md_file_name
-                )
-                # TODO 优化专栏的文档生成 让文档更加专业一些 结合多agent 需要图文并茂 当前只有文字总结
-                # generate the new summary using the document
-                assert db_user.default_document_reader_model_id is not None
-                summary_res = summary_section_with_origin(
-                    user_id=user_id,
-                    model_id=db_user.default_document_reader_model_id,
-                    origin_section_markdown_content=origin_section_content,
-                    new_document_markdown_content=markdown_content
-                )
-                # put the new summary into the file system
-                md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-                await remote_file_service.upload_raw_content_to_path(
-                    file_path=md_file_name, 
-                    content=summary_res.summary.encode('utf-8'),
-                    content_type='text/plain'
-                )
-                # update the section content
-                db_section.md_file_name = md_file_name
-            else:
-                # summary the section of the document
-                # TODO 优化专栏的文档生成 让文档更加专业一些 结合多agent 需要图文并茂 当前只有文字总结
-                assert db_user.default_document_reader_model_id is not None
-                summary_res = summary_section(
-                    user_id=user_id, 
-                    model_id=db_user.default_document_reader_model_id, 
-                    markdown_content=markdown_content
-                )
-                # put the summary into the file system
-                md_file_name = f"markdown/{uuid.uuid4().hex}.md"
-                await remote_file_service.upload_raw_content_to_path(
-                    file_path=md_file_name, 
-                    content=summary_res.summary.encode('utf-8'),
-                    content_type='text/plain'
-                )
-                # update the section content
-                db_section.md_file_name = md_file_name
-            # as we successfully update the section, we need to set the status of the section document to 2 
+    # update the section content
+    db_section.md_file_name = md_file_name
+    db_section_process_task.status = SectionProcessStatus.SUCCESS
+    db.commit()
+    if override is not None:
+        if override.title is not None:
+            db_section.title = override.title
+        if override.description is not None:
+            db_section.description = override.description
+        if override.cover is not None:
+            db_section.cover = override.cover
+    if db_section.md_file_name is None:
+        for db_section_document in db_section_documents_all:
             db_section_document.status = SectionDocumentIntegration.SUCCESS
-            db.commit()
-            # podcast
-            if db_section.auto_podcast:
-                await handle_update_section_ai_podcast(
-                    section_id=section_id, 
-                    user_id=user_id
-                )
-            db_section_process_task.status = SectionProcessStatus.SUCCESS
-            db.commit()
-            db_users = crud.section.get_users_for_section_by_section_id(
-                db=db,
-                section_id=section_id,
-                filter_roles=[
-                    UserSectionRole.MEMBER,
-                    UserSectionRole.SUBSCRIBER
-                ]
-            )
-            for db_user in db_users:
-                start_trigger_user_notification_event.delay(
-                    user_id=db_user.id,
-                    trigger_event_uuid=NotificationTriggerEventUUID.SECTION_UPDATED,
-                    params={
-                        "user_id": db_user.id,
-                        "section_id": section_id
-                    }
-                )
-        except Exception as e:
-            exception_logger.error(f"Something is error while updating the section: {e}")
-            db_section_document.status = SectionDocumentIntegration.FAILED
-            db.commit()
-            raise e
-    db.close()
+    else:
+        for db_section_document in db_section_documents_wait_to:
+            db_section_document.status = SectionDocumentIntegration.SUCCESS
+    db.commit()
+    if auto_podcast:
+        await handle_update_section_ai_podcast(
+            section_id=section_id, 
+            user_id=user_id
+        )
 
 @celery_app.task
 def start_process_document(
@@ -874,38 +893,16 @@ def start_process_document(
 def start_process_section(
     section_id: int,
     user_id: int,
-    auto_summary: bool = False,
     auto_podcast: bool = False,
     override: SectionOverrideProperty | None = None
 ):
     db = SessionLocal()
     asyncio.run(
-        handle_start_section_process(
+        handle_process_section(
             section_id=section_id,
             user_id=user_id,
-            auto_summary=auto_summary,
             auto_podcast=auto_podcast,
             override=override
-        )
-    )
-    db.close()
-
-@celery_app.task
-def update_sections_for_document(
-    document_id: int,
-    user_id: int
-):
-    db = SessionLocal()
-    sections = crud.section.get_sections_by_document_id(
-        db=db, 
-        document_id=document_id
-    )
-    section_ids = [section.id for section in sections]
-    asyncio.run(
-        handle_update_sections_for_document(
-            section_ids=section_ids,
-            document_id=document_id, 
-            user_id=user_id
         )
     )
     db.close()
