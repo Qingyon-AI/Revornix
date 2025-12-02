@@ -197,6 +197,8 @@ async def handle_update_document_ai_podcast(
         
         if db_engine.uuid == EngineUUID.Volc_TTS.value:
             engine = VolcTTSEngine()
+        else:
+            raise Exception("The podcast engine of the user is not supported")
         
         await engine.init_engine_config_by_user_engine_id(
             user_engine_id=db_user.default_podcast_user_engine_id
@@ -264,6 +266,11 @@ async def handle_convert_document_md(
         )
         if db_document is None:
             raise Exception("The document you want to process is not found")
+        if db_document.category == DocumentCategory.QUICK_NOTE:
+            # 目前的设计架构 速记模式在api请求时候已经填充了数据，后台任务不需要convert处理 直接设为成功然后退出该进程即可
+            db_convert_task.status = DocumentMdConvertStatus.SUCCESS
+            db.commit()
+            return
         if db_document.category == DocumentCategory.FILE:
             if db_user.default_file_document_parse_user_engine_id is None:
                 raise Exception("The user which you want to process document has not set default file document parse user engine")
@@ -317,12 +324,8 @@ async def handle_convert_document_md(
             )
         
         md_file_name = None
-
-        if db_document.category == DocumentCategory.QUICK_NOTE:
-            # 目前的设计架构 速记模式在api请求时候已经填充了数据，后台任务不需要convert处理
-            pass
         
-        elif db_document.category == DocumentCategory.FILE:
+        if db_document.category == DocumentCategory.FILE:
             db_file_document = crud.document.get_file_document_by_document_id(
                 db=db,
                 document_id=document_id
@@ -438,8 +441,6 @@ async def handle_process_document(
             raise Exception("The user which you want to process document has not set default user file system")
         if db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to process document has not set default document reader model")
-        if db_user.default_document_reader_model_id is None:
-            raise Exception("Default document reader model id not found")
         db_model = crud.model.get_ai_model_by_id(
             db=db,
             model_id=db_user.default_document_reader_model_id
@@ -452,29 +453,7 @@ async def handle_process_document(
         )
         if db_document is None:
             raise Exception("The document you want to process is not found")
-        if db_document.category == DocumentCategory.WEBSITE:
-            if db_user.default_website_document_parse_user_engine_id is None:
-                raise Exception("The user which you want to process document has not set default website document parse user engine")
-            md_extractor = crud.engine.get_user_engine_by_user_engine_id(
-                db=db, 
-                user_engine_id=db_user.default_website_document_parse_user_engine_id
-            )
-        elif db_document.category == DocumentCategory.FILE:
-            if db_user.default_file_document_parse_user_engine_id is None:
-                raise Exception("The user which you want to process document has not set default file document parse user engine")
-            md_extractor = crud.engine.get_user_engine_by_user_engine_id(
-                db=db, 
-                user_engine_id=db_user.default_file_document_parse_user_engine_id
-            )
-        if md_extractor is None:
-            raise Exception("There are something wrong with the user's markdown convert engine")
-        db_engine = crud.engine.get_engine_by_id(
-            db=db, 
-            id=md_extractor.engine_id
-        )
-        if db_engine is None:
-            raise Exception("There are something wrong with the user's markdown convert engine")
-        
+
         remote_file_service = await get_user_remote_file_system(
             user_id=user_id
         )
