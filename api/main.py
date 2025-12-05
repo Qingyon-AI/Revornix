@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
     try:
         app.state.redis = await redis_pool()
     except Exception as e:
-        exception_logger.exception("❌ Redis 初始化失败")
+        exception_logger.exception("❌ Redis 初始化失败", e)
         raise
     # TODO: init the dataset and vector
     scheduler.start()

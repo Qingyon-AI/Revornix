@@ -24,7 +24,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { bindEmailVerify } from '@/service/user';
+import { bindEmail } from '@/service/user';
 import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
@@ -61,7 +61,7 @@ const EmailBind = () => {
 		values: z.infer<typeof emailFormSchema>
 	) => {
 		startBindEmailTransition(async () => {
-			const [res, err] = await utils.to(bindEmailVerify(values));
+			const [res, err] = await utils.to(bindEmail(values));
 			if (err) {
 				toast.error(err.message);
 				return;
