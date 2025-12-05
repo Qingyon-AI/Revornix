@@ -4,12 +4,16 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
+| [**bindEmailCodeUserBindEmailCodePost**](UserApi.md#bindemailcodeuserbindemailcodepost) | **POST** /user/bind/email/code | Bind Email Code |
+| [**bindEmailUserBindEmailPost**](UserApi.md#bindemailuserbindemailpost) | **POST** /user/bind/email | Bind Email |
 | [**bindEmailVerifyUserBindEmailVerifyPost**](UserApi.md#bindemailverifyuserbindemailverifypost) | **POST** /user/bind/email/verify | Bind Email Verify |
 | [**bindGithubUserBindGithubPost**](UserApi.md#bindgithubuserbindgithubpost) | **POST** /user/bind/github | Bind Github |
 | [**bindGoogleUserBindGooglePost**](UserApi.md#bindgoogleuserbindgooglepost) | **POST** /user/bind/google | Bind Google |
 | [**bindPhoneUserBindPhoneCodePost**](UserApi.md#bindphoneuserbindphonecodepost) | **POST** /user/bind/phone/code | Bind Phone |
 | [**bindPhoneVerifyUserBindPhoneVerifyPost**](UserApi.md#bindphoneverifyuserbindphoneverifypost) | **POST** /user/bind/phone/verify | Bind Phone Verify |
 | [**bindWechatUserBindWechatWebPost**](UserApi.md#bindwechatuserbindwechatwebpost) | **POST** /user/bind/wechat/web | Bind Wechat |
+| [**createUserByEmailCodeUserCreateEmailCodePost**](UserApi.md#createuserbyemailcodeusercreateemailcodepost) | **POST** /user/create/email/code | Create User By Email Code |
+| [**createUserByEmailUserCreateEmailPost**](UserApi.md#createuserbyemailusercreateemailpost) | **POST** /user/create/email | Create User By Email |
 | [**createUserByEmailVerifyUserCreateEmailVerifyPost**](UserApi.md#createuserbyemailverifyusercreateemailverifypost) | **POST** /user/create/email/verify | Create User By Email Verify |
 | [**createUserByGithubUserCreateGithubPost**](UserApi.md#createuserbygithubusercreategithubpost) | **POST** /user/create/github | Create User By Github |
 | [**createUserByGoogleUserCreateGooglePost**](UserApi.md#createuserbygoogleusercreategooglepost) | **POST** /user/create/google | Create User By Google |
@@ -40,9 +44,149 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 
 
+## bindEmailCodeUserBindEmailCodePost
+
+> NormalResponse bindEmailCodeUserBindEmailCodePost(bindEmailRequest)
+
+Bind Email Code
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { BindEmailCodeUserBindEmailCodePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // BindEmailRequest
+    bindEmailRequest: ...,
+  } satisfies BindEmailCodeUserBindEmailCodePostRequest;
+
+  try {
+    const data = await api.bindEmailCodeUserBindEmailCodePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **bindEmailRequest** | [BindEmailRequest](BindEmailRequest.md) |  | |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## bindEmailUserBindEmailPost
+
+> NormalResponse bindEmailUserBindEmailPost(bindEmailVerifyRequest, authorization, xForwardedFor)
+
+Bind Email
+
+This api is only available for local use, and is disabled in the official deployment version
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { BindEmailUserBindEmailPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // BindEmailVerifyRequest
+    bindEmailVerifyRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies BindEmailUserBindEmailPostRequest;
+
+  try {
+    const data = await api.bindEmailUserBindEmailPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **bindEmailVerifyRequest** | [BindEmailVerifyRequest](BindEmailVerifyRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## bindEmailVerifyUserBindEmailVerifyPost
 
-> NormalResponse bindEmailVerifyUserBindEmailVerifyPost(bindEmailVerifyRequest, authorization, xForwardedFor)
+> NormalResponse bindEmailVerifyUserBindEmailVerifyPost(bindEmailCodeVerifyRequest, authorization, xForwardedFor)
 
 Bind Email Verify
 
@@ -60,8 +204,8 @@ async function example() {
   const api = new UserApi();
 
   const body = {
-    // BindEmailVerifyRequest
-    bindEmailVerifyRequest: ...,
+    // BindEmailCodeVerifyRequest
+    bindEmailCodeVerifyRequest: ...,
     // string (optional)
     authorization: authorization_example,
     // string (optional)
@@ -85,7 +229,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **bindEmailVerifyRequest** | [BindEmailVerifyRequest](BindEmailVerifyRequest.md) |  | |
+| **bindEmailCodeVerifyRequest** | [BindEmailCodeVerifyRequest](BindEmailCodeVerifyRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
@@ -472,9 +616,143 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## createUserByEmailCodeUserCreateEmailCodePost
+
+> NormalResponse createUserByEmailCodeUserCreateEmailCodePost(emailCreateRequest)
+
+Create User By Email Code
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { CreateUserByEmailCodeUserCreateEmailCodePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // EmailCreateRequest
+    emailCreateRequest: ...,
+  } satisfies CreateUserByEmailCodeUserCreateEmailCodePostRequest;
+
+  try {
+    const data = await api.createUserByEmailCodeUserCreateEmailCodePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **emailCreateRequest** | [EmailCreateRequest](EmailCreateRequest.md) |  | |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## createUserByEmailUserCreateEmailPost
+
+> TokenResponse createUserByEmailUserCreateEmailPost(emailUserCreateVerifyRequest)
+
+Create User By Email
+
+his api is only available for local use, and is disabled in the official deployment version
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { CreateUserByEmailUserCreateEmailPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // EmailUserCreateVerifyRequest
+    emailUserCreateVerifyRequest: ...,
+  } satisfies CreateUserByEmailUserCreateEmailPostRequest;
+
+  try {
+    const data = await api.createUserByEmailUserCreateEmailPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **emailUserCreateVerifyRequest** | [EmailUserCreateVerifyRequest](EmailUserCreateVerifyRequest.md) |  | |
+
+### Return type
+
+[**TokenResponse**](TokenResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## createUserByEmailVerifyUserCreateEmailVerifyPost
 
-> TokenResponse createUserByEmailVerifyUserCreateEmailVerifyPost(emailUserCreateVerifyRequest)
+> TokenResponse createUserByEmailVerifyUserCreateEmailVerifyPost(emailUserCreateCodeVerifyRequest)
 
 Create User By Email Verify
 
@@ -492,8 +770,8 @@ async function example() {
   const api = new UserApi();
 
   const body = {
-    // EmailUserCreateVerifyRequest
-    emailUserCreateVerifyRequest: ...,
+    // EmailUserCreateCodeVerifyRequest
+    emailUserCreateCodeVerifyRequest: ...,
   } satisfies CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest;
 
   try {
@@ -513,7 +791,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **emailUserCreateVerifyRequest** | [EmailUserCreateVerifyRequest](EmailUserCreateVerifyRequest.md) |  | |
+| **emailUserCreateCodeVerifyRequest** | [EmailUserCreateCodeVerifyRequest](EmailUserCreateCodeVerifyRequest.md) |  | |
 
 ### Return type
 

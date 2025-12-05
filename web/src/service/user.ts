@@ -1,5 +1,5 @@
 import userApi from '@/api/user'
-import { BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatWebUserBindRequest, WeChatWebUserCreateRequest } from '@/generated';
+import { BindEmailCodeVerifyRequest, BindEmailRequest, BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailCreateRequest, EmailUserCreateCodeVerifyRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatWebUserBindRequest, WeChatWebUserCreateRequest } from '@/generated';
 import { request } from '@/lib/request';
 
 export const searchUser = async (data: SearchUserRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
@@ -44,8 +44,20 @@ export const unBindEmail = async () => {
     return await request(userApi.unBindEmail)
 }
 
-export const createEmailUserVerify = async (data: EmailUserCreateVerifyRequest): Promise<TokenResponse> => {
-    return await request(userApi.createEmailUserVerify, {
+export const createEmailUser = async (data: EmailUserCreateVerifyRequest): Promise<TokenResponse> => {
+    return await request(userApi.createEmailUser, {
+        data
+    })
+}
+
+export const createEmailUserCodeVerify = async (data: EmailUserCreateCodeVerifyRequest): Promise<TokenResponse> => {
+    return await request(userApi.createEmailUserCodeVerify, {
+        data
+    })
+}
+
+export const createEmailUserCode = async (data: EmailCreateRequest): Promise<NormalResponse> => {
+    return await request(userApi.createEmailUserCode, {
         data
     })
 }
@@ -98,8 +110,20 @@ export const updatePassword = async (data: PasswordUpdateRequest): Promise<Norma
     })
 }
 
-export const bindEmailVerify = async (data: BindEmailVerifyRequest): Promise<NormalResponse> => {
-    return await request(userApi.bindEmailVerify, {
+export const bindEmailCodeVerify = async (data: BindEmailCodeVerifyRequest): Promise<NormalResponse> => {
+    return await request(userApi.bindEmailCodeVerify, {
+        data
+    })
+}
+
+export const bindEmailCode = async (data: BindEmailRequest): Promise<NormalResponse> => {
+    return await request(userApi.bindEmailCode, {
+        data
+    })
+}
+
+export const bindEmail = async (data: BindEmailVerifyRequest): Promise<NormalResponse> => {
+    return await request(userApi.bindEmail, {
         data
     })
 }

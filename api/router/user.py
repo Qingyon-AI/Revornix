@@ -12,9 +12,10 @@ from schemas.error import CustomException
 from common.jwt_utils import create_token
 from common.dependencies import get_db
 from common.hash import verify_password
-from common.dependencies import get_current_user, get_db, get_cache, decode_jwt_token
+from common.dependencies import get_current_user, get_db, get_cache, decode_jwt_token, get_request_host
 from common.tp_auth.google_utils import get_google_token
 from common.tp_auth.wechat_utils import get_web_user_info, get_web_wechat_tokens, get_mini_wechat_tokens
+from common.system_email.email import RevornixSystemEmail
 from redis import Redis
 from common.tp_auth.github_utils import get_github_token, get_github_userInfo
 from google.oauth2 import id_token
@@ -336,11 +337,100 @@ async def user_info(
     res.follows = follows
     return res
 
+@user_router.post("/create/email/code", response_model=schemas.common.NormalResponse)
+async def create_user_by_email_code(
+    email_create_request: schemas.user.EmailCreateRequest, 
+    db: Session = Depends(get_db), 
+    cache: Redis = Depends(get_cache)
+):
+    if crud.user.get_user_by_email(
+        db=db, 
+        email=email_create_request.email
+    ):
+        raise CustomException("The email already exists", code=400)
+    else:
+        code = "".join(random.sample(string.ascii_letters + string.digits, 6))
+        await cache.set(
+            name=email_create_request.email, 
+            value=code, 
+            ex=600
+        )
+        mail = RevornixSystemEmail()
+        await mail.send(
+            recipient=email_create_request.email,
+            title="Revornix注册验证码",
+            content=f"欢迎使用Revornix，您的验证码为{code}, 有效期10分钟。",
+            template='register.html'
+        )
+        res = schemas.common.SuccessResponse(message="The code has been sent.")
+        return res
+    
 @user_router.post('/create/email/verify', response_model=schemas.user.TokenResponse)
 async def create_user_by_email_verify(
-    email_user_create_verify_request: schemas.user.EmailUserCreateVerifyRequest, 
-    db: Session = Depends(get_db)
+    email_user_create_verify_request: schemas.user.EmailUserCreateCodeVerifyRequest, 
+    db: Session = Depends(get_db), 
+    cache: Redis = Depends(get_cache)
 ):
+    if crud.user.get_user_by_email(
+        db=db, 
+        email=email_user_create_verify_request.email
+    ):
+        raise Exception("The email is already exists")
+    code = await cache.get(email_user_create_verify_request.email)
+    if code != email_user_create_verify_request.code or code is None:
+        raise Exception("Code is wrong")
+    await cache.delete(email_user_create_verify_request.email)
+    db_user = crud.user.create_base_user(
+        db=db, 
+        nickname=email_user_create_verify_request.email,
+        avatar="files/default_avatar.png"
+    )
+    crud.user.create_email_user(
+        db=db, 
+        user_id=db_user.id, 
+        email=email_user_create_verify_request.email, 
+        password=email_user_create_verify_request.password,
+        nickname=email_user_create_verify_request.email
+    )
+    # init the default file system for the user
+    db_user_file_system = crud.file_system.create_user_file_system(
+        db=db,
+        file_system_id=1,
+        user_id=db_user.id,
+        title="Default File System",
+        description="The default file system for the user"
+    )
+    db_user.default_user_file_system = db_user_file_system.id
+    # create the minio file bucket for the user because it's the default file system
+    BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+    # init the default engine for the user
+    db_user_engine = crud.engine.create_user_engine(
+        db=db,
+        user_id=db_user.id,
+        engine_id=1,
+        title="Default Engine",
+        description="The default engine for the user"
+    )
+    db_user.default_website_document_parse_user_engine_id = db_user_engine.id
+    db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    db.commit()
+    access_token, refresh_token = create_token(db_user)
+    if access_token is None or refresh_token is None:
+        raise CustomException(message='The token is not created.')
+    return schemas.user.TokenResponse(
+        access_token=access_token, 
+        refresh_token=refresh_token, 
+        expires_in=3600
+    )
+
+@user_router.post('/create/email', response_model=schemas.user.TokenResponse, description='his api is only available for local use, and is disabled in the official deployment version')
+async def create_user_by_email(
+    email_user_create_verify_request: schemas.user.EmailUserCreateVerifyRequest, 
+    db: Session = Depends(get_db),
+    host: str = Depends(get_request_host),
+):
+    if 'revornix.com' in host or 'revornix.cn' in host:
+        raise CustomException(message='This api is only available for local use, and is disabled in the official deployment version', code=403)
     if crud.user.get_user_by_email(
         db=db, 
         email=email_user_create_verify_request.email
@@ -414,12 +504,61 @@ async def update_password(
     db.commit()
     return schemas.common.SuccessResponse(message="The password is updated successfully.")
 
-@user_router.post('/bind/email/verify', response_model=schemas.common.NormalResponse)
-async def bind_email_verify(
-    bind_email_verify_request: schemas.user.BindEmailVerifyRequest,
-    user = Depends(get_current_user),
+@user_router.post('/bind/email/code', response_model=schemas.common.NormalResponse)
+async def bind_email_code(
+    bind_email_request: schemas.user.BindEmailRequest,
+    cache: Redis = Depends(get_cache),
     db: Session = Depends(get_db)
 ):
+    email_exist = crud.user.get_email_user_by_email(
+        db=db, 
+        email=bind_email_request.email
+    )
+    if email_exist:
+        raise Exception('The email is already exists')
+    code = "".join(random.sample(string.ascii_letters + string.digits, 6))
+    await cache.set(
+        name=bind_email_request.email, 
+        value=code, 
+        ex=600
+    )
+    mail = RevornixSystemEmail()
+    await mail.send(
+        recipient=bind_email_request.email,
+        title="Revornix邮箱绑定",
+        content=f"你正在绑定邮箱，验证码是 {code}"
+    )
+    res = schemas.common.SuccessResponse(message='The code has been sent.')
+    return res
+
+@user_router.post('/bind/email/verify', response_model=schemas.common.NormalResponse)
+async def bind_email_verify(
+    bind_email_verify_request: schemas.user.BindEmailCodeVerifyRequest,
+    user = Depends(get_current_user),
+    cache: Redis = Depends(get_cache),
+    db: Session = Depends(get_db)
+):
+    code = await cache.get(bind_email_verify_request.email)
+    if code is None or code != bind_email_verify_request.code:
+        raise Exception("Code is wrong.")
+    await cache.delete(bind_email_verify_request.email)
+    crud.user.create_email_user(
+        db=db, 
+        user_id=user.id,
+        email=bind_email_verify_request.email
+    )
+    db.commit()
+    return schemas.common.SuccessResponse(message="The email is binded successfully.")
+
+@user_router.post('/bind/email', response_model=schemas.common.NormalResponse, description='This api is only available for local use, and is disabled in the official deployment version')
+async def bind_email(
+    bind_email_verify_request: schemas.user.BindEmailVerifyRequest,
+    user = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    host: str = Depends(get_request_host)
+):
+    if 'revornix.com' in host or 'revornix.cn' in host:
+        raise CustomException(message='This api is only available for local use, and is disabled in the official deployment version', code=403)
     db_exist_email_user = crud.user.get_email_user_by_email(
         db=db,
         email=bind_email_verify_request.email
@@ -888,7 +1027,6 @@ async def unbind_github(
 @user_router.post('/create/sms/code', response_model=schemas.common.NormalResponse)
 async def create_user_by_sms_code(
     sms_user_code_create_request: schemas.user.SmsUserCodeCreateRequest,
-    db: Session = Depends(get_db),
     cache: Redis = Depends(get_cache)
 ):
     code = "".join(random.sample(string.digits, 6))

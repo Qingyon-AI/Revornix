@@ -2,6 +2,13 @@ from pydantic import BaseModel, field_serializer, field_validator
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
 
+class BindEmailRequest(BaseModel):
+    email: str
+    
+class BindEmailCodeVerifyRequest(BaseModel):
+    email: str
+    code: str
+
 class SearchUserRequest(BaseModel):
     filter_name: str
     filter_value: str
@@ -104,6 +111,11 @@ class FollowUserRequest(BaseModel):
 class EmailCreateRequest(BaseModel):
     email: str
     
+class EmailUserCreateCodeVerifyRequest(BaseModel):
+    email: str
+    code: str
+    password: str
+
 class EmailUserCreateVerifyRequest(BaseModel):
     email: str
     password: str

@@ -11,6 +11,18 @@ from fastapi import Request, HTTPException, status, Depends, Header
 if OAUTH_SECRET_KEY is None:
     raise Exception("OAUTH_SECRET_KEY is not set")
 
+async def get_request_host(request: Request) -> str:
+    host = (
+        request.headers.get("x-forwarded-host")
+        or request.headers.get("host")
+        or request.url.hostname
+    )
+
+    if host is None:
+        raise ValueError("Host not found in request")
+
+    return host
+
 def get_db():
     db = SessionLocal()
     try:
