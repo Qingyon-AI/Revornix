@@ -13,7 +13,7 @@ const auth = (request: NextRequest) => {
     return true
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     // If the user is authenticated, continue as normal
     if (auth(request)) {
         return NextResponse.next()
