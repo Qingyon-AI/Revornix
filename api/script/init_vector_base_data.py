@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 from pymilvus import DataType, MilvusClient
 from config.milvus import MILVUS_CLUSTER_ENDPOINT, MILVUS_TOKEN
 
