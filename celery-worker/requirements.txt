@@ -39,3 +39,4 @@ websockets==15.0.1
 lark_oapi==1.4.24
 python-telegram-bot==22.5
 jwcrypto==1.5.6
+hf_transfer==0.1.9
