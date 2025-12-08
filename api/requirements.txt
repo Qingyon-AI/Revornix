@@ -40,3 +40,4 @@ websockets==15.0.1
 sentry-sdk==2.44.0
 lark_oapi==1.4.24
 python-telegram-bot==22.5
+hf_transfer==0.1.9
