@@ -92,46 +92,69 @@ export const request = <T>(url: string, initialOptions?: RequestOptions): Promis
         headers.append('Content-Type', 'application/json');
     }
     headers.append('Trace-Id', uuidv4())
+
     const isServer = typeof window === 'undefined';
     if (!isServer) {
         const accessToken = Cookies.get('access_token');
         if (accessToken) headers.append('Authorization', `Bearer ${accessToken}`);
     }
+
     return new Promise(async (resolve, reject) => {
         const method = initialOptions?.method || 'POST';
         const options: any = {
             method: method,
-            mode: 'cors', // no-cors, *cors, same-origin
-            credentials: 'same-origin', // include, *same-origin, omit
-            redirect: 'follow', // manual, *follow, error
-            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            mode: 'cors',
+            credentials: 'same-origin',
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
             headers: headers,
             ...initialOptions
         }
+
         if (method === 'POST' && initialOptions?.data && !initialOptions.formData) {
-            options.body = JSON.stringify({ ...initialOptions?.data })
+            options.body = JSON.stringify({ ...initialOptions.data });
         }
         if (method === 'POST' && initialOptions?.formData) {
             options.body = initialOptions.formData;
         }
+
         let finalUrl = url;
         if (method === 'GET' && initialOptions?.data) {
             finalUrl = finalUrl + '?' + qs.stringify(initialOptions.data, { skipNulls: true });
         }
-        const response = await fetch(finalUrl, options);
+
+        // 🟦【关键补充】捕获 fetch 网络层错误（Failed to fetch、CORS 错误、DNS 错误、证书错误等）
+        let response: Response;
+        try {
+            response = await fetch(finalUrl, options);
+        } catch (networkErr: any) {
+            console.error('[Network Error]', networkErr);
+
+            reject({
+                success: false,
+                message: networkErr?.message || 'Network error',
+                code: 0, // 0 代表未到达服务端
+            } as ErrorResponse);
+            return;
+        }
+
+        // 🟦 Response 不是 OK 的情况
         if (!response.ok) {
-            // 权限问题
+            // Token 过期：尝试刷新
             if (response.status === 401) {
                 const retryPromise = checkTokenRefreshStatus<T>(url, initialOptions);
                 return retryPromise && retryPromise.then(resolve);
             }
+
+            // 其他错误：返回规范化错误对象
             reject(await parseError(response));
             return;
         }
-        // 请求正常
+
+        // 🟦 正常返回
         resolve(await parseResponse<T>(response));
-    })
-}
+    });
+};
 
 async function parseResponse<T>(response: Response): Promise<T> {
     const contentType = response.headers.get('Content-Type');
