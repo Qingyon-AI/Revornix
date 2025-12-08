@@ -14,7 +14,7 @@ import { SectionUserPublicInfo } from '@/generated';
 import { useMutation } from '@tanstack/react-query';
 import { deleteSectionUser, modifySectionUser } from '@/service/section';
 import { toast } from 'sonner';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { Button } from '../ui/button';
 import { Loader2, XCircleIcon } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
