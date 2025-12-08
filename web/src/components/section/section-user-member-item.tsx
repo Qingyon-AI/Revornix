@@ -112,7 +112,7 @@ const SectionMemberItem = ({
 						});
 					}}>
 					<SelectTrigger
-						className='h-6 px-2 text-xs w-[140px] flex-shrink-0'
+						className='h-6 px-2 text-xs w-[140px] shrink-0'
 						size={'sm'}>
 						<SelectValue placeholder='请设置该用户的权限' />
 					</SelectTrigger>
