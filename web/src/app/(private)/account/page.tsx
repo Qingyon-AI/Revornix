@@ -16,9 +16,13 @@ import GoogleBind from '@/components/user/google-bind';
 import PhoneBind from '@/components/user/phone-bind';
 import WeChatBind from '@/components/user/wechat-bind';
 import UserPlan from '@/components/user/user-plan';
+import { headers } from 'next/headers';
 
 const AccountPage = async () => {
 	const t = await getTranslations();
+	const headersList = await headers();
+	const host = headersList.get('host');
+
 	return (
 		<div className='px-5 pb-5'>
 			<Card className='mb-5'>
@@ -58,18 +62,23 @@ const AccountPage = async () => {
 							<SloganUpdate />
 						</div>
 					</div>
-					<Separator />
-					<div className='flex justify-between items-center'>
-						<Label className='flex flex-col gap-2 items-start'>
-							{t('account_plan_subscribe_plan')}
-							<div className='text-[0.8rem] text-muted-foreground'>
-								{t('account_plan_subscribe_plan_description')}
+					{(host?.includes('app.revornix.com') ||
+						host?.includes('app.revornix.cn')) && (
+						<>
+							<Separator />
+							<div className='flex justify-between items-center'>
+								<Label className='flex flex-col gap-2 items-start'>
+									{t('account_plan_subscribe_plan')}
+									<div className='text-[0.8rem] text-muted-foreground'>
+										{t('account_plan_subscribe_plan_description')}
+									</div>
+								</Label>
+								<div className='flex flex-col gap-2 text-xs font-bold'>
+									<UserPlan />
+								</div>
 							</div>
-						</Label>
-						<div className='flex flex-col gap-2 text-xs font-bold'>
-							<UserPlan />
-						</div>
-					</div>
+						</>
+					)}
 				</CardContent>
 			</Card>
 			<Card className='mb-5'>
