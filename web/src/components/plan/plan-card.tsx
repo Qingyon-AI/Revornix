@@ -198,13 +198,13 @@ const PlanCard = ({
 							</div>
 						)}
 						{payWay == PayWay.WECHAT && prepayBackData && (
-							<div className='size-[200px] relative rounded overflow-hidden shrink-0 mx-auto'>
+							<div className='size-[200px] relative rounded overflow-hidden shrink-0 mx-auto my-5'>
 								<Image src={prepayBackData?.code} alt='qr code' fill />
 							</div>
 						)}
 						{payWay == PayWay.ALIPAY && prepayBackData && (
 							<iframe
-								className='size-[200px] relative rounded overflow-hidden shrink-0 mx-auto'
+								className='size-[200px] relative rounded overflow-hidden shrink-0 mx-auto my-5'
 								ref={alipayIframeBox}></iframe>
 						)}
 						{prepayBackData && (
