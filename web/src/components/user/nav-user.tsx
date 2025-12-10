@@ -40,7 +40,7 @@ export function NavUser() {
 	const queryClient = getQueryClient();
 	const router = useRouter();
 	const { isMobile } = useSidebar();
-	const { userInfo, logOut } = useUserContext();
+	const { mainUserInfo, logOut } = useUserContext();
 
 	const onLogout = async () => {
 		logOut();
@@ -90,14 +90,14 @@ export function NavUser() {
 	);
 
 	useEffect(() => {
-		if (userInfo) {
+		if (mainUserInfo) {
 			notificationWebsocket.connect();
 		}
-	}, [userInfo]);
+	}, [mainUserInfo]);
 
 	return (
 		<SidebarMenu>
-			{userInfo && (
+			{mainUserInfo && (
 				<SidebarMenuItem>
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -105,7 +105,7 @@ export function NavUser() {
 								size='lg'
 								className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'>
 								<CustomImage
-									src={userInfo.avatar!}
+									src={mainUserInfo.avatar!}
 									alt={'avatar'}
 									className='object-cover size-8 rounded-lg'
 									errorPlaceHolder={
@@ -116,10 +116,12 @@ export function NavUser() {
 								/>
 								<div className='grid flex-1 text-left text-sm leading-tight'>
 									<span className='truncate font-semibold line-clamp-1'>
-										{userInfo.nickname}
+										{mainUserInfo.nickname}
 									</span>
 									<span className='line-clamp-1 text-xs text-muted-foreground'>
-										{userInfo.slogan ? userInfo.slogan : t('user_no_slogan')}
+										{mainUserInfo.slogan
+											? mainUserInfo.slogan
+											: t('user_no_slogan')}
 									</span>
 								</div>
 								<ChevronsUpDown className='ml-auto size-4' />
@@ -133,7 +135,7 @@ export function NavUser() {
 							<DropdownMenuLabel className='p-0 font-normal'>
 								<div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
 									<CustomImage
-										src={userInfo.avatar!}
+										src={mainUserInfo.avatar!}
 										alt={'avatar'}
 										className='object-cover size-8 rounded-lg'
 										errorPlaceHolder={
@@ -144,10 +146,12 @@ export function NavUser() {
 									/>
 									<div className='grid flex-1 text-left text-sm leading-tight'>
 										<span className='truncate font-semibold line-clamp-1'>
-											{userInfo.nickname}
+											{mainUserInfo.nickname}
 										</span>
 										<span className='line-clamp-1 text-xs text-muted-foreground'>
-											{userInfo.slogan ? userInfo.slogan : t('user_no_slogan')}
+											{mainUserInfo.slogan
+												? mainUserInfo.slogan
+												: t('user_no_slogan')}
 										</span>
 									</div>
 								</div>
@@ -160,7 +164,9 @@ export function NavUser() {
 											<span className='text-muted-foreground text-xs'>
 												{t('user_fans')}
 											</span>
-											<span className='font-bold ml-1'>{userInfo.fans}</span>
+											<span className='font-bold ml-1'>
+												{mainUserInfo.fans}
+											</span>
 										</Button>
 									</Link>
 									<Link href={'/user/follows'} className='flex-1'>
@@ -171,7 +177,9 @@ export function NavUser() {
 											<span className='text-muted-foreground text-xs'>
 												{t('user_follows')}
 											</span>
-											<span className='font-bold ml-1'>{userInfo.follows}</span>
+											<span className='font-bold ml-1'>
+												{mainUserInfo.follows}
+											</span>
 										</Button>
 									</Link>
 								</div>

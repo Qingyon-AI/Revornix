@@ -14,8 +14,6 @@ import { useUserContext } from '@/provider/user-provider';
 import { toast } from 'sonner';
 import { FileService } from '@/lib/file';
 import { getUserFileSystemDetail } from '@/service/file-system';
-import { Separator } from '../ui/separator';
-import SectionOperate from './section-operate';
 import { cn } from '@/lib/utils';
 
 const SectionMarkdown = ({
@@ -26,7 +24,7 @@ const SectionMarkdown = ({
 	className?: string;
 }) => {
 	const t = useTranslations();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const {
 		data: section,
 		isFetching,
@@ -41,14 +39,14 @@ const SectionMarkdown = ({
 	});
 
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
 		queryFn: () =>
 			getUserFileSystemDetail({
-				user_file_system_id: userInfo!.default_user_file_system!,
+				user_file_system_id: mainUserInfo!.default_user_file_system!,
 			}),
 		enabled:
-			userInfo?.id !== undefined &&
-			userInfo?.default_user_file_system !== undefined,
+			mainUserInfo?.id !== undefined &&
+			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
 	const [markdown, setMarkdown] = useState<string>();
@@ -56,9 +54,9 @@ const SectionMarkdown = ({
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
 
 	const onGetMarkdown = async () => {
-		if (!section || !section.md_file_name || !userInfo) return;
+		if (!section || !section.md_file_name || !mainUserInfo) return;
 		setMarkdownIsFetching(true);
-		if (!userInfo.default_user_file_system) {
+		if (!mainUserInfo.default_user_file_system) {
 			toast.error('No user default file system found');
 			return;
 		}
@@ -83,10 +81,15 @@ const SectionMarkdown = ({
 	};
 
 	useEffect(() => {
-		if (!section || !section.md_file_name || !userInfo || !userFileSystemDetail)
+		if (
+			!section ||
+			!section.md_file_name ||
+			!mainUserInfo ||
+			!userFileSystemDetail
+		)
 			return;
 		onGetMarkdown();
-	}, [section, userInfo, userFileSystemDetail]);
+	}, [section, mainUserInfo, userFileSystemDetail]);
 
 	return (
 		<>

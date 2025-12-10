@@ -65,7 +65,7 @@ const CreatePage = () => {
 		queryFn: getMineLabels,
 	});
 
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 
 	const getLabelByValue = (value: number): Option | undefined => {
 		if (!labels) return;
@@ -261,7 +261,7 @@ const CreatePage = () => {
 												{t('section_create_form_auto_podcast')}
 											</FormLabel>
 											<Switch
-												disabled={!userInfo?.default_podcast_user_engine_id}
+												disabled={!mainUserInfo?.default_podcast_user_engine_id}
 												checked={field.value}
 												onCheckedChange={(e) => {
 													field.onChange(e);
@@ -271,9 +271,9 @@ const CreatePage = () => {
 										<FormDescription>
 											{t('section_create_form_auto_podcast_description')}
 										</FormDescription>
-										{!userInfo?.default_podcast_user_engine_id && (
+										{!mainUserInfo?.default_podcast_user_engine_id && (
 											<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-												<OctagonAlert className='h-4 w-4 !text-destructive' />
+												<OctagonAlert className='h-4 w-4 text-destructive!' />
 												<AlertDescription>
 													{t('section_create_auto_podcast_engine_unset')}
 												</AlertDescription>

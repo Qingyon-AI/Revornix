@@ -63,7 +63,7 @@ const PlanCard = ({
 	const alipayIframeBox = useRef<HTMLIFrameElement>(null);
 	const [showPayDialog, setShowPayDialog] = useState(false);
 	const [showScanCode, setShowScanCode] = useState(false);
-	const { refreshUserInfo, userInfo } = useUserContext();
+	const { refreshMainUserInfo, mainUserInfo } = useUserContext();
 
 	const locale = useLocale();
 
@@ -81,7 +81,7 @@ const PlanCard = ({
 				clean();
 				toast.success(t('account_plan_pay_success'));
 				await utils.sleep(1000);
-				await refreshUserInfo();
+				await refreshMainUserInfo();
 				setShowPayDialog(false);
 				setShowScanCode(false);
 				setPrepayBackData(undefined);
@@ -212,7 +212,7 @@ const PlanCard = ({
 										<TableCell className='font-bold'>
 											{t('account_plan_pay_subscribe_user')}
 										</TableCell>
-										<TableCell>{userInfo?.nickname}</TableCell>
+										<TableCell>{mainUserInfo?.nickname}</TableCell>
 									</TableRow>
 									<TableRow>
 										<TableCell className='font-bold'>

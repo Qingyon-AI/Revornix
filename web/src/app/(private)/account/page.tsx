@@ -15,6 +15,7 @@ import GitHubBind from '@/components/user/github-bind';
 import GoogleBind from '@/components/user/google-bind';
 import PhoneBind from '@/components/user/phone-bind';
 import WeChatBind from '@/components/user/wechat-bind';
+import UserPlan from '@/components/user/user-plan';
 
 const AccountPage = async () => {
 	const t = await getTranslations();
@@ -55,6 +56,18 @@ const AccountPage = async () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<SloganUpdate />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('account_plan_subscribe_plan')}
+							<div className='text-[0.8rem] text-muted-foreground'>
+								{t('account_plan_subscribe_plan_description')}
+							</div>
+						</Label>
+						<div className='flex flex-col gap-2 text-xs font-bold'>
+							<UserPlan />
 						</div>
 					</div>
 				</CardContent>

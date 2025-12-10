@@ -54,7 +54,7 @@ export function RegisterFormCloud() {
 	const [submitting, setSubmitting] = useState(false);
 	const [codeSending, setCodeSending] = useState(false);
 
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -120,7 +120,7 @@ export function RegisterFormCloud() {
 		toast.success(t('seo_register_success'));
 		Cookies.set('access_token', res.access_token);
 		Cookies.set('refresh_token', res.refresh_token);
-		refreshUserInfo();
+		refreshMainUserInfo();
 		router.push('/dashboard');
 		setSubmitting(false);
 	};

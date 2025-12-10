@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 
 const DefaultDocumentReadMarkReasonChoose = () => {
 	const t = useTranslations();
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const reasons = [
 		{ id: 0, name: t('setting_document_read_mark_reason_0') },
 		{ id: 1, name: t('setting_document_read_mark_reason_1') },
@@ -32,7 +32,7 @@ const DefaultDocumentReadMarkReasonChoose = () => {
 			toast.error(err.message);
 			return;
 		}
-		refreshUserInfo();
+		refreshMainUserInfo();
 		toast.success(
 			t('setting_document_default_read_mark_reason_update_successful')
 		);
@@ -41,9 +41,9 @@ const DefaultDocumentReadMarkReasonChoose = () => {
 		<>
 			<Select
 				value={
-					userInfo?.default_read_mark_reason
-						? String(userInfo?.default_read_mark_reason)
-						: userInfo?.default_read_mark_reason === 0
+					mainUserInfo?.default_read_mark_reason
+						? String(mainUserInfo?.default_read_mark_reason)
+						: mainUserInfo?.default_read_mark_reason === 0
 						? '0'
 						: undefined
 				}

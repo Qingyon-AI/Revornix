@@ -30,7 +30,7 @@ interface ProviderMapProps {
 
 const DocumentSummaryModel = () => {
 	const t = useTranslations();
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const { data } = useQuery({
 		queryKey: ['getModels'],
 		queryFn: async () => {
@@ -80,7 +80,7 @@ const DocumentSummaryModel = () => {
 			toast.error(err.message);
 			return;
 		}
-		refreshUserInfo();
+		refreshMainUserInfo();
 		toast.success(t('setting_default_document_read_model_update_successful'));
 	};
 
@@ -88,8 +88,8 @@ const DocumentSummaryModel = () => {
 		<>
 			<Select
 				value={
-					userInfo?.default_document_reader_model_id
-						? String(userInfo?.default_document_reader_model_id)
+					mainUserInfo?.default_document_reader_model_id
+						? String(mainUserInfo?.default_document_reader_model_id)
 						: undefined
 				}
 				onValueChange={(e) => {

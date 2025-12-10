@@ -25,7 +25,6 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 import { Info, Loader2, PlusCircle, Trash, UploadIcon } from 'lucide-react';
-import { utils } from '@kinda/utils';
 import Parser from 'rss-parser';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { Separator } from '../ui/separator';
@@ -40,7 +39,7 @@ const AddRss = () => {
 	const [uploadingCover, setUploadingCover] = useState(false);
 	const [tempFile, setTempFile] = useState<File>();
 
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 
 	const [testing, startTest] = useTransition();
 	const [filling, startFill] = useTransition();
@@ -65,14 +64,14 @@ const AddRss = () => {
 	});
 
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
 		queryFn: () =>
 			getUserFileSystemDetail({
-				user_file_system_id: userInfo!.default_user_file_system!,
+				user_file_system_id: mainUserInfo!.default_user_file_system!,
 			}),
 		enabled:
-			userInfo?.id !== undefined &&
-			userInfo?.default_user_file_system !== undefined,
+			mainUserInfo?.id !== undefined &&
+			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
 	const { data: sections } = useQuery({
@@ -172,7 +171,7 @@ const AddRss = () => {
 		if (!file) {
 			return;
 		}
-		if (!userInfo?.default_user_file_system) {
+		if (!mainUserInfo?.default_user_file_system) {
 			toast.error('No user default file system found');
 			return;
 		}
@@ -383,7 +382,7 @@ const AddRss = () => {
 
 				<Separator />
 
-				<DialogFooter className='w-full flex flex-row !justify-between items-center'>
+				<DialogFooter className='w-full flex flex-row justify-between! items-center'>
 					<div className='flex flex-row gap-3 items-center h-5'>
 						<Button
 							variant={'link'}

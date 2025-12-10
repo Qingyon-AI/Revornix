@@ -35,7 +35,7 @@ const AddQuickNote = () => {
 	const searchParams = useSearchParams();
 	const sectionId = searchParams.get('section_id');
 	const t = useTranslations();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const formSchema = z.object({
 		category: z.number(),
 		content: z.string(),
@@ -213,7 +213,9 @@ const AddQuickNote = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={!userInfo?.default_document_reader_model_id}
+													disabled={
+														!mainUserInfo?.default_document_reader_model_id
+													}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -223,9 +225,9 @@ const AddQuickNote = () => {
 											<FormDescription>
 												{t('document_create_ai_summary_description')}
 											</FormDescription>
-											{!userInfo?.default_document_reader_model_id && (
+											{!mainUserInfo?.default_document_reader_model_id && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 !text-destructive' />
+													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
 														{t('document_create_ai_summary_engine_unset')}
 													</AlertDescription>
@@ -247,7 +249,9 @@ const AddQuickNote = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={!userInfo?.default_podcast_user_engine_id}
+													disabled={
+														!mainUserInfo?.default_podcast_user_engine_id
+													}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -257,9 +261,9 @@ const AddQuickNote = () => {
 											<FormDescription>
 												{t('document_create_auto_podcast_description')}
 											</FormDescription>
-											{!userInfo?.default_podcast_user_engine_id && (
+											{!mainUserInfo?.default_podcast_user_engine_id && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 !text-destructive' />
+													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
 														{t('document_create_auto_podcast_engine_unset')}
 													</AlertDescription>

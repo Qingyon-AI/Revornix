@@ -23,7 +23,7 @@ import CustomImage from '../ui/custom-image';
 
 const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 	const queryClient = getQueryClient();
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const [cancelinig, setCanceling] = useState(false);
 	const [showCancelDialog, setShowCancelDialog] = useState(false);
 	const handleCancelFollow = async () => {
@@ -45,7 +45,7 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 				);
 			},
 		});
-		refreshUserInfo();
+		refreshMainUserInfo();
 		setShowCancelDialog(false);
 		setCanceling(false);
 	};

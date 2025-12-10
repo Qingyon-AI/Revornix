@@ -32,18 +32,14 @@ const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 
-	const {
-		data: section,
-		isFetching,
-		isFetched,
-	} = useQuery({
+	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
 			return getSectionDetail({ section_id: id });
 		},
 	});
 
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 
 	const mutateGeneratePodcast = useMutation({
 		mutationFn: () =>
@@ -107,7 +103,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 								<Expand size={4} className='text-muted-foreground' />
 							</Button>
 						</DialogTrigger>
-						<DialogContent className='!max-w-[80vw] h-[80vh] flex flex-col'>
+						<DialogContent className='max-w-[80vw]! h-[80vh] flex flex-col'>
 							<DialogHeader>
 								<DialogTitle>{t('section_graph')}</DialogTitle>
 								<DialogDescription>
@@ -124,47 +120,49 @@ const SectionContainer = ({ id }: { id: number }) => {
 				</Card>
 
 				<Card className='p-5 relative flex flex-col gap-5'>
-					{section?.creator.id !== userInfo?.id && !section?.podcast_task && (
-						<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-							<OctagonAlert className='h-4 w-4 !text-destructive' />
-							<AlertDescription>
-								{t('section_podcast_user_unable')}
-							</AlertDescription>
-						</Alert>
-					)}
-					{section?.creator.id === userInfo?.id && !section?.podcast_task && (
-						<>
-							<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
-								<AlertDescription className='flex flex-row items-center'>
-									<span className='inline-flex'>
-										{t('section_podcast_unset')}
-									</span>
-									<Button
-										variant={'link'}
-										size='sm'
-										className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0'
-										onClick={() => mutateGeneratePodcast.mutate()}
-										disabled={
-											mutateGeneratePodcast.isPending ||
-											!userInfo?.default_podcast_user_engine_id
-										}>
-										{t('section_podcast_generate')}
-										{mutateGeneratePodcast.isPending && (
-											<Loader2 className='animate-spin' />
-										)}
-									</Button>
+					{section?.creator.id !== mainUserInfo?.id &&
+						!section?.podcast_task && (
+							<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+								<OctagonAlert className='h-4 w-4 text-destructive!' />
+								<AlertDescription>
+									{t('section_podcast_user_unable')}
 								</AlertDescription>
 							</Alert>
-							{!userInfo?.default_podcast_user_engine_id && (
-								<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-									<OctagonAlert className='h-4 w-4 !text-destructive' />
-									<AlertDescription>
-										{t('section_create_auto_podcast_engine_unset')}
+						)}
+					{section?.creator.id === mainUserInfo?.id &&
+						!section?.podcast_task && (
+							<>
+								<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
+									<AlertDescription className='flex flex-row items-center'>
+										<span className='inline-flex'>
+											{t('section_podcast_unset')}
+										</span>
+										<Button
+											variant={'link'}
+											size='sm'
+											className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0'
+											onClick={() => mutateGeneratePodcast.mutate()}
+											disabled={
+												mutateGeneratePodcast.isPending ||
+												!mainUserInfo?.default_podcast_user_engine_id
+											}>
+											{t('section_podcast_generate')}
+											{mutateGeneratePodcast.isPending && (
+												<Loader2 className='animate-spin' />
+											)}
+										</Button>
 									</AlertDescription>
 								</Alert>
-							)}
-						</>
-					)}
+								{!mainUserInfo?.default_podcast_user_engine_id && (
+									<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+										<OctagonAlert className='h-4 w-4 text-destructive!' />
+										<AlertDescription>
+											{t('section_create_auto_podcast_engine_unset')}
+										</AlertDescription>
+									</Alert>
+								)}
+							</>
+						)}
 					{section?.podcast_task && (
 						<>
 							{section?.podcast_task?.status ===

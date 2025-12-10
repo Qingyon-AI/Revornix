@@ -22,7 +22,7 @@ const UserContainer = ({ id }: { id: number }) => {
 	const queryClient = getQueryClient();
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 
 	const { data: userInfo, isFetching: isFetchingUserInfo } = useQuery({
 		queryKey: ['userInfo', id],
@@ -91,7 +91,7 @@ const UserContainer = ({ id }: { id: number }) => {
 					);
 				},
 			});
-			refreshUserInfo();
+			refreshMainUserInfo();
 		},
 	});
 

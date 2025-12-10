@@ -9,7 +9,7 @@ import SectionOperateComment from './section-operate-comment';
 import SectionDocument from './section-document';
 
 const SectionOperate = ({ id }: { id: number }) => {
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
@@ -21,7 +21,7 @@ const SectionOperate = ({ id }: { id: number }) => {
 		<div className='w-full flex justify-between'>
 			<SectionOperateComment section_id={id} />
 			<SectionDocument section_id={id} />
-			{section && userInfo?.id === section?.creator.id && (
+			{section && mainUserInfo?.id === section?.creator.id && (
 				<>
 					<SectionOperateShare section_id={id} />
 					<SectionOperateConfiguration
@@ -31,7 +31,7 @@ const SectionOperate = ({ id }: { id: number }) => {
 					<SectionOperateDelete section_id={id} className='flex-1 w-full' />
 				</>
 			)}
-			{section && userInfo?.id !== section?.creator.id && (
+			{section && mainUserInfo?.id !== section?.creator.id && (
 				<>
 					<SectionOperateSubscribe section_id={id} className='flex-1 w-full' />
 				</>

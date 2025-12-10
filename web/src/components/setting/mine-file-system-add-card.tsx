@@ -41,7 +41,7 @@ import { Separator } from '../ui/separator';
 const MineFileSystemAddCard = ({}: {}) => {
 	const t = useTranslations();
 	const locale = useLocale();
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const [showMineFileSystemAddDialog, setShowMineFileSystemAddDialog] =
 		useState(false);
 	const formSchema = z.object({
@@ -75,7 +75,7 @@ const MineFileSystemAddCard = ({}: {}) => {
 			queryClient.invalidateQueries({
 				queryKey: ['mine-file-system'],
 			});
-			refreshUserInfo();
+			refreshMainUserInfo();
 			form.reset();
 			setShowMineFileSystemAddDialog(false);
 		},

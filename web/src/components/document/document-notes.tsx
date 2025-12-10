@@ -16,7 +16,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 	const t = useTranslations();
 
 	const router = useRouter();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 
 	const { data: document } = useQuery({
 		queryKey: ['getDocumentDetail', id],
@@ -54,13 +54,13 @@ const DocumentNotes = ({ id }: { id: number }) => {
 
 	return (
 		<div className='h-full flex flex-col overflow-auto px-5'>
-			{document?.creator?.id !== userInfo?.id && (
+			{document?.creator?.id !== mainUserInfo?.id && (
 				<Alert className='bg-destructive/10 dark:bg-destructive/20 mb-5'>
-					<OctagonAlert className='h-4 w-4 !text-destructive' />
+					<OctagonAlert className='h-4 w-4 text-destructive!' />
 					<AlertDescription>{t('document_notes_tips')}</AlertDescription>
 				</Alert>
 			)}
-			{document?.creator?.id === userInfo?.id && (
+			{document?.creator?.id === mainUserInfo?.id && (
 				<div className='pt-1'>
 					<DocumentCommentForm documentId={id} commentSearchKeyword={keyword} />
 				</div>

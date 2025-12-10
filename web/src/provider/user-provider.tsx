@@ -9,16 +9,19 @@ import {
 } from 'react';
 import Cookies from 'js-cookie';
 import { QueryObserverResult, useQuery } from '@tanstack/react-query';
-import { getMyInfo } from '@/service/user';
+import { getMyInfo, getUserInfoForPaySystem } from '@/service/user';
 import { PrivateUserInfo } from '@/generated';
+import { UserResponseDTO } from '@/generated-pay';
 
 export type UserState = {
-	userInfo?: PrivateUserInfo;
+	mainUserInfo?: PrivateUserInfo;
+	paySystemUserInfo?: UserResponseDTO;
 	tempUpdateUserInfo: (user: PrivateUserInfo) => void;
 };
 
 export type UserActions = {
-	refreshUserInfo: () => Promise<QueryObserverResult<any, Error>>;
+	refreshMainUserInfo: () => Promise<QueryObserverResult<any, Error>>;
+	refreshPaySystemInfo: () => Promise<QueryObserverResult<any, Error>>;
 	logOut: () => void;
 };
 
@@ -31,22 +34,33 @@ export interface UserContextProviderProps {
 }
 
 export const UserContextProvider = ({ children }: UserContextProviderProps) => {
-	const [userInfo, setUserInfo] = useState<PrivateUserInfo | undefined>(
+	const [mainUserInfo, setMainUserInfo] = useState<PrivateUserInfo | undefined>(
 		undefined
 	);
-	// 2. 获取用户信息
-	const { data, refetch: refreshUserInfo } = useQuery({
+	const [paySystemUserInfo, setPaySystemUserInfo] = useState<
+		UserResponseDTO | undefined
+	>(undefined);
+
+	const { data: mainInfo, refetch: refreshMainUserInfo } = useQuery({
 		enabled: false,
 		queryKey: ['myInfo'],
 		queryFn: getMyInfo,
 	});
 
-	// 3. 在查询成功时更新 userInfo
+	const { data: paySystemInfo, refetch: refreshPaySystemInfo } = useQuery({
+		enabled: false,
+		queryKey: ['paySystemUserInfo'],
+		queryFn: getUserInfoForPaySystem,
+	});
+
 	useEffect(() => {
-		if (data) {
-			setUserInfo(data);
+		if (mainInfo) {
+			setMainUserInfo(mainInfo);
 		}
-	}, [data]);
+		if (paySystemInfo) {
+			setPaySystemUserInfo(paySystemInfo);
+		}
+	}, [mainInfo, paySystemInfo]);
 
 	const logOut = () => {
 		Cookies.remove('access_token');
@@ -56,18 +70,21 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
 
 	// 5. 临时更新用户信息
 	const tempUpdateUserInfo = (newUserInfo: PrivateUserInfo) => {
-		setUserInfo(newUserInfo); // 触发重新渲染
+		setMainUserInfo(newUserInfo); // 触发重新渲染
 	};
 
 	useEffect(() => {
-		Cookies.get('access_token') && refreshUserInfo();
+		Cookies.get('access_token') && refreshMainUserInfo();
+		Cookies.get('access_token') && refreshPaySystemInfo();
 	}, []);
 
 	return (
 		<UserContext.Provider
 			value={{
-				userInfo,
-				refreshUserInfo,
+				mainUserInfo,
+				paySystemUserInfo,
+				refreshMainUserInfo,
+				refreshPaySystemInfo,
 				logOut,
 				tempUpdateUserInfo,
 			}}>

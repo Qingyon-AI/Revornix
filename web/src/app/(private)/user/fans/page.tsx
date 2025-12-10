@@ -11,7 +11,7 @@ import { useInView } from 'react-intersection-observer';
 
 const UserFans = () => {
 	const t = useTranslations();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const [keyword, setKeyword] = useState('');
 
 	const { ref: bottomRef, inView } = useInView();
@@ -25,8 +25,8 @@ const UserFans = () => {
 		isError,
 		hasNextPage,
 	} = useInfiniteQuery({
-		enabled: !!userInfo?.id,
-		queryKey: ['getUserFans', keyword, userInfo?.id],
+		enabled: !!mainUserInfo?.id,
+		queryKey: ['getUserFans', keyword, mainUserInfo?.id],
 		queryFn: (pageParam) => {
 			// @ts-expect-error
 			return getUserFans({ ...pageParam.pageParam });
@@ -34,7 +34,7 @@ const UserFans = () => {
 		initialPageParam: {
 			limit: 10,
 			keyword: keyword,
-			user_id: userInfo?.id,
+			user_id: mainUserInfo?.id,
 		},
 		getNextPageParam: (lastPage) => {
 			return lastPage.has_more
@@ -42,7 +42,7 @@ const UserFans = () => {
 						start: lastPage.next_start,
 						limit: lastPage.limit,
 						keyword: keyword,
-						user_id: userInfo?.id,
+						user_id: mainUserInfo?.id,
 				  }
 				: undefined;
 		},

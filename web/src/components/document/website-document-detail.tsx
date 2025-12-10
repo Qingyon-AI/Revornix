@@ -40,7 +40,7 @@ const WebsiteDocumentDetail = ({
 	onFinishRead?: () => void;
 }) => {
 	const t = useTranslations();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const queryClient = getQueryClient();
 	const [markdownRendered, setMarkdownRendered] = useState(false);
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
@@ -55,14 +55,14 @@ const WebsiteDocumentDetail = ({
 	});
 
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
 		queryFn: () =>
 			getUserFileSystemDetail({
-				user_file_system_id: userInfo!.default_user_file_system!,
+				user_file_system_id: mainUserInfo!.default_user_file_system!,
 			}),
 		enabled:
-			userInfo?.id !== undefined &&
-			userInfo?.default_user_file_system !== undefined,
+			mainUserInfo?.id !== undefined &&
+			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
 	const { data: userRemoteFileUrlPrefix } = useQuery({
@@ -97,10 +97,10 @@ const WebsiteDocumentDetail = ({
 		if (
 			!document ||
 			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
-			!userInfo
+			!mainUserInfo
 		)
 			return;
-		if (!userInfo.default_user_file_system) {
+		if (!mainUserInfo.default_user_file_system) {
 			toast.error('No user default file system found');
 			return;
 		}
@@ -149,13 +149,13 @@ const WebsiteDocumentDetail = ({
 		if (
 			!document ||
 			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
-			!userInfo ||
+			!mainUserInfo ||
 			!userFileSystemDetail ||
 			!userRemoteFileUrlPrefix
 		)
 			return;
 		onGetMarkdown();
-	}, [document, userInfo, userRemoteFileUrlPrefix, userFileSystemDetail]);
+	}, [document, mainUserInfo, userRemoteFileUrlPrefix, userFileSystemDetail]);
 
 	const { ref: bottomRef, inView } = useInView();
 

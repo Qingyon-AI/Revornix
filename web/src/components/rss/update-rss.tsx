@@ -26,7 +26,6 @@ import { Skeleton } from '../ui/skeleton';
 import { useEffect, useState, useTransition } from 'react';
 import { useUserContext } from '@/provider/user-provider';
 import { getUserFileSystemDetail } from '@/service/file-system';
-import { utils } from '@kinda/utils';
 import Parser from 'rss-parser';
 import { FileService } from '@/lib/file';
 import { Info, Loader2, Trash, UploadIcon } from 'lucide-react';
@@ -36,7 +35,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
 	const [uploadingCover, setUploadingCover] = useState(false);
@@ -66,14 +65,14 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 	});
 
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
 		queryFn: () =>
 			getUserFileSystemDetail({
-				user_file_system_id: userInfo!.default_user_file_system!,
+				user_file_system_id: mainUserInfo!.default_user_file_system!,
 			}),
 		enabled:
-			userInfo?.id !== undefined &&
-			userInfo?.default_user_file_system !== undefined,
+			mainUserInfo?.id !== undefined &&
+			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
 	const { data: sections } = useQuery({
@@ -194,7 +193,7 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 		if (!file) {
 			return;
 		}
-		if (!userInfo?.default_user_file_system) {
+		if (!mainUserInfo?.default_user_file_system) {
 			toast.error('No user default file system found');
 			return;
 		}
@@ -222,7 +221,10 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 					<DialogDescription>{t('rss_update_tips')}</DialogDescription>
 				</DialogHeader>
 				<Form {...form}>
-					<form id='update-form' className='space-y-5 flex-1 overflow-auto p-1' onSubmit={handleSubmit}>
+					<form
+						id='update-form'
+						className='space-y-5 flex-1 overflow-auto p-1'
+						onSubmit={handleSubmit}>
 						<FormField
 							name='address'
 							control={form.control}
@@ -406,7 +408,7 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 
 				<Separator />
 
-				<DialogFooter className='w-full flex flex-row !justify-between items-center'>
+				<DialogFooter className='w-full flex flex-row justify-between! items-center'>
 					<div className='flex flex-row gap-3 items-center h-5'>
 						<Button
 							variant={'link'}

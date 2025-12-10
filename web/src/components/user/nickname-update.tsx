@@ -35,13 +35,13 @@ const NicknameUpdate = () => {
 	const nicknameFormSchema = z.object({
 		nickname: z.string().min(1, t('account_nickname_no_less_than')),
 	});
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const mutation = useMutation({
 		mutationFn: async (newUserInfo: UserInfoUpdateRequest) => {
 			return updateUserInfo(newUserInfo);
 		},
 		onSuccess: () => {
-			refreshUserInfo();
+			refreshMainUserInfo();
 			toast.success('Name updated successfully');
 		},
 		onError: (error) => {
@@ -52,7 +52,7 @@ const NicknameUpdate = () => {
 			setShowNicknameUpdateFormDialog(false);
 		},
 	});
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const [formSubmitStatus, setFormSubmitStatus] = useState(false);
 	const [showNicknameUpdateFormDialog, setShowNicknameUpdateFormDialog] =
 		useState(false);
@@ -94,8 +94,8 @@ const NicknameUpdate = () => {
 	return (
 		<>
 			<div className='flex flex-row items-center'>
-				{userInfo && userInfo.nickname && (
-					<div className='font-bold text-xs'>{userInfo.nickname}</div>
+				{mainUserInfo && mainUserInfo.nickname && (
+					<div className='font-bold text-xs'>{mainUserInfo.nickname}</div>
 				)}
 				<Button
 					variant={'link'}

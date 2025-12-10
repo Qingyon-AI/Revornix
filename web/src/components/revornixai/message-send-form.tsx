@@ -39,17 +39,20 @@ const MessageSendForm = () => {
 		message: z.string().min(1, t('revornix_ai_message_content_needed')),
 		enable_mcp: z.boolean(),
 	});
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 
 	const { data: default_llm_model } = useQuery({
-		queryKey: ['getRevornixDefaultModel', userInfo?.default_revornix_model_id],
+		queryKey: [
+			'getRevornixDefaultModel',
+			mainUserInfo?.default_revornix_model_id,
+		],
 		queryFn: () => {
-			if (!userInfo?.default_revornix_model_id) {
+			if (!mainUserInfo?.default_revornix_model_id) {
 				return;
 			}
-			return getAiModel({ model_id: userInfo?.default_revornix_model_id });
+			return getAiModel({ model_id: mainUserInfo?.default_revornix_model_id });
 		},
-		enabled: !!userInfo?.default_revornix_model_id,
+		enabled: !!mainUserInfo?.default_revornix_model_id,
 	});
 
 	const {
@@ -76,9 +79,9 @@ const MessageSendForm = () => {
 		}
 		const { event, data, run_id } = responseItem;
 		setAiStatus(event);
-		
+
 		if (isEmpty(data) || isEmpty(data?.chunk?.content)) return;
-		
+
 		if (event === 'on_chat_model_stream') {
 			const messageItem = tempMessages().find(
 				(item) => item.chat_id === run_id
@@ -118,7 +121,7 @@ const MessageSendForm = () => {
 	};
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		if (!userInfo?.default_revornix_model_id) {
+		if (!mainUserInfo?.default_revornix_model_id) {
 			toast.error(t('revornix_ai_model_not_set'), {
 				action: {
 					label: t('revornix_ai_default_model_goto'),

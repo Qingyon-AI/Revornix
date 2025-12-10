@@ -57,7 +57,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 	const [showDeleteDocumentDialog, setShowDeleteDocumentDialog] =
 		useState(false);
 
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 
 	const { data } = useQuery({
 		queryKey: ['getDocumentDetail', id],
@@ -262,7 +262,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 							</div>
 						</SheetContent>
 					</Sheet>
-					{data.creator.id === userInfo?.id && (
+					{data.creator.id === mainUserInfo?.id && (
 						<>
 							<Button
 								variant={'ghost'}

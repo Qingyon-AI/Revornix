@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 const GoogleBindPage = () => {
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const searchParams = useSearchParams();
 	const router = useRouter();
 
@@ -23,7 +23,7 @@ const GoogleBindPage = () => {
 			return;
 		}
 		router.push('/account');
-		refreshUserInfo();
+		refreshMainUserInfo();
 	};
 
 	useEffect(() => {

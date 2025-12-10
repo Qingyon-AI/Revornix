@@ -45,7 +45,7 @@ const PhoneBind = () => {
 	const [bindingPhone, startBindPhoneTransition] = useTransition();
 	const [unBindingPhone, startUnBindPhoneTransition] = useTransition();
 	const [sendingCode, startSendingCodeTransition] = useTransition();
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const [showPhoneBindFormDialog, setShowPhoneBindFormDialog] = useState(false);
 
 	const form = useForm<z.infer<typeof phoneFormSchema>>({
@@ -81,7 +81,7 @@ const PhoneBind = () => {
 				return;
 			}
 			toast.success(t('account_bind_successfullt'));
-			refreshUserInfo();
+			refreshMainUserInfo();
 			setShowPhoneBindFormDialog(false);
 		});
 	};
@@ -119,7 +119,7 @@ const PhoneBind = () => {
 				return;
 			}
 			toast.success(t('account_unbind_successfully'));
-			refreshUserInfo();
+			refreshMainUserInfo();
 			form.reset();
 			setShowPhoneBindFormDialog(false);
 		});
@@ -127,7 +127,7 @@ const PhoneBind = () => {
 
 	return (
 		<>
-			{userInfo && !userInfo.phone_info && (
+			{mainUserInfo && !mainUserInfo.phone_info && (
 				<Button
 					variant='outline'
 					onClick={() => {
@@ -137,9 +137,11 @@ const PhoneBind = () => {
 				</Button>
 			)}
 
-			{userInfo && userInfo.phone_info && (
+			{mainUserInfo && mainUserInfo.phone_info && (
 				<div className='flex flex-row items-center'>
-					<div className='font-bold text-xs'>{userInfo.phone_info.phone}</div>
+					<div className='font-bold text-xs'>
+						{mainUserInfo.phone_info.phone}
+					</div>
 					<Button
 						variant={'link'}
 						className='text-xs'

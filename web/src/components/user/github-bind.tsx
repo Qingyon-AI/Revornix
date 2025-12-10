@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl';
 const GitHubBind = () => {
 	const t = useTranslations();
 	const [unBindStatus, setUnBindStatus] = useState(false);
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const handleBindGitHub = () => {
 		// redirect the user to github
 		const link = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&response_type=code&redirect_uri=${window.location.origin}/integrations/github/oauth2/bind/callback`;
@@ -29,14 +29,14 @@ const GitHubBind = () => {
 		}
 		toast.success(t('account_unbind_successfully'));
 		setUnBindStatus(false);
-		refreshUserInfo();
+		refreshMainUserInfo();
 	};
 	return (
 		<div>
-			{userInfo && userInfo.github_info && (
+			{mainUserInfo && mainUserInfo.github_info && (
 				<div className='flex flex-row items-center'>
 					<div className='font-bold text-xs'>
-						ID: {userInfo.github_info.github_user_id}
+						ID: {mainUserInfo.github_info.github_user_id}
 					</div>
 					<Button
 						variant={'link'}
@@ -49,7 +49,7 @@ const GitHubBind = () => {
 				</div>
 			)}
 
-			{userInfo && !userInfo.github_info && (
+			{mainUserInfo && !mainUserInfo.github_info && (
 				<Button onClick={handleBindGitHub} variant={'outline'}>
 					{t('account_go_bind')}
 				</Button>

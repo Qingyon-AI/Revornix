@@ -35,7 +35,7 @@ import { toast } from 'sonner';
 const DocumentContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 
 	const {
 		data: document,
@@ -105,15 +105,15 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	});
 
 	useEffect(() => {
-		if (!document || document.is_read || !userInfo) return;
-		if (userInfo?.default_read_mark_reason === 0) {
+		if (!document || document.is_read || !mainUserInfo) return;
+		if (mainUserInfo?.default_read_mark_reason === 0) {
 			mutateRead.mutate();
 		}
-	}, [document?.id, userInfo]); // 注意此处依赖必须是document?.id，而不是document本身，因为有其他部分代码会修改document的状态，导致useEffect再次执行
+	}, [document?.id, mainUserInfo]); // 注意此处依赖必须是document?.id，而不是document本身，因为有其他部分代码会修改document的状态，导致useEffect再次执行
 
 	const handleFinishRead = () => {
 		if (!document || document.is_read) return;
-		if (userInfo?.default_read_mark_reason === 1) {
+		if (mainUserInfo?.default_read_mark_reason === 1) {
 			mutateRead.mutate();
 		}
 	};
@@ -149,7 +149,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 								<Expand size={4} className='text-muted-foreground' />
 							</Button>
 						</DialogTrigger>
-						<DialogContent className='!max-w-[80vw] h-[80vh] flex flex-col'>
+						<DialogContent className='max-w-[80vw]! h-[80vh] flex flex-col'>
 							<DialogHeader>
 								<DialogTitle>{t('document_graph')}</DialogTitle>
 								<DialogDescription>
@@ -180,7 +180,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 										onClick={() => mutateGeneratePodcast.mutate()}
 										disabled={
 											mutateGeneratePodcast.isPending ||
-											!userInfo?.default_podcast_user_engine_id
+											!mainUserInfo?.default_podcast_user_engine_id
 										}>
 										{t('document_podcast_generate')}
 										{mutateGeneratePodcast.isPending && (
@@ -189,9 +189,9 @@ const DocumentContainer = ({ id }: { id: number }) => {
 									</Button>
 								</AlertDescription>
 							</Alert>
-							{!userInfo?.default_podcast_user_engine_id && (
+							{!mainUserInfo?.default_podcast_user_engine_id && (
 								<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-									<OctagonAlert className='h-4 w-4 !text-destructive' />
+									<OctagonAlert className='h-4 w-4 text-destructive!' />
 									<AlertDescription>
 										{t('document_create_auto_podcast_engine_unset')}
 									</AlertDescription>

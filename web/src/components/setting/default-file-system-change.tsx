@@ -32,7 +32,7 @@ import { AlertCircleIcon } from 'lucide-react';
 
 const DefaultFileSystemChange = () => {
 	const t = useTranslations();
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 
 	const { data: mineFileSystems, isFetching: isFetchingMineFileSystems } =
 		useQuery({
@@ -44,8 +44,8 @@ const DefaultFileSystemChange = () => {
 
 	// 本地状态：当前选中的 filesystem id（字符串形式以匹配 Select 的 value）
 	const [selectedFs, setSelectedFs] = useState<string | undefined>(
-		userInfo?.default_user_file_system
-			? String(userInfo.default_user_file_system)
+		mainUserInfo?.default_user_file_system
+			? String(mainUserInfo.default_user_file_system)
 			: undefined
 	);
 
@@ -55,16 +55,16 @@ const DefaultFileSystemChange = () => {
 	// 要切换到的目标 filesystem id（数字）
 	const [targetFsId, setTargetFsId] = useState<number | null>(null);
 
-	// 当 userInfo 更新时，同步本地选中值
+	// 当 mainUserInfo 更新时，同步本地选中值
 	useEffect(() => {
-		if (userInfo?.default_user_file_system) {
-			setSelectedFs(String(userInfo.default_user_file_system));
+		if (mainUserInfo?.default_user_file_system) {
+			setSelectedFs(String(mainUserInfo.default_user_file_system));
 		}
-	}, [userInfo?.default_user_file_system]);
+	}, [mainUserInfo?.default_user_file_system]);
 
 	const handleSelectChange = (value: string) => {
 		const id = Number(value);
-		if (id === userInfo?.default_user_file_system) {
+		if (id === mainUserInfo?.default_user_file_system) {
 			// 选中了当前已是默认的不变
 			setSelectedFs(value);
 			return;
@@ -91,16 +91,16 @@ const DefaultFileSystemChange = () => {
 			toast.success(
 				t('setting_file_system_page_current_file_system_update_successfully')
 			);
-			await refreshUserInfo(); // 更新用户信息
-			// 刷新 userInfo -> effect 会同步 selectedFs
+			await refreshMainUserInfo(); // 更新用户信息
+			// 刷新 mainUserInfo -> effect 会同步 selectedFs
 		}
 		setConfirmOpen(false);
 	};
 
 	const handleCancelChange = () => {
-		// 取消：恢复本地选中值到 userInfo 默认值
-		if (userInfo?.default_user_file_system) {
-			setSelectedFs(String(userInfo.default_user_file_system));
+		// 取消：恢复本地选中值到 mainUserInfo 默认值
+		if (mainUserInfo?.default_user_file_system) {
+			setSelectedFs(String(mainUserInfo.default_user_file_system));
 		}
 		setConfirmOpen(false);
 	};
@@ -140,18 +140,10 @@ const DefaultFileSystemChange = () => {
 							<div className='mx-auto sm:mx-0 flex h-9 w-9 items-center justify-center rounded-full bg-destructive/10'>
 								<AlertCircleIcon className='size-4 text-destructive' />
 							</div>
-							{
-								t(
-									'setting_file_system_confirm_switch_file_system_title'
-								)
-							}
+							{t('setting_file_system_confirm_switch_file_system_title')}
 						</AlertDialogTitle>
 						<AlertDialogDescription className='text-destructive'>
-							{
-								t(
-									'setting_file_system_confirm_switch_file_system_description'
-								)
-							}
+							{t('setting_file_system_confirm_switch_file_system_description')}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

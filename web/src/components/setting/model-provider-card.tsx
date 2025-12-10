@@ -54,7 +54,7 @@ interface ModelCardProps {
 
 const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 	const t = useTranslations();
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const formSchema = z.object({
 		name: z.string().min(1, 'Name is required'),
 		description: z.string().optional().nullable(),
@@ -121,7 +121,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 			queryClient.invalidateQueries({
 				queryKey: ['getModels'],
 			});
-			refreshUserInfo();
+			refreshMainUserInfo();
 		});
 	};
 

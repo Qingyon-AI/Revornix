@@ -8,12 +8,12 @@ import { useUserContext } from '@/provider/user-provider';
 
 const InitDefaultChoose = () => {
 	const t = useTranslations();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	return (
 		<>
-			{(!userInfo?.default_document_reader_model_id ||
-				!userInfo.default_revornix_model_id ||
-				!userInfo.default_user_file_system) && (
+			{(!mainUserInfo?.default_document_reader_model_id ||
+				!mainUserInfo.default_revornix_model_id ||
+				!mainUserInfo.default_user_file_system) && (
 				<div className='space-y-5'>
 					<div
 						className='flex justify-between items-center'
@@ -38,8 +38,8 @@ const InitDefaultChoose = () => {
 					</div>
 				</div>
 			)}
-			{userInfo?.default_document_reader_model_id &&
-				userInfo.default_revornix_model_id && (
+			{mainUserInfo?.default_document_reader_model_id &&
+				mainUserInfo.default_revornix_model_id && (
 					<div className='bg-muted rounded p-5 py-12 flex flex-col justify-center items-center gap-5'>
 						<CircleCheck className='size-28 text-muted-foreground' />
 						<p className='text-muted-foreground text-sm'>{t('init_done')}</p>
