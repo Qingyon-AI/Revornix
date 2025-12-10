@@ -199,6 +199,11 @@ const routers: RouteItem[] = [
 				title_en: 'Notification',
 				path: '/notifications',
 			},
+			{
+				title: '用户计划',
+				title_en: 'User Plan',
+				path: '/plan',
+			},
 		],
 	},
 ];

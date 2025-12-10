@@ -1,6 +1,12 @@
 'use client';
 
-import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-react';
+import {
+	BadgeCheck,
+	Bell,
+	ChevronsUpDown,
+	LogOut,
+	Sparkles,
+} from 'lucide-react';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -42,7 +48,9 @@ export function NavUser() {
 	};
 
 	const notificationWebsocket = useWebSocket(
-		`${NOTIFICATION_WS_API_PREFIX!}?access_token=${Cookies.get('access_token')}`,
+		`${NOTIFICATION_WS_API_PREFIX!}?access_token=${Cookies.get(
+			'access_token'
+		)}`,
 		{
 			manual: true,
 			onOpen(event, instance) {
@@ -178,6 +186,13 @@ export function NavUser() {
 									onClick={() => router.push('/account/notifications')}>
 									<Bell />
 									{t('user_notifications')}
+								</DropdownMenuItem>
+							</DropdownMenuGroup>
+							<DropdownMenuSeparator />
+							<DropdownMenuGroup>
+								<DropdownMenuItem onClick={() => router.push('/account/plan')}>
+									<Sparkles />
+									{t('account_plan_upgrade')}
 								</DropdownMenuItem>
 							</DropdownMenuGroup>
 							<DropdownMenuSeparator />
