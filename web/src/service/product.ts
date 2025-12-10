@@ -1,66 +1,26 @@
 import ProductApi from '@/api/product'
+import { GetProductAbilitiesRequestDTO, GetProductAbilitiesResponseDTO, GetProductRequestByUUIDDTO, GetProductResponseDTO, PrePayProductRequestDTO, PrePayProductResponseDTO } from '@/generated-pay'
 import { request } from '@/lib/request'
 
-interface Ability {
-    id: number
-    name: string
-    name_zh: string
-    description: string
-    description_zh: string
-    tag: string
-    create_time: string
-    update_time: string
-    delete_at: string
-}
-
-interface ProductAbilitiesResponse {
-    abilities: Ability[]
-}
-
 export const getProductAbilities = async (
-    data: {
-        product_uuid: string
-    }
-): Promise<ProductAbilitiesResponse> => {
+    data: GetProductAbilitiesRequestDTO
+): Promise<GetProductAbilitiesResponseDTO> => {
     return await request(ProductApi.getProductAbilities, {
         data
     })
 }
 
-interface ProductDetailResponse {
-    id: number
-    uuid: string
-    name: string
-    name_zh: string
-    description: string
-    description_zh: string
-    price: number
-}
-
 export const getProductDetail = async (
-    data: {
-        product_uuid: string
-    }
-): Promise<ProductDetailResponse> => {
+    data: GetProductRequestByUUIDDTO
+): Promise<GetProductResponseDTO> => {
     return await request(ProductApi.getProductDetail, {
         data
     })
 }
 
-export type PrePayResponse = {
-    out_trade_no: string
-    code: string
-    product_name: string
-    price: number
-}
-
 export const prePayProduct = async (
-    data: {
-        product_uuid: string;
-        pay_way: number;
-        category: string;
-    }
-): Promise<PrePayResponse> => {
+    data: PrePayProductRequestDTO
+): Promise<PrePayProductResponseDTO> => {
     return await request(ProductApi.prePayProduct, {
         data
     })

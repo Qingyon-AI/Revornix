@@ -26,7 +26,6 @@ import {
 	prePayProduct,
 	getProductAbilities,
 	getProductDetail,
-	PrePayResponse,
 } from '@/service/product';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -41,6 +40,7 @@ import { PayWay } from '@/enums/product';
 import { useLocale, useTranslations } from 'next-intl';
 import { Alert, AlertDescription } from '../ui/alert';
 import { cn } from '@/lib/utils';
+import { PrePayProductResponseDTO } from '@/generated-pay';
 
 const PlanCard = ({
 	product_uuid,
@@ -51,7 +51,8 @@ const PlanCard = ({
 }) => {
 	const t = useTranslations();
 
-	const [prepayBackData, setPrepayBackData] = useState<PrePayResponse>();
+	const [prepayBackData, setPrepayBackData] =
+		useState<PrePayProductResponseDTO>();
 	const [payWay, setPayWay] = useState<PayWay>();
 	const [orderNo, setOrderNo] = useGetSet<string | null>(null);
 	const [intervalTime, setIntervalTime] = useState<number>();

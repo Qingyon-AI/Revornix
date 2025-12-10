@@ -1,6 +1,11 @@
 import userApi from '@/api/user'
 import { BindEmailCodeVerifyRequest, BindEmailRequest, BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailCreateRequest, EmailUserCreateCodeVerifyRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatWebUserBindRequest, WeChatWebUserCreateRequest } from '@/generated';
+import { UserResponseDTO } from '@/generated-pay';
 import { request } from '@/lib/request';
+
+export const getUserInfoForPaySystem = async (): Promise<UserResponseDTO> => {
+    return await request(userApi.getUserInfoForPaySystem)
+}
 
 export const searchUser = async (data: SearchUserRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
     return await request(userApi.searchUser, {
