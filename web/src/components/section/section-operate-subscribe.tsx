@@ -20,8 +20,6 @@ const SectionOperateSubscribe = ({
 	const t = useTranslations();
 	const id = section_id;
 
-	const { userInfo } = useUserContext();
-
 	const [subscribing, setSubscribing] = useState(false);
 
 	const queryClient = getQueryClient();

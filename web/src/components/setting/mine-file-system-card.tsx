@@ -64,7 +64,7 @@ const MineFileSystemCard = ({
 }) => {
 	const t = useTranslations();
 	const locale = useLocale();
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const [configDialogOpen, setConfigDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const formSchema = z.object({
@@ -100,7 +100,7 @@ const MineFileSystemCard = ({
 			queryClient.invalidateQueries({
 				queryKey: ['mine-file-system'],
 			});
-			refreshUserInfo();
+			refreshMainUserInfo();
 		},
 	});
 	const mutateUpdateFileSystem = useMutation({

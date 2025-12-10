@@ -35,7 +35,7 @@ const EmailBind = () => {
 		email: z.string().email(t('account_email_format_error')),
 	});
 	const [bindingEmail, startBindEmailTransition] = useTransition();
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const [showBindEmailDialog, setShowBindEmailDialog] = useState(false);
 
 	const form = useForm<z.infer<typeof emailFormSchema>>({
@@ -67,7 +67,7 @@ const EmailBind = () => {
 				return;
 			}
 			toast.success(t('account_email_update_success'));
-			refreshUserInfo();
+			refreshMainUserInfo();
 			setShowBindEmailDialog(false);
 			form.reset();
 		});
@@ -80,7 +80,7 @@ const EmailBind = () => {
 
 	return (
 		<>
-			{userInfo && !userInfo.email_info && (
+			{mainUserInfo && !mainUserInfo.email_info && (
 				<Button
 					variant={'link'}
 					className='text-xs'
@@ -91,10 +91,12 @@ const EmailBind = () => {
 				</Button>
 			)}
 
-			{userInfo && userInfo.email_info && (
+			{mainUserInfo && mainUserInfo.email_info && (
 				<>
 					<div className='flex flex-row items-center'>
-						<div className='font-bold text-xs'>{userInfo.email_info.email}</div>
+						<div className='font-bold text-xs'>
+							{mainUserInfo.email_info.email}
+						</div>
 						<Button
 							variant={'link'}
 							className='text-xs'
@@ -111,12 +113,12 @@ const EmailBind = () => {
 				<DialogContent className='sm:max-w-md'>
 					<DialogHeader>
 						<DialogTitle>
-							{userInfo?.email_info
+							{mainUserInfo?.email_info
 								? t('account_email_update')
 								: t('account_email_bind')}
 						</DialogTitle>
 						<DialogDescription>
-							{userInfo?.email_info
+							{mainUserInfo?.email_info
 								? t('account_email_update_description')
 								: t('account_email_bind_description')}
 						</DialogDescription>
@@ -133,7 +135,7 @@ const EmailBind = () => {
 												<FormControl>
 													<Input
 														placeholder={
-															userInfo?.email_info
+															mainUserInfo?.email_info
 																? t('account_email_update_placeholder')
 																: t('account_email_bind_placeholder')
 														}

@@ -9,7 +9,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
 
 const WeChatCreatePage = () => {
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const searchParams = useSearchParams();
 	const router = useRouter();
 
@@ -24,7 +24,7 @@ const WeChatCreatePage = () => {
 			return;
 		}
 		router.push('/account');
-		refreshUserInfo();
+		refreshMainUserInfo();
 	};
 
 	useEffect(() => {

@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl';
 const GoogleBind = () => {
 	const t = useTranslations();
 	const [unBindStatus, setUnBindStatus] = useState(false);
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const handleBindGoogle = () => {
 		// redirect the user to google
 		const link = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${window.location.origin}/integrations/google/oauth2/bind/callback&scope=openid email profile&response_type=code`;
@@ -29,14 +29,14 @@ const GoogleBind = () => {
 		}
 		toast.success(t('account_unbind_successfully'));
 		setUnBindStatus(false);
-		refreshUserInfo();
+		refreshMainUserInfo();
 	};
 	return (
 		<div>
-			{userInfo && userInfo.google_info && (
+			{mainUserInfo && mainUserInfo.google_info && (
 				<div className='flex flex-row items-center'>
 					<div className='font-bold text-xs'>
-						ID: {userInfo.google_info.google_user_id}
+						ID: {mainUserInfo.google_info.google_user_id}
 					</div>
 					<Button
 						variant={'link'}
@@ -49,7 +49,7 @@ const GoogleBind = () => {
 				</div>
 			)}
 
-			{userInfo && !userInfo.google_info && (
+			{mainUserInfo && !mainUserInfo.google_info && (
 				<Button onClick={handleBindGoogle} variant={'outline'}>
 					{t('account_go_bind')}
 				</Button>

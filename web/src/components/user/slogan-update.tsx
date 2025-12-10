@@ -35,16 +35,15 @@ const SloganUpdate = () => {
 	const sloganFormSchema = z.object({
 		slogan: z.string().min(1, t('account_slogan_no_less_than')),
 	});
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo, mainUserInfo } = useUserContext();
 	const mutation = useMutation({
 		mutationFn: async (newUserInfo: UserInfoUpdateRequest) => {
 			return updateUserInfo(newUserInfo);
 		},
 		onSuccess: () => {
-			refreshUserInfo();
+			refreshMainUserInfo();
 		},
 	});
-	const { userInfo } = useUserContext();
 	const [formSubmitStatus, setFormSubmitStatus] = useState(false);
 	const [showSloganUpdateFormDialog, setShowSloganUpdateFormDialog] =
 		useState(false);
@@ -92,9 +91,9 @@ const SloganUpdate = () => {
 	return (
 		<>
 			<div className='flex flex-row items-center'>
-				{userInfo && userInfo.slogan && (
+				{mainUserInfo && mainUserInfo.slogan && (
 					<div className='font-bold text-xs line-clamp-1 max-w-40'>
-						{userInfo.slogan}
+						{mainUserInfo.slogan}
 					</div>
 				)}
 				<Button

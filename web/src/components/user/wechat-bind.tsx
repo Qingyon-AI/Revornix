@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl';
 const WeChatBind = () => {
 	const t = useTranslations();
 	const [unBindStatus, setUnBindStatus] = useState(false);
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const handleUnBindWeChat = async () => {
 		setUnBindStatus(true);
 		const [res, err] = await utils.to(unBindWeChat());
@@ -24,17 +24,17 @@ const WeChatBind = () => {
 		}
 		toast.success(t('account_unbind_successfully'));
 		setUnBindStatus(false);
-		refreshUserInfo();
+		refreshMainUserInfo();
 	};
 	return (
 		<div>
-			{userInfo &&
-				userInfo.wechat_infos &&
-				userInfo.wechat_infos.length > 0 && (
+			{mainUserInfo &&
+				mainUserInfo.wechat_infos &&
+				mainUserInfo.wechat_infos.length > 0 && (
 					<div className='flex flex-row items-center'>
 						<div className='font-bold text-xs'>
 							{t('account_wechat')}:{' '}
-							{userInfo.wechat_infos.map((item) => item.nickname).join(',')}
+							{mainUserInfo.wechat_infos.map((item) => item.nickname).join(',')}
 						</div>
 						<Button
 							variant={'link'}
@@ -47,7 +47,7 @@ const WeChatBind = () => {
 					</div>
 				)}
 
-			{userInfo && !userInfo.wechat_infos?.length && (
+			{mainUserInfo && !mainUserInfo.wechat_infos?.length && (
 				<Link
 					href={`https://open.weixin.qq.com/connect/qrconnect?appid=${
 						process.env.NEXT_PUBLIC_WECHAT_APP_ID

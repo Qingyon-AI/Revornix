@@ -21,21 +21,21 @@ import Link from 'next/link';
 
 const InitSettingDialog = () => {
 	const t = useTranslations();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const [showDialog, setShowDialog] = useState(false);
 	const [needInitial, setNeedInitial] = useState(false);
 	useEffect(() => {
 		if (
-			!userInfo?.default_document_reader_model_id ||
-			!userInfo.default_file_document_parse_user_engine_id ||
-			!userInfo.default_website_document_parse_user_engine_id ||
-			!userInfo.default_revornix_model_id
+			!mainUserInfo?.default_document_reader_model_id ||
+			!mainUserInfo.default_file_document_parse_user_engine_id ||
+			!mainUserInfo.default_website_document_parse_user_engine_id ||
+			!mainUserInfo.default_revornix_model_id
 		) {
 			setNeedInitial(true);
 		} else {
 			setNeedInitial(false);
 		}
-	}, [userInfo]);
+	}, [mainUserInfo]);
 
 	const steps = [
 		{ title: 'Step 1', description: t('init_setting_quick_set_step_1') },
@@ -60,14 +60,14 @@ const InitSettingDialog = () => {
 											'/setting#default_file_markdown_parse_user_engine_choose'
 										}>
 										<Badge variant='secondary'>
-											{userInfo?.default_file_document_parse_user_engine_id ? (
+											{mainUserInfo?.default_file_document_parse_user_engine_id ? (
 												<BadgeCheckIcon />
 											) : (
 												<Info className='text-red-500' />
 											)}
 											<span
 												className={
-													userInfo?.default_file_document_parse_user_engine_id
+													mainUserInfo?.default_file_document_parse_user_engine_id
 														? ''
 														: 'text-red-500'
 												}>
@@ -80,14 +80,14 @@ const InitSettingDialog = () => {
 											'/setting#default_website_markdown_parse_user_engine_choose'
 										}>
 										<Badge variant='secondary'>
-											{userInfo?.default_website_document_parse_user_engine_id ? (
+											{mainUserInfo?.default_website_document_parse_user_engine_id ? (
 												<BadgeCheckIcon />
 											) : (
 												<Info className='text-red-500' />
 											)}
 											<span
 												className={
-													userInfo?.default_website_document_parse_user_engine_id
+													mainUserInfo?.default_website_document_parse_user_engine_id
 														? ''
 														: 'text-red-500'
 												}>
@@ -97,14 +97,14 @@ const InitSettingDialog = () => {
 									</Link>
 									<Link href={'/setting#default_document_summary_model_choose'}>
 										<Badge variant='secondary'>
-											{userInfo?.default_document_reader_model_id ? (
+											{mainUserInfo?.default_document_reader_model_id ? (
 												<BadgeCheckIcon />
 											) : (
 												<Info className='text-red-500' />
 											)}
 											<span
 												className={
-													userInfo?.default_document_reader_model_id
+													mainUserInfo?.default_document_reader_model_id
 														? ''
 														: 'text-red-500'
 												}>
@@ -114,14 +114,14 @@ const InitSettingDialog = () => {
 									</Link>
 									<Link href={'/setting#default_revornix_ai_model_choose'}>
 										<Badge variant='secondary'>
-											{userInfo?.default_revornix_model_id ? (
+											{mainUserInfo?.default_revornix_model_id ? (
 												<BadgeCheckIcon />
 											) : (
 												<Info className='text-red-500' />
 											)}
 											<span
 												className={
-													userInfo?.default_revornix_model_id
+													mainUserInfo?.default_revornix_model_id
 														? ''
 														: 'text-red-500'
 												}>
@@ -131,14 +131,14 @@ const InitSettingDialog = () => {
 									</Link>
 									<Link href={'/setting#default_user_file_system'}>
 										<Badge variant='secondary'>
-											{userInfo?.default_user_file_system ? (
+											{mainUserInfo?.default_user_file_system ? (
 												<BadgeCheckIcon />
 											) : (
 												<Info className='text-red-500' />
 											)}
 											<span
 												className={
-													userInfo?.default_user_file_system
+													mainUserInfo?.default_user_file_system
 														? ''
 														: 'text-red-500'
 												}>

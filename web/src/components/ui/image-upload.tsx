@@ -20,20 +20,20 @@ const ImageUpload = ({
 	className?: string;
 }) => {
 	const t = useTranslations();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const [file, setFile] = useState<File | null>(null);
 	const upload = useRef<HTMLInputElement>(null);
 	const [uploadingStatus, setUploadingStatus] = useState<string | null>();
 
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
 		queryFn: () =>
 			getUserFileSystemDetail({
-				user_file_system_id: userInfo!.default_user_file_system!,
+				user_file_system_id: mainUserInfo!.default_user_file_system!,
 			}),
 		enabled:
-			userInfo?.id !== undefined &&
-			userInfo?.default_user_file_system !== undefined,
+			mainUserInfo?.id !== undefined &&
+			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
 	const handleOnUploadFile = () => {
@@ -44,7 +44,7 @@ const ImageUpload = ({
 		if (!file) {
 			return;
 		}
-		if (!userInfo?.default_user_file_system) {
+		if (!mainUserInfo?.default_user_file_system) {
 			toast.error('No user default file system found');
 			return;
 		}

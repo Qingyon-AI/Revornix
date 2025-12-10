@@ -27,7 +27,7 @@ const QuickDocumentDetail = ({
 	onFinishRead?: () => void;
 }) => {
 	const queryClient = getQueryClient();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const {
 		isFetching,
 		data: document,
@@ -66,7 +66,7 @@ const QuickDocumentDetail = ({
 	useEffect(() => {
 		if (!document || !document.quick_note_info) return;
 		setMarkdownRendered(true);
-	}, [document, userInfo]);
+	}, [document, mainUserInfo]);
 
 	useEffect(() => {
 		if (!markdownRendered || !inView) return;

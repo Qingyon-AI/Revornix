@@ -36,7 +36,7 @@ const AddLink = () => {
 	const searchParams = useSearchParams();
 	const sectionId = searchParams.get('section_id');
 	const t = useTranslations();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const formSchema = z.object({
 		category: z.number(),
 		url: z.string().url(),
@@ -62,7 +62,7 @@ const AddLink = () => {
 			from_plat: 'revornix-web',
 			labels: [],
 			sections: sectionId ? [Number(sectionId)] : [],
-			auto_podcast: false
+			auto_podcast: false,
 		},
 	});
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
@@ -141,7 +141,7 @@ const AddLink = () => {
 			<Form {...form}>
 				<form onSubmit={onSubmitMessageForm} className='flex flex-col h-full'>
 					<div className='flex flex-col w-full gap-5 flex-1 mb-5'>
-						{!userInfo?.default_website_document_parse_user_engine_id && (
+						{!mainUserInfo?.default_website_document_parse_user_engine_id && (
 							<Alert>
 								<AlertCircleIcon />
 								<AlertTitle>
@@ -235,7 +235,9 @@ const AddLink = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={!userInfo?.default_document_reader_model_id}
+													disabled={
+														!mainUserInfo?.default_document_reader_model_id
+													}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -245,9 +247,9 @@ const AddLink = () => {
 											<FormDescription>
 												{t('document_create_ai_summary_description')}
 											</FormDescription>
-											{!userInfo?.default_document_reader_model_id && (
+											{!mainUserInfo?.default_document_reader_model_id && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 !text-destructive' />
+													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
 														{t('document_create_ai_summary_engine_unset')}
 													</AlertDescription>
@@ -269,7 +271,9 @@ const AddLink = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={!userInfo?.default_podcast_user_engine_id}
+													disabled={
+														!mainUserInfo?.default_podcast_user_engine_id
+													}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -279,9 +283,9 @@ const AddLink = () => {
 											<FormDescription>
 												{t('document_create_auto_podcast_description')}
 											</FormDescription>
-											{!userInfo?.default_podcast_user_engine_id && (
+											{!mainUserInfo?.default_podcast_user_engine_id && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 !text-destructive' />
+													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
 														{t('document_create_auto_podcast_engine_unset')}
 													</AlertDescription>
@@ -334,7 +338,7 @@ const AddLink = () => {
 						className='w-full'
 						disabled={
 							mutateCreateDocument.isPending ||
-							!userInfo?.default_website_document_parse_user_engine_id ||
+							!mainUserInfo?.default_website_document_parse_user_engine_id ||
 							!form.watch('url')
 						}>
 						{t('document_create_submit')}

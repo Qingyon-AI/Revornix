@@ -19,7 +19,7 @@ import { useUserContext } from '@/provider/user-provider';
 const NavUser = () => {
 	const t = useTranslations();
 	const router = useRouter();
-	const { userInfo, logOut } = useUserContext();
+	const { mainUserInfo, logOut } = useUserContext();
 	const onLogout = async () => {
 		logOut();
 		router.push('/login');
@@ -27,17 +27,17 @@ const NavUser = () => {
 
 	return (
 		<>
-			{!userInfo && (
+			{!mainUserInfo && (
 				<Link href={'/login'}>
 					<Button variant={'outline'}>{t('seo_nav_login_in')}</Button>
 				</Link>
 			)}
-			{userInfo && (
+			{mainUserInfo && (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Link className='text-xs' href={'/dashboard'}>
 							<img
-								src={userInfo.avatar}
+								src={mainUserInfo.avatar}
 								alt='avatar'
 								className='rounded-full size-8 object-cover'
 							/>
@@ -51,16 +51,18 @@ const NavUser = () => {
 						<DropdownMenuLabel className='p-0 font-normal'>
 							<div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
 								<img
-									src={userInfo.avatar!}
+									src={mainUserInfo.avatar!}
 									alt={'avatar'}
 									className='object-cover size-8 rounded-lg'
 								/>
 								<div className='grid flex-1 text-left text-sm leading-tight'>
 									<span className='truncate font-semibold line-clamp-1'>
-										{userInfo.nickname}
+										{mainUserInfo.nickname}
 									</span>
 									<span className='line-clamp-1 text-xs text-muted-foreground'>
-										{userInfo.slogan ? userInfo.slogan : t('user_no_slogan')}
+										{mainUserInfo.slogan
+											? mainUserInfo.slogan
+											: t('user_no_slogan')}
 									</span>
 								</div>
 							</div>
@@ -73,7 +75,7 @@ const NavUser = () => {
 										<span className='text-muted-foreground text-xs'>
 											{t('user_fans')}
 										</span>
-										<span className='font-bold ml-1'>{userInfo.fans}</span>
+										<span className='font-bold ml-1'>{mainUserInfo.fans}</span>
 									</Button>
 								</Link>
 								<Link href={'/user/follows'} className='flex-1'>
@@ -84,7 +86,9 @@ const NavUser = () => {
 										<span className='text-muted-foreground text-xs'>
 											{t('user_follows')}
 										</span>
-										<span className='font-bold ml-1'>{userInfo.follows}</span>
+										<span className='font-bold ml-1'>
+											{mainUserInfo.follows}
+										</span>
 									</Button>
 								</Link>
 							</div>

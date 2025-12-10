@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 
 const DefaultFileDocumentParseEngineChange = () => {
 	const t = useTranslations();
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const { data } = useQuery({
 		queryKey: ['mine-engine'],
 		queryFn: async () => {
@@ -35,15 +35,15 @@ const DefaultFileDocumentParseEngineChange = () => {
 			toast.error(err.message);
 			return;
 		}
-		refreshUserInfo();
+		refreshMainUserInfo();
 		toast.success(t('setting_default_engine_update_successful'));
 	};
 
 	return (
 		<Select
 			value={
-				userInfo?.default_file_document_parse_user_engine_id
-					? String(userInfo?.default_file_document_parse_user_engine_id)
+				mainUserInfo?.default_file_document_parse_user_engine_id
+					? String(mainUserInfo?.default_file_document_parse_user_engine_id)
 					: undefined
 			}
 			onValueChange={(e) => {
@@ -52,9 +52,7 @@ const DefaultFileDocumentParseEngineChange = () => {
 			<SelectTrigger
 				id='default_file_document_parse_engine_choose'
 				className='min-w-[180px]'>
-				<SelectValue
-					placeholder={t('setting_default_engine_choose')}
-				/>
+				<SelectValue placeholder={t('setting_default_engine_choose')} />
 			</SelectTrigger>
 			<SelectContent>
 				<SelectGroup>

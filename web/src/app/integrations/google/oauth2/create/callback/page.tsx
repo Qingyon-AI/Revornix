@@ -9,7 +9,7 @@ import { utils } from '@kinda/utils';
 import { useUserContext } from '@/provider/user-provider';
 
 const GoogleCreatePage = () => {
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const searchParams = useSearchParams();
 	const router = useRouter();
 
@@ -28,7 +28,7 @@ const GoogleCreatePage = () => {
 		});
 		Cookies.set('refresh_token', res.refresh_token);
 		router.push('/dashboard');
-		refreshUserInfo();
+		refreshMainUserInfo();
 	};
 
 	useEffect(() => {

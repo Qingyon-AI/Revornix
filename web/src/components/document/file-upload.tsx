@@ -24,7 +24,7 @@ const FileUpload = ({
 	className?: string;
 }) => {
 	const t = useTranslations();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const [file, setFile] = useState<File | null>(null);
 	const [fileName, setFileName] = useState<string | null>(null); // ⭐保存文件路径
 	const upload = useRef<HTMLInputElement>(null);
@@ -32,14 +32,14 @@ const FileUpload = ({
 
 	// 加载用户文件系统信息
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
 		queryFn: () =>
 			getUserFileSystemDetail({
-				user_file_system_id: userInfo!.default_user_file_system!,
+				user_file_system_id: mainUserInfo!.default_user_file_system!,
 			}),
 		enabled:
-			userInfo?.id !== undefined &&
-			userInfo?.default_user_file_system !== undefined,
+			mainUserInfo?.id !== undefined &&
+			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
 	// ⭐初始化默认值（仅初始化一次）
@@ -58,7 +58,7 @@ const FileUpload = ({
 		const file = e.target.files?.[0];
 		if (!file) return;
 
-		if (!userInfo?.default_user_file_system) {
+		if (!mainUserInfo?.default_user_file_system) {
 			toast.error('No user default file system found');
 			return;
 		}

@@ -34,7 +34,7 @@ import { useInView } from 'react-intersection-observer';
 
 const SectionDetailPage = () => {
 	const t = useTranslations();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const today = new Date().toISOString().split('T')[0];
 	const {
 		data: section,
@@ -47,22 +47,22 @@ const SectionDetailPage = () => {
 	});
 
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
 		queryFn: () =>
 			getUserFileSystemDetail({
-				user_file_system_id: userInfo!.default_user_file_system!,
+				user_file_system_id: mainUserInfo!.default_user_file_system!,
 			}),
 		enabled:
-			userInfo?.id !== undefined &&
-			userInfo?.default_user_file_system !== undefined,
+			mainUserInfo?.id !== undefined &&
+			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
 	const [markdown, setMarkdown] = useState<string>();
 
 	const onGetMarkdown = async () => {
-		if (!section || !section.md_file_name || !userInfo) return;
-		if (!userInfo.default_user_file_system) {
+		if (!section || !section.md_file_name || !mainUserInfo) return;
+		if (!mainUserInfo.default_user_file_system) {
 			toast.error('No default file system found');
 			return;
 		}
@@ -87,12 +87,12 @@ const SectionDetailPage = () => {
 		if (
 			!section ||
 			!section?.md_file_name ||
-			!userInfo ||
+			!mainUserInfo ||
 			!userFileSystemDetail
 		)
 			return;
 		onGetMarkdown();
-	}, [section, userInfo, userFileSystemDetail]);
+	}, [section, mainUserInfo, userFileSystemDetail]);
 
 	const { ref: bottomRef, inView } = useInView();
 	const {

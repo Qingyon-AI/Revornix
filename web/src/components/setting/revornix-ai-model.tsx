@@ -30,7 +30,7 @@ interface ProviderMapProps {
 
 const RevornixAIModel = () => {
 	const t = useTranslations();
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const { data } = useQuery({
 		queryKey: ['getModels'],
 		queryFn: async () => {
@@ -80,7 +80,7 @@ const RevornixAIModel = () => {
 			toast.error(err.message);
 			return;
 		}
-		refreshUserInfo();
+		refreshMainUserInfo();
 		toast.success(t('setting_revornix_model_update_successful'));
 	};
 
@@ -88,8 +88,8 @@ const RevornixAIModel = () => {
 		<>
 			<Select
 				value={
-					userInfo?.default_revornix_model_id
-						? String(userInfo?.default_revornix_model_id)
+					mainUserInfo?.default_revornix_model_id
+						? String(mainUserInfo?.default_revornix_model_id)
 						: undefined
 				}
 				onValueChange={(e) => {

@@ -34,7 +34,7 @@ import { Separator } from '@/components/ui/separator';
 
 const SubscribedSectionPage = () => {
 	const t = useTranslations();
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
 	const [desc, setDesc] = useState(true);
@@ -47,11 +47,11 @@ const SubscribedSectionPage = () => {
 		fetchNextPage,
 		hasNextPage,
 	} = useInfiniteQuery({
-		enabled: !!userInfo,
+		enabled: !!mainUserInfo,
 		queryKey: [
 			'searchMySubscribedSection',
 			keyword,
-			userInfo?.id,
+			mainUserInfo?.id,
 			desc,
 			labelIds,
 		],
@@ -59,7 +59,7 @@ const SubscribedSectionPage = () => {
 			return getMySubscribedSecitions({ ...pageParam.pageParam });
 		},
 		initialPageParam: {
-			user_id: userInfo?.id,
+			user_id: mainUserInfo?.id,
 			limit: 10,
 			keyword: keyword,
 			label_ids: labelIds,
@@ -68,7 +68,7 @@ const SubscribedSectionPage = () => {
 		getNextPageParam: (lastPage) => {
 			return lastPage.has_more
 				? {
-						user_id: userInfo?.id,
+						user_id: mainUserInfo?.id,
 						start: lastPage.next_start,
 						limit: lastPage.limit,
 						keyword: keyword,

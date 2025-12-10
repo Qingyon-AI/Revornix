@@ -11,18 +11,18 @@ import { getUserFileSystemDetail } from '@/service/file-system';
 
 const Upload = () => {
 	const [status, setStatus] = useState<string | null>(null);
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	const fileInput = useRef<HTMLInputElement>(null);
 
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
 		queryFn: () =>
 			getUserFileSystemDetail({
-				user_file_system_id: userInfo!.default_user_file_system!,
+				user_file_system_id: mainUserInfo!.default_user_file_system!,
 			}),
 		enabled:
-			userInfo?.id !== undefined &&
-			userInfo?.default_user_file_system !== undefined,
+			mainUserInfo?.id !== undefined &&
+			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
 	const onChooseFile = async () => {
@@ -32,7 +32,7 @@ const Upload = () => {
 	const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		if (!userInfo?.default_user_file_system) {
+		if (!mainUserInfo?.default_user_file_system) {
 			toast.error('No user default file system found');
 			return;
 		}

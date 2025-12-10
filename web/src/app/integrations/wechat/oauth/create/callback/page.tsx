@@ -10,7 +10,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
 
 const WeChatCreatePage = () => {
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const searchParams = useSearchParams();
 	const router = useRouter();
 
@@ -27,7 +27,7 @@ const WeChatCreatePage = () => {
 		if (!res) return;
 		Cookies.set('access_token', res.access_token);
 		Cookies.set('refresh_token', res.refresh_token);
-		refreshUserInfo();
+		refreshMainUserInfo();
 		router.push('/dashboard');
 	};
 

@@ -15,26 +15,26 @@ import { getUserFileSystemDetail } from '@/service/file-system';
 
 const AvatarUpdate = () => {
 	const t = useTranslations();
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const [uploadingStatus, setUploadingStatus] = useState<boolean>(false);
 	const fileInput = useRef<HTMLInputElement>(null);
 
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', userInfo?.id],
+		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
 		queryFn: () =>
 			getUserFileSystemDetail({
-				user_file_system_id: userInfo!.default_user_file_system!,
+				user_file_system_id: mainUserInfo!.default_user_file_system!,
 			}),
 		enabled:
-			userInfo?.id !== undefined &&
-			userInfo?.default_user_file_system !== undefined,
+			mainUserInfo?.id !== undefined &&
+			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
 	const mutationUpdateUserInfo = useMutation({
 		mutationFn: updateUserInfo,
 		onSuccess: async () => {
 			await utils.sleep(500);
-			await refreshUserInfo();
+			await refreshMainUserInfo();
 		},
 		onError(error) {
 			toast.error(error.message);
@@ -48,7 +48,7 @@ const AvatarUpdate = () => {
 	const onUpload = async (e: ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		if (!userInfo?.default_user_file_system) {
+		if (!mainUserInfo?.default_user_file_system) {
 			toast.error('No user default file system found');
 			return;
 		}
@@ -71,7 +71,7 @@ const AvatarUpdate = () => {
 
 	return (
 		<>
-			{userInfo && !userInfo.avatar && (
+			{mainUserInfo && !mainUserInfo.avatar && (
 				<>
 					<Button
 						className='text-xs'
@@ -89,11 +89,11 @@ const AvatarUpdate = () => {
 					/>
 				</>
 			)}
-			{userInfo && userInfo.avatar && (
+			{mainUserInfo && mainUserInfo.avatar && (
 				<>
 					<div className='flex flex-row'>
 						<CustomImage
-							src={userInfo.avatar}
+							src={mainUserInfo.avatar}
 							className='mr-2 size-8 rounded object-cover'
 							alt='avatar'
 						/>

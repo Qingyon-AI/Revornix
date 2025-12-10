@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 
 const DefaultWebsiteDocumentParseEngineChange = () => {
 	const t = useTranslations();
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const { data } = useQuery({
 		queryKey: ['mine-engine'],
 		queryFn: async () => {
@@ -35,15 +35,15 @@ const DefaultWebsiteDocumentParseEngineChange = () => {
 			toast.error(err.message);
 			return;
 		}
-		refreshUserInfo();
+		refreshMainUserInfo();
 		toast.success(t('setting_default_engine_update_successful'));
 	};
 
 	return (
 		<Select
 			value={
-				userInfo?.default_website_document_parse_user_engine_id
-					? String(userInfo?.default_website_document_parse_user_engine_id)
+				mainUserInfo?.default_website_document_parse_user_engine_id
+					? String(mainUserInfo?.default_website_document_parse_user_engine_id)
 					: undefined
 			}
 			onValueChange={(e) => {

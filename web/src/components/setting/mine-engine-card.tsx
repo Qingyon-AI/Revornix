@@ -57,7 +57,7 @@ import { Input } from '../ui/input';
 
 const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 	const t = useTranslations();
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const [configDialogOpen, setConfigDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const formSchema = z.object({
@@ -91,7 +91,7 @@ const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 			queryClient.invalidateQueries({
 				queryKey: ['mine-engine'],
 			});
-			refreshUserInfo();
+			refreshMainUserInfo();
 		},
 		onError: (error) => {
 			toast.error(error.message);

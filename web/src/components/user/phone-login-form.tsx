@@ -50,7 +50,7 @@ const PhoneLoginForm = () => {
 	const redirect_page = searchParams.get('redirect_to') || '/dashboard'; // 默认跳转到 dashboard
 	const router = useRouter();
 	const { loginWay, setLoginWay } = useLoginProvider();
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const phoneForm = useForm<z.infer<typeof phoneFormSchema>>({
 		resolver: zodResolver(phoneFormSchema),
 		defaultValues: {
@@ -99,7 +99,7 @@ const PhoneLoginForm = () => {
 			Cookies.set('refresh_token', res.refresh_token);
 			toast.success(t('seo_login_success'));
 			setSubmitLoading(false);
-			refreshUserInfo();
+			refreshMainUserInfo();
 			router.push(redirect_page);
 		}
 	};

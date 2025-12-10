@@ -4,15 +4,15 @@ import { useUserContext } from '@/provider/user-provider';
 import { Skeleton } from '../ui/skeleton';
 
 const UserUUID = () => {
-	const { userInfo } = useUserContext();
+	const { mainUserInfo } = useUserContext();
 	return (
 		<>
-			{userInfo?.uuid ? (
+			{mainUserInfo?.uuid ? (
 				<p className='text-center text-muted-foreground text-xs'>
-					uuid: {userInfo?.uuid}
+					uuid: {mainUserInfo?.uuid}
 				</p>
 			) : (
-				<Skeleton className='w-full h-[1rem]' />
+				<Skeleton className='w-full h-4' />
 			)}
 		</>
 	);

@@ -52,7 +52,7 @@ const EmailLoginForm = () => {
 	const redirect_page = searchParams.get('redirect_to') || '/dashboard';
 	const [submitLoading, setSubmitLoading] = useState(false);
 	const router = useRouter();
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const emailForm = useForm<z.infer<typeof emailFormSchema>>({
 		resolver: zodResolver(emailFormSchema),
 		defaultValues: {
@@ -94,7 +94,7 @@ const EmailLoginForm = () => {
 			Cookies.set('refresh_token', res.refresh_token);
 			toast.success(t('seo_login_success'));
 			setSubmitLoading(false);
-			refreshUserInfo();
+			refreshMainUserInfo();
 			router.push(redirect_page);
 		}
 	};

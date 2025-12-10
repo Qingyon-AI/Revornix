@@ -35,7 +35,7 @@ import { Separator } from '../ui/separator';
 
 const MineEngineAddCard = ({}: {}) => {
 	const t = useTranslations();
-	const { refreshUserInfo } = useUserContext();
+	const { refreshMainUserInfo } = useUserContext();
 	const [showMineEngineAddDialog, setShowMineEngineAddDialog] = useState(false);
 	const formSchema = z.object({
 		engine_id: z.number().int(),
@@ -68,7 +68,7 @@ const MineEngineAddCard = ({}: {}) => {
 			queryClient.invalidateQueries({
 				queryKey: ['mine-engine'],
 			});
-			refreshUserInfo();
+			refreshMainUserInfo();
 			form.reset();
 			setShowMineEngineAddDialog(false);
 		},

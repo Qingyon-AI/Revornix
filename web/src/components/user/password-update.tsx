@@ -40,7 +40,7 @@ const PassWordUpdate = () => {
 			.string()
 			.min(8, t('account_password_update_form_password_no_less_than')),
 	});
-	const { userInfo, refreshUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const [isSubmitting, startSubmittingTransition] = useTransition();
 	const [copiedText, copy] = useCopyToClipboard();
 	const [initialPassword, setInitialPassword] = useState<string>();
@@ -87,7 +87,7 @@ const PassWordUpdate = () => {
 			}
 			toast.success(t('account_password_update_success'));
 			form.reset();
-			refreshUserInfo();
+			refreshMainUserInfo();
 			setShowPasswordUpdateDialog(false);
 		});
 	};
@@ -103,23 +103,23 @@ const PassWordUpdate = () => {
 	} = useQuery({
 		enabled: false,
 		retry: false,
-		queryKey: ['getMyInitialPassword', userInfo],
+		queryKey: ['getMyInitialPassword', mainUserInfo],
 		queryFn: getMyInitialPassword,
 	});
 
 	return (
 		<>
-			{userInfo && !userInfo.email_info && (
+			{mainUserInfo && !mainUserInfo.email_info && (
 				<p className='text-xs px-4'>{t('account_password_without_email')}</p>
 			)}
-			{userInfo && userInfo.email_info && (
+			{mainUserInfo && mainUserInfo.email_info && (
 				<>
 					<Dialog
 						open={showInitialPasswordDialog}
 						onOpenChange={(v) => {
 							setShowInitialPasswordDialog(v);
 							if (!v) {
-								refreshUserInfo();
+								refreshMainUserInfo();
 							}
 						}}>
 						<DialogContent>
@@ -162,8 +162,8 @@ const PassWordUpdate = () => {
 						</DialogContent>
 					</Dialog>
 					<div className='flex flex-row gap-5'>
-						{userInfo.email_info.is_initial_password &&
-							!userInfo.email_info.has_seen_initial_password && (
+						{mainUserInfo.email_info.is_initial_password &&
+							!mainUserInfo.email_info.has_seen_initial_password && (
 								<Button
 									onClick={async () => {
 										setShowInitialPasswordDialog(true);
