@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '../ui/button';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
+import { Plan } from '@/enums/product';
 
 const UserPlan = () => {
 	const t = useTranslations();
@@ -13,7 +14,7 @@ const UserPlan = () => {
 
 	return (
 		<div className='flex flex-row items-center justify-end'>
-			{paySystemUserInfo?.userPlan.plan && (
+			{paySystemUserInfo?.userPlan?.plan && (
 				<Badge variant='outline'>
 					{paySystemUserInfo.userPlan.plan.product?.name}
 					{new Date().getTime() >
@@ -22,7 +23,7 @@ const UserPlan = () => {
 					)}
 				</Badge>
 			)}
-			{paySystemUserInfo?.userPlan.plan &&
+			{paySystemUserInfo?.userPlan?.plan &&
 				new Date().getTime() >
 					new Date(paySystemUserInfo?.userPlan.expireTime).getTime() && (
 					<Link href={'/account/plan'}>
@@ -31,20 +32,25 @@ const UserPlan = () => {
 						</Button>
 					</Link>
 				)}
-			{paySystemUserInfo?.userPlan.plan &&
-				paySystemUserInfo?.userPlan.plan.product?.name
-					.toLowerCase()
-					.includes('free') && (
-					<Link href={'/account/pro'}>
+			{((paySystemUserInfo?.userPlan?.plan &&
+				paySystemUserInfo?.userPlan?.plan.product?.uuid === Plan.FREE) ||
+				!paySystemUserInfo?.userPlan) && (
+				<Link href={'/account/plan'}>
+					<Button className='text-xs w-fit' variant={'link'}>
+						{t('account_plan_go_to_subscribe')}
+					</Button>
+				</Link>
+			)}
+			{paySystemUserInfo?.userPlan?.plan &&
+				paySystemUserInfo?.userPlan?.plan.product?.uuid === Plan.PRO && (
+					<Link href={'/account/plan'}>
 						<Button className='text-xs w-fit' variant={'link'}>
-							{t('account_plan_go_to_subscribe')}
+							{t('account_plan_go_to_upgrade')}
 						</Button>
 					</Link>
 				)}
-			{paySystemUserInfo?.userPlan.plan &&
-				!paySystemUserInfo?.userPlan.plan.product?.name
-					.toLowerCase()
-					.includes('free') && (
+			{paySystemUserInfo?.userPlan?.plan &&
+				paySystemUserInfo?.userPlan.plan.product?.uuid !== Plan.FREE && (
 					<div className='mx-5'>
 						{format(paySystemUserInfo?.userPlan.startTime, 'yyyy-MM-dd')}
 						{' ~ '}

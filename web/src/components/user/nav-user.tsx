@@ -126,7 +126,7 @@ export function NavUser() {
 									</span>
 								</div>
 								<ChevronsUpDown className='ml-auto size-4' />
-								{paySystemUserInfo?.userPlan.plan?.product && (
+								{paySystemUserInfo?.userPlan?.plan?.product && (
 									<Badge className='rounded-full border-none bg-linear-to-r from-sky-500 to-indigo-600 text-white'>
 										<Sparkles />
 										{paySystemUserInfo.userPlan.plan.product.name}
@@ -162,7 +162,7 @@ export function NavUser() {
 										</span>
 									</div>
 
-									{paySystemUserInfo?.userPlan.plan?.product && (
+									{paySystemUserInfo?.userPlan?.plan?.product && (
 										<Badge className='rounded-full border-none bg-linear-to-r from-sky-500 to-indigo-600 text-white'>
 											<Sparkles />
 											{paySystemUserInfo.userPlan.plan.product.name}

@@ -712,6 +712,7 @@
     "account_plan_expired": "已过期",
     "account_plan_go_to_renew": "前往续订",
     "account_plan_go_to_subscribe": "前往订阅",
+    "account_plan_go_to_upgrade": "前往升级",
     "account_plan_tips": "如果新计划与原有计划一致，那么时间将正常向后延；如果新计划与原计划不一致，那么原有计划将被延后到新计划结束，新计划将立即生效；暂不支持从高级订阅降级到更低订阅。",
     "account_plan_upgrade": "升级计划",
     "account_plan_subscribe": "订阅",
