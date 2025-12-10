@@ -32,6 +32,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH: process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH,
     NEXT_PUBLIC_HOST: process.env.NEXT_PUBLIC_HOST,
     UNION_PAY_API_PREFIX: process.env.UNION_PAY_API_PREFIX,
+    DEPLOY_HOSTS: process.env.DEPLOY_HOSTS,
   }
 };
 
