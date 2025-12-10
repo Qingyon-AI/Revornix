@@ -34,13 +34,14 @@ import { Button } from '../ui/button';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import CustomImage from '../ui/custom-image';
+import { Badge } from '../ui/badge';
 
 export function NavUser() {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const router = useRouter();
 	const { isMobile } = useSidebar();
-	const { mainUserInfo, logOut } = useUserContext();
+	const { mainUserInfo, logOut, paySystemUserInfo } = useUserContext();
 
 	const onLogout = async () => {
 		logOut();
@@ -125,6 +126,12 @@ export function NavUser() {
 									</span>
 								</div>
 								<ChevronsUpDown className='ml-auto size-4' />
+								{paySystemUserInfo?.userPlan.plan?.product && (
+									<Badge className='rounded-full border-none bg-linear-to-r from-sky-500 to-indigo-600 text-white'>
+										<Sparkles />
+										{paySystemUserInfo.userPlan.plan.product.name}
+									</Badge>
+								)}
 							</SidebarMenuButton>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent
@@ -154,6 +161,13 @@ export function NavUser() {
 												: t('user_no_slogan')}
 										</span>
 									</div>
+
+									{paySystemUserInfo?.userPlan.plan?.product && (
+										<Badge className='rounded-full border-none bg-linear-to-r from-sky-500 to-indigo-600 text-white'>
+											<Sparkles />
+											{paySystemUserInfo.userPlan.plan.product.name}
+										</Badge>
+									)}
 								</div>
 								<div className='flex flex-row items-center gap-1'>
 									<Link href={'/user/fans'} className='flex-1'>
