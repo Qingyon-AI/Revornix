@@ -711,6 +711,7 @@
     "account_plan_expired": "Expired",
     "account_plan_go_to_renew": "Go to Renew",
     "account_plan_go_to_subscribe": "Go to Subscribe",
+    "account_plan_go_to_upgrade": "Go to Upgrade",
     "account_plan_tips": "If the new plan is the same as the current one, the subscription period will be extended accordingly. If the new plan differs from the current one, the existing plan will be paused until the new plan ends, and the new plan will take effect immediately. Downgrading from a higher-tier plan to a lower-tier plan is currently not supported.",
     "account_plan_upgrade": "Upgrade Plan",
     "account_plan_subscribe": "Subscribe",
