@@ -1,4 +1,5 @@
 import { API_PREFIX } from "@/config/api"
+import { UNION_PAY_API_PREFIX } from '@/config/api'
 
 export default {
     searchUser: API_PREFIX + '/user/search',
@@ -40,4 +41,5 @@ export default {
     createUserByWechatMini: API_PREFIX + '/user/create/wechat/mini',
     bindWeChat: API_PREFIX + '/user/bind/wechat/web',
     unBindWeChat: API_PREFIX + '/user/unbind/wechat',
+    getUserInfoForPaySystem: UNION_PAY_API_PREFIX + '/user/info',
 } 
