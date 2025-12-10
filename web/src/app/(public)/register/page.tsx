@@ -8,12 +8,11 @@ export default async function RegisterPage() {
 
 	return (
 		<div className='flex items-center justify-center min-h-[calc(theme("height.screen")-theme("height.16"))]'>
-			{(host?.includes('revornix.com') || host?.includes('revornix.cn')) && (
-				<RegisterFormCloud />
-			)}
+			{(host?.includes('app.revornix.com') ||
+				host?.includes('app.revornix.cn')) && <RegisterFormCloud />}
 			{host &&
-				!host?.includes('revornix.com') &&
-				!host.includes('revornix.cn') && <RegisterFormLocal />}
+				!host?.includes('app.revornix.com') &&
+				!host.includes('app.revornix.cn') && <RegisterFormLocal />}
 		</div>
 	);
 }

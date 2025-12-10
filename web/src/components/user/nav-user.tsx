@@ -37,6 +37,8 @@ import CustomImage from '../ui/custom-image';
 import { Badge } from '../ui/badge';
 
 export function NavUser() {
+	const host = window.location.host;
+
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const router = useRouter();
@@ -54,9 +56,7 @@ export function NavUser() {
 		)}`,
 		{
 			manual: true,
-			onOpen(event, instance) {
-				console.log('websocket opened', event, instance);
-			},
+			onOpen(event, instance) {},
 			onMessage: (e) => {
 				const message = JSON.parse(e.data);
 				const notification = message.notification;
@@ -210,13 +210,21 @@ export function NavUser() {
 									{t('user_notifications')}
 								</DropdownMenuItem>
 							</DropdownMenuGroup>
-							<DropdownMenuSeparator />
-							<DropdownMenuGroup>
-								<DropdownMenuItem onClick={() => router.push('/account/plan')}>
-									<Sparkles />
-									{t('account_plan_upgrade')}
-								</DropdownMenuItem>
-							</DropdownMenuGroup>
+
+							{(host?.includes('app.revornix.com') ||
+								host?.includes('app.revornix.cn')) && (
+								<>
+									<DropdownMenuSeparator />
+									<DropdownMenuGroup>
+										<DropdownMenuItem
+											onClick={() => router.push('/account/plan')}>
+											<Sparkles />
+											{t('account_plan_upgrade')}
+										</DropdownMenuItem>
+									</DropdownMenuGroup>
+								</>
+							)}
+
 							<DropdownMenuSeparator />
 							<DropdownMenuItem onClick={onLogout}>
 								<LogOut />

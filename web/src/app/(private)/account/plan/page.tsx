@@ -3,8 +3,21 @@ import PlanCard from '@/components/plan/plan-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
+import { headers } from 'next/headers';
+import { notFound } from 'next/navigation';
 
 const ProPage = async () => {
+	const headersList = await headers();
+	const host = headersList.get('host');
+
+	// ✅ 如果 host 是 das，直接 404
+	if (
+		!host?.includes('app.revornix.com') &&
+		!host?.includes('app.revornix.cn')
+	) {
+		notFound();
+	}
+
 	const t = await getTranslations();
 	return (
 		<div className='pb-5 px-5 flex flex-col justify-center w-full'>
