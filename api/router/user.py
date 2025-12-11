@@ -12,7 +12,7 @@ from schemas.error import CustomException
 from common.jwt_utils import create_token
 from common.dependencies import get_db
 from common.hash import verify_password
-from common.dependencies import get_current_user, get_db, get_cache, decode_jwt_token, get_request_host
+from common.dependencies import get_current_user, get_db, get_cache, decode_jwt_token, get_request_host, check_deployed_by_official
 from common.tp_auth.google_utils import get_google_token
 from common.tp_auth.wechat_utils import get_web_user_info, get_web_wechat_tokens, get_mini_wechat_tokens
 from common.system_email.email import RevornixSystemEmail
@@ -427,10 +427,8 @@ async def create_user_by_email_verify(
 async def create_user_by_email(
     email_user_create_verify_request: schemas.user.EmailUserCreateVerifyRequest, 
     db: Session = Depends(get_db),
-    host: str = Depends(get_request_host),
+    _ = Depends(check_deployed_by_official)
 ):
-    if 'revornix.com' in host or 'revornix.cn' in host:
-        raise CustomException(message='This api is only available for local use, and is disabled in the official deployment version', code=403)
     if crud.user.get_user_by_email(
         db=db, 
         email=email_user_create_verify_request.email
@@ -555,10 +553,8 @@ async def bind_email(
     bind_email_verify_request: schemas.user.BindEmailVerifyRequest,
     user = Depends(get_current_user),
     db: Session = Depends(get_db),
-    host: str = Depends(get_request_host)
+    _ = Depends(check_deployed_by_official)
 ):
-    if 'revornix.com' in host or 'revornix.cn' in host:
-        raise CustomException(message='This api is only available for local use, and is disabled in the official deployment version', code=403)
     db_exist_email_user = crud.user.get_email_user_by_email(
         db=db,
         email=bind_email_verify_request.email

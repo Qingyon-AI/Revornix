@@ -6,3 +6,6 @@ api_base_url = os.environ.get('api_base_url')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+DEPLOY_HOSTS = os.environ.get('DEPLOY_HOSTS', 'localhost').split(',')
+OFFICIAL = os.environ.get('OFFICIAL')
