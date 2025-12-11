@@ -55,7 +55,7 @@ const SectionGraph = ({ section_id }: { section_id: number }) => {
 
 	const { resolvedTheme } = useTheme();
 
-	const { data, isLoading, isError, error, isFetched, refetch } = useQuery({
+	const { data, isLoading, isError, error, isFetched } = useQuery({
 		queryKey: ['searchDocumentGraph', section_id],
 		queryFn: async () =>
 			searchSectionGraph({

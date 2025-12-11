@@ -6,8 +6,10 @@ import SectionDocumentCard from './section-document-card';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
 import { Skeleton } from '../ui/skeleton';
+import { useTranslations } from 'next-intl';
 
 const SectionDocumentsList = ({ section_id }: { section_id: number }) => {
+	const t = useTranslations();
 	const { ref: bottomRef, inView } = useInView();
 	const {
 		data,
@@ -50,6 +52,11 @@ const SectionDocumentsList = ({ section_id }: { section_id: number }) => {
 				documents.map((document, index) => {
 					return <SectionDocumentCard key={index} document={document} />;
 				})}
+			{isSuccess && documents && documents.length === 0 && (
+				<p className='flex-1 flex justify-center items-center text-sm text-muted-foreground'>
+					{t('section_no_documents')}
+				</p>
+			)}
 			{isFetching && !data && (
 				<>
 					{[...Array(10)].map((number, index) => {
