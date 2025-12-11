@@ -6,10 +6,10 @@ def upsert_milvus(
     chunks_info: list[ChunkInfo]
 ):
     """
-    chunks_info: [{ "id": str, "embedding": list, "text": str, "doc_id": int, "idx": int}]
+    chunks_info: [{ "id": str, "embedding": list, "text": str, "doc_id": int, "idx": int }]
     """
-    data = [
-        {
+    for c in chunks_info:
+        row = {
             "id": c.id,
             "embedding": c.embedding,
             "text": c.text,
@@ -17,6 +17,4 @@ def upsert_milvus(
             "creator_id": user_id,
             "idx": c.idx
         }
-        for c in chunks_info
-    ]
-    milvus_client.insert(collection_name=MILVUS_COLLECTION, data=data)
+        milvus_client.insert(collection_name=MILVUS_COLLECTION, data=row)

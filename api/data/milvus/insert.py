@@ -1,13 +1,15 @@
 from data.custom_types.all import ChunkInfo
 from data.milvus.base import milvus_client, MILVUS_COLLECTION
 
-def upsert_milvus(user_id: int,
-                  chunks_info: list[ChunkInfo]):
+def upsert_milvus(
+    user_id: int,
+    chunks_info: list[ChunkInfo]
+):
     """
-    chunks_info: [{ "id": str, "embedding": list, "text": str, "doc_id": int, "idx": int}]
+    chunks_info: [{ "id": str, "embedding": list, "text": str, "doc_id": int, "idx": int }]
     """
-    data = [
-        {
+    for c in chunks_info:
+        row = {
             "id": c.id,
             "embedding": c.embedding,
             "text": c.text,
@@ -15,6 +17,4 @@ def upsert_milvus(user_id: int,
             "creator_id": user_id,
             "idx": c.idx
         }
-        for c in chunks_info
-    ]
-    milvus_client.insert(collection_name=MILVUS_COLLECTION, data=data)
+        milvus_client.insert(collection_name=MILVUS_COLLECTION, data=row)
