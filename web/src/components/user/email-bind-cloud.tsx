@@ -15,6 +15,7 @@ import {
 	FormControl,
 	FormField,
 	FormItem,
+	FormLabel,
 	FormMessage,
 } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -24,24 +25,53 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { bindEmail } from '@/service/user';
+import { bindEmailCodeVerify, bindEmailCode } from '@/service/user';
 import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
+import { useCountDown } from 'ahooks';
 
-const EmailBind = () => {
+const EmailBindCloud = () => {
 	const t = useTranslations();
 	const emailFormSchema = z.object({
 		email: z.string().email(t('account_email_format_error')),
+		code: z.string().length(6),
 	});
 	const [bindingEmail, startBindEmailTransition] = useTransition();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const [showBindEmailDialog, setShowBindEmailDialog] = useState(false);
+	const [codeSending, setCodeSending] = useState(false);
+
+	const [targetDate, setTargetDate] = useState<number>();
+	const [countdown] = useCountDown({
+		targetDate,
+	});
+
+	const onSendCode = async () => {
+		form.trigger('email');
+		if (form.formState.errors.email) {
+			toast.error(form.formState.errors.email.message);
+			return;
+		}
+		setCodeSending(true);
+		const [res, err] = await utils.to(
+			bindEmailCode({ email: form.getValues('email') })
+		);
+		if (err || !res) {
+			toast.error(err.message);
+			setCodeSending(false);
+			return;
+		}
+		setCodeSending(false);
+		setTargetDate(Date.now() + 60000);
+		toast.success(t('seo_register_form_email_code_send_success_fullly'));
+	};
 
 	const form = useForm<z.infer<typeof emailFormSchema>>({
 		resolver: zodResolver(emailFormSchema),
 		defaultValues: {
 			email: '',
+			code: '',
 		},
 	});
 
@@ -61,7 +91,7 @@ const EmailBind = () => {
 		values: z.infer<typeof emailFormSchema>
 	) => {
 		startBindEmailTransition(async () => {
-			const [res, err] = await utils.to(bindEmail(values));
+			const [res, err] = await utils.to(bindEmailCodeVerify(values));
 			if (err) {
 				toast.error(err.message);
 				return;
@@ -126,27 +156,54 @@ const EmailBind = () => {
 					<Form {...form}>
 						<form onSubmit={onSubmitBindEmailForm} className='space-y-5'>
 							<div className='grid gap-4'>
-								<div className='grid gap-2'>
-									<FormField
-										control={form.control}
-										name='email'
-										render={({ field }) => (
-											<FormItem>
+								<FormField
+									control={form.control}
+									name='email'
+									render={({ field }) => (
+										<FormItem>
+											<FormControl>
+												<Input
+													placeholder={
+														mainUserInfo?.email_info
+															? t('account_email_update_placeholder')
+															: t('account_email_bind_placeholder')
+													}
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name='code'
+									render={({ field }) => (
+										<FormItem>
+											<div className='flex w-full items-center gap-3'>
 												<FormControl>
 													<Input
-														placeholder={
-															mainUserInfo?.email_info
-																? t('account_email_update_placeholder')
-																: t('account_email_bind_placeholder')
-														}
+														placeholder={t(
+															'seo_register_form_email_code_placeholder'
+														)}
 														{...field}
 													/>
 												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								</div>
+												<Button
+													type='button'
+													onClick={onSendCode}
+													disabled={!!countdown || codeSending}>
+													{!countdown && t('seo_register_form_email_code_send')}
+													{!!countdown && `${Math.round(countdown / 1000)}`}
+													{codeSending && (
+														<Loader2 className='size-4 animate-spin' />
+													)}
+												</Button>
+											</div>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 							</div>
 							<DialogFooter className='sm:justify-end'>
 								<Button type='submit' disabled={bindingEmail}>
@@ -167,4 +224,4 @@ const EmailBind = () => {
 	);
 };
 
-export default EmailBind;
+export default EmailBindCloud;

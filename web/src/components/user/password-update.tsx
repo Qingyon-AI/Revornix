@@ -194,64 +194,65 @@ const PassWordUpdate = () => {
 							onOpenAutoFocus={(e) => e.preventDefault()}>
 							<DialogHeader>
 								<DialogTitle>{t('account_password_update')}</DialogTitle>
+								<DialogDescription>
+									{t('account_password_update_description')}
+								</DialogDescription>
 							</DialogHeader>
 							<Form {...form}>
 								<form
+									id='password-update-form'
 									onSubmit={onSubmitUpdatePasswordForm}
 									className='space-y-5'>
-									<div className='space-y-5'>
-										<FormField
-											control={form.control}
-											name='origin_password'
-											render={({ field }) => (
-												<FormItem>
-													<FormControl>
-														<Input
-															type='password'
-															placeholder={t(
-																'account_password_origin_placeholder'
-															)}
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name='password'
-											render={({ field }) => (
-												<FormItem>
-													<FormControl>
-														<Input
-															type='password'
-															placeholder={t(
-																'account_password_new_placeholder'
-															)}
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</div>
-									<DialogFooter className='sm:justify-end'>
-										<Button type='submit' disabled={isSubmitting}>
-											{t('account_password_update_confirm')}
-											{isSubmitting && (
-												<Loader2 className='size-4 animate-spin' />
-											)}
-										</Button>
-										<DialogClose asChild>
-											<Button type='button' variant='secondary'>
-												{t('account_password_update_cancel')}
-											</Button>
-										</DialogClose>
-									</DialogFooter>
+									<FormField
+										control={form.control}
+										name='origin_password'
+										render={({ field }) => (
+											<FormItem>
+												<FormControl>
+													<Input
+														type='password'
+														placeholder={t(
+															'account_password_origin_placeholder'
+														)}
+														{...field}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name='password'
+										render={({ field }) => (
+											<FormItem>
+												<FormControl>
+													<Input
+														type='password'
+														placeholder={t('account_password_new_placeholder')}
+														{...field}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
 								</form>
 							</Form>
+							<DialogFooter className='sm:justify-end'>
+								<Button
+									type='submit'
+									disabled={isSubmitting}
+									form='password-update-form'>
+									{t('account_password_update_confirm')}
+									{isSubmitting && <Loader2 className='size-4 animate-spin' />}
+								</Button>
+								<DialogClose asChild>
+									<Button type='button' variant='secondary'>
+										{t('account_password_update_cancel')}
+									</Button>
+								</DialogClose>
+							</DialogFooter>
 						</DialogContent>
 					</Dialog>
 				</>

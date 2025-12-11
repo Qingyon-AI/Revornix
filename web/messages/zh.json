@@ -798,6 +798,7 @@
     "account_password_initial_password": "初始密码",
     "account_password_initial_password_description": "初次密码仅可查看一次，之后将无法查看，请注意保存。",
     "account_password_update": "更改密码",
+    "account_password_update_description": "此处你可以通过原密码更改你的密码",
     "account_password_update_form_password_no_less_than": "密码至少8位",
     "account_password_update_success": "更改成功",
     "account_password_update_cancel": "取消",

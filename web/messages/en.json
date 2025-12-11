@@ -797,6 +797,7 @@
     "account_password_initial_password": "Initial Password",
     "account_password_initial_password_description": "The initial password can only be viewed once. Please make sure to save it.",
     "account_password_update": "Change Password",
+    "account_password_update_description": "You can change your password here using your original password",
     "account_password_update_form_password_no_less_than": "Password must be at least 8 characters",
     "account_password_update_success": "Password Updated Successfully",
     "account_password_update_cancel": "Cancel",
