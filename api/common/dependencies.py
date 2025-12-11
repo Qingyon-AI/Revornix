@@ -29,11 +29,9 @@ async def check_deployed_by_official(
     host = Depends(get_request_host)
 ):
     # 如果不是部署着的服务 则可访问
-    if host not in DEPLOY_HOSTS:
+    if host not in DEPLOY_HOSTS and OFFICIAL == 'False':
         return
     # 如果不是官方部署的 则可访问
-    if OFFICIAL == 'False':
-        return
     raise schemas.error.CustomException(message='This api is only available for local use, and is disabled in the official deployment version', code=403)
 
 def get_db():
