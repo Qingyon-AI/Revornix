@@ -124,8 +124,11 @@ const SEOSectionDetail = async (props: {
 		throw new Error('Something is wrong while getting the section detail');
 	}
 
-	if (section_res && section_res.md_file_name) {
+	if (section_res) {
 		section = section_res;
+	}
+
+	if (section_res && section_res.md_file_name) {
 		const [markdown_res, markdown_err] = await utils.to(
 			getFileContent(section_res.md_file_name)
 		);
@@ -151,7 +154,7 @@ const SEOSectionDetail = async (props: {
 								<Expand size={4} className='text-muted-foreground' />
 							</Button>
 						</DialogTrigger>
-						<DialogContent className='!max-w-[80vw] h-[80vh] flex flex-col'>
+						<DialogContent className='max-w-[80vw]! h-[80vh] flex flex-col'>
 							<DialogHeader>
 								<DialogTitle>{t('section_graph')}</DialogTitle>
 								<DialogDescription>
@@ -175,7 +178,7 @@ const SEOSectionDetail = async (props: {
 						components={{}}
 						remarkPlugins={[remarkMath, remarkGfm]}
 						rehypePlugins={[rehypeKatex, rehypeRaw]}>
-						{markdown}
+						{markdown ? markdown : t('section_no_md')}
 					</Markdown>
 				</div>
 				<div className='max-w-prose mx-auto'>
@@ -192,7 +195,7 @@ const SEOSectionDetail = async (props: {
 				</div>
 			</div>
 			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
-				<Card className='relative shadow-none h-full flex flex-col !gap-0'>
+				<Card className='relative shadow-none h-full flex flex-col gap-0!'>
 					<CardHeader className='mb-5'>
 						<CardTitle>{t('section_documents')}</CardTitle>
 						<CardDescription>

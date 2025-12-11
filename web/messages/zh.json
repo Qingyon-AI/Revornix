@@ -611,6 +611,8 @@
     "section_search_filter_form_label_description": "选择标签后，列表将只会显示包含该标签的专栏。注意：清空后由于标签筛选为空，所有专栏都将隐藏，只有取消标签筛选后，列表将显示所有专栏。",
     "section_search_filter_form_label_cancel": "取消标签筛选",
     "sections_empty": "暂无专栏",
+    "section_no_md": "该文档暂无内容",
+    "section_no_documents": "暂无相关文档",
     "section_card_documents_count": "{section_documents_count}篇文档",
     "section_card_subscribers_count": "{section_subscribers_count}订阅",
     "section_not_found": "找不到该专栏",
