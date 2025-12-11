@@ -2,7 +2,7 @@ import PassWordUpdate from '@/components/user/password-update';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import EmailBind from '@/components/user/email-bind';
+import EmailBindLocal from '@/components/user/email-bind-local';
 import AvatarUpdate from '@/components/user/avatar-update';
 import NicknameUpdate from '@/components/user/nickname-update';
 import SloganUpdate from '@/components/user/slogan-update';
@@ -17,6 +17,7 @@ import PhoneBind from '@/components/user/phone-bind';
 import WeChatBind from '@/components/user/wechat-bind';
 import UserPlan from '@/components/user/user-plan';
 import { headers } from 'next/headers';
+import EmailBindCloud from '@/components/user/email-bind-cloud';
 
 const AccountPage = async () => {
 	const t = await getTranslations();
@@ -91,7 +92,12 @@ const AccountPage = async () => {
 							</div>
 						</Label>
 						<div className='flex flex-col gap-2'>
-							<EmailBind />
+							{host?.includes('app.revornix.com') ||
+							host?.includes('app.revornix.cn') ? (
+								<EmailBindCloud />
+							) : (
+								<EmailBindLocal />
+							)}
 						</div>
 					</div>
 					<Separator />
