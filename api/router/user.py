@@ -1175,7 +1175,7 @@ async def create_user_by_wechat_mini(wechat_mini_user_create_request: schemas.us
     openid = response_tokens.openid
     union_id = response_tokens.unionid
     if openid is None or union_id is None:
-        raise CustomException('WeChat Login Failed', 401)
+        raise CustomException('WeChat Login Failed', 403)
     
     # 如果openid都已经存在了 那就说明这个用户在这个平台已经注册过了 直接返回token
     db_exist_wechat_user_by_open_id = crud.user.get_wechat_user_by_wechat_open_id(
@@ -1278,7 +1278,7 @@ async def create_user_by_wechat_web(
     openid = response_tokens.openid
     union_id = response_tokens.unionid
     if access_token is None or openid is None or union_id is None:
-        raise CustomException('WeChat Login Failed', 401)
+        raise CustomException('WeChat Login Failed', 403)
     
     db_exist_wechat_user_by_openid = crud.user.get_wechat_user_by_wechat_open_id(
         db=db, 
@@ -1376,7 +1376,7 @@ async def bind_wechat(
         filter_wechat_platform=WeChatUserSource.REVORNIX_WEB_APP
     )
     if db_wechat_user_exist is not None:
-        raise CustomException(message="This wechat account is alread be bounded", code=401)
+        raise CustomException(message="This wechat account is alread be bounded", code=403)
     code = wechat_user_bind_request.code
     response_tokens = get_web_wechat_tokens(WECHAT_WEB_APP_ID, WECHAT_WEB_APP_SECRET, code)
     access_token = response_tokens.access_token
