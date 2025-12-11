@@ -1375,7 +1375,7 @@ async def bind_wechat(
         user_id=user.id,
         filter_wechat_platform=WeChatUserSource.REVORNIX_WEB_APP
     )
-    if db_wechat_user_exist is not None:
+    if len(db_wechat_user_exist) > 0:
         raise CustomException(message="This wechat account is alread be bounded", code=403)
     code = wechat_user_bind_request.code
     response_tokens = get_web_wechat_tokens(WECHAT_WEB_APP_ID, WECHAT_WEB_APP_SECRET, code)
