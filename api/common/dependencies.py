@@ -1,11 +1,13 @@
 import crud
 import models
+import schemas
 from jose import jwt
 from redis import Redis
 from sqlalchemy.orm import Session
 from common.sql import SessionLocal
 from datetime import datetime, timezone
 from config.oauth2 import OAUTH_SECRET_KEY
+from config.base import OFFICIAL, DEPLOY_HOSTS
 from fastapi import Request, HTTPException, status, Depends, Header
 
 if OAUTH_SECRET_KEY is None:
@@ -22,6 +24,17 @@ async def get_request_host(request: Request) -> str:
         raise ValueError("Host not found in request")
 
     return host
+
+async def check_deployed_by_official(
+    host = Depends(get_request_host)
+):
+    # 如果不是部署着的服务 则可访问
+    if host not in DEPLOY_HOSTS:
+        return
+    # 如果不是官方部署的 则可访问
+    if OFFICIAL == 'False':
+        return
+    raise schemas.error.CustomException(message='This api is only available for local use, and is disabled in the official deployment version', code=403)
 
 def get_db():
     db = SessionLocal()
