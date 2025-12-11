@@ -755,6 +755,26 @@ async def delete_user(
         db=db, 
         user_id=user.id
     )
+    crud.user.delete_wechat_user_by_user_id(
+        db=db,
+        user_id=user.id
+    )
+    crud.user.delete_email_user_by_user_id(
+        db=db,
+        user_id=user.id
+    )
+    crud.user.delete_github_user_by_user_id(
+        db=db,
+        user_id=user.id
+    )
+    crud.user.delete_google_user_by_user_id(
+        db=db,
+        user_id=user.id
+    )
+    crud.user.delete_phone_user_by_user_id(
+        db=db,
+        user_id=user.id
+    )
     db.commit()
     return schemas.common.SuccessResponse(message="The user is deleted successfully.")
 
