@@ -54,7 +54,7 @@ class MineruEngine(MarkdownEngineProtocol):
                 browser = await p.chromium.launch(headless=True)
                 page = await browser.new_page()
 
-                await page.goto(url, wait_until="networkidle")
+                await page.goto(url, wait_until="domcontentloaded")
                 html_content = await page.content()
                 await page.pdf(path=shot_pdf_path)
                 await browser.close()

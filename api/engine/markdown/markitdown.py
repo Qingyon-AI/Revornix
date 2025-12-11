@@ -43,7 +43,7 @@ class MarkitdownEngine(MarkdownEngineProtocol):
             browser = await p.chromium.launch(headless=True)
             page = await browser.new_page()
             # 可以适当等到网络空闲，页面更稳定
-            await page.goto(url, wait_until="networkidle")
+            await page.goto(url, wait_until="domcontentloaded")
             html_content = await page.content()
             await browser.close()
 
