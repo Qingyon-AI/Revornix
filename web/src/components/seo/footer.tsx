@@ -8,7 +8,7 @@ const Footer = () => {
 			<p className='text-center'>
 				Copyright ©{' '}
 				<Link href={'https://www.qingyon.com'} target='_blank'>
-					Qingyun Tech (ShaoXing) Co., Ltd
+					Qingyong Technology (Hangzhou) Co., Inc.
 				</Link>{' '}
 				Since {2024}.
 			</p>
