@@ -8,7 +8,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
-from common.sql import Base
+from data.sql.base import Base
 
 
 class OAuth2Client(Base):

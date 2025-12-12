@@ -1,7 +1,7 @@
 import crud
 import schemas
 from typing import cast
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from enums.section import UserSectionRole
 from protocol.notification_template import NotificationTemplate
 from protocol.remote_file_service import RemoteFileServiceProtocol

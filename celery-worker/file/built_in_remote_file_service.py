@@ -3,7 +3,7 @@ import boto3
 import crud
 import json
 from typing import Any
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from botocore.client import Config
 from botocore.exceptions import ClientError
 from protocol.remote_file_service import RemoteFileServiceProtocol

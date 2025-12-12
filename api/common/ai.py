@@ -5,7 +5,7 @@ from prompts.summary_section import summary_section_prompt
 from prompts.summary_section_with_origin import summary_section_with_origin_prompt
 from prompts.summary_content import summary_content_prompt
 from prompts.reducer_summary import reducer_summary_prompt
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from pydantic import BaseModel
 from data.custom_types.all import *
 

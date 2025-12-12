@@ -4,7 +4,7 @@ import schemas
 from jose import jwt
 from redis import Redis
 from sqlalchemy.orm import Session
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from datetime import datetime, timezone
 from config.oauth2 import OAUTH_SECRET_KEY
 from config.base import OFFICIAL, DEPLOY_HOSTS

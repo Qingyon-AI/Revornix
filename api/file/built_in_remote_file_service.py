@@ -3,7 +3,7 @@ import crud
 import json
 from typing import Any
 from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from botocore.client import Config
 from botocore.exceptions import ClientError
 from protocol.remote_file_service import RemoteFileServiceProtocol

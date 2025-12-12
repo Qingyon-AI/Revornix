@@ -33,6 +33,7 @@ AI时代的资讯管理工具。Revornix可以帮助你便捷整合所有可见�
 - 智能助手&内置MCP：Revornix内置了MCP服务客户端和服务端，既可以向第三方提供MCP服务，也可以使用AI助手来调用本地或者三方的MCP服务。
 - 大模型无缝接入：模型不固定，你可以任意选择想要使用的模型，并且针对不同的功能点，模型可以独立。
 - 多语言&响应式：无论你是中文用户还是英文用户，无论你是使用手机还是电脑，都能获得良好的使用体验。
+- 自动播客：用户可以开启文档/专栏的自动播客生成/更新功能，开启后，Revornix会自动生成文档/专栏的音频文件，提供一种额外的方式获取信息。
 
 ## 快速开始
 
@@ -87,8 +88,8 @@ cp ./celery-worker/.env.example ./celery-worker/.env
 
 ```shell
 cd api
-python -m script.init_vector_base_data
-python -m script.init_sql_base_data
+python -m data.milvus.create
+python -m data.sql.create
 ```
 
 ### 启动核心后端服务

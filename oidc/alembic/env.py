@@ -31,7 +31,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 from models.user import *
 from models.oauth import *
-from common.sql import Base
+from data.sql.base import Base
 target_metadata = Base.metadata # 设置创建模型的元类
 
 # other values from the config, defined by the needs of env.py,

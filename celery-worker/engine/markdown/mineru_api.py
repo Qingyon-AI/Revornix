@@ -14,7 +14,7 @@ from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileIn
 from enums.engine import EngineUUID
 from playwright.async_api import async_playwright
 from typing import Tuple
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 
 class MineruApiEngine(MarkdownEngineProtocol):
 

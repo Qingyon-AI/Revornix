@@ -2,7 +2,7 @@ import crud
 import schemas
 import json
 from typing import Protocol
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 
 class NotificationToolProtocol(Protocol):
 

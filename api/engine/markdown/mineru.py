@@ -12,7 +12,7 @@ from enums.engine import EngineUUID, EngineCategory
 from playwright.async_api import async_playwright
 from common.common import get_user_remote_file_system, is_dir_empty, extract_title_and_summary
 from common.mineru import parse_doc
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 
 
 class MineruEngine(MarkdownEngineProtocol):

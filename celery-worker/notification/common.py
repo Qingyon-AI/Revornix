@@ -1,6 +1,6 @@
 import crud
 from common.logger import exception_logger, log_exception
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
 from notification.tool.email import EmailNotificationTool

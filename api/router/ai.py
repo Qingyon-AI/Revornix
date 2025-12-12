@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from common.dependencies import get_db, get_current_user
 from fastapi.responses import StreamingResponse
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from mcp_use import MCPClient, MCPAgent
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage, HumanMessage

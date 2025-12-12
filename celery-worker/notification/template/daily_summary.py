@@ -1,6 +1,6 @@
 import crud
 import schemas
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from datetime import date as date_type
 from typing import cast
 from common.common import get_user_remote_file_system
