@@ -6,7 +6,7 @@ from typing import Optional
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from common.sql import Base
+from data.sql.base import Base
 
 class NotificationTemplate(Base):
     __tablename__ = "notification_template"

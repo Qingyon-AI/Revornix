@@ -1,6 +1,6 @@
 import crud
 import json
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from typing import Protocol
 
 class EngineProtocol(Protocol):

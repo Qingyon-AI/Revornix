@@ -3,7 +3,6 @@ import httpx
 import schemas
 import markdown
 import feedparser
-from common.sql import SessionLocal
 from common.logger import info_logger, exception_logger
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
@@ -12,7 +11,7 @@ from notification.tool.email import EmailNotificationTool
 from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
 from datetime import datetime, timezone
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from notification.template.daily_summary import DailySummaryNotificationTemplate
 from common.celery.app import start_process_document
 from enums.document import DocumentMdConvertStatus, UserDocumentAuthority, DocumentCategory

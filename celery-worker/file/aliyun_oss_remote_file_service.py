@@ -2,7 +2,7 @@ import crud
 import json
 import boto3
 from typing import Any
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from enums.file import RemoteFileServiceUUID
 from aliyunsdkcore.client import AcsClient

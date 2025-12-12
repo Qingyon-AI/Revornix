@@ -2,7 +2,7 @@ import crud
 import os
 from jose import jwt
 from redis import Redis
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from fastapi import Request
 from fastapi import Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session

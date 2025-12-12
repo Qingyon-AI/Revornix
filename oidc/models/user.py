@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
-from common.sql import Base
+from data.sql.base import Base
 
 
 class WechatUser(Base):

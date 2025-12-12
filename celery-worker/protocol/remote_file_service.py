@@ -1,7 +1,7 @@
 import crud
 import json
 from typing import Protocol
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from config.file_system import FILE_SYSTEM_SERVER_PUBLIC_URL
 from enums.file import RemoteFileServiceUUID
 

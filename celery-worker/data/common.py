@@ -11,7 +11,7 @@ from chonkie.types import Chunk
 from chonkie.chunker.recursive import RecursiveChunker
 from enums.document import DocumentCategory
 from common.common import get_user_remote_file_system
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from data.custom_types.all import *
 from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from typing import AsyncGenerator

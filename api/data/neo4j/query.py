@@ -1,6 +1,6 @@
 import openai
 import crud
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from data.neo4j.search import *
 from prompts.query import query_context_summary
 

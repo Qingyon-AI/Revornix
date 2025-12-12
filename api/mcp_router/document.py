@@ -4,7 +4,7 @@ from fastmcp import FastMCP, Context
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 from fastmcp.server.dependencies import get_http_headers
 from fastmcp.exceptions import ToolError
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 
 class UserAuthMiddleware(Middleware):
     async def on_call_tool(self, context: MiddlewareContext, call_next):

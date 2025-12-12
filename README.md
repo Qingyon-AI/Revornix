@@ -33,6 +33,7 @@ Revornix is an information management tool built for the AI era. It helps you co
 - Smart assistant & MCP: Bundled MCP client and server let you expose tools to others or let the assistant call local and third-party MCP services.
 - Seamless LLM integration: Bring any model you like. Each feature can rely on its own model configuration.
 - Multilingual & responsive: Great experience in both Chinese and English, across desktop and mobile.
+- Auto Podcast: Users can enable automatic podcast generation and updates for documents/sections. Once enabled, Revornix will automatically generate audio files for documents/sections, providing an additional way to consume information.
 
 ## Quick Start
 
@@ -87,8 +88,8 @@ Fill each file according to the [environment variables guide](https://revornix.c
 
 ```shell
 cd api
-python -m script.init_vector_base_data
-python -m script.init_sql_base_data
+python -m data.milvus.create
+python -m data.sql.create
 ```
 
 ### Launch the core backend

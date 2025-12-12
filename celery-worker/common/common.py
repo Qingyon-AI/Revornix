@@ -2,7 +2,7 @@ import re
 import crud
 from pathlib import Path
 from common.hash import verify_password
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from enums.file import RemoteFileServiceUUID
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService

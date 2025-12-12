@@ -18,7 +18,7 @@ from config.base import BASE_DIR
 from common.logger import exception_logger
 from common.ai import summary_content
 from common.common import get_user_remote_file_system
-from common.sql import SessionLocal
+from data.sql.base import SessionLocal
 from common.ai import reducer_summary
 from data.neo4j.insert import upsert_entities_neo4j, upsert_relations_neo4j, upsert_chunk_entity_relations, create_communities_from_chunks, create_community_nodes_and_relationships_with_size, annotate_node_degrees, upsert_chunks_neo4j, upsert_doc_chunk_relations, upsert_doc_neo4j
 from data.milvus.insert import upsert_milvus
