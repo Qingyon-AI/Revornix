@@ -148,9 +148,11 @@ async def get_ai_model_provider(
                                     api_url=db_user_model_provider.api_url)
  
 @ai_router.post("/model-provider/create", response_model=schemas.ai.ModelProviderCreateResponse)
-async def create_model_provider(model_provider_request: schemas.ai.ModelProviderCreateRequest,
-                                db: Session = Depends(get_db),
-                                user: models.user.User = Depends(get_current_user)):
+async def create_model_provider(
+    model_provider_request: schemas.ai.ModelProviderCreateRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
     db_ai_model_provider = crud.model.create_ai_model_provider(
         db=db, 
         name=model_provider_request.name, 
@@ -434,8 +436,15 @@ async def create_agent(
     db.close()
     return MCPAgent(llm=llm, client=mcp_client)
 
-async def stream_ops(user_id: int, messages: list, enable_mcp: bool = False):
-    agent = await create_agent(user_id=user_id, enable_mcp=enable_mcp)
+async def stream_ops(
+    user_id: int, 
+    messages: list, 
+    enable_mcp: bool = False
+):
+    agent = await create_agent(
+        user_id=user_id, 
+        enable_mcp=enable_mcp
+    )
     agent.clear_conversation_history()
     # 弹出最后一条消息并将其作为query
     query = messages.pop().content
@@ -468,8 +477,10 @@ async def stream_ops(user_id: int, messages: list, enable_mcp: bool = False):
     yield f"{json.dumps(to_serializable(sse_data), ensure_ascii=False)}\n\n"
 
 @ai_router.post("/ask")
-async def ask_ai(chat_messages: schemas.ai.ChatMessages, 
-                 user: models.user.User = Depends(get_current_user)):
+async def ask_ai(
+    chat_messages: schemas.ai.ChatMessages, 
+    user: models.user.User = Depends(get_current_user)
+):
     enable_mcp = chat_messages.enable_mcp
     messages = chat_messages.messages
     
