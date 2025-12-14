@@ -33,7 +33,7 @@ tf-keras==2.20.1
 sentence_transformers==5.1.1
 neo4j==6.0.3
 tenacity==9.1.2
-mcp_use==1.4.1
+mcp_use==1.5.0
 fastmcp==2.13.1
 websockets==15.0.1
 lark_oapi==1.4.24
