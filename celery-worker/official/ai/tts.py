@@ -8,13 +8,6 @@ OFFICIAL_TTS_AI_BASE_URL = os.environ.get('OFFICIAL_TTS_AI_BASE_URL')
 OFFICIAL_TTS_AI_KEY = os.environ.get('OFFICIAL_TTS_AI_KEY')
 OFFICIAL_TTS_AI_MODEL = os.environ.get('OFFICIAL_TTS_AI_MODEL')
 
-if not OFFICIAL_TTS_AI_BASE_URL or not OFFICIAL_TTS_AI_KEY or not OFFICIAL_TTS_AI_MODEL:
-    raise RuntimeError(
-        "Please set OFFICIAL_TTS_AI_MODEL, "
-        "OFFICIAL_TTS_AI_BASE_URL, "
-        "OFFICIAL_TTS_AI_KEY in .env file"
-    )
-
 tts_client = OpenAI(
     base_url=OFFICIAL_TTS_AI_BASE_URL,
     api_key=OFFICIAL_TTS_AI_KEY

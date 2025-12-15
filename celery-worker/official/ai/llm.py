@@ -10,13 +10,6 @@ OFFICIAL_LLM_AI_BASE_URL = os.environ.get('OFFICIAL_LLM_AI_BASE_URL')
 OFFICIAL_LLM_AI_KEY = os.environ.get('OFFICIAL_LLM_AI_KEY')
 OFFICIAL_LLM_AI_MODEL = os.environ.get('OFFICIAL_LLM_AI_MODEL')
 
-if not OFFICIAL_LLM_AI_BASE_URL or not OFFICIAL_LLM_AI_KEY or not OFFICIAL_LLM_AI_MODEL:
-    raise RuntimeError(
-        "Please set OFFICIAL_LLM_AI_MODEL, "
-        "OFFICIAL_LLM_AI_BASE_URL, "
-        "OFFICIAL_LLM_AI_KEY in .env file"
-    )
-
 class OfficialLLMAIClient:
 
     client: OpenAI
