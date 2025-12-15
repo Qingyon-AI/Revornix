@@ -15,8 +15,8 @@ class ModelProvider(BaseModel):
     id: int
     name: str
     description: str | None
-    api_key: str
-    api_url: str
+    api_key: str | None
+    api_url: str | None
     class Config:
         from_attributes = True
         

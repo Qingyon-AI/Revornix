@@ -65,6 +65,8 @@ def get_api_key(
     api_key: str | None = Header(default=None), 
     db: Session = Depends(get_db)
 ):
+    if api_key is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing API Key")
     db_api_key = crud.api_key.get_api_key_by_api_key(
         db=db, 
         api_key=api_key
@@ -86,24 +88,31 @@ def get_current_user_with_api_key(
 def get_real_ip(
     request: Request, 
     x_forwarded_for: str | None = Header(default=None)
-) -> str:
+) -> str | None:
     if x_forwarded_for:
         # 取第一个IP，因为X-Forwarded-For可能包含多个IP，由逗号分隔
         ip = x_forwarded_for.split(",")[0]
     else:
-        ip = request.client.host
+        if request.client:
+            ip = request.client.host
+        else:
+            ip = None
     return ip
 
-def get_authorization_header(authorization: str | None = Header(default=None)) -> str:
+def get_authorization_header(
+    authorization: str | None = Header(default=None)
+):
     if authorization is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing authorization header")
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authorization header format")
     return authorization.replace("Bearer ", "")
 
-def get_current_user_without_throw(authorization: str | None = Header(default=None),
-                                   db: Session = Depends(get_db),
-                                   ip: str = Depends(get_real_ip)):
+def get_current_user_without_throw(
+    authorization: str | None = Header(default=None),
+    db: Session = Depends(get_db),
+    ip: str = Depends(get_real_ip)
+):
     now = datetime.now(timezone.utc)
     authenticate_value = "Bearer"
     if authorization is None or not authorization.startswith(authenticate_value):
@@ -111,7 +120,7 @@ def get_current_user_without_throw(authorization: str | None = Header(default=No
     try:
         token = authorization.replace('Bearer ', '')
         payload = jwt.decode(token, OAUTH_SECRET_KEY, algorithms=['HS256'])
-        uuid: str = payload.get("sub")
+        uuid: str | None = payload.get("sub")
         if uuid is None:
             return None
     except Exception as e:
@@ -130,9 +139,11 @@ def get_current_user_without_throw(authorization: str | None = Header(default=No
     db.refresh(user)
     return user
 
-def get_current_user(authorization: str | None = Header(default=None), 
-                     db: Session = Depends(get_db), 
-                     ip: str = Depends(get_real_ip)):
+def get_current_user(
+    authorization: str | None = Header(default=None), 
+    db: Session = Depends(get_db), 
+    ip: str = Depends(get_real_ip)
+):
     now = datetime.now(timezone.utc)
     authenticate_value = "Bearer"
     credentials_exception = HTTPException(
@@ -144,7 +155,7 @@ def get_current_user(authorization: str | None = Header(default=None),
     try:
         token = authorization.replace('Bearer ', '')
         payload = jwt.decode(token, OAUTH_SECRET_KEY, algorithms=['HS256'])
-        uuid: str = payload.get("sub")
+        uuid: str | None = payload.get("sub")
         if uuid is None:
             raise credentials_exception
     except Exception as e:
