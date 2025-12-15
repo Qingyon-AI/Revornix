@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from openai import OpenAI
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from common.dependencies import get_db, get_current_user
+from common.dependencies import get_db, get_current_user, check_deployed_by_official
 from fastapi.responses import StreamingResponse
 from data.sql.base import SessionLocal
 from mcp_use import MCPClient, MCPAgent
@@ -17,6 +17,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage, HumanMessage
 from common.common import to_serializable, safe_json_loads
 from enums.mcp import MCPCategory
+from enums.model import OfficialModelProvider, OfficialModel
 
 ai_router = APIRouter()
 
@@ -174,13 +175,27 @@ async def create_model_provider(
 async def delete_ai_model(
     delete_model_request: schemas.ai.DeleteModelRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
+    deployed_by_official: bool = Depends(check_deployed_by_official)
 ):
-    crud.model.delete_ai_models_by_user_id_and_model_ids(
-        db=db, 
-        user_id=user.id,
-        model_ids=delete_model_request.model_ids
-    )
+    for model_id in delete_model_request.model_ids:
+        db_model = crud.model.get_ai_model_by_id(
+            db=db,
+            model_id=model_id
+        )
+        if db_model is None:
+            raise schemas.error.CustomException("The model is not exist", code=404)
+        if deployed_by_official and db_model.uuid in [
+            OfficialModel.llm.value, 
+            OfficialModel.image.value, 
+            OfficialModel.tts.value,
+        ]:
+            raise schemas.error.CustomException("The Official Model is forbidden to delete", code=403)
+        crud.model.delete_ai_models_by_user_id_and_model_ids(
+            db=db, 
+            user_id=user.id,
+            model_ids=[model_id]
+        )
     if user.default_revornix_model_id in delete_model_request.model_ids:
         user.default_revornix_model_id = None
     if user.default_document_reader_model_id in delete_model_request.model_ids:
@@ -192,14 +207,24 @@ async def delete_ai_model(
 async def delete_ai_model_provider(
     delete_model_request: schemas.ai.DeleteModelProviderRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
-):
-    crud.model.delete_ai_model_providers(
-        db=db, 
-        user_id=user.id,
-        provider_ids=delete_model_request.provider_ids
-    )
+    user: models.user.User = Depends(get_current_user),
+    deployed_by_official: bool = Depends(check_deployed_by_official)
+):  
     for provider_id in delete_model_request.provider_ids:
+        db_model_provider = crud.model.get_ai_model_provider_by_id(
+            db=db,
+            provider_id=provider_id
+        )
+        if db_model_provider is None:
+            raise schemas.error.CustomException("The model provider is not exist", code=404)
+        if deployed_by_official and db_model_provider.uuid == OfficialModelProvider.Revornix:
+            raise schemas.error.CustomException("The Official Model Provider is forbidden to delete", code=403)
+        
+        crud.model.delete_ai_model_providers(
+            db=db, 
+            user_id=user.id,
+            provider_ids=[provider_id]
+        )
         db_models = crud.model.search_ai_models_for_user_ai_model_provider(
             db=db, 
             user_id=user.id, 
@@ -232,8 +257,10 @@ async def list_ai_model(
         provider_id=model_search_request.provider_id
     )
     for item in db_ai_models:
-        db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, 
-                                                                   provider_id=item.provider_id)
+        db_model_provider = crud.model.get_ai_model_provider_by_id(
+            db=db, 
+            provider_id=item.provider_id
+        )
         if db_model_provider is None:
             continue
         db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(

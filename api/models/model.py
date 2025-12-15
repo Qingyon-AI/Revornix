@@ -24,6 +24,7 @@ class AIModel(Base):
     __tablename__ = "ai_model"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255))
     provider_id: Mapped[int] = mapped_column(ForeignKey("ai_model_provider.id"), index=True, nullable=False)
@@ -41,14 +42,16 @@ class UserAIModelProvider(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    api_key: Mapped[str] = mapped_column(String(255), nullable=False)
-    api_url: Mapped[str] = mapped_column(String(255), nullable=False)
+    # 注意有一些模型供应商提供的模型接入口是不需要的api_key和api_url的
+    api_key: Mapped[str] = mapped_column(String(255))
+    api_url: Mapped[str] = mapped_column(String(255))
 
 
 class AIModelPorvider(Base):
     __tablename__ = "ai_model_provider"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255))
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

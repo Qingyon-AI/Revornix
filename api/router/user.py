@@ -4,6 +4,7 @@ import os
 import random
 import string
 import models
+from official.hooks.user import on_user_created
 from uuid import uuid4
 from jwt.exceptions import ExpiredSignatureError
 from fastapi import APIRouter, Depends, Depends
@@ -12,7 +13,7 @@ from schemas.error import CustomException
 from common.jwt_utils import create_token
 from common.dependencies import get_db
 from common.hash import verify_password
-from common.dependencies import get_current_user, get_db, get_cache, decode_jwt_token, get_request_host, check_deployed_by_official
+from common.dependencies import get_current_user, get_db, get_cache, decode_jwt_token, check_deployed_by_official, reject_if_official
 from common.tp_auth.google_utils import get_google_token
 from common.tp_auth.wechat_utils import get_web_user_info, get_web_wechat_tokens, get_mini_wechat_tokens
 from common.system_email.email import RevornixSystemEmail
@@ -369,7 +370,8 @@ async def create_user_by_email_code(
 async def create_user_by_email_verify(
     email_user_create_verify_request: schemas.user.EmailUserCreateCodeVerifyRequest, 
     db: Session = Depends(get_db), 
-    cache: Redis = Depends(get_cache)
+    cache: Redis = Depends(get_cache),
+    deployed_by_official: bool = Depends(check_deployed_by_official)
 ):
     if crud.user.get_user_by_email(
         db=db, 
@@ -413,6 +415,10 @@ async def create_user_by_email_verify(
     )
     db_user.default_website_document_parse_user_engine_id = db_user_engine.id
     db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    if deployed_by_official:
+        await on_user_created(
+            user_id=db_user.id
+        )
     db.commit()
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
@@ -427,7 +433,7 @@ async def create_user_by_email_verify(
 async def create_user_by_email(
     email_user_create_verify_request: schemas.user.EmailUserCreateVerifyRequest, 
     db: Session = Depends(get_db),
-    _ = Depends(check_deployed_by_official)
+    _ = Depends(reject_if_official)
 ):
     if crud.user.get_user_by_email(
         db=db, 
@@ -553,7 +559,7 @@ async def bind_email(
     bind_email_verify_request: schemas.user.BindEmailVerifyRequest,
     user = Depends(get_current_user),
     db: Session = Depends(get_db),
-    _ = Depends(check_deployed_by_official)
+    _ = Depends(reject_if_official)
 ):
     db_exist_email_user = crud.user.get_email_user_by_email(
         db=db,
@@ -781,7 +787,8 @@ async def delete_user(
 @user_router.post("/create/google", response_model=schemas.user.TokenResponse)
 async def create_user_by_google(
     user: schemas.user.GoogleUserCreate, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    deployed_by_official: bool = Depends(check_deployed_by_official)
 ):
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
@@ -844,6 +851,10 @@ async def create_user_by_google(
     )
     db_user.default_website_document_parse_user_engine_id = db_user_engine.id
     db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    if deployed_by_official:
+        await on_user_created(
+            user_id=db_user.id
+        )
     db.commit()
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
@@ -914,7 +925,8 @@ async def unbind_google(
 @user_router.post("/create/github", response_model=schemas.user.TokenResponse)
 async def create_user_by_github(
     user: schemas.user.GithubUserCreate, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    deployed_by_official: bool = Depends(check_deployed_by_official)
 ):
     GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
     GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')
@@ -978,6 +990,10 @@ async def create_user_by_github(
     )
     db_user.default_website_document_parse_user_engine_id = db_user_engine.id
     db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    if deployed_by_official:
+        await on_user_created(
+            user_id=db_user.id
+        )
     db.commit()
     access_token, refresh_token = create_token(db_user)
     res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
@@ -1061,7 +1077,8 @@ async def create_user_by_sms_code(
 async def create_user_by_sms_verify(
     sms_user_code_verify_request: schemas.user.SmsUserCodeVerifyCreate,
     db: Session = Depends(get_db),
-    cache: Redis = Depends(get_cache)
+    cache: Redis = Depends(get_cache),
+    deployed_by_official: bool = Depends(check_deployed_by_official)
 ):
     code = await cache.get(sms_user_code_verify_request.phone)
     if code is None:
@@ -1116,6 +1133,10 @@ async def create_user_by_sms_verify(
         )
         db_user.default_website_document_parse_user_engine_id = db_user_engine.id
         db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+        if deployed_by_official:
+            await on_user_created(
+                user_id=db_user.id
+            )
         db.commit()
         access_token, refresh_token = create_token(db_user)
         return schemas.user.TokenResponse(
@@ -1183,8 +1204,11 @@ async def unbind_phone(
     return schemas.common.SuccessResponse()
 
 @user_router.post('/create/wechat/mini', response_model=schemas.user.TokenResponse)
-async def create_user_by_wechat_mini(wechat_mini_user_create_request: schemas.user.WeChatMiniUserCreateRequest,
-                                     db: Session = Depends(get_db)):
+async def create_user_by_wechat_mini(
+    wechat_mini_user_create_request: schemas.user.WeChatMiniUserCreateRequest,
+    db: Session = Depends(get_db),
+    deployed_by_official: bool = Depends(check_deployed_by_official)
+):
     WECHAT_MINI_APP_ID = os.environ.get('WECHAT_MINI_APP_ID')
     WECHAT_MINI_APP_SECRET = os.environ.get('WECHAT_MINI_APP_SECRET')
     if WECHAT_MINI_APP_ID is None or WECHAT_MINI_APP_SECRET is None:
@@ -1256,6 +1280,10 @@ async def create_user_by_wechat_mini(wechat_mini_user_create_request: schemas.us
         )
         db_user.default_website_document_parse_user_engine_id = db_user_engine.id
         db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+        if deployed_by_official:
+            await on_user_created(
+                user_id=db_user.id
+            )
     else:
         # TODO 优化一下微信用户的机制 现在的处理总感觉有些问题
         # 如果union_id已经存在 说明该用户已通过别的微信渠道注册过，不需要新建文件系统等机制 仅仅再创建一个微信用户身份即可
@@ -1273,6 +1301,7 @@ async def create_user_by_wechat_mini(wechat_mini_user_create_request: schemas.us
             wechat_user_union_id=union_id,
             wechat_user_name=db_user.nickname
         )
+    
     db.commit()
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
@@ -1284,7 +1313,8 @@ async def create_user_by_wechat_mini(wechat_mini_user_create_request: schemas.us
 @user_router.post("/create/wechat/web", response_model=schemas.user.TokenResponse)
 async def create_user_by_wechat_web(
     wechat_web_user_create_request: schemas.user.WeChatWebUserCreateRequest, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    deployed_by_official: bool = Depends(check_deployed_by_official)
 ):
     WECHAT_WEB_APP_ID = os.environ.get('WECHAT_WEB_APP_ID')
     WECHAT_WEB_APP_SECRET = os.environ.get('WECHAT_WEB_APP_SECRET')
@@ -1357,6 +1387,10 @@ async def create_user_by_wechat_web(
         )
         db_user.default_website_document_parse_user_engine_id = db_user_engine.id
         db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+        if deployed_by_official:
+            await on_user_created(
+                user_id=db_user.id
+            )
     else:
         db_user = crud.user.get_user_by_id(
             db=db, 
