@@ -406,7 +406,10 @@ async def create_agent(
     model_id = user.default_revornix_model_id
     if model_id is None:
         raise schemas.error.CustomException("The user has not set a default model", code=400)
-    db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    db_model = crud.model.get_ai_model_by_id(
+        db=db, 
+        model_id=model_id
+    )
     if db_model is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
     db_model_provider = crud.model.get_ai_model_provider_by_id(
@@ -422,6 +425,12 @@ async def create_agent(
     )
     if db_user_model_provider is None:
         raise schemas.error.CustomException("The user has not set a model provider", code=400)
+    api_key = SecretStr(db_user_model_provider.api_key if db_user_model_provider.api_key is not None else "")
+    base_url = db_user_model_provider.api_url
+    if db_model_provider.uuid == OfficialModelProvider.Revornix.value:
+        from official.ai.llm import OFFICIAL_LLM_AI_BASE_URL, OFFICIAL_LLM_AI_KEY
+        api_key = SecretStr(OFFICIAL_LLM_AI_KEY if OFFICIAL_LLM_AI_KEY is not None else "")
+        base_url = OFFICIAL_LLM_AI_BASE_URL
     mcp_client = MCPClient()
     if enable_mcp:
         mcp_servers = crud.mcp.search_mcp_servers(
@@ -463,8 +472,8 @@ async def create_agent(
                     )
     llm = ChatOpenAI(
         model=db_model.name,
-        api_key=SecretStr(db_user_model_provider.api_key if db_user_model_provider.api_key is not None else ""),
-        base_url=db_user_model_provider.api_url,
+        api_key=api_key,
+        base_url=base_url
     )
     db.close()
     return MCPAgent(llm=llm, client=mcp_client)

@@ -17,6 +17,7 @@ from prompts.entity_and_relation_extraction import entity_and_relation_extractio
 from typing import AsyncGenerator
 from sqlalchemy.orm import Session
 from protocol.remote_file_service import RemoteFileServiceProtocol
+from proxy.ai_model_proxy import AIModelProxy
 
 def make_chunk_id(
     doc_id: int, 
@@ -228,7 +229,7 @@ def merge_entitys_and_relations(
 
 def get_extract_llm_client(
     user_id: int
-) -> openai.OpenAI:
+):
     db = SessionLocal()
     db_user = crud.user.get_user_by_id(
         db=db, 
@@ -238,35 +239,15 @@ def get_extract_llm_client(
         raise Exception("User not found")
     if db_user.default_document_reader_model_id is None:
         raise Exception("Default document reader model id not found")
-    db_model = crud.model.get_ai_model_by_id(
-        db=db, 
+    
+    model_configuration = AIModelProxy(
+        user_id=user_id,
         model_id=db_user.default_document_reader_model_id
     )
-    db_user_model = crud.model.get_user_ai_model_by_id(
-        db=db, 
-        user_id=user_id, 
-        ai_model_id=db_user.default_document_reader_model_id
-    )
-    if db_model is None:
-        raise Exception("Model not found")
-    if db_user_model is None:
-        raise Exception("User model not found")
-    db_model_provider = crud.model.get_ai_model_provider_by_id(
-        db=db, 
-        provider_id=db_model.provider_id
-    )
-    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-        db=db, 
-        user_id=user_id, 
-        ai_model_provider_id=db_model.provider_id
-    )
-    if db_model_provider is None:
-        raise Exception("Model provider not found")
-    if db_user_model_provider is None:
-        raise Exception("User model provider not found")
+    
     llm_client = openai.OpenAI(
-        api_key=db_user_model_provider.api_key,
-        base_url=db_user_model_provider.api_url,
+        api_key=model_configuration.api_key,
+        base_url=model_configuration.base_url,
     )
     db.close()
     return llm_client
