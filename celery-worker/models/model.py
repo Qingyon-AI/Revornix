@@ -49,6 +49,7 @@ class AIModelPorvider(Base):
     __tablename__ = "ai_model_provider"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255))
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

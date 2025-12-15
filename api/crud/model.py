@@ -1,4 +1,5 @@
 import models
+from uuid import uuid4
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from common.encrypt import encrypt_api_key, decrypt_api_key
@@ -7,14 +8,15 @@ def create_user_ai_model_provider(
     db: Session, 
     user_id: int, 
     ai_model_provider_id: int, 
-    api_key: str, 
-    api_url: str
+    api_key: str | None = None, 
+    api_url: str | None = None
 ):
     """
     Create a new user AI model provider.
     """
     now = datetime.now(timezone.utc)
-    api_key = encrypt_api_key(api_key)
+    if api_key is not None:
+        api_key = encrypt_api_key(api_key)
     db_user_provider = models.model.UserAIModelProvider(
         user_id=user_id,
         ai_model_provider_id=ai_model_provider_id,
@@ -29,15 +31,19 @@ def create_user_ai_model_provider(
 def create_ai_model_provider(
     db: Session, 
     name: str, 
-    description: str | None = None
+    description: str | None = None,
+    uuid: str | None = None
 ):
     """
     Create a new AI model provider.
     """
     now = datetime.now(timezone.utc)
+    if uuid is None:
+        uuid = uuid4().hex
     db_ai_provider = models.model.AIModelPorvider(
         name=name,
         description=description,
+        uuid=uuid,
         create_time=now
     )
     db.add(db_ai_provider)
@@ -67,6 +73,7 @@ def create_ai_model(
     name: str, 
     provider_id: int,
     description: str | None = None,
+    uuid: str | None = None
 ):
     """
     Create a new AI model.
@@ -78,10 +85,30 @@ def create_ai_model(
         provider_id=provider_id,
         create_time=now
     )
+    if uuid is None:
+        new_model.uuid = uuid4().hex
     db.add(new_model)
     db.flush()
     return new_model
 
+def get_user_ai_model_provider_by_uuid_decripted(
+    db: Session,
+    user_id: int,
+    uuid: str
+):
+    """
+    获取用户 AI 模型 Provider，并解密 API Key
+    """
+    record = db.query(models.model.UserAIModelProvider).filter(
+        models.model.UserAIModelProvider.user_id == user_id,
+        models.model.UserAIModelProvider.uuid == uuid,
+        models.model.UserAIModelProvider.delete_at == None
+    ).one_or_none()
+    
+    if record and record.api_key:
+        record.api_key = decrypt_api_key(record.api_key)
+    return record
+    
 def get_user_ai_model_provider_by_id_decrypted(
     db: Session, 
     user_id: int, 
@@ -116,6 +143,18 @@ def get_user_ai_model_by_id(
 
     return record
 
+def get_ai_model_by_uuid(
+    db: Session,
+    uuid: str
+):
+    """
+    Get an AI model by its UUID.
+    """
+    query = db.query(models.model.AIModel)
+    query = query.filter(models.model.AIModel.uuid == uuid,
+                         models.model.AIModel.delete_at == None)
+    return query.one_or_none()
+
 def get_ai_model_by_id(
     db: Session, 
     model_id: int
@@ -126,6 +165,18 @@ def get_ai_model_by_id(
     query = db.query(models.model.AIModel)
     query = query.filter(models.model.AIModel.id == model_id,
                          models.model.AIModel.delete_at == None)
+    return query.one_or_none()
+
+def get_ai_model_provider_by_uuid(
+    db: Session,
+    uuid: str
+):
+    """
+    Get an AI model provider by its UUID.
+    """
+    query = db.query(models.model.AIModelPorvider)
+    query = query.filter(models.model.AIModelPorvider.uuid == uuid,
+                         models.model.AIModelPorvider.delete_at == None)
     return query.one_or_none()
 
 def get_ai_model_provider_by_id(
