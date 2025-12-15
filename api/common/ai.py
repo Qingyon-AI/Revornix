@@ -24,7 +24,7 @@ def summary_section(
 ):
     db = SessionLocal()
     db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
-    db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
+    db_user_model = crud.model.get_user_ai_model_by_id(
         db=db, 
         user_id=user_id, 
         ai_model_id=model_id
@@ -33,7 +33,10 @@ def summary_section(
         raise Exception("Model not found")
     if db_user_model is None:
         raise Exception("User model not found")
-    db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
+    db_model_provider = crud.model.get_ai_model_provider_by_id(
+        db=db, 
+        provider_id=db_model.provider_id
+    )
     db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
         db=db, 
         user_id=user_id, 
@@ -47,8 +50,8 @@ def summary_section(
     system_prompt = summary_section_prompt(markdown_content=markdown_content)
     
     client = OpenAI(
-        api_key=db_user_model.api_key if db_user_model.api_key else db_user_model_provider.api_key,
-        base_url=db_user_model.api_url if db_user_model.api_url else db_user_model_provider.api_url,
+        api_key=db_user_model_provider.api_key,
+        base_url=db_user_model_provider.api_url,
     )
     completion = client.chat.completions.create(
         model=db_model.name,
@@ -79,7 +82,7 @@ def summary_section_with_origin(
         db=db, 
         model_id=model_id
     )
-    db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
+    db_user_model = crud.model.get_user_ai_model_by_id(
         db=db, 
         user_id=user_id, 
         ai_model_id=model_id
@@ -108,8 +111,8 @@ def summary_section_with_origin(
     )
 
     client = OpenAI(
-        api_key=db_user_model.api_key if db_user_model.api_key else db_user_model_provider.api_key,
-        base_url=db_user_model.api_url if db_user_model.api_url else db_user_model_provider.api_url,
+        api_key=db_user_model_provider.api_key,
+        base_url=db_user_model_provider.api_url,
     )
     completion = client.chat.completions.create(
         model=db_model.name,
@@ -139,7 +142,7 @@ def summary_content(
         db=db, 
         model_id=model_id
     )
-    db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
+    db_user_model = crud.model.get_user_ai_model_by_id(
         db=db, 
         user_id=user_id, 
         ai_model_id=model_id
@@ -163,8 +166,8 @@ def summary_content(
         raise Exception("User model provider not found")
     system_prompt = summary_content_prompt(content=content)
     client = OpenAI(
-        api_key=db_user_model.api_key if db_user_model.api_key else db_user_model_provider.api_key,
-        base_url=db_user_model.api_url if db_user_model.api_url else db_user_model_provider.api_url,
+        api_key=db_user_model_provider.api_key,
+        base_url=db_user_model_provider.api_url,
     )
     completion = client.chat.completions.create(
         model=db_model.name,
@@ -203,7 +206,7 @@ def reducer_summary(
         db=db, 
         model_id=model_id
     )
-    db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
+    db_user_model = crud.model.get_user_ai_model_by_id(
         db=db, 
         user_id=user_id, 
         ai_model_id=model_id
@@ -232,8 +235,8 @@ def reducer_summary(
         new_relations=new_relations
     )
     client = OpenAI(
-        api_key=db_user_model.api_key if db_user_model.api_key else db_user_model_provider.api_key,
-        base_url=db_user_model.api_url if db_user_model.api_url else db_user_model_provider.api_url,
+        api_key=db_user_model_provider.api_key,
+        base_url=db_user_model_provider.api_url,
     )
     completion = client.chat.completions.create(
         model=db_model.name,

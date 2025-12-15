@@ -20,13 +20,13 @@ def get_user_ai_model_provider_by_id_decrypted(
         record.api_key = decrypt_api_key(record.api_key)
     return record
 
-def get_user_ai_model_by_id_decrypted(
+def get_user_ai_model_by_id(
     db: Session, 
     user_id: int, 
     ai_model_id: int
 ):
     """
-    获取用户 AI 模型，并解密 API Key
+    获取用户 AI 模型
     """
     record = db.query(models.model.UserAIModel).filter(
         models.model.UserAIModel.user_id == user_id,
@@ -34,8 +34,6 @@ def get_user_ai_model_by_id_decrypted(
         models.model.UserAIModel.delete_at == None
     ).one_or_none()
 
-    if record and record.api_key:
-        record.api_key = decrypt_api_key(record.api_key)
     return record
 
 def get_ai_model_by_id(

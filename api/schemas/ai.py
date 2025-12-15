@@ -24,8 +24,6 @@ class Model(BaseModel):
     id: int
     name: str
     description: str | None
-    api_key: str
-    api_url: str
     provider: ModelProvider
     class Config:
         from_attributes = True
@@ -73,8 +71,6 @@ class ModelUpdateRequest(BaseModel):
     id: int
     name: str | None = None
     description: str | None = None
-    api_key: str | None = None
-    api_url: str | None = None
     
 class ModelProviderUpdateRequest(BaseModel):
     id: int

@@ -65,8 +65,6 @@ async def create_model(
         db=db,
         user_id=user.id,
         ai_model_id=db_ai_model.id,
-        api_key=model_create_request.api_key,
-        api_url=model_create_request.api_url
     )
     db.commit()
     return schemas.ai.ModelCreateResponse(id=db_ai_model.id)
@@ -84,7 +82,7 @@ async def get_ai_model(
     if ai_model is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
     
-    db_user_model = crud.model.get_user_ai_model_by_id_decrypted(
+    db_user_model = crud.model.get_user_ai_model_by_id(
         db=db,
         user_id=user.id,
         ai_model_id=model_request.model_id
@@ -108,16 +106,18 @@ async def get_ai_model(
     )
     if db_user_provider is None or db_user_provider.user_id != user.id:
         raise schemas.error.CustomException("The model provider is not belong to you", code=403)
-    return schemas.ai.Model(id=ai_model.id,
-                            name=ai_model.name,
-                            description=ai_model.description,
-                            provider=schemas.ai.ModelProvider(id=ai_model_provider.id,
-                                                              name=ai_model_provider.name,
-                                                              description=ai_model_provider.description,
-                                                              api_key=db_user_provider.api_key,
-                                                              api_url=db_user_provider.api_url),
-                            api_key=db_user_model.api_key,
-                            api_url=db_user_model.api_url)
+    return schemas.ai.Model(
+        id=ai_model.id,
+        name=ai_model.name,
+        description=ai_model.description,
+        provider=schemas.ai.ModelProvider(
+            id=ai_model_provider.id,
+            name=ai_model_provider.name,
+            description=ai_model_provider.description,
+            api_key=db_user_provider.api_key,
+            api_url=db_user_provider.api_url
+        ),
+    )
 
 @ai_router.post("/model-provider/detail", response_model=schemas.ai.ModelProvider)
 async def get_ai_model_provider(
@@ -141,11 +141,13 @@ async def get_ai_model_provider(
     if db_user_model_provider is None or db_user_model_provider.user_id != user.id:
         raise schemas.error.CustomException("The model provider is not belong to you", code=403)
     
-    return schemas.ai.ModelProvider(id=ai_model_provider.id,
-                                    name=ai_model_provider.name,
-                                    description=ai_model_provider.description,
-                                    api_key=db_user_model_provider.api_key,
-                                    api_url=db_user_model_provider.api_url)
+    return schemas.ai.ModelProvider(
+        id=ai_model_provider.id,
+        name=ai_model_provider.name,
+        description=ai_model_provider.description,
+        api_key=db_user_model_provider.api_key,
+        api_url=db_user_model_provider.api_url
+    )
  
 @ai_router.post("/model-provider/create", response_model=schemas.ai.ModelProviderCreateResponse)
 async def create_model_provider(
@@ -239,7 +241,7 @@ async def list_ai_model(
             user_id=user.id,
             ai_model_provider_id=db_model_provider.id
         )
-        db_user_ai_model = crud.model.get_user_ai_model_by_id_decrypted(
+        db_user_ai_model = crud.model.get_user_ai_model_by_id(
             db=db,
             user_id=user.id,
             ai_model_id=item.id
@@ -251,8 +253,6 @@ async def list_ai_model(
                 id=item.id,
                 name=item.name,
                 description=item.description,
-                api_key=db_user_ai_model.api_key,
-                api_url=db_user_ai_model.api_url,
                 provider=schemas.ai.ModelProvider(
                     id=db_model_provider.id,
                     name=db_model_provider.name,
@@ -286,11 +286,13 @@ async def list_ai_model_provider(
         if db_user_ai_model_provider is None:
             continue
         data.append(
-            schemas.ai.ModelProvider(id=item.id,
-                                     name=item.name,
-                                     description=item.description,
-                                     api_key=db_user_ai_model_provider.api_key,
-                                     api_url=db_user_ai_model_provider.api_url)
+            schemas.ai.ModelProvider(
+                id=item.id,
+                name=item.name,
+                description=item.description,
+                api_key=db_user_ai_model_provider.api_key,
+                api_url=db_user_ai_model_provider.api_url
+            )
         )
     return schemas.ai.ModelProviderSearchResponse(data=data)
 
@@ -307,7 +309,7 @@ async def update_ai_model(
     )
     if db_ai_model is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
-    db_user_ai_model = crud.model.get_user_ai_model_by_id_decrypted(
+    db_user_ai_model = crud.model.get_user_ai_model_by_id(
         db=db,
         user_id=user.id,
         ai_model_id=db_ai_model.id
@@ -318,10 +320,6 @@ async def update_ai_model(
         db_ai_model.name = model_update_request.name
     if model_update_request.description is not None:
         db_ai_model.description = model_update_request.description
-    if model_update_request.api_key is not None:
-        db_ai_model.api_key = model_update_request.api_key
-    if model_update_request.api_url is not None:
-        db_ai_model.api_url = model_update_request.api_url
     db_ai_model.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()
