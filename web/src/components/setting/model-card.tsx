@@ -33,6 +33,7 @@ const ModelCard = ({ model }: ModelCardProps) => {
 	const [editing, setEditing] = useState(false);
 	const [updatePending, startUpdate] = useTransition();
 	const [deletePending, startDelete] = useTransition();
+
 	const handleDeleteModel = async () => {
 		startDelete(async () => {
 			const [res, err] = await utils.to(
@@ -41,7 +42,7 @@ const ModelCard = ({ model }: ModelCardProps) => {
 				})
 			);
 			if (err) {
-				toast.error(t('setting_model_add_failed'));
+				toast.error(err.message || t('setting_model_add_failed'));
 				return;
 			}
 			if (res) {

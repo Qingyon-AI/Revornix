@@ -64,12 +64,10 @@ const ModelAddCard = ({
 					name: values.name,
 					description: values.name,
 					provider_id: modelProvider.id,
-					api_key: '',
-					api_url: '',
 				})
 			);
 			if (err) {
-				toast.error(t('setting_model_add_failed'));
+				toast.error(`${t('setting_model_add_failed')}, ${err}`);
 				return;
 			}
 			toast.success(t('setting_model_add_success'));

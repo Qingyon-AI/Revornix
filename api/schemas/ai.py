@@ -5,8 +5,6 @@ class ModelCreateRequest(BaseModel):
     name: str
     description: str | None
     provider_id: int
-    api_key: str
-    api_url: str
     
 class ModelCreateResponse(BaseModel):
     id: int

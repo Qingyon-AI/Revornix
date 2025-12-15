@@ -9,8 +9,6 @@ Name | Type
 `name` | string
 `description` | string
 `provider_id` | number
-`api_key` | string
-`api_url` | string
 
 ## Example
 
@@ -22,8 +20,6 @@ const example = {
   "name": null,
   "description": null,
   "provider_id": null,
-  "api_key": null,
-  "api_url": null,
 } satisfies ModelCreateRequest
 
 console.log(example)

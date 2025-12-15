@@ -309,6 +309,7 @@
     "setting_model_update_failed": "更新模型失败，请稍后再试",
     "setting_model_update_success": "更新模型成功",
     "setting_model_delete_success": "模型删除成功",
+    "setting_model_delete_failed": "模型删除失败，请稍后再试",
     "setting_model_name": "模型名称",
     "setting_model_name_placeholder": "请输入模型名称",
     "setting_model_empty": "暂无模型",

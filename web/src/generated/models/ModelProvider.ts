@@ -42,13 +42,13 @@ export interface ModelProvider {
      * @type {string}
      * @memberof ModelProvider
      */
-    api_key: string;
+    api_key: string | null;
     /**
      * 
      * @type {string}
      * @memberof ModelProvider
      */
-    api_url: string;
+    api_url: string | null;
 }
 
 /**
