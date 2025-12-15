@@ -28,8 +28,8 @@ if __name__ == "__main__":
         )
         db_official_llm_model = crud.model.create_ai_model(
             db=db,
-            name='GPT-5.2',
-            description='GPT-5.2',
+            name='gpt-5.2',
+            description='gpt-5.2',
             provider_id=db_official_llm_model_provider.id,
             uuid=OfficialModel.llm.value
         )

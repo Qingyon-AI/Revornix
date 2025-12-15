@@ -11,13 +11,6 @@ OFFICIAL_IMAGE_AI_BASE_URL = os.environ.get("OFFICIAL_IMAGE_AI_BASE_URL")
 OFFICIAL_IMAGE_AI_KEY = os.environ.get("OFFICIAL_IMAGE_AI_KEY")
 OFFICIAL_IMAGE_AI_MODEL = os.environ.get("OFFICIAL_IMAGE_AI_MODEL")
 
-if not OFFICIAL_IMAGE_AI_BASE_URL or not OFFICIAL_IMAGE_AI_KEY or not OFFICIAL_IMAGE_AI_MODEL:
-    raise RuntimeError(
-        "Please set OFFICIAL_IMAGE_AI_MODEL, "
-        "OFFICIAL_IMAGE_AI_BASE_URL, "
-        "OFFICIAL_IMAGE_AI_KEY in .env file"
-    )
-
 SYSTEM_PROMPT = """You are a pure image generation function.
 
 You MUST return ONLY a valid image Data URL in the exact format:

@@ -1,6 +1,54 @@
 import models
+from uuid import uuid4
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from common.encrypt import decrypt_api_key
+
+def create_ai_model_provider(
+    db: Session, 
+    name: str, 
+    description: str | None = None,
+    uuid: str | None = None
+):
+    """
+    Create a new AI model provider.
+    """
+    now = datetime.now(timezone.utc)
+    if uuid is None:
+        uuid = uuid4().hex
+    db_ai_provider = models.model.AIModelPorvider(
+        name=name,
+        description=description,
+        uuid=uuid,
+        create_time=now
+    )
+    db.add(db_ai_provider)
+    db.flush()
+    return db_ai_provider
+
+def create_ai_model(
+    db: Session, 
+    name: str, 
+    provider_id: int,
+    description: str | None = None,
+    uuid: str | None = None
+):
+    """
+    Create a new AI model.
+    """
+    now = datetime.now(timezone.utc)
+    new_model = models.model.AIModel(
+        name=name,
+        description=description,
+        provider_id=provider_id,
+        uuid=uuid,
+        create_time=now
+    )
+    if uuid is None:
+        new_model.uuid = uuid4().hex
+    db.add(new_model)
+    db.flush()
+    return new_model
 
 def get_user_ai_model_provider_by_id_decrypted(
     db: Session, 
