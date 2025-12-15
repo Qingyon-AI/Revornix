@@ -62,8 +62,6 @@ const DocumentSummaryModel = () => {
 				id: model.id,
 				name: model.name,
 				description: model.description,
-				api_key: model.api_key,
-				api_url: model.api_url,
 				provider: providerMap[providerId],
 			});
 		});

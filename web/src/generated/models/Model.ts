@@ -47,18 +47,6 @@ export interface Model {
     description: string | null;
     /**
      * 
-     * @type {string}
-     * @memberof Model
-     */
-    api_key: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Model
-     */
-    api_url: string;
-    /**
-     * 
      * @type {ModelProvider}
      * @memberof Model
      */
@@ -72,8 +60,6 @@ export function instanceOfModel(value: object): value is Model {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('api_key' in value) || value['api_key'] === undefined) return false;
-    if (!('api_url' in value) || value['api_url'] === undefined) return false;
     if (!('provider' in value) || value['provider'] === undefined) return false;
     return true;
 }
@@ -91,8 +77,6 @@ export function ModelFromJSONTyped(json: any, ignoreDiscriminator: boolean): Mod
         'id': json['id'],
         'name': json['name'],
         'description': json['description'],
-        'api_key': json['api_key'],
-        'api_url': json['api_url'],
         'provider': ModelProviderFromJSON(json['provider']),
     };
 }
@@ -111,8 +95,6 @@ export function ModelToJSONTyped(value?: Model | null, ignoreDiscriminator: bool
         'id': value['id'],
         'name': value['name'],
         'description': value['description'],
-        'api_key': value['api_key'],
-        'api_url': value['api_url'],
         'provider': ModelProviderToJSON(value['provider']),
     };
 }

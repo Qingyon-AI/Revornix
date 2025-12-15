@@ -37,18 +37,6 @@ export interface ModelUpdateRequest {
      * @memberof ModelUpdateRequest
      */
     description?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelUpdateRequest
-     */
-    api_key?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelUpdateRequest
-     */
-    api_url?: string | null;
 }
 
 /**
@@ -72,8 +60,6 @@ export function ModelUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator: 
         'id': json['id'],
         'name': json['name'] == null ? undefined : json['name'],
         'description': json['description'] == null ? undefined : json['description'],
-        'api_key': json['api_key'] == null ? undefined : json['api_key'],
-        'api_url': json['api_url'] == null ? undefined : json['api_url'],
     };
 }
 
@@ -91,8 +77,6 @@ export function ModelUpdateRequestToJSONTyped(value?: ModelUpdateRequest | null,
         'id': value['id'],
         'name': value['name'],
         'description': value['description'],
-        'api_key': value['api_key'],
-        'api_url': value['api_url'],
     };
 }
 

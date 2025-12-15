@@ -18,8 +18,6 @@ class UserAIModel(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    api_key: Mapped[str] = mapped_column(String(255), nullable=False)
-    api_url: Mapped[str] = mapped_column(String(255), nullable=False)
 
 
 class AIModel(Base):
