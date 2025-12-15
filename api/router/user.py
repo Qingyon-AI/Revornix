@@ -415,11 +415,11 @@ async def create_user_by_email_verify(
     )
     db_user.default_website_document_parse_user_engine_id = db_user_engine.id
     db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    db.commit()
     if deployed_by_official:
         await on_user_created(
             user_id=db_user.id
         )
-    db.commit()
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
         raise CustomException(message='The token is not created.')
@@ -851,11 +851,11 @@ async def create_user_by_google(
     )
     db_user.default_website_document_parse_user_engine_id = db_user_engine.id
     db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    db.commit()
     if deployed_by_official:
         await on_user_created(
             user_id=db_user.id
         )
-    db.commit()
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
         access_token=access_token, 
@@ -990,11 +990,11 @@ async def create_user_by_github(
     )
     db_user.default_website_document_parse_user_engine_id = db_user_engine.id
     db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+    db.commit()
     if deployed_by_official:
         await on_user_created(
             user_id=db_user.id
         )
-    db.commit()
     access_token, refresh_token = create_token(db_user)
     res = schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
     return res
@@ -1133,11 +1133,11 @@ async def create_user_by_sms_verify(
         )
         db_user.default_website_document_parse_user_engine_id = db_user_engine.id
         db_user.default_file_document_parse_user_engine_id = db_user_engine.id
+        db.commit()
         if deployed_by_official:
             await on_user_created(
                 user_id=db_user.id
             )
-        db.commit()
         access_token, refresh_token = create_token(db_user)
         return schemas.user.TokenResponse(
             access_token=access_token, 
@@ -1280,10 +1280,6 @@ async def create_user_by_wechat_mini(
         )
         db_user.default_website_document_parse_user_engine_id = db_user_engine.id
         db_user.default_file_document_parse_user_engine_id = db_user_engine.id
-        if deployed_by_official:
-            await on_user_created(
-                user_id=db_user.id
-            )
     else:
         # TODO 优化一下微信用户的机制 现在的处理总感觉有些问题
         # 如果union_id已经存在 说明该用户已通过别的微信渠道注册过，不需要新建文件系统等机制 仅仅再创建一个微信用户身份即可
@@ -1301,8 +1297,11 @@ async def create_user_by_wechat_mini(
             wechat_user_union_id=union_id,
             wechat_user_name=db_user.nickname
         )
-    
     db.commit()
+    if deployed_by_official:
+        await on_user_created(
+            user_id=db_user.id
+        )
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
         access_token=access_token, 
@@ -1387,10 +1386,6 @@ async def create_user_by_wechat_web(
         )
         db_user.default_website_document_parse_user_engine_id = db_user_engine.id
         db_user.default_file_document_parse_user_engine_id = db_user_engine.id
-        if deployed_by_official:
-            await on_user_created(
-                user_id=db_user.id
-            )
     else:
         db_user = crud.user.get_user_by_id(
             db=db, 
@@ -1407,6 +1402,10 @@ async def create_user_by_wechat_web(
             wechat_user_name=db_user.nickname
         )
     db.commit()
+    if deployed_by_official:
+        await on_user_created(
+            user_id=db_user.id
+        )
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
         access_token=access_token, 
