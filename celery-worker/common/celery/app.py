@@ -33,6 +33,7 @@ from enums.engine import EngineUUID
 from common.ai import make_section_markdown
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentGraphStatus
 from enums.section import SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus
+from proxy.ai_model_proxy import AIModelProxy
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
@@ -313,12 +314,14 @@ async def handle_convert_document_md(
             raise Exception("The convert engine is not supported")
         
         if db_document.category == DocumentCategory.FILE:
-            assert db_user.default_file_document_parse_user_engine_id is not None
+            if db_user.default_file_document_parse_user_engine_id is None:
+                raise Exception("The user who want to process document has not set default file document parse user engine")
             await engine.init_engine_config_by_user_engine_id(
                 user_engine_id=db_user.default_file_document_parse_user_engine_id
             )
         elif db_document.category == DocumentCategory.WEBSITE:
-            assert db_user.default_website_document_parse_user_engine_id is not None
+            if db_user.default_website_document_parse_user_engine_id is None:
+                raise Exception("The user who want to process document has not set default website document parse user engine")
             await engine.init_engine_config_by_user_engine_id(
                 user_engine_id=db_user.default_website_document_parse_user_engine_id
             )
@@ -441,12 +444,10 @@ async def handle_process_document(
             raise Exception("The user which you want to process document has not set default user file system")
         if db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to process document has not set default document reader model")
-        db_model = crud.model.get_ai_model_by_id(
-            db=db,
+        model_configuration = AIModelProxy(
+            user_id=user_id,
             model_id=db_user.default_document_reader_model_id
         )
-        if db_model is None:
-            raise Exception(f"The defaul document reader model is not found for the user with id: {user_id}")
         db_document = crud.document.get_document_by_document_id(
             db=db,
             document_id=document_id
@@ -506,7 +507,7 @@ async def handle_process_document(
                 chunk_info.embedding = embedding.tolist()
                 sub_entities, sub_relations = extract_entities_relations(
                     llm_client=llm_client, 
-                    llm_model=db_model.name,
+                    llm_model=model_configuration.model_name,
                     chunk=chunk_info
                 )
                 entities.extend(sub_entities)

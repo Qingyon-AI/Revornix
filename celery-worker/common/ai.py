@@ -1,14 +1,13 @@
 import json
-import crud
 from openai import OpenAI
 from prompts.summary_section import summary_section_prompt
 from prompts.summary_section_with_origin import summary_section_with_origin_prompt
 from prompts.summary_content import summary_content_prompt
 from prompts.reducer_summary import reducer_summary_prompt
 from prompts.make_section_markdown import make_section_markdown_prompt
-from data.sql.base import SessionLocal
 from pydantic import BaseModel
 from data.custom_types.all import *
+from proxy.ai_model_proxy import AIModelProxy
 
 class SummaryResult(BaseModel):
     summary: str
@@ -23,36 +22,19 @@ def summary_section(
     model_id: int, 
     markdown_content: str
 ):
-    db = SessionLocal()
-    db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
-    db_user_model = crud.model.get_user_ai_model_by_id(
-        db=db, 
-        user_id=user_id, 
-        ai_model_id=model_id
-    )
-    if db_model is None:
-        raise Exception("Model not found")
-    if db_user_model is None:
-        raise Exception("User model not found")
-    db_model_provider = crud.model.get_ai_model_provider_by_id(db=db, provider_id=db_model.provider_id)
-    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-        db=db, 
-        user_id=user_id, 
-        ai_model_provider_id=db_model.provider_id
-    )
-    if db_model_provider is None:
-        raise Exception("Model provider not found")
-    if db_user_model_provider is None:
-        raise Exception("User model provider not found")
+    model_configuration = AIModelProxy(
+        user_id=user_id,
+        model_id=model_id
+    ).get_configuration()
     
     system_prompt = summary_section_prompt(markdown_content=markdown_content)
     
     client = OpenAI(
-        api_key=db_user_model_provider.api_key,
-        base_url=db_user_model_provider.api_url,
+        api_key=model_configuration.api_key,
+        base_url=model_configuration.base_url,
     )
     completion = client.chat.completions.create(
-        model=db_model.name,
+        model=model_configuration.model_name,
         messages=[
             {"role": "system", "content": "You are an expert in summarizing document content."},
             {"role": "user", "content": system_prompt}
@@ -66,7 +48,6 @@ def summary_section(
         raise Exception("No content returned for ai")
     content = json.loads(content)
     summary = content.get('summary')
-    db.close()
     return SummaryResult(summary=summary)
 
 def summary_section_with_origin(
@@ -75,33 +56,10 @@ def summary_section_with_origin(
     origin_section_markdown_content: str, 
     new_document_markdown_content: str
 ):
-    db = SessionLocal()
-    db_model = crud.model.get_ai_model_by_id(
-        db=db, 
+    model_configuration = AIModelProxy(
+        user_id=user_id,
         model_id=model_id
-    )
-    db_user_model = crud.model.get_user_ai_model_by_id(
-        db=db, 
-        user_id=user_id, 
-        ai_model_id=model_id
-    )
-    if db_model is None:
-        raise Exception("Model not found")
-    if db_user_model is None:
-        raise Exception("User model not found")
-    db_model_provider = crud.model.get_ai_model_provider_by_id(
-        db=db, 
-        provider_id=db_model.provider_id
-    )
-    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-        db=db, 
-        user_id=user_id, 
-        ai_model_provider_id=db_model.provider_id
-    )
-    if db_model_provider is None:
-        raise Exception("Model provider not found")
-    if db_user_model_provider is None:
-        raise Exception("User model provider not found")
+    ).get_configuration()
     
     system_prompt = summary_section_with_origin_prompt(
         origin_section_markdown_content=origin_section_markdown_content, 
@@ -109,11 +67,11 @@ def summary_section_with_origin(
     )
 
     client = OpenAI(
-        api_key=db_user_model_provider.api_key,
-        base_url=db_user_model_provider.api_url,
+        api_key=model_configuration.api_key,
+        base_url=model_configuration.base_url,
     )
     completion = client.chat.completions.create(
-        model=db_model.name,
+        model=model_configuration.model_name,
         messages=[
             {"role": "system", "content": "You are an expert in summarizing document content."},
             {"role": "user", "content": system_prompt}
@@ -127,7 +85,6 @@ def summary_section_with_origin(
         raise Exception("No content returned for ai")
     content = json.loads(content)
     summary = content.get('summary')
-    db.close()
     return SummaryResult(summary=summary)
 
 def make_section_markdown(
@@ -138,33 +95,10 @@ def make_section_markdown(
     entities: list[EntityInfo],
     relations: list[RelationInfo]
 ):
-    db = SessionLocal()
-    db_model = crud.model.get_ai_model_by_id(
-        db=db, 
+    model_configuration = AIModelProxy(
+        user_id=user_id,
         model_id=model_id
-    )
-    db_user_model = crud.model.get_user_ai_model_by_id(
-        db=db, 
-        user_id=user_id, 
-        ai_model_id=model_id
-    )
-    if db_model is None:
-        raise Exception("Model not found")
-    if db_user_model is None:
-        raise Exception("User model not found")
-    db_model_provider = crud.model.get_ai_model_provider_by_id(
-        db=db, 
-        provider_id=db_model.provider_id
-    )
-    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-        db=db, 
-        user_id=user_id, 
-        ai_model_provider_id=db_model.provider_id
-    )
-    if db_model_provider is None:
-        raise Exception("Model provider not found")
-    if db_user_model_provider is None:
-        raise Exception("User model provider not found")
+    ).get_configuration()
     
     prompt = make_section_markdown_prompt(
         current_markdown_content=current_markdown_content,
@@ -174,11 +108,11 @@ def make_section_markdown(
     )
 
     client = OpenAI(
-        api_key=db_user_model_provider.api_key,
-        base_url=db_user_model_provider.api_url,
+        api_key=model_configuration.api_key,
+        base_url=model_configuration.base_url,
     )
     completion = client.chat.completions.create(
-        model=db_model.name,
+        model=model_configuration.model_name,
         messages=[
             {"role": "system", "content": "You are an expert in summarizing document content."},
             {"role": "user", "content": prompt}
@@ -189,7 +123,6 @@ def make_section_markdown(
     content = completion.choices[0].message.content
     if content is None:
         raise Exception("No content returned for ai")
-    db.close()
     return content
 
 def summary_content(
@@ -197,40 +130,18 @@ def summary_content(
     model_id: int,
     content: str
 ):
-    db = SessionLocal()
-    db_model = crud.model.get_ai_model_by_id(
-        db=db, 
+    model_configuration = AIModelProxy(
+        user_id=user_id,
         model_id=model_id
-    )
-    db_user_model = crud.model.get_user_ai_model_by_id(
-        db=db, 
-        user_id=user_id, 
-        ai_model_id=model_id
-    )
-    if db_model is None:
-        raise Exception("Model not found")
-    if db_user_model is None:
-        raise Exception("User model not found")
-    db_model_provider = crud.model.get_ai_model_provider_by_id(
-        db=db, 
-        provider_id=db_model.provider_id
-    )
-    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-        db=db, 
-        user_id=user_id, 
-        ai_model_provider_id=db_model.provider_id
-    )
-    if db_model_provider is None:
-        raise Exception("Model provider not found")
-    if db_user_model_provider is None:
-        raise Exception("User model provider not found")
+    ).get_configuration()
+    
     system_prompt = summary_content_prompt(content=content)
     client = OpenAI(
-        api_key=db_user_model_provider.api_key,
-        base_url=db_user_model_provider.api_url,
+        api_key=model_configuration.api_key,
+        base_url=model_configuration.base_url,
     )
     completion = client.chat.completions.create(
-        model=db_model.name,
+        model=model_configuration.model_name,
         messages=[
             {"role": "system", "content": "You are an expert in summarizing document content."},
             {"role": "user", "content": system_prompt}
@@ -246,7 +157,6 @@ def summary_content(
     title = res_summary.get('title')
     description = res_summary.get('description')
     summary = res_summary.get('summary')
-    db.close()
     return SummaryResultWithTitleAndDescription(
         title=title, 
         description=description, 
@@ -261,33 +171,11 @@ def reducer_summary(
     new_entities: list[EntityInfo],
     new_relations: list[RelationInfo]
 ):
-    db = SessionLocal()
-    db_model = crud.model.get_ai_model_by_id(
-        db=db, 
+    model_configuration = AIModelProxy(
+        user_id=user_id,
         model_id=model_id
-    )
-    db_user_model = crud.model.get_user_ai_model_by_id(
-        db=db, 
-        user_id=user_id, 
-        ai_model_id=model_id
-    )
-    if db_model is None:
-        raise Exception("Model not found")
-    if db_user_model is None:
-        raise Exception("User model not found")
-    db_model_provider = crud.model.get_ai_model_provider_by_id(
-        db=db, 
-        provider_id=db_model.provider_id
-    )
-    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-        db=db, 
-        user_id=user_id, 
-        ai_model_provider_id=db_model.provider_id
-    )
-    if db_model_provider is None:
-        raise Exception("Model provider not found")
-    if db_user_model_provider is None:
-        raise Exception("User model provider not found")
+    ).get_configuration()
+    
     system_prompt = reducer_summary_prompt(
         current_summary=current_summary,
         new_summary_to_append=new_summary_to_append,
@@ -295,11 +183,11 @@ def reducer_summary(
         new_relations=new_relations
     )
     client = OpenAI(
-        api_key=db_user_model_provider.api_key,
-        base_url=db_user_model_provider.api_url,
+        api_key=model_configuration.api_key,
+        base_url=model_configuration.base_url,
     )
     completion = client.chat.completions.create(
-        model=db_model.name,
+        model=model_configuration.model_name,
         messages=[
             {"role": "system", "content": "You are an expert in summarizing document content."},
             {"role": "user", "content": system_prompt}
@@ -315,7 +203,6 @@ def reducer_summary(
     title = res_summary.get('title')
     description = res_summary.get('description')
     summary = res_summary.get('summary')
-    db.close()
     return SummaryResultWithTitleAndDescription(
         title=title, 
         description=description, 
