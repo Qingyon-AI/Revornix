@@ -158,8 +158,8 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 			form.reset({
 				name: modelProvider.name,
 				description: modelProvider.description,
-				api_key: modelProvider.api_key,
-				api_url: modelProvider.api_url,
+				api_key: modelProvider.api_key || '',
+				api_url: modelProvider.api_url || '',
 			});
 		}
 	}, [modelProvider]);

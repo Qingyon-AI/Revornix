@@ -37,18 +37,6 @@ export interface ModelCreateRequest {
      * @memberof ModelCreateRequest
      */
     provider_id: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelCreateRequest
-     */
-    api_key: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelCreateRequest
-     */
-    api_url: string;
 }
 
 /**
@@ -58,8 +46,6 @@ export function instanceOfModelCreateRequest(value: object): value is ModelCreat
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('provider_id' in value) || value['provider_id'] === undefined) return false;
-    if (!('api_key' in value) || value['api_key'] === undefined) return false;
-    if (!('api_url' in value) || value['api_url'] === undefined) return false;
     return true;
 }
 
@@ -76,8 +62,6 @@ export function ModelCreateRequestFromJSONTyped(json: any, ignoreDiscriminator: 
         'name': json['name'],
         'description': json['description'],
         'provider_id': json['provider_id'],
-        'api_key': json['api_key'],
-        'api_url': json['api_url'],
     };
 }
 
@@ -95,8 +79,6 @@ export function ModelCreateRequestToJSONTyped(value?: ModelCreateRequest | null,
         'name': value['name'],
         'description': value['description'],
         'provider_id': value['provider_id'],
-        'api_key': value['api_key'],
-        'api_url': value['api_url'],
     };
 }
 

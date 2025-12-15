@@ -1,5 +1,5 @@
 import aiApi from '@/api/ai'
-import { ChatMessages, DeleteModelProviderRequest, DeleteModelRequest, Model, ModelCreateRequest, ModelCreateResponse, ModelProvider, ModelProviderCreateRequest, ModelProviderCreateResponse, ModelProviderRequest, ModelProviderSearchRequest, ModelProviderSearchResponse, ModelProviderUpdateRequest, ModelRequest, ModelSearchRequest, ModelSearchResponse, ModelUpdateRequest } from '@/generated'
+import { ChatMessages, DeleteModelProviderRequest, DeleteModelRequest, Model, ModelCreateRequest, ModelCreateResponse, ModelProvider, ModelProviderCreateRequest, ModelProviderCreateResponse, ModelProviderRequest, ModelProviderSearchRequest, ModelProviderSearchResponse, ModelProviderUpdateRequest, ModelRequest, ModelSearchRequest, ModelSearchResponse, ModelUpdateRequest, NormalResponse } from '@/generated'
 import { request } from '@/lib/request'
 
 export const askAi = async (data: ChatMessages) => {
@@ -32,13 +32,13 @@ export const searchAiModelProvider = async (data: ModelProviderSearchRequest): P
     })
 }
 
-export const deleteAiModel = async (data: DeleteModelRequest) => {
+export const deleteAiModel = async (data: DeleteModelRequest): Promise<NormalResponse> => {
     return await request(aiApi.deleteAiModel, {
         data: data
     })
 }
 
-export const deleteAiModelProvider = async (data: DeleteModelProviderRequest) => {
+export const deleteAiModelProvider = async (data: DeleteModelProviderRequest): Promise<NormalResponse> => {
     return await request(aiApi.deleteAiModelProvider, {
         data: data
     })

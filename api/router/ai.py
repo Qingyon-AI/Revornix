@@ -217,7 +217,9 @@ async def delete_ai_model_provider(
         )
         if db_model_provider is None:
             raise schemas.error.CustomException("The model provider is not exist", code=404)
-        if deployed_by_official and db_model_provider.uuid == OfficialModelProvider.Revornix:
+        if deployed_by_official and db_model_provider.uuid in [
+            OfficialModelProvider.Revornix.value
+        ]:
             raise schemas.error.CustomException("The Official Model Provider is forbidden to delete", code=403)
         
         crud.model.delete_ai_model_providers(
@@ -455,7 +457,7 @@ async def create_agent(
                     )
     llm = ChatOpenAI(
         model=db_model.name,
-        api_key=SecretStr(db_user_model_provider.api_key),
+        api_key=SecretStr(db_user_model_provider.api_key if db_user_model_provider.api_key is not None else ""),
         base_url=db_user_model_provider.api_url,
     )
     db.close()
