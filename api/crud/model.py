@@ -83,6 +83,7 @@ def create_ai_model(
         name=name,
         description=description,
         provider_id=provider_id,
+        uuid=uuid,
         create_time=now
     )
     if uuid is None:
