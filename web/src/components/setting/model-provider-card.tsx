@@ -47,6 +47,7 @@ import ModelCard from './model-card';
 import ModelAddCard from './model-add-card';
 import { Badge } from '../ui/badge';
 import { useUserContext } from '@/provider/user-provider';
+import { OfficialModelProvider } from '@/enums/model';
 
 interface ModelCardProps {
 	modelProvider: ModelProvider;
@@ -337,65 +338,51 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 						{t('setting_model_models_configure')}
 					</div>
 				</CardContent>
-				<CardFooter className='flex flex-row items-center justify-between'>
-					<div className='flex flex-row gap-2'>
-						{modelProvider.api_key ? (
-							<Badge
-								variant={'outline'}
-								className='text-xs text-muted-foreground'>
-								KEY
-							</Badge>
-						) : (
-							<Badge
-								variant={'destructive'}
-								className='text-xs text-muted-foreground'>
-								KEY
-							</Badge>
-						)}
-						{modelProvider.api_url ? (
-							<Badge
-								variant={'outline'}
-								className='text-xs text-muted-foreground'>
-								URL
-							</Badge>
-						) : (
-							<Badge
-								variant={'destructive'}
-								className='text-xs text-muted-foreground'>
-								URL
-							</Badge>
-						)}
-					</div>
-					<Dialog>
-						<DialogTrigger asChild>
-							<Button type='button' variant={'outline'}>
-								{t('delete')}
-							</Button>
-						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>{t('warning')}</DialogTitle>
-								<DialogDescription>
-									{t('setting_model_provider_delete_warning_description')}
-								</DialogDescription>
-							</DialogHeader>
-							<DialogFooter>
-								<Button
-									variant='destructive'
-									type='button'
-									onClick={handleDeleteModelProvider}>
-									{t('confirm')}
-									{deleteModelProviderLoading && (
-										<Loader2 className='h-4 w-4 animate-spin' />
-									)}
+				{!(modelProvider.uuid === OfficialModelProvider.Revornix) && (
+					<CardFooter className='flex flex-row items-center justify-between'>
+						<div className='flex flex-row gap-2'>
+							{modelProvider.api_key ? (
+								<Badge variant={'outline'}>KEY</Badge>
+							) : (
+								<Badge variant={'destructive'}>KEY</Badge>
+							)}
+							{modelProvider.api_url ? (
+								<Badge variant={'outline'}>URL</Badge>
+							) : (
+								<Badge variant={'destructive'}>URL</Badge>
+							)}
+						</div>
+						<Dialog>
+							<DialogTrigger asChild>
+								<Button type='button' variant={'outline'}>
+									{t('delete')}
 								</Button>
-								<DialogClose asChild>
-									<Button variant='default'>{t('cancel')}</Button>
-								</DialogClose>
-							</DialogFooter>
-						</DialogContent>
-					</Dialog>
-				</CardFooter>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>{t('warning')}</DialogTitle>
+									<DialogDescription>
+										{t('setting_model_provider_delete_warning_description')}
+									</DialogDescription>
+								</DialogHeader>
+								<DialogFooter>
+									<Button
+										variant='destructive'
+										type='button'
+										onClick={handleDeleteModelProvider}>
+										{t('confirm')}
+										{deleteModelProviderLoading && (
+											<Loader2 className='h-4 w-4 animate-spin' />
+										)}
+									</Button>
+									<DialogClose asChild>
+										<Button variant='default'>{t('cancel')}</Button>
+									</DialogClose>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+					</CardFooter>
+				)}
 			</Card>
 		</>
 	);

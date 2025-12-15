@@ -109,10 +109,12 @@ async def get_ai_model(
         raise schemas.error.CustomException("The model provider is not belong to you", code=403)
     return schemas.ai.Model(
         id=ai_model.id,
+        uuid=ai_model.uuid,
         name=ai_model.name,
         description=ai_model.description,
         provider=schemas.ai.ModelProvider(
             id=ai_model_provider.id,
+            uuid=ai_model.uuid,
             name=ai_model_provider.name,
             description=ai_model_provider.description,
             api_key=db_user_provider.api_key,
@@ -144,6 +146,7 @@ async def get_ai_model_provider(
     
     return schemas.ai.ModelProvider(
         id=ai_model_provider.id,
+        uuid=ai_model_provider.uuid,
         name=ai_model_provider.name,
         description=ai_model_provider.description,
         api_key=db_user_model_provider.api_key,
@@ -280,10 +283,12 @@ async def list_ai_model(
         data.append(
             schemas.ai.Model(
                 id=item.id,
+                uuid=item.uuid,
                 name=item.name,
                 description=item.description,
                 provider=schemas.ai.ModelProvider(
                     id=db_model_provider.id,
+                    uuid=db_model_provider.uuid,
                     name=db_model_provider.name,
                     description=db_model_provider.description,
                     api_key=db_user_model_provider.api_key,
@@ -317,6 +322,7 @@ async def list_ai_model_provider(
         data.append(
             schemas.ai.ModelProvider(
                 id=item.id,
+                uuid=item.uuid,
                 name=item.name,
                 description=item.description,
                 api_key=db_user_ai_model_provider.api_key,

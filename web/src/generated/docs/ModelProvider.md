@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`uuid` | string
 `name` | string
 `description` | string
 `api_key` | string
@@ -20,6 +21,7 @@ import type { ModelProvider } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "uuid": null,
   "name": null,
   "description": null,
   "api_key": null,

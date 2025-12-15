@@ -19,12 +19,13 @@ import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
 
-interface ProviderMapProps {
+export type ProviderMapProps =  {
 	id: number;
+	uuid: string;
 	name: string;
 	description: string | null;
-	api_key: string;
-	api_url: string;
+	api_key: string | null;
+	api_url: string | null;
 	models: Model[];
 }
 
@@ -50,6 +51,7 @@ const DocumentSummaryModel = () => {
 			if (!providerMap[providerId]) {
 				providerMap[providerId] = {
 					id: provider.id,
+					uuid: provider.uuid,
 					name: provider.name,
 					description: provider.description,
 					api_key: provider.api_key,
@@ -60,6 +62,7 @@ const DocumentSummaryModel = () => {
 			// 将当前模型加入到对应 provider 的 models 列表中
 			providerMap[providerId].models.push({
 				id: model.id,
+				uuid: model.uuid,
 				name: model.name,
 				description: model.description,
 				provider: providerMap[providerId],

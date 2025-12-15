@@ -9,7 +9,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import type { Model } from '@/generated';
 import { useUserContext } from '@/provider/user-provider';
 import { searchAiModel } from '@/service/ai';
 import { updateUserDefaultModel } from '@/service/user';
@@ -18,15 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
-
-interface ProviderMapProps {
-	id: number;
-	name: string;
-	description: string | null;
-	api_key: string;
-	api_url: string;
-	models: Model[];
-}
+import { ProviderMapProps } from './document-summary-model';
 
 const RevornixAIModel = () => {
 	const t = useTranslations();
@@ -50,6 +41,7 @@ const RevornixAIModel = () => {
 			if (!providerMap[providerId]) {
 				providerMap[providerId] = {
 					id: provider.id,
+					uuid: provider.uuid,
 					name: provider.name,
 					description: provider.description,
 					api_key: provider.api_key,
@@ -60,6 +52,7 @@ const RevornixAIModel = () => {
 			// 将当前模型加入到对应 provider 的 models 列表中
 			providerMap[providerId].models.push({
 				id: model.id,
+				uuid: model.uuid,
 				name: model.name,
 				description: model.description,
 				provider: providerMap[providerId],

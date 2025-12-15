@@ -38,6 +38,12 @@ export interface Model {
      * @type {string}
      * @memberof Model
      */
+    uuid: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Model
+     */
     name: string;
     /**
      * 
@@ -58,6 +64,7 @@ export interface Model {
  */
 export function instanceOfModel(value: object): value is Model {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('provider' in value) || value['provider'] === undefined) return false;
@@ -75,6 +82,7 @@ export function ModelFromJSONTyped(json: any, ignoreDiscriminator: boolean): Mod
     return {
         
         'id': json['id'],
+        'uuid': json['uuid'],
         'name': json['name'],
         'description': json['description'],
         'provider': ModelProviderFromJSON(json['provider']),
@@ -93,6 +101,7 @@ export function ModelToJSONTyped(value?: Model | null, ignoreDiscriminator: bool
     return {
         
         'id': value['id'],
+        'uuid': value['uuid'],
         'name': value['name'],
         'description': value['description'],
         'provider': ModelProviderToJSON(value['provider']),

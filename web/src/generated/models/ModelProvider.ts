@@ -30,6 +30,12 @@ export interface ModelProvider {
      * @type {string}
      * @memberof ModelProvider
      */
+    uuid: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelProvider
+     */
     name: string;
     /**
      * 
@@ -56,6 +62,7 @@ export interface ModelProvider {
  */
 export function instanceOfModelProvider(value: object): value is ModelProvider {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('api_key' in value) || value['api_key'] === undefined) return false;
@@ -74,6 +81,7 @@ export function ModelProviderFromJSONTyped(json: any, ignoreDiscriminator: boole
     return {
         
         'id': json['id'],
+        'uuid': json['uuid'],
         'name': json['name'],
         'description': json['description'],
         'api_key': json['api_key'],
@@ -93,6 +101,7 @@ export function ModelProviderToJSONTyped(value?: ModelProvider | null, ignoreDis
     return {
         
         'id': value['id'],
+        'uuid': value['uuid'],
         'name': value['name'],
         'description': value['description'],
         'api_key': value['api_key'],
