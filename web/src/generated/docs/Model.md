@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`uuid` | string
 `name` | string
 `description` | string
 `provider` | [ModelProvider](ModelProvider.md)
@@ -19,6 +20,7 @@ import type { Model } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "uuid": null,
   "name": null,
   "description": null,
   "provider": null,

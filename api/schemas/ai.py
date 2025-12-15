@@ -11,6 +11,7 @@ class ModelCreateResponse(BaseModel):
     
 class ModelProvider(BaseModel):
     id: int
+    uuid: str
     name: str
     description: str | None
     api_key: str | None
@@ -20,6 +21,7 @@ class ModelProvider(BaseModel):
         
 class Model(BaseModel):
     id: int
+    uuid: str
     name: str
     description: str | None
     provider: ModelProvider

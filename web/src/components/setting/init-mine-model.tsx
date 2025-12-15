@@ -160,8 +160,6 @@ const InitMineModel = () => {
 			const res = await mutateAddModel.mutateAsync({
 				name: values.model_name,
 				description: values.model_name,
-				api_key: '',
-				api_url: '',
 				provider_id: values.model_provider_id!,
 			});
 		} else if (providerChooseYepOrNo === 'no') {
@@ -174,8 +172,6 @@ const InitMineModel = () => {
 			const res2 = await mutateAddModel.mutateAsync({
 				name: values.model_name,
 				description: values.model_name,
-				api_key: '',
-				api_url: '',
 				provider_id: res1.id,
 			});
 		}
