@@ -4,10 +4,6 @@ from data.sql.base import SessionLocal
 from pydantic import BaseModel
 from official.model.llm import OFFICIAL_LLM_AI_BASE_URL, OFFICIAL_LLM_AI_KEY
 
-OFFICIAL_MODEL_CONFIG = {
-    OfficialModel.llm.value: (OFFICIAL_LLM_AI_KEY, OFFICIAL_LLM_AI_BASE_URL),
-}
-
 class AIModelConfiguration(BaseModel):
     api_key: str | None
     base_url: str | None
