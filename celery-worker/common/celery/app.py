@@ -205,21 +205,19 @@ async def handle_update_document_ai_podcast(
             user_engine_id=db_user.default_podcast_user_engine_id
         )
         
-        podcast_result = await engine.synthesize(
+        audio_bytes = await engine.synthesize(
             text=markdown_content
         )
-        audio_bytes = httpx.get(url=str(podcast_result)).content
+        if audio_bytes is None:
+            db_podcast_task.status = DocumentPodcastStatus.FAILED
+            db.commit()
+            raise Exception("The podcast of the document is not generated because of the error of the engine")
         podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
         await remote_file_service.upload_raw_content_to_path(
             file_path=podcast_file_name, 
             content=audio_bytes,
             content_type="audio/mpeg"
         )
-        
-        if podcast_result is None:
-            db_podcast_task.status = DocumentPodcastStatus.FAILED
-            db.commit()
-            raise Exception("The podcast of the document is not generated because of the error of the engine")
         
         db_podcast_task.status = DocumentPodcastStatus.SUCCESS
         db_podcast_task.podcast_file_name = podcast_file_name
@@ -662,10 +660,14 @@ async def handle_update_section_ai_podcast(
             user_engine_id=db_user.default_podcast_user_engine_id
         )
         
-        podcast_result = await engine.synthesize(
+        audio_bytes = await engine.synthesize(
             text=markdown_content
         )
-        audio_bytes = httpx.get(url=str(podcast_result)).content
+        if audio_bytes is None:
+            db_podcast_task.status = SectionPodcastStatus.FAILED
+            db.commit()
+            raise Exception("The podcast of the section is not generated because of the error of the engine")
+        
         podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
         await remote_file_service.upload_raw_content_to_path(
             file_path=podcast_file_name, 
