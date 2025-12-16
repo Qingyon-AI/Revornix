@@ -136,7 +136,7 @@ async def update_default_file_system(
     return schemas.common.SuccessResponse(message="The default file system is updated successfully.")
 
 @user_router.post('/default-engine/update', response_model=schemas.common.NormalResponse)
-async def update_default_document_parse_engine(
+async def update_default_engine(
     default_engine_update_request: schemas.user.DefaultEngineUpdateRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -146,10 +146,11 @@ async def update_default_document_parse_engine(
         user_id=user.id, 
         default_file_document_parse_user_engine_id=default_engine_update_request.default_file_document_parse_user_engine_id,
         default_website_document_parse_user_engine_id=default_engine_update_request.default_website_document_parse_user_engine_id,
-        default_podcast_user_engine_id=default_engine_update_request.default_podcast_user_engine_id
+        default_podcast_user_engine_id=default_engine_update_request.default_podcast_user_engine_id,
+        default_image_generate_engine_id=default_engine_update_request.default_image_generate_engine_id
     )
     db.commit()
-    return schemas.common.SuccessResponse(message="The default document parse engine is updated successfully.")
+    return schemas.common.SuccessResponse(message="The default engine is updated successfully.")
 
 @user_router.post('/default-model/update', response_model=schemas.common.NormalResponse)
 async def update_default_model(

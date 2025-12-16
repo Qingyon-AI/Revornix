@@ -20,6 +20,7 @@ import DefaultFileSystemChange from '@/components/setting/default-file-system-ch
 import DefaultWebsiteDocumentParseEngineChange from '@/components/setting/default-website-document-parse-engine-change';
 import DefaultFileDocumentParseEngineChange from '@/components/setting/default-file-document-parse-engine-change';
 import DefaultPodcastEngineChange from '@/components/setting/default-podcast-engine-change';
+import DocumentImageGenerateEngineChange from '@/components/setting/document-image-generate-engine-change';
 
 const SettingPage = () => {
 	const t = useTranslations();
@@ -193,6 +194,17 @@ const SettingPage = () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<DefaultPodcastEngineChange />
+						</div>
+					</div>
+					<Separator />
+					<div
+						className='flex justify-between items-center'
+						id='default_document_summary_model_choose'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_image_generate_engine')}
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<DocumentImageGenerateEngineChange />
 						</div>
 					</div>
 				</CardContent>

@@ -14,7 +14,7 @@ import { utils } from '@kinda/utils';
 import { updateUserDefaultEngine } from '@/service/user';
 import { toast } from 'sonner';
 
-const DefaultPodcastEngineChange = () => {
+const DocumentImageGenerateEngineChange = () => {
 	const t = useTranslations();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const { data } = useQuery({
@@ -25,10 +25,10 @@ const DefaultPodcastEngineChange = () => {
 		},
 	});
 
-	const handleUpdateDefaultPodcastEngine = async (id: number) => {
+	const handleUpdateDefaultImageGenerateEngine = async (id: number) => {
 		const [res, err] = await utils.to(
 			updateUserDefaultEngine({
-				default_podcast_user_engine_id: id,
+				default_image_generate_engine_id: id,
 			})
 		);
 		if (err) {
@@ -47,10 +47,10 @@ const DefaultPodcastEngineChange = () => {
 					: undefined
 			}
 			onValueChange={(e) => {
-				handleUpdateDefaultPodcastEngine(Number(e));
+				handleUpdateDefaultImageGenerateEngine(Number(e));
 			}}>
 			<SelectTrigger
-				id='default_podcast_engine_choose'
+				id='default_image_generate_engine_choose'
 				className='min-w-[180px]'>
 				<SelectValue placeholder={t('setting_default_engine_choose')} />
 			</SelectTrigger>
@@ -72,4 +72,4 @@ const DefaultPodcastEngineChange = () => {
 	);
 };
 
-export default DefaultPodcastEngineChange;
+export default DocumentImageGenerateEngineChange;

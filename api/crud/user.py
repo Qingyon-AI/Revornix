@@ -585,7 +585,8 @@ def update_user_default_engine(
     user_id: int,
     default_file_document_parse_user_engine_id: int | None = None,
     default_website_document_parse_user_engine_id: int | None = None,
-    default_podcast_user_engine_id: int | None = None
+    default_podcast_user_engine_id: int | None = None,
+    default_image_generate_engine_id: int | None = None
 ):
     now = datetime.now(timezone.utc)
     db_user_query = db.query(models.user.User)
@@ -601,6 +602,8 @@ def update_user_default_engine(
         db_user.default_website_document_parse_user_engine_id = default_website_document_parse_user_engine_id
     if default_podcast_user_engine_id is not None:
         db_user.default_podcast_user_engine_id = default_podcast_user_engine_id
+    if default_image_generate_engine_id is not None:
+        db_user.default_image_generate_engine_id = default_image_generate_engine_id
     db_user.update_time = now
     db.flush()
     return db_user

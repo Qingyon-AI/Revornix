@@ -169,6 +169,12 @@ export interface PrivateUserInfo {
      * @memberof PrivateUserInfo
      */
     default_podcast_user_engine_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof PrivateUserInfo
+     */
+    default_image_generate_engine_id?: number | null;
 }
 
 /**
@@ -209,6 +215,7 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'default_website_document_parse_user_engine_id': json['default_website_document_parse_user_engine_id'] == null ? undefined : json['default_website_document_parse_user_engine_id'],
         'default_file_document_parse_user_engine_id': json['default_file_document_parse_user_engine_id'] == null ? undefined : json['default_file_document_parse_user_engine_id'],
         'default_podcast_user_engine_id': json['default_podcast_user_engine_id'] == null ? undefined : json['default_podcast_user_engine_id'],
+        'default_image_generate_engine_id': json['default_image_generate_engine_id'] == null ? undefined : json['default_image_generate_engine_id'],
     };
 }
 
@@ -242,6 +249,7 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'default_website_document_parse_user_engine_id': value['default_website_document_parse_user_engine_id'],
         'default_file_document_parse_user_engine_id': value['default_file_document_parse_user_engine_id'],
         'default_podcast_user_engine_id': value['default_podcast_user_engine_id'],
+        'default_image_generate_engine_id': value['default_image_generate_engine_id'],
     };
 }
 

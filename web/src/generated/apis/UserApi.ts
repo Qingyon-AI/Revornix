@@ -275,7 +275,7 @@ export interface UnbindWechatUserUnbindWechatPostRequest {
     xForwardedFor?: string | null;
 }
 
-export interface UpdateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRequest {
+export interface UpdateDefaultEngineUserDefaultEngineUpdatePostRequest {
     defaultEngineUpdateRequest: DefaultEngineUpdateRequest;
     authorization?: string | null;
     xForwardedFor?: string | null;
@@ -1536,13 +1536,13 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Default Document Parse Engine
+     * Update Default Engine
      */
-    async updateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRaw(requestParameters: UpdateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateDefaultEngineUserDefaultEngineUpdatePostRaw(requestParameters: UpdateDefaultEngineUserDefaultEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
         if (requestParameters['defaultEngineUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'defaultEngineUpdateRequest',
-                'Required parameter "defaultEngineUpdateRequest" was null or undefined when calling updateDefaultDocumentParseEngineUserDefaultEngineUpdatePost().'
+                'Required parameter "defaultEngineUpdateRequest" was null or undefined when calling updateDefaultEngineUserDefaultEngineUpdatePost().'
             );
         }
 
@@ -1575,10 +1575,10 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Default Document Parse Engine
+     * Update Default Engine
      */
-    async updateDefaultDocumentParseEngineUserDefaultEngineUpdatePost(requestParameters: UpdateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
-        const response = await this.updateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRaw(requestParameters, initOverrides);
+    async updateDefaultEngineUserDefaultEngineUpdatePost(requestParameters: UpdateDefaultEngineUserDefaultEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.updateDefaultEngineUserDefaultEngineUpdatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

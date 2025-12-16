@@ -80,6 +80,7 @@ class DefaultEngineUpdateRequest(BaseModel):
     default_website_document_parse_user_engine_id: int | None = None
     default_file_document_parse_user_engine_id: int | None = None
     default_podcast_user_engine_id: int | None = None
+    default_image_generate_engine_id: int | None = None
 
 class DefaultModelUpdateRequest(BaseModel):
     default_document_reader_model_id: int | None = None
@@ -169,6 +170,7 @@ class PrivateUserInfo(BaseModel):
     default_website_document_parse_user_engine_id: int | None = None
     default_file_document_parse_user_engine_id: int | None = None
     default_podcast_user_engine_id: int | None = None
+    default_image_generate_engine_id: int | None = None
     
     @field_serializer("avatar")
     def serialize_avatar(self, v: str) -> str:
