@@ -2,6 +2,7 @@ import uuid
 import time
 import json
 import websockets
+import httpx
 from protocol.tts_engine import TTSEngineProtocol
 from enums.engine import EngineUUID, EngineCategory
 from pydantic import AnyUrl
@@ -139,4 +140,6 @@ class VolcTTSEngine(TTSEngineProtocol):
         finally:
             if websocket:
                 await websocket.close()
-        return final_audio_url
+        if final_audio_url is not None:
+            return httpx.get(str(final_audio_url)).content
+        return None

@@ -26,7 +26,7 @@ class OfficialTTSAIClient:
     def generate(
         self, 
         text: str,
-        voice: str = 'alloy'
+        voice: str = 'verse'
     ):
         if OFFICIAL_TTS_AI_MODEL is None:
             raise RuntimeError("Please set OFFICIAL_TTS_AI_MODEL in .env file")
@@ -34,11 +34,14 @@ class OfficialTTSAIClient:
             model=OFFICIAL_TTS_AI_MODEL,
             voice=voice,
             input=text,
-            response_format='wav'
+            response_format='mp3'
         )
-        content = response.content.decode('utf-8')
-        return content
+        return response
 
 if __name__ == '__main__':
     client = OfficialTTSAIClient()
     generator_audio = client.generate(text='The quick brown fox jumped over the lazy dog.')
+    audio_bytes = generator_audio.read()
+    with open("output.mp3", "wb") as f:
+        f.write(audio_bytes)
+            

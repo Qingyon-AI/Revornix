@@ -6,6 +6,7 @@ from typing import Protocol
 class EngineProtocol(Protocol):
     
     engine_uuid: str
+    engine_category: int
     engine_name: str
     engine_name_zh: str
     engine_description: str | None
@@ -19,6 +20,7 @@ class EngineProtocol(Protocol):
         self, 
         engine_uuid: str,
         engine_name: str,
+        engine_category: int,
         engine_name_zh: str, 
         engine_description: str | None = None, 
         engine_description_zh: str | None = None, 
@@ -32,6 +34,7 @@ class EngineProtocol(Protocol):
         self.engine_description_zh = engine_description_zh
         self.engine_demo_config = engine_demo_config
         self.engine_config = engine_config
+        self.engine_category = engine_category
     
     def get_engine_config(self) -> dict | None:
         if self.engine_config is None:
