@@ -293,7 +293,7 @@
     "setting_model": "模型配置",
     "setting_model_select": "选择模型",
     "setting_model_collection": "模型集成",
-    "setting_model_provider_configure": "配置供应",
+    "setting_model_provider_configure": "配置",
     "setting_model_provider_add": "增加模型供应商",
     "setting_model_provider_add_successful": "新建成功",
     "setting_model_provider_delete_successful": "删除成功",

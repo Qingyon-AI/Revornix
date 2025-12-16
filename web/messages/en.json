@@ -293,7 +293,7 @@
     "setting_model": "Model Settings",
     "setting_model_select": "Select Model",
     "setting_model_collection": "Model Ensemble",
-    "setting_model_provider_configure": "Provider Configuration",
+    "setting_model_provider_configure": "Configuration",
     "setting_model_provider_add": "Add Model Provider",
     "setting_model_provider_add_successful": "Successfully Created",
     "setting_model_provider_delete_successful": "Successfully Deleted",

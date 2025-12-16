@@ -222,7 +222,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 				<DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
 					<DialogHeader>
 						<DialogTitle>{modelProvider?.name}</DialogTitle>
-						<DialogDescription>{modelProvider?.description}</DialogDescription>
+						<DialogDescription className='break-all'>{modelProvider?.description}</DialogDescription>
 					</DialogHeader>
 					<div>
 						<Form {...form}>
@@ -314,22 +314,12 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 			</Dialog>
 			<Card>
 				<CardHeader>
-					<div className='flex flex-row items-center justify-between'>
-						<div>
-							<CardTitle>{modelProvider.name}</CardTitle>
-							<CardDescription>{modelProvider.description}</CardDescription>
-						</div>
-						<Button
-							variant={'outline'}
-							className='text-xs shadow-none'
-							onClick={() => {
-								setShowModelProviderConfigDialog(true);
-							}}>
-							{t('setting_model_provider_configure')}
-						</Button>
-					</div>
+					<CardTitle>{modelProvider.name}</CardTitle>
+					<CardDescription className='break-all'>
+						{modelProvider.description}
+					</CardDescription>
 				</CardHeader>
-				<CardContent>
+				<CardContent className='flex-1'>
 					<div
 						className='text-xs bg-muted rounded p-3 text-center cursor-pointer'
 						onClick={() => {
@@ -352,35 +342,44 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 								<Badge variant={'destructive'}>URL</Badge>
 							)}
 						</div>
-						<Dialog>
-							<DialogTrigger asChild>
-								<Button type='button' variant={'outline'}>
-									{t('delete')}
-								</Button>
-							</DialogTrigger>
-							<DialogContent>
-								<DialogHeader>
-									<DialogTitle>{t('warning')}</DialogTitle>
-									<DialogDescription>
-										{t('setting_model_provider_delete_warning_description')}
-									</DialogDescription>
-								</DialogHeader>
-								<DialogFooter>
-									<Button
-										variant='destructive'
-										type='button'
-										onClick={handleDeleteModelProvider}>
-										{t('confirm')}
-										{deleteModelProviderLoading && (
-											<Loader2 className='h-4 w-4 animate-spin' />
-										)}
+						<div className='flex flex-row gap-2 items-center'>
+							<Button
+								className='text-xs shadow-none'
+								onClick={() => {
+									setShowModelProviderConfigDialog(true);
+								}}>
+								{t('setting_model_provider_configure')}
+							</Button>
+							<Dialog>
+								<DialogTrigger asChild>
+									<Button type='button' variant={'secondary'}>
+										{t('delete')}
 									</Button>
-									<DialogClose asChild>
-										<Button variant='default'>{t('cancel')}</Button>
-									</DialogClose>
-								</DialogFooter>
-							</DialogContent>
-						</Dialog>
+								</DialogTrigger>
+								<DialogContent>
+									<DialogHeader>
+										<DialogTitle>{t('warning')}</DialogTitle>
+										<DialogDescription>
+											{t('setting_model_provider_delete_warning_description')}
+										</DialogDescription>
+									</DialogHeader>
+									<DialogFooter>
+										<Button
+											variant='destructive'
+											type='button'
+											onClick={handleDeleteModelProvider}>
+											{t('confirm')}
+											{deleteModelProviderLoading && (
+												<Loader2 className='h-4 w-4 animate-spin' />
+											)}
+										</Button>
+										<DialogClose asChild>
+											<Button variant='default'>{t('cancel')}</Button>
+										</DialogClose>
+									</DialogFooter>
+								</DialogContent>
+							</Dialog>
+						</div>
 					</CardFooter>
 				)}
 			</Card>
