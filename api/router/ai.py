@@ -333,7 +333,8 @@ async def list_ai_model_provider(
 async def update_ai_model(
     model_update_request: schemas.ai.ModelUpdateRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
+    deployed_by_official: bool = Depends(check_deployed_by_official)
 ):
     now = datetime.now(timezone.utc)
     db_ai_model = crud.model.get_ai_model_by_id(
@@ -342,6 +343,10 @@ async def update_ai_model(
     )
     if db_ai_model is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
+    if deployed_by_official and db_ai_model.uuid in [
+        OfficialModel.llm.meta.id
+    ]:
+        raise schemas.error.CustomException("The Official Model is forbidden to update", code=403)
     db_user_ai_model = crud.model.get_user_ai_model_by_id(
         db=db,
         user_id=user.id,
@@ -361,7 +366,8 @@ async def update_ai_model(
 async def update_ai_model_provider(
     model_provider_update_request: schemas.ai.ModelProviderUpdateRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
+    deployed_by_official: bool = Depends(check_deployed_by_official)
 ):
     now = datetime.now(timezone.utc)
     db_ai_model_provider = crud.model.get_ai_model_provider_by_id(
@@ -370,6 +376,10 @@ async def update_ai_model_provider(
     )
     if db_ai_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
+    if deployed_by_official and db_ai_model_provider.uuid in [
+        OfficialModelProvider.Revornix.meta.id
+    ]:
+        raise schemas.error.CustomException("The Official Model Provider is forbidden to update", code=403)
     db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
         db=db,
         user_id=user.id,
