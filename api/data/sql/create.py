@@ -2,14 +2,12 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 import os
-from datetime import datetime
 
 from sqlalchemy import text
 from alembic import command
 from alembic.config import Config
 
 import crud
-import models
 
 from data.sql.base import SessionLocal, Base, engine
 from config.base import BASE_DIR
