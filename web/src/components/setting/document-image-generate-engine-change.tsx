@@ -42,8 +42,8 @@ const DocumentImageGenerateEngineChange = () => {
 	return (
 		<Select
 			value={
-				mainUserInfo?.default_podcast_user_engine_id
-					? String(mainUserInfo?.default_podcast_user_engine_id)
+				mainUserInfo?.default_image_generate_engine_id
+					? String(mainUserInfo?.default_image_generate_engine_id)
 					: undefined
 			}
 			onValueChange={(e) => {
