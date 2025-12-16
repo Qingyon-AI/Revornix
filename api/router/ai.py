@@ -190,8 +190,6 @@ async def delete_ai_model(
             raise schemas.error.CustomException("The model is not exist", code=404)
         if deployed_by_official and db_model.uuid in [
             OfficialModel.llm.value, 
-            OfficialModel.image.value, 
-            OfficialModel.tts.value,
         ]:
             raise schemas.error.CustomException("The Official Model is forbidden to delete", code=403)
         crud.model.delete_ai_models_by_user_id_and_model_ids(
@@ -221,7 +219,7 @@ async def delete_ai_model_provider(
         if db_model_provider is None:
             raise schemas.error.CustomException("The model provider is not exist", code=404)
         if deployed_by_official and db_model_provider.uuid in [
-            OfficialModelProvider.Revornix.value
+            OfficialModelProvider.Revornix.meta.id
         ]:
             raise schemas.error.CustomException("The Official Model Provider is forbidden to delete", code=403)
         
@@ -427,8 +425,8 @@ async def create_agent(
         raise schemas.error.CustomException("The user has not set a model provider", code=400)
     api_key = SecretStr(db_user_model_provider.api_key if db_user_model_provider.api_key is not None else "")
     base_url = db_user_model_provider.api_url
-    if db_model_provider.uuid == OfficialModelProvider.Revornix.value:
-        from official.ai.llm import OFFICIAL_LLM_AI_BASE_URL, OFFICIAL_LLM_AI_KEY
+    if db_model_provider.uuid == OfficialModelProvider.Revornix.meta.id:
+        from official.model.llm import OFFICIAL_LLM_AI_BASE_URL, OFFICIAL_LLM_AI_KEY
         api_key = SecretStr(OFFICIAL_LLM_AI_KEY if OFFICIAL_LLM_AI_KEY is not None else "")
         base_url = OFFICIAL_LLM_AI_BASE_URL
     mcp_client = MCPClient()

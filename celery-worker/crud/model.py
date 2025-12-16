@@ -2,7 +2,49 @@ import models
 from uuid import uuid4
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
-from common.encrypt import decrypt_api_key
+from common.encrypt import encrypt_api_key, decrypt_api_key
+
+def create_user_ai_model(
+    db: Session, 
+    user_id: int, 
+    ai_model_id: int, 
+):
+    """
+    Create a new user AI model.
+    """
+    now = datetime.now(timezone.utc)
+    db_user_ai_model = models.model.UserAIModel(
+        user_id=user_id,
+        ai_model_id=ai_model_id,
+        create_time=now
+    )
+    db.add(db_user_ai_model)
+    db.flush()
+    return db_user_ai_model
+
+def create_user_ai_model_provider(
+    db: Session, 
+    user_id: int, 
+    ai_model_provider_id: int, 
+    api_key: str | None = None, 
+    api_url: str | None = None
+):
+    """
+    Create a new user AI model provider.
+    """
+    now = datetime.now(timezone.utc)
+    if api_key is not None:
+        api_key = encrypt_api_key(api_key)
+    db_user_provider = models.model.UserAIModelProvider(
+        user_id=user_id,
+        ai_model_provider_id=ai_model_provider_id,
+        api_key=api_key,
+        api_url=api_url,
+        create_time=now
+    )
+    db.add(db_user_provider)
+    db.flush()
+    return db_user_provider
 
 def create_ai_model_provider(
     db: Session, 
@@ -49,6 +91,30 @@ def create_ai_model(
     db.add(new_model)
     db.flush()
     return new_model
+
+def get_ai_model_by_uuid(
+    db: Session,
+    uuid: str
+):
+    """
+    Get an AI model by its UUID.
+    """
+    query = db.query(models.model.AIModel)
+    query = query.filter(models.model.AIModel.uuid == uuid,
+                         models.model.AIModel.delete_at == None)
+    return query.one_or_none()
+
+def get_ai_model_provider_by_uuid(
+    db: Session,
+    uuid: str
+):
+    """
+    Get an AI model provider by its UUID.
+    """
+    query = db.query(models.model.AIModelPorvider)
+    query = query.filter(models.model.AIModelPorvider.uuid == uuid,
+                         models.model.AIModelPorvider.delete_at == None)
+    return query.one_or_none()
 
 def get_user_ai_model_provider_by_id_decrypted(
     db: Session, 

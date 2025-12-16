@@ -2,14 +2,10 @@ import crud
 from enums.model import OfficialModel, OfficialModelProvider
 from data.sql.base import SessionLocal
 from pydantic import BaseModel
-from official.ai.llm import OFFICIAL_LLM_AI_BASE_URL, OFFICIAL_LLM_AI_KEY
-from official.ai.image import OFFICIAL_IMAGE_AI_BASE_URL, OFFICIAL_IMAGE_AI_KEY
-from official.ai.tts import OFFICIAL_TTS_AI_BASE_URL, OFFICIAL_TTS_AI_KEY
+from official.model.llm import OFFICIAL_LLM_AI_BASE_URL, OFFICIAL_LLM_AI_KEY
 
 OFFICIAL_MODEL_CONFIG = {
     OfficialModel.llm.value: (OFFICIAL_LLM_AI_KEY, OFFICIAL_LLM_AI_BASE_URL),
-    OfficialModel.image.value: (OFFICIAL_IMAGE_AI_KEY, OFFICIAL_IMAGE_AI_BASE_URL),
-    OfficialModel.tts.value: (OFFICIAL_TTS_AI_KEY, OFFICIAL_TTS_AI_BASE_URL),
 }
 
 class AIModelConfiguration(BaseModel):
@@ -49,27 +45,15 @@ class AIModelProxy:
                 if db_user_model_provider is None:
                     raise Exception("User model provider not found")
                 if db_model_provider.uuid in [
-                    OfficialModelProvider.Revornix.value
+                    OfficialModelProvider.Revornix.meta.id
                 ] and db_model.uuid in [
-                    OfficialModel.llm.value,
-                    OfficialModel.image.value,
-                    OfficialModel.tts.value
+                    OfficialModel.llm.meta.id,
                 ]:
                     if db_model.uuid == OfficialModel.llm.value:
                         if OFFICIAL_LLM_AI_KEY is None or OFFICIAL_LLM_AI_BASE_URL is None:
                             raise Exception("API key or base URL not set for the official LLM AI")
                         self.api_key = OFFICIAL_LLM_AI_KEY
                         self.base_url = OFFICIAL_LLM_AI_BASE_URL
-                    elif db_model.uuid == OfficialModel.image.value:
-                        if OFFICIAL_IMAGE_AI_KEY is None or OFFICIAL_IMAGE_AI_BASE_URL is None:
-                            raise Exception("API key or base URL not set for the official image AI")
-                        self.api_key = OFFICIAL_IMAGE_AI_KEY
-                        self.base_url = OFFICIAL_IMAGE_AI_BASE_URL
-                    elif db_model.uuid == OfficialModel.tts.value:
-                        if OFFICIAL_TTS_AI_KEY is None or OFFICIAL_TTS_AI_BASE_URL is None:
-                            raise Exception("API key or base URL not set for the official TTS AI")
-                        self.api_key = OFFICIAL_TTS_AI_KEY
-                        self.base_url = OFFICIAL_TTS_AI_BASE_URL
                     else:
                         raise Exception("Unknown official model")
                 else:
