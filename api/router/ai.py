@@ -189,7 +189,7 @@ async def delete_ai_model(
         if db_model is None:
             raise schemas.error.CustomException("The model is not exist", code=404)
         if deployed_by_official and db_model.uuid in [
-            OfficialModel.llm.value, 
+            OfficialModel.llm.meta.id, 
         ]:
             raise schemas.error.CustomException("The Official Model is forbidden to delete", code=403)
         crud.model.delete_ai_models_by_user_id_and_model_ids(

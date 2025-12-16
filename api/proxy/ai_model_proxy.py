@@ -4,10 +4,6 @@ from data.sql.base import SessionLocal
 from pydantic import BaseModel
 from official.model.llm import OFFICIAL_LLM_AI_BASE_URL, OFFICIAL_LLM_AI_KEY
 
-OFFICIAL_MODEL_CONFIG = {
-    OfficialModel.llm.value: (OFFICIAL_LLM_AI_KEY, OFFICIAL_LLM_AI_BASE_URL),
-}
-
 class AIModelConfiguration(BaseModel):
     api_key: str | None
     base_url: str | None
@@ -49,7 +45,7 @@ class AIModelProxy:
                 ] and db_model.uuid in [
                     OfficialModel.llm.meta.id,
                 ]:
-                    if db_model.uuid == OfficialModel.llm.value:
+                    if db_model.uuid == OfficialModel.llm.meta.id:
                         if OFFICIAL_LLM_AI_KEY is None or OFFICIAL_LLM_AI_BASE_URL is None:
                             raise Exception("API key or base URL not set for the official LLM AI")
                         self.api_key = OFFICIAL_LLM_AI_KEY
