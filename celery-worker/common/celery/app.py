@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-import httpx
 import uuid
 from data.custom_types.all import EntityInfo, RelationInfo
 import crud
@@ -29,6 +28,8 @@ from engine.markdown.jina import JinaEngine
 from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
+from engine.tts.openai import OpenAITTSEngine
+from engine.tts.official_openai import OfficialOpenAITTSEngine
 from enums.engine import EngineUUID
 from common.ai import make_section_markdown
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentGraphStatus
@@ -198,8 +199,12 @@ async def handle_update_document_ai_podcast(
         
         if db_engine.uuid == EngineUUID.Volc_TTS.value:
             engine = VolcTTSEngine()
+        elif db_engine.uuid == EngineUUID.OpenAI_TTS.value:
+            engine = OpenAITTSEngine()
+        elif db_engine.uuid == EngineUUID.Official_OpenAI_TTS.value:
+            engine = OfficialOpenAITTSEngine()
         else:
-            raise Exception("The podcast engine of the user is not supported")
+            raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
         
         await engine.init_engine_config_by_user_engine_id(
             user_engine_id=db_user.default_podcast_user_engine_id
@@ -653,6 +658,10 @@ async def handle_update_section_ai_podcast(
         
         if db_engine.uuid == EngineUUID.Volc_TTS.value:
             engine = VolcTTSEngine()
+        elif db_engine.uuid == EngineUUID.OpenAI_TTS.value:
+            engine = OpenAITTSEngine()
+        elif db_engine.uuid == EngineUUID.Official_OpenAI_TTS:
+            engine = OfficialOpenAITTSEngine()
         else:
             raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
         

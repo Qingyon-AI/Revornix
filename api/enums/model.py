@@ -1,9 +1,31 @@
 from enum import Enum
+from typing import NamedTuple
 
-class OfficialModelProvider(Enum): 
-    Revornix = "99fee36492ea41a78b79ee99bb3c1332"
-    
+class ModelMeta(NamedTuple):
+    id: str
+    title: str
+    description: str
+
+class OfficialModelProvider(Enum):
+    Revornix = ModelMeta(
+        id="99fee36492ea41a78b79ee99bb3c1332",
+        title="Revornix",
+        description=(
+            'Revornix-operated LLM gateway. '
+            'Models are provided via Revornix-managed routing, '
+            'including official and licensed upstream providers.'
+        )
+    )
+    @property
+    def meta(self) -> ModelMeta:
+        return self.value
+
 class OfficialModel(Enum):
-    llm = "7dc12cdb183b49e199d2651f997db272"
-    image = "13a099a3300d486aa20550d971c9f338"
-    tts = "76a7ec17dd1a47f894fc4c0a4956f116"
+    llm = ModelMeta(
+        id="7dc12cdb183b49e199d2651f997db272",
+        title="gpt5.2",
+        description="gpt5.2"
+    )
+    @property
+    def meta(self) -> ModelMeta:
+        return self.value

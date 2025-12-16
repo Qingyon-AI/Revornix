@@ -11,6 +11,9 @@ class EngineUUID(Enum):
     
     Banana_Image = '9f1fb0005a99483da191a38af6dc7a23'
     
+    Official_OpenAI_TTS = '4ece6490f8ef4132bf30a7ca72250d56'
+    Official_Banana_Image = '3867d20a8e24484da42f8a1f04bece87'
+    
 class EngineCategory(IntEnum):
     Markdown = 0
     TTS = 1

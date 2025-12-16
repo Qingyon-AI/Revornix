@@ -2,6 +2,7 @@ import crud
 from common.logger import info_logger, exception_logger
 from enums.model import OfficialModelProvider, OfficialModel
 from data.sql.base import SessionLocal
+from enums.engine import EngineUUID
 
 async def on_user_created(
     user_id: int
@@ -11,7 +12,7 @@ async def on_user_created(
         db = SessionLocal()
         db_official_model_provider = crud.model.get_ai_model_provider_by_uuid(
             db=db,
-            uuid=OfficialModelProvider.Revornix.value   
+            uuid=OfficialModelProvider.Revornix.meta.id 
         )
         if db_official_model_provider is None:
             raise Exception("Official Model Provider not found")
@@ -29,22 +30,10 @@ async def on_user_created(
             )
         db_official_model_llm = crud.model.get_ai_model_by_uuid(
             db=db,
-            uuid=OfficialModel.llm.value
-        )
-        db_official_model_image = crud.model.get_ai_model_by_uuid(
-            db=db,
-            uuid=OfficialModel.image.value
-        )
-        db_official_model_tts = crud.model.get_ai_model_by_uuid(
-            db=db,
-            uuid=OfficialModel.tts.value
+            uuid=OfficialModel.llm.meta.id
         )
         if db_official_model_llm is None:
             raise Exception("Official Model LLM not found")
-        if db_official_model_image is None:
-            raise Exception("Official Model Image not found")
-        if db_official_model_tts is None:
-            raise Exception("Official Model TTS not found")
         db_user_ai_model_llm_official = crud.model.get_user_ai_model_by_id(
             db=db,
             user_id=user_id,
@@ -56,28 +45,34 @@ async def on_user_created(
                 user_id=user_id,
                 ai_model_id=db_official_model_llm.id,
             )
-        db_user_ai_model_image_official = crud.model.get_user_ai_model_by_id(
+        db_official_openai_tts_engine = crud.engine.get_engine_by_uuid(
+            db=db,
+            uuid=EngineUUID.Official_OpenAI_TTS.value
+        )
+        if db_official_openai_tts_engine is None:
+            raise Exception("Official OpenAI TTS Engine not found")
+        crud.engine.create_user_engine(
             db=db,
             user_id=user_id,
-            ai_model_id=db_official_model_image.id,
+            engine_id=db_official_openai_tts_engine.id,
+            title='Revornix Proxied OpenAI TTS Engine',
+            description='Revornix Proxied OpenAI TTS Engine',
+            config_json=''
         )
-        if db_user_ai_model_image_official is None:
-            crud.model.create_user_ai_model(
-                db=db,
-                user_id=user_id,
-                ai_model_id=db_official_model_image.id,
-            )
-        db_user_ai_model_tts_official = crud.model.get_user_ai_model_by_id(
+        db_official_banana_image_generate_engine = crud.engine.get_engine_by_uuid(
+            db=db,
+            uuid=EngineUUID.Official_Banana_Image.value
+        )
+        if db_official_banana_image_generate_engine is None:
+            raise Exception("Official Banana Image Generate Engine not found")
+        crud.engine.create_user_engine(
             db=db,
             user_id=user_id,
-            ai_model_id=db_official_model_tts.id,
+            engine_id=db_official_banana_image_generate_engine.id,
+            title='Revornix Proxied Banana Image Generator Engine',
+            description='Revornix Proxied Banana Image Generator Engine',
+            config_json=''
         )
-        if db_user_ai_model_tts_official is None:
-            db_user_ai_model_tts_official = crud.model.create_user_ai_model(
-                db=db,
-                user_id=user_id,
-                ai_model_id=db_official_model_tts.id,
-            )
         db.commit()
     except Exception as e:
         exception_logger.exception(f"Error on user created hook: {e}",)

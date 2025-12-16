@@ -1,7 +1,7 @@
 import io
 import asyncio
 from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
-from enums.engine import EngineUUID
+from enums.engine import EngineUUID, EngineCategory
 from common.common import extract_title_and_summary
 from bs4 import BeautifulSoup
 from markitdown import MarkItDown
@@ -13,6 +13,7 @@ class MarkitdownEngine(MarkdownEngineProtocol):
     def __init__(self):
         super().__init__(
             engine_uuid=EngineUUID.MarkitDown.value,
+            engine_category=EngineCategory.Markdown,
             engine_name="Markitdown",
             engine_name_zh="Markitdown",
             engine_description="Markitdown is a tool that converts file to Markdown.",

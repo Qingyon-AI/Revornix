@@ -1,12 +1,13 @@
 import httpx
 from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo
-from enums.engine import EngineUUID
+from enums.engine import EngineUUID, EngineCategory
 
 class JinaEngine(MarkdownEngineProtocol):
     
     def __init__(self):
         super().__init__(
             engine_uuid=EngineUUID.Jina.value,
+            engine_category=EngineCategory.Markdown,
             engine_name='Jina',
             engine_name_zh='Jina',
             engine_description='Jina is an AI-powered web scraping engine that can help you quickly find the information you want.',
