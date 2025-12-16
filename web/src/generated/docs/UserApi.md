@@ -33,7 +33,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**unbindGoogleUserUnbindGooglePost**](UserApi.md#unbindgoogleuserunbindgooglepost) | **POST** /user/unbind/google | Unbind Google |
 | [**unbindPhoneUserUnbindPhonePost**](UserApi.md#unbindphoneuserunbindphonepost) | **POST** /user/unbind/phone | Unbind Phone |
 | [**unbindWechatUserUnbindWechatPost**](UserApi.md#unbindwechatuserunbindwechatpost) | **POST** /user/unbind/wechat | Unbind Wechat |
-| [**updateDefaultDocumentParseEngineUserDefaultEngineUpdatePost**](UserApi.md#updatedefaultdocumentparseengineuserdefaultengineupdatepost) | **POST** /user/default-engine/update | Update Default Document Parse Engine |
+| [**updateDefaultEngineUserDefaultEngineUpdatePost**](UserApi.md#updatedefaultengineuserdefaultengineupdatepost) | **POST** /user/default-engine/update | Update Default Engine |
 | [**updateDefaultFileSystemUserDefaultFileSystemUpdatePost**](UserApi.md#updatedefaultfilesystemuserdefaultfilesystemupdatepost) | **POST** /user/default-file-system/update | Update Default File System |
 | [**updateDefaultModelUserDefaultModelUpdatePost**](UserApi.md#updatedefaultmodeluserdefaultmodelupdatepost) | **POST** /user/default-model/update | Update Default Model |
 | [**updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost**](UserApi.md#updatemydefaultreadmarkreasonuserreadmarkreasonupdatepost) | **POST** /user/read-mark-reason/update | Update My Default Read Mark Reason |
@@ -2049,11 +2049,11 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## updateDefaultDocumentParseEngineUserDefaultEngineUpdatePost
+## updateDefaultEngineUserDefaultEngineUpdatePost
 
-> NormalResponse updateDefaultDocumentParseEngineUserDefaultEngineUpdatePost(defaultEngineUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateDefaultEngineUserDefaultEngineUpdatePost(defaultEngineUpdateRequest, authorization, xForwardedFor)
 
-Update Default Document Parse Engine
+Update Default Engine
 
 ### Example
 
@@ -2062,7 +2062,7 @@ import {
   Configuration,
   UserApi,
 } from '';
-import type { UpdateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRequest } from '';
+import type { UpdateDefaultEngineUserDefaultEngineUpdatePostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -2075,10 +2075,10 @@ async function example() {
     authorization: authorization_example,
     // string (optional)
     xForwardedFor: xForwardedFor_example,
-  } satisfies UpdateDefaultDocumentParseEngineUserDefaultEngineUpdatePostRequest;
+  } satisfies UpdateDefaultEngineUserDefaultEngineUpdatePostRequest;
 
   try {
-    const data = await api.updateDefaultDocumentParseEngineUserDefaultEngineUpdatePost(body);
+    const data = await api.updateDefaultEngineUserDefaultEngineUpdatePost(body);
     console.log(data);
   } catch (error) {
     console.error(error);

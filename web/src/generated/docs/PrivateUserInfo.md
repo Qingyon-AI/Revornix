@@ -25,6 +25,7 @@ Name | Type
 `default_website_document_parse_user_engine_id` | number
 `default_file_document_parse_user_engine_id` | number
 `default_podcast_user_engine_id` | number
+`default_image_generate_engine_id` | number
 
 ## Example
 
@@ -52,6 +53,7 @@ const example = {
   "default_website_document_parse_user_engine_id": null,
   "default_file_document_parse_user_engine_id": null,
   "default_podcast_user_engine_id": null,
+  "default_image_generate_engine_id": null,
 } satisfies PrivateUserInfo
 
 console.log(example)

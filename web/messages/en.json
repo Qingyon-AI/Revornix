@@ -318,6 +318,7 @@
     "setting_revornix_model_empty": "The default model is not configured yet",
     "setting_revornix_model_update_successful": "Revornix AI Response Model Updated Successfully",
     "setting_document_summary_model": "Document Summary Model",
+    "setting_image_generate_engine": "Default Image Generate Engine",
     "setting_color": "Color Theme",
     "setting_color_dark": "Dark Mode",
     "setting_color_light": "Light Mode",
