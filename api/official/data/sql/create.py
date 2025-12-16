@@ -40,17 +40,10 @@ if __name__ == "__main__":
             provider_id=db_official_llm_model_provider.id,
             uuid=OfficialModel.image.value
         )
-        db_tts_model = crud.model.create_ai_model(
-            db=db,
-            name='gpt-audio',
-            description='gpt-audio',
-            provider_id=db_official_llm_model_provider.id,
-            uuid=OfficialModel.tts.value
-        )
         db.commit()
-        info_logger.info("✅ Official AI Database Data reset & initialized successfully")
+        info_logger.info("✅ Official Database Data reset & initialized successfully")
     except Exception as e:
-        exception_logger.exception(f"❌ Official AI Database Data initialization failed: {e}")
+        exception_logger.exception(f"❌ Official Database Data initialization failed: {e}")
         raise
     finally:
         db.close()

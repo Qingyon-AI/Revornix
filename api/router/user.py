@@ -24,6 +24,7 @@ from google.auth.transport import requests
 from common.sms.tencent_sms import TencentSms
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from enums.user import WeChatUserSource
+from enums.engine import EngineUUID
 
 user_router = APIRouter()
 
@@ -407,12 +408,18 @@ async def create_user_by_email_verify(
     # create the minio file bucket for the user because it's the default file system
     BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
     # init the default engine for the user
+    db_mineru_engine = crud.engine.get_engine_by_uuid(
+        db=db,
+        uuid=EngineUUID.MinerU.value
+    )
+    if db_mineru_engine is None:
+        raise CustomException('The MinerU Engine is Not Found', 404)
     db_user_engine = crud.engine.create_user_engine(
         db=db,
         user_id=db_user.id,
-        engine_id=1,
-        title="Default Engine",
-        description="The default engine for the user"
+        engine_id=db_mineru_engine.id,
+        title="Default MinerU Engine",
+        description="The default mineru engine for the user"
     )
     db_user.default_website_document_parse_user_engine_id = db_user_engine.id
     db_user.default_file_document_parse_user_engine_id = db_user_engine.id
@@ -465,12 +472,18 @@ async def create_user_by_email(
     # create the minio file bucket for the user because it's the default file system
     BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
     # init the default engine for the user
+    db_mineru_engine = crud.engine.get_engine_by_uuid(
+        db=db,
+        uuid=EngineUUID.MinerU.value
+    )
+    if db_mineru_engine is None:
+        raise CustomException('The MinerU Engine is Not Found', 404)
     db_user_engine = crud.engine.create_user_engine(
         db=db,
         user_id=db_user.id,
-        engine_id=1,
-        title="Default Engine",
-        description="The default engine for the user"
+        engine_id=db_mineru_engine.id,
+        title="Default MinerU Engine",
+        description="The default mineru engine for the user"
     )
     db_user.default_website_document_parse_user_engine_id = db_user_engine.id
     db_user.default_file_document_parse_user_engine_id = db_user_engine.id
@@ -843,12 +856,18 @@ async def create_user_by_google(
     # create the minio file bucket for the user because it's the default file system
     BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
     # init the default engine for the user
+    db_mineru_engine = crud.engine.get_engine_by_uuid(
+        db=db,
+        uuid=EngineUUID.MinerU.value
+    )
+    if db_mineru_engine is None:
+        raise CustomException('The MinerU Engine is Not Found', 404)
     db_user_engine = crud.engine.create_user_engine(
         db=db,
         user_id=db_user.id,
-        engine_id=1,
-        title="Default Engine",
-        description="The default engine for the user"
+        engine_id=db_mineru_engine.id,
+        title="Default MinerU Engine",
+        description="The default mineru engine for the user"
     )
     db_user.default_website_document_parse_user_engine_id = db_user_engine.id
     db_user.default_file_document_parse_user_engine_id = db_user_engine.id
@@ -982,12 +1001,18 @@ async def create_user_by_github(
     # create the minio file bucket for the user because it's the default file system
     BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
     # init the default engine for the user
+    db_mineru_engine = crud.engine.get_engine_by_uuid(
+        db=db,
+        uuid=EngineUUID.MinerU.value
+    )
+    if db_mineru_engine is None:
+        raise CustomException('The MinerU Engine is Not Found', 404)
     db_user_engine = crud.engine.create_user_engine(
         db=db,
         user_id=db_user.id,
-        engine_id=1,
-        title="Default Engine",
-        description="The default engine for the user"
+        engine_id=db_mineru_engine.id,
+        title="Default MinerU Engine",
+        description="The default mineru engine for the user"
     )
     db_user.default_website_document_parse_user_engine_id = db_user_engine.id
     db_user.default_file_document_parse_user_engine_id = db_user_engine.id
@@ -1125,12 +1150,18 @@ async def create_user_by_sms_verify(
         # create the minio file bucket for the user because it's the default file system
         BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
         # init the default engine for the user
+        db_mineru_engine = crud.engine.get_engine_by_uuid(
+            db=db,
+            uuid=EngineUUID.MinerU.value
+        )
+        if db_mineru_engine is None:
+            raise CustomException('The MinerU Engine is Not Found', 404)
         db_user_engine = crud.engine.create_user_engine(
             db=db,
             user_id=db_user.id,
-            engine_id=1,
-            title="Default Engine",
-            description="The default engine for the user"
+            engine_id=db_mineru_engine.id,
+            title="Default MinerU Engine",
+            description="The default mineru engine for the user"
         )
         db_user.default_website_document_parse_user_engine_id = db_user_engine.id
         db_user.default_file_document_parse_user_engine_id = db_user_engine.id
@@ -1272,12 +1303,18 @@ async def create_user_by_wechat_mini(
         # create the minio file bucket for the user because it's the default file system
         BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
         # init the default engine for the user
+        db_mineru_engine = crud.engine.get_engine_by_uuid(
+            db=db,
+            uuid=EngineUUID.MinerU.value
+        )
+        if db_mineru_engine is None:
+            raise CustomException('The MinerU Engine is Not Found', 404)
         db_user_engine = crud.engine.create_user_engine(
             db=db,
             user_id=db_user.id,
-            engine_id=1,
-            title="Default Engine",
-            description="The default engine for the user"
+            engine_id=db_mineru_engine.id,
+            title="Default MinerU Engine",
+            description="The default mineru engine for the user"
         )
         db_user.default_website_document_parse_user_engine_id = db_user_engine.id
         db_user.default_file_document_parse_user_engine_id = db_user_engine.id
@@ -1378,12 +1415,18 @@ async def create_user_by_wechat_web(
         # create the minio file bucket for the user because it's the default file system
         BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
         # init the default engine for the user
+        db_mineru_engine = crud.engine.get_engine_by_uuid(
+            db=db,
+            uuid=EngineUUID.MinerU.value
+        )
+        if db_mineru_engine is None:
+            raise CustomException('The MinerU Engine is Not Found', 404)
         db_user_engine = crud.engine.create_user_engine(
             db=db,
             user_id=db_user.id,
-            engine_id=1,
-            title="Default Engine",
-            description="The default engine for the user"
+            engine_id=db_mineru_engine.id,
+            title="Default MinerU Engine",
+            description="The default mineru engine for the user"
         )
         db_user.default_website_document_parse_user_engine_id = db_user_engine.id
         db_user.default_file_document_parse_user_engine_id = db_user_engine.id
