@@ -18,6 +18,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from common.common import to_serializable, safe_json_loads
 from enums.mcp import MCPCategory
 from enums.model import OfficialModelProvider, OfficialModel
+from common.encrypt import encrypt_api_key
 
 ai_router = APIRouter()
 
@@ -392,7 +393,7 @@ async def update_ai_model_provider(
     if model_provider_update_request.description is not None:
         db_ai_model_provider.description = model_provider_update_request.description
     if model_provider_update_request.api_key is not None:
-        db_user_ai_model_provider.api_key = model_provider_update_request.api_key
+        db_user_ai_model_provider.api_key = encrypt_api_key(model_provider_update_request.api_key)
     if model_provider_update_request.api_url is not None:
         db_user_ai_model_provider.api_url = model_provider_update_request.api_url
     db_ai_model_provider.update_time = now
