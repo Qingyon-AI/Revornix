@@ -8,11 +8,6 @@ OFFICIAL_TTS_AI_BASE_URL = os.environ.get('OFFICIAL_TTS_AI_BASE_URL')
 OFFICIAL_TTS_AI_KEY = os.environ.get('OFFICIAL_TTS_AI_KEY')
 OFFICIAL_TTS_AI_MODEL = os.environ.get('OFFICIAL_TTS_AI_MODEL')
 
-tts_client = OpenAI(
-    base_url=OFFICIAL_TTS_AI_BASE_URL,
-    api_key=OFFICIAL_TTS_AI_KEY
-)
-
 class OfficialTTSAIClient:
     client: OpenAI
 
