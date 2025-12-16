@@ -55,8 +55,21 @@ def call_llm(
 async def create_model(
     model_create_request: schemas.ai.ModelCreateRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
+    deployed_by_official: bool = Depends(check_deployed_by_official)
 ):
+    db_model_provider = crud.model.get_ai_model_provider_by_id(
+        db=db,
+        provider_id=model_create_request.provider_id
+    )
+    if db_model_provider is None:
+        raise schemas.error.CustomException("The model provider is not exist", code=404)
+    
+    if deployed_by_official and db_model_provider.uuid in [
+        OfficialModelProvider.Revornix.meta.id
+    ]:
+        raise schemas.error.CustomException("The official revornix proxied model provider is forbidden to add model", code=403)
+    
     db_ai_model = crud.model.create_ai_model(
         db=db, 
         name=model_create_request.name, 
