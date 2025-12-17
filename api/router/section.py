@@ -95,25 +95,36 @@ def section_document_request(
         desc=section_document_request.desc
     )
     
-    def get_section_document_info(document: models.document.Document): 
-        db_labels = crud.document.get_labels_by_document_id(
-            db=db,
-            document_id=document.id
-        )
-        db_section_document = crud.section.get_section_document_by_section_id_and_document_id(
-            db=db,
-            section_id=section_document_request.section_id,
-            document_id=document.id
-        )
+    document_ids = [document.id for document in db_documents]
+    labels_by_document_id = crud.document.get_labels_by_document_ids(db=db, document_ids=document_ids)
+    section_documents = crud.section.get_section_documents_by_section_id_and_document_ids(
+        db=db,
+        section_id=section_document_request.section_id,
+        document_ids=document_ids,
+    )
+    section_document_by_document_id = {item.document_id: item for item in section_documents}
+    documents = []
+    for document in db_documents:
+        db_section_document = section_document_by_document_id.get(document.id)
         if db_section_document is None:
-            raise Exception("Section document not found")
-        return schemas.section.SectionDocumentInfo.model_validate({
-            **document.__dict__,
-            'title': document.title,
-            'status': db_section_document.status,
-            'labels': db_labels,
-        })
-    documents = [get_section_document_info(document) for document in db_documents]
+            continue
+        labels = [
+            schemas.section.Label(id=label.id, name=label.name)
+            for label in labels_by_document_id.get(document.id, [])
+        ]
+        info = schemas.section.SectionDocumentInfo(
+            id=document.id,
+            title=document.title,
+            status=db_section_document.status,
+            category=document.category,
+            cover=document.cover,
+            description=document.description,
+            from_plat=document.from_plat,
+            labels=labels,
+            create_time=document.create_time,
+            update_time=document.update_time,
+        )
+        documents.append(info)
     if len(documents) < section_document_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == section_document_request.limit:
@@ -707,7 +718,7 @@ async def update_section(
     return schemas.common.SuccessResponse()
 
 @section_router.post('/public/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
-async def public_sections(
+def public_sections(
     search_public_sections_request: schemas.section.SearchPublicSectionsRequest,
     db: Session = Depends(get_db),
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)
@@ -724,43 +735,36 @@ async def public_sections(
         desc=search_public_sections_request.desc
     )
     
-    def get_section_info(section):
-        documents_count = crud.section.count_documents_for_section_by_section_id(
-            db=db, 
-            section_id=section.id
-        )
-        subscribers_count = crud.section.count_users_for_section_by_section_id(
+    section_ids = [section.id for section in db_sections]
+    documents_count_by_section_id = crud.section.count_documents_for_section_by_section_ids(db=db, section_ids=section_ids)
+    subscribers_count_by_section_id = crud.section.count_users_for_section_by_section_ids(
+        db=db,
+        section_ids=section_ids,
+        filter_roles=[UserSectionRole.SUBSCRIBER],
+    )
+    labels_by_section_id = crud.section.get_labels_by_section_ids(db=db, section_ids=section_ids)
+    authority_by_section_id = {}
+    if user is not None:
+        section_users = crud.section.get_section_users_by_section_ids_and_user_id(
             db=db,
-            section_id=section.id,
-            filter_roles=[UserSectionRole.SUBSCRIBER]
+            section_ids=section_ids,
+            user_id=user.id,
         )
-        db_labels = crud.section.get_labels_by_section_id(
-            db=db,
-            section_id=section.id
-        )
+        authority_by_section_id = {item.section_id: item.authority for item in section_users}
+
+    sections = []
+    for section in db_sections:
         labels = [
-            schemas.section.Label(id=db_label.id, name=db_label.name) for db_label in db_labels
+            schemas.section.Label(id=label.id, name=label.name)
+            for label in labels_by_section_id.get(section.id, [])
         ]
-        section = schemas.section.SectionInfo(
-            **section.__dict__,
-            creator=section.creator,
-            labels=labels,
-            documents_count=documents_count,
-            subscribers_count=subscribers_count
-        )
-        
-        if user is not None:
-            db_section_user = crud.section.get_section_user_by_section_id_and_user_id(
-                db=db,
-                section_id=section.id,
-                user_id=user.id
-            )
-            if db_section_user is not None:
-                section.authority = db_section_user.authority
-                
-        return section
-    
-    sections = [get_section_info(section) for section in db_sections]
+        res = schemas.section.SectionInfo.model_validate(section)
+        res.creator = section.creator
+        res.labels = labels
+        res.documents_count = documents_count_by_section_id.get(section.id, 0)
+        res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
+        res.authority = authority_by_section_id.get(section.id)
+        sections.append(res)
     
     if len(db_sections) < search_public_sections_request.limit or len(db_sections) == 0:
         has_more = False
@@ -788,7 +792,7 @@ async def public_sections(
     )
     
 @section_router.post('/mine/all', response_model=schemas.section.AllMySectionsResponse)
-async def get_all_mine_sections(
+def get_all_mine_sections(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
@@ -798,23 +802,23 @@ async def get_all_mine_sections(
         user_id=user.id,
         filter_roles=[UserSectionRole.CREATOR, UserSectionRole.MEMBER]
     )
+    section_ids = [section.id for section in db_sections]
+    section_users = crud.section.get_section_users_by_section_ids_and_user_id(
+        db=db,
+        section_ids=section_ids,
+        user_id=user.id,
+    )
+    authority_by_section_id = {item.section_id: item.authority for item in section_users}
     for db_section in db_sections:
-        db_section_user = crud.section.get_section_user_by_section_id_and_user_id(
-            db=db,
-            section_id=db_section.id,
-            user_id=user.id
-        )
-        if db_section_user is None:
-            continue
         section = schemas.section.BaseSectionInfo(
             **db_section.__dict__,
-            authority=db_section_user.authority
+            authority=authority_by_section_id.get(db_section.id)
         )
         sections.append(section)
     return schemas.section.AllMySectionsResponse(data=sections)
     
 @section_router.post('/user/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
-async def search_user_sections(
+def search_user_sections(
     search_user_sections_request: schemas.section.SearchUserSectionsRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -834,29 +838,33 @@ async def search_user_sections(
         desc=search_user_sections_request.desc
     )
     
-    def get_section_info(section):
-        documents_count = crud.section.count_documents_for_section_by_section_id(
-            db=db, 
-            section_id=section.id
-        )
-        subscribers_count = crud.section.count_users_for_section_by_section_id(
-            db=db,
-            section_id=section.id,
-            filter_roles=[UserSectionRole.SUBSCRIBER]
-        )
-        db_section_user = crud.section.get_section_user_by_section_id_and_user_id(
-            db=db,
-            section_id=section.id,
-            user_id=user.id
-        )
+    section_ids = [section.id for section in db_sections]
+    documents_count_by_section_id = crud.section.count_documents_for_section_by_section_ids(db=db, section_ids=section_ids)
+    subscribers_count_by_section_id = crud.section.count_users_for_section_by_section_ids(
+        db=db,
+        section_ids=section_ids,
+        filter_roles=[UserSectionRole.SUBSCRIBER],
+    )
+    labels_by_section_id = crud.section.get_labels_by_section_ids(db=db, section_ids=section_ids)
+    section_users = crud.section.get_section_users_by_section_ids_and_user_id(
+        db=db,
+        section_ids=section_ids,
+        user_id=user.id,
+    )
+    authority_by_section_id = {item.section_id: item.authority for item in section_users}
+
+    sections = []
+    for section in db_sections:
         res = schemas.section.SectionInfo.model_validate(section)
         res.creator = section.creator
-        res.authority = db_section_user.authority if db_section_user else None
-        res.documents_count = documents_count
-        res.subscribers_count = subscribers_count
-        return res
-        
-    sections = [get_section_info(section) for section in db_sections]
+        res.authority = authority_by_section_id.get(section.id)
+        res.documents_count = documents_count_by_section_id.get(section.id, 0)
+        res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
+        res.labels = [
+            schemas.section.Label(id=label.id, name=label.name)
+            for label in labels_by_section_id.get(section.id, [])
+        ]
+        sections.append(res)
     if len(db_sections) < search_user_sections_request.limit or len(db_sections) == 0:
         has_more = False
     if len(db_sections) == search_user_sections_request.limit:
@@ -872,7 +880,7 @@ async def search_user_sections(
         next_start = next_section.id if next_section is not None else None
     total = crud.section.count_user_sections(
         db=db,
-        user_id=user.id,
+        user_id=search_user_sections_request.user_id,
         only_published=True if search_user_sections_request.user_id != user.id else False,
         keyword=search_user_sections_request.keyword,
         label_ids=search_user_sections_request.label_ids
@@ -904,37 +912,33 @@ def search_mine_sections(
         label_ids=search_mine_sections_request.label_ids,
         desc=search_mine_sections_request.desc
     )
-    def get_section_info(section):
-        documents_count = crud.section.count_documents_for_section_by_section_id(
-            db=db, 
-            section_id=section.id
-        )
-        subscribers_count = crud.section.count_users_for_section_by_section_id(
-            db=db,
-            section_id=section.id,
-            filter_roles=[UserSectionRole.SUBSCRIBER]
-        )
-        db_user_section = crud.section.get_section_user_by_section_id_and_user_id(
-            db=db,
-            user_id=user.id,
-            section_id=section.id
-        )
-        db_labels = crud.section.get_labels_by_section_id(
-            db=db, 
-            section_id=section.id
-        )
-        labels = [
-            schemas.section.Label(id=db_label.id, name=db_label.name) for db_label in db_labels
+    section_ids = [section.id for section in db_sections]
+    documents_count_by_section_id = crud.section.count_documents_for_section_by_section_ids(db=db, section_ids=section_ids)
+    subscribers_count_by_section_id = crud.section.count_users_for_section_by_section_ids(
+        db=db,
+        section_ids=section_ids,
+        filter_roles=[UserSectionRole.SUBSCRIBER],
+    )
+    labels_by_section_id = crud.section.get_labels_by_section_ids(db=db, section_ids=section_ids)
+    section_users = crud.section.get_section_users_by_section_ids_and_user_id(
+        db=db,
+        section_ids=section_ids,
+        user_id=user.id,
+    )
+    authority_by_section_id = {item.section_id: item.authority for item in section_users}
+
+    sections = []
+    for section in db_sections:
+        res = schemas.section.SectionInfo.model_validate(section)
+        res.creator = section.creator
+        res.authority = authority_by_section_id.get(section.id)
+        res.documents_count = documents_count_by_section_id.get(section.id, 0)
+        res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
+        res.labels = [
+            schemas.section.Label(id=label.id, name=label.name)
+            for label in labels_by_section_id.get(section.id, [])
         ]
-        return schemas.section.SectionInfo(
-            **section.__dict__,
-            creator=section.creator,
-            authority=db_user_section.authority if db_user_section else None,
-            labels=labels,
-            documents_count=documents_count,
-            subscribers_count=subscribers_count
-        )
-    sections = [get_section_info(section) for section in db_sections]
+        sections.append(res)
     if len(db_sections) < search_mine_sections_request.limit or len(db_sections) == 0:
         has_more = False
     if len(db_sections) == search_mine_sections_request.limit:

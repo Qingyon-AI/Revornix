@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from enums.section import SectionDocumentIntegration
 
+
 def create_or_update_section_document(
     db: Session,
     section_id: int,
@@ -67,8 +68,9 @@ def get_sections_by_document_id(
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.document_id == document_id,
-                         models.section.SectionDocument.delete_at == None,
-                         models.section.Section.delete_at == None)
+                         models.section.SectionDocument.delete_at == None)
+    query = query.filter(models.section.Section.delete_at == None)
+    query = query.order_by(models.section.Section.update_time.desc())
     return query.all()
 
 def get_section_by_user_and_date(

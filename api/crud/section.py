@@ -2,7 +2,7 @@ import models
 from uuid import uuid4
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from enums.section import UserSectionRole, SectionDocumentIntegration
 from datetime import date as date_type
 
@@ -232,6 +232,7 @@ def search_user_sections(
             query = query.filter(models.section.Section.id <= start)
         else:
             query = query.filter(models.section.Section.id >= start)
+    query = query.options(selectinload(models.section.Section.creator))
     query = query.distinct(models.section.Section.id)
     query = query.limit(limit)
     return query.all()
@@ -244,6 +245,12 @@ def count_user_sections(
     only_published: bool = False
 ):
     query = db.query(models.section.Section)
+    query = query.join(models.section.SectionUser)
+    query = query.filter(
+        models.section.SectionUser.user_id == user_id,
+        models.section.SectionUser.delete_at == None,
+        models.section.SectionUser.role.in_([UserSectionRole.CREATOR, UserSectionRole.MEMBER]),
+    )
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -258,8 +265,6 @@ def count_user_sections(
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
                              models.section.SectionLabel.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None,
-                         models.section.Section.creator_id == user_id)
     query = query.distinct(models.section.Section.id)
     return query.count()
 
@@ -273,8 +278,13 @@ def search_next_user_section(
     desc: bool = True
 ):
     query = db.query(models.section.Section)
-    query = query.filter(models.section.Section.delete_at == None,
-                         models.section.Section.creator_id == user_id)
+    query = query.filter(models.section.Section.delete_at == None)
+    query = query.join(models.section.SectionUser)
+    query = query.filter(
+        models.section.SectionUser.user_id == user_id,
+        models.section.SectionUser.delete_at == None,
+        models.section.SectionUser.role.in_([UserSectionRole.CREATOR, UserSectionRole.MEMBER]),
+    )
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -295,6 +305,7 @@ def search_next_user_section(
     else:
         query = query.order_by(models.section.Section.id.asc())
         query = query.filter(models.section.Section.id > section.id)
+    query = query.distinct(models.section.Section.id)
     return query.first()
 
 def search_user_subscribed_sections(
@@ -485,6 +496,7 @@ def search_published_sections(
             query = query.filter(models.section.Section.id <= start)
         else:
             query = query.filter(models.section.Section.id >= start)
+    query = query.options(selectinload(models.section.Section.creator))
     query = query.distinct(models.section.Section.id)
     query = query.limit(limit)
     return query.all()
@@ -553,6 +565,28 @@ def count_documents_for_section_by_section_id(
                          models.section.SectionDocument.delete_at == None)
     query = query.distinct(models.document.Document.id)
     return query.count()
+
+def count_documents_for_section_by_section_ids(
+    db: Session,
+    section_ids: list[int]
+):
+    if not section_ids:
+        return {}
+    query = db.query(
+        models.section.SectionDocument.section_id,
+        func.count(func.distinct(models.section.SectionDocument.document_id)),
+    )
+    query = query.join(
+        models.document.Document,
+        models.document.Document.id == models.section.SectionDocument.document_id,
+    )
+    query = query.filter(
+        models.section.SectionDocument.section_id.in_(section_ids),
+        models.section.SectionDocument.delete_at == None,
+        models.document.Document.delete_at == None,
+    )
+    query = query.group_by(models.section.SectionDocument.section_id)
+    return {section_id: count for section_id, count in query.all()}
 
 def search_users_and_section_users_by_section_id(
     db: Session,
@@ -657,6 +691,35 @@ def count_users_for_section_by_section_id(
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     return query.count()
 
+def count_users_for_section_by_section_ids(
+    db: Session,
+    section_ids: list[int],
+    filter_roles: list[int] | None = None,
+):
+    if not section_ids:
+        return {}
+    now = datetime.now(timezone.utc)
+    query = db.query(
+        models.section.SectionUser.section_id,
+        func.count(models.user.User.id),
+    )
+    query = query.join(models.user.User, models.user.User.id == models.section.SectionUser.user_id)
+    query = query.filter(
+        models.section.SectionUser.section_id.in_(section_ids),
+        models.section.SectionUser.delete_at == None,
+        models.user.User.delete_at == None,
+    )
+    query = query.filter(
+        or_(
+            models.section.SectionUser.expire_time > now,
+            models.section.SectionUser.expire_time == None,
+        )
+    )
+    if filter_roles is not None:
+        query = query.filter(models.section.SectionUser.role.in_(filter_roles))
+    query = query.group_by(models.section.SectionUser.section_id)
+    return {section_id: count for section_id, count in query.all()}
+
 def get_section_user_by_section_id_and_user_id(
     db: Session, 
     section_id: int, 
@@ -673,6 +736,31 @@ def get_section_user_by_section_id_and_user_id(
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     return query.one_or_none()
+
+def get_section_users_by_section_ids_and_user_id(
+    db: Session,
+    section_ids: list[int],
+    user_id: int,
+    filter_roles: list[int] | None = None,
+):
+    if not section_ids:
+        return []
+    now = datetime.now(timezone.utc)
+    query = db.query(models.section.SectionUser)
+    query = query.filter(
+        models.section.SectionUser.section_id.in_(section_ids),
+        models.section.SectionUser.user_id == user_id,
+        models.section.SectionUser.delete_at == None,
+    )
+    query = query.filter(
+        or_(
+            models.section.SectionUser.expire_time > now,
+            models.section.SectionUser.expire_time == None,
+        )
+    )
+    if filter_roles is not None:
+        query = query.filter(models.section.SectionUser.role.in_(filter_roles))
+    return query.all()
 
 def get_section_by_user_and_date(
     db: Session,
@@ -709,6 +797,43 @@ def get_labels_by_section_id(
                          models.section.Label.delete_at == None)
     return query.all()
 
+def get_labels_by_section_ids(
+    db: Session,
+    section_ids: list[int],
+):
+    if not section_ids:
+        return {}
+    query = db.query(models.section.SectionLabel.section_id, models.section.Label)
+    query = query.join(
+        models.section.Label,
+        models.section.SectionLabel.label_id == models.section.Label.id,
+    )
+    query = query.filter(
+        models.section.SectionLabel.section_id.in_(section_ids),
+        models.section.SectionLabel.delete_at == None,
+        models.section.Label.delete_at == None,
+    )
+    rows = query.all()
+    res: dict[int, list[models.section.Label]] = {}
+    for section_id, label in rows:
+        res.setdefault(section_id, []).append(label)
+    return res
+
+def get_section_documents_by_section_id_and_document_ids(
+    db: Session,
+    section_id: int,
+    document_ids: list[int],
+):
+    if not document_ids:
+        return []
+    query = db.query(models.section.SectionDocument)
+    query = query.filter(
+        models.section.SectionDocument.section_id == section_id,
+        models.section.SectionDocument.document_id.in_(document_ids),
+        models.section.SectionDocument.delete_at == None,
+    )
+    return query.all()
+
 def get_section_labels_by_section_id(
     db: Session, 
     section_id: int
@@ -730,11 +855,14 @@ def get_section_documents_and_sections_by_document_id(
 
 def get_section_documents_by_section_id(
     db: Session,
-    section_id: int
+    section_id: int,
+    filter_status: SectionDocumentIntegration | None = None
 ):
     query = db.query(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
                          models.section.SectionDocument.delete_at == None)
+    if filter_status is not None:
+        query = query.filter(models.section.SectionDocument.status == filter_status)
     return query.all()
 
 def get_section_document_by_section_id_and_document_id(

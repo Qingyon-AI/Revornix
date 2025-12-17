@@ -30,7 +30,7 @@ from enums.engine import EngineUUID
 user_router = APIRouter()
 
 @user_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
-async def search_user(
+def search_user(
     search_user_request: schemas.user.SearchUserRequest,
     current_user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -97,22 +97,23 @@ async def search_user(
                 user=db_users[-1],
                 keyword=search_user_request.filter_value
             )
+    user_ids = [item.id for item in db_users]
+    fans_by_user_id = crud.user.count_user_fans_by_user_ids(db=db, user_ids=user_ids)
+    follows_by_user_id = crud.user.count_user_follows_by_user_ids(db=db, user_ids=user_ids)
+    followed_user_ids = set()
+    if current_user is not None:
+        follow_rows = crud.user.get_user_follows_by_from_user_id_and_to_user_ids(
+            db=db,
+            from_user_id=current_user.id,
+            to_user_ids=user_ids,
+        )
+        followed_user_ids = {row.to_user_id for row in follow_rows}
+
     for db_user in db_users:
         user_item = schemas.user.UserPublicInfo.model_validate(db_user)
-        user_item.fans = crud.user.count_user_fans(
-            db=db, 
-            user_id=db_user.id
-        )
-        user_item.follows = crud.user.count_user_follows(
-            db=db,
-            user_id=db_user.id
-        )
-        user_follow = crud.user.get_user_follow_by_to_user_id_and_from_user_id(
-            db=db,
-            to_user_id=db_user.id,
-            from_user_id=current_user.id
-        )
-        if user_follow is not None and user_follow.delete_at is None:
+        user_item.fans = fans_by_user_id.get(db_user.id, 0)
+        user_item.follows = follows_by_user_id.get(db_user.id, 0)
+        if db_user.id in followed_user_ids:
             user_item.is_followed = True
         users.append(user_item)
         
@@ -170,7 +171,7 @@ async def update_default_model(
     return schemas.common.SuccessResponse(message="The default model is updated successfully.")
 
 @user_router.post('/fans', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
-async def search_user_fans(
+def search_user_fans(
     search_user_fans_request: schemas.user.SearchUserFansRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -201,16 +202,13 @@ async def search_user_fans(
         keyword=search_user_fans_request.keyword
     )
     elements = []
-    for user in users:
-        element = schemas.user.UserPublicInfo.model_validate(user)
-        element.fans = crud.user.count_user_fans(
-            db=db, 
-            user_id=user.id
-        )
-        element.follows = crud.user.count_user_follows(
-            db=db,
-            user_id=user.id
-        )
+    user_ids = [item.id for item in users]
+    fans_by_user_id = crud.user.count_user_fans_by_user_ids(db=db, user_ids=user_ids)
+    follows_by_user_id = crud.user.count_user_follows_by_user_ids(db=db, user_ids=user_ids)
+    for item in users:
+        element = schemas.user.UserPublicInfo.model_validate(item)
+        element.fans = fans_by_user_id.get(item.id, 0)
+        element.follows = follows_by_user_id.get(item.id, 0)
         elements.append(element)
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,
@@ -222,7 +220,7 @@ async def search_user_fans(
     )
 
 @user_router.post('/follows', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
-async def search_user_follows(
+def search_user_follows(
     search_user_follows_request: schemas.user.SearchUserFollowsRequest, 
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -253,16 +251,13 @@ async def search_user_follows(
         keyword=search_user_follows_request.keyword
     )
     elements = []
-    for user in users:
-        element = schemas.user.UserPublicInfo.model_validate(user)
-        element.fans = crud.user.count_user_fans(
-            db=db, 
-            user_id=user.id
-        )
-        element.follows = crud.user.count_user_follows(
-            db=db,
-            user_id=user.id
-        )
+    user_ids = [item.id for item in users]
+    fans_by_user_id = crud.user.count_user_fans_by_user_ids(db=db, user_ids=user_ids)
+    follows_by_user_id = crud.user.count_user_follows_by_user_ids(db=db, user_ids=user_ids)
+    for item in users:
+        element = schemas.user.UserPublicInfo.model_validate(item)
+        element.fans = fans_by_user_id.get(item.id, 0)
+        element.follows = follows_by_user_id.get(item.id, 0)
         elements.append(element)
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,

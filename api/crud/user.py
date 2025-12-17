@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timezone
 from common.hash import hash_password
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from enums.user import MarkDocumentReadReason
 
 def create_base_user(
@@ -320,6 +321,22 @@ def count_user_fans(
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     return query.count()
 
+def count_user_fans_by_user_ids(
+    db: Session,
+    user_ids: list[int],
+):
+    if not user_ids:
+        return {}
+    query = db.query(models.user.FollowUser.to_user_id, func.count(models.user.FollowUser.id))
+    query = query.join(models.user.User, models.user.User.id == models.user.FollowUser.from_user_id)
+    query = query.filter(
+        models.user.FollowUser.to_user_id.in_(user_ids),
+        models.user.FollowUser.delete_at == None,
+        models.user.User.delete_at == None,
+    )
+    query = query.group_by(models.user.FollowUser.to_user_id)
+    return {user_id: count for user_id, count in query.all()}
+
 def search_next_user_fan(
     db: Session,
     user: models.user.User,
@@ -369,6 +386,37 @@ def count_user_follows(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     return query.count()
+
+def count_user_follows_by_user_ids(
+    db: Session,
+    user_ids: list[int],
+):
+    if not user_ids:
+        return {}
+    query = db.query(models.user.FollowUser.from_user_id, func.count(models.user.FollowUser.id))
+    query = query.join(models.user.User, models.user.User.id == models.user.FollowUser.to_user_id)
+    query = query.filter(
+        models.user.FollowUser.from_user_id.in_(user_ids),
+        models.user.FollowUser.delete_at == None,
+        models.user.User.delete_at == None,
+    )
+    query = query.group_by(models.user.FollowUser.from_user_id)
+    return {user_id: count for user_id, count in query.all()}
+
+def get_user_follows_by_from_user_id_and_to_user_ids(
+    db: Session,
+    from_user_id: int,
+    to_user_ids: list[int],
+):
+    if not to_user_ids:
+        return []
+    query = db.query(models.user.FollowUser)
+    query = query.filter(
+        models.user.FollowUser.from_user_id == from_user_id,
+        models.user.FollowUser.to_user_id.in_(to_user_ids),
+        models.user.FollowUser.delete_at == None,
+    )
+    return query.all()
 
 def search_next_user_follow(
     db: Session,
