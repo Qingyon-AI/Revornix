@@ -42,9 +42,9 @@ class UserAIModelProvider(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    # 注意有一些模型供应商提供的模型接入口是不需要的api_key和api_url的
+    # 注意有一些模型供应商提供的模型接入口是不需要的api_key和base_url的
     api_key: Mapped[Optional[str]] = mapped_column(String(255))
-    api_url: Mapped[Optional[str]] = mapped_column(String(255))
+    base_url: Mapped[Optional[str]] = mapped_column(String(255))
 
 
 class AIModelPorvider(Base):

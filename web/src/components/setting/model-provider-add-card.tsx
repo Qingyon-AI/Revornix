@@ -33,7 +33,7 @@ const ModelProviderAddCard = () => {
 		name: z.string().min(1, 'Name is required'),
 		description: z.string(),
 		api_key: z.string().min(1, 'API Key is required'),
-		api_url: z.string(),
+		base_url: z.string(),
 	});
 	const queryClient = getQueryClient();
 
@@ -43,7 +43,7 @@ const ModelProviderAddCard = () => {
 			name: '',
 			description: '',
 			api_key: '',
-			api_url: '',
+			base_url: '',
 		},
 	});
 	const [showModelProviderConfigDialog, setShowModelProviderConfigDialog] =
@@ -164,7 +164,7 @@ const ModelProviderAddCard = () => {
 								/>
 								<FormField
 									control={form.control}
-									name='api_url'
+									name='base_url'
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>

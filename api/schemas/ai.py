@@ -15,7 +15,7 @@ class ModelProvider(BaseModel):
     name: str
     description: str | None
     api_key: str | None
-    api_url: str | None
+    base_url: str | None
     class Config:
         from_attributes = True
         
@@ -32,7 +32,7 @@ class ModelProviderCreateRequest(BaseModel):
     name: str
     description: str | None = None
     api_key: str
-    api_url: str
+    base_url: str
     
 class ModelProviderCreateResponse(BaseModel):
     id: int
@@ -77,7 +77,7 @@ class ModelProviderUpdateRequest(BaseModel):
     name: str | None = None
     description: str | None = None
     api_key: str | None = None
-    api_url: str | None = None
+    base_url: str | None = None
     
 class Document(BaseModel):
     id: int

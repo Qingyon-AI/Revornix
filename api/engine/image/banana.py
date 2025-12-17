@@ -45,7 +45,7 @@ class BananaImageGenerateEngine(ImageGenerateEngineProtocol):
             engine_category=EngineCategory.IMAGE,
             engine_description='',
             engine_description_zh='',
-            engine_demo_config='{"api_key": "jina_******", "base_url": "", "model_name": ""}'
+            engine_demo_config='{"api_key": "", "base_url": "", "model_name": ""}'
         )
         
     def generate_image(

@@ -48,7 +48,7 @@ export interface ModelProviderUpdateRequest {
      * @type {string}
      * @memberof ModelProviderUpdateRequest
      */
-    api_url?: string | null;
+    base_url?: string | null;
 }
 
 /**
@@ -73,7 +73,7 @@ export function ModelProviderUpdateRequestFromJSONTyped(json: any, ignoreDiscrim
         'name': json['name'] == null ? undefined : json['name'],
         'description': json['description'] == null ? undefined : json['description'],
         'api_key': json['api_key'] == null ? undefined : json['api_key'],
-        'api_url': json['api_url'] == null ? undefined : json['api_url'],
+        'base_url': json['base_url'] == null ? undefined : json['base_url'],
     };
 }
 
@@ -92,7 +92,7 @@ export function ModelProviderUpdateRequestToJSONTyped(value?: ModelProviderUpdat
         'name': value['name'],
         'description': value['description'],
         'api_key': value['api_key'],
-        'api_url': value['api_url'],
+        'base_url': value['base_url'],
     };
 }
 

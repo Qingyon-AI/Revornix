@@ -1,10 +1,12 @@
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
+import re
 import uuid
-from data.custom_types.all import EntityInfo, RelationInfo
 import crud
 import asyncio
+from data.custom_types.all import EntityInfo, RelationInfo
+from schemas.section import GeneratedImage
 from data.neo4j.base import neo4j_driver
 from embedding.qwen import get_embedding_model
 from data.common import stream_chunk_document
@@ -35,6 +37,9 @@ from common.ai import make_section_markdown
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentGraphStatus
 from enums.section import SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus
 from proxy.ai_model_proxy import AIModelProxy
+from engine.image.banana import BananaImageGenerateEngine
+from engine.image.official_banana import OfficialBananaImageGenerateEngine
+from protocol.image_generate_engine import ImageGenerateEngineProtocol
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
@@ -696,6 +701,34 @@ async def handle_update_section_ai_podcast(
     finally:
         db.close()
 
+def apply_generated_images(
+    markdown_with_markers: str,
+    images: list[GeneratedImage],
+) -> str:
+    image_map = {img.id: img.image for img in images}
+    used_ids: set[str] = set()
+
+    def repl(match: re.Match) -> str:
+        image_id = match.group(1).strip()
+
+        if image_id in used_ids:
+            # 重复使用，直接保留占位符，方便排查
+            return match.group(0)
+
+        used_ids.add(image_id)
+
+        image_md = image_map.get(image_id)
+        if not image_md:
+            # 图片生成失败或缺失
+            exception_logger.warning(f"[SectionImage] missing image for id={image_id}")
+            return match.group(0)
+
+        # 确保图片独立成块
+        return f"\n\n{image_md}\n\n"
+
+    pattern = re.compile(r"\[image-id:\s*([^\]]+)\]")
+    return pattern.sub(repl, markdown_with_markers)
+
 async def handle_process_section(
     section_id: int,
     user_id: int,
@@ -825,6 +858,57 @@ async def handle_process_section(
         entities=entities,
         relations=relations
     )
+    
+    if db_user.default_image_generate_engine_id is not None:
+        # 如果用户设置了图像生成引擎，那么基于专栏当前的markdown生成插图
+        db_image_generator = crud.engine.get_user_engine_by_user_engine_id(
+            db=db, 
+            user_engine_id=db_user.default_image_generate_engine_id
+        )
+        if db_image_generator is None:
+            raise Exception("There is something wrong with the user's default image generate engine")
+        db_engine = crud.engine.get_engine_by_id(
+            db=db, 
+            id=db_image_generator.engine_id
+        )
+        if db_engine is None:
+            raise Exception("There is something wrong with the user's default image generate engine")
+        if db_engine.uuid == EngineUUID.Banana_Image.value:
+            engine = BananaImageGenerateEngine()
+        elif db_engine.uuid == EngineUUID.Official_Banana_Image.value:
+            engine = OfficialBananaImageGenerateEngine()
+        else:
+            raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
+        
+        await engine.init_engine_config_by_user_engine_id(
+            user_engine_id=db_user.default_image_generate_engine_id
+        )
+        
+        # plan images + inject markers
+        images_plan = await ImageGenerateEngineProtocol.plan_images_with_llm(
+            user_id=user_id,
+            markdown=content,
+            entities=entities,
+            relations=relations,
+        )
+        # generate images if needed
+        if images_plan.plans:
+            generated_images = []
+            for plan in images_plan.plans:
+                generated_image = engine.generate_image(
+                    text=plan.prompt,
+                )
+                if generated_image is None:
+                    continue
+                generated_images.append(
+                    GeneratedImage(
+                        id=plan.id,
+                        prompt=plan.prompt,
+                        image=generated_image
+                    )
+                )
+            content = apply_generated_images(images_plan.markdown_with_markers, generated_images)
+
     remote_file_service = await get_user_remote_file_system(
         user_id=user_id
     )
@@ -965,3 +1049,11 @@ def start_trigger_user_notification_event(
             params=params
         )
     )
+    
+if __name__ == '__main__':
+    asyncio.run(handle_process_section(
+        section_id=1,
+        user_id=1,
+        auto_podcast=True,
+        override=None
+    ))

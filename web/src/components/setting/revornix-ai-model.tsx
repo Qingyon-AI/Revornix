@@ -45,7 +45,7 @@ const RevornixAIModel = () => {
 					name: provider.name,
 					description: provider.description,
 					api_key: provider.api_key,
-					api_url: provider.api_url,
+					base_url: provider.base_url,
 					models: [], // 用来存储该 provider 下面的模型
 				};
 			}
