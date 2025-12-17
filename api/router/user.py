@@ -4,6 +4,7 @@ import os
 import random
 import string
 import models
+from datetime import datetime, timezone
 from official.hooks.user import on_user_created
 from uuid import uuid4
 from jwt.exceptions import ExpiredSignatureError
@@ -13,7 +14,7 @@ from schemas.error import CustomException
 from common.jwt_utils import create_token
 from common.dependencies import get_db
 from common.hash import verify_password
-from common.dependencies import get_current_user, get_db, get_cache, decode_jwt_token, check_deployed_by_official, reject_if_official
+from common.dependencies import get_current_user, get_db, get_cache, decode_jwt_token, check_deployed_by_official, reject_if_official, get_real_ip
 from common.tp_auth.google_utils import get_google_token
 from common.tp_auth.wechat_utils import get_web_user_info, get_web_wechat_tokens, get_mini_wechat_tokens
 from common.system_email.email import RevornixSystemEmail
@@ -713,7 +714,8 @@ async def my_info(
 @user_router.post("/login", response_model=schemas.user.TokenResponse)
 async def login(
     user_login_request: schemas.user.UserLoginRequest, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ip: str | None = Depends(get_real_ip)
 ):
     user = crud.user.get_user_by_email(
         db=db, 
@@ -734,6 +736,9 @@ async def login(
         provided_password=user_login_request.password
     ):
         raise Exception("Email or password is incorrect")
+    user.last_login_ip = ip
+    user.last_login_time = datetime.now(timezone.utc)
+    db.commit()
     access_token, refresh_token = create_token(user)
     return schemas.user.TokenResponse(
         access_token=access_token, 
@@ -744,7 +749,8 @@ async def login(
 @user_router.post("/token/update", response_model=schemas.user.TokenResponse)
 async def update_token(
     token_update_request: schemas.user.TokenUpdateRequest, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ip: str | None = Depends(get_real_ip)
 ):
     try:
         payload = decode_jwt_token(token=token_update_request.refresh_token)
@@ -759,6 +765,9 @@ async def update_token(
     )
     if user is None:
         raise Exception("The user for this refresh_token is not exist")
+    user.last_login_ip = ip
+    user.last_login_time = datetime.now(timezone.utc)
+    db.commit()
     access_token, refresh_token = create_token(user)
     return schemas.user.TokenResponse(
         access_token=access_token, 
