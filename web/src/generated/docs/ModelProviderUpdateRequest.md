@@ -10,7 +10,7 @@ Name | Type
 `name` | string
 `description` | string
 `api_key` | string
-`api_url` | string
+`base_url` | string
 
 ## Example
 
@@ -23,7 +23,7 @@ const example = {
   "name": null,
   "description": null,
   "api_key": null,
-  "api_url": null,
+  "base_url": null,
 } satisfies ModelProviderUpdateRequest
 
 console.log(example)

@@ -44,7 +44,7 @@ const InitMineModel = () => {
 			model_provider_name: z.string().optional(),
 			model_provider_description: z.string().optional(),
 			model_provider_api_key: z.string().optional(),
-			model_provider_api_url: z.string().optional(),
+			model_provider_base_url: z.string().optional(),
 			model_provider_id: z.number().optional(),
 			model_name: z.string(),
 		})
@@ -52,7 +52,7 @@ const InitMineModel = () => {
 			const hasCustomProvider =
 				data.model_provider_name &&
 				data.model_provider_api_key &&
-				data.model_provider_api_url;
+				data.model_provider_base_url;
 
 			const hasProviderId = data.model_provider_id !== undefined;
 
@@ -75,7 +75,7 @@ const InitMineModel = () => {
 				ctx.addIssue({
 					code: z.ZodIssueCode.custom,
 					message: t('init_mine_model_form_needed'),
-					path: ['model_provider_api_url'],
+					path: ['model_provider_base_url'],
 				});
 			}
 			if (!data.model_name) {
@@ -167,7 +167,7 @@ const InitMineModel = () => {
 				name: values.model_provider_name!,
 				description: values.model_provider_description,
 				api_key: values.model_provider_api_key!,
-				api_url: values.model_provider_api_url!,
+				base_url: values.model_provider_base_url!,
 			});
 			const res2 = await mutateAddModel.mutateAsync({
 				name: values.model_name,
@@ -315,7 +315,7 @@ const InitMineModel = () => {
 								/>
 								<FormField
 									control={form.control}
-									name='model_provider_api_url'
+									name='model_provider_base_url'
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>

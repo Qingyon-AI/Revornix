@@ -60,7 +60,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 		name: z.string().min(1, 'Name is required'),
 		description: z.string().optional().nullable(),
 		api_key: z.string().min(1, 'API Key is required'),
-		api_url: z.string().optional(),
+		base_url: z.string().optional(),
 	});
 	const queryClient = getQueryClient();
 
@@ -68,7 +68,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			api_key: '',
-			api_url: '',
+			base_url: '',
 		},
 	});
 	const [showDeleteModelProviderDialog, setShowDeleteModelProviderDialog] =
@@ -160,7 +160,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 				name: modelProvider.name,
 				description: modelProvider.description,
 				api_key: modelProvider.api_key || '',
-				api_url: modelProvider.api_url || '',
+				base_url: modelProvider.base_url || '',
 			});
 		}
 	}, [modelProvider]);
@@ -286,7 +286,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 								/>
 								<FormField
 									control={form.control}
-									name='api_url'
+									name='base_url'
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
@@ -336,7 +336,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 							) : (
 								<Badge variant={'destructive'}>KEY</Badge>
 							)}
-							{modelProvider.api_url ? (
+							{modelProvider.base_url ? (
 								<Badge variant={'outline'}>URL</Badge>
 							) : (
 								<Badge variant={'destructive'}>URL</Badge>

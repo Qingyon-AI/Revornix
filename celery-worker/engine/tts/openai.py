@@ -14,7 +14,7 @@ class OpenAITTSEngine(TTSEngineProtocol):
             engine_category=EngineCategory.TTS,
             engine_description="OpenAI TTS engine, based on openai's tts interface, convert text to audio",
             engine_description_zh="OpenAI TTS引擎，基于openai提供的tts接口，将文本转化为音频。",
-            engine_demo_config='{"base_url":"","api_key":""}'
+            engine_demo_config='{"base_url":"","api_key":"",model_name: ""}'
         )
         
     async def synthesize(

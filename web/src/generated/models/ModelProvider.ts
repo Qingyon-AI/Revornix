@@ -54,7 +54,7 @@ export interface ModelProvider {
      * @type {string}
      * @memberof ModelProvider
      */
-    api_url: string | null;
+    base_url: string | null;
 }
 
 /**
@@ -66,7 +66,7 @@ export function instanceOfModelProvider(value: object): value is ModelProvider {
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('api_key' in value) || value['api_key'] === undefined) return false;
-    if (!('api_url' in value) || value['api_url'] === undefined) return false;
+    if (!('base_url' in value) || value['base_url'] === undefined) return false;
     return true;
 }
 
@@ -85,7 +85,7 @@ export function ModelProviderFromJSONTyped(json: any, ignoreDiscriminator: boole
         'name': json['name'],
         'description': json['description'],
         'api_key': json['api_key'],
-        'api_url': json['api_url'],
+        'base_url': json['base_url'],
     };
 }
 
@@ -105,7 +105,7 @@ export function ModelProviderToJSONTyped(value?: ModelProvider | null, ignoreDis
         'name': value['name'],
         'description': value['description'],
         'api_key': value['api_key'],
-        'api_url': value['api_url'],
+        'base_url': value['base_url'],
     };
 }
 

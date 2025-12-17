@@ -132,7 +132,7 @@ async def get_ai_model(
             name=ai_model_provider.name,
             description=ai_model_provider.description,
             api_key=db_user_provider.api_key,
-            api_url=db_user_provider.api_url
+            base_url=db_user_provider.base_url
         ),
     )
 
@@ -164,7 +164,7 @@ async def get_ai_model_provider(
         name=ai_model_provider.name,
         description=ai_model_provider.description,
         api_key=db_user_model_provider.api_key,
-        api_url=db_user_model_provider.api_url
+        base_url=db_user_model_provider.base_url
     )
  
 @ai_router.post("/model-provider/create", response_model=schemas.ai.ModelProviderCreateResponse)
@@ -183,7 +183,7 @@ async def create_model_provider(
         user_id=user.id,
         ai_model_provider_id=db_ai_model_provider.id,
         api_key=model_provider_request.api_key,
-        api_url=model_provider_request.api_url
+        base_url=model_provider_request.base_url
     )
     db.commit()
     return schemas.ai.ModelProviderCreateResponse(id=db_ai_model_provider.id)
@@ -304,7 +304,7 @@ async def list_ai_model(
                     name=db_model_provider.name,
                     description=db_model_provider.description,
                     api_key=db_user_model_provider.api_key,
-                    api_url=db_user_model_provider.api_url)
+                    base_url=db_user_model_provider.base_url)
                 )
         )
     return schemas.ai.ModelSearchResponse(data=data)
@@ -338,7 +338,7 @@ async def list_ai_model_provider(
                 name=item.name,
                 description=item.description,
                 api_key=db_user_ai_model_provider.api_key,
-                api_url=db_user_ai_model_provider.api_url
+                base_url=db_user_ai_model_provider.base_url
             )
         )
     return schemas.ai.ModelProviderSearchResponse(data=data)
@@ -407,8 +407,8 @@ async def update_ai_model_provider(
         db_ai_model_provider.description = model_provider_update_request.description
     if model_provider_update_request.api_key is not None:
         db_user_ai_model_provider.api_key = encrypt_api_key(model_provider_update_request.api_key)
-    if model_provider_update_request.api_url is not None:
-        db_user_ai_model_provider.api_url = model_provider_update_request.api_url
+    if model_provider_update_request.base_url is not None:
+        db_user_ai_model_provider.base_url = model_provider_update_request.base_url
     db_ai_model_provider.update_time = now
     db_user_ai_model_provider.update_time = now
     db.commit()
@@ -448,7 +448,7 @@ async def create_agent(
     if db_user_model_provider is None:
         raise schemas.error.CustomException("The user has not set a model provider", code=400)
     api_key = SecretStr(db_user_model_provider.api_key if db_user_model_provider.api_key is not None else "")
-    base_url = db_user_model_provider.api_url
+    base_url = db_user_model_provider.base_url
     if db_model_provider.uuid == OfficialModelProvider.Revornix.meta.id:
         from official.model.llm import OFFICIAL_LLM_AI_BASE_URL, OFFICIAL_LLM_AI_KEY
         api_key = SecretStr(OFFICIAL_LLM_AI_KEY if OFFICIAL_LLM_AI_KEY is not None else "")
