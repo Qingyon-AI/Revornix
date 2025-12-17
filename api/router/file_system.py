@@ -21,7 +21,7 @@ from common.common import get_user_remote_file_system
 file_system_router = APIRouter()
 
 @file_system_router.post('/url-prefix', response_model=schemas.file_system.FileUrlPrefixResponse)
-async def get_url_prefix(
+def get_url_prefix(
     file_url_prefix_request: schemas.file_system.FileUrlPrefixRequest
 ):
     url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(
@@ -245,7 +245,7 @@ def get_aliyun_oss_presigned_url(
     )
 
 @file_system_router.post('/detail', response_model=schemas.file_system.FileSystemInfo)
-async def get_file_system_info(
+def get_file_system_info(
     file_system_info_request: schemas.file_system.FileSystemInfoRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
@@ -259,7 +259,7 @@ async def get_file_system_info(
     return schemas.file_system.FileSystemInfo.model_validate(db_file_system)
 
 @file_system_router.post('/user-file-system/detail', response_model=schemas.file_system.UserFileSystemInfo)
-async def get_user_file_system_info(
+def get_user_file_system_info(
     user_file_system_info_request: schemas.file_system.UserFileSystemInfoRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
@@ -291,7 +291,7 @@ async def get_user_file_system_info(
     return res
 
 @file_system_router.post("/mine", response_model=schemas.file_system.MineFileSystemSearchResponse)
-async def search_mine_file_system(
+def search_mine_file_system(
     file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
     db: Session = Depends(get_db), 
     current_user: models.user.User = Depends(get_current_user)
@@ -321,7 +321,7 @@ async def search_mine_file_system(
     return schemas.file_system.MineFileSystemSearchResponse(data=res)
 
 @file_system_router.post("/provide", response_model=schemas.file_system.ProvideFileSystemSearchResponse)
-async def provide_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
+def provide_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
                               db: Session = Depends(get_db), 
                               current_user: models.user.User = Depends(get_current_user)):
     db_file_systems = crud.file_system.get_all_file_systems(
@@ -334,7 +334,7 @@ async def provide_file_system(file_system_search_request: schemas.file_system.Fi
     return schemas.file_system.ProvideFileSystemSearchResponse(data=file_systems)
 
 @file_system_router.post("/install", response_model=schemas.file_system.FileSystemInstallResponse)
-async def install_user_file_system(
+def install_user_file_system(
     file_system_install_request: schemas.file_system.FileSystemInstallRequest, 
     db: Session = Depends(get_db), 
     current_user: models.user.User = Depends(get_current_user)
@@ -351,7 +351,7 @@ async def install_user_file_system(
     return schemas.file_system.FileSystemInstallResponse(user_file_system_id=db_user_file_system.id)
 
 @file_system_router.post("/user-file-system/delete", response_model=schemas.common.NormalResponse)
-async def delete_user_file_system(
+def delete_user_file_system(
     user_file_system_delete_request: schemas.file_system.UserFileSystemDeleteRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
@@ -365,7 +365,7 @@ async def delete_user_file_system(
     return schemas.common.SuccessResponse()
 
 @file_system_router.post("/update", response_model=schemas.common.NormalResponse)
-async def update_file_system(
+def update_file_system(
     user_file_system_update_request: schemas.file_system.UserFileSystemUpdateRequest, 
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)

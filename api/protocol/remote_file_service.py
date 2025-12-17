@@ -1,5 +1,7 @@
 import crud
 import json
+import threading
+import time
 from typing import Protocol
 from data.sql.base import SessionLocal
 from config.file_system import FILE_SYSTEM_SERVER_PUBLIC_URL
@@ -39,6 +41,27 @@ class RemoteFileServiceProtocol(Protocol):
     ):
         """本函数默认用来返回任何前端需要url_prefix的情况，注意这个url_prefix是公网访问文件系统的url_prefix
         """
+        cache = getattr(RemoteFileServiceProtocol, "_url_prefix_cache", None)
+        if cache is None:
+            cache = {}
+            setattr(RemoteFileServiceProtocol, "_url_prefix_cache", cache)
+        lock = getattr(RemoteFileServiceProtocol, "_url_prefix_cache_lock", None)
+        if lock is None:
+            lock = threading.Lock()
+            setattr(RemoteFileServiceProtocol, "_url_prefix_cache_lock", lock)
+        ttl_seconds = getattr(RemoteFileServiceProtocol, "_url_prefix_cache_ttl_seconds", None)
+        if ttl_seconds is None:
+            ttl_seconds = 60.0
+            setattr(RemoteFileServiceProtocol, "_url_prefix_cache_ttl_seconds", ttl_seconds)
+
+        now = time.monotonic()
+        with lock:
+            cached = cache.get(user_id)
+        if cached is not None:
+            cached_at, cached_value = cached
+            if now - cached_at <= ttl_seconds:
+                return cached_value
+
         db = SessionLocal()
         try:
             db_user = crud.user.get_user_by_id(
@@ -63,7 +86,7 @@ class RemoteFileServiceProtocol(Protocol):
                 raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")
 
             if db_file_system.uuid == RemoteFileServiceUUID.Built_In.value:
-                return f'{FILE_SYSTEM_SERVER_PUBLIC_URL}/{db_user.uuid}'
+                url_prefix = f'{FILE_SYSTEM_SERVER_PUBLIC_URL}/{db_user.uuid}'
             elif db_file_system.uuid == RemoteFileServiceUUID.AliyunOSS.value:
                 config_str = db_user_file_system.config_json
             elif db_file_system.uuid == RemoteFileServiceUUID.AWS_S3.value:
@@ -72,10 +95,16 @@ class RemoteFileServiceProtocol(Protocol):
                 config_str = db_user_file_system.config_json
             else:
                 raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")
-            if config_str is None:
+            if db_file_system.uuid != RemoteFileServiceUUID.Built_In.value:
+                if config_str is None:
+                    raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")
+                config = json.loads(config_str)
+                url_prefix = config.get("url_prefix")
+            if not url_prefix:
                 raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")
-            config = json.loads(config_str)
-            return config.get("url_prefix")
+            with lock:
+                cache[user_id] = (now, url_prefix)
+            return url_prefix
         except Exception as e:
             raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")
         finally:

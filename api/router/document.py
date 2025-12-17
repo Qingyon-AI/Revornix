@@ -1,6 +1,7 @@
 import crud
 import models
 import schemas
+import asyncio
 from celery import chain, group
 from datetime import datetime, timezone
 from schemas.common import SuccessResponse
@@ -20,7 +21,7 @@ from enums.section import UserSectionRole, UserSectionAuthority, SectionDocument
 document_router = APIRouter()
 
 @document_router.post('/label/summary', response_model=schemas.document.LabelSummaryResponse)
-async def get_label_summary(
+def get_label_summary(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
@@ -41,7 +42,7 @@ async def get_label_summary(
     return schemas.document.LabelSummaryResponse(data=res)
 
 @document_router.post('/label/delete', response_model=schemas.common.NormalResponse)
-async def delete_label(
+def delete_label(
     label_delete_request: schemas.document.LabelDeleteRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -55,7 +56,7 @@ async def delete_label(
     return schemas.common.SuccessResponse()
 
 @document_router.post("/label/list", response_model=schemas.document.LabelListResponse)
-async def list_label(
+def list_label(
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
 ):
@@ -69,7 +70,7 @@ async def list_label(
     return schemas.document.LabelListResponse(data=labels)
 
 @document_router.post('/label/create', response_model=schemas.document.CreateLabelResponse)
-async def add_label(
+def add_label(
     label_add_request: schemas.document.LabelAddRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -83,7 +84,7 @@ async def add_label(
     return schemas.document.CreateLabelResponse(id=db_label.id, name=db_label.name)
     
 @document_router.post('/note/create', response_model=schemas.common.NormalResponse)
-async def create_note(
+def create_note(
     note_create_request: schemas.document.DocumentNoteCreateRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -98,7 +99,7 @@ async def create_note(
     return schemas.common.SuccessResponse()
 
 @document_router.post('/note/delete', response_model=schemas.common.NormalResponse)
-async def delete_note(
+def delete_note(
     note_delete_request: schemas.document.DocumentNoteDeleteRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -112,7 +113,7 @@ async def delete_note(
     return schemas.common.SuccessResponse()
 
 @document_router.post('/note/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentNoteInfo])
-async def search_note(
+def search_note(
     search_note_request: schemas.document.SearchDocumentNoteRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -195,10 +196,11 @@ async def create_ai_summary(
     model_id = user.default_document_reader_model_id
     if model_id is None:
         raise Exception('Please set the default document reader model for the user first.')
-    ai_summary_result = summary_content(
-        user_id=user.id, 
-        model_id=model_id, 
-        content=markdown_content
+    ai_summary_result = await asyncio.to_thread(
+        summary_content,
+        user_id=user.id,
+        model_id=model_id,
+        content=markdown_content,
     )
     db_document = crud.document.get_document_by_document_id(
         db=db,
@@ -272,7 +274,7 @@ async def generate_podcast(
     return schemas.common.SuccessResponse()
 
 @document_router.post('/month/summary', response_model=schemas.document.DocumentMonthSummaryResponse)
-async def get_month_summary(
+def get_month_summary(
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
 ):
@@ -285,7 +287,7 @@ async def get_month_summary(
     return schemas.document.DocumentMonthSummaryResponse(data=summary_items)
 
 @document_router.post('/create', response_model=schemas.document.DocumentCreateResponse)
-async def create_document(
+def create_document(
     document_create_request: schemas.document.DocumentCreateRequest,  
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -484,7 +486,7 @@ async def transform_markdown(
     return schemas.common.SuccessResponse()
 
 @document_router.post('/update', response_model=schemas.common.NormalResponse)
-async def update_document(
+def update_document(
     document_update_request: schemas.document.DocumentUpdateRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -1047,7 +1049,7 @@ def search_my_star_documents(
     )
 
 @document_router.post('/vector/search', response_model=schemas.document.VectorSearchResponse)
-async def search_knowledge_vector(
+def search_knowledge_vector(
     vector_search_request: schemas.document.VectorSearchRequest, 
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -1067,7 +1069,7 @@ async def search_knowledge_vector(
     return schemas.document.VectorSearchResponse(documents=documents)
 
 @document_router.post('/star', response_model=SuccessResponse)
-async def star_document(
+def star_document(
     star_request: schemas.document.StarRequest, 
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -1094,7 +1096,7 @@ async def star_document(
     return schemas.common.SuccessResponse(message="The star status of the document is successfully updated")
 
 @document_router.post('/read', response_model=SuccessResponse)
-async def read_document(
+def read_document(
     read_request: schemas.document.ReadRequest, 
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -1121,7 +1123,7 @@ async def read_document(
     return schemas.common.SuccessResponse(message="The read status of the document is successfully updated")
 
 @document_router.post('/delete', response_model=SuccessResponse)
-async def delete_document(
+def delete_document(
     documents_delete_request: schemas.document.DocumentDeleteRequest, 
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)

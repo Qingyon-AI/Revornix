@@ -52,7 +52,7 @@ def call_llm(
     return completion
 
 @ai_router.post("/model/create", response_model=schemas.ai.ModelCreateResponse)
-async def create_model(
+def create_model(
     model_create_request: schemas.ai.ModelCreateRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user),
@@ -85,7 +85,7 @@ async def create_model(
     return schemas.ai.ModelCreateResponse(id=db_ai_model.id)
 
 @ai_router.post("/model/detail", response_model=schemas.ai.Model)
-async def get_ai_model(
+def get_ai_model(
     model_request: schemas.ai.ModelRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -137,7 +137,7 @@ async def get_ai_model(
     )
 
 @ai_router.post("/model-provider/detail", response_model=schemas.ai.ModelProvider)
-async def get_ai_model_provider(
+def get_ai_model_provider(
     model_provider_request: schemas.ai.ModelProviderRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -168,7 +168,7 @@ async def get_ai_model_provider(
     )
  
 @ai_router.post("/model-provider/create", response_model=schemas.ai.ModelProviderCreateResponse)
-async def create_model_provider(
+def create_model_provider(
     model_provider_request: schemas.ai.ModelProviderCreateRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -189,7 +189,7 @@ async def create_model_provider(
     return schemas.ai.ModelProviderCreateResponse(id=db_ai_model_provider.id)
  
 @ai_router.post("/model/delete", response_model=schemas.common.NormalResponse)
-async def delete_ai_model(
+def delete_ai_model(
     delete_model_request: schemas.ai.DeleteModelRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user),
@@ -219,7 +219,7 @@ async def delete_ai_model(
     return schemas.common.SuccessResponse()
 
 @ai_router.post("/model-provider/delete", response_model=schemas.common.NormalResponse)
-async def delete_ai_model_provider(
+def delete_ai_model_provider(
     delete_model_request: schemas.ai.DeleteModelProviderRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user),
@@ -261,7 +261,7 @@ async def delete_ai_model_provider(
     return schemas.common.SuccessResponse()
      
 @ai_router.post("/model/search", response_model=schemas.ai.ModelSearchResponse)
-async def list_ai_model(
+def list_ai_model(
     model_search_request: schemas.ai.ModelSearchRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -310,7 +310,7 @@ async def list_ai_model(
     return schemas.ai.ModelSearchResponse(data=data)
 
 @ai_router.post("/model-provider/search", response_model=schemas.ai.ModelProviderSearchResponse)
-async def list_ai_model_provider(
+def list_ai_model_provider(
     model_provider_search_request: schemas.ai.ModelProviderSearchRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -344,7 +344,7 @@ async def list_ai_model_provider(
     return schemas.ai.ModelProviderSearchResponse(data=data)
 
 @ai_router.post("/model/update", response_model=schemas.common.NormalResponse)
-async def update_ai_model(
+def update_ai_model(
     model_update_request: schemas.ai.ModelUpdateRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user),
@@ -377,7 +377,7 @@ async def update_ai_model(
     return schemas.common.SuccessResponse()
 
 @ai_router.post("/model-provider/update", response_model=schemas.common.NormalResponse)
-async def update_ai_model_provider(
+def update_ai_model_provider(
     model_provider_update_request: schemas.ai.ModelProviderUpdateRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user),
@@ -541,7 +541,7 @@ async def stream_ops(
     yield f"{json.dumps(to_serializable(sse_data), ensure_ascii=False)}\n\n"
 
 @ai_router.post("/ask")
-async def ask_ai(
+def ask_ai(
     chat_messages: schemas.ai.ChatMessages, 
     user: models.user.User = Depends(get_current_user)
 ):

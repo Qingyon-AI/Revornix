@@ -10,7 +10,7 @@ from enums.section import UserSectionRole
 graph_router = APIRouter()
 
 @graph_router.post('/section', response_model=schemas.graph.GraphResponse)
-async def section_graph(
+def section_graph(
     section_graph_request: schemas.graph.SectionGraphRequest,
     user: models.user.User = Depends(get_current_user_without_throw),
     db: Session = Depends(get_db)
@@ -126,7 +126,7 @@ async def section_graph(
     return schemas.graph.GraphResponse(nodes=nodes, edges=edges)
 
 @graph_router.post('/document', response_model=schemas.graph.GraphResponse)
-async def document_graph(
+def document_graph(
     document_graph_request: schemas.graph.DocumentGraphRequest,
     user: models.user.User = Depends(get_current_user)
 ):
@@ -168,7 +168,7 @@ async def document_graph(
     return schemas.graph.GraphResponse(nodes=nodes, edges=edges) 
 
 @graph_router.post("/search", response_model=schemas.graph.GraphResponse)
-async def graph(
+def graph(
     user: models.user.User = Depends(get_current_user)
 ):
     nodes = []
