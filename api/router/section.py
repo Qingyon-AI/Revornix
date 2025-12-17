@@ -71,7 +71,7 @@ async def generate_podcast(
     return schemas.common.SuccessResponse()
 
 @section_router.post('/documents', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionDocumentInfo])
-async def section_document_request(
+def section_document_request(
     section_document_request: schemas.section.SectionDocumentRequest,
     db: Session = Depends(get_db),
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)
@@ -141,7 +141,7 @@ async def section_document_request(
     )
 
 @section_router.post('/detail/seo', response_model=schemas.section.SectionInfo)
-async def section_seo_detail_request(
+def section_seo_detail_request(
     section_seo_detail_request: schemas.section.SectionSeoDetailRequest,
     db: Session = Depends(get_db),
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)
@@ -887,7 +887,7 @@ async def search_user_sections(
     )                                                                                    
                                                     
 @section_router.post('/mine/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
-async def search_mine_sections(
+def search_mine_sections(
     search_mine_sections_request: schemas.section.SearchMineSectionsRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -964,7 +964,7 @@ async def search_mine_sections(
     )
     
 @section_router.post('/detail', response_model=schemas.section.SectionInfo)
-async def get_section_detail(
+def get_section_detail(
     section_detail_request: schemas.section.SectionDetailRequest,
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw),
     db: Session = Depends(get_db)

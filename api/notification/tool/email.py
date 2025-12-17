@@ -1,5 +1,6 @@
 import smtplib
 import ssl
+import asyncio
 from pathlib import Path
 from typing import Optional
 from email.mime.text import MIMEText
@@ -91,11 +92,14 @@ class EmailNotificationTool(NotificationToolProtocol):
         msg.attach(alternative)
 
         try:
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(host=smtp_host, port=smtp_port, context=context, timeout=10) as server:
-                server.login(user=username, password=password)
-                server.sendmail(from_addr=username, to_addrs=[recipient], msg=msg.as_string())
-            return True
+            def _send():
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(host=smtp_host, port=smtp_port, context=context, timeout=10) as server:
+                    server.login(user=username, password=password)
+                    server.sendmail(from_addr=username, to_addrs=[recipient], msg=msg.as_string())
+                return True
+
+            return await asyncio.to_thread(_send)
 
         except smtplib.SMTPException as smtp_err:
             exception_logger.error(f"[EmailNotify] SMTP error: {smtp_err}", exc_info=True)

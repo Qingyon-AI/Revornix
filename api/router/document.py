@@ -644,8 +644,77 @@ def get_document_info(
     res.podcast_task = podcast_task
     return res
 
+def get_document_infos(
+    db: Session,
+    documents: list[models.document.Document]
+):
+    if not documents:
+        return []
+    document_ids = [document.id for document in documents]
+
+    convert_tasks = crud.task.get_document_convert_tasks_by_document_ids(db=db, document_ids=document_ids)
+    embedding_tasks = crud.task.get_document_embedding_tasks_by_document_ids(db=db, document_ids=document_ids)
+    graph_tasks = crud.task.get_document_graph_tasks_by_document_ids(db=db, document_ids=document_ids)
+    podcast_tasks = crud.task.get_document_podcast_tasks_by_document_ids(db=db, document_ids=document_ids)
+    process_tasks = crud.task.get_document_process_tasks_by_document_ids(db=db, document_ids=document_ids)
+    labels_by_document_id = crud.document.get_labels_by_document_ids(db=db, document_ids=document_ids)
+
+    convert_task_by_document_id = {task.document_id: task for task in convert_tasks}
+    embedding_task_by_document_id = {task.document_id: task for task in embedding_tasks}
+    graph_task_by_document_id = {task.document_id: task for task in graph_tasks}
+    podcast_task_by_document_id = {task.document_id: task for task in podcast_tasks}
+    process_task_by_document_id = {task.document_id: task for task in process_tasks}
+
+    res = []
+    for document in documents:
+        info = schemas.document.DocumentInfo.model_validate(document)
+        info.labels = [
+            schemas.document.Label(id=label.id, name=label.name)
+            for label in labels_by_document_id.get(document.id, [])
+        ]
+
+        convert_task = convert_task_by_document_id.get(document.id)
+        if convert_task is not None:
+            info.convert_task = schemas.task.DocumentConvertTask(
+                creator_id=document.creator_id,
+                status=convert_task.status,
+                md_file_name=convert_task.md_file_name,
+            )
+
+        embedding_task = embedding_task_by_document_id.get(document.id)
+        if embedding_task is not None:
+            info.embedding_task = schemas.task.DocumentEmbeddingTask(
+                creator_id=document.creator_id,
+                status=embedding_task.status,
+            )
+
+        graph_task = graph_task_by_document_id.get(document.id)
+        if graph_task is not None:
+            info.graph_task = schemas.task.DocumentGraphTask(
+                creator_id=document.creator_id,
+                status=graph_task.status,
+            )
+
+        podcast_task = podcast_task_by_document_id.get(document.id)
+        if podcast_task is not None:
+            info.podcast_task = schemas.task.DocumentPodcastTask(
+                creator_id=document.creator_id,
+                status=podcast_task.status,
+                podcast_file_name=podcast_task.podcast_file_name,
+            )
+
+        process_task = process_task_by_document_id.get(document.id)
+        if process_task is not None:
+            info.process_task = schemas.task.DocumentProcessTask(
+                creator_id=document.creator_id,
+                status=process_task.status,
+            )
+
+        res.append(info)
+    return res
+
 @document_router.post('/detail', response_model=schemas.document.DocumentDetailResponse)
-async def get_document_detail(
+def get_document_detail(
     document_detail_request: schemas.document.DocumentDetailRequest, 
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -789,7 +858,7 @@ async def get_document_detail(
     return res
 
 @document_router.post('/unread/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
-async def search_user_unread_documents(
+def search_user_unread_documents(
     search_unread_list_request: schemas.document.SearchUnreadListRequest, 
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -807,12 +876,7 @@ async def search_user_unread_documents(
         desc=search_unread_list_request.desc
     )
     
-    documents = [
-        get_document_info(
-            db=db,
-            document=document
-        ) for document in db_documents
-    ]
+    documents = get_document_infos(db=db, documents=db_documents)
     if len(documents) < search_unread_list_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_unread_list_request.limit:
@@ -842,7 +906,7 @@ async def search_user_unread_documents(
     )
     
 @document_router.post('/recent/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
-async def recent_read_document(
+def recent_read_document(
     search_recent_read_request: schemas.document.SearchRecentReadRequest, 
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -859,12 +923,7 @@ async def recent_read_document(
         label_ids=search_recent_read_request.label_ids,
         desc=search_recent_read_request.desc
     )
-    documents = [
-        get_document_info(
-            db=db,
-            document=document
-        ) for document in db_documents
-    ]
+    documents = get_document_infos(db=db, documents=db_documents)
     if len(documents) < search_recent_read_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_recent_read_request.limit:
@@ -894,7 +953,7 @@ async def recent_read_document(
     )
 
 @document_router.post('/search/mine', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
-async def search_all_mine_documents(
+def search_all_mine_documents(
     search_all_my_document_request: schemas.document.SearchAllMyDocumentsRequest, 
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -911,12 +970,7 @@ async def search_all_mine_documents(
         label_ids=search_all_my_document_request.label_ids,
         desc=search_all_my_document_request.desc
     )
-    documents = [
-        get_document_info(
-            db=db,
-            document=document
-        ) for document in db_documents
-    ]
+    documents = get_document_infos(db=db, documents=db_documents)
     if len(documents) < search_all_my_document_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_all_my_document_request.limit:
@@ -946,7 +1000,7 @@ async def search_all_mine_documents(
     )
 
 @document_router.post('/star/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
-async def search_my_star_documents(
+def search_my_star_documents(
     search_my_star_documents_request: schemas.document.SearchMyStarDocumentsRequest, 
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -963,12 +1017,7 @@ async def search_my_star_documents(
         label_ids=search_my_star_documents_request.label_ids,
         desc=search_my_star_documents_request.desc
     )
-    documents = [
-        get_document_info(
-            db=db,
-            document=document
-        ) for document in db_documents
-    ]
+    documents = get_document_infos(db=db, documents=db_documents)
     if len(documents) < search_my_star_documents_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_my_star_documents_request.limit:

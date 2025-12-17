@@ -174,6 +174,71 @@ def get_document_convert_task_by_document_id(
                          models.task.DocumentConvertToMdTask.delete_at == None)
     return query.one_or_none()
 
+def get_document_convert_tasks_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    if not document_ids:
+        return []
+    query = db.query(models.task.DocumentConvertToMdTask)
+    query = query.filter(
+        models.task.DocumentConvertToMdTask.document_id.in_(document_ids),
+        models.task.DocumentConvertToMdTask.delete_at == None,
+    )
+    return query.all()
+
+def get_document_embedding_tasks_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    if not document_ids:
+        return []
+    query = db.query(models.task.DocumentEmbeddingTask)
+    query = query.filter(
+        models.task.DocumentEmbeddingTask.document_id.in_(document_ids),
+        models.task.DocumentEmbeddingTask.delete_at == None,
+    )
+    return query.all()
+
+def get_document_graph_tasks_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    if not document_ids:
+        return []
+    query = db.query(models.task.DocumentGraphTask)
+    query = query.filter(
+        models.task.DocumentGraphTask.document_id.in_(document_ids),
+        models.task.DocumentGraphTask.delete_at == None,
+    )
+    return query.all()
+
+def get_document_podcast_tasks_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    if not document_ids:
+        return []
+    query = db.query(models.task.DocumentPodcastTask)
+    query = query.filter(
+        models.task.DocumentPodcastTask.document_id.in_(document_ids),
+        models.task.DocumentPodcastTask.delete_at == None,
+    )
+    return query.all()
+
+def get_document_process_tasks_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    if not document_ids:
+        return []
+    query = db.query(models.task.DocumentProcessTask)
+    query = query.filter(
+        models.task.DocumentProcessTask.document_id.in_(document_ids),
+        models.task.DocumentProcessTask.delete_at == None,
+    )
+    return query.all()
+
 def delete_document_convert_task_by_document_ids(
     db: Session,
     user_id: int,

@@ -164,9 +164,9 @@ class AppleSandboxNotificationTool(NotificationToolProtocol):
         }
         if cover is not None:
             data.update({'sender_avatar': cover})
-        with httpx.Client(http2=True) as client:
+        async with httpx.AsyncClient(http2=True, timeout=10) as client:
             try:
-                res = client.post(url=url, headers=headers, json=data)
+                res = await client.post(url=url, headers=headers, json=data)
                 res.raise_for_status()
                 return True
             except Exception as e:

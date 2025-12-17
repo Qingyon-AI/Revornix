@@ -561,6 +561,28 @@ def get_labels_by_document_id(
                          models.document.Label.delete_at == None)
     return query.all()
 
+def get_labels_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    if not document_ids:
+        return {}
+    query = db.query(models.document.DocumentLabel.document_id, models.document.Label)
+    query = query.join(
+        models.document.Label,
+        models.document.DocumentLabel.label_id == models.document.Label.id,
+    )
+    query = query.filter(
+        models.document.DocumentLabel.document_id.in_(document_ids),
+        models.document.DocumentLabel.delete_at == None,
+        models.document.Label.delete_at == None,
+    )
+    rows = query.all()
+    res: dict[int, list[models.document.Label]] = {}
+    for document_id, label in rows:
+        res.setdefault(document_id, []).append(label)
+    return res
+
 def get_document_labels_by_document_id(
     db: Session, 
     document_id: int
