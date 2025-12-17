@@ -9,7 +9,7 @@ from enums.mcp import MCPCategory
 mcp_router = APIRouter()
 
 @mcp_router.post('/server/detail', response_model=schemas.mcp.MCPServerInfo)
-async def get_mcp_server_detail(
+def get_mcp_server_detail(
     mcp_server_detail_request: schemas.mcp.MCPServerDetailRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -55,7 +55,7 @@ async def get_mcp_server_detail(
         raise schemas.error.CustomException(message="MCPServerCategoryError")
 
 @mcp_router.post("/server/search", response_model=schemas.mcp.MCPServerSearchResponse)
-async def get_mcp_server_list(
+def get_mcp_server_list(
     mcp_server_search_request: schemas.mcp.MCPServerSearchRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -101,7 +101,7 @@ async def get_mcp_server_list(
     return schemas.mcp.MCPServerSearchResponse(data=res)
 
 @mcp_router.post('/server/create', response_model=schemas.common.NormalResponse)
-async def create_server(
+def create_server(
     mcp_server_create_request: schemas.mcp.MCPServerCreateRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -135,7 +135,7 @@ async def create_server(
     return schemas.common.SuccessResponse()
 
 @mcp_router.post("/server/update", response_model=schemas.common.NormalResponse)
-async def update_server(
+def update_server(
     mcp_server_update_request: schemas.mcp.MCPServerUpdateRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -211,7 +211,7 @@ async def update_server(
     return schemas.common.SuccessResponse()
 
 @mcp_router.post("/server/delete", response_model=schemas.common.NormalResponse)
-async def delete_server(mcp_server_delete_request: schemas.mcp.MCPServerDeleteRequest,
+def delete_server(mcp_server_delete_request: schemas.mcp.MCPServerDeleteRequest,
                         db: Session = Depends(get_db),
                         user: models.user.User = Depends(get_current_user)):
     db_base_mcp_server = crud.mcp.get_base_mcp_server_by_id(

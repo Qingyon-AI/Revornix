@@ -9,7 +9,7 @@ from common.dependencies import get_current_user, get_db
 rss_router = APIRouter()
 
 @rss_router.post('/detail', response_model=schemas.rss.RssServerInfo)
-async def getRssServerDetail(
+def getRssServerDetail(
     get_rss_server_detail_request: schemas.rss.GetRssServerDetailRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
@@ -42,7 +42,7 @@ async def getRssServerDetail(
     return rss_server_info
 
 @rss_router.post('/document', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
-async def getRssServerDocument(
+def getRssServerDocument(
     get_rss_server_document_request: schemas.rss.GetRssServerDocumentRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -121,7 +121,7 @@ async def getRssServerDocument(
     )
 
 @rss_router.post('/add', response_model=schemas.rss.AddRssServerResponse)
-async def addRssServer(
+def addRssServer(
     add_rss_request: schemas.rss.AddRssServerRequest, 
     db: Session = Depends(get_db), 
     current_user: models.user.User = Depends(get_current_user)
@@ -145,7 +145,7 @@ async def addRssServer(
     return schemas.rss.AddRssServerResponse(id=db_rss_server.id)
 
 @rss_router.post('/delete', response_model=schemas.common.NormalResponse)
-async def deleteRssServer(
+def deleteRssServer(
     delete_rss_request: schemas.rss.DeleteRssServerRequest, 
     db: Session = Depends(get_db), 
     current_user: models.user.User = Depends(get_current_user)
@@ -164,7 +164,7 @@ async def deleteRssServer(
     return schemas.common.SuccessResponse()
 
 @rss_router.post('/update', response_model=schemas.common.NormalResponse)
-async def updateRssServer(
+def updateRssServer(
     update_rss_request: schemas.rss.UpdateRssServerRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
@@ -191,7 +191,7 @@ async def updateRssServer(
     return schemas.common.SuccessResponse()
 
 @rss_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.rss.RssServerInfo])
-async def searchRssServer(
+def searchRssServer(
     search_rss_request: schemas.rss.SearchRssServerRequest, 
     db: Session = Depends(get_db), 
     current_user: models.user.User = Depends(get_current_user)

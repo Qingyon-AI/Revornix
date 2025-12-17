@@ -233,7 +233,7 @@ def section_seo_detail_request(
     return res
 
 @section_router.post('/publish', response_model=schemas.common.NormalResponse)
-async def section_publish_request(
+def section_publish_request(
     section_publish_request: schemas.section.SectionPublishRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -266,7 +266,7 @@ async def section_publish_request(
     return schemas.common.SuccessResponse()
 
 @section_router.post('/republish', response_model=schemas.common.NormalResponse)
-async def section_republish(
+def section_republish(
     section_republish_request: schemas.section.SectionRePublishRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -295,7 +295,7 @@ async def section_republish(
     return schemas.common.SuccessResponse()
 
 @section_router.post('/publish/get', response_model=schemas.section.SectionPublishGetResponse)
-async def section_publish_get_request(
+def section_publish_get_request(
     section_publish_get_request: schemas.section.SectionPublishGetRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -322,7 +322,7 @@ async def section_publish_get_request(
     )
 
 @section_router.post('/mine/role-and-authority', response_model=schemas.section.SectionUserRoleAndAuthorityResponse)
-async def get_mine_section_role_and_authority(
+def get_mine_section_role_and_authority(
     section_user_get_request: schemas.section.MineSectionRoleAndAuthorityRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -342,7 +342,7 @@ async def get_mine_section_role_and_authority(
     )
 
 @section_router.post('/user/role-and-authority', response_model=schemas.section.SectionUserRoleAndAuthorityResponse)
-async def get_section_user_role_and_authority(
+def get_section_user_role_and_authority(
     section_user_get_request: schemas.section.SectionUserRoleAndAuthorityRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -362,7 +362,7 @@ async def get_section_user_role_and_authority(
     )
 
 @section_router.post('/user', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionUserPublicInfo])
-async def section_user_request(
+def section_user_request(
     section_user_request: schemas.section.SectionUserRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -438,7 +438,7 @@ async def section_user_request(
     )
 
 @section_router.post('/user/add', response_model=schemas.common.NormalResponse)
-async def section_user_add_request(
+def section_user_add_request(
     section_share_request: schemas.section.SectionUserAddRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -472,7 +472,7 @@ async def section_user_add_request(
     return schemas.common.SuccessResponse()
 
 @section_router.post('/user/modify', response_model=schemas.common.NormalResponse)
-async def section_user_modify_request(
+def section_user_modify_request(
     section_user_modify_request: schemas.section.SectionUserModifyRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -511,7 +511,7 @@ async def section_user_modify_request(
     return schemas.common.SuccessResponse()
 
 @section_router.post('/user/delete', response_model=schemas.common.NormalResponse)
-async def delete_section_user(
+def delete_section_user(
     section_user_delete_request: schemas.section.SectionUserDeleteRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -547,7 +547,7 @@ async def delete_section_user(
     return schemas.common.SuccessResponse()
 
 @section_router.post('/label/create', response_model=schemas.section.CreateLabelResponse)
-async def add_label(
+def add_label(
     label_add_request: schemas.section.LabelAddRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -561,7 +561,7 @@ async def add_label(
     return schemas.section.CreateLabelResponse(id=db_label.id, name=db_label.name)
 
 @section_router.post("/label/list", response_model=schemas.section.LabelListResponse)
-async def list_label(
+def list_label(
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
 ):
@@ -575,7 +575,7 @@ async def list_label(
     return schemas.section.LabelListResponse(data=labels)
 
 @section_router.post('/label/delete', response_model=schemas.common.NormalResponse)
-async def delete_label(
+def delete_label(
     label_delete_request: schemas.section.LabelDeleteRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -589,7 +589,7 @@ async def delete_label(
     return schemas.common.SuccessResponse()
 
 @section_router.post("/subscribed", response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
-async def get_my_subscribed_sections(
+def get_my_subscribed_sections(
     search_subscribed_section_request: schemas.section.SearchSubscribedSectionRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -666,7 +666,7 @@ async def get_my_subscribed_sections(
     )
 
 @section_router.post("/update", response_model=schemas.common.NormalResponse)
-async def update_section(
+def update_section(
     section_update_request: schemas.section.SectionUpdateRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user),
@@ -1114,7 +1114,7 @@ def get_section_detail(
     return res
 
 @section_router.post('/date', response_model=schemas.section.DaySectionResponse)
-async def get_date_section_info(
+def get_date_section_info(
     day_section_request: schemas.section.DaySectionRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -1162,7 +1162,7 @@ async def get_date_section_info(
     return res
 
 @section_router.post('/create', response_model=schemas.section.SectionCreateResponse)
-async def create_section(
+def create_section(
     section_create_request: schemas.section.SectionCreateRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -1198,7 +1198,7 @@ async def create_section(
 
 # 可免费订阅的专栏直接在这里处理，付费专栏订阅放到java微服务中去处理，注意付费专栏的取消订阅这部分逻辑还是在这里处理的
 @section_router.post('/subscribe', response_model=schemas.common.NormalResponse)
-async def subscribe_section(
+def subscribe_section(
     section_subscribe_request: schemas.section.SectionSubscribeRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -1256,7 +1256,7 @@ async def subscribe_section(
     return schemas.common.SuccessResponse()    
 
 @section_router.post('/delete', response_model=schemas.common.NormalResponse)
-async def delete_section(
+def delete_section(
     section_delete_request: schemas.section.SectionDeleteRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -1304,7 +1304,7 @@ async def delete_section(
     return schemas.common.SuccessResponse()
     
 @section_router.post('/comment/create', response_model=schemas.common.NormalResponse)
-async def create_section_comment(
+def create_section_comment(
     section_comment_create_request: schemas.section.SectionCommentCreateRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
@@ -1340,7 +1340,7 @@ async def create_section_comment(
     return schemas.common.SuccessResponse()
 
 @section_router.post('/comment/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionCommentInfo])
-async def search_section_comment(
+def search_section_comment(
     section_comment_search_request: schemas.section.SectionCommentSearchRequest,
     db: Session = Depends(get_db), 
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)
@@ -1385,7 +1385,7 @@ async def search_section_comment(
     return res
 
 @section_router.post('/comment/delete', response_model=schemas.common.NormalResponse)
-async def delete_section_comment(
+def delete_section_comment(
     section_comment_delete_request: schemas.section.SectionCommentDeleteRequest,
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)

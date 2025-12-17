@@ -9,7 +9,7 @@ from common.dependencies import get_current_user, get_db
 api_key_router = APIRouter()
 
 @api_key_router.post("/create", response_model=schemas.api_key.ApiKeyCreateResponse)
-async def create_api_key(
+def create_api_key(
     api_key_create_request: schemas.api_key.ApiKeyCreateRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -24,7 +24,7 @@ async def create_api_key(
     return schemas.api_key.ApiKeyCreateResponse(api_key_id=db_api_key.id)
 
 @api_key_router.post("/search", response_model=schemas.pagination.Pagination[schemas.api_key.ApiKeyInfo])
-async def search_api_key(
+def search_api_key(
     search_api_key_request: schemas.api_key.SearchApiKeysRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -53,7 +53,7 @@ async def search_api_key(
     return res
 
 @api_key_router.post("/delete", response_model=schemas.common.NormalResponse)
-async def delete_api_key(
+def delete_api_key(
     api_keys_delete_request: schemas.api_key.ApiKeysDeleteRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)

@@ -49,7 +49,7 @@ async def upload_file_system(
     return schemas.common.SuccessResponse()
 
 @tp_router.post('/section/create', response_model=schemas.section.SectionCreateResponse)
-async def create_section(
+def create_section(
     section_create_request: schemas.section.SectionCreateRequest,
     db: Session = Depends(get_db),
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
@@ -78,7 +78,7 @@ async def create_section(
     return schemas.section.SectionCreateResponse(id=db_section.id)
 
 @tp_router.post('/section/label/create', response_model=schemas.section.CreateLabelResponse)
-async def add_label(
+def add_label(
     label_add_request: schemas.section.LabelAddRequest,
     db: Session = Depends(get_db), 
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
@@ -95,7 +95,7 @@ async def add_label(
     )
 
 @tp_router.post('/section/mine/all', response_model=schemas.section.AllMySectionsResponse)
-async def get_all_mine_sections(
+def get_all_mine_sections(
     db: Session = Depends(get_db),
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
 ):
@@ -111,7 +111,7 @@ async def get_all_mine_sections(
     return schemas.section.AllMySectionsResponse(data=sections)
 
 @tp_router.post("/document/label/list", response_model=schemas.document.LabelListResponse)
-async def list_label(
+def list_label(
     db: Session = Depends(get_db), 
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
 ):
@@ -126,7 +126,7 @@ async def list_label(
     return schemas.document.LabelListResponse(data=labels)
 
 @tp_router.post("/document/label/create", response_model=schemas.document.CreateLabelResponse)
-async def create_document_label(
+def create_document_label(
     label_add_request: schemas.document.LabelAddRequest,
     db: Session = Depends(get_db),
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
@@ -143,7 +143,7 @@ async def create_document_label(
     )
                        
 @tp_router.post("/document/create", response_model=schemas.document.DocumentCreateResponse)
-async def create_document(
+def create_document(
     document_create_request: schemas.document.DocumentCreateRequest, 
     db: Session = Depends(get_db), 
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)

@@ -1,5 +1,6 @@
 import crud
 import schemas
+import asyncio
 import os
 import random
 import string
@@ -129,7 +130,7 @@ def search_user(
     return res
 
 @user_router.post('/default-file-system/update', response_model=schemas.common.NormalResponse)
-async def update_default_file_system(
+def update_default_file_system(
     default_file_system_update_request: schemas.user.DefaultFileSystemUpdateRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -139,7 +140,7 @@ async def update_default_file_system(
     return schemas.common.SuccessResponse(message="The default file system is updated successfully.")
 
 @user_router.post('/default-engine/update', response_model=schemas.common.NormalResponse)
-async def update_default_engine(
+def update_default_engine(
     default_engine_update_request: schemas.user.DefaultEngineUpdateRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -156,7 +157,7 @@ async def update_default_engine(
     return schemas.common.SuccessResponse(message="The default engine is updated successfully.")
 
 @user_router.post('/default-model/update', response_model=schemas.common.NormalResponse)
-async def update_default_model(
+def update_default_model(
     default_model_update_request: schemas.user.DefaultModelUpdateRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -269,7 +270,7 @@ def search_user_follows(
     )
 
 @user_router.post('/follow', response_model=schemas.common.NormalResponse)
-async def follow_user(
+def follow_user(
     follow_user_request: schemas.user.FollowUserRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -305,7 +306,7 @@ async def follow_user(
     return schemas.common.SuccessResponse()
 
 @user_router.post('/info', response_model=schemas.user.UserPublicInfo)
-async def user_info(
+def user_info(
     user_info_request: schemas.user.UserInfoRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -402,7 +403,7 @@ async def create_user_by_email_verify(
     )
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
-    BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+    await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
     # init the default engine for the user
     db_mineru_engine = crud.engine.get_engine_by_uuid(
         db=db,
@@ -434,7 +435,7 @@ async def create_user_by_email_verify(
     )
 
 @user_router.post('/create/email', response_model=schemas.user.TokenResponse, description='his api is only available for local use, and is disabled in the official deployment version')
-async def create_user_by_email(
+def create_user_by_email(
     email_user_create_verify_request: schemas.user.EmailUserCreateVerifyRequest, 
     db: Session = Depends(get_db),
     _ = Depends(reject_if_official)
@@ -494,7 +495,7 @@ async def create_user_by_email(
     )
 
 @user_router.post('/password/update', response_model=schemas.common.NormalResponse)
-async def update_password(
+def update_password(
     password_update_request: schemas.user.PasswordUpdateRequest,
     user = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -565,7 +566,7 @@ async def bind_email_verify(
     return schemas.common.SuccessResponse(message="The email is binded successfully.")
 
 @user_router.post('/bind/email', response_model=schemas.common.NormalResponse, description='This api is only available for local use, and is disabled in the official deployment version')
-async def bind_email(
+def bind_email(
     bind_email_verify_request: schemas.user.BindEmailVerifyRequest,
     user = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -595,7 +596,7 @@ async def bind_email(
     return schemas.common.SuccessResponse(message="The email is binded successfully.")
 
 @user_router.post('/read-mark-reason/update', response_model=schemas.common.NormalResponse)
-async def update_my_default_read_mark_reason(
+def update_my_default_read_mark_reason(
     default_read_mark_reason_update_request: schemas.user.DefaultReadMarkReasonUpdateRequest,
     user = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -609,7 +610,7 @@ async def update_my_default_read_mark_reason(
     return schemas.common.SuccessResponse(message="The default read mark reason is updated successfully.")
 
 @user_router.post('/update', response_model=schemas.common.NormalResponse)
-async def update_my_info(
+def update_my_info(
     user_info_update_request: schemas.user.UserInfoUpdateRequest, 
     user = Depends(get_current_user), 
     db: Session = Depends(get_db)
@@ -625,7 +626,7 @@ async def update_my_info(
     return schemas.common.SuccessResponse(message="The information of the user is updated successfully.")
 
 @user_router.post('/password/initial-see', response_model=schemas.user.InitialPasswordResponse)
-async def initial_see_password(
+def initial_see_password(
     user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -707,7 +708,7 @@ def my_info(
 
 # 邮箱密码登陆
 @user_router.post("/login", response_model=schemas.user.TokenResponse)
-async def login(
+def login(
     user_login_request: schemas.user.UserLoginRequest, 
     db: Session = Depends(get_db),
     ip: str | None = Depends(get_real_ip)
@@ -742,7 +743,7 @@ async def login(
     )
 
 @user_router.post("/token/update", response_model=schemas.user.TokenResponse)
-async def update_token(
+def update_token(
     token_update_request: schemas.user.TokenUpdateRequest, 
     db: Session = Depends(get_db),
     ip: str | None = Depends(get_real_ip)
@@ -771,7 +772,7 @@ async def update_token(
     )
 
 @user_router.post('/delete', response_model=schemas.common.NormalResponse)
-async def delete_user(
+def delete_user(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -812,16 +813,22 @@ async def create_user_by_google(
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
     if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
         raise Exception("Google client id or secret is not set")
-    token = get_google_token(
+    token = await asyncio.to_thread(
+        get_google_token,
         google_client_id=GOOGLE_CLIENT_ID,
         google_client_secret=GOOGLE_CLIENT_SECRET,
-        code=user.code, 
-        redirect_uri='https://app.revornix.com/integrations/google/oauth2/create/callback'
+        code=user.code,
+        redirect_uri='https://app.revornix.com/integrations/google/oauth2/create/callback',
     )
     if token is None:
         raise Exception("something error while getting google account info")
 
-    idinfo = id_token.verify_oauth2_token(token.get('id_token'), requests.Request(), os.environ.get('GOOGLE_CLIENT_ID'))
+    idinfo = await asyncio.to_thread(
+        id_token.verify_oauth2_token,
+        token.get('id_token'),
+        requests.Request(),
+        os.environ.get('GOOGLE_CLIENT_ID'),
+    )
     db_google_user_exist = crud.user.get_google_user_by_google_id(
         db=db, 
         google_user_id=idinfo.get('sub')
@@ -858,7 +865,7 @@ async def create_user_by_google(
     )
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
-    BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+    await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
     # init the default engine for the user
     db_mineru_engine = crud.engine.get_engine_by_uuid(
         db=db,
@@ -888,7 +895,7 @@ async def create_user_by_google(
     )
 
 @user_router.post("/bind/google", response_model=schemas.common.NormalResponse)
-async def bind_google(
+def bind_google(
     bind_google: schemas.user.GoogleUserBind, 
     user = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -935,7 +942,7 @@ async def bind_google(
     return schemas.common.SuccessResponse()
 
 @user_router.post('/unbind/google', response_model=schemas.common.NormalResponse)
-async def unbind_google(
+def unbind_google(
     user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -957,15 +964,16 @@ async def create_user_by_github(
     if GITHUB_CLIENT_ID is None or GITHUB_CLIENT_SECRET is None:
         raise Exception("Github client id or secret is not set")
     
-    token = get_github_token(
+    token = await asyncio.to_thread(
+        get_github_token,
         github_client_id=GITHUB_CLIENT_ID,
         github_client_secret=GITHUB_CLIENT_SECRET,
-        code=user.code, 
-        redirect_uri='https://app.revornix.com/integrations/github/oauth2/create/callback'
+        code=user.code,
+        redirect_uri='https://app.revornix.com/integrations/github/oauth2/create/callback',
     )
     if token is None:
         raise Exception("some thing is error while getting github account info")
-    github_user_info = get_github_userInfo(token=token.get('access_token'))
+    github_user_info = await asyncio.to_thread(get_github_userInfo, token=token.get('access_token'))
     db_exist_github_user = crud.user.get_github_user_by_github_user_id(
         db=db, 
         github_user_id=str(github_user_info.get('id'))
@@ -1003,7 +1011,7 @@ async def create_user_by_github(
     )
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
-    BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+    await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
     # init the default engine for the user
     db_mineru_engine = crud.engine.get_engine_by_uuid(
         db=db,
@@ -1030,7 +1038,7 @@ async def create_user_by_github(
     return res
 
 @user_router.post("/bind/github", response_model=schemas.common.NormalResponse)
-async def bind_github(bind_github: schemas.user.GithubUserBind, 
+def bind_github(bind_github: schemas.user.GithubUserBind, 
                       user = Depends(get_current_user),
                       db: Session = Depends(get_db)):
     GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
@@ -1075,7 +1083,7 @@ async def bind_github(bind_github: schemas.user.GithubUserBind,
     return schemas.common.SuccessResponse()
 
 @user_router.post('/unbind/github', response_model=schemas.common.NormalResponse)
-async def unbind_github(
+def unbind_github(
     user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -1094,11 +1102,14 @@ async def create_user_by_sms_code(
     code = "".join(random.sample(string.digits, 6))
     await cache.set(sms_user_code_create_request.phone, code, 600)
     
-    sms_client = TencentSms.get_official_sms_client()
-    sms_client.send_register_msg(
-        phone_numbers=[sms_user_code_create_request.phone],
-        code=code
-    )
+    def _send_sms():
+        sms_client = TencentSms.get_official_sms_client()
+        sms_client.send_register_msg(
+            phone_numbers=[sms_user_code_create_request.phone],
+            code=code
+        )
+
+    await asyncio.to_thread(_send_sms)
     
     res = schemas.common.SuccessResponse()
     return res
@@ -1152,7 +1163,7 @@ async def create_user_by_sms_verify(
         )
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
-        BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+        await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
         # init the default engine for the user
         db_mineru_engine = crud.engine.get_engine_by_uuid(
             db=db,
@@ -1196,11 +1207,14 @@ async def bind_phone(
         raise Exception('The phone number is already registered')
     code = "".join(random.sample(string.digits, 6))
     
-    sms_client = TencentSms.get_official_sms_client()
-    sms_client.send_register_msg(
-        phone_numbers=[bind_phone_code_create_request.phone],
-        code=code
-    )
+    def _send_sms():
+        sms_client = TencentSms.get_official_sms_client()
+        sms_client.send_register_msg(
+            phone_numbers=[bind_phone_code_create_request.phone],
+            code=code
+        )
+
+    await asyncio.to_thread(_send_sms)
     
     await cache.set(bind_phone_code_create_request.phone, code, 600)
     res = schemas.common.SuccessResponse()
@@ -1228,7 +1242,7 @@ async def bind_phone_verify(
     return schemas.common.SuccessResponse()
 
 @user_router.post('/unbind/phone', response_model=schemas.common.NormalResponse)
-async def unbind_phone(
+def unbind_phone(
     user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -1251,7 +1265,7 @@ async def create_user_by_wechat_mini(
         raise CustomException('WeChat Mini Program Not Configured', 500)
     
     code = wechat_mini_user_create_request.code
-    response_tokens = get_mini_wechat_tokens(WECHAT_MINI_APP_ID, WECHAT_MINI_APP_SECRET, code)
+    response_tokens = await asyncio.to_thread(get_mini_wechat_tokens, WECHAT_MINI_APP_ID, WECHAT_MINI_APP_SECRET, code)
     openid = response_tokens.openid
     union_id = response_tokens.unionid
     if openid is None or union_id is None:
@@ -1305,7 +1319,7 @@ async def create_user_by_wechat_mini(
         )
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
-        BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+        await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
         # init the default engine for the user
         db_mineru_engine = crud.engine.get_engine_by_uuid(
             db=db,
@@ -1363,7 +1377,7 @@ async def create_user_by_wechat_web(
         raise CustomException('WeChat Web Not Configured', 500)
     
     code = wechat_web_user_create_request.code
-    response_tokens = get_web_wechat_tokens(WECHAT_WEB_APP_ID, WECHAT_WEB_APP_SECRET, code)
+    response_tokens = await asyncio.to_thread(get_web_wechat_tokens, WECHAT_WEB_APP_ID, WECHAT_WEB_APP_SECRET, code)
     access_token = response_tokens.access_token
     
     openid = response_tokens.openid
@@ -1389,9 +1403,10 @@ async def create_user_by_wechat_web(
     )
     if len(db_exist_wechat_user_by_union_id) == 0:
         # get the wechat user info
-        response_user_info = get_web_user_info(
-            access_token=access_token, 
-            openid=openid
+        response_user_info = await asyncio.to_thread(
+            get_web_user_info,
+            access_token=access_token,
+            openid=openid,
         )
         nickname = response_user_info.get('nickname')
         db_user = crud.user.create_base_user(
@@ -1417,7 +1432,7 @@ async def create_user_by_wechat_web(
         )
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
-        BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+        await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
         # init the default engine for the user
         db_mineru_engine = crud.engine.get_engine_by_uuid(
             db=db,
@@ -1462,7 +1477,7 @@ async def create_user_by_wechat_web(
     )
 
 @user_router.post("/bind/wechat/web", response_model=schemas.common.NormalResponse)
-async def bind_wechat(
+def bind_wechat(
     wechat_user_bind_request: schemas.user.WeChatWebUserBindRequest, 
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -1505,7 +1520,7 @@ async def bind_wechat(
     return schemas.common.SuccessResponse()
 
 @user_router.post('/unbind/wechat', response_model=schemas.common.NormalResponse)
-async def unbind_wechat(
+def unbind_wechat(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

@@ -10,7 +10,7 @@ from common.dependencies import get_current_user, get_db
 engine_router = APIRouter()
 
 @engine_router.post("/mine", response_model=schemas.engine.MineEngineSearchResponse)
-async def search_document_parse_engine(
+def search_document_parse_engine(
     engine_search_request: schemas.engine.EngineSearchRequest, 
     db: Session = Depends(get_db), 
     current_user: models.user.User = Depends(get_current_user)
@@ -42,7 +42,7 @@ async def search_document_parse_engine(
     return schemas.engine.MineEngineSearchResponse(data=res)
 
 @engine_router.post("/provide", response_model=schemas.engine.ProvideEngineSearchResponse)
-async def provide_document_parse_engine(
+def provide_document_parse_engine(
     engine_search_request: schemas.engine.EngineSearchRequest, 
     db: Session = Depends(get_db), 
     current_user: models.user.User = Depends(get_current_user)
@@ -57,7 +57,7 @@ async def provide_document_parse_engine(
     return schemas.engine.ProvideEngineSearchResponse(data=engines)
 
 @engine_router.post("/install", response_model=schemas.engine.EngineInstallResponse)
-async def install_engine(
+def install_engine(
     engine_install_request: schemas.engine.EngineInstallRequest, 
     db: Session = Depends(get_db), 
     current_user: models.user.User = Depends(get_current_user)
@@ -74,7 +74,7 @@ async def install_engine(
     return schemas.engine.EngineInstallResponse(user_engine_id=db_user_engine.id)
 
 @engine_router.post("/delete", response_model=schemas.common.NormalResponse)
-async def delete_engine(
+def delete_engine(
     engine_delete_request: schemas.engine.EngineDeleteRequest, 
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
@@ -88,7 +88,7 @@ async def delete_engine(
     return schemas.common.SuccessResponse()
 
 @engine_router.post("/update", response_model=schemas.common.NormalResponse)
-async def update_engine(
+def update_engine(
     engine_update_request: schemas.engine.EngineUpdateRequest, 
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
