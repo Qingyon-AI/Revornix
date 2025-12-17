@@ -684,7 +684,7 @@ async def delete_email_source(
     return schemas.common.SuccessResponse()
 
 @notification_router.post('/record/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationRecord])
-async def search_notification_record(
+def search_notification_record(
     search_notification_record_request: schemas.notification.SearchNotificationRecordRequest, 
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)

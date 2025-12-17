@@ -72,7 +72,8 @@ class DingTalkNotificationTool(NotificationToolProtocol):
 
         try:
             headers = {"Content-Type": "application/json"}
-            res = httpx.post(webhook_url, json=payload, headers=headers)
+            async with httpx.AsyncClient(timeout=10) as client:
+                res = await client.post(webhook_url, json=payload, headers=headers)
 
             # 先检查 HTTP 状态码
             if res.status_code != 200:

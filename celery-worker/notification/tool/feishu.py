@@ -5,6 +5,7 @@ import httpx
 import time
 import io
 import json
+import asyncio
 import lark_oapi as lark
 from lark_oapi.api.im.v1 import CreateImageRequest, CreateImageRequestBody, CreateImageResponse
 from typing import Optional
@@ -111,9 +112,10 @@ class FeishuNotificationTool(NotificationToolProtocol):
         ]
 
         if cover:
-            image_key = self.upload_image(
-                image=httpx.get(cover).content
-            )
+            async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
+                cover_res = await client.get(cover)
+                cover_res.raise_for_status()
+            image_key = await asyncio.to_thread(self.upload_image, image=cover_res.content)
             elements.insert(0, {
                 "tag": "img",
                 "img_key": image_key,
@@ -188,7 +190,8 @@ class FeishuNotificationTool(NotificationToolProtocol):
             })
         try:
             headers = {"Content-Type": "application/json"}
-            res = httpx.post(webhook_url, json=payload, headers=headers)
+            async with httpx.AsyncClient(timeout=10) as client:
+                res = await client.post(webhook_url, json=payload, headers=headers)
             if res.json().get('code') != 0:
                 exception_logger.error('Failed to send notification to Feishu: {}'.format(res.json()))
             

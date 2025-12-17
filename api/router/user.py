@@ -653,7 +653,7 @@ async def initial_see_password(
     return schemas.user.InitialPasswordResponse(password=email_user.initial_password)
 
 @user_router.post('/mine/info', response_model=schemas.user.PrivateUserInfo)
-async def my_info(
+def my_info(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
