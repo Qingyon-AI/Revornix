@@ -29,9 +29,10 @@ def job_listener(event):
 async def fetch_and_save(
     rss_server: schemas.rss.RssServerInfo
 ):
-    response = httpx.get(rss_server.address, timeout=15)
-    response.raise_for_status()
-    parsed = feedparser.parse(rss_server.address)
+    async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
+        response = await client.get(rss_server.address)
+        response.raise_for_status()
+    parsed = feedparser.parse(response.content)
     if not parsed.entries:
         return
     db = SessionLocal()

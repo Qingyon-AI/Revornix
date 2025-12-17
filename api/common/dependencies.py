@@ -110,10 +110,8 @@ def get_authorization_header(
 
 def get_current_user_without_throw(
     authorization: str | None = Header(default=None),
-    db: Session = Depends(get_db),
-    ip: str = Depends(get_real_ip)
+    db: Session = Depends(get_db)
 ):
-    now = datetime.now(timezone.utc)
     authenticate_value = "Bearer"
     if authorization is None or not authorization.startswith(authenticate_value):
         return None
@@ -133,18 +131,12 @@ def get_current_user_without_throw(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are forbidden"
         )
-    user.last_login_ip = ip
-    user.last_login_time = now
-    db.commit()
-    db.refresh(user)
     return user
 
 def get_current_user(
     authorization: str | None = Header(default=None), 
-    db: Session = Depends(get_db), 
-    ip: str = Depends(get_real_ip)
+    db: Session = Depends(get_db)
 ):
-    now = datetime.now(timezone.utc)
     authenticate_value = "Bearer"
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -168,8 +160,4 @@ def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are forbidden"
         )
-    user.last_login_ip = ip
-    user.last_login_time = now
-    db.commit()
-    db.refresh(user)
     return user
