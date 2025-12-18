@@ -182,3 +182,26 @@ async def get_user_plan(
         data = response.json()
         userPlan = data.get('userPlan')
         return userPlan
+
+async def plan_ability_checked(
+    ability: str
+):
+    async def dependency(
+        authorization: str | None = Header(default=None), 
+    ):
+        headers = { }
+        if authorization is not None:
+            headers.update({
+                "Authorization": authorization
+            })
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f'{UNION_PAY_URL_PREFIX}/user/ability/check',
+                headers=headers,
+                json={
+                    "ability": ability
+                }
+            )
+            response.raise_for_status()
+        return True
+    return dependency
