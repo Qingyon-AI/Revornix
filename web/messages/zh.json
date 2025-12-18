@@ -62,7 +62,7 @@
     "init_setting_quick_set_step_2": "完成配置",
     "init_setting_file_convert_engine": "默认文件文档转化引擎",
     "init_setting_website_convert_engine": "默认网站文档转化引擎",
-    "init_setting_image_generate_model": "默认图片生成模型",
+    "init_setting_document_summary_model": "默认文档总结模型",
     "init_setting_revornix_ai_model": "默认RevornixAI对话模型",
     "init_setting_default_file_system": "默认文件系统",
     "init_setting_dialog_title": "初始化设置",
