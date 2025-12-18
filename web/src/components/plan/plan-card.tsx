@@ -22,11 +22,7 @@ import WechatIcon from '@/components/icons/wechat-icon';
 import AlipayIcon from '@/components/icons/alipay-icon';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { Button } from '@/components/ui/button';
-import {
-	prePayProduct,
-	getProductAbilities,
-	getProductDetail,
-} from '@/service/product';
+import { prePayProduct, getProductDetail } from '@/service/product';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { utils } from '@kinda/utils';
@@ -35,19 +31,26 @@ import { useUserContext } from '@/provider/user-provider';
 import { useCountDown, useInterval } from 'ahooks';
 import { useGetSet } from 'react-use';
 import { useQuery } from '@tanstack/react-query';
-import { Skeleton } from '../ui/skeleton';
 import { PayWay } from '@/enums/product';
 import { useLocale, useTranslations } from 'next-intl';
 import { Alert, AlertDescription } from '../ui/alert';
 import { cn } from '@/lib/utils';
 import { PrePayProductResponseDTO } from '@/generated-pay';
 
+export type IntroduceAbility = {
+	name: string;
+	name_zh: string;
+	tag?: string;
+};
+
 const PlanCard = ({
 	product_uuid,
 	badge,
+	introduction_abilities,
 }: {
 	product_uuid: string;
 	badge?: string;
+	introduction_abilities?: IntroduceAbility[];
 }) => {
 	const t = useTranslations();
 
@@ -96,25 +99,9 @@ const PlanCard = ({
 		{ immediate: false }
 	);
 
-	const {
-		data: productDetail,
-		isFetching: productDetailFetching,
-		error: productDetailError,
-	} = useQuery({
+	const { data: productDetail } = useQuery({
 		queryKey: ['getProductDetail', product_uuid],
 		queryFn: () => getProductDetail({ product_uuid }),
-	});
-
-	const {
-		data: productAbilities,
-		isFetching: productAbilitiesFetching,
-		error: productAbilitiesError,
-	} = useQuery({
-		enabled: !!productDetail,
-		queryKey: ['getProductAbilities', product_uuid],
-		queryFn: () => {
-			return getProductAbilities({ product_uuid: product_uuid });
-		},
 	});
 
 	const generateQrCode = async (code: string) => {
@@ -283,68 +270,59 @@ const PlanCard = ({
 				</DialogContent>
 			</Dialog>
 
-			{(productDetailFetching || productAbilitiesFetching) &&
-				!productAbilitiesError &&
-				!productDetailError && <Skeleton className='w-full h-96' />}
-			{!productDetailFetching && !productAbilitiesFetching && (
-				<Card
-					className={cn(
-						'flex flex-col relative',
-						badge
-							? 'ring-2 ring-indigo-500 bg-white dark:bg-zinc-900 shadow-lg transition'
-							: ''
-					)}>
-					{badge && (
-						<div className='absolute -top-3 right-4 rounded-full bg-indigo-500 px-3 py-1 text-xs font-semibold text-white shadow'>
-							{badge}
-						</div>
-					)}
-					<CardHeader>
-						<CardTitle>
-							{locale === 'zh' ? productDetail?.name_zh : productDetail?.name}
-						</CardTitle>
-					</CardHeader>
-					<CardContent className='flex flex-col gap-5 flex-1'>
-						<div>
-							<span className='font-bold text-2xl'>
-								{'¥'}{' '}
-								{productDetail?.price
-									? (productDetail.price / 100).toFixed(2)
-									: t('account_plan_free')}
-							</span>
-							<span>/{t('account_plan_month')}</span>
-						</div>
-						<div className='flex flex-col gap-2 text-sm'>
-							{productAbilities &&
-								productAbilities.abilities.map((item, index) => {
-									return (
-										<div
-											key={index}
-											className='flex flex-row gap-1 items-center'>
-											<BadgeCheck size={15} className='shrink-0' />
-											{locale === 'zh' ? item.name_zh : item.name}
-											{item.tag && (
-												<Badge variant={'outline'}>{item.tag}</Badge>
-											)}
-										</div>
-									);
-								})}
-						</div>
-					</CardContent>
-					<CardFooter>
-						<Button
-							className='w-full'
-							disabled={!productDetail?.price}
-							onClick={() => {
-								setShowPayDialog(true);
-							}}>
+			<Card
+				className={cn(
+					'flex flex-col relative',
+					badge
+						? 'ring-2 ring-indigo-500 bg-white dark:bg-zinc-900 shadow-lg transition'
+						: ''
+				)}>
+				{badge && (
+					<div className='absolute -top-3 right-4 rounded-full bg-indigo-500 px-3 py-1 text-xs font-semibold text-white shadow'>
+						{badge}
+					</div>
+				)}
+				<CardHeader>
+					<CardTitle>
+						{locale === 'zh' ? productDetail?.name_zh : productDetail?.name}
+					</CardTitle>
+				</CardHeader>
+				<CardContent className='flex flex-col gap-5 flex-1'>
+					<div>
+						<span className='font-bold text-2xl'>
+							{'¥'}{' '}
 							{productDetail?.price
-								? t('account_plan_subscribe')
+								? (productDetail.price / 100).toFixed(2)
 								: t('account_plan_free')}
-						</Button>
-					</CardFooter>
-				</Card>
-			)}
+						</span>
+						<span>/{t('account_plan_month')}</span>
+					</div>
+					<div className='flex flex-col gap-2 text-sm'>
+						{introduction_abilities &&
+							introduction_abilities.map((item, index) => {
+								return (
+									<div key={index} className='flex flex-row gap-1 items-center'>
+										<BadgeCheck size={15} className='shrink-0' />
+										{locale === 'zh' ? item.name_zh : item.name}
+										{item.tag && <Badge variant={'outline'}>{item.tag}</Badge>}
+									</div>
+								);
+							})}
+					</div>
+				</CardContent>
+				<CardFooter>
+					<Button
+						className='w-full'
+						disabled={!productDetail?.price}
+						onClick={() => {
+							setShowPayDialog(true);
+						}}>
+						{productDetail?.price
+							? t('account_plan_subscribe')
+							: t('account_plan_free')}
+					</Button>
+				</CardFooter>
+			</Card>
 		</>
 	);
 };
