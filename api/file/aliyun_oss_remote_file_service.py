@@ -5,7 +5,7 @@ import asyncio
 from typing import Any
 from data.sql.base import SessionLocal
 from protocol.remote_file_service import RemoteFileServiceProtocol
-from enums.file import RemoteFileServiceUUID
+from enums.file import RemoteFileService
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 from botocore.config import Config
@@ -17,7 +17,7 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
     
     def __init__(self):
         super().__init__(
-            file_service_uuid=RemoteFileServiceUUID.AliyunOSS.value,
+            file_service_uuid=RemoteFileService.AliyunOSS.meta.id,
             file_service_name='Aliyun OSS',
             file_service_name_zh='阿里云OSS',
             file_service_description='Aliyun-OSS File System, Based on Aliyun official OSS, has strong stability and availability, but needs to be charged.',

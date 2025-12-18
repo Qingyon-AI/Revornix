@@ -6,7 +6,7 @@ from typing import Any
 from data.sql.base import SessionLocal
 from botocore.client import Config
 from protocol.remote_file_service import RemoteFileServiceProtocol
-from enums.file import RemoteFileServiceUUID
+from enums.file import RemoteFileService
 
 class AWSS3RemoteFileService(RemoteFileServiceProtocol):
     
@@ -15,7 +15,7 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
 
     def __init__(self):
         super().__init__(
-            file_service_uuid=RemoteFileServiceUUID.AWS_S3.value,
+            file_service_uuid=RemoteFileService.AWS_S3.meta.id,
             file_service_name='AWS-S3',
             file_service_name_zh='亚马逊S3',
             file_service_description="AWS S3, this amazon's paid oss service.",

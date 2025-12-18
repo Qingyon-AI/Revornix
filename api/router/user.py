@@ -26,6 +26,7 @@ from google.auth.transport import requests
 from common.sms.tencent_sms import TencentSms
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from enums.user import WeChatUserSource
+from enums.file import RemoteFileService
 from enums.engine import EngineUUID
 
 user_router = APIRouter()
@@ -394,11 +395,17 @@ async def create_user_by_email_verify(
         nickname=email_user_create_verify_request.email
     )
     # init the default file system for the user
+    db_file_system = crud.file_system.get_file_system_by_uuid(
+        db=db,
+        uuid=RemoteFileService.Built_In.meta.id
+    )
+    if db_file_system is None:
+        raise CustomException('The Built-In File System is Not Found', 404)
     db_user_file_system = crud.file_system.create_user_file_system(
         db=db,
-        file_system_id=1,
+        file_system_id=db_file_system.id,
         user_id=db_user.id,
-        title="Default File System",
+        title="Default Minio File System",
         description="The default file system for the user"
     )
     db_user.default_user_file_system = db_user_file_system.id
@@ -458,11 +465,17 @@ def create_user_by_email(
         nickname=email_user_create_verify_request.email
     )
     # init the default file system for the user
+    db_file_system = crud.file_system.get_file_system_by_uuid(
+        db=db,
+        uuid=RemoteFileService.Built_In.meta.id
+    )
+    if db_file_system is None:
+        raise CustomException('The Built-In File System is Not Found', 404)
     db_user_file_system = crud.file_system.create_user_file_system(
         db=db,
-        file_system_id=1,
+        file_system_id=db_file_system.id,
         user_id=db_user.id,
-        title="Default File System",
+        title="Default Minio File System",
         description="The default file system for the user"
     )
     db_user.default_user_file_system = db_user_file_system.id
@@ -856,11 +869,17 @@ async def create_user_by_google(
         google_user_name=idinfo.get('name')
     )
     # init the default file system for the user
+    db_file_system = crud.file_system.get_file_system_by_uuid(
+        db=db,
+        uuid=RemoteFileService.Built_In.meta.id
+    )
+    if db_file_system is None:
+        raise CustomException('The Built-In File System is Not Found', 404)
     db_user_file_system = crud.file_system.create_user_file_system(
         db=db,
-        file_system_id=1,
+        file_system_id=db_file_system.id,
         user_id=db_user.id,
-        title="Default File System",
+        title="Default Minio File System",
         description="The default file system for the user"
     )
     db_user.default_user_file_system = db_user_file_system.id
@@ -1002,11 +1021,17 @@ async def create_user_by_github(
     )
     
     # init the default file system for the user
+    db_file_system = crud.file_system.get_file_system_by_uuid(
+        db=db,
+        uuid=RemoteFileService.Built_In.meta.id
+    )
+    if db_file_system is None:
+        raise CustomException('The Built-In File System is Not Found', 404)
     db_user_file_system = crud.file_system.create_user_file_system(
         db=db,
-        file_system_id=1,
+        file_system_id=db_file_system.id,
         user_id=db_user.id,
-        title="Default File System",
+        title="Default Minio File System",
         description="The default file system for the user"
     )
     db_user.default_user_file_system = db_user_file_system.id
@@ -1154,11 +1179,17 @@ async def create_user_by_sms_verify(
             phone=sms_user_code_verify_request.phone
         )
         # init the default file system for the user
+        db_file_system = crud.file_system.get_file_system_by_uuid(
+            db=db,
+            uuid=RemoteFileService.Built_In.meta.id
+        )
+        if db_file_system is None:
+            raise CustomException('The Built-In File System is Not Found', 404)
         db_user_file_system = crud.file_system.create_user_file_system(
             db=db,
-            file_system_id=1,
+            file_system_id=db_file_system.id,
             user_id=db_user.id,
-            title="Default File System",
+            title="Default Minio File System",
             description="The default file system for the user"
         )
         db_user.default_user_file_system = db_user_file_system.id
@@ -1310,11 +1341,17 @@ async def create_user_by_wechat_mini(
             wechat_user_name=nickname
         )
         # init the default file system for the user
+        db_file_system = crud.file_system.get_file_system_by_uuid(
+            db=db,
+            uuid=RemoteFileService.Built_In.meta.id
+        )
+        if db_file_system is None:
+            raise CustomException('The Built-In File System is Not Found', 404)
         db_user_file_system = crud.file_system.create_user_file_system(
             db=db,
-            file_system_id=1,
+            file_system_id=db_file_system.id,
             user_id=db_user.id,
-            title="Default File System",
+            title="Default Minio File System",
             description="The default file system for the user"
         )
         db_user.default_user_file_system = db_user_file_system.id
@@ -1423,11 +1460,17 @@ async def create_user_by_wechat_web(
             wechat_user_name=nickname
         )
         # init the default file system for the user
+        db_file_system = crud.file_system.get_file_system_by_uuid(
+            db=db,
+            uuid=RemoteFileService.Built_In.meta.id
+        )
+        if db_file_system is None:
+            raise CustomException('The Built-In File System is Not Found', 404)
         db_user_file_system = crud.file_system.create_user_file_system(
             db=db,
-            file_system_id=1,
+            file_system_id=db_file_system.id,
             user_id=db_user.id,
-            title="Default File System",
+            title="Default Minio File System",
             description="The default file system for the user"
         )
         db_user.default_user_file_system = db_user_file_system.id
