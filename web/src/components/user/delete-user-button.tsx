@@ -30,8 +30,8 @@ const DeleteUserButton = ({ className }: { className?: string }) => {
 			toast.error(err.message);
 			return;
 		}
+		await utils.sleep(500);
 		toast.success(t('account_delete_success'));
-		await utils.sleep(1000);
 		Cookies.remove('access_token');
 		Cookies.remove('refresh_token');
 		setDeleteUserSubmitStatus(false);
