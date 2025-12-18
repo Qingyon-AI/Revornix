@@ -1,15 +1,16 @@
 import crud
 import models
 import schemas
+import httpx
 from jose import jwt
 from redis import Redis
 from sqlalchemy.orm import Session
 from data.sql.base import SessionLocal
-from datetime import datetime, timezone
 from config.oauth2 import OAUTH_SECRET_KEY
 from config.base import OFFICIAL, DEPLOY_HOSTS
 from urllib.parse import urlparse
 from fastapi import Request, HTTPException, status, Depends, Header
+from config.base import UNION_PAY_URL_PREFIX
 
 if OAUTH_SECRET_KEY is None:
     raise Exception("OAUTH_SECRET_KEY is not set")
@@ -161,3 +162,23 @@ def get_current_user(
             detail="You are forbidden"
         )
     return user
+
+async def get_user_plan(
+    authorization: str | None = Header(default=None), 
+):
+    headers = { }
+    if authorization is not None:
+        headers.update({
+            "Authorization": authorization
+        })
+    else:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authorization header is required')
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f'{UNION_PAY_URL_PREFIX}/user/info',
+            headers=headers
+        )
+        response.raise_for_status()
+        data = response.json()
+        userPlan = data.get('userPlan')
+        return userPlan
