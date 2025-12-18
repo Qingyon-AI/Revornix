@@ -38,6 +38,7 @@ import GoogleIcon from '../icons/google-icon';
 import GithubIcon from '../icons/github-icon';
 import { GOOGLE_CLIENT_ID } from '@/config/google';
 import { GITHUB_CLIENT_ID } from '@/config/github';
+import WechatIcon from '../icons/wechat-icon';
 
 const phoneFormSchema = z.object({
 	phone: z.string().min(2).max(50),
@@ -203,34 +204,48 @@ const PhoneLoginForm = () => {
 						{submitLoading && <Loader2 className='mr-1 size-4 animate-spin' />}
 						{t('seo_login_submit')}
 					</Button>
-					<div className='my-2 w-full relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border'>
-						<span className='relative z-10 bg-background px-2 text-muted-foreground'>
-							OR
-						</span>
-					</div>
-					<div className='w-full grid grid-cols-3 gap-2'>
-						<Button
-							type='button'
-							className='w-full'
-							onClick={handleGoogleLogin}>
-							<GoogleIcon />
-						</Button>
-						<Button
-							type='button'
-							className='w-full'
-							onClick={handleGitHubLogin}>
-							<GithubIcon />
-						</Button>
-						<Button
-							disabled={submitLoading}
-							type='button'
-							className='w-full'
-							onClick={() => {
-								setLoginWay('email');
-							}}>
-							<Mail />
-						</Button>
-					</div>
+					{process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH === 'true' && (
+						<>
+							<div className='my-2 w-full relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border'>
+								<span className='relative z-10 bg-background px-2 text-muted-foreground'>
+									OR
+								</span>
+							</div>
+							<div className='w-full grid grid-cols-4 gap-2'>
+								<Link
+									href={`https://open.weixin.qq.com/connect/qrconnect?appid=${
+										process.env.NEXT_PUBLIC_WECHAT_APP_ID
+									}&redirect_uri=${encodeURIComponent(
+										`https://app.revornix.com/integrations/wechat/oauth/create/callback`
+									)}&response_type=code&scope=snsapi_login&state=ndkasnl#wechat_redirect`}>
+									<Button type='button' className='w-full'>
+										<WechatIcon />
+									</Button>
+								</Link>
+								<Button
+									type='button'
+									className='w-full'
+									onClick={handleGoogleLogin}>
+									<GoogleIcon />
+								</Button>
+								<Button
+									type='button'
+									className='w-full'
+									onClick={handleGitHubLogin}>
+									<GithubIcon />
+								</Button>
+								<Button
+									disabled={submitLoading}
+									type='button'
+									className='w-full'
+									onClick={() => {
+										setLoginWay('email');
+									}}>
+									<Mail />
+								</Button>
+							</div>
+						</>
+					)}
 					<div className='w-full'>
 						<div className='mt-4 text-center text-sm'>
 							<span className='mr-2'>{t('seo_login_no_account')}</span>
