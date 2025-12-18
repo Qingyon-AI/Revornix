@@ -3,7 +3,7 @@ import json
 from typing import Protocol
 from data.sql.base import SessionLocal
 from config.file_system import FILE_SYSTEM_SERVER_PUBLIC_URL
-from enums.file import RemoteFileServiceUUID
+from enums.file import RemoteFileService
 
 class RemoteFileServiceProtocol(Protocol):
 
@@ -62,13 +62,13 @@ class RemoteFileServiceProtocol(Protocol):
             if db_file_system is None:
                 raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")
 
-            if db_file_system.uuid == RemoteFileServiceUUID.Built_In.value:
+            if db_file_system.uuid == RemoteFileService.Built_In.meta.id:
                 return f'{FILE_SYSTEM_SERVER_PUBLIC_URL}/{db_user.uuid}'
-            elif db_file_system.uuid == RemoteFileServiceUUID.AliyunOSS.value:
+            elif db_file_system.uuid == RemoteFileService.AliyunOSS.meta.id:
                 config_str = db_user_file_system.config_json
-            elif db_file_system.uuid == RemoteFileServiceUUID.AWS_S3.value:
+            elif db_file_system.uuid == RemoteFileService.AWS_S3.meta.id:
                 config_str = db_user_file_system.config_json
-            elif db_file_system.uuid == RemoteFileServiceUUID.Generic_S3.value:
+            elif db_file_system.uuid == RemoteFileService.Generic_S3.meta.id:
                 config_str = db_user_file_system.config_json
             else:
                 raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")

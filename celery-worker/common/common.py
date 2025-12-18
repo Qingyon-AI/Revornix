@@ -8,7 +8,7 @@ import asyncio
 from typing import Type
 from pathlib import Path
 from data.sql.base import SessionLocal
-from enums.file import RemoteFileServiceUUID
+from enums.file import RemoteFileService
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.aws_s3_remote_file_service import AWSS3RemoteFileService
@@ -92,13 +92,13 @@ async def get_user_remote_file_system(
                 )
                 if not db_file_system:
                     raise Exception("There is something wrong with the user's default file system.")
-                if db_file_system.uuid == RemoteFileServiceUUID.Built_In.value:
+                if db_file_system.uuid == RemoteFileService.Built_In.meta.id:
                     remote_file_service = BuiltInRemoteFileService()
-                elif db_file_system.uuid == RemoteFileServiceUUID.AliyunOSS.value:
+                elif db_file_system.uuid == RemoteFileService.AliyunOSS.meta.id:
                     remote_file_service = AliyunOSSRemoteFileService()
-                elif db_file_system.uuid == RemoteFileServiceUUID.Generic_S3.value:
+                elif db_file_system.uuid == RemoteFileService.Generic_S3.meta.id:
                     remote_file_service = GenericS3RemoteFileService()
-                elif db_file_system.uuid == RemoteFileServiceUUID.AWS_S3.value:
+                elif db_file_system.uuid == RemoteFileService.AWS_S3.meta.id:
                     remote_file_service = AWSS3RemoteFileService()
                 else:
                     raise Exception("There is something wrong with the user's default file system.")

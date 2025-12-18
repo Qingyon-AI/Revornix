@@ -6,7 +6,7 @@ from typing import Any
 from data.sql.base import SessionLocal
 from botocore.client import Config
 from protocol.remote_file_service import RemoteFileServiceProtocol
-from enums.file import RemoteFileServiceUUID
+from enums.file import RemoteFileService
 
 class GenericS3RemoteFileService(RemoteFileServiceProtocol):
     
@@ -15,7 +15,7 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
 
     def __init__(self):
         super().__init__(
-            file_service_uuid=RemoteFileServiceUUID.Generic_S3.value,
+            file_service_uuid=RemoteFileService.Generic_S3.meta.id,
             file_service_name='Generic-S3',
             file_service_name_zh='通用S3',
             file_service_description="Generic S3 Service — this can be used as a template for any cloud storage service that supports the S3 protocol.",
