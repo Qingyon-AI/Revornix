@@ -6,12 +6,13 @@ from datetime import datetime, timezone
 from uuid import uuid4
 from typing import cast
 from sqlalchemy.orm import Session
-from common.dependencies import get_db, get_current_user, get_current_user_without_throw
+from common.dependencies import get_db, get_current_user, get_current_user_without_throw, plan_ability_checked
 from common.common import get_user_remote_file_system
 from enums.section import UserSectionAuthority, UserSectionRole, SectionPodcastStatus, SectionProcessStatus
 from common.celery.app import start_process_section_podcast, update_section_process_status, start_trigger_user_notification_event
 from celery import chain
 from enums.notification import NotificationTriggerEventUUID
+from enums.ability import Ability
 
 section_router = APIRouter()
 
@@ -96,7 +97,10 @@ def section_document_request(
     )
     
     document_ids = [document.id for document in db_documents]
-    labels_by_document_id = crud.document.get_labels_by_document_ids(db=db, document_ids=document_ids)
+    labels_by_document_id = crud.document.get_labels_by_document_ids(
+        db=db, 
+        document_ids=document_ids
+    )
     section_documents = crud.section.get_section_documents_by_section_id_and_document_ids(
         db=db,
         section_id=section_document_request.section_id,
@@ -441,7 +445,9 @@ def section_user_request(
 def section_user_add_request(
     section_share_request: schemas.section.SectionUserAddRequest,
     db: Session = Depends(get_db), 
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
+    _ = Depends(plan_ability_checked(Ability.SECTION_COLLABORATION.value)),
+    
 ):
     section_user = crud.section.get_section_user_by_section_id_and_user_id(
         db=db,

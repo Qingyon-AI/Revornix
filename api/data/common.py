@@ -227,7 +227,7 @@ def merge_entitys_and_relations(
 
     return dedup_entities, dedup_relations
 
-def get_extract_llm_client(
+async def get_extract_llm_client(
     user_id: int
 ):
     db = SessionLocal()
@@ -240,10 +240,10 @@ def get_extract_llm_client(
     if db_user.default_document_reader_model_id is None:
         raise Exception("Default document reader model id not found")
     
-    model_configuration = AIModelProxy(
+    model_configuration = (await AIModelProxy.create(
         user_id=user_id,
         model_id=db_user.default_document_reader_model_id
-    )
+    )).get_configuration()
     
     llm_client = openai.OpenAI(
         api_key=model_configuration.api_key,

@@ -9,10 +9,12 @@ from sqlalchemy.orm import Session
 from openai import OpenAI
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from common.dependencies import get_db, get_current_user, check_deployed_by_official
+from common.dependencies import get_db, get_current_user, check_deployed_by_official, plan_ability_checked_in_func, check_deployed_by_official_in_fuc
+from enums.ability import Ability
 from fastapi.responses import StreamingResponse
 from data.sql.base import SessionLocal
 from mcp_use import MCPClient, MCPAgent
+from common.jwt_utils import create_token
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage, HumanMessage
 from common.common import to_serializable, safe_json_loads
@@ -454,7 +456,15 @@ async def create_agent(
         api_key = SecretStr(OFFICIAL_LLM_AI_KEY if OFFICIAL_LLM_AI_KEY is not None else "")
         base_url = OFFICIAL_LLM_AI_BASE_URL
     mcp_client = MCPClient()
-    if enable_mcp:
+    access_token, _ = create_token(
+        user=user
+    )
+    auth_status = await plan_ability_checked_in_func(
+        ability=Ability.MCP_CLIENT.value,
+        authorization=f'Bearer {access_token}'
+    )
+    deployed_by_official_in_func = await check_deployed_by_official_in_fuc()
+    if (not deployed_by_official_in_func and enable_mcp) or (deployed_by_official_in_func and auth_status and enable_mcp):
         mcp_servers = crud.mcp.search_mcp_servers(
             db=db, 
             user_id=user_id

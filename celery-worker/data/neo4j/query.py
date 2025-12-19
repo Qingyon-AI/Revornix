@@ -5,7 +5,7 @@ from data.neo4j.search import *
 from prompts.query import query_context_summary
 from proxy.ai_model_proxy import AIModelProxy
 
-def get_query_result_summary_llm_client(
+async def get_query_result_summary_llm_client(
     user_id: int
 ):
     db = SessionLocal()
@@ -18,10 +18,10 @@ def get_query_result_summary_llm_client(
     if db_user.default_revornix_model_id is None:
         raise Exception("User default model not found")
     
-    model_configuration = AIModelProxy(
+    model_configuration = (await AIModelProxy.create(
         user_id=user_id,
         model_id=db_user.default_revornix_model_id
-    )
+    )).get_configuration()
     
     llm_client = openai.OpenAI(
         api_key=model_configuration.api_key,
@@ -30,7 +30,7 @@ def get_query_result_summary_llm_client(
     db.close()
     return llm_client
 
-def global_query(
+async def global_query(
     user_id: int, 
     query: str
 ):
@@ -40,7 +40,7 @@ def global_query(
         search_text=query
     )
     prompt = query_context_summary(query, str(results))
-    llm_client = get_query_result_summary_llm_client(
+    llm_client = await get_query_result_summary_llm_client(
         user_id=user_id
     )
     resp = llm_client.chat.completions.create(
@@ -51,7 +51,7 @@ def global_query(
     output_text = resp.choices[0].message.content
     return output_text
 
-def naive_query(
+async def naive_query(
     user_id: int, 
     query: str
 ):
@@ -61,7 +61,7 @@ def naive_query(
         search_text=query
     )
     prompt = query_context_summary(query, str(results))
-    llm_client = get_query_result_summary_llm_client(
+    llm_client = await get_query_result_summary_llm_client(
         user_id=user_id
     )
     resp = llm_client.chat.completions.create(

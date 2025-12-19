@@ -1,8 +1,9 @@
 import models
 from datetime import datetime, timezone, timedelta
+from datetime import date as date_type
 from sqlalchemy import or_, func, cast, Date
 from sqlalchemy.orm import Session, selectinload
-from enums.document import UserDocumentAuthority
+from enums.document import UserDocumentAuthority, DocumentCategory
 
 def create_document_note(
     db: Session, 
@@ -302,7 +303,10 @@ def count_user_documents(
     db: Session, 
     user_id: int, 
     keyword: str | None = None, 
-    label_ids: list[int] | None = None
+    label_ids: list[int] | None = None,
+    filter_category: DocumentCategory | None = None,
+    filter_platform: str | None = None,
+    filter_date: date_type | None = None
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.UserDocument).outerjoin(models.document.DocumentLabel)
@@ -314,6 +318,17 @@ def count_user_documents(
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at == None,
                              models.document.DocumentLabel.label_id.in_(label_ids))
+    if filter_category is not None:
+        query = query.filter(models.document.Document.category == filter_category)
+    if filter_platform is not None:
+        query = query.filter(models.document.Document.platform == filter_platform)
+    if filter_date is not None:
+        start = datetime.combine(filter_date, datetime.min.time())
+        end = start + timedelta(days=1)
+        query = query.filter(
+            models.document.Document.create_time >= start,
+            models.document.Document.create_time < end
+        )
     query = query.distinct(models.document.Document.id)
     return query.count()
 
