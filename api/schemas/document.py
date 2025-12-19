@@ -84,9 +84,8 @@ class SummaryItem(BaseModel):
 class DocumentMonthSummaryResponse(BaseModel):
     data: list[SummaryItem]
 
-class DocumentCreateRequest(BaseModel):
+class BaseDocumentCreateRequest(BaseModel):
     category: int
-    from_plat: str
     sections: list[int] = []
     labels: list[int] = []
     title: str | None = None
@@ -97,6 +96,12 @@ class DocumentCreateRequest(BaseModel):
     file_name: str | None = None
     auto_summary: bool = False
     auto_podcast: bool = False
+
+class DocumentCreateRequest(BaseDocumentCreateRequest):
+    from_plat: str
+
+class ApiDocumentCreateRequest(BaseDocumentCreateRequest):
+    pass
     
 class DocumentCreateResponse(BaseModel):
     document_id: int

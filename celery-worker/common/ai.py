@@ -1,7 +1,5 @@
 import json
 from openai import OpenAI
-from prompts.summary_section import summary_section_prompt
-from prompts.summary_section_with_origin import summary_section_with_origin_prompt
 from prompts.summary_content import summary_content_prompt
 from prompts.reducer_summary import reducer_summary_prompt
 from prompts.make_section_markdown import make_section_markdown_prompt
@@ -17,77 +15,7 @@ class SummaryResultWithTitleAndDescription(BaseModel):
     description: str
     summary: str
 
-def summary_section(
-    user_id: int, 
-    model_id: int, 
-    markdown_content: str
-):
-    model_configuration = AIModelProxy(
-        user_id=user_id,
-        model_id=model_id
-    ).get_configuration()
-    
-    system_prompt = summary_section_prompt(markdown_content=markdown_content)
-    
-    client = OpenAI(
-        api_key=model_configuration.api_key,
-        base_url=model_configuration.base_url,
-    )
-    completion = client.chat.completions.create(
-        model=model_configuration.model_name,
-        messages=[
-            {"role": "system", "content": "You are an expert in summarizing document content."},
-            {"role": "user", "content": system_prompt}
-        ],
-        temperature=0.3,
-        response_format={"type": "json_object"},
-        max_tokens=4096
-    )
-    content = completion.choices[0].message.content
-    if content is None:
-        raise Exception("No content returned for ai")
-    content = json.loads(content)
-    summary = content.get('summary')
-    return SummaryResult(summary=summary)
-
-def summary_section_with_origin(
-    user_id: int, 
-    model_id: int, 
-    origin_section_markdown_content: str, 
-    new_document_markdown_content: str
-):
-    model_configuration = AIModelProxy(
-        user_id=user_id,
-        model_id=model_id
-    ).get_configuration()
-    
-    system_prompt = summary_section_with_origin_prompt(
-        origin_section_markdown_content=origin_section_markdown_content, 
-        new_document_markdown_content=new_document_markdown_content
-    )
-
-    client = OpenAI(
-        api_key=model_configuration.api_key,
-        base_url=model_configuration.base_url,
-    )
-    completion = client.chat.completions.create(
-        model=model_configuration.model_name,
-        messages=[
-            {"role": "system", "content": "You are an expert in summarizing document content."},
-            {"role": "user", "content": system_prompt}
-        ],
-        temperature=0.3,
-        response_format={"type": "json_object"},
-        max_tokens=8192
-    )
-    content = completion.choices[0].message.content
-    if content is None:
-        raise Exception("No content returned for ai")
-    content = json.loads(content)
-    summary = content.get('summary')
-    return SummaryResult(summary=summary)
-
-def make_section_markdown(
+async def make_section_markdown(
     user_id: int,
     model_id: int,
     current_markdown_content: str | None,
@@ -95,10 +23,10 @@ def make_section_markdown(
     entities: list[EntityInfo],
     relations: list[RelationInfo]
 ):
-    model_configuration = AIModelProxy(
+    model_configuration = (await AIModelProxy.create(
         user_id=user_id,
         model_id=model_id
-    ).get_configuration()
+    )).get_configuration()
     
     prompt = make_section_markdown_prompt(
         current_markdown_content=current_markdown_content,
@@ -125,15 +53,15 @@ def make_section_markdown(
         raise Exception("No content returned for ai")
     return content
 
-def summary_content(
+async def summary_content(
     user_id: int,
     model_id: int,
     content: str
 ):
-    model_configuration = AIModelProxy(
+    model_configuration = (await AIModelProxy.create(
         user_id=user_id,
         model_id=model_id
-    ).get_configuration()
+    )).get_configuration()
     
     system_prompt = summary_content_prompt(content=content)
     client = OpenAI(
@@ -163,7 +91,7 @@ def summary_content(
         summary=summary
     )
 
-def reducer_summary(
+async def reducer_summary(
     user_id: int,
     model_id: int,
     current_summary: str | None,
@@ -171,10 +99,10 @@ def reducer_summary(
     new_entities: list[EntityInfo],
     new_relations: list[RelationInfo]
 ):
-    model_configuration = AIModelProxy(
+    model_configuration = (await AIModelProxy.create(
         user_id=user_id,
         model_id=model_id
-    ).get_configuration()
+    )).get_configuration()
     
     system_prompt = reducer_summary_prompt(
         current_summary=current_summary,

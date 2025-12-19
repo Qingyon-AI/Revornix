@@ -4,7 +4,8 @@ import models
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime
-from common.dependencies import get_current_user, get_db
+from common.dependencies import get_current_user, get_db, plan_ability_checked
+from enums.ability import Ability
 
 rss_router = APIRouter()
 
@@ -124,7 +125,8 @@ def getRssServerDocument(
 def addRssServer(
     add_rss_request: schemas.rss.AddRssServerRequest, 
     db: Session = Depends(get_db), 
-    current_user: models.user.User = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user),
+    _ = Depends(plan_ability_checked(Ability.RSS_ADD.value))
 ):
     db_rss_server = crud.rss.create_rss_server(
         db=db, 
@@ -148,7 +150,8 @@ def addRssServer(
 def deleteRssServer(
     delete_rss_request: schemas.rss.DeleteRssServerRequest, 
     db: Session = Depends(get_db), 
-    current_user: models.user.User = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user),
+    _ = Depends(plan_ability_checked(Ability.RSS_DELETE.value))
 ):
     crud.rss.delete_rss_servers(
         db=db, 
@@ -167,7 +170,8 @@ def deleteRssServer(
 def updateRssServer(
     update_rss_request: schemas.rss.UpdateRssServerRequest,
     db: Session = Depends(get_db),
-    current_user: models.user.User = Depends(get_current_user)
+    current_user: models.user.User = Depends(get_current_user),
+    _ = Depends(plan_ability_checked(Ability.RSS_UPDATE.value))
 ):
     now = datetime.now()
     db_rss_server = crud.rss.get_rss_server_by_id(

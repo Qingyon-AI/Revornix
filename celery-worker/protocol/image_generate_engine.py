@@ -48,10 +48,10 @@ class ImageGenerateEngineProtocol(EngineProtocol):
                 max_images=6,
             )
 
-            model_conf = AIModelProxy(
+            model_conf = (await AIModelProxy.create(
                 user_id=user_id,
                 model_id=db_user.default_document_reader_model_id
-            ).get_configuration()
+            )).get_configuration()
 
             client = OpenAI(
                 api_key=model_conf.api_key,

@@ -12,11 +12,12 @@ from common.dependencies import get_db
 from data.milvus.search import naive_search
 from data.milvus.create import milvus_client
 from typing import cast
-from common.dependencies import get_db, get_current_user
+from common.dependencies import get_db, get_current_user, check_deployed_by_official, plan_ability_checked_in_func, get_authorization_header
 from common.common import get_user_remote_file_system
 from common.celery.app import start_process_document, start_process_document_podcast, update_document_process_status, start_process_section
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus, UserDocumentAuthority
 from enums.section import UserSectionRole, UserSectionAuthority, SectionDocumentIntegration
+from enums.ability import Ability
 
 document_router = APIRouter()
 
@@ -196,12 +197,12 @@ async def create_ai_summary(
     model_id = user.default_document_reader_model_id
     if model_id is None:
         raise Exception('Please set the default document reader model for the user first.')
-    ai_summary_result = await asyncio.to_thread(
-        summary_content,
+    ai_summary_result = await summary_content(
         user_id=user.id,
         model_id=model_id,
         content=markdown_content,
     )
+        
     db_document = crud.document.get_document_by_document_id(
         db=db,
         document_id=ai_summary_request.document_id
@@ -287,14 +288,28 @@ def get_month_summary(
     return schemas.document.DocumentMonthSummaryResponse(data=summary_items)
 
 @document_router.post('/create', response_model=schemas.document.DocumentCreateResponse)
-def create_document(
+async def create_document(
     document_create_request: schemas.document.DocumentCreateRequest,  
     db: Session = Depends(get_db), 
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
+    deployed_by_official = Depends(check_deployed_by_official),
+    authorization: str = Depends(get_authorization_header),
 ):
     now = datetime.now(timezone.utc)
     db_document = None
     if document_create_request.category == DocumentCategory.WEBSITE:
+        db_website_documents_count = crud.document.count_user_documents(
+            db=db,
+            user_id=user.id,
+            filter_category=DocumentCategory.WEBSITE
+        )
+        if db_website_documents_count > 20 and deployed_by_official:
+            auth_status = await plan_ability_checked_in_func(
+                ability=Ability.COLLECT_LINK.value,
+                authorization=authorization
+            )
+            if not auth_status:
+                raise Exception('The number of website documents exceeds the limit for your plan')
         if document_create_request.url is None:
             raise Exception('The url is required when the document category is website')
         db_document = crud.document.create_base_document(
@@ -311,6 +326,18 @@ def create_document(
             url=document_create_request.url,
         )
     elif document_create_request.category == DocumentCategory.FILE:
+        db_file_documents_count = crud.document.count_user_documents(
+            db=db,
+            user_id=user.id,
+            filter_category=DocumentCategory.FILE
+        )
+        if db_file_documents_count > 20 and deployed_by_official:
+            auth_status = await plan_ability_checked_in_func(
+                ability=Ability.COLLECT_LINK.value,
+                authorization=authorization
+            )
+            if not auth_status:
+                raise Exception('The number of file documents exceeds the limit for your plan')
         if document_create_request.file_name is None:
             raise Exception('The file name is required when the document category is file')
         db_document = crud.document.create_base_document(

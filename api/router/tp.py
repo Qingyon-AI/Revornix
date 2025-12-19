@@ -4,15 +4,18 @@
 
 import schemas
 import crud
+import models
 from celery import chain, group
 from datetime import datetime, timezone
 from common.celery.app import start_process_document, start_process_section
-from common.dependencies import get_db, get_current_user_with_api_key
+from common.dependencies import get_db, get_current_user_with_api_key, plan_ability_checked_in_func, check_deployed_by_official
 from common.common import get_user_remote_file_system
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from enums.document import DocumentCategory, UserDocumentAuthority
 from enums.section import UserSectionAuthority, UserSectionRole, SectionDocumentIntegration
+from enums.ability import Ability
+from common.jwt_utils import create_token
 
 tp_router = APIRouter()
 
@@ -143,13 +146,55 @@ def create_document_label(
     )
                        
 @tp_router.post("/document/create", response_model=schemas.document.DocumentCreateResponse)
-def create_document(
+async def create_document(
     document_create_request: schemas.document.DocumentCreateRequest, 
     db: Session = Depends(get_db), 
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
+    user: models.user.User = Depends(get_current_user_with_api_key),
+    deployed_by_official: bool = Depends(check_deployed_by_official),
 ):
     now = datetime.now(timezone.utc)
+    access_token, _ = create_token(
+        user=user
+    )
+    db_api_plat_user_documents = crud.document.count_user_documents(
+        db=db,
+        user_id=user.id,
+        filter_platform='api',
+        filter_date=now.date()
+    )
+    auth_status = True
+    if db_api_plat_user_documents > 10 and db_api_plat_user_documents < 25 and deployed_by_official:
+        auth_status = await plan_ability_checked_in_func(
+            ability=Ability.API_COLLECT_LIMITED.value,
+            authorization=f'Bearer {access_token}'
+        )
+    if db_api_plat_user_documents >= 25 and db_api_plat_user_documents < 50 and deployed_by_official:
+        auth_status = await plan_ability_checked_in_func(
+            ability=Ability.API_COLLECT_LIMITED_MORE.value,
+            authorization=f'Bearer {access_token}'
+        )
+    if db_api_plat_user_documents >= 50 and deployed_by_official:
+        auth_status = await plan_ability_checked_in_func(
+            ability=Ability.API_COLLECT_LIMITED_MUCH_MORE.value,
+            authorization=f'Bearer {access_token}'
+        )
+    if not auth_status and deployed_by_official:
+        raise Exception('The number of documents exceeds the limit for your plan')
+    
     if document_create_request.category == DocumentCategory.WEBSITE:
+        db_website_documents_count = crud.document.count_user_documents(
+            db=db,
+            user_id=user.id,
+            filter_category=DocumentCategory.WEBSITE
+        )
+        if db_website_documents_count > 20 and deployed_by_official:
+            auth_status = await plan_ability_checked_in_func(
+                ability=Ability.COLLECT_LINK.value,
+                authorization=f'Bearer {access_token}'
+            )
+            if not auth_status and deployed_by_official:
+                raise Exception('The number of website documents exceeds the limit for your plan')
+            
         if document_create_request.url is None:
             raise Exception('The url is required when the document category is website')
         db_document = crud.document.create_base_document(
@@ -158,7 +203,7 @@ def create_document(
             title='Website Analysing...',
             description='Website Analysing...',
             category=document_create_request.category,
-            from_plat=document_create_request.from_plat
+            from_plat='api'
         )
         crud.document.create_website_document(
             db=db, 
@@ -166,13 +211,26 @@ def create_document(
             document_id=db_document.id
         )
     elif document_create_request.category == DocumentCategory.FILE:
+        db_file_documents_count = crud.document.count_user_documents(
+            db=db,
+            user_id=user.id,
+            filter_category=DocumentCategory.FILE
+        )
+        if db_file_documents_count > 20:
+            auth_status = await plan_ability_checked_in_func(
+                ability=Ability.COLLECT_LINK.value,
+                authorization=f'Bearer {access_token}'
+            )
+            if not auth_status and deployed_by_official:
+                raise Exception('The number of file documents exceeds the limit for your plan')
+            
         if document_create_request.file_name is None:
             raise Exception('The file name is required when the document category is file')
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
             category=document_create_request.category,
-            from_plat=document_create_request.from_plat,
+            from_plat='api',
             title=f'File document analysing...',
             description=f'File document analysing...'
         )
@@ -188,7 +246,7 @@ def create_document(
             db=db,
             creator_id=user.id,
             category=document_create_request.category,
-            from_plat=document_create_request.from_plat,
+            from_plat='api',
             title=f'Quick Note saved at {now}',
             description=f'Quick Note saved at {now}'
         )

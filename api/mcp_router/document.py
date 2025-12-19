@@ -7,7 +7,11 @@ from fastmcp.exceptions import ToolError
 from data.sql.base import SessionLocal
 
 class UserAuthMiddleware(Middleware):
-    async def on_call_tool(self, context: MiddlewareContext, call_next):
+    async def on_call_tool(
+        self, 
+        context: MiddlewareContext, 
+        call_next
+    ):
         headers = get_http_headers()
         api_key = headers.get("api-key")
         if not api_key:
@@ -22,10 +26,15 @@ class UserAuthMiddleware(Middleware):
             
         return await call_next(context)
 
-    async def verify_api_key_and_get_user_id(self, api_key: str) -> int | None:
+    async def verify_api_key_and_get_user_id(
+        self, 
+        api_key: str
+    ):
         db = SessionLocal()
-        db_api_key = crud.api_key.get_api_key_by_api_key(db=db, 
-                                                         api_key=api_key)
+        db_api_key = crud.api_key.get_api_key_by_api_key(
+            db=db, 
+            api_key=api_key
+        )
         if not db_api_key:
             return None
         db.close()
