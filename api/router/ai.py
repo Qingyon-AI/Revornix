@@ -13,6 +13,7 @@ from common.dependencies import get_db, get_current_user, check_deployed_by_offi
 from enums.ability import Ability
 from fastapi.responses import StreamingResponse
 from data.sql.base import SessionLocal
+from proxy.ai_model_proxy import AIModelProxy
 from mcp_use import MCPClient, MCPAgent
 from common.jwt_utils import create_token
 from langchain_openai import ChatOpenAI
@@ -430,31 +431,14 @@ async def create_agent(
     model_id = user.default_revornix_model_id
     if model_id is None:
         raise schemas.error.CustomException("The user has not set a default model", code=400)
-    db_model = crud.model.get_ai_model_by_id(
-        db=db, 
+    model_configuration = (await AIModelProxy.create(
+        user_id=user_id,
         model_id=model_id
-    )
-    if db_model is None:
-        raise schemas.error.CustomException("The model is not exist", code=404)
-    db_model_provider = crud.model.get_ai_model_provider_by_id(
-        db=db, 
-        provider_id=db_model.provider_id
-    )
-    if db_model_provider is None:
-        raise schemas.error.CustomException("The model provider is not exist", code=404)
-    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-        db=db, 
-        user_id=user.id, 
-        ai_model_provider_id=db_model.provider_id
-    )
-    if db_user_model_provider is None:
-        raise schemas.error.CustomException("The user has not set a model provider", code=400)
-    api_key = SecretStr(db_user_model_provider.api_key if db_user_model_provider.api_key is not None else "")
-    base_url = db_user_model_provider.base_url
-    if db_model_provider.uuid == OfficialModelProvider.Revornix.meta.id:
-        from official.model.llm import OFFICIAL_LLM_AI_BASE_URL, OFFICIAL_LLM_AI_KEY
-        api_key = SecretStr(OFFICIAL_LLM_AI_KEY if OFFICIAL_LLM_AI_KEY is not None else "")
-        base_url = OFFICIAL_LLM_AI_BASE_URL
+    )).get_configuration()
+    
+    api_key = SecretStr(model_configuration.api_key if model_configuration.api_key is not None else "")
+    base_url = model_configuration.base_url
+    
     mcp_client = MCPClient()
     access_token, _ = create_token(
         user=user
@@ -503,7 +487,7 @@ async def create_agent(
                         }
                     )
     llm = ChatOpenAI(
-        model=db_model.name,
+        model=model_configuration.model_name,
         api_key=api_key,
         base_url=base_url
     )
