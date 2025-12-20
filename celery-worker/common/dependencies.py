@@ -205,7 +205,7 @@ def plan_ability_checked(
         headers = { }
         if authorization is not None:
             headers.update({
-                'Authorization': f'Bearer {authorization}'
+                'Authorization': f'{authorization}'
             })
         async with httpx.AsyncClient() as client:
             response = await client.post(
