@@ -4,6 +4,8 @@ from data.sql.base import SessionLocal
 from typing import Protocol
 from enums.engine import EngineUUID
 from enums.ability import Ability
+from official.engine.image import OFFICIAL_IMAGE_AI_BASE_URL, OFFICIAL_IMAGE_AI_KEY, OFFICIAL_IMAGE_AI_MODEL
+from official.engine.tts import OFFICIAL_TTS_AI_BASE_URL, OFFICIAL_TTS_AI_KEY, OFFICIAL_TTS_AI_MODEL
 from common.dependencies import plan_ability_checked_in_func, check_deployed_by_official_in_fuc
 from common.jwt_utils import create_token
 
@@ -94,6 +96,22 @@ class EngineProtocol(Protocol):
                     raise PermissionError("plan ability denied")
 
             self.engine_config = user_engine.config_json
+            
+            if self.engine_uuid == EngineUUID.Official_Banana_Image.value:
+                config = json.dumps({
+                    "model_name": OFFICIAL_IMAGE_AI_MODEL,
+                    "base_url": OFFICIAL_IMAGE_AI_BASE_URL,
+                    "api_key": OFFICIAL_IMAGE_AI_KEY
+                })
+                self.engine_config = config
+            elif self.engine_uuid == EngineUUID.Official_OpenAI_TTS.value:
+                config = json.dumps({
+                    "model_name": OFFICIAL_TTS_AI_MODEL,
+                    "base_url": OFFICIAL_TTS_AI_BASE_URL,
+                    "api_key": OFFICIAL_TTS_AI_KEY
+                })
+                self.engine_config = config
+                
             self.user_id = user_engine.user_id
 
         finally:
