@@ -1,14 +1,7 @@
 import re
-import json
-import crud
-from common.jwt_utils import create_token
-from common.dependencies import plan_ability_checked_in_func, check_deployed_by_official_in_fuc
-from enums.ability import Ability
-from data.sql.base import SessionLocal
 from enums.engine import EngineUUID, EngineCategory
 from protocol.image_generate_engine import ImageGenerateEngineProtocol
 from openai import OpenAI
-from official.engine.image import OFFICIAL_IMAGE_AI_BASE_URL, OFFICIAL_IMAGE_AI_KEY, OFFICIAL_IMAGE_AI_MODEL
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
 SYSTEM_PROMPT = """You are a pure image generation function.
@@ -54,64 +47,6 @@ class OfficialBananaImageGenerateEngine(ImageGenerateEngineProtocol):
             engine_description_zh='',
             engine_demo_config=''
         )
-
-    # 官方代理的banana接口，初始化直接获取本地的环境变量即可
-    async def init_engine_config_by_user_engine_id(
-        self, 
-        user_engine_id: int
-    ):
-        db = SessionLocal()
-        try:
-            user_engine = crud.engine.get_user_engine_by_user_engine_id(
-                db=db,
-                user_engine_id=user_engine_id
-            )
-            if not user_engine:
-                raise ValueError("user_engine not found")
-
-            user = crud.user.get_user_by_id(
-                db=db,
-                user_id=user_engine.user_id
-            )
-            if not user:
-                raise ValueError("user not found")
-
-            engine = crud.engine.get_engine_by_id(
-                db=db,
-                id=user_engine.engine_id
-            )
-            if not engine:
-                raise ValueError("engine not found")
-
-            if engine.uuid != self.engine_uuid:
-                raise ValueError("engine uuid mismatch")
-
-            ability_map = {
-                EngineUUID.Official_OpenAI_TTS.value:
-                    Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value,
-                EngineUUID.Official_Banana_Image.value:
-                    Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value,
-            }
-
-            ability = ability_map.get(engine.uuid)
-            deployed_by_official = await check_deployed_by_official_in_fuc()
-            if ability and deployed_by_official:
-                access_token, _ = create_token(user=user)
-                authorized = await plan_ability_checked_in_func(
-                    ability=ability,
-                    authorization=f"Bearer {access_token}"
-                )
-                if not authorized:
-                    raise PermissionError("plan ability denied")
-        finally:
-            db.close()
-
-        config = json.dumps({
-            "model_name": OFFICIAL_IMAGE_AI_MODEL,
-            "base_url": OFFICIAL_IMAGE_AI_BASE_URL,
-            "api_key": OFFICIAL_IMAGE_AI_KEY
-        })
-        self.engine_config = config
         
     def generate_image(
         self, 
