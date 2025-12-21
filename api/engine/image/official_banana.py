@@ -1,7 +1,7 @@
 import re
 from enums.engine import EngineUUID, EngineCategory
 from protocol.image_generate_engine import ImageGenerateEngineProtocol
-from openai import OpenAI
+from langfuse.openai import OpenAI
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
 SYSTEM_PROMPT = """You are a pure image generation function.

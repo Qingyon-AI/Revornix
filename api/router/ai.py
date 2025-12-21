@@ -6,7 +6,7 @@ import models
 from pydantic import SecretStr
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
-from openai import OpenAI
+from langfuse.openai import OpenAI
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from common.dependencies import get_db, get_current_user, check_deployed_by_official, plan_ability_checked_in_func, check_deployed_by_official_in_fuc

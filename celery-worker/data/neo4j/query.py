@@ -1,5 +1,5 @@
-import openai
 import crud
+from langfuse.openai import OpenAI
 from data.sql.base import SessionLocal
 from data.neo4j.search import *
 from prompts.query import query_context_summary
@@ -23,7 +23,7 @@ async def get_query_result_summary_llm_client(
         model_id=db_user.default_revornix_model_id
     )).get_configuration()
     
-    llm_client = openai.OpenAI(
+    llm_client = OpenAI(
         api_key=model_configuration.api_key,
         base_url=model_configuration.base_url,
     )

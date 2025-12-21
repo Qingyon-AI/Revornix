@@ -4,7 +4,7 @@ load_dotenv(override=True)
 import os
 import re
 from rich import print
-from openai import OpenAI
+from langfuse.openai import OpenAI
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
 OFFICIAL_IMAGE_AI_BASE_URL = os.environ.get("OFFICIAL_IMAGE_AI_BASE_URL")

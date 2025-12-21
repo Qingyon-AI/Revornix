@@ -1,6 +1,6 @@
 from protocol.tts_engine import TTSEngineProtocol
 from enums.engine import EngineUUID, EngineCategory
-from openai import OpenAI
+from langfuse.openai import OpenAI
 
 class OpenAITTSEngine(TTSEngineProtocol):
     """此引擎使用的是openai的tts接口

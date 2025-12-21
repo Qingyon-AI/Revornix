@@ -1,11 +1,11 @@
 import crud
 import hashlib
-import openai
 import json
 import asyncio
 import torch
 import models
 from typing import cast
+from langfuse.openai import OpenAI
 from enums.document import DocumentMdConvertStatus
 from chonkie.types import Chunk
 from chonkie.chunker.recursive import RecursiveChunker
@@ -150,7 +150,7 @@ async def _load_markdown_content(
 # 调用 LLM 抽取实体和关系
 # ----------------------------
 def extract_entities_relations(
-    llm_client: openai.OpenAI, 
+    llm_client: OpenAI, 
     llm_model: str,
     chunk: ChunkInfo
 ) -> tuple[list[EntityInfo], list[RelationInfo]]:
@@ -229,7 +229,7 @@ def merge_entitys_and_relations(
 
 async def get_extract_llm_client(
     user_id: int
-) -> openai.OpenAI:
+) -> OpenAI:
     db = SessionLocal()
     db_user = crud.user.get_user_by_id(
         db=db, 
@@ -245,7 +245,7 @@ async def get_extract_llm_client(
         model_id=db_user.default_document_reader_model_id
     )).get_configuration()
     
-    llm_client = openai.OpenAI(
+    llm_client = OpenAI(
         api_key=model_configuration.api_key,
         base_url=model_configuration.base_url,
     )
