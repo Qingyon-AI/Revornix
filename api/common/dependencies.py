@@ -35,7 +35,7 @@ async def check_deployed_by_official(
         return True
     return False
 
-async def check_deployed_by_official_in_fuc():
+def check_deployed_by_official_in_fuc():
     if OFFICIAL == 'True':
         return True
     return False
