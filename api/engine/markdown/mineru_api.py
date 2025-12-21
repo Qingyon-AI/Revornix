@@ -11,7 +11,7 @@ from pathlib import Path
 from config.base import BASE_DIR
 from common.common import get_user_remote_file_system, extract_title_and_summary
 from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
-from enums.engine import EngineUUID, EngineCategory
+from enums.engine import Engine, EngineCategory
 from playwright.async_api import async_playwright
 from typing import Tuple
 from data.sql.base import SessionLocal
@@ -20,7 +20,7 @@ class MineruApiEngine(MarkdownEngineProtocol):
 
     def __init__(self):
         super().__init__(
-            engine_uuid=EngineUUID.MinerU_API.value,
+            engine_uuid=Engine.MinerU_API.meta.uuid,
             engine_name='MinerU API',
             engine_name_zh='MinerU API',
             engine_category=EngineCategory.Markdown,

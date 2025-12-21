@@ -33,7 +33,7 @@ from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
 from engine.tts.openai import OpenAITTSEngine
 from engine.tts.official_openai import OfficialOpenAITTSEngine
-from enums.engine import EngineUUID
+from enums.engine import Engine
 from common.ai import make_section_markdown
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentGraphStatus
 from enums.section import SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus
@@ -205,11 +205,11 @@ async def handle_update_document_ai_podcast(
             user_id=user_id
         )
         
-        if db_engine.uuid == EngineUUID.Volc_TTS.value:
+        if db_engine.uuid == Engine.Volc_TTS.meta.uuid:
             engine = VolcTTSEngine()
-        elif db_engine.uuid == EngineUUID.OpenAI_TTS.value:
+        elif db_engine.uuid == Engine.OpenAI_TTS.meta.uuid:
             engine = OpenAITTSEngine()
-        elif db_engine.uuid == EngineUUID.Official_OpenAI_TTS.value:
+        elif db_engine.uuid == Engine.Official_OpenAI_TTS.meta.uuid:
             engine = OfficialOpenAITTSEngine()
         else:
             raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
@@ -313,13 +313,13 @@ async def handle_convert_document_md(
             user_file_system_id=db_user.default_user_file_system
         )
         
-        if db_engine.uuid == EngineUUID.MinerU_API.value:
+        if db_engine.uuid == Engine.MinerU_API.meta.uuid:
             engine = MineruApiEngine()
-        elif db_engine.uuid == EngineUUID.MarkitDown.value:
+        elif db_engine.uuid == Engine.MarkitDown.meta.uuid:
             engine = MarkitdownEngine()
-        elif db_engine.uuid == EngineUUID.Jina.value:
+        elif db_engine.uuid == Engine.Jina.meta.uuid:
             engine = JinaEngine()
-        elif db_engine.uuid == EngineUUID.MinerU.value:
+        elif db_engine.uuid == Engine.MinerU.meta.uuid:
             engine = MineruEngine()
         else:
             raise Exception("The convert engine is not supported")
@@ -673,11 +673,11 @@ async def handle_update_section_ai_podcast(
             user_id=user_id
         )
         
-        if db_engine.uuid == EngineUUID.Volc_TTS.value:
+        if db_engine.uuid == Engine.Volc_TTS.meta.uuid:
             engine = VolcTTSEngine()
-        elif db_engine.uuid == EngineUUID.OpenAI_TTS.value:
+        elif db_engine.uuid == Engine.OpenAI_TTS.meta.uuid:
             engine = OpenAITTSEngine()
-        elif db_engine.uuid == EngineUUID.Official_OpenAI_TTS:
+        elif db_engine.uuid == Engine.meta.uuid:
             engine = OfficialOpenAITTSEngine()
         else:
             raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
@@ -885,9 +885,9 @@ async def handle_process_section(
         )
         if db_engine is None:
             raise Exception("There is something wrong with the user's default image generate engine")
-        if db_engine.uuid == EngineUUID.Banana_Image.value:
+        if db_engine.uuid == Engine.Banana_Image.meta.uuid:
             engine = BananaImageGenerateEngine()
-        elif db_engine.uuid == EngineUUID.Official_Banana_Image.value:
+        elif db_engine.uuid == Engine.Official_Banana_Image.meta.uuid:
             engine = OfficialBananaImageGenerateEngine()
         else:
             raise Exception("Unsupport engine, uuid: " + db_engine.uuid)

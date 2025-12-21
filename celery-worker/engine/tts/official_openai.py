@@ -1,5 +1,5 @@
 from protocol.tts_engine import TTSEngineProtocol
-from enums.engine import EngineUUID, EngineCategory
+from enums.engine import Engine, EngineCategory
 from langfuse.openai import OpenAI
 
 class OfficialOpenAITTSEngine(TTSEngineProtocol):
@@ -8,7 +8,7 @@ class OfficialOpenAITTSEngine(TTSEngineProtocol):
     
     def __init__(self):
         super().__init__(
-            engine_uuid=EngineUUID.Official_OpenAI_TTS.value,
+            engine_uuid=Engine.Official_OpenAI_TTS.meta.uuid,
             engine_name="Revornix Proxied OpenAI TTS Engine",
             engine_name_zh="Revornix代理的OpenAI TTS引擎",
             engine_category=EngineCategory.TTS,

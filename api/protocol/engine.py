@@ -2,7 +2,7 @@ import crud
 import json
 from data.sql.base import SessionLocal
 from typing import Protocol
-from enums.engine import EngineUUID
+from enums.engine import Engine
 from enums.ability import Ability
 from official.engine.image import OFFICIAL_IMAGE_AI_BASE_URL, OFFICIAL_IMAGE_AI_KEY, OFFICIAL_IMAGE_AI_MODEL
 from official.engine.tts import OFFICIAL_TTS_AI_BASE_URL, OFFICIAL_TTS_AI_KEY, OFFICIAL_TTS_AI_MODEL
@@ -78,9 +78,9 @@ class EngineProtocol(Protocol):
                 raise ValueError("engine uuid mismatch")
 
             ability_map = {
-                EngineUUID.Official_OpenAI_TTS.value:
+                Engine.Official_OpenAI_TTS.meta.uuid:
                     Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value,
-                EngineUUID.Official_Banana_Image.value:
+                Engine.Official_Banana_Image.meta.uuid:
                     Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value,
             }
 
@@ -97,14 +97,14 @@ class EngineProtocol(Protocol):
 
             self.engine_config = user_engine.config_json
             
-            if self.engine_uuid == EngineUUID.Official_Banana_Image.value:
+            if self.engine_uuid == Engine.Official_Banana_Image.meta.uuid:
                 config = json.dumps({
                     "model_name": OFFICIAL_IMAGE_AI_MODEL,
                     "base_url": OFFICIAL_IMAGE_AI_BASE_URL,
                     "api_key": OFFICIAL_IMAGE_AI_KEY
                 })
                 self.engine_config = config
-            elif self.engine_uuid == EngineUUID.Official_OpenAI_TTS.value:
+            elif self.engine_uuid == Engine.Official_OpenAI_TTS.meta.uuid:
                 config = json.dumps({
                     "model_name": OFFICIAL_TTS_AI_MODEL,
                     "base_url": OFFICIAL_TTS_AI_BASE_URL,

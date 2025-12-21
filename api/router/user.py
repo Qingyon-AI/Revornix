@@ -27,7 +27,7 @@ from common.sms.tencent_sms import TencentSms
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from enums.user import WeChatUserSource
 from enums.file import RemoteFileService
-from enums.engine import EngineUUID
+from enums.engine import Engine
 
 user_router = APIRouter()
 
@@ -414,7 +414,7 @@ async def create_user_by_email_verify(
     # init the default engine for the user
     db_mineru_engine = crud.engine.get_engine_by_uuid(
         db=db,
-        uuid=EngineUUID.MinerU.value
+        uuid=Engine.MinerU.meta.uuid
     )
     if db_mineru_engine is None:
         raise CustomException('The MinerU Engine is Not Found', 404)
@@ -484,7 +484,7 @@ def create_user_by_email(
     # init the default engine for the user
     db_mineru_engine = crud.engine.get_engine_by_uuid(
         db=db,
-        uuid=EngineUUID.MinerU.value
+        uuid=Engine.MinerU.meta.uuid
     )
     if db_mineru_engine is None:
         raise CustomException('The MinerU Engine is Not Found', 404)
@@ -888,7 +888,7 @@ async def create_user_by_google(
     # init the default engine for the user
     db_mineru_engine = crud.engine.get_engine_by_uuid(
         db=db,
-        uuid=EngineUUID.MinerU.value
+        uuid=Engine.MinerU.meta.uuid
     )
     if db_mineru_engine is None:
         raise CustomException('The MinerU Engine is Not Found', 404)
@@ -1040,7 +1040,7 @@ async def create_user_by_github(
     # init the default engine for the user
     db_mineru_engine = crud.engine.get_engine_by_uuid(
         db=db,
-        uuid=EngineUUID.MinerU.value
+        uuid=Engine.MinerU.meta.uuid
     )
     if db_mineru_engine is None:
         raise CustomException('The MinerU Engine is Not Found', 404)
@@ -1198,7 +1198,7 @@ async def create_user_by_sms_verify(
         # init the default engine for the user
         db_mineru_engine = crud.engine.get_engine_by_uuid(
             db=db,
-            uuid=EngineUUID.MinerU.value
+            uuid=Engine.MinerU.meta.uuid
         )
         if db_mineru_engine is None:
             raise CustomException('The MinerU Engine is Not Found', 404)
@@ -1360,7 +1360,7 @@ async def create_user_by_wechat_mini(
         # init the default engine for the user
         db_mineru_engine = crud.engine.get_engine_by_uuid(
             db=db,
-            uuid=EngineUUID.MinerU.value
+            uuid=Engine.MinerU.meta.uuid
         )
         if db_mineru_engine is None:
             raise CustomException('The MinerU Engine is Not Found', 404)
@@ -1479,7 +1479,7 @@ async def create_user_by_wechat_web(
         # init the default engine for the user
         db_mineru_engine = crud.engine.get_engine_by_uuid(
             db=db,
-            uuid=EngineUUID.MinerU.value
+            uuid=Engine.MinerU.meta.uuid
         )
         if db_mineru_engine is None:
             raise CustomException('The MinerU Engine is Not Found', 404)
