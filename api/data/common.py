@@ -16,7 +16,7 @@ from prompts.entity_and_relation_extraction import entity_and_relation_extractio
 from typing import AsyncGenerator
 from sqlalchemy.orm import Session
 from protocol.remote_file_service import RemoteFileServiceProtocol
-from proxy.ai_model_proxy import AIModelProxy
+from langfuse import propagate_attributes
 from langfuse.openai import OpenAI
 
 def make_chunk_id(
@@ -150,6 +150,7 @@ async def _load_markdown_content(
 # 调用 LLM 抽取实体和关系
 # ----------------------------
 def extract_entities_relations(
+    user_id: int,
     llm_client: OpenAI, 
     llm_model: str,
     chunk: ChunkInfo
@@ -158,37 +159,39 @@ def extract_entities_relations(
     调用 LLM 模型抽取实体与关系
     """
     prompt = entity_and_relation_extraction_prompt(chunk=chunk)
-    resp = llm_client.chat.completions.create(
-        model=llm_model,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.0,
-        response_format={"type": "json_object"},
-    )
-    output_text = resp.choices[0].message.content
-    if output_text is None:
-        data = {"entities": [], "relations": []}
-    else:
-        try:
-            data = json.loads(output_text)
-        except:
+    
+    with propagate_attributes(user_id=str(user_id)):
+        resp = llm_client.chat.completions.create(
+            model=llm_model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            response_format={"type": "json_object"},
+        )
+        output_text = resp.choices[0].message.content
+        if output_text is None:
             data = {"entities": [], "relations": []}
+        else:
+            try:
+                data = json.loads(output_text)
+            except:
+                data = {"entities": [], "relations": []}
 
-    entities = [
-        EntityInfo(
-            id=e['id'],
-            text=e['text'],
-            chunks=[chunk.id],
-            entity_type=e['entity_type']
-        ) for e in data.get("entities", [])
-    ]
-    relations = [
-        RelationInfo(
-            src_node=r["src_entity_id"],
-            tgt_node=r["tgt_entity_id"],
-            relation_type=r["relation_type"]
-        ) for r in data.get("relations", [])
-    ]
-    return entities, relations
+        entities = [
+            EntityInfo(
+                id=e['id'],
+                text=e['text'],
+                chunks=[chunk.id],
+                entity_type=e['entity_type']
+            ) for e in data.get("entities", [])
+        ]
+        relations = [
+            RelationInfo(
+                src_node=r["src_entity_id"],
+                tgt_node=r["tgt_entity_id"],
+                relation_type=r["relation_type"]
+            ) for r in data.get("relations", [])
+        ]
+        return entities, relations
 
 # -----------------------------
 # 合并实体和关系
@@ -226,28 +229,3 @@ def merge_entitys_and_relations(
             dedup_relations.append(r)
 
     return dedup_entities, dedup_relations
-
-async def get_extract_llm_client(
-    user_id: int
-):
-    db = SessionLocal()
-    db_user = crud.user.get_user_by_id(
-        db=db, 
-        user_id=user_id
-    )
-    if db_user is None:
-        raise Exception("User not found")
-    if db_user.default_document_reader_model_id is None:
-        raise Exception("Default document reader model id not found")
-    
-    model_configuration = (await AIModelProxy.create(
-        user_id=user_id,
-        model_id=db_user.default_document_reader_model_id
-    )).get_configuration()
-    
-    llm_client = OpenAI(
-        api_key=model_configuration.api_key,
-        base_url=model_configuration.base_url,
-    )
-    db.close()
-    return llm_client

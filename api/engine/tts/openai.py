@@ -1,6 +1,7 @@
 from protocol.tts_engine import TTSEngineProtocol
 from enums.engine import Engine, EngineCategory
 from langfuse.openai import OpenAI
+from langfuse import propagate_attributes
 
 class OpenAITTSEngine(TTSEngineProtocol):
     """此引擎使用的是openai的tts接口
@@ -30,15 +31,17 @@ class OpenAITTSEngine(TTSEngineProtocol):
         if model_name is None or base_url is None or api_key is None:
             raise Exception("The user's configuration of this engine is not complete.")
         
-        llm_client = OpenAI(
-            base_url=base_url,
-            api_key=api_key
-        )
-        
-        response = llm_client.audio.speech.create(
-            model=model_name,
-            voice='verse',
-            input=text,
-            response_format='mp3'
-        )
-        return response.read()
+        if not self.user_id:
+            raise Exception("The user_id is not set.")
+        with propagate_attributes(user_id=str(self.user_id)):
+            llm_client = OpenAI(
+                base_url=base_url,
+                api_key=api_key
+            )
+            response = llm_client.audio.speech.create(
+                model=model_name,
+                voice='verse',
+                input=text,
+                response_format='mp3'
+            )
+            return response.read()
