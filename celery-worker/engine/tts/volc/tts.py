@@ -4,7 +4,7 @@ import json
 import websockets
 import httpx
 from protocol.tts_engine import TTSEngineProtocol
-from enums.engine import EngineUUID, EngineCategory
+from enums.engine import Engine, EngineCategory
 from pydantic import AnyUrl
 from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
 
@@ -14,7 +14,7 @@ class VolcTTSEngine(TTSEngineProtocol):
     
     def __init__(self):
         super().__init__(
-            engine_uuid=EngineUUID.Volc_TTS.value,
+            engine_uuid=Engine.Volc_TTS.meta.uuid,
             engine_name="Volc Podcast Engine",
             engine_name_zh="豆包播客引擎",
             engine_category=EngineCategory.TTS,

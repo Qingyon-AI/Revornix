@@ -1,5 +1,5 @@
 import re
-from enums.engine import EngineUUID, EngineCategory
+from enums.engine import Engine, EngineCategory
 from protocol.image_generate_engine import ImageGenerateEngineProtocol
 from langfuse.openai import OpenAI
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
@@ -39,7 +39,7 @@ class BananaImageGenerateEngine(ImageGenerateEngineProtocol):
     
     def __init__(self):
         super().__init__(
-            engine_uuid=EngineUUID.Banana_Image.value,
+            engine_uuid=Engine.Banana_Image.meta.uuid,
             engine_name='Banana Image',
             engine_name_zh='Banage 图像生成',
             engine_category=EngineCategory.IMAGE,

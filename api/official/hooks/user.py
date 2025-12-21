@@ -2,7 +2,7 @@ import crud
 from common.logger import info_logger, exception_logger
 from enums.model import OfficialModelProvider, OfficialModel
 from data.sql.base import SessionLocal
-from enums.engine import EngineUUID
+from enums.engine import Engine
 
 async def on_user_created(
     user_id: int
@@ -47,7 +47,7 @@ async def on_user_created(
             )
         db_official_openai_tts_engine = crud.engine.get_engine_by_uuid(
             db=db,
-            uuid=EngineUUID.Official_OpenAI_TTS.value
+            uuid=Engine.Official_OpenAI_TTS.meta.uuid
         )
         if db_official_openai_tts_engine is None:
             raise Exception("Official OpenAI TTS Engine not found")
@@ -61,7 +61,7 @@ async def on_user_created(
         )
         db_official_banana_image_generate_engine = crud.engine.get_engine_by_uuid(
             db=db,
-            uuid=EngineUUID.Official_Banana_Image.value
+            uuid=Engine.Official_Banana_Image.meta.uuid
         )
         if db_official_banana_image_generate_engine is None:
             raise Exception("Official Banana Image Generate Engine not found")

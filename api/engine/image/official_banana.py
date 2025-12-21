@@ -1,5 +1,5 @@
 import re
-from enums.engine import EngineUUID, EngineCategory
+from enums.engine import Engine, EngineCategory
 from protocol.image_generate_engine import ImageGenerateEngineProtocol
 from langfuse.openai import OpenAI
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
@@ -39,7 +39,7 @@ class OfficialBananaImageGenerateEngine(ImageGenerateEngineProtocol):
     
     def __init__(self):
         super().__init__(
-            engine_uuid=EngineUUID.Official_Banana_Image.value,
+            engine_uuid=Engine.Official_Banana_Image.meta.uuid,
             engine_name='Revornix Proxied Banana Image',
             engine_name_zh='Revornix 代理的 Banage 图像生成',
             engine_category=EngineCategory.IMAGE,
