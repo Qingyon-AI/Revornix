@@ -85,7 +85,7 @@ class EngineProtocol(Protocol):
             }
 
             ability = ability_map.get(engine.uuid)
-            deployed_by_official = await check_deployed_by_official_in_fuc()
+            deployed_by_official = check_deployed_by_official_in_fuc()
             if ability and deployed_by_official:
                 access_token, _ = create_token(user=user)
                 authorized = await plan_ability_checked_in_func(

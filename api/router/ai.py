@@ -422,110 +422,125 @@ async def create_agent(
     enable_mcp: bool = False
 ):
     db = SessionLocal()
-    user = crud.user.get_user_by_id(
-        db=db, 
-        user_id=user_id
-    )
-    if user is None:
-        raise schemas.error.CustomException("The user is not exist", code=404)
-    model_id = user.default_revornix_model_id
-    if model_id is None:
-        raise schemas.error.CustomException("The user has not set a default model", code=400)
-    model_configuration = (await AIModelProxy.create(
-        user_id=user_id,
-        model_id=model_id
-    )).get_configuration()
-    
-    api_key = SecretStr(model_configuration.api_key if model_configuration.api_key is not None else "")
-    base_url = model_configuration.base_url
-    
-    mcp_client = MCPClient()
-    access_token, _ = create_token(
-        user=user
-    )
-    auth_status = await plan_ability_checked_in_func(
-        ability=Ability.MCP_CLIENT.value,
-        authorization=f'Bearer {access_token}'
-    )
-    deployed_by_official_in_func = await check_deployed_by_official_in_fuc()
-    if (not deployed_by_official_in_func and enable_mcp) or (deployed_by_official_in_func and auth_status and enable_mcp):
-        mcp_servers = crud.mcp.search_mcp_servers(
+    try:
+        user = crud.user.get_user_by_id(
             db=db, 
             user_id=user_id
         )
-        for mcp_server in mcp_servers:
-            if not mcp_server.enable:
-                continue
+        if user is None:
+            raise schemas.error.CustomException("The user is not exist", code=404)
+        model_id = user.default_revornix_model_id
+        if model_id is None:
+            raise schemas.error.CustomException("The user has not set a default model", code=400)
+        model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=model_id
+        )).get_configuration()
+        
+        api_key = SecretStr(model_configuration.api_key if model_configuration.api_key is not None else "")
+        base_url = model_configuration.base_url
+        
+        mcp_client = MCPClient()
+        access_token, _ = create_token(
+            user=user
+        )
+        auth_status = await plan_ability_checked_in_func(
+            ability=Ability.MCP_CLIENT.value,
+            authorization=f'Bearer {access_token}'
+        )
+        deployed_by_official_in_func = check_deployed_by_official_in_fuc()
+        mcp_enabled = False
+        if enable_mcp:
+            if not deployed_by_official_in_func:
+                mcp_enabled = True
             else:
-                if mcp_server.category == MCPCategory.STD:
-                    stdio_mcp_server = crud.mcp.get_std_mcp_server_by_base_server_id(
-                        db=db, 
-                        base_server_id=mcp_server.id
-                    )
-                    if stdio_mcp_server is None:
-                        continue
-                    mcp_client.add_server(
-                        name=mcp_server.name,
-                        server_config={
-                            "command": stdio_mcp_server.cmd,
-                            "args": safe_json_loads(stdio_mcp_server.args, []),
-                            "env": safe_json_loads(stdio_mcp_server.env, {})
-                        }
-                    )
-                if mcp_server.category == MCPCategory.HTTP:
-                    http_mcp_server = crud.mcp.get_http_mcp_server_by_base_server_id(
-                        db=db, 
-                        base_server_id=mcp_server.id
-                    )
-                    if http_mcp_server is None:
-                        continue
-                    mcp_client.add_server(
-                        name=mcp_server.name,
-                        server_config={
-                            "url": http_mcp_server.url,
-                            "headers": safe_json_loads(http_mcp_server.headers, {})
-                        }
-                    )
-    llm = ChatOpenAI(
-        model=model_configuration.model_name,
-        api_key=api_key,
-        base_url=base_url
-    )
-    db.close()
-    return MCPAgent(llm=llm, client=mcp_client)
+                mcp_enabled = auth_status
+        if mcp_enabled:
+            mcp_servers = crud.mcp.search_mcp_servers(
+                db=db, 
+                user_id=user_id
+            )
+            for mcp_server in mcp_servers:
+                if not mcp_server.enable:
+                    continue
+                else:
+                    if mcp_server.category == MCPCategory.STD:
+                        stdio_mcp_server = crud.mcp.get_std_mcp_server_by_base_server_id(
+                            db=db, 
+                            base_server_id=mcp_server.id
+                        )
+                        if stdio_mcp_server is None:
+                            continue
+                        mcp_client.add_server(
+                            name=mcp_server.name,
+                            server_config={
+                                "command": stdio_mcp_server.cmd,
+                                "args": safe_json_loads(stdio_mcp_server.args, []),
+                                "env": safe_json_loads(stdio_mcp_server.env, {})
+                            }
+                        )
+                    if mcp_server.category == MCPCategory.HTTP:
+                        http_mcp_server = crud.mcp.get_http_mcp_server_by_base_server_id(
+                            db=db, 
+                            base_server_id=mcp_server.id
+                        )
+                        if http_mcp_server is None:
+                            continue
+                        mcp_client.add_server(
+                            name=mcp_server.name,
+                            server_config={
+                                "url": http_mcp_server.url,
+                                "headers": safe_json_loads(http_mcp_server.headers, {})
+                            }
+                        )
+        llm = ChatOpenAI(
+            model=model_configuration.model_name,
+            api_key=api_key,
+            base_url=base_url
+        )
+        return MCPAgent(llm=llm, client=mcp_client)
+    finally:
+        db.close()
 
-async def stream_ops(
-    user_id: int, 
-    messages: list, 
-    enable_mcp: bool = False
+async def stream_ops_with_agent(
+    agent: MCPAgent, 
+    messages: list
 ):
-    agent = await create_agent(
-        user_id=user_id, 
-        enable_mcp=enable_mcp
-    )
-    agent.clear_conversation_history()
-    # 弹出最后一条消息并将其作为query
-    query = messages.pop().content
-    for message in messages:
-        if message.role == "user":
-            agent.add_to_history(HumanMessage(content=message.content))
-        elif message.role == "assistant":
-            agent.add_to_history(AIMessage(content=message.content))
-    async for event in agent.stream_events(
-        query=f"{query}",
-    ):
-        event_type = event.get("event")
-        data = event.get("data", {})
-        run_id = event.get("run_id")
-        parent_ids = event.get("parent_ids")
-        sse_data = {
-            "parent_ids": parent_ids,
+    run_id = None
+    try:
+        agent.clear_conversation_history()
+        # 弹出最后一条消息并将其作为query
+        query = messages.pop().content
+        for message in messages:
+            if message.role == "user":
+                agent.add_to_history(HumanMessage(content=message.content))
+            elif message.role == "assistant":
+                agent.add_to_history(AIMessage(content=message.content))
+        async for event in agent.stream_events(
+            query=f"{query}",
+        ):
+            event_type = event.get("event")
+            data = event.get("data", {})
+            run_id = event.get("run_id")
+            parent_ids = event.get("parent_ids")
+            sse_data = {
+                "parent_ids": parent_ids,
+                "run_id": run_id,
+                "event": event_type,
+                "timestamp": time.time(),
+                "data": to_serializable(data),
+            }
+            yield f"{json.dumps(to_serializable(sse_data), ensure_ascii=False)}\n\n"
+    except Exception as e:
+        error_event = {
+            "event": "error",
             "run_id": run_id,
-            "event": event_type,
             "timestamp": time.time(),
-            "data": to_serializable(data),
+            "data": {
+                "content": str(e)
+            }
         }
-        yield f"{json.dumps(to_serializable(sse_data), ensure_ascii=False)}\n\n"
+        yield json.dumps(error_event, ensure_ascii=False) + "\n\n"
     sse_data = {
         "event": "done",
         "timestamp": time.time(),
@@ -535,18 +550,27 @@ async def stream_ops(
     yield f"{json.dumps(to_serializable(sse_data), ensure_ascii=False)}\n\n"
 
 @ai_router.post("/ask")
-def ask_ai(
+async def ask_ai(
     chat_messages: schemas.ai.ChatMessages, 
     user: models.user.User = Depends(get_current_user)
 ):
     enable_mcp = chat_messages.enable_mcp
     messages = chat_messages.messages
     
-    return StreamingResponse(
-        stream_ops(
+    try:
+        agent = await create_agent(
             user_id=user.id, 
-            messages=messages, 
             enable_mcp=enable_mcp
+        )
+    except Exception as e:
+        raise schemas.error.CustomException(
+            message=e,
+            code=400
+        )
+    return StreamingResponse(
+        stream_ops_with_agent(
+            agent=agent,
+            messages=messages
         ), 
         media_type="text/event-stream; charset=utf-8",
         headers={

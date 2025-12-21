@@ -7,10 +7,9 @@ from redis import Redis
 from sqlalchemy.orm import Session
 from data.sql.base import SessionLocal
 from config.oauth2 import OAUTH_SECRET_KEY
-from config.base import OFFICIAL, DEPLOY_HOSTS
+from config.base import OFFICIAL, DEPLOY_HOSTS, UNION_PAY_URL_PREFIX
 from urllib.parse import urlparse
 from fastapi import Request, HTTPException, status, Depends, Header
-from config.base import UNION_PAY_URL_PREFIX
 
 if OAUTH_SECRET_KEY is None:
     raise Exception("OAUTH_SECRET_KEY is not set")
@@ -36,7 +35,7 @@ async def check_deployed_by_official(
         return True
     return False
 
-async def check_deployed_by_official_in_fuc():
+def check_deployed_by_official_in_fuc():
     if OFFICIAL == 'True':
         return True
     return False
