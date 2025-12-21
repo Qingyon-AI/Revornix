@@ -20,7 +20,7 @@ class VolcTTSEngine(TTSEngineProtocol):
             engine_category=EngineCategory.TTS,
             engine_description="DouBao Podcast TTS, based on ByteDance's DouBao large model podcast generation engine.",
             engine_description_zh="豆包播客，基于字节跳动的豆包大模型的播客生成引擎。",
-            engine_demo_config='{"appid":"","access_token":""}'
+            engine_demo_config='{"appid":"","access_token":"","base_url":""}'
         )
         
     async def synthesize(
@@ -54,7 +54,7 @@ class VolcTTSEngine(TTSEngineProtocol):
         try:
             # 建立WebSocket连接	client<----------->server
             websocket = await websockets.connect(
-                "wss://openspeech.bytedance.com/api/v3/sami/podcasttts",
+                config.get('base_url'),
                 additional_headers=headers
             )
             while retry_num > 0:

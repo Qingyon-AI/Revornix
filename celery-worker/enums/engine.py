@@ -47,9 +47,9 @@ class Engine(Enum):
         name='Banana_Image',
         category=EngineCategory.IMAGE
     )
-    Official_OpenAI_TTS = EngineMeta(
+    Official_Volc_TTS = EngineMeta(
         uuid='4ece6490f8ef4132bf30a7ca72250d56',
-        name='Official_OpenAI_TTS',
+        name='Official_Volc_TTS',
         category=EngineCategory.TTS
     )
     Official_Banana_Image = EngineMeta(

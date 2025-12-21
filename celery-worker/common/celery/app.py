@@ -32,7 +32,7 @@ from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
 from engine.tts.openai import OpenAITTSEngine
-from engine.tts.official_openai import OfficialOpenAITTSEngine
+from engine.tts.volc.official_volc import OfficialVolcTTSEngine
 from enums.engine import Engine
 from common.ai import make_section_markdown
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentGraphStatus
@@ -209,8 +209,8 @@ async def handle_update_document_ai_podcast(
             engine = VolcTTSEngine()
         elif db_engine.uuid == Engine.OpenAI_TTS.meta.uuid:
             engine = OpenAITTSEngine()
-        elif db_engine.uuid == Engine.Official_OpenAI_TTS.meta.uuid:
-            engine = OfficialOpenAITTSEngine()
+        elif db_engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
+            engine = OfficialVolcTTSEngine()
         else:
             raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
         
@@ -678,7 +678,7 @@ async def handle_update_section_ai_podcast(
         elif db_engine.uuid == Engine.OpenAI_TTS.meta.uuid:
             engine = OpenAITTSEngine()
         elif db_engine.uuid == Engine.meta.uuid:
-            engine = OfficialOpenAITTSEngine()
+            engine = OfficialVolcTTSEngine()
         else:
             raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
         

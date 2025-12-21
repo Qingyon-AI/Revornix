@@ -4,7 +4,7 @@ import crud
 from common.logger import exception_logger, info_logger
 from enums.model import OfficialModelProvider, OfficialModel
 from data.sql.base import SessionLocal
-from engine.tts.official_openai import OfficialOpenAITTSEngine
+from engine.tts.volc.official_volc import OfficialVolcTTSEngine
 from engine.image.official_banana import OfficialBananaImageGenerateEngine
 from protocol.engine import EngineProtocol
 
@@ -73,7 +73,7 @@ def seed_database(db):
     # ================================
     engines: list[EngineProtocol] = [
         OfficialBananaImageGenerateEngine(),
-        OfficialOpenAITTSEngine(),
+        OfficialVolcTTSEngine(),
     ]
 
     for engine in engines:
