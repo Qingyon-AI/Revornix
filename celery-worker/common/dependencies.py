@@ -215,16 +215,19 @@ def plan_ability_checked(
                 }
             )
             if not response.is_success: 
+                err = None
                 try:
                     errMsg = response.json().get("message")
-                    raise schemas.error.CustomException(
+                    err = schemas.error.CustomException(
                         message=errMsg, 
                         code=403
                     )
                 except Exception as e:
-                    raise schemas.error.CustomException(
-                        message="Something is wrong with the ability check service", 
+                    errMsg = "Something is wrong with the ability check service"
+                    err = schemas.error.CustomException(
+                        message=errMsg, 
                         code=503
                     )
+                raise err
         return True
     return dependency
