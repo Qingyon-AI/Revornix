@@ -6,7 +6,6 @@ import models
 from pydantic import SecretStr
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
-from langfuse.openai import OpenAI
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from common.dependencies import get_db, get_current_user, check_deployed_by_official, plan_ability_checked_in_func, check_deployed_by_official_in_fuc
@@ -17,6 +16,7 @@ from proxy.ai_model_proxy import AIModelProxy
 from mcp_use import MCPClient, MCPAgent
 from common.jwt_utils import create_token
 from langchain_openai import ChatOpenAI
+from langfuse import propagate_attributes
 from langchain_core.messages import AIMessage, HumanMessage
 from common.common import to_serializable, safe_json_loads
 from enums.mcp import MCPCategory
@@ -24,35 +24,6 @@ from enums.model import OfficialModelProvider, OfficialModel
 from common.encrypt import encrypt_api_key
 
 ai_router = APIRouter()
-
-def call_llm_stream(
-    ai_client: OpenAI, 
-    model: str, 
-    message: str
-):
-    stream = ai_client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": "You are an intelligent Assistant. You will execute tasks as instructed"},
-            {"role": "user", "content": message},
-        ],
-        stream=True,
-    )
-    return stream
-
-def call_llm(
-    ai_client: OpenAI, 
-    model: str, 
-    message: str
-):
-    completion = ai_client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": "You are an intelligent Assistant. You will execute tasks as instructed"},
-            {"role": "user", "content": message},
-        ]
-    )
-    return completion
 
 @ai_router.post("/model/create", response_model=schemas.ai.ModelCreateResponse)
 def create_model(
@@ -503,6 +474,7 @@ async def create_agent(
         db.close()
 
 async def stream_ops_with_agent(
+    user_id: int,
     agent: MCPAgent, 
     messages: list
 ):
@@ -516,21 +488,22 @@ async def stream_ops_with_agent(
                 agent.add_to_history(HumanMessage(content=message.content))
             elif message.role == "assistant":
                 agent.add_to_history(AIMessage(content=message.content))
-        async for event in agent.stream_events(
-            query=f"{query}",
-        ):
-            event_type = event.get("event")
-            data = event.get("data", {})
-            run_id = event.get("run_id")
-            parent_ids = event.get("parent_ids")
-            sse_data = {
-                "parent_ids": parent_ids,
-                "run_id": run_id,
-                "event": event_type,
-                "timestamp": time.time(),
-                "data": to_serializable(data),
-            }
-            yield f"{json.dumps(to_serializable(sse_data), ensure_ascii=False)}\n\n"
+        with propagate_attributes(user_id=str(user_id)):
+            async for event in agent.stream_events(
+                query=f"{query}",
+            ):
+                event_type = event.get("event")
+                data = event.get("data", {})
+                run_id = event.get("run_id")
+                parent_ids = event.get("parent_ids")
+                sse_data = {
+                    "parent_ids": parent_ids,
+                    "run_id": run_id,
+                    "event": event_type,
+                    "timestamp": time.time(),
+                    "data": to_serializable(data),
+                }
+                yield f"{json.dumps(to_serializable(sse_data), ensure_ascii=False)}\n\n"
     except Exception as e:
         error_event = {
             "event": "error",
@@ -569,6 +542,7 @@ async def ask_ai(
         )
     return StreamingResponse(
         stream_ops_with_agent(
+            user_id=user.id,
             agent=agent,
             messages=messages
         ), 

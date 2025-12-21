@@ -4,6 +4,7 @@ import asyncio
 from proxy.ai_model_proxy import AIModelProxy
 from protocol.engine import EngineProtocol
 from langfuse.openai import OpenAI
+from langfuse import propagate_attributes
 from prompts.section_image import build_image_planner_user_prompt, IMAGE_PLANNER_SYSTEM
 from schemas.section import ImagePlan, ImagePlanResult
 from data.sql.base import SessionLocal
@@ -53,36 +54,36 @@ class ImageGenerateEngineProtocol(EngineProtocol):
                 model_id=db_user.default_document_reader_model_id
             )).get_configuration()
 
-            client = OpenAI(
-                api_key=model_conf.api_key,
-                base_url=model_conf.base_url,
-            )
+            with propagate_attributes(user_id=str(user_id)):
+                client = OpenAI(
+                    api_key=model_conf.api_key,
+                    base_url=model_conf.base_url,
+                )
+                completion = await asyncio.to_thread(
+                    client.chat.completions.create,
+                    model=model_conf.model_name,
+                    messages=[
+                        {"role": "system", "content": IMAGE_PLANNER_SYSTEM},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    temperature=0.3,
+                    response_format={"type": "json_object"},
+                    max_tokens=4096,
+                )
 
-            completion = await asyncio.to_thread(
-                client.chat.completions.create,
-                model=model_conf.model_name,
-                messages=[
-                    {"role": "system", "content": IMAGE_PLANNER_SYSTEM},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=0.3,
-                response_format={"type": "json_object"},
-                max_tokens=4096,
-            )
+                resp_text = completion.choices[0].message.content
+                if not resp_text:
+                    raise RuntimeError("Image planner returned empty response")
 
-            resp_text = completion.choices[0].message.content
-            if not resp_text:
-                raise RuntimeError("Image planner returned empty response")
+                data = json.loads(resp_text)
 
-            data = json.loads(resp_text)
+                plans = data.get("plans") or []
+                plans = plans[:6]
 
-            plans = data.get("plans") or []
-            plans = plans[:6]
-
-            return ImagePlanResult(
-                markdown_with_markers=data["markdown_with_markers"],
-                plans=[ImagePlan(**p) for p in plans],
-            )
+                return ImagePlanResult(
+                    markdown_with_markers=data["markdown_with_markers"],
+                    plans=[ImagePlan(**p) for p in plans],
+                )
 
         finally:
             db.close()

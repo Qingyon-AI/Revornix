@@ -517,6 +517,7 @@ async def handle_process_document(
                 embedding = embedding_model.encode(chunk_info.text)
                 chunk_info.embedding = embedding.tolist()
                 sub_entities, sub_relations = extract_entities_relations(
+                    user_id=user_id,
                     llm_client=llm_client, 
                     llm_model=model_configuration.model_name,
                     chunk=chunk_info
@@ -677,7 +678,7 @@ async def handle_update_section_ai_podcast(
             engine = VolcTTSEngine()
         elif db_engine.uuid == Engine.OpenAI_TTS.meta.uuid:
             engine = OpenAITTSEngine()
-        elif db_engine.uuid == Engine.meta.uuid:
+        elif db_engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
             engine = OfficialVolcTTSEngine()
         else:
             raise Exception("Unsupport engine, uuid: " + db_engine.uuid)

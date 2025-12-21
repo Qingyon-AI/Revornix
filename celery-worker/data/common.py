@@ -6,6 +6,7 @@ import torch
 import models
 from typing import cast
 from langfuse.openai import OpenAI
+from langfuse import propagate_attributes
 from enums.document import DocumentMdConvertStatus
 from chonkie.types import Chunk
 from chonkie.chunker.recursive import RecursiveChunker
@@ -150,6 +151,7 @@ async def _load_markdown_content(
 # 调用 LLM 抽取实体和关系
 # ----------------------------
 def extract_entities_relations(
+    user_id: int,
     llm_client: OpenAI, 
     llm_model: str,
     chunk: ChunkInfo
@@ -158,37 +160,38 @@ def extract_entities_relations(
     调用 LLM 模型抽取实体与关系
     """
     prompt = entity_and_relation_extraction_prompt(chunk=chunk)
-    resp = llm_client.chat.completions.create(
-        model=llm_model,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.0,
-        response_format={"type": "json_object"},
-    )
-    output_text = resp.choices[0].message.content
-    if output_text is None:
-        data = {"entities": [], "relations": []}
-    else:
-        try:
-            data = json.loads(output_text)
-        except:
+    with propagate_attributes(user_id=str(user_id)):
+        resp = llm_client.chat.completions.create(
+            model=llm_model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            response_format={"type": "json_object"},
+        )
+        output_text = resp.choices[0].message.content
+        if output_text is None:
             data = {"entities": [], "relations": []}
+        else:
+            try:
+                data = json.loads(output_text)
+            except:
+                data = {"entities": [], "relations": []}
 
-    entities = [
-        EntityInfo(
-            id=e['id'],
-            text=e['text'],
-            chunks=[chunk.id],
-            entity_type=e['entity_type']
-        ) for e in data.get("entities", [])
-    ]
-    relations = [
-        RelationInfo(
-            src_node=r["src_entity_id"],
-            tgt_node=r["tgt_entity_id"],
-            relation_type=r["relation_type"]
-        ) for r in data.get("relations", [])
-    ]
-    return entities, relations
+        entities = [
+            EntityInfo(
+                id=e['id'],
+                text=e['text'],
+                chunks=[chunk.id],
+                entity_type=e['entity_type']
+            ) for e in data.get("entities", [])
+        ]
+        relations = [
+            RelationInfo(
+                src_node=r["src_entity_id"],
+                tgt_node=r["tgt_entity_id"],
+                relation_type=r["relation_type"]
+            ) for r in data.get("relations", [])
+        ]
+        return entities, relations
 
 # -----------------------------
 # 合并实体和关系

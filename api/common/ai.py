@@ -1,5 +1,6 @@
 import json
 from langfuse.openai import OpenAI
+from langfuse import propagate_attributes
 from prompts.summary_content import summary_content_prompt
 from prompts.reducer_summary import reducer_summary_prompt
 from pydantic import BaseModel
@@ -25,32 +26,34 @@ async def summary_content(
     )).get_configuration()
     
     system_prompt = summary_content_prompt(content=content)
-    client = OpenAI(
-        api_key=model_configuration.api_key,
-        base_url=model_configuration.base_url,
-    )
-    completion = client.chat.completions.create(
-        model=model_configuration.model_name,
-        messages=[
-            {"role": "system", "content": "You are an expert in summarizing document content."},
-            {"role": "user", "content": system_prompt}
-        ],
-        temperature=0.3,
-        response_format={"type": "json_object"},
-        max_tokens=4096
-    )
-    res_summary = completion.choices[0].message.content
-    if res_summary is None:
-        raise Exception("No content returned for ai")
-    res_summary = json.loads(res_summary)
-    title = res_summary.get('title')
-    description = res_summary.get('description')
-    summary = res_summary.get('summary')
-    return SummaryResultWithTitleAndDescription(
-        title=title, 
-        description=description, 
-        summary=summary
-    )
+    
+    with propagate_attributes(user_id=str(user_id)):
+        client = OpenAI(
+            api_key=model_configuration.api_key,
+            base_url=model_configuration.base_url,
+        )
+        completion = client.chat.completions.create(
+            model=model_configuration.model_name,
+            messages=[
+                {"role": "system", "content": "You are an expert in summarizing document content."},
+                {"role": "user", "content": system_prompt}
+            ],
+            temperature=0.3,
+            response_format={"type": "json_object"},
+            max_tokens=4096
+        )
+        res_summary = completion.choices[0].message.content
+        if res_summary is None:
+            raise Exception("No content returned for ai")
+        res_summary = json.loads(res_summary)
+        title = res_summary.get('title')
+        description = res_summary.get('description')
+        summary = res_summary.get('summary')
+        return SummaryResultWithTitleAndDescription(
+            title=title, 
+            description=description, 
+            summary=summary
+        )
 
 async def reducer_summary(
     user_id: int,
@@ -71,29 +74,31 @@ async def reducer_summary(
         new_entities=new_entities,
         new_relations=new_relations
     )
-    client = OpenAI(
-        api_key=model_configuration.api_key,
-        base_url=model_configuration.base_url,
-    )
-    completion = client.chat.completions.create(
-        model=model_configuration.model_name,
-        messages=[
-            {"role": "system", "content": "You are an expert in summarizing document content."},
-            {"role": "user", "content": system_prompt}
-        ],
-        temperature=0.3,
-        response_format={"type": "json_object"},
-        max_tokens=4096
-    )
-    res_summary = completion.choices[0].message.content
-    if res_summary is None:
-        raise Exception("No content returned for ai")
-    res_summary = json.loads(res_summary)
-    title = res_summary.get('title')
-    description = res_summary.get('description')
-    summary = res_summary.get('summary')
-    return SummaryResultWithTitleAndDescription(
-        title=title, 
-        description=description, 
-        summary=summary
-    )
+    
+    with propagate_attributes(user_id=str(user_id)):
+        client = OpenAI(
+            api_key=model_configuration.api_key,
+            base_url=model_configuration.base_url,
+        )
+        completion = client.chat.completions.create(
+            model=model_configuration.model_name,
+            messages=[
+                {"role": "system", "content": "You are an expert in summarizing document content."},
+                {"role": "user", "content": system_prompt}
+            ],
+            temperature=0.3,
+            response_format={"type": "json_object"},
+            max_tokens=4096
+        )
+        res_summary = completion.choices[0].message.content
+        if res_summary is None:
+            raise Exception("No content returned for ai")
+        res_summary = json.loads(res_summary)
+        title = res_summary.get('title')
+        description = res_summary.get('description')
+        summary = res_summary.get('summary')
+        return SummaryResultWithTitleAndDescription(
+            title=title, 
+            description=description, 
+            summary=summary
+        )
