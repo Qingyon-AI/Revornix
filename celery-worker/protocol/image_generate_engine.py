@@ -3,7 +3,7 @@ import json
 import asyncio
 from proxy.ai_model_proxy import AIModelProxy
 from protocol.engine import EngineProtocol
-from openai import OpenAI
+from langfuse.openai import OpenAI
 from prompts.section_image import build_image_planner_user_prompt, IMAGE_PLANNER_SYSTEM
 from data.sql.base import SessionLocal
 from data.custom_types.all import EntityInfo, RelationInfo

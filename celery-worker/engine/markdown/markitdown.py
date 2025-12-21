@@ -5,7 +5,7 @@ from enums.engine import EngineUUID, EngineCategory
 from common.common import extract_title_and_summary
 from bs4 import BeautifulSoup
 from markitdown import MarkItDown
-from openai import OpenAI
+from langfuse.openai import OpenAI
 from playwright.async_api import async_playwright
 
 class MarkitdownEngine(MarkdownEngineProtocol):

@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 import os
-from openai import OpenAI
+from langfuse.openai import OpenAI
 from rich import print
 from openai.types.responses.response_completed_event import ResponseCompletedEvent
 

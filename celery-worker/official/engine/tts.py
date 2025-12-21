@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 import os
-from openai import OpenAI
+from langfuse.openai import OpenAI
 
 OFFICIAL_TTS_AI_BASE_URL = os.environ.get('OFFICIAL_TTS_AI_BASE_URL')
 OFFICIAL_TTS_AI_KEY = os.environ.get('OFFICIAL_TTS_AI_KEY')

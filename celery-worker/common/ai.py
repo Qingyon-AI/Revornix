@@ -1,5 +1,5 @@
 import json
-from openai import OpenAI
+from langfuse.openai import OpenAI
 from prompts.summary_content import summary_content_prompt
 from prompts.reducer_summary import reducer_summary_prompt
 from prompts.make_section_markdown import make_section_markdown_prompt

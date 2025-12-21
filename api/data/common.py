@@ -1,6 +1,5 @@
 import crud
 import hashlib
-import openai
 import json
 import asyncio
 import torch
@@ -18,6 +17,7 @@ from typing import AsyncGenerator
 from sqlalchemy.orm import Session
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.ai_model_proxy import AIModelProxy
+from langfuse.openai import OpenAI
 
 def make_chunk_id(
     doc_id: int, 
@@ -150,7 +150,7 @@ async def _load_markdown_content(
 # 调用 LLM 抽取实体和关系
 # ----------------------------
 def extract_entities_relations(
-    llm_client: openai.OpenAI, 
+    llm_client: OpenAI, 
     llm_model: str,
     chunk: ChunkInfo
 ) -> tuple[list[EntityInfo], list[RelationInfo]]:
@@ -245,7 +245,7 @@ async def get_extract_llm_client(
         model_id=db_user.default_document_reader_model_id
     )).get_configuration()
     
-    llm_client = openai.OpenAI(
+    llm_client = OpenAI(
         api_key=model_configuration.api_key,
         base_url=model_configuration.base_url,
     )
