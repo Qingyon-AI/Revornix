@@ -5,7 +5,7 @@ from typing import Protocol
 from enums.engine import Engine
 from enums.ability import Ability
 from official.engine.image import OFFICIAL_IMAGE_AI_BASE_URL, OFFICIAL_IMAGE_AI_KEY, OFFICIAL_IMAGE_AI_MODEL
-from official.engine.tts import OFFICIAL_TTS_AI_BASE_URL, OFFICIAL_TTS_AI_KEY, OFFICIAL_TTS_AI_MODEL
+from official.engine.tts import OFFICIAL_VOLC_TTS_ACCESS_TOKEN, OFFICIAL_VOLC_TTS_AI_BASE_URL, OFFICIAL_VOLC_TTS_APP_ID
 from common.dependencies import plan_ability_checked_in_func, check_deployed_by_official_in_fuc
 from common.jwt_utils import create_token
 
@@ -78,7 +78,7 @@ class EngineProtocol(Protocol):
                 raise ValueError("engine uuid mismatch")
 
             ability_map = {
-                Engine.Official_OpenAI_TTS.meta.uuid:
+                Engine.Official_Volc_TTS.meta.uuid:
                     Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value,
                 Engine.Official_Banana_Image.meta.uuid:
                     Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value,
@@ -104,11 +104,11 @@ class EngineProtocol(Protocol):
                     "api_key": OFFICIAL_IMAGE_AI_KEY
                 })
                 self.engine_config = config
-            elif self.engine_uuid == Engine.Official_OpenAI_TTS.meta.uuid:
+            elif self.engine_uuid == Engine.Official_Volc_TTS.meta.uuid:
                 config = json.dumps({
-                    "model_name": OFFICIAL_TTS_AI_MODEL,
-                    "base_url": OFFICIAL_TTS_AI_BASE_URL,
-                    "api_key": OFFICIAL_TTS_AI_KEY
+                    "base_url": OFFICIAL_VOLC_TTS_AI_BASE_URL,
+                    "appid": OFFICIAL_VOLC_TTS_APP_ID,
+                    "access_token": OFFICIAL_VOLC_TTS_ACCESS_TOKEN
                 })
                 self.engine_config = config
                 

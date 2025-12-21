@@ -45,18 +45,18 @@ async def on_user_created(
                 user_id=user_id,
                 ai_model_id=db_official_model_llm.id,
             )
-        db_official_openai_tts_engine = crud.engine.get_engine_by_uuid(
+        db_official_volc_tts_engine = crud.engine.get_engine_by_uuid(
             db=db,
-            uuid=Engine.Official_OpenAI_TTS.meta.uuid
+            uuid=Engine.Official_Volc_TTS.meta.uuid
         )
-        if db_official_openai_tts_engine is None:
-            raise Exception("Official OpenAI TTS Engine not found")
+        if db_official_volc_tts_engine is None:
+            raise Exception("Official Volc TTS Engine not found")
         crud.engine.create_user_engine(
             db=db,
             user_id=user_id,
-            engine_id=db_official_openai_tts_engine.id,
-            title='Revornix Proxied OpenAI TTS Engine',
-            description='Revornix Proxied OpenAI TTS Engine',
+            engine_id=db_official_volc_tts_engine.id,
+            title='Revornix Proxied Volc TTS Engine',
+            description='Revornix Proxied Volc TTS Engine',
             config_json=''
         )
         db_official_banana_image_generate_engine = crud.engine.get_engine_by_uuid(

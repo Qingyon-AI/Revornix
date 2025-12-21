@@ -8,19 +8,19 @@ from enums.engine import Engine, EngineCategory
 from pydantic import AnyUrl
 from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
 
-class VolcTTSEngine(TTSEngineProtocol):
+class OfficialVolcTTSEngine(TTSEngineProtocol):
     """此引擎使用的是字节跳动的播客TTS引擎，具体文档参照https://www.volcengine.com/docs/6561/1668014
     """
     
     def __init__(self):
         super().__init__(
-            engine_uuid=Engine.Volc_TTS.meta.uuid,
-            engine_name="Volc Podcast Engine",
-            engine_name_zh="豆包播客引擎",
+            engine_uuid=Engine.Official_Volc_TTS.meta.uuid,
+            engine_name="Revornix Proxied Volc Podcast Engine",
+            engine_name_zh="Revornix 代理的豆包播客引擎",
             engine_category=EngineCategory.TTS,
-            engine_description="DouBao Podcast TTS, based on ByteDance's DouBao large model podcast generation engine.",
-            engine_description_zh="豆包播客，基于字节跳动的豆包大模型的播客生成引擎。",
-            engine_demo_config='{"appid":"","access_token":"","base_url":""}'
+            engine_description="",
+            engine_description_zh="",
+            engine_demo_config=''
         )
         
     async def synthesize(
