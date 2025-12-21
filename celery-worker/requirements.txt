@@ -41,3 +41,4 @@ python-telegram-bot==22.5
 jwcrypto==1.5.6
 hf_transfer==0.1.9
 python-jose==3.5.0
+langfuse==3.11.1
