@@ -34,7 +34,9 @@ sentence_transformers==5.2.0
 neo4j==6.0.3
 tenacity==9.1.2
 mcp_use==1.5.1
-fastmcp==2.13.1
+langchain==1.2.0
+langchain_openai==1.1.6
+fastmcp==2.14.1
 websockets==15.0.1
 lark_oapi==1.4.24
 python-telegram-bot==22.5
