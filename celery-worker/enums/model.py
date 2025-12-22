@@ -23,8 +23,8 @@ class OfficialModelProvider(Enum):
 class OfficialModel(Enum):
     llm = ModelMeta(
         id="7dc12cdb183b49e199d2651f997db272",
-        title="gpt5.2",
-        description="gpt5.2"
+        title="gpt-5.2",
+        description="gpt-5.2"
     )
     @property
     def meta(self) -> ModelMeta:
