@@ -5,6 +5,8 @@ import re
 import uuid
 import crud
 import asyncio
+import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
 from data.custom_types.all import EntityInfo, RelationInfo
 from schemas.section import GeneratedImage
 from data.neo4j.base import neo4j_driver
@@ -43,6 +45,14 @@ from engine.image.official_banana import OfficialBananaImageGenerateEngine
 from protocol.image_generate_engine import ImageGenerateEngineProtocol
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from enums.ability import Ability
+from config.sentry import WORKER_SENTRY_DSN, WORKER_SENTRY_ENABLE
+
+if WORKER_SENTRY_ENABLE:
+    sentry_sdk.init(
+        dsn=WORKER_SENTRY_DSN,
+        integrations=[CeleryIntegration()],
+        send_default_pii=True,
+    )
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
