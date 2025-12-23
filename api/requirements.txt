@@ -38,8 +38,8 @@ tencentcloud-sdk-python==3.1.12
 sentence_transformers==5.2.0
 neo4j==6.0.3
 websockets==15.0.1
-sentry-sdk==2.44.0
 lark_oapi==1.4.24
 python-telegram-bot==22.5
 hf_transfer==0.1.9
 langfuse==3.11.1
+sentry_sdk==2.48.0

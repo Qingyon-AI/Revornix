@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-import sentry_sdk
 import io
 import time
 import yaml
@@ -29,6 +28,7 @@ from router.graph import graph_router
 from mcp_router.common import common_mcp_router
 from mcp_router.document import document_mcp_router
 from common.logger import exception_logger, info_logger, exception_logger
+from config.sentry import API_SENTRY_DSN, API_SENTRY_ENABLE
 
 common_mcp_app = common_mcp_router.http_app()
 document_mcp_app = document_mcp_router.http_app()
@@ -37,6 +37,12 @@ document_mcp_app = document_mcp_router.http_app()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
+        if API_SENTRY_ENABLE == "True":
+            import sentry_sdk
+            sentry_sdk.init(
+                dsn=API_SENTRY_DSN,
+                send_default_pii=True,
+            )
         app.state.redis = await redis_pool()
     except Exception as e:
         exception_logger.exception("❌ Redis 初始化失败", e)
