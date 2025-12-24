@@ -488,7 +488,10 @@ async def stream_ops_with_agent(
                 agent.add_to_history(HumanMessage(content=message.content))
             elif message.role == "assistant":
                 agent.add_to_history(AIMessage(content=message.content))
-        with propagate_attributes(user_id=str(user_id)):
+        with propagate_attributes(
+            user_id=str(user_id),
+            tags=[f'model:{agent.llm.name}']
+        ):
             async for event in agent.stream_events(
                 query=f"{query}",
             ):

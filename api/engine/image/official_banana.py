@@ -66,7 +66,10 @@ class OfficialBananaImageGenerateEngine(ImageGenerateEngineProtocol):
         if self.user_id is None:
             raise Exception("The user_id is None.")
         
-        with propagate_attributes(user_id=str(self.user_id)):
+        with propagate_attributes(
+            user_id=str(self.user_id),
+            tags=[f'model:{model_name}']
+        ):
             llm_client = OpenAI(
                 base_url=base_url,
                 api_key=api_key
