@@ -286,6 +286,13 @@ async def list_traces(
 
     return resp.json()["data"]
 
+def is_leaf_generation(obs, all_obs):
+    return not any(
+        child.get("parentObservationId") == obs.get("id")
+        and child.get("type") == "GENERATION"
+        for child in all_obs
+    )
+
 async def calc_token_usage(trace_ids: list[str]):
     total_input = total_output = total_all = 0
     
@@ -302,9 +309,13 @@ async def calc_token_usage(trace_ids: list[str]):
             )
             resp.raise_for_status()
             detail = resp.json()
-
-            for obs in detail.get("observations", []):
-                if obs.get("usageDetails"):
+            observations = detail.get("observations", [])
+            for obs in observations:
+                if (
+                    obs["type"] == "GENERATION"
+                    and obs.get("usageDetails")
+                    and is_leaf_generation(obs, observations)
+                ):
                     usage = obs["usageDetails"]
                     total_input += usage.get("input", 0)
                     total_output += usage.get("output", 0)
