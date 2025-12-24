@@ -54,7 +54,10 @@ class ImageGenerateEngineProtocol(EngineProtocol):
                 model_id=db_user.default_document_reader_model_id
             )).get_configuration()
 
-            with propagate_attributes(user_id=str(user_id)):
+            with propagate_attributes(
+                user_id=str(user_id),
+                tags=[f'model:{model_conf.model_name}']
+            ):
                 client = OpenAI(
                     api_key=model_conf.api_key,
                     base_url=model_conf.base_url,

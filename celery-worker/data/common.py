@@ -160,7 +160,10 @@ def extract_entities_relations(
     调用 LLM 模型抽取实体与关系
     """
     prompt = entity_and_relation_extraction_prompt(chunk=chunk)
-    with propagate_attributes(user_id=str(user_id)):
+    with propagate_attributes(
+        user_id=str(user_id),
+        tags=[f'model:{llm_model}']
+    ):
         resp = llm_client.chat.completions.create(
             model=llm_model,
             messages=[{"role": "user", "content": prompt}],

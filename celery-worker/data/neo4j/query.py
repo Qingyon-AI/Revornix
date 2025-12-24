@@ -56,7 +56,10 @@ async def global_query(
         model_id=db_user.default_revornix_model_id
     )).get_configuration()
     
-    with propagate_attributes(user_id=str(user_id)):
+    with propagate_attributes(
+        user_id=str(user_id),
+        tags=[f'model:{model_configuration.model_name}']
+    ):
         llm_client = OpenAI(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url
@@ -94,7 +97,10 @@ async def naive_query(
         model_id=db_user.default_revornix_model_id
     )).get_configuration()
     
-    with propagate_attributes(user_id=str(user_id)):
+    with propagate_attributes(
+        user_id=str(user_id),
+        tags=[f'model:{model_configuration.model_name}']
+    ):
         llm_client = OpenAI(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url

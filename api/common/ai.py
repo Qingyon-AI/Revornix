@@ -27,7 +27,10 @@ async def summary_content(
     
     system_prompt = summary_content_prompt(content=content)
     
-    with propagate_attributes(user_id=str(user_id)):
+    with propagate_attributes(
+        user_id=str(user_id),
+        tags=[f'model:{model_configuration.model_name}']
+    ):
         client = OpenAI(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url,
@@ -75,7 +78,10 @@ async def reducer_summary(
         new_relations=new_relations
     )
     
-    with propagate_attributes(user_id=str(user_id)):
+    with propagate_attributes(
+        user_id=str(user_id),
+        tags=[f'model:{model_configuration.model_name}']
+    ):
         client = OpenAI(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url,
