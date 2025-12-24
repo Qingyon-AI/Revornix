@@ -490,7 +490,7 @@ async def stream_ops_with_agent(
                 agent.add_to_history(AIMessage(content=message.content))
         with propagate_attributes(
             user_id=str(user_id),
-            tags=[f'model:{agent.llm.name}']
+            tags=[f'model:{agent._model_name}']
         ):
             async for event in agent.stream_events(
                 query=f"{query}",
