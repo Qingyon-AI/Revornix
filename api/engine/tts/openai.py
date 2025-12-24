@@ -2,6 +2,7 @@ from protocol.tts_engine import TTSEngineProtocol
 from enums.engine import Engine, EngineCategory
 from langfuse.openai import OpenAI
 from langfuse import propagate_attributes
+from common.langfuse import langfuse
 
 class OpenAITTSEngine(TTSEngineProtocol):
     """此引擎使用的是openai的tts接口
@@ -33,18 +34,43 @@ class OpenAITTSEngine(TTSEngineProtocol):
         
         if not self.user_id:
             raise Exception("The user_id is not set.")
-        with propagate_attributes(
-            user_id=str(self.user_id),
-            tags=[f'model:{model_name}']
-        ):
-            llm_client = OpenAI(
-                base_url=base_url,
-                api_key=api_key
-            )
-            response = llm_client.audio.speech.create(
-                model=model_name,
-                voice='verse',
-                input=text,
-                response_format='mp3'
-            )
-            return response.read()
+        
+        with langfuse.start_as_current_observation(
+            as_type="generation",
+            name="tts-call",
+            model=model_name,
+        ) as gen:
+            with propagate_attributes(
+                user_id=str(self.user_id),
+                tags=[f'model:{model_name}']
+            ):
+                gen.update(
+                    input={
+                        "text": text,
+                        "voice": "verse"
+                    }
+                )
+
+                llm_client = OpenAI(
+                    base_url=base_url,
+                    api_key=api_key
+                )
+                response = llm_client.audio.speech.create(
+                    model=model_name,
+                    voice='verse',
+                    input=text,
+                    response_format='mp3'
+                )
+                return response.read()
+
+if __name__ == '__main__':
+    async def main():
+        engine = OpenAITTSEngine()
+        await engine.init_engine_config_by_user_engine_id(
+            user_engine_id=3
+        )
+        res = await engine.synthesize('你是谁啊？')
+        with open('res.mp3', 'wb') as f:
+            f.write(res)
+    import asyncio
+    asyncio.run(main())
