@@ -64,9 +64,7 @@ class OfficialVolcTTSEngine(TTSEngineProtocol):
                 ):
                 try:
                     gen.update(
-                        input={
-                            "text": text
-                        }
+                        input=text
                     )
                     # 建立WebSocket连接	client<----------->server
                     websocket = await websockets.connect(
@@ -150,15 +148,15 @@ class OfficialVolcTTSEngine(TTSEngineProtocol):
                                     "input_text_tokens": token_usage_info.get("input_text_tokens") + data.get("usage").get("input_text_tokens") if (token_usage_info and token_usage_info.get("input_text_tokens")) else data.get("usage").get("input_text_tokens"),
                                     "output_audio_tokens": token_usage_info.get("output_audio_tokens") + data.get("usage").get("output_audio_tokens") if (token_usage_info and token_usage_info.get("output_audio_tokens")) else data.get("usage").get("output_audio_tokens")
                                 }
-                                input_tokens = token_usage_info.get("input_text_tokens")
-                                assert input_tokens is not None
-                                output_tokens = token_usage_info.get("output_audio_tokens")
-                                assert output_tokens is not None
+                                input_text_tokens = token_usage_info.get("input_text_tokens")
+                                assert input_text_tokens is not None
+                                output_audio_tokens = token_usage_info.get("output_audio_tokens")
+                                assert output_audio_tokens is not None
                                 gen.update(
                                     output='',
                                     usage_details={
-                                        "input_tokens": input_tokens,
-                                        "output_tokens": output_tokens,
+                                        "input_text_tokens": input_text_tokens,
+                                        "output_audio_tokens": output_audio_tokens,
                                     },
                                 )
                             # 会话结束
