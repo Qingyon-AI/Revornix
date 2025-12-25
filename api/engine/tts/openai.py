@@ -2,20 +2,20 @@ from protocol.tts_engine import TTSEngineProtocol
 from enums.engine import Engine, EngineCategory
 from langfuse.openai import OpenAI
 from langfuse import propagate_attributes
-from common.langfuse import langfuse
+from prompts.podcast_generation import podcast_generation_prompt
 
-class OpenAITTSEngine(TTSEngineProtocol):
+class OpenAIAudioEngine(TTSEngineProtocol):
     """此引擎使用的是openai的tts接口
     """
     
     def __init__(self):
         super().__init__(
             engine_uuid=Engine.OpenAI_TTS.meta.uuid,
-            engine_name="OpenAI TTS Engine",
-            engine_name_zh="OpenAI TTS引擎",
+            engine_name="OpenAI Audio Engine",
+            engine_name_zh="OpenAI Audio引擎",
             engine_category=EngineCategory.TTS,
-            engine_description="OpenAI TTS engine, based on openai's tts interface, convert text to audio",
-            engine_description_zh="OpenAI TTS引擎，基于openai提供的tts接口，将文本转化为音频。",
+            engine_description="OpenAI Audio engine, based on openai's audio interface, convert text to audio",
+            engine_description_zh="OpenAI Audio引擎，基于openai提供的Audio接口，将文本转化为音频。",
             engine_demo_config='{"base_url":"","api_key":"","model_name":""}'
         )
         
@@ -35,41 +35,38 @@ class OpenAITTSEngine(TTSEngineProtocol):
         if not self.user_id:
             raise Exception("The user_id is not set.")
         
-        with langfuse.start_as_current_observation(
-            as_type="generation",
-            name="tts-call",
-            model=model_name,
-        ) as gen:
-            with propagate_attributes(
-                user_id=str(self.user_id),
-                tags=[f'model:{model_name}']
-            ):
-                gen.update(
-                    input={
-                        "text": text,
-                        "voice": "verse"
+        with propagate_attributes(
+            user_id=str(self.user_id),
+            tags=[f'model:{model_name}']
+        ):  
+            llm_client = OpenAI(
+                base_url=base_url,
+                api_key=api_key
+            )
+            completion = llm_client.chat.completions.create(
+                model=model_name,
+                modalities=["text", "audio"],
+                audio={"voice": "alloy", "format": "mp3"},
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f'{podcast_generation_prompt(text)}'
                     }
-                )
-
-                llm_client = OpenAI(
-                    base_url=base_url,
-                    api_key=api_key
-                )
-                response = llm_client.audio.speech.create(
-                    model=model_name,
-                    voice='verse',
-                    input=text,
-                    response_format='mp3'
-                )
-                return response.read()
+                ]
+            )
+            audio = completion.choices[0].message.audio
+            if audio is None:
+                raise Exception("The audio is None.")
+            # Langfuse会将audio.data包装成LangfuseMedia，从中获取音频bytes需要通过_content_bytes
+            return audio.data._content_bytes
 
 if __name__ == '__main__':
     async def main():
-        engine = OpenAITTSEngine()
+        engine = OpenAIAudioEngine()
         await engine.init_engine_config_by_user_engine_id(
             user_engine_id=3
         )
-        res = await engine.synthesize('你是谁啊？')
+        res = await engine.synthesize('今天是个好天气。')
         with open('res.mp3', 'wb') as f:
             f.write(res)
     import asyncio

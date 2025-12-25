@@ -20,7 +20,7 @@ from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
 from engine.image.banana import BananaImageGenerateEngine
-from engine.tts.openai import OpenAITTSEngine
+from engine.tts.openai import OpenAIAudioEngine
 
 # ---------------- File Systems ----------------
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
@@ -193,7 +193,7 @@ def seed_database(db):
         MineruApiEngine(),
         VolcTTSEngine(),
         BananaImageGenerateEngine(),
-        OpenAITTSEngine(),
+        OpenAIAudioEngine(),
     ]
 
     for eng in engines:
