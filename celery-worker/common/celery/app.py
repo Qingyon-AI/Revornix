@@ -33,7 +33,7 @@ from engine.markdown.jina import JinaEngine
 from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.volc.tts import VolcTTSEngine
-from engine.tts.openai import OpenAITTSEngine
+from engine.tts.openai import OpenAIAudioEngine
 from engine.tts.volc.official_volc import OfficialVolcTTSEngine
 from enums.engine import Engine
 from common.ai import make_section_markdown
@@ -218,7 +218,7 @@ async def handle_update_document_ai_podcast(
         if db_engine.uuid == Engine.Volc_TTS.meta.uuid:
             engine = VolcTTSEngine()
         elif db_engine.uuid == Engine.OpenAI_TTS.meta.uuid:
-            engine = OpenAITTSEngine()
+            engine = OpenAIAudioEngine()
         elif db_engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
             engine = OfficialVolcTTSEngine()
         else:
@@ -687,7 +687,7 @@ async def handle_update_section_ai_podcast(
         if db_engine.uuid == Engine.Volc_TTS.meta.uuid:
             engine = VolcTTSEngine()
         elif db_engine.uuid == Engine.OpenAI_TTS.meta.uuid:
-            engine = OpenAITTSEngine()
+            engine = OpenAIAudioEngine()
         elif db_engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
             engine = OfficialVolcTTSEngine()
         else:
