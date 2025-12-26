@@ -15,11 +15,11 @@ const DashboardPage = () => {
 	const t = useTranslations();
 	return (
 		<div className='flex flex-col px-5 gap-5 pb-5 w-full'>
+			<InitSettingDialog />
 			<div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
 				<TodaySummary />
 				<TodayNews />
 			</div>
-			<InitSettingDialog />
 			<div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
 				<UnReadDocumentBox />
 				<StarDocumentBox />

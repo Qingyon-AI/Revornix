@@ -1,6 +1,7 @@
 import CustomPlan from '@/components/plan/custom-plan';
 import PlanCard, { IntroduceAbility } from '@/components/plan/plan-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { isAllowedDeployHost } from '@/lib/utils';
 import { Info } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
@@ -10,11 +11,8 @@ const ProPage = async () => {
 	const headersList = await headers();
 	const host = headersList.get('host');
 
-	// ✅ 如果 host 是 das，直接 404
-	if (
-		!host?.includes('app.revornix.com') &&
-		!host?.includes('app.revornix.cn')
-	) {
+	// ✅ 如果 host 不是官方部署的服务，直接 404
+	if (!host || !isAllowedDeployHost(host)) {
 		notFound();
 	}
 
@@ -69,8 +67,7 @@ const ProPage = async () => {
 		},
 		{
 			name: 'Automatically generate podcasts for sections/documents (requires self-configured model).',
-			name_zh:
-				'自动生成专栏/文档的播客（需要自行配置模型）',
+			name_zh: '自动生成专栏/文档的播客（需要自行配置模型）',
 		},
 	];
 
