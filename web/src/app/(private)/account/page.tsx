@@ -18,6 +18,7 @@ import WeChatBind from '@/components/user/wechat-bind';
 import UserPlan from '@/components/user/user-plan';
 import { headers } from 'next/headers';
 import EmailBindCloud from '@/components/user/email-bind-cloud';
+import { isAllowedDeployHost } from '@/lib/utils';
 
 const AccountPage = async () => {
 	const t = await getTranslations();
@@ -63,8 +64,7 @@ const AccountPage = async () => {
 							<SloganUpdate />
 						</div>
 					</div>
-					{(host?.includes('app.revornix.com') ||
-						host?.includes('app.revornix.cn')) && (
+					{host && isAllowedDeployHost(host) && (
 						<>
 							<Separator />
 							<div className='flex justify-between items-center'>
@@ -92,8 +92,7 @@ const AccountPage = async () => {
 							</div>
 						</Label>
 						<div className='flex flex-col gap-2'>
-							{host?.includes('app.revornix.com') ||
-							host?.includes('app.revornix.cn') ? (
+							{host && isAllowedDeployHost(host) ? (
 								<EmailBindCloud />
 							) : (
 								<EmailBindLocal />

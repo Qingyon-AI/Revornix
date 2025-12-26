@@ -35,6 +35,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import CustomImage from '../ui/custom-image';
 import { Badge } from '../ui/badge';
+import { isAllowedDeployHost } from '@/lib/utils';
 
 export function NavUser() {
 	const t = useTranslations();
@@ -146,9 +147,7 @@ export function NavUser() {
 
 	if (!mainUserInfo) return null;
 
-	const showPlanUpgrade =
-		host &&
-		(host.includes('app.revornix.com') || host.includes('app.revornix.cn'));
+	const showPlanUpgrade = host && isAllowedDeployHost(host);
 
 	return (
 		<SidebarMenu>

@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { RegisterFormLocal } from '@/components/user/register-form-local';
 import { RegisterFormCloud } from '@/components/user/register-form-cloud';
+import { isAllowedDeployHost } from '@/lib/utils';
 
 export default async function RegisterPage() {
 	const headersList = await headers();
@@ -8,11 +9,8 @@ export default async function RegisterPage() {
 
 	return (
 		<div className='flex items-center justify-center min-h-[calc(theme("height.screen")-theme("height.16"))]'>
-			{(host?.includes('app.revornix.com') ||
-				host?.includes('app.revornix.cn')) && <RegisterFormCloud />}
-			{host &&
-				!host?.includes('app.revornix.com') &&
-				!host.includes('app.revornix.cn') && <RegisterFormLocal />}
+			{host && isAllowedDeployHost(host) && <RegisterFormCloud />}
+			{host && isAllowedDeployHost(host) && <RegisterFormLocal />}
 		</div>
 	);
 }

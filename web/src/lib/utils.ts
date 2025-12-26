@@ -6,6 +6,20 @@ import remarkRehype from 'remark-rehype'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeStringify from 'rehype-stringify'
 
+export function isAllowedDeployHost(host?: string) {
+  if (!host) return false
+
+  const envHosts = process.env.NEXT_PUBLIC_DEPLOY_HOSTS
+  if (!envHosts) return false
+
+  const hostList = envHosts
+    .split(',')
+    .map(h => h.trim())
+    .filter(Boolean)
+
+  return hostList.some(h => host.includes(h))
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
