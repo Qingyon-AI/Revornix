@@ -5,8 +5,11 @@ import crud
 import models
 import schemas
 import httpx
+from rich import print
 from jose import jwt
 from redis import Redis
+from collections import defaultdict
+from typing import Any
 from sqlalchemy.orm import Session
 from data.sql.base import SessionLocal
 from config.oauth2 import OAUTH_SECRET_KEY
@@ -244,7 +247,7 @@ async def list_traces(
     user_id: int,
     start_time: Optional[datetime] = None,
     end_time: Optional[datetime] = None,
-    limit: int = 50,
+    limit: int | None = None,
 ):
     """
     查询指定用户在指定时间范围内的 Langfuse traces
@@ -264,15 +267,21 @@ async def list_traces(
     if start_time.tzinfo is None or end_time.tzinfo is None:
         raise ValueError("start_time / end_time must be timezone-aware (UTC)")
 
-    params = {
+    params: dict[str, str | int] = {
         "userId": str(user_id),
         "fromTimestamp": start_time.isoformat(),
         "toTimestamp": end_time.isoformat(),
-        "limit": limit,
         "orderBy": "timestamp.desc",
         # 👇 如果你是用 tag 记录 model（推荐）
         "tags": f"model:{model_name}",
     }
+    
+    if limit is not None:
+        params.update(
+            {
+                "limit": limit
+            }
+        )
 
     async with httpx.AsyncClient(
         timeout=10
@@ -292,13 +301,30 @@ def is_leaf_generation(obs, all_obs):
         and child.get("type") == "GENERATION"
         for child in all_obs
     )
+    
+def sum_usage_details(items: list[dict[str, Any]]) -> dict[str, int]:
+    total: dict[str, int] = defaultdict(int)
 
-async def calc_token_usage(trace_ids: list[str]):
-    total_input = total_output = total_all = 0
+    for item in items:
+        usage = item.get("usageDetails")
+        if not usage:
+            continue
+
+        for key, value in usage.items():
+            if isinstance(value, int):
+                total[key] += value
+
+    return dict(total)
+
+async def calc_token_usage(
+    trace_ids: list[str]
+):
     
     if LANGFUSE_PUBLIC_KEY is None or LANGFUSE_SECRET_KEY is None:
         raise RuntimeError("Missing LANGFUSE_PUBLIC_KEY or LANGFUSE_SECRET_KEY")
 
+    to_be_sumed = []
+    
     async with httpx.AsyncClient(
         timeout=10
     ) as client:
@@ -316,16 +342,11 @@ async def calc_token_usage(trace_ids: list[str]):
                     and obs.get("usageDetails")
                     and is_leaf_generation(obs, observations)
                 ):
-                    usage = obs["usageDetails"]
-                    total_input += usage.get("input", 0)
-                    total_output += usage.get("output", 0)
-                    total_all += usage.get("total", 0)
+                    to_be_sumed.append(obs)
 
-    return {
-        "input_tokens": total_input,
-        "output_tokens": total_output,
-        "total_tokens": total_all,
-    }
+    total_usage = sum_usage_details(to_be_sumed)
+
+    return total_usage
     
 async def get_user_token_usage(
     *,
@@ -333,7 +354,7 @@ async def get_user_token_usage(
     model_name: str,
     start_time: Optional[datetime] = None,
     end_time: Optional[datetime] = None,
-    limit: int = 50,
+    limit: int | None = None,
 ):
     traces = await list_traces(
         model_name=model_name,
@@ -346,13 +367,7 @@ async def get_user_token_usage(
     trace_ids = [t["id"] for t in traces]
 
     if not trace_ids:
-        return {
-            "input_tokens": 0,
-            "output_tokens": 0,
-            "total_tokens": 0,
-            "cost": 0.0,
-            "trace_count": 0,
-        }
+        return None
 
     usage = await calc_token_usage(trace_ids)
     usage["trace_count"] = len(trace_ids)
@@ -362,19 +377,17 @@ async def get_user_token_usage(
 if __name__=='__main__':
     
     import asyncio
-    from rich import print
     
     async def main():
         end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(days=7)
         res = await get_user_token_usage(
             user_id=1,
-            model_name="gpt-5.2",
+            model_name="gpt-audio",
             start_time=start_time,
             end_time=end_time,
         )
         print(res)
-
     asyncio.run(
         main()
     )

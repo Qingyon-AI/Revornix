@@ -3,6 +3,9 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from datetime import datetime, timedelta, timezone
+
+from common.dependencies import get_user_token_usage
 from data.sql.base import SessionLocal
 from enums.model import OfficialModel, OfficialModelProvider
 from enums.ability import Ability
@@ -106,10 +109,25 @@ class AIModelProxy:
             access_token, _ = create_token(user=db_user)
 
             deployed_by_official = check_deployed_by_official_in_fuc()
+            
+            ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED.value
 
+            end_time = datetime.now(timezone.utc)
+            start_time = end_time - timedelta(days=30)
+            token_usage = await get_user_token_usage(
+                user_id=user_id,
+                model_name=db_model.name,
+                start_time=start_time,
+                end_time=end_time,
+            )
+            if token_usage is not None:
+                token_total = token_usage.get('total')
+                if token_total is not None and token_total > 1000000:
+                    ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_MORE.value
+            
             # 权限校验（async）
             auth_status = await plan_ability_checked_in_func(
-                ability=Ability.OFFICIAL_PROXIED_LLM_LIMITED.value,
+                ability=ability,
                 authorization=f"Bearer {access_token}",
             )
 

@@ -1,15 +1,24 @@
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 import crud
 import models
 import schemas
 import httpx
+from rich import print
 from jose import jwt
 from redis import Redis
+from collections import defaultdict
+from typing import Any
 from sqlalchemy.orm import Session
 from data.sql.base import SessionLocal
 from config.oauth2 import OAUTH_SECRET_KEY
 from config.base import OFFICIAL, DEPLOY_HOSTS, UNION_PAY_URL_PREFIX
 from urllib.parse import urlparse
+from datetime import datetime, timezone, timedelta
+from typing import Optional
 from fastapi import Request, HTTPException, status, Depends, Header
+from config.langfuse import LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
 
 if OAUTH_SECRET_KEY is None:
     raise Exception("OAUTH_SECRET_KEY is not set")
@@ -231,3 +240,154 @@ def plan_ability_checked(
                 raise err
         return True
     return dependency
+
+
+async def list_traces(
+    model_name: str,
+    user_id: int,
+    start_time: Optional[datetime] = None,
+    end_time: Optional[datetime] = None,
+    limit: int | None = None,
+):
+    """
+    查询指定用户在指定时间范围内的 Langfuse traces
+    时间必须是 UTC（tz-aware）
+    """
+
+    if LANGFUSE_PUBLIC_KEY is None or LANGFUSE_SECRET_KEY is None:
+        raise RuntimeError("Missing LANGFUSE_PUBLIC_KEY or LANGFUSE_SECRET_KEY")
+
+    # 兜底时间（最近 24h）
+    if end_time is None:
+        end_time = datetime.now(timezone.utc)
+    if start_time is None:
+        start_time = end_time - timedelta(days=1)
+
+    # 🚨 强制 UTC
+    if start_time.tzinfo is None or end_time.tzinfo is None:
+        raise ValueError("start_time / end_time must be timezone-aware (UTC)")
+
+    params: dict[str, str | int] = {
+        "userId": str(user_id),
+        "fromTimestamp": start_time.isoformat(),
+        "toTimestamp": end_time.isoformat(),
+        "orderBy": "timestamp.desc",
+        # 👇 如果你是用 tag 记录 model（推荐）
+        "tags": f"model:{model_name}",
+    }
+    
+    if limit is not None:
+        params.update(
+            {
+                "limit": limit
+            }
+        )
+
+    async with httpx.AsyncClient(
+        timeout=10
+    ) as client:
+        resp = await client.get(
+            f"{LANGFUSE_BASE_URL}/api/public/traces",
+            auth=(LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY),
+            params=params,
+        )
+        resp.raise_for_status()
+
+    return resp.json()["data"]
+
+def is_leaf_generation(obs, all_obs):
+    return not any(
+        child.get("parentObservationId") == obs.get("id")
+        and child.get("type") == "GENERATION"
+        for child in all_obs
+    )
+    
+def sum_usage_details(items: list[dict[str, Any]]) -> dict[str, int]:
+    total: dict[str, int] = defaultdict(int)
+
+    for item in items:
+        usage = item.get("usageDetails")
+        if not usage:
+            continue
+
+        for key, value in usage.items():
+            if isinstance(value, int):
+                total[key] += value
+
+    return dict(total)
+
+async def calc_token_usage(
+    trace_ids: list[str]
+):
+    
+    if LANGFUSE_PUBLIC_KEY is None or LANGFUSE_SECRET_KEY is None:
+        raise RuntimeError("Missing LANGFUSE_PUBLIC_KEY or LANGFUSE_SECRET_KEY")
+
+    to_be_sumed = []
+    
+    async with httpx.AsyncClient(
+        timeout=10
+    ) as client:
+        for trace_id in trace_ids:
+            resp = await client.get(
+                f"{LANGFUSE_BASE_URL}/api/public/traces/{trace_id}",
+                auth=(LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY),
+            )
+            resp.raise_for_status()
+            detail = resp.json()
+            observations = detail.get("observations", [])
+            for obs in observations:
+                if (
+                    obs["type"] == "GENERATION"
+                    and obs.get("usageDetails")
+                    and is_leaf_generation(obs, observations)
+                ):
+                    to_be_sumed.append(obs)
+
+    total_usage = sum_usage_details(to_be_sumed)
+
+    return total_usage
+    
+async def get_user_token_usage(
+    *,
+    user_id: int,
+    model_name: str,
+    start_time: Optional[datetime] = None,
+    end_time: Optional[datetime] = None,
+    limit: int | None = None,
+):
+    traces = await list_traces(
+        model_name=model_name,
+        user_id=user_id,
+        start_time=start_time,
+        end_time=end_time,
+        limit=limit,
+    )
+
+    trace_ids = [t["id"] for t in traces]
+
+    if not trace_ids:
+        return None
+
+    usage = await calc_token_usage(trace_ids)
+    usage["trace_count"] = len(trace_ids)
+
+    return usage
+
+if __name__=='__main__':
+    
+    import asyncio
+    
+    async def main():
+        end_time = datetime.now(timezone.utc)
+        start_time = end_time - timedelta(days=7)
+        res = await get_user_token_usage(
+            user_id=1,
+            model_name="gpt-audio",
+            start_time=start_time,
+            end_time=end_time,
+        )
+        print(res)
+    asyncio.run(
+        main()
+    )
