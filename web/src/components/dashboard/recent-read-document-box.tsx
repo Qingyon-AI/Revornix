@@ -13,6 +13,13 @@ import {
 } from '@/components/ui/card';
 import StackedDocuments from '@/components/dashboard/stacked-documents';
 import { useTranslations } from 'next-intl';
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
+import { TrashIcon } from 'lucide-react';
 
 const RecentReadDocumentBox = () => {
 	const t = useTranslations();
@@ -50,9 +57,14 @@ const RecentReadDocumentBox = () => {
 						<StackedDocuments documents={recentReadDocuments.elements} />
 					)}
 				{recentReadDocuments?.total === 0 && !isFetchingRecentReadDocuments && (
-					<span className='h-full text-xs text-muted-foreground flex justify-center items-center'>
-						{t('no_recent_read_documents')}
-					</span>
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<TrashIcon />
+							</EmptyMedia>
+							<EmptyDescription>{t('no_recent_read_documents')}</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
 				)}
 			</CardContent>
 		</Card>
