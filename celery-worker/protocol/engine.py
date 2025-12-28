@@ -90,8 +90,11 @@ class EngineProtocol(Protocol):
                 )
                 if token_usage is not None:
                     token_total = token_usage.get('total')
-                    if token_total is not None and token_total > 1000000:
-                        ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_MORE.value
+                    if token_total is not None:
+                        if token_total > 1000000:
+                            ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_MORE.value
+                        if token_total > 10000000:
+                            ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_NONE.value
 
             elif engine.uuid == Engine.Official_Banana_Image.meta.uuid:
                 if OFFICIAL_IMAGE_AI_MODEL is None or OFFICIAL_IMAGE_AI_BASE_URL is None or OFFICIAL_IMAGE_AI_KEY is None:
@@ -107,8 +110,11 @@ class EngineProtocol(Protocol):
                 )
                 if token_usage is not None:
                     token_total = token_usage.get('total')
-                    if token_total is not None and token_total > 1000000:
-                        ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_MORE.value
+                    if token_total is not None:
+                        if token_total > 1000000:
+                            ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_MORE.value
+                        if token_total > 10000000:
+                            ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_NONE.value
 
             deployed_by_official = check_deployed_by_official_in_fuc()
             if ability and deployed_by_official:
