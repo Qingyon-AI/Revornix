@@ -427,6 +427,7 @@
     "notification_mark_as_unread": "标记为未读",
     "notification_marked_as_unread": "已标记为未读",
     "notification_view_with_link_params": "前往{notification_link}查看",
+    "document_create": "创建文档",
     "document_create_quick_note": "速记",
     "document_create_note_placeholded": "就从这里开始吧...",
     "document_create_quick_note_description": "快速记录你的想法，并将其转为知识。",

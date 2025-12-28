@@ -426,6 +426,7 @@
     "notification_mark_as_unread": "Mark as Unread",
     "notification_marked_as_unread": "Marked as Unread",
     "notification_view_with_link_params": "View at {notification_link}",
+    "document_create": "Create Document",
     "document_create_quick_note": "Quick Note",
     "document_create_note_placeholded": "Start from here...",
     "document_create_quick_note_description": "Quickly record your ideas and transform them into knowledge.",

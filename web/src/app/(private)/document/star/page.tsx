@@ -12,6 +12,7 @@ import {
 	ArrowDownNarrowWide,
 	ArrowDownWideNarrow,
 	SlidersHorizontalIcon,
+	TrashIcon,
 } from 'lucide-react';
 import {
 	Popover,
@@ -30,6 +31,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useTranslations } from 'next-intl';
 import { Separator } from '@/components/ui/separator';
+import {
+	Empty,
+	EmptyContent,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from '@/components/ui/empty';
+import Link from 'next/link';
 
 const StarDocumentPage = () => {
 	const t = useTranslations();
@@ -203,11 +212,21 @@ const StarDocumentPage = () => {
 				</div>
 			</div>
 			{isSuccess && documents.length === 0 && (
-				<div className='flex flex-col items-center justify-center h-full'>
-					<p className='text-sm text-muted-foreground'>
-						{t('documents_empty')}
-					</p>
-				</div>
+				<Empty>
+					<EmptyHeader>
+						<EmptyMedia variant='icon'>
+							<TrashIcon />
+						</EmptyMedia>
+						<EmptyTitle>{t('documents_empty')}</EmptyTitle>
+					</EmptyHeader>
+					<EmptyContent>
+						<div className='flex gap-2'>
+							<Link href={'/document/create'}>
+								<Button>{t('document_create')}</Button>
+							</Link>
+						</div>
+					</EmptyContent>
+				</Empty>
 			)}
 			<div className='grid grid-cols-1 gap-4 md:grid-cols-4 px-5 pb-5'>
 				{documents &&
