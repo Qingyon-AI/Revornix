@@ -9,6 +9,14 @@ import { format } from 'date-fns';
 import { useRouter } from 'nextjs-toploader/app';
 import { useTranslations } from 'next-intl';
 import CustomImage from '../ui/custom-image';
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
+import { TrashIcon } from 'lucide-react';
 
 const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
@@ -46,56 +54,63 @@ const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 	}, [inView]);
 
 	return (
-		<div className='flex flex-col gap-2'>
-			{comments &&
-				comments.map((comment) => {
-					return (
-						<div
-							key={comment.id}
-							className='text-sm rounded p-5 bg-muted dark:bg-black'>
-							<p>{comment.content}</p>
-							<div className='flex flex-row items-center justify-between mt-2'>
-								<div
-									className='flex flex-row items-center'
-									onClick={() =>
-										router.push(`/user/detail/${comment.creator.id}`)
-									}>
-									<CustomImage
-										src={comment.creator.avatar}
-										className='w-5 h-5 rounded-full mr-2 object-cover'
-									/>
+		<>
+			{!isFetching && comments && comments.length === 0 && (
+				<Empty className='h-full'>
+					<EmptyHeader>
+						<EmptyMedia variant='icon'>
+							<TrashIcon />
+						</EmptyMedia>
+						<EmptyDescription>{t('section_comments_empty')}</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
+			)}
+			<div className='flex flex-col gap-2'>
+				{comments &&
+					comments.map((comment) => {
+						return (
+							<div
+								key={comment.id}
+								className='text-sm rounded p-5 bg-muted dark:bg-black'>
+								<p>{comment.content}</p>
+								<div className='flex flex-row items-center justify-between mt-2'>
+									<div
+										className='flex flex-row items-center'
+										onClick={() =>
+											router.push(`/user/detail/${comment.creator.id}`)
+										}>
+										<CustomImage
+											src={comment.creator.avatar}
+											className='w-5 h-5 rounded-full mr-2 object-cover'
+										/>
+										<p className='text-xs text-muted-foreground'>
+											{comment.creator.nickname}
+										</p>
+									</div>
 									<p className='text-xs text-muted-foreground'>
-										{comment.creator.nickname}
+										{format(comment.create_time, 'MM-dd HH:mm')}
 									</p>
 								</div>
-								<p className='text-xs text-muted-foreground'>
-									{format(comment.create_time, 'MM-dd HH:mm')}
-								</p>
 							</div>
-						</div>
-					);
-				})}
-			{isFetching && !data && (
-				<div className='flex flex-col gap-3'>
-					{[...Array(12)].map((number, index) => {
-						return <Skeleton className='w-full h-20' key={index} />;
+						);
 					})}
-				</div>
-			)}
-			{isFetchingNextPage && data && (
-				<div className='flex flex-col gap-3'>
-					{[...Array(12)].map((number, index) => {
-						return <Skeleton className='w-full h-20' key={index} />;
-					})}
-				</div>
-			)}
-			{!isFetching && comments && comments.length === 0 && (
-				<div className='text-muted-foreground text-sm'>
-					{t('section_comments_empty')}
-				</div>
-			)}
-			<div ref={bottomRef}></div>
-		</div>
+				{isFetching && !data && (
+					<div className='flex flex-col gap-3'>
+						{[...Array(12)].map((number, index) => {
+							return <Skeleton className='w-full h-20' key={index} />;
+						})}
+					</div>
+				)}
+				{isFetchingNextPage && data && (
+					<div className='flex flex-col gap-3'>
+						{[...Array(12)].map((number, index) => {
+							return <Skeleton className='w-full h-20' key={index} />;
+						})}
+					</div>
+				)}
+				<div ref={bottomRef}></div>
+			</div>
+		</>
 	);
 };
 
