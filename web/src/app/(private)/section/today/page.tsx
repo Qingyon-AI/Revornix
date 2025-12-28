@@ -40,7 +40,6 @@ import {
 } from '@/components/ui/empty';
 import { RefreshCcwIcon, TrashIcon, XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { useRouter } from 'nextjs-toploader/app';
 
 const SectionDetailPage = () => {
