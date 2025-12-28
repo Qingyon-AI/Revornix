@@ -78,6 +78,7 @@ class EngineProtocol(Protocol):
             if engine.uuid != self.engine_uuid:
                 raise ValueError("engine uuid mismatch")
             
+            ability = None
             if engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
                 ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value
                 end_time = datetime.now(timezone.utc)

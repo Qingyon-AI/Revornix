@@ -123,7 +123,9 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			{/* 此处的min-h-0是因为父级的grid布局会导致子元素的h-full无法准确继承到父级的实际高度，导致其高度被内容撑开 */}
 			<div className='col-span-8 h-full relative min-h-0'>
 				{isError && (
-					<div className='text-sm text-muted-foreground h-full w-full flex justify-center items-center'>{error.message}</div>
+					<div className='text-sm text-muted-foreground h-full w-full flex justify-center items-center'>
+						{error.message}
+					</div>
 				)}
 				{document?.category === DocumentCategory.WEBSITE && (
 					<WebsiteDocumentDetail onFinishRead={handleFinishRead} id={id} />
@@ -165,70 +167,68 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					<DocumentGraph document_id={id} />
 				</Card>
 
-				<Card className='p-5 relative flex flex-col gap-5'>
-					{!document?.podcast_task && (
-						<>
-							<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
-								<AlertDescription className='flex flex-row items-center'>
-									<span className='inline-flex'>
-										{t('document_podcast_unset')}
-									</span>
-									<Button
-										variant={'link'}
-										size='sm'
-										className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0'
-										onClick={() => mutateGeneratePodcast.mutate()}
-										disabled={
-											mutateGeneratePodcast.isPending ||
-											!mainUserInfo?.default_podcast_user_engine_id
-										}>
-										{t('document_podcast_generate')}
-										{mutateGeneratePodcast.isPending && (
-											<Loader2 className='animate-spin' />
-										)}
-									</Button>
+				{!document?.podcast_task && (
+					<>
+						<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
+							<AlertDescription>
+								<span className='inline-flex'>
+									{t('document_podcast_unset')}
+								</span>
+								<Button
+									variant={'link'}
+									size='sm'
+									className='text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
+									onClick={() => mutateGeneratePodcast.mutate()}
+									disabled={
+										mutateGeneratePodcast.isPending ||
+										!mainUserInfo?.default_podcast_user_engine_id
+									}>
+									{t('document_podcast_generate')}
+									{mutateGeneratePodcast.isPending && (
+										<Loader2 className='animate-spin' />
+									)}
+								</Button>
+							</AlertDescription>
+						</Alert>
+						{!mainUserInfo?.default_podcast_user_engine_id && (
+							<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+								<OctagonAlert className='h-4 w-4 text-destructive!' />
+								<AlertDescription>
+									{t('document_create_auto_podcast_engine_unset')}
 								</AlertDescription>
 							</Alert>
-							{!mainUserInfo?.default_podcast_user_engine_id && (
-								<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-									<OctagonAlert className='h-4 w-4 text-destructive!' />
-									<AlertDescription>
-										{t('document_create_auto_podcast_engine_unset')}
-									</AlertDescription>
-								</Alert>
+						)}
+					</>
+				)}
+
+				{document?.podcast_task && (
+					<Card className='p-5 relative flex flex-col gap-5'>
+						{document?.podcast_task?.status ===
+							DocumentPodcastStatus.GENERATING && (
+							<div className='text-center text-muted-foreground text-xs p-3'>
+								{t('document_podcast_processing')}
+							</div>
+						)}
+						{document?.podcast_task?.status === DocumentPodcastStatus.SUCCESS &&
+							document?.podcast_task?.podcast_file_name && (
+								<AudioPlayer
+									src={document?.podcast_task?.podcast_file_name}
+									cover={
+										document.cover ??
+										'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
+									}
+									title={document.title ?? 'Unkown Title'}
+									artist={'AI Generated'}
+								/>
 							)}
-						</>
-					)}
-					{document?.podcast_task && (
-						<>
-							{document?.podcast_task?.status ===
-								DocumentPodcastStatus.GENERATING && (
-								<div className='text-center text-muted-foreground text-xs p-3'>
-									{t('document_podcast_processing')}
-								</div>
-							)}
-							{document?.podcast_task?.status ===
-								DocumentPodcastStatus.SUCCESS &&
-								document?.podcast_task?.podcast_file_name && (
-									<AudioPlayer
-										src={document?.podcast_task?.podcast_file_name}
-										cover={
-											document.cover ??
-											'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
-										}
-										title={document.title ?? 'Unkown Title'}
-										artist={'AI Generated'}
-									/>
-								)}
-							{document?.podcast_task?.status ===
-								DocumentPodcastStatus.FAILED && (
-								<div className='text-center text-muted-foreground text-xs p-3'>
-									{t('document_podcast_failed')}
-								</div>
-							)}
-						</>
-					)}
-				</Card>
+						{document?.podcast_task?.status ===
+							DocumentPodcastStatus.FAILED && (
+							<div className='text-center text-muted-foreground text-xs p-3'>
+								{t('document_podcast_failed')}
+							</div>
+						)}
+					</Card>
+				)}
 			</div>
 		</div>
 	);
