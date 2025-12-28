@@ -119,79 +119,73 @@ const SectionContainer = ({ id }: { id: number }) => {
 					<SectionGraph section_id={id} />
 				</Card>
 
-				<Card className='p-5 relative flex flex-col gap-5'>
-					{section?.creator.id !== mainUserInfo?.id &&
-						!section?.podcast_task && (
-							<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-								<OctagonAlert className='h-4 w-4 text-destructive!' />
-								<AlertDescription>
-									{t('section_podcast_user_unable')}
-								</AlertDescription>
-							</Alert>
-						)}
-					{section?.creator.id === mainUserInfo?.id &&
-						!section?.podcast_task && (
-							<>
-								<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
-									<AlertDescription className='flex flex-row items-center'>
-										<span className='inline-flex'>
-											{t('section_podcast_unset')}
-										</span>
-										<Button
-											variant={'link'}
-											size='sm'
-											className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0'
-											onClick={() => mutateGeneratePodcast.mutate()}
-											disabled={
-												mutateGeneratePodcast.isPending ||
-												!mainUserInfo?.default_podcast_user_engine_id
-											}>
-											{t('section_podcast_generate')}
-											{mutateGeneratePodcast.isPending && (
-												<Loader2 className='animate-spin' />
-											)}
-										</Button>
-									</AlertDescription>
-								</Alert>
-								{!mainUserInfo?.default_podcast_user_engine_id && (
-									<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-										<OctagonAlert className='h-4 w-4 text-destructive!' />
-										<AlertDescription>
-											{t('section_create_auto_podcast_engine_unset')}
-										</AlertDescription>
-									</Alert>
+				{section?.creator.id !== mainUserInfo?.id && !section?.podcast_task && (
+					<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+						<OctagonAlert className='h-4 w-4 text-destructive!' />
+						<AlertDescription>
+							{t('section_podcast_user_unable')}
+						</AlertDescription>
+					</Alert>
+				)}
+
+				{section?.creator.id === mainUserInfo?.id && !section?.podcast_task && (
+					<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+						<AlertDescription>
+							<span className='inline-flex'>{t('section_podcast_unset')}</span>
+							<Button
+								variant={'link'}
+								size='sm'
+								className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
+								onClick={() => mutateGeneratePodcast.mutate()}
+								disabled={
+									mutateGeneratePodcast.isPending ||
+									!mainUserInfo?.default_podcast_user_engine_id
+								}>
+								{t('section_podcast_generate')}
+								{mutateGeneratePodcast.isPending && (
+									<Loader2 className='animate-spin' />
 								)}
-							</>
+							</Button>
+						</AlertDescription>
+					</Alert>
+				)}
+
+				{!mainUserInfo?.default_podcast_user_engine_id && (
+					<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+						<OctagonAlert className='h-4 w-4 text-destructive!' />
+						<AlertDescription>
+							{t('section_create_auto_podcast_engine_unset')}
+						</AlertDescription>
+					</Alert>
+				)}
+
+				{section?.podcast_task && (
+					<Card className='p-5 relative flex flex-col gap-5'>
+						{section?.podcast_task?.status ===
+							SectionPodcastStatus.GENERATING && (
+							<div className='text-center text-muted-foreground text-xs p-3'>
+								{t('section_podcast_processing')}
+							</div>
 						)}
-					{section?.podcast_task && (
-						<>
-							{section?.podcast_task?.status ===
-								SectionPodcastStatus.GENERATING && (
-								<div className='text-center text-muted-foreground text-xs p-3'>
-									{t('section_podcast_processing')}
-								</div>
+						{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
+							section?.podcast_task?.podcast_file_name && (
+								<AudioPlayer
+									src={section?.podcast_task?.podcast_file_name}
+									cover={
+										section.cover ??
+										'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
+									}
+									title={section.title ?? 'Unkown Title'}
+									artist={'AI Generated'}
+								/>
 							)}
-							{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
-								section?.podcast_task?.podcast_file_name && (
-									<AudioPlayer
-										src={section?.podcast_task?.podcast_file_name}
-										cover={
-											section.cover ??
-											'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
-										}
-										title={section.title ?? 'Unkown Title'}
-										artist={'AI Generated'}
-									/>
-								)}
-							{section?.podcast_task?.status ===
-								SectionPodcastStatus.FAILED && (
-								<div className='text-center text-muted-foreground text-xs p-3'>
-									{t('section_podcast_failed')}
-								</div>
-							)}
-						</>
-					)}
-				</Card>
+						{section?.podcast_task?.status === SectionPodcastStatus.FAILED && (
+							<div className='text-center text-muted-foreground text-xs p-3'>
+								{t('section_podcast_failed')}
+							</div>
+						)}
+					</Card>
+				)}
 			</div>
 		</div>
 	);
