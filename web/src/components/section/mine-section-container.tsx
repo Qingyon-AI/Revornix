@@ -12,6 +12,7 @@ import {
 	ArrowDownNarrowWide,
 	ArrowDownWideNarrow,
 	SlidersHorizontalIcon,
+	TrashIcon,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,14 @@ import {
 } from '@/components/ui/sheet';
 import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
+import Link from 'next/link';
 
 const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 	const t = useTranslations();
@@ -208,9 +217,21 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 				</div>
 			</div>
 			{isSuccess && sections.length === 0 && (
-				<div className='flex flex-col items-center justify-center h-full'>
-					<p className='text-sm text-muted-foreground'>{t('sections_empty')}</p>
-				</div>
+				<Empty>
+					<EmptyHeader>
+						<EmptyMedia variant='icon'>
+							<TrashIcon />
+						</EmptyMedia>
+						<EmptyDescription>{t('sections_empty')}</EmptyDescription>
+					</EmptyHeader>
+					<EmptyContent>
+						<div className='flex gap-2'>
+							<Link href={'/section/create'}>
+								<Button>{t('section_create')}</Button>
+							</Link>
+						</div>
+					</EmptyContent>
+				</Empty>
 			)}
 			<div className='grid grid-cols-1 gap-4 md:grid-cols-4 px-5 pb-5'>
 				{sections &&

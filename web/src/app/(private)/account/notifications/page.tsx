@@ -10,11 +10,17 @@ import {
 	searchNotificationRecords,
 } from '@/service/notification';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
-import { BadgeCheck, Loader2 } from 'lucide-react';
+import { BadgeCheck, Loader2, TrashIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { toast } from 'sonner';
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
 
 const NotificationsPage = () => {
 	const t = useTranslations();
@@ -95,11 +101,14 @@ const NotificationsPage = () => {
 						</div>
 					)}
 					{isSuccess && notifications && notifications.length === 0 && (
-						<div className='flex flex-col items-center justify-center h-full'>
-							<p className='text-sm text-muted-foreground'>
-								{t('notification_empty')}
-							</p>
-						</div>
+						<Empty className='h-full'>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<TrashIcon />
+								</EmptyMedia>
+								<EmptyDescription>{t('notification_empty')}</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
 					)}
 					<div className='flex flex-col gap-3'>
 						{isFetching && !data && (
@@ -119,7 +128,10 @@ const NotificationsPage = () => {
 						{notifications &&
 							notifications.map((notification, index) => {
 								return (
-									<NotificationRecordCard key={index} notification={notification} />
+									<NotificationRecordCard
+										key={index}
+										notification={notification}
+									/>
 								);
 							})}
 						<div ref={bottomRef}></div>

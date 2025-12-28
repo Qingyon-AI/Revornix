@@ -34,9 +34,9 @@ import { Separator } from '../ui/separator';
 import {
 	Empty,
 	EmptyContent,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
-	EmptyTitle,
 } from '@/components/ui/empty';
 import Link from 'next/link';
 
@@ -222,7 +222,7 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 						<EmptyMedia variant='icon'>
 							<TrashIcon />
 						</EmptyMedia>
-						<EmptyTitle>{t('documents_empty')}</EmptyTitle>
+						<EmptyDescription>{t('documents_empty')}</EmptyDescription>
 					</EmptyHeader>
 					<EmptyContent>
 						<div className='flex gap-2'>
