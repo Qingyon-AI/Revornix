@@ -1,30 +1,22 @@
 
-# GetOrderDetailResponseDTO
+# CheckAbilityRequestDTO
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`id` | number
-`order_no` | string
-`price` | number
-`status` | number
-`product` | [ProductResponseDTO](ProductResponseDTO.md)
+`ability` | string
 
 ## Example
 
 ```typescript
-import type { GetOrderDetailResponseDTO } from ''
+import type { CheckAbilityRequestDTO } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": null,
-  "order_no": null,
-  "price": null,
-  "status": null,
-  "product": null,
-} satisfies GetOrderDetailResponseDTO
+  "ability": null,
+} satisfies CheckAbilityRequestDTO
 
 console.log(example)
 
@@ -33,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as GetOrderDetailResponseDTO
+const exampleParsed = JSON.parse(exampleJSON) as CheckAbilityRequestDTO
 console.log(exampleParsed)
 ```
 

@@ -15,12 +15,15 @@
 
 import * as runtime from '../runtime';
 import type {
+  GetOrderDetailByPaypalOrderRequestDTO,
   GetOrderDetailRequestDTO,
   GetOrderDetailResponseDTO,
   OrderStatusRequestDTO,
   OrderStatusResponseDTO,
 } from '../models/index';
 import {
+    GetOrderDetailByPaypalOrderRequestDTOFromJSON,
+    GetOrderDetailByPaypalOrderRequestDTOToJSON,
     GetOrderDetailRequestDTOFromJSON,
     GetOrderDetailRequestDTOToJSON,
     GetOrderDetailResponseDTOFromJSON,
@@ -35,8 +38,16 @@ export interface GetOrderDetailRequest {
     getOrderDetailRequestDTO: GetOrderDetailRequestDTO;
 }
 
+export interface GetOrderDetailByPaypalOrderRequest {
+    getOrderDetailByPaypalOrderRequestDTO: GetOrderDetailByPaypalOrderRequestDTO;
+}
+
 export interface GetOrderStatusRequest {
     orderStatusRequestDTO: OrderStatusRequestDTO;
+}
+
+export interface PaypalCallbackRequest {
+    body: string;
 }
 
 /**
@@ -109,6 +120,43 @@ export class OrderControllerApi extends runtime.BaseAPI {
 
     /**
      */
+    async getOrderDetailByPaypalOrderRaw(requestParameters: GetOrderDetailByPaypalOrderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetOrderDetailResponseDTO>> {
+        if (requestParameters['getOrderDetailByPaypalOrderRequestDTO'] == null) {
+            throw new runtime.RequiredError(
+                'getOrderDetailByPaypalOrderRequestDTO',
+                'Required parameter "getOrderDetailByPaypalOrderRequestDTO" was null or undefined when calling getOrderDetailByPaypalOrder().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/order/detail/paypal`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GetOrderDetailByPaypalOrderRequestDTOToJSON(requestParameters['getOrderDetailByPaypalOrderRequestDTO']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetOrderDetailResponseDTOFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async getOrderDetailByPaypalOrder(requestParameters: GetOrderDetailByPaypalOrderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetOrderDetailResponseDTO> {
+        const response = await this.getOrderDetailByPaypalOrderRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
     async getOrderStatusRaw(requestParameters: GetOrderStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OrderStatusResponseDTO>> {
         if (requestParameters['orderStatusRequestDTO'] == null) {
             throw new runtime.RequiredError(
@@ -141,6 +189,43 @@ export class OrderControllerApi extends runtime.BaseAPI {
      */
     async getOrderStatus(requestParameters: GetOrderStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OrderStatusResponseDTO> {
         const response = await this.getOrderStatusRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async paypalCallbackRaw(requestParameters: PaypalCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<object>> {
+        if (requestParameters['body'] == null) {
+            throw new runtime.RequiredError(
+                'body',
+                'Required parameter "body" was null or undefined when calling paypalCallback().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/order/callback/paypal`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: requestParameters['body'] as any,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     */
+    async paypalCallback(requestParameters: PaypalCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<object> {
+        const response = await this.paypalCallbackRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

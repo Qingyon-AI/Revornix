@@ -1,6 +1,6 @@
 'use client';
 
-import { BadgeCheck, Info, Loader2, ShieldAlert, Sparkles } from 'lucide-react';
+import { BadgeCheck, Info, Loader2, Sparkles } from 'lucide-react';
 import {
 	Card,
 	CardContent,
@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import QRCode from 'qrcode';
 import { Badge } from '../ui/badge';
+import { FaPaypal } from 'react-icons/fa';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
 	Dialog,
@@ -33,7 +34,6 @@ import { useGetSet } from 'react-use';
 import { useQuery } from '@tanstack/react-query';
 import { PayWay } from '@/enums/product';
 import { useLocale, useTranslations } from 'next-intl';
-import { Alert, AlertDescription } from '../ui/alert';
 import { cn } from '@/lib/utils';
 import { PrePayProductResponseDTO } from '@/generated-pay';
 
@@ -147,6 +147,8 @@ const PlanCard = ({
 			}
 			setTargetTime(Date.now() + 600000);
 			setIntervalTime(1000);
+		} else if (pay_way === PayWay.PAYPAL) {
+			window.location.href = res.code;
 		}
 	};
 	return (
@@ -164,24 +166,16 @@ const PlanCard = ({
 				}}>
 				<DialogContent className='max-h-[80vh] overflow-auto'>
 					<DialogHeader>
-						<DialogTitle>{t('account_plan_pay_qr_code')}</DialogTitle>
-						<DialogDescription className='text-muted-foreground text-sm'>
-							{countdown != null && countdown !== 0 && (
-								<>
-									<span>{t('account_plan_pay_qr_code_description') + ' '}</span>
-									<span className='font-bold'>
-										{Math.round(countdown / 1000)}
-									</span>
-									<span>s</span>
-								</>
-							)}
+						<DialogTitle>{t('order_info')}</DialogTitle>
+						<DialogDescription>
+							{t('account_plan_pay_warning')}
 						</DialogDescription>
 					</DialogHeader>
 					<div className='relative w-full'>
 						{!prepayBackData && (
 							<div className='flex flex-row justify-center items-center h-[200px]'>
 								<Loader2 className='size-4 animate-spin' />
-								<p>{t('account_plan_pay_qr_code_generating')}...</p>
+								<p>{t('order_info_getting')}...</p>
 							</div>
 						)}
 						{payWay == PayWay.WECHAT && prepayBackData && (
@@ -193,6 +187,15 @@ const PlanCard = ({
 							<iframe
 								className='size-[200px] relative rounded overflow-hidden shrink-0 mx-auto my-5'
 								ref={alipayIframeBox}></iframe>
+						)}
+						{countdown != null && countdown !== 0 && (
+							<div className='text-sm text-center my-5'>
+								<span>{t('account_plan_pay_qr_code_description') + ' '}</span>
+								<span className='font-bold'>
+									{Math.round(countdown / 1000)}
+								</span>
+								<span>s</span>
+							</div>
 						)}
 						{prepayBackData && (
 							<Table>
@@ -223,12 +226,6 @@ const PlanCard = ({
 								</TableBody>
 							</Table>
 						)}
-						<Alert className='my-5 bg-amber-600/10 dark:bg-amber-600/15 text-amber-500 border-amber-500/50 dark:border-amber-600/50'>
-							<ShieldAlert className='size-4' />
-							<AlertDescription>
-								{t('account_plan_pay_warning')}
-							</AlertDescription>
-						</Alert>
 					</div>
 				</DialogContent>
 			</Dialog>
@@ -241,7 +238,7 @@ const PlanCard = ({
 							{t('account_plan_pay_way_choose_description')}
 						</DialogDescription>
 					</DialogHeader>
-					<div className='w-full grid grid-cols-1 md:grid-cols-2 gap-5'>
+					<div className='w-full grid grid-cols-1 md:grid-cols-3 gap-2'>
 						<Button
 							className='relative'
 							onClick={() => {
@@ -261,6 +258,15 @@ const PlanCard = ({
 							}}>
 							{t('account_plan_pay_way_alipay')}
 							<AlipayIcon />
+						</Button>
+						<Button
+							onClick={() => {
+								if (productDetail?.id) {
+									handlePrePayProduct(productDetail.uuid, PayWay.PAYPAL);
+								}
+							}}>
+							{t('account_plan_pay_way_paypal')}
+							<FaPaypal />
 						</Button>
 					</div>
 					<div className='text-muted-foreground text-xs flex flex-row gap-1'>

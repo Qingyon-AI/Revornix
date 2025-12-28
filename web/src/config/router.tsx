@@ -13,6 +13,30 @@ const routers: RouteItem[] = [
 		path: '/dashboard',
 	},
 	{
+		title: '回调',
+		title_en: 'Callback',
+		path: '/callback',
+		children: [
+			{
+				title: 'Paypal',
+				title_en: 'Paypal',
+				path: '/paypal',
+				children: [
+					{
+						title: '支付结果',
+						title_en: 'Result',
+						path: '/return',
+					},
+					{
+						title: '取消支付',
+						title_en: 'Canceled',
+						path: '/cancel',
+					},
+				],
+			},
+		],
+	},
+	{
 		title: '设置',
 		title_en: 'Settings',
 		path: '/setting',
