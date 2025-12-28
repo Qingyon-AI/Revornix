@@ -7,7 +7,9 @@ apis/index.ts
 docs/Ability.md
 docs/BonusControllerApi.md
 docs/BonusWithdrawRequestDTO.md
+docs/CheckAbilityRequestDTO.md
 docs/CommonControllerApi.md
+docs/GetOrderDetailByPaypalOrderRequestDTO.md
 docs/GetOrderDetailRequestDTO.md
 docs/GetOrderDetailResponseDTO.md
 docs/GetProductAbilitiesRequestDTO.md
@@ -31,6 +33,8 @@ docs/UserResponseDTO.md
 index.ts
 models/Ability.ts
 models/BonusWithdrawRequestDTO.ts
+models/CheckAbilityRequestDTO.ts
+models/GetOrderDetailByPaypalOrderRequestDTO.ts
 models/GetOrderDetailRequestDTO.ts
 models/GetOrderDetailResponseDTO.ts
 models/GetProductAbilitiesRequestDTO.ts

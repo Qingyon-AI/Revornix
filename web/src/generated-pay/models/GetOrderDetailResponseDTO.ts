@@ -35,6 +35,12 @@ export interface GetOrderDetailResponseDTO {
     id: number;
     /**
      * 
+     * @type {string}
+     * @memberof GetOrderDetailResponseDTO
+     */
+    order_no: string;
+    /**
+     * 
      * @type {number}
      * @memberof GetOrderDetailResponseDTO
      */
@@ -58,6 +64,7 @@ export interface GetOrderDetailResponseDTO {
  */
 export function instanceOfGetOrderDetailResponseDTO(value: object): value is GetOrderDetailResponseDTO {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('order_no' in value) || value['order_no'] === undefined) return false;
     if (!('price' in value) || value['price'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('product' in value) || value['product'] === undefined) return false;
@@ -75,6 +82,7 @@ export function GetOrderDetailResponseDTOFromJSONTyped(json: any, ignoreDiscrimi
     return {
         
         'id': json['id'],
+        'order_no': json['order_no'],
         'price': json['price'],
         'status': json['status'],
         'product': ProductResponseDTOFromJSON(json['product']),
@@ -93,6 +101,7 @@ export function GetOrderDetailResponseDTOToJSONTyped(value?: GetOrderDetailRespo
     return {
         
         'id': value['id'],
+        'order_no': value['order_no'],
         'price': value['price'],
         'status': value['status'],
         'product': ProductResponseDTOToJSON(value['product']),

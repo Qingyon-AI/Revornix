@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`code` | string
 `name` | string
 `name_zh` | string
 `description` | string
@@ -24,6 +25,7 @@ import type { Ability } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "code": null,
   "name": null,
   "name_zh": null,
   "description": null,

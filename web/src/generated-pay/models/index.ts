@@ -2,6 +2,8 @@
 /* eslint-disable */
 export * from './Ability';
 export * from './BonusWithdrawRequestDTO';
+export * from './CheckAbilityRequestDTO';
+export * from './GetOrderDetailByPaypalOrderRequestDTO';
 export * from './GetOrderDetailRequestDTO';
 export * from './GetOrderDetailResponseDTO';
 export * from './GetProductAbilitiesRequestDTO';

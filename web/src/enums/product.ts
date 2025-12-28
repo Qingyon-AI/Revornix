@@ -1,6 +1,7 @@
 export enum PayWay {
     WECHAT = 0,
-    ALIPAY = 1
+    ALIPAY = 1,
+    PAYPAL = 2
 }
 
 export enum Plan {

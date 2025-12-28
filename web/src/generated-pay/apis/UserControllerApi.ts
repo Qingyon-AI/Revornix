@@ -15,17 +15,65 @@
 
 import * as runtime from '../runtime';
 import type {
+  CheckAbilityRequestDTO,
   UserResponseDTO,
 } from '../models/index';
 import {
+    CheckAbilityRequestDTOFromJSON,
+    CheckAbilityRequestDTOToJSON,
     UserResponseDTOFromJSON,
     UserResponseDTOToJSON,
 } from '../models/index';
+
+export interface CheckAuthorityRequest {
+    checkAbilityRequestDTO: CheckAbilityRequestDTO;
+}
 
 /**
  * 
  */
 export class UserControllerApi extends runtime.BaseAPI {
+
+    /**
+     */
+    async checkAuthorityRaw(requestParameters: CheckAuthorityRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<boolean>> {
+        if (requestParameters['checkAbilityRequestDTO'] == null) {
+            throw new runtime.RequiredError(
+                'checkAbilityRequestDTO',
+                'Required parameter "checkAbilityRequestDTO" was null or undefined when calling checkAuthority().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/user/ability/check`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CheckAbilityRequestDTOToJSON(requestParameters['checkAbilityRequestDTO']),
+        }, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<boolean>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     */
+    async checkAuthority(requestParameters: CheckAuthorityRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<boolean> {
+        const response = await this.checkAuthorityRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      */

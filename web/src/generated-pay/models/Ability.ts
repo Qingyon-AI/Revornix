@@ -30,6 +30,12 @@ export interface Ability {
      * @type {string}
      * @memberof Ability
      */
+    code: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Ability
+     */
     name: string;
     /**
      * 
@@ -79,6 +85,7 @@ export interface Ability {
  * Check if a given object implements the Ability interface.
  */
 export function instanceOfAbility(value: object): value is Ability {
+    if (!('code' in value) || value['code'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
     if (!('createTime' in value) || value['createTime'] === undefined) return false;
@@ -96,6 +103,7 @@ export function AbilityFromJSONTyped(json: any, ignoreDiscriminator: boolean): A
     return {
         
         'id': json['id'] == null ? undefined : json['id'],
+        'code': json['code'],
         'name': json['name'],
         'name_zh': json['name_zh'],
         'description': json['description'] == null ? undefined : json['description'],
@@ -119,6 +127,7 @@ export function AbilityToJSONTyped(value?: Ability | null, ignoreDiscriminator: 
     return {
         
         'id': value['id'],
+        'code': value['code'],
         'name': value['name'],
         'name_zh': value['name_zh'],
         'description': value['description'],

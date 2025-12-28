@@ -1,12 +1,16 @@
 import OrderApi from '@/api/order'
+import { GetOrderDetailByPaypalOrderRequestDTO, GetOrderDetailResponseDTO, OrderStatusRequestDTO, OrderStatusResponseDTO } from '@/generated-pay';
 import { request } from '@/lib/request'
 
-interface OrderStatusResponse {
-    status: number;
+
+export const getOrderStatus = async (data: OrderStatusRequestDTO): Promise<OrderStatusResponseDTO> => {
+    return await request(OrderApi.getOrderStatus, {
+        data
+    })
 }
 
-export const getOrderStatus = async (data: { order_no: string }): Promise<OrderStatusResponse> => {
-    return await request(OrderApi.getOrderStatus, {
+export const getOrderDetailByPaypalOrder = async (data: GetOrderDetailByPaypalOrderRequestDTO): Promise<GetOrderDetailResponseDTO> => {
+    return await request(OrderApi.getOrderDetailByPaypalOrder, {
         data
     })
 }
