@@ -31,6 +31,15 @@ import { useUserContext } from '@/provider/user-provider';
 import { toast } from 'sonner';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { useInView } from 'react-intersection-observer';
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
+import { RefreshCcwIcon, TrashIcon, XIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const SectionDetailPage = () => {
 	const t = useTranslations();
@@ -41,6 +50,7 @@ const SectionDetailPage = () => {
 		isFetching: isFetchingSection,
 		isError,
 		error,
+		refetch,
 	} = useQuery({
 		queryKey: ['todayDocumentSummarySection'],
 		queryFn: () => getDayDocumentsSummarySection({ date: today }),
@@ -191,13 +201,27 @@ const SectionDetailPage = () => {
 					style={{ flex: '1 1 0' }}>
 					{isFetchingSection && <Skeleton className='h-full w-full' />}
 					{((isError && error) || markdownGetError) && (
-						<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
-							{error?.message ?? (
-								<div className='flex flex-col text-center gap-2'>
-									<p>{markdownGetError}</p>
-								</div>
-							)}
-						</div>
+						<Empty className='h-full'>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<XIcon />
+								</EmptyMedia>
+								<EmptyDescription>
+									{markdownGetError || error?.message}
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button
+									variant='outline'
+									size='sm'
+									onClick={() => {
+										refetch();
+									}}>
+									<RefreshCcwIcon />
+									{t('refresh')}
+								</Button>
+							</EmptyContent>
+						</Empty>
 					)}
 					{markdown && !isError && !markdownGetError && (
 						<div className='prose dark:prose-invert mx-auto'>

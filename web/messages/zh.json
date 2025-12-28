@@ -500,6 +500,7 @@
     "section_graph": "专栏知识图谱",
     "section_graph_description": "这里可以查看本专栏关联的所有文档",
     "section_graph_empty": "该专栏知识图谱暂无内容",
+    "section_create": "创建专栏",
     "section_create_title_needed": "请输入专栏标题",
     "section_create_description_needed": "请输入专栏描述",
     "section_create_success": "专栏创建成功",
