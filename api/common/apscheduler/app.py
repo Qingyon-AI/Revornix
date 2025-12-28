@@ -55,7 +55,9 @@ async def fetch_and_save(
                 user_id=rss_server.user_id, 
                 url=entry.link
             )
-            
+            rss_server.sections = list(dict.fromkeys(
+                rss_server.sections
+            ))
             if existing_doc:
                 for section in rss_server.sections:
                     db_exist_section_document = crud.section.get_section_document_by_section_id_and_document_id(

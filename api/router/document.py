@@ -409,6 +409,10 @@ async def create_document(
             date=now.date()
         )
     document_create_request.sections.append(db_today_section.id)
+    # 去重
+    document_create_request.sections = list(dict.fromkeys(
+        document_create_request.sections
+    ))
     for section_id in document_create_request.sections:
         crud.section.create_or_update_section_document(
             db=db,
@@ -559,6 +563,10 @@ def update_document(
             label_ids=labels_to_delete
         )
     if document_update_request.sections is not None:
+        # 去重
+        document_update_request.sections = list(dict.fromkeys(
+            document_update_request.sections
+        ))
         exist_document_sections = crud.document.get_sections_by_document_id(
             db=db, 
             document_id=document_update_request.document_id
