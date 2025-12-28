@@ -122,8 +122,11 @@ class AIModelProxy:
             )
             if token_usage is not None:
                 token_total = token_usage.get('total')
-                if token_total is not None and token_total > 1000000:
-                    ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_MORE.value
+                if token_total is not None:
+                    if token_total > 1000000:
+                        ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_MORE.value
+                    if token_total > 10000000:
+                        ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_NONE.value
             
             # 权限校验（async）
             auth_status = await plan_ability_checked_in_func(
