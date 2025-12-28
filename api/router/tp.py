@@ -295,6 +295,10 @@ async def create_document(
             date=now.date()
         )
     document_create_request.sections.append(db_today_section.id)
+    # 去重
+    document_create_request.sections = list(dict.fromkeys(
+        document_create_request.sections
+    ))
     for section_id in document_create_request.sections:
         crud.section.create_or_update_section_document(
             db=db,

@@ -91,6 +91,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
 	}, [inView]);
+
 	return (
 		<>
 			<Separator className='mb-5' />

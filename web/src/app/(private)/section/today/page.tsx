@@ -40,9 +40,12 @@ import {
 } from '@/components/ui/empty';
 import { RefreshCcwIcon, TrashIcon, XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { useRouter } from 'nextjs-toploader/app';
 
 const SectionDetailPage = () => {
 	const t = useTranslations();
+	const router = useRouter();
 	const { mainUserInfo } = useUserContext();
 	const today = new Date().toISOString().split('T')[0];
 	const {
@@ -145,6 +148,13 @@ const SectionDetailPage = () => {
 			fetchNextPage();
 	}, [inView, isFetchingSectionDocuments, hasNextPage, section]);
 
+	const handleAddDocument = (section_id: string) => {
+		const params = new URLSearchParams({
+			section_id: section_id,
+		});
+		router.push(`/document/create?${params.toString()}`);
+	};
+
 	return (
 		<>
 			<div className='px-5 pb-5 w-full flex flex-col gap-5 relative flex-1 box-border'>
@@ -162,9 +172,31 @@ const SectionDetailPage = () => {
 									{t('section_documents_description')}
 								</SheetDescription>
 							</SheetHeader>
-							<div className='px-5 flex flex-col gap-5 overflow-auto pb-5'>
+							<div className='px-5 flex flex-col gap-5 overflow-auto pb-5 flex-1'>
+								{isSuccess && documents && documents.length === 0 && (
+									<Empty className='h-full'>
+										<EmptyHeader>
+											<EmptyMedia variant='icon'>
+												<TrashIcon />
+											</EmptyMedia>
+											<EmptyDescription>{t('sections_empty')}</EmptyDescription>
+										</EmptyHeader>
+										<EmptyContent>
+											<div className='flex gap-2'>
+												<Button
+													onClick={() => {
+														section &&
+															handleAddDocument(section?.section_id.toString());
+													}}>
+													{t('document_create')}
+												</Button>
+											</div>
+										</EmptyContent>
+									</Empty>
+								)}
 								{isSuccess &&
 									documents &&
+									documents.length > 0 &&
 									documents.map((document, index) => {
 										return (
 											<SectionDocumentCard key={index} document={document} />
