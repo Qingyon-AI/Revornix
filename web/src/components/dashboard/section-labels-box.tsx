@@ -6,6 +6,13 @@ import { Badge } from '../ui/badge';
 import { useRouter } from 'nextjs-toploader/app';
 import { getMineLabels } from '@/service/section';
 import { useTranslations } from 'next-intl';
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
+import { TrashIcon } from 'lucide-react';
 
 const SectionLabelsBox = () => {
 	const router = useRouter();
@@ -18,7 +25,14 @@ const SectionLabelsBox = () => {
 		<>
 			{isFetching && <Skeleton className='w-full h-10' />}
 			{isSuccess && data.data.length === 0 && (
-				<div className='text-muted-foreground text-xs text-center w-full'>{t('section_label_empty')}</div>
+				<Empty>
+					<EmptyHeader>
+						<EmptyMedia variant='icon'>
+							<TrashIcon />
+						</EmptyMedia>
+						<EmptyDescription>{t('section_label_empty')}</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
 			)}
 			{!isFetching &&
 				data &&

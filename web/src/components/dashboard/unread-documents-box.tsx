@@ -13,6 +13,13 @@ import {
 } from '@/components/ui/card';
 import StackedDocuments from '@/components/dashboard/stacked-documents';
 import { useTranslations } from 'next-intl';
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
+import { TrashIcon } from 'lucide-react';
 
 const UnReadDocumentBox = () => {
 	const router = useRouter();
@@ -49,9 +56,14 @@ const UnReadDocumentBox = () => {
 							<StackedDocuments documents={unReadDocuments.elements} />
 						)}
 					{unReadDocuments?.total === 0 && !isFetchingUnReadDocuments && (
-						<span className='h-full text-xs text-muted-foreground flex justify-center items-center'>
-							{t('no_unread_documents')}
-						</span>
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<TrashIcon />
+								</EmptyMedia>
+								<EmptyDescription>{t('no_unread_documents')}</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
 					)}
 				</CardContent>
 			</Card>

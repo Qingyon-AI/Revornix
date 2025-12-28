@@ -21,6 +21,13 @@ import { cn, getRandomColor } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
+import { TrashIcon } from 'lucide-react';
 
 const DocumentLabelSummary = ({ className }: { className?: string }) => {
 	const t = useTranslations();
@@ -85,7 +92,16 @@ const DocumentLabelSummary = ({ className }: { className?: string }) => {
 				)}
 				{!isFetching && data && colorizedData.length == 0 && (
 					<div className='flex flex-col items-center justify-center h-[250px] text-sm text-muted-foreground'>
-						{t('dashboard_document_label_summary_empty')}
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<TrashIcon />
+								</EmptyMedia>
+								<EmptyDescription>
+									{t('dashboard_document_label_summary_empty')}
+								</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
 					</div>
 				)}
 			</CardContent>

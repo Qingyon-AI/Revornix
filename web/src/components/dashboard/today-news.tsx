@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DAILY_HOT_API_PREFIX } from '@/config/api';
 import { Website } from '@/app/(private)/hot-search/page';
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, RefreshCcwIcon, TrashIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AutoScrollList } from '@/components/ui/auto-scroll-list';
 import {
@@ -16,6 +16,14 @@ import {
 	CardTitle,
 } from '../ui/card';
 import { useTranslations } from 'next-intl';
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from '@/components/ui/empty';
 
 const TodayNews = () => {
 	const t = useTranslations();
@@ -116,11 +124,22 @@ const TodayNews = () => {
 			</CardHeader>
 			<CardContent className='flex-1'>
 				{refreshStatus ? (
-					<Skeleton className='w-full h-[140px]' />
+					<Skeleton className='w-full min-h-[140px] h-full' />
 				) : error ? (
-					<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
-						{error}
-					</div>
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<TrashIcon />
+							</EmptyMedia>
+							<EmptyDescription>{error}</EmptyDescription>
+						</EmptyHeader>
+						<EmptyContent>
+							<Button variant='outline' size='sm' onClick={handleInitData}>
+								<RefreshCcwIcon />
+								{t('refresh')}
+							</Button>
+						</EmptyContent>
+					</Empty>
 				) : (
 					<AutoScrollList visibleCount={5} itemHeight={28} gap={1}>
 						{websites.map((website, index) => (

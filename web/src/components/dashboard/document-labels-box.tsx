@@ -6,6 +6,13 @@ import { Badge } from '../ui/badge';
 import { useRouter } from 'nextjs-toploader/app';
 import { getLabels } from '@/service/document';
 import { useTranslations } from 'next-intl';
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
+import { TrashIcon } from 'lucide-react';
 
 const DocumentLabelsBox = () => {
 	const router = useRouter();
@@ -22,7 +29,14 @@ const DocumentLabelsBox = () => {
 		<>
 			{isFetchingDocumentLabels && <Skeleton className='w-full h-10' />}
 			{isSuccessDocumentLabels && documentLabels.data.length === 0 && (
-				<div className='text-muted-foreground text-xs text-center w-full'>{t('document_label_empty')}</div>
+				<Empty>
+					<EmptyHeader>
+						<EmptyMedia variant='icon'>
+							<TrashIcon />
+						</EmptyMedia>
+						<EmptyDescription>{t('document_label_empty')}</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
 			)}
 			{!isFetchingDocumentLabels &&
 				documentLabels &&

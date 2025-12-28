@@ -19,7 +19,15 @@ import {
 } from '../ui/card';
 import Link from 'next/link';
 import { Button } from '../ui/button';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, RefreshCcwIcon, XIcon } from 'lucide-react';
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from '@/components/ui/empty';
 
 const TodaySummary = () => {
 	const t = useTranslations();
@@ -30,6 +38,7 @@ const TodaySummary = () => {
 		isFetching,
 		isError,
 		error,
+		refetch,
 	} = useQuery({
 		queryKey: ['todayDocumentSummarySection'],
 		queryFn: () => getDayDocumentsSummarySection({ date: today }),
@@ -101,13 +110,27 @@ const TodaySummary = () => {
 			<CardContent className='flex-1'>
 				{isFetching && <Skeleton className='h-full w-full' />}
 				{((isError && error) || markdownGetError) && (
-					<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
-						{error?.message ?? (
-							<div className='flex flex-col text-center gap-2'>
-								<p>{markdownGetError}</p>
-							</div>
-						)}
-					</div>
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<XIcon />
+							</EmptyMedia>
+							<EmptyDescription>
+								{markdownGetError || error?.message}
+							</EmptyDescription>
+						</EmptyHeader>
+						<EmptyContent>
+							<Button
+								variant='outline'
+								size='sm'
+								onClick={() => {
+									refetch();
+								}}>
+								<RefreshCcwIcon />
+								{t('refresh')}
+							</Button>
+						</EmptyContent>
+					</Empty>
 				)}
 				{markdown && <div className='line-clamp-6'>{markdown}</div>}
 			</CardContent>

@@ -13,6 +13,13 @@ import {
 } from '@/components/ui/card';
 import StackedDocuments from '@/components/dashboard/stacked-documents';
 import { useTranslations } from 'next-intl';
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
+import { TrashIcon } from 'lucide-react';
 
 const StarDocumentBox = () => {
 	const t = useTranslations();
@@ -49,9 +56,14 @@ const StarDocumentBox = () => {
 						<StackedDocuments documents={starDocuments.elements} />
 					)}
 				{starDocuments?.total === 0 && !isFetchingStarDocuments && (
-					<span className='h-full text-xs text-muted-foreground flex justify-center items-center'>
-						{t('no_star_documents')}
-					</span>
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<TrashIcon />
+							</EmptyMedia>
+							<EmptyDescription>{t('no_star_documents')}</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
 				)}
 			</CardContent>
 		</Card>
