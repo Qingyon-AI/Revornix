@@ -108,3 +108,46 @@ async def reducer_summary(
             description=description, 
             summary=summary
         )
+
+
+async def make_section_markdown(
+    user_id: int,
+    model_id: int,
+    current_markdown_content: str | None,
+    new_markdown_contents_to_append: str,
+    entities: list[EntityInfo],
+    relations: list[RelationInfo]
+):
+    model_configuration = (await AIModelProxy.create(
+        user_id=user_id,
+        model_id=model_id
+    )).get_configuration()
+    
+    prompt = make_section_markdown_prompt(
+        current_markdown_content=current_markdown_content,
+        new_markdown_contents_to_append=new_markdown_contents_to_append,
+        entities=entities,
+        relations=relations
+    )
+
+    with propagate_attributes(
+        user_id=str(user_id),
+        tags=[f'model:{model_configuration.model_name}']
+    ):
+        client = OpenAI(
+            api_key=model_configuration.api_key,
+            base_url=model_configuration.base_url,
+        )
+        completion = client.chat.completions.create(
+            model=model_configuration.model_name,
+            messages=[
+                {"role": "system", "content": "You are an expert in summarizing document content."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_tokens=8192
+        )
+        content = completion.choices[0].message.content
+        if content is None:
+            raise Exception("No content returned for ai")
+        return content

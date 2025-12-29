@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from langfuse import propagate_attributes
 from langfuse.openai import OpenAI
+from proxy.ai_model_proxy import AIModelProxy
 
 def make_chunk_id(
     doc_id: int, 
@@ -229,3 +230,29 @@ def merge_entitys_and_relations(
             dedup_relations.append(r)
 
     return dedup_entities, dedup_relations
+
+
+async def get_extract_llm_client(
+    user_id: int
+) -> OpenAI:
+    db = SessionLocal()
+    db_user = crud.user.get_user_by_id(
+        db=db, 
+        user_id=user_id
+    )
+    if db_user is None:
+        raise Exception("User not found")
+    if db_user.default_document_reader_model_id is None:
+        raise Exception("Default document reader model id not found")
+    
+    model_configuration = (await AIModelProxy.create(
+        user_id=user_id,
+        model_id=db_user.default_document_reader_model_id
+    )).get_configuration()
+    
+    llm_client = OpenAI(
+        api_key=model_configuration.api_key,
+        base_url=model_configuration.base_url,
+    )
+    db.close()
+    return llm_client
