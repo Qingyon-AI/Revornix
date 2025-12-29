@@ -16,7 +16,7 @@ from common.dependencies import get_db, get_current_user, check_deployed_by_offi
 from common.common import get_user_remote_file_system
 from common.celery.app import start_process_document, start_process_document_podcast, update_document_process_status, start_process_section
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus, UserDocumentAuthority
-from enums.section import UserSectionRole, UserSectionAuthority, SectionDocumentIntegration
+from enums.section import UserSectionRole, UserSectionAuthority, SectionDocumentIntegration, SectionProcessTriggerType
 from enums.ability import Ability
 
 document_router = APIRouter()
@@ -408,6 +408,12 @@ async def create_document(
             section_id=db_today_section.id,
             date=now.date()
         )
+        crud.task.create_section_process_task(
+            db=db,
+            user_id=user.id,
+            section_id=db_today_section.id,
+            trigger_type=SectionProcessTriggerType.UPDATED
+        )
     document_create_request.sections.append(db_today_section.id)
     # 去重
     document_create_request.sections = list(dict.fromkeys(
@@ -433,6 +439,15 @@ async def create_document(
         db=db,
         document_id=db_document.id
     )
+    db_sections_to_process = []
+    for db_section in db_sections:
+        db_section_process_task = crud.task.get_section_process_task_by_section_id(
+            db=db,
+            section_id=db_section.id
+        )
+        # 只有触发时机为 UPDATED 的专栏才需要在文档的更新的时候触发
+        if db_section_process_task is not None and db_section_process_task.trigger_type == SectionProcessTriggerType.UPDATED:
+            db_sections_to_process.append(db_section)
     # 构造每个 Section 的 Celery 任务
     section_process_tasks = group(
         start_process_section.si(
@@ -440,7 +455,7 @@ async def create_document(
             user_id=user.id,
             auto_podcast=db_section.auto_podcast
         )
-        for db_section in db_sections
+        for db_section in db_sections_to_process
     )
     background_tasks = chain(
         start_process_document.si(
@@ -592,14 +607,22 @@ def update_document(
                 db=db, 
                 document_id=document_update_request.document_id
             )
+            db_section_to_process = []
+            for db_section_document, db_section in db_section_documents_and_sections:
+                db_section_process_task = crud.task.get_section_process_task_by_section_id(
+                    db=db,
+                    section_id=db_section.id
+                )
+                if db_section_process_task is not None and db_section_process_task.trigger_type == SectionProcessTriggerType.UPDATED:
+                    db_section_to_process.append(db_section)
             # 构造每个 Section 的 Celery 任务
             section_process_tasks = group(
                 start_process_section.si(
-                    section_id=db_section_document.section_id,
+                    section_id=db_section.id,
                     user_id=user.id,
                     auto_podcast=db_section.auto_podcast
                 )
-                for db_section_document, db_section in db_section_documents_and_sections
+                for db_section in db_section_to_process
             )
             section_process_tasks.apply_async()
     db_document.update_time = now

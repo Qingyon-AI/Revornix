@@ -27,3 +27,7 @@ class SectionProcessStatus(IntEnum):
     PROCESSING = 1
     SUCCESS = 2
     FAILED = 3
+    
+class SectionProcessTriggerType(IntEnum):
+    SCHEDULER = 0
+    UPDATED = 1

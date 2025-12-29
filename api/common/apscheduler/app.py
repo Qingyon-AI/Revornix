@@ -17,6 +17,7 @@ from common.celery.app import start_process_document
 from enums.document import DocumentMdConvertStatus, UserDocumentAuthority, DocumentCategory
 from enums.notification import NotificationContentType, NotificationSourceUUID, NotificationTemplateUUID, NotificationTriggerType
 from enums.section import SectionDocumentIntegration, UserSectionRole, UserSectionAuthority
+from common.celery.app import start_process_section
 
 scheduler = AsyncIOScheduler()
 
@@ -349,6 +350,29 @@ scheduler.add_job(
     id="fetch_all_rss_sources",
     next_run_time=datetime.now(tz=timezone.utc)
 )
+
+db_section_trigger_schedulers = crud.task.get_section_process_tasks(
+    db=db
+)
+
+for db_section, db_section_process_task in db_section_trigger_schedulers:
+    db_section_process_task_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
+        db=db,
+        section_id=db_section.id
+    )
+    if db_section_process_task_scheduler is None:
+        continue
+    scheduler.add_job(
+        func=start_process_section,
+        kwargs={
+            "section_id": db_section.id,
+            "user_id": db_section.creator_id,
+            "auto_summary": db_section.auto_summary,
+            "auto_podcast": db_section.auto_podcast
+        },
+        trigger=CronTrigger.from_crontab(db_section_process_task_scheduler.cron_expr),
+        id=f"section-process-{str(db_section.id)}"
+    )
 
 info_logger.info("All apscheduler tasks restarted")
 

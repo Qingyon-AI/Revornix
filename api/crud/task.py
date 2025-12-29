@@ -2,19 +2,36 @@ import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentEmbeddingStatus, DocumentProcessStatus, DocumentMdConvertStatus
-from enums.section import SectionPodcastStatus, SectionProcessStatus
+from enums.section import SectionPodcastStatus, SectionProcessStatus, SectionProcessTriggerType
+
+def create_section_process_task_trigger_scheduler(
+    db: Session,
+    section_process_task_id: int,
+    cron_expr: str
+):
+    scheduler = models.task.SectionTriggerScheduler(
+        section_process_task_id=section_process_task_id,
+        cron_expr=cron_expr
+    )
+    db.add(scheduler)
+    db.flush()
+    return scheduler
 
 def create_section_process_task(
     db: Session,
     user_id: int,
     section_id: int,
-    status: SectionProcessStatus = SectionProcessStatus.WAIT_TO
+    status: SectionProcessStatus = SectionProcessStatus.WAIT_TO,
+    trigger_type: SectionProcessTriggerType = SectionProcessTriggerType.UPDATED
 ):
     now = datetime.now(timezone.utc)
-    task = models.task.SectionProcessTask(user_id=user_id,
-                                          status=status,
-                                          section_id=section_id,
-                                          create_time=now)
+    task = models.task.SectionProcessTask(
+        user_id=user_id,
+        status=status,
+        section_id=section_id,
+        create_time=now,
+        trigger_type=trigger_type
+    )
     db.add(task)
     db.flush()
     return task
@@ -110,6 +127,35 @@ def create_document_convert_task(
     db.add(task)
     db.flush()
     return task
+
+def get_section_process_tasks(
+    db: Session,
+):
+    query = db.query(models.section.Section, models.task.SectionProcessTask)
+    query = query.join(
+        models.task.SectionProcessTask,
+        models.task.SectionProcessTask.section_id == models.section.Section.id
+    )
+    query = query.join(
+        models.task.SectionTriggerScheduler,
+        models.task.SectionTriggerScheduler.section_process_task_id == models.task.SectionProcessTask.id
+    )
+    query = query.filter(
+        models.section.Section.delete_at.is_(None),
+        models.task.SectionProcessTask.delete_at.is_(None),
+        models.task.SectionProcessTask.trigger_type == SectionProcessTriggerType.SCHEDULER,
+    )
+    return query.all()
+
+def get_section_process_trigger_scheduler_by_section_id(
+    db: Session,
+    section_id: int
+):
+    query = db.query(models.task.SectionTriggerScheduler)
+    query = query.join(models.task.SectionProcessTask)
+    query = query.filter(models.task.SectionProcessTask.section_id == section_id,
+                         models.task.SectionTriggerScheduler.delete_at == None)
+    return query.one_or_none()
 
 def get_section_process_task_by_section_id(
     db: Session,

@@ -2,7 +2,7 @@ import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentEmbeddingStatus, DocumentMdConvertStatus
-from enums.section import SectionPodcastStatus, SectionProcessStatus
+from enums.section import SectionPodcastStatus, SectionProcessStatus, SectionProcessTriggerType
 
 def create_document_convert_task(
     db: Session,
@@ -25,13 +25,17 @@ def create_section_process_task(
     db: Session,
     user_id: int,
     section_id: int,
-    status: SectionProcessStatus = SectionProcessStatus.WAIT_TO
+    status: SectionProcessStatus = SectionProcessStatus.WAIT_TO,
+    trigger_type: SectionProcessTriggerType = SectionProcessTriggerType.UPDATED
 ):
     now = datetime.now(timezone.utc)
-    task = models.task.SectionProcessTask(user_id=user_id,
-                                          status=status,
-                                          section_id=section_id,
-                                          create_time=now)
+    task = models.task.SectionProcessTask(
+        user_id=user_id,
+        status=status,
+        section_id=section_id,
+        create_time=now,
+        trigger_type=trigger_type
+    )
     db.add(task)
     db.flush()
     return task

@@ -13,6 +13,7 @@ from common.celery.app import start_process_section_podcast, update_section_proc
 from celery import chain
 from enums.notification import NotificationTriggerEventUUID
 from enums.ability import Ability
+from enums.section import SectionProcessTriggerType
 
 section_router = APIRouter()
 
@@ -1198,6 +1199,23 @@ def create_section(
         crud.section.create_publish_section(
             db=db, 
             section_id=db_section.id
+        )
+    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+        db=db,
+        section_id=db_section.id
+    )
+    if db_section_process_task is None:
+        db_section_process_task = crud.task.create_section_process_task(
+            db=db,
+            user_id=user.id,
+            section_id=db_section.id,
+            trigger_type=SectionProcessTriggerType(section_create_request.process_task_trigger_type)
+        )
+    if section_create_request.process_task_trigger_scheduler:
+        crud.task.create_section_process_task_trigger_scheduler(
+            db=db,
+            section_process_task_id=db_section_process_task.id,
+            cron_expr=section_create_request.process_task_trigger_scheduler
         )
     db.commit()
     return schemas.section.SectionCreateResponse(id=db_section.id)

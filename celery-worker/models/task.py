@@ -82,6 +82,16 @@ class SectionProcessTask(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    trigger_type: Mapped[Optional[int]] = mapped_column(Integer, nullable=False, comment='0: scheduler, 1: updated')
+
+
+class SectionTriggerScheduler(Base):
+    __tablename__ = "section_trigger_scheduler"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    section_process_task_id: Mapped[int] = mapped_column(ForeignKey("section_process_task.id"), index=True, nullable=False)
+    cron_expr: Mapped[str] = mapped_column(String(100), nullable=False)
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
 
 class SectionPodcastTask(Base):
