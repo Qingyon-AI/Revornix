@@ -269,6 +269,11 @@ async def create_document(
         document_id=db_document.id, 
         authority=UserDocumentAuthority.OWNER
     )
+    crud.task.create_document_process_task(
+        db=db,
+        user_id=user.id,
+        document_id=db_document.id,
+    )
     # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
     db_today_section = crud.section.get_section_by_user_and_date(
         db=db, 
