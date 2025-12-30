@@ -115,130 +115,108 @@ import {
 export interface AddLabelDocumentLabelCreatePostRequest {
     schemasDocumentLabelAddRequest: SchemasDocumentLabelAddRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface CreateAiSummaryDocumentAiSummaryPostRequest {
     documentAiSummaryRequest: DocumentAiSummaryRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface CreateDocumentDocumentCreatePostRequest {
     documentCreateRequest: DocumentCreateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface CreateNoteDocumentNoteCreatePostRequest {
     documentNoteCreateRequest: DocumentNoteCreateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteDocumentDocumentDeletePostRequest {
     documentDeleteRequest: DocumentDeleteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteLabelDocumentLabelDeletePostRequest {
     schemasSectionLabelDeleteRequest: SchemasSectionLabelDeleteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteNoteDocumentNoteDeletePostRequest {
     documentNoteDeleteRequest: DocumentNoteDeleteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GeneratePodcastDocumentPodcastGeneratePostRequest {
     generateDocumentPodcastRequest: GenerateDocumentPodcastRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetDocumentDetailDocumentDetailPostRequest {
     documentDetailRequest: DocumentDetailRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetLabelSummaryDocumentLabelSummaryPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetMonthSummaryDocumentMonthSummaryPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface ListLabelDocumentLabelListPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface ReadDocumentDocumentReadPostRequest {
     readRequest: ReadRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface RecentReadDocumentDocumentRecentSearchPostRequest {
     searchRecentReadRequest: SearchRecentReadRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchAllMineDocumentsDocumentSearchMinePostRequest {
     searchAllMyDocumentsRequest: SearchAllMyDocumentsRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchKnowledgeVectorDocumentVectorSearchPostRequest {
     vectorSearchRequest: VectorSearchRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchMyStarDocumentsDocumentStarSearchPostRequest {
     searchMyStarDocumentsRequest: SearchMyStarDocumentsRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchNoteDocumentNoteSearchPostRequest {
     searchDocumentNoteRequest: SearchDocumentNoteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest {
     searchUnreadListRequest: SearchUnreadListRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface StarDocumentDocumentStarPostRequest {
     starRequest: StarRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface TransformMarkdownDocumentMarkdownTransformPostRequest {
     documentMarkdownConvertRequest: DocumentMarkdownConvertRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateDocumentDocumentUpdatePostRequest {
     documentUpdateRequest: DocumentUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 /**
@@ -265,10 +243,6 @@ export class DocumentApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -314,10 +288,6 @@ export class DocumentApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/document/ai/summary`;
 
@@ -359,10 +329,6 @@ export class DocumentApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -408,10 +374,6 @@ export class DocumentApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/document/note/create`;
 
@@ -453,10 +415,6 @@ export class DocumentApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -502,10 +460,6 @@ export class DocumentApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/document/label/delete`;
 
@@ -547,10 +501,6 @@ export class DocumentApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -596,10 +546,6 @@ export class DocumentApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/document/podcast/generate`;
 
@@ -643,10 +589,6 @@ export class DocumentApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/document/detail`;
 
@@ -679,10 +621,6 @@ export class DocumentApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -718,10 +656,6 @@ export class DocumentApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/document/month/summary`;
 
@@ -753,10 +687,6 @@ export class DocumentApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -799,10 +729,6 @@ export class DocumentApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -848,10 +774,6 @@ export class DocumentApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/document/recent/search`;
 
@@ -893,10 +815,6 @@ export class DocumentApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -942,10 +860,6 @@ export class DocumentApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/document/vector/search`;
 
@@ -987,10 +901,6 @@ export class DocumentApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1036,10 +946,6 @@ export class DocumentApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/document/note/search`;
 
@@ -1081,10 +987,6 @@ export class DocumentApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1130,10 +1032,6 @@ export class DocumentApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/document/star`;
 
@@ -1177,10 +1075,6 @@ export class DocumentApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/document/markdown/transform`;
 
@@ -1222,10 +1116,6 @@ export class DocumentApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 

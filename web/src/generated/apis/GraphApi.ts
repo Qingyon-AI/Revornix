@@ -34,18 +34,15 @@ import {
 export interface DocumentGraphGraphDocumentPostRequest {
     documentGraphRequest: DocumentGraphRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GraphGraphSearchPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SectionGraphGraphSectionPostRequest {
     sectionGraphRequest: SectionGraphRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 /**
@@ -72,10 +69,6 @@ export class GraphApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -110,10 +103,6 @@ export class GraphApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -156,10 +145,6 @@ export class GraphApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 

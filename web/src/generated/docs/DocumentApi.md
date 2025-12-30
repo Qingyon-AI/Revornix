@@ -31,7 +31,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## addLabelDocumentLabelCreatePost
 
-> SchemasDocumentCreateLabelResponse addLabelDocumentLabelCreatePost(schemasDocumentLabelAddRequest, authorization, xForwardedFor)
+> SchemasDocumentCreateLabelResponse addLabelDocumentLabelCreatePost(schemasDocumentLabelAddRequest, authorization)
 
 Add Label
 
@@ -53,8 +53,6 @@ async function example() {
     schemasDocumentLabelAddRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies AddLabelDocumentLabelCreatePostRequest;
 
   try {
@@ -76,7 +74,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **schemasDocumentLabelAddRequest** | [SchemasDocumentLabelAddRequest](SchemasDocumentLabelAddRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -103,7 +100,7 @@ No authorization required
 
 ## createAiSummaryDocumentAiSummaryPost
 
-> NormalResponse createAiSummaryDocumentAiSummaryPost(documentAiSummaryRequest, authorization, xForwardedFor)
+> NormalResponse createAiSummaryDocumentAiSummaryPost(documentAiSummaryRequest, authorization)
 
 Create Ai Summary
 
@@ -125,8 +122,6 @@ async function example() {
     documentAiSummaryRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies CreateAiSummaryDocumentAiSummaryPostRequest;
 
   try {
@@ -148,7 +143,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentAiSummaryRequest** | [DocumentAiSummaryRequest](DocumentAiSummaryRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -175,7 +169,7 @@ No authorization required
 
 ## createDocumentDocumentCreatePost
 
-> DocumentCreateResponse createDocumentDocumentCreatePost(documentCreateRequest, authorization, xForwardedFor)
+> DocumentCreateResponse createDocumentDocumentCreatePost(documentCreateRequest, authorization)
 
 Create Document
 
@@ -197,8 +191,6 @@ async function example() {
     documentCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies CreateDocumentDocumentCreatePostRequest;
 
   try {
@@ -220,7 +212,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentCreateRequest** | [DocumentCreateRequest](DocumentCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -247,7 +238,7 @@ No authorization required
 
 ## createNoteDocumentNoteCreatePost
 
-> NormalResponse createNoteDocumentNoteCreatePost(documentNoteCreateRequest, authorization, xForwardedFor)
+> NormalResponse createNoteDocumentNoteCreatePost(documentNoteCreateRequest, authorization)
 
 Create Note
 
@@ -269,8 +260,6 @@ async function example() {
     documentNoteCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies CreateNoteDocumentNoteCreatePostRequest;
 
   try {
@@ -292,7 +281,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentNoteCreateRequest** | [DocumentNoteCreateRequest](DocumentNoteCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -319,7 +307,7 @@ No authorization required
 
 ## deleteDocumentDocumentDeletePost
 
-> SuccessResponse deleteDocumentDocumentDeletePost(documentDeleteRequest, authorization, xForwardedFor)
+> SuccessResponse deleteDocumentDocumentDeletePost(documentDeleteRequest, authorization)
 
 Delete Document
 
@@ -341,8 +329,6 @@ async function example() {
     documentDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteDocumentDocumentDeletePostRequest;
 
   try {
@@ -364,7 +350,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentDeleteRequest** | [DocumentDeleteRequest](DocumentDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -391,7 +376,7 @@ No authorization required
 
 ## deleteLabelDocumentLabelDeletePost
 
-> NormalResponse deleteLabelDocumentLabelDeletePost(schemasSectionLabelDeleteRequest, authorization, xForwardedFor)
+> NormalResponse deleteLabelDocumentLabelDeletePost(schemasSectionLabelDeleteRequest, authorization)
 
 Delete Label
 
@@ -413,8 +398,6 @@ async function example() {
     schemasSectionLabelDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteLabelDocumentLabelDeletePostRequest;
 
   try {
@@ -436,7 +419,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **schemasSectionLabelDeleteRequest** | [SchemasSectionLabelDeleteRequest](SchemasSectionLabelDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -463,7 +445,7 @@ No authorization required
 
 ## deleteNoteDocumentNoteDeletePost
 
-> NormalResponse deleteNoteDocumentNoteDeletePost(documentNoteDeleteRequest, authorization, xForwardedFor)
+> NormalResponse deleteNoteDocumentNoteDeletePost(documentNoteDeleteRequest, authorization)
 
 Delete Note
 
@@ -485,8 +467,6 @@ async function example() {
     documentNoteDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteNoteDocumentNoteDeletePostRequest;
 
   try {
@@ -508,7 +488,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentNoteDeleteRequest** | [DocumentNoteDeleteRequest](DocumentNoteDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -535,7 +514,7 @@ No authorization required
 
 ## generatePodcastDocumentPodcastGeneratePost
 
-> NormalResponse generatePodcastDocumentPodcastGeneratePost(generateDocumentPodcastRequest, authorization, xForwardedFor)
+> NormalResponse generatePodcastDocumentPodcastGeneratePost(generateDocumentPodcastRequest, authorization)
 
 Generate Podcast
 
@@ -557,8 +536,6 @@ async function example() {
     generateDocumentPodcastRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GeneratePodcastDocumentPodcastGeneratePostRequest;
 
   try {
@@ -580,7 +557,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **generateDocumentPodcastRequest** | [GenerateDocumentPodcastRequest](GenerateDocumentPodcastRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -607,7 +583,7 @@ No authorization required
 
 ## getDocumentDetailDocumentDetailPost
 
-> DocumentDetailResponse getDocumentDetailDocumentDetailPost(documentDetailRequest, authorization, xForwardedFor)
+> DocumentDetailResponse getDocumentDetailDocumentDetailPost(documentDetailRequest, authorization)
 
 Get Document Detail
 
@@ -629,8 +605,6 @@ async function example() {
     documentDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetDocumentDetailDocumentDetailPostRequest;
 
   try {
@@ -652,7 +626,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentDetailRequest** | [DocumentDetailRequest](DocumentDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -679,7 +652,7 @@ No authorization required
 
 ## getLabelSummaryDocumentLabelSummaryPost
 
-> LabelSummaryResponse getLabelSummaryDocumentLabelSummaryPost(authorization, xForwardedFor)
+> LabelSummaryResponse getLabelSummaryDocumentLabelSummaryPost(authorization)
 
 Get Label Summary
 
@@ -699,8 +672,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetLabelSummaryDocumentLabelSummaryPostRequest;
 
   try {
@@ -721,7 +692,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -748,7 +718,7 @@ No authorization required
 
 ## getMonthSummaryDocumentMonthSummaryPost
 
-> DocumentMonthSummaryResponse getMonthSummaryDocumentMonthSummaryPost(authorization, xForwardedFor)
+> DocumentMonthSummaryResponse getMonthSummaryDocumentMonthSummaryPost(authorization)
 
 Get Month Summary
 
@@ -768,8 +738,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetMonthSummaryDocumentMonthSummaryPostRequest;
 
   try {
@@ -790,7 +758,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -817,7 +784,7 @@ No authorization required
 
 ## listLabelDocumentLabelListPost
 
-> SchemasDocumentLabelListResponse listLabelDocumentLabelListPost(authorization, xForwardedFor)
+> SchemasDocumentLabelListResponse listLabelDocumentLabelListPost(authorization)
 
 List Label
 
@@ -837,8 +804,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies ListLabelDocumentLabelListPostRequest;
 
   try {
@@ -859,7 +824,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -886,7 +850,7 @@ No authorization required
 
 ## readDocumentDocumentReadPost
 
-> SuccessResponse readDocumentDocumentReadPost(readRequest, authorization, xForwardedFor)
+> SuccessResponse readDocumentDocumentReadPost(readRequest, authorization)
 
 Read Document
 
@@ -908,8 +872,6 @@ async function example() {
     readRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies ReadDocumentDocumentReadPostRequest;
 
   try {
@@ -931,7 +893,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **readRequest** | [ReadRequest](ReadRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -958,7 +919,7 @@ No authorization required
 
 ## recentReadDocumentDocumentRecentSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo recentReadDocumentDocumentRecentSearchPost(searchRecentReadRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionDocumentInfo recentReadDocumentDocumentRecentSearchPost(searchRecentReadRequest, authorization)
 
 Recent Read Document
 
@@ -980,8 +941,6 @@ async function example() {
     searchRecentReadRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies RecentReadDocumentDocumentRecentSearchPostRequest;
 
   try {
@@ -1003,7 +962,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchRecentReadRequest** | [SearchRecentReadRequest](SearchRecentReadRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1030,7 +988,7 @@ No authorization required
 
 ## searchAllMineDocumentsDocumentSearchMinePost
 
-> InifiniteScrollPagnitionDocumentInfo searchAllMineDocumentsDocumentSearchMinePost(searchAllMyDocumentsRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionDocumentInfo searchAllMineDocumentsDocumentSearchMinePost(searchAllMyDocumentsRequest, authorization)
 
 Search All Mine Documents
 
@@ -1052,8 +1010,6 @@ async function example() {
     searchAllMyDocumentsRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchAllMineDocumentsDocumentSearchMinePostRequest;
 
   try {
@@ -1075,7 +1031,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchAllMyDocumentsRequest** | [SearchAllMyDocumentsRequest](SearchAllMyDocumentsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1102,7 +1057,7 @@ No authorization required
 
 ## searchKnowledgeVectorDocumentVectorSearchPost
 
-> VectorSearchResponse searchKnowledgeVectorDocumentVectorSearchPost(vectorSearchRequest, authorization, xForwardedFor)
+> VectorSearchResponse searchKnowledgeVectorDocumentVectorSearchPost(vectorSearchRequest, authorization)
 
 Search Knowledge Vector
 
@@ -1124,8 +1079,6 @@ async function example() {
     vectorSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchKnowledgeVectorDocumentVectorSearchPostRequest;
 
   try {
@@ -1147,7 +1100,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **vectorSearchRequest** | [VectorSearchRequest](VectorSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1174,7 +1126,7 @@ No authorization required
 
 ## searchMyStarDocumentsDocumentStarSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo searchMyStarDocumentsDocumentStarSearchPost(searchMyStarDocumentsRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionDocumentInfo searchMyStarDocumentsDocumentStarSearchPost(searchMyStarDocumentsRequest, authorization)
 
 Search My Star Documents
 
@@ -1196,8 +1148,6 @@ async function example() {
     searchMyStarDocumentsRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchMyStarDocumentsDocumentStarSearchPostRequest;
 
   try {
@@ -1219,7 +1169,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchMyStarDocumentsRequest** | [SearchMyStarDocumentsRequest](SearchMyStarDocumentsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1246,7 +1195,7 @@ No authorization required
 
 ## searchNoteDocumentNoteSearchPost
 
-> InifiniteScrollPagnitionDocumentNoteInfo searchNoteDocumentNoteSearchPost(searchDocumentNoteRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionDocumentNoteInfo searchNoteDocumentNoteSearchPost(searchDocumentNoteRequest, authorization)
 
 Search Note
 
@@ -1268,8 +1217,6 @@ async function example() {
     searchDocumentNoteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchNoteDocumentNoteSearchPostRequest;
 
   try {
@@ -1291,7 +1238,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchDocumentNoteRequest** | [SearchDocumentNoteRequest](SearchDocumentNoteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1318,7 +1264,7 @@ No authorization required
 
 ## searchUserUnreadDocumentsDocumentUnreadSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo searchUserUnreadDocumentsDocumentUnreadSearchPost(searchUnreadListRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionDocumentInfo searchUserUnreadDocumentsDocumentUnreadSearchPost(searchUnreadListRequest, authorization)
 
 Search User Unread Documents
 
@@ -1340,8 +1286,6 @@ async function example() {
     searchUnreadListRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest;
 
   try {
@@ -1363,7 +1307,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchUnreadListRequest** | [SearchUnreadListRequest](SearchUnreadListRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1390,7 +1333,7 @@ No authorization required
 
 ## starDocumentDocumentStarPost
 
-> SuccessResponse starDocumentDocumentStarPost(starRequest, authorization, xForwardedFor)
+> SuccessResponse starDocumentDocumentStarPost(starRequest, authorization)
 
 Star Document
 
@@ -1412,8 +1355,6 @@ async function example() {
     starRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies StarDocumentDocumentStarPostRequest;
 
   try {
@@ -1435,7 +1376,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **starRequest** | [StarRequest](StarRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1462,7 +1402,7 @@ No authorization required
 
 ## transformMarkdownDocumentMarkdownTransformPost
 
-> NormalResponse transformMarkdownDocumentMarkdownTransformPost(documentMarkdownConvertRequest, authorization, xForwardedFor)
+> NormalResponse transformMarkdownDocumentMarkdownTransformPost(documentMarkdownConvertRequest, authorization)
 
 Transform Markdown
 
@@ -1484,8 +1424,6 @@ async function example() {
     documentMarkdownConvertRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies TransformMarkdownDocumentMarkdownTransformPostRequest;
 
   try {
@@ -1507,7 +1445,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentMarkdownConvertRequest** | [DocumentMarkdownConvertRequest](DocumentMarkdownConvertRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1534,7 +1471,7 @@ No authorization required
 
 ## updateDocumentDocumentUpdatePost
 
-> NormalResponse updateDocumentDocumentUpdatePost(documentUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateDocumentDocumentUpdatePost(documentUpdateRequest, authorization)
 
 Update Document
 
@@ -1556,8 +1493,6 @@ async function example() {
     documentUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateDocumentDocumentUpdatePostRequest;
 
   try {
@@ -1579,7 +1514,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentUpdateRequest** | [DocumentUpdateRequest](DocumentUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

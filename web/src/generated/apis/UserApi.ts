@@ -137,43 +137,36 @@ export interface BindEmailCodeUserBindEmailCodePostRequest {
 export interface BindEmailUserBindEmailPostRequest {
     bindEmailVerifyRequest: BindEmailVerifyRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface BindEmailVerifyUserBindEmailVerifyPostRequest {
     bindEmailCodeVerifyRequest: BindEmailCodeVerifyRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface BindGithubUserBindGithubPostRequest {
     githubUserBind: GithubUserBind;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface BindGoogleUserBindGooglePostRequest {
     googleUserBind: GoogleUserBind;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface BindPhoneUserBindPhoneCodePostRequest {
     bindPhoneCodeCreateRequest: BindPhoneCodeCreateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface BindPhoneVerifyUserBindPhoneVerifyPostRequest {
     bindPhoneCodeVerifyRequest: BindPhoneCodeVerifyRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface BindWechatUserBindWechatWebPostRequest {
     weChatWebUserBindRequest: WeChatWebUserBindRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface CreateUserByEmailCodeUserCreateEmailCodePostRequest {
@@ -214,111 +207,95 @@ export interface CreateUserByWechatWebUserCreateWechatWebPostRequest {
 
 export interface DeleteUserUserDeletePostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface FollowUserUserFollowPostRequest {
     followUserRequest: FollowUserRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface InitialSeePasswordUserPasswordInitialSeePostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface LoginUserLoginPostRequest {
     userLoginRequest: UserLoginRequest;
+    xForwardedFor?: string | null;
 }
 
 export interface MyInfoUserMineInfoPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchUserFansUserFansPostRequest {
     searchUserFansRequest: SearchUserFansRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchUserFollowsUserFollowsPostRequest {
     searchUserFollowsRequest: SearchUserFollowsRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchUserUserSearchPostRequest {
     searchUserRequest: SearchUserRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UnbindGithubUserUnbindGithubPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UnbindGoogleUserUnbindGooglePostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UnbindPhoneUserUnbindPhonePostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UnbindWechatUserUnbindWechatPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateDefaultEngineUserDefaultEngineUpdatePostRequest {
     defaultEngineUpdateRequest: DefaultEngineUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateDefaultFileSystemUserDefaultFileSystemUpdatePostRequest {
     defaultFileSystemUpdateRequest: DefaultFileSystemUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateDefaultModelUserDefaultModelUpdatePostRequest {
     defaultModelUpdateRequest: DefaultModelUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequest {
     defaultReadMarkReasonUpdateRequest: DefaultReadMarkReasonUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateMyInfoUserUpdatePostRequest {
     userInfoUpdateRequest: UserInfoUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdatePasswordUserPasswordUpdatePostRequest {
     passwordUpdateRequest: PasswordUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateTokenUserTokenUpdatePostRequest {
     tokenUpdateRequest: TokenUpdateRequest;
+    xForwardedFor?: string | null;
 }
 
 export interface UserInfoUserInfoPostRequest {
     userInfoRequest: UserInfoRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 /**
@@ -387,10 +364,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/bind/email`;
 
@@ -433,10 +406,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -482,10 +451,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/bind/github`;
 
@@ -527,10 +492,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -576,10 +537,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/bind/phone/code`;
 
@@ -623,10 +580,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/bind/phone/verify`;
 
@@ -668,10 +621,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1061,10 +1010,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/delete`;
 
@@ -1107,10 +1052,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/follow`;
 
@@ -1143,10 +1084,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1187,6 +1124,10 @@ export class UserApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
 
         let urlPath = `/user/login`;
 
@@ -1219,10 +1160,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1265,10 +1202,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1314,10 +1247,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/follows`;
 
@@ -1361,10 +1290,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/search`;
 
@@ -1397,10 +1322,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1436,10 +1357,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/unbind/google`;
 
@@ -1473,10 +1390,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/unbind/phone`;
 
@@ -1508,10 +1421,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1554,10 +1463,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1603,10 +1508,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/default-file-system/update`;
 
@@ -1648,10 +1549,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1697,10 +1594,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/read-mark-reason/update`;
 
@@ -1742,10 +1635,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1791,10 +1680,6 @@ export class UserApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/user/password/update`;
 
@@ -1833,6 +1718,10 @@ export class UserApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
 
 
         let urlPath = `/user/token/update`;
@@ -1875,10 +1764,6 @@ export class UserApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 

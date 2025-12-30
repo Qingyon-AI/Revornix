@@ -20,7 +20,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## askAiAiAskPost
 
-> any askAiAiAskPost(chatMessages, authorization, xForwardedFor)
+> any askAiAiAskPost(chatMessages, authorization)
 
 Ask Ai
 
@@ -42,8 +42,6 @@ async function example() {
     chatMessages: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies AskAiAiAskPostRequest;
 
   try {
@@ -65,7 +63,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **chatMessages** | [ChatMessages](ChatMessages.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -92,7 +89,7 @@ No authorization required
 
 ## createModelAiModelCreatePost
 
-> ModelCreateResponse createModelAiModelCreatePost(modelCreateRequest, authorization, xForwardedFor)
+> ModelCreateResponse createModelAiModelCreatePost(modelCreateRequest, authorization)
 
 Create Model
 
@@ -114,8 +111,6 @@ async function example() {
     modelCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies CreateModelAiModelCreatePostRequest;
 
   try {
@@ -137,7 +132,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelCreateRequest** | [ModelCreateRequest](ModelCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -164,7 +158,7 @@ No authorization required
 
 ## createModelProviderAiModelProviderCreatePost
 
-> ModelProviderCreateResponse createModelProviderAiModelProviderCreatePost(modelProviderCreateRequest, authorization, xForwardedFor)
+> ModelProviderCreateResponse createModelProviderAiModelProviderCreatePost(modelProviderCreateRequest, authorization)
 
 Create Model Provider
 
@@ -186,8 +180,6 @@ async function example() {
     modelProviderCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies CreateModelProviderAiModelProviderCreatePostRequest;
 
   try {
@@ -209,7 +201,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelProviderCreateRequest** | [ModelProviderCreateRequest](ModelProviderCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -236,7 +227,7 @@ No authorization required
 
 ## deleteAiModelAiModelDeletePost
 
-> NormalResponse deleteAiModelAiModelDeletePost(deleteModelRequest, authorization, xForwardedFor)
+> NormalResponse deleteAiModelAiModelDeletePost(deleteModelRequest, authorization)
 
 Delete Ai Model
 
@@ -258,8 +249,6 @@ async function example() {
     deleteModelRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteAiModelAiModelDeletePostRequest;
 
   try {
@@ -281,7 +270,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteModelRequest** | [DeleteModelRequest](DeleteModelRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -308,7 +296,7 @@ No authorization required
 
 ## deleteAiModelProviderAiModelProviderDeletePost
 
-> NormalResponse deleteAiModelProviderAiModelProviderDeletePost(deleteModelProviderRequest, authorization, xForwardedFor)
+> NormalResponse deleteAiModelProviderAiModelProviderDeletePost(deleteModelProviderRequest, authorization)
 
 Delete Ai Model Provider
 
@@ -330,8 +318,6 @@ async function example() {
     deleteModelProviderRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteAiModelProviderAiModelProviderDeletePostRequest;
 
   try {
@@ -353,7 +339,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteModelProviderRequest** | [DeleteModelProviderRequest](DeleteModelProviderRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -380,7 +365,7 @@ No authorization required
 
 ## getAiModelAiModelDetailPost
 
-> Model getAiModelAiModelDetailPost(modelRequest, authorization, xForwardedFor)
+> Model getAiModelAiModelDetailPost(modelRequest, authorization)
 
 Get Ai Model
 
@@ -402,8 +387,6 @@ async function example() {
     modelRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetAiModelAiModelDetailPostRequest;
 
   try {
@@ -425,7 +408,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelRequest** | [ModelRequest](ModelRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -452,7 +434,7 @@ No authorization required
 
 ## getAiModelProviderAiModelProviderDetailPost
 
-> ModelProvider getAiModelProviderAiModelProviderDetailPost(modelProviderRequest, authorization, xForwardedFor)
+> ModelProvider getAiModelProviderAiModelProviderDetailPost(modelProviderRequest, authorization)
 
 Get Ai Model Provider
 
@@ -474,8 +456,6 @@ async function example() {
     modelProviderRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetAiModelProviderAiModelProviderDetailPostRequest;
 
   try {
@@ -497,7 +477,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelProviderRequest** | [ModelProviderRequest](ModelProviderRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -524,7 +503,7 @@ No authorization required
 
 ## listAiModelAiModelSearchPost
 
-> ModelSearchResponse listAiModelAiModelSearchPost(modelSearchRequest, authorization, xForwardedFor)
+> ModelSearchResponse listAiModelAiModelSearchPost(modelSearchRequest, authorization)
 
 List Ai Model
 
@@ -546,8 +525,6 @@ async function example() {
     modelSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies ListAiModelAiModelSearchPostRequest;
 
   try {
@@ -569,7 +546,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelSearchRequest** | [ModelSearchRequest](ModelSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -596,7 +572,7 @@ No authorization required
 
 ## listAiModelProviderAiModelProviderSearchPost
 
-> ModelProviderSearchResponse listAiModelProviderAiModelProviderSearchPost(modelProviderSearchRequest, authorization, xForwardedFor)
+> ModelProviderSearchResponse listAiModelProviderAiModelProviderSearchPost(modelProviderSearchRequest, authorization)
 
 List Ai Model Provider
 
@@ -618,8 +594,6 @@ async function example() {
     modelProviderSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies ListAiModelProviderAiModelProviderSearchPostRequest;
 
   try {
@@ -641,7 +615,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelProviderSearchRequest** | [ModelProviderSearchRequest](ModelProviderSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -668,7 +641,7 @@ No authorization required
 
 ## updateAiModelAiModelUpdatePost
 
-> NormalResponse updateAiModelAiModelUpdatePost(modelUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateAiModelAiModelUpdatePost(modelUpdateRequest, authorization)
 
 Update Ai Model
 
@@ -690,8 +663,6 @@ async function example() {
     modelUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateAiModelAiModelUpdatePostRequest;
 
   try {
@@ -713,7 +684,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelUpdateRequest** | [ModelUpdateRequest](ModelUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -740,7 +710,7 @@ No authorization required
 
 ## updateAiModelProviderAiModelProviderUpdatePost
 
-> NormalResponse updateAiModelProviderAiModelProviderUpdatePost(modelProviderUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateAiModelProviderAiModelProviderUpdatePost(modelProviderUpdateRequest, authorization)
 
 Update Ai Model Provider
 
@@ -762,8 +732,6 @@ async function example() {
     modelProviderUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateAiModelProviderAiModelProviderUpdatePostRequest;
 
   try {
@@ -785,7 +753,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelProviderUpdateRequest** | [ModelProviderUpdateRequest](ModelProviderUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

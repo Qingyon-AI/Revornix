@@ -14,7 +14,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## createServerMcpServerCreatePost
 
-> NormalResponse createServerMcpServerCreatePost(mCPServerCreateRequest, authorization, xForwardedFor)
+> NormalResponse createServerMcpServerCreatePost(mCPServerCreateRequest, authorization)
 
 Create Server
 
@@ -36,8 +36,6 @@ async function example() {
     mCPServerCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies CreateServerMcpServerCreatePostRequest;
 
   try {
@@ -59,7 +57,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mCPServerCreateRequest** | [MCPServerCreateRequest](MCPServerCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -86,7 +83,7 @@ No authorization required
 
 ## deleteServerMcpServerDeletePost
 
-> NormalResponse deleteServerMcpServerDeletePost(mCPServerDeleteRequest, authorization, xForwardedFor)
+> NormalResponse deleteServerMcpServerDeletePost(mCPServerDeleteRequest, authorization)
 
 Delete Server
 
@@ -108,8 +105,6 @@ async function example() {
     mCPServerDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteServerMcpServerDeletePostRequest;
 
   try {
@@ -131,7 +126,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mCPServerDeleteRequest** | [MCPServerDeleteRequest](MCPServerDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -158,7 +152,7 @@ No authorization required
 
 ## getMcpServerDetailMcpServerDetailPost
 
-> MCPServerInfo getMcpServerDetailMcpServerDetailPost(mCPServerDetailRequest, authorization, xForwardedFor)
+> MCPServerInfo getMcpServerDetailMcpServerDetailPost(mCPServerDetailRequest, authorization)
 
 Get Mcp Server Detail
 
@@ -180,8 +174,6 @@ async function example() {
     mCPServerDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetMcpServerDetailMcpServerDetailPostRequest;
 
   try {
@@ -203,7 +195,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mCPServerDetailRequest** | [MCPServerDetailRequest](MCPServerDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -230,7 +221,7 @@ No authorization required
 
 ## getMcpServerListMcpServerSearchPost
 
-> MCPServerSearchResponse getMcpServerListMcpServerSearchPost(mCPServerSearchRequest, authorization, xForwardedFor)
+> MCPServerSearchResponse getMcpServerListMcpServerSearchPost(mCPServerSearchRequest, authorization)
 
 Get Mcp Server List
 
@@ -252,8 +243,6 @@ async function example() {
     mCPServerSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetMcpServerListMcpServerSearchPostRequest;
 
   try {
@@ -275,7 +264,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mCPServerSearchRequest** | [MCPServerSearchRequest](MCPServerSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -302,7 +290,7 @@ No authorization required
 
 ## updateServerMcpServerUpdatePost
 
-> NormalResponse updateServerMcpServerUpdatePost(mCPServerUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateServerMcpServerUpdatePost(mCPServerUpdateRequest, authorization)
 
 Update Server
 
@@ -324,8 +312,6 @@ async function example() {
     mCPServerUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateServerMcpServerUpdatePostRequest;
 
   try {
@@ -347,7 +333,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mCPServerUpdateRequest** | [MCPServerUpdateRequest](MCPServerUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

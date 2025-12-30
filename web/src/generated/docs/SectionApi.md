@@ -38,7 +38,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## addLabelSectionLabelCreatePost
 
-> SchemasDocumentCreateLabelResponse addLabelSectionLabelCreatePost(schemasDocumentLabelAddRequest, authorization, xForwardedFor)
+> SchemasDocumentCreateLabelResponse addLabelSectionLabelCreatePost(schemasDocumentLabelAddRequest, authorization)
 
 Add Label
 
@@ -60,8 +60,6 @@ async function example() {
     schemasDocumentLabelAddRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies AddLabelSectionLabelCreatePostRequest;
 
   try {
@@ -83,7 +81,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **schemasDocumentLabelAddRequest** | [SchemasDocumentLabelAddRequest](SchemasDocumentLabelAddRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -110,7 +107,7 @@ No authorization required
 
 ## createSectionCommentSectionCommentCreatePost
 
-> NormalResponse createSectionCommentSectionCommentCreatePost(sectionCommentCreateRequest, authorization, xForwardedFor)
+> NormalResponse createSectionCommentSectionCommentCreatePost(sectionCommentCreateRequest, authorization)
 
 Create Section Comment
 
@@ -132,8 +129,6 @@ async function example() {
     sectionCommentCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies CreateSectionCommentSectionCommentCreatePostRequest;
 
   try {
@@ -155,7 +150,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionCommentCreateRequest** | [SectionCommentCreateRequest](SectionCommentCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -182,7 +176,7 @@ No authorization required
 
 ## createSectionSectionCreatePost
 
-> SectionCreateResponse createSectionSectionCreatePost(sectionCreateRequest, authorization, xForwardedFor)
+> SectionCreateResponse createSectionSectionCreatePost(sectionCreateRequest, authorization)
 
 Create Section
 
@@ -204,8 +198,6 @@ async function example() {
     sectionCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies CreateSectionSectionCreatePostRequest;
 
   try {
@@ -227,7 +219,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionCreateRequest** | [SectionCreateRequest](SectionCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -254,7 +245,7 @@ No authorization required
 
 ## deleteLabelSectionLabelDeletePost
 
-> NormalResponse deleteLabelSectionLabelDeletePost(schemasSectionLabelDeleteRequest, authorization, xForwardedFor)
+> NormalResponse deleteLabelSectionLabelDeletePost(schemasSectionLabelDeleteRequest, authorization)
 
 Delete Label
 
@@ -276,8 +267,6 @@ async function example() {
     schemasSectionLabelDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteLabelSectionLabelDeletePostRequest;
 
   try {
@@ -299,7 +288,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **schemasSectionLabelDeleteRequest** | [SchemasSectionLabelDeleteRequest](SchemasSectionLabelDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -326,7 +314,7 @@ No authorization required
 
 ## deleteSectionCommentSectionCommentDeletePost
 
-> NormalResponse deleteSectionCommentSectionCommentDeletePost(sectionCommentDeleteRequest, authorization, xForwardedFor)
+> NormalResponse deleteSectionCommentSectionCommentDeletePost(sectionCommentDeleteRequest, authorization)
 
 Delete Section Comment
 
@@ -348,8 +336,6 @@ async function example() {
     sectionCommentDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteSectionCommentSectionCommentDeletePostRequest;
 
   try {
@@ -371,7 +357,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionCommentDeleteRequest** | [SectionCommentDeleteRequest](SectionCommentDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -398,7 +383,7 @@ No authorization required
 
 ## deleteSectionSectionDeletePost
 
-> NormalResponse deleteSectionSectionDeletePost(sectionDeleteRequest, authorization, xForwardedFor)
+> NormalResponse deleteSectionSectionDeletePost(sectionDeleteRequest, authorization)
 
 Delete Section
 
@@ -420,8 +405,6 @@ async function example() {
     sectionDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteSectionSectionDeletePostRequest;
 
   try {
@@ -443,7 +426,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionDeleteRequest** | [SectionDeleteRequest](SectionDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -470,7 +452,7 @@ No authorization required
 
 ## deleteSectionUserSectionUserDeletePost
 
-> NormalResponse deleteSectionUserSectionUserDeletePost(sectionUserDeleteRequest, authorization, xForwardedFor)
+> NormalResponse deleteSectionUserSectionUserDeletePost(sectionUserDeleteRequest, authorization)
 
 Delete Section User
 
@@ -492,8 +474,6 @@ async function example() {
     sectionUserDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteSectionUserSectionUserDeletePostRequest;
 
   try {
@@ -515,7 +495,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionUserDeleteRequest** | [SectionUserDeleteRequest](SectionUserDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -542,7 +521,7 @@ No authorization required
 
 ## generatePodcastSectionPodcastGeneratePost
 
-> NormalResponse generatePodcastSectionPodcastGeneratePost(generateSectionPodcastRequest, authorization, xForwardedFor)
+> NormalResponse generatePodcastSectionPodcastGeneratePost(generateSectionPodcastRequest, authorization)
 
 Generate Podcast
 
@@ -564,8 +543,6 @@ async function example() {
     generateSectionPodcastRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GeneratePodcastSectionPodcastGeneratePostRequest;
 
   try {
@@ -587,7 +564,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **generateSectionPodcastRequest** | [GenerateSectionPodcastRequest](GenerateSectionPodcastRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -614,7 +590,7 @@ No authorization required
 
 ## getAllMineSectionsSectionMineAllPost
 
-> AllMySectionsResponse getAllMineSectionsSectionMineAllPost(authorization, xForwardedFor)
+> AllMySectionsResponse getAllMineSectionsSectionMineAllPost(authorization)
 
 Get All Mine Sections
 
@@ -634,8 +610,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetAllMineSectionsSectionMineAllPostRequest;
 
   try {
@@ -656,7 +630,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -683,7 +656,7 @@ No authorization required
 
 ## getDateSectionInfoSectionDatePost
 
-> DaySectionResponse getDateSectionInfoSectionDatePost(daySectionRequest, authorization, xForwardedFor)
+> DaySectionResponse getDateSectionInfoSectionDatePost(daySectionRequest, authorization)
 
 Get Date Section Info
 
@@ -705,8 +678,6 @@ async function example() {
     daySectionRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetDateSectionInfoSectionDatePostRequest;
 
   try {
@@ -728,7 +699,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **daySectionRequest** | [DaySectionRequest](DaySectionRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -755,7 +725,7 @@ No authorization required
 
 ## getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost
 
-> SectionUserRoleAndAuthorityResponse getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost(mineSectionRoleAndAuthorityRequest, authorization, xForwardedFor)
+> SectionUserRoleAndAuthorityResponse getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost(mineSectionRoleAndAuthorityRequest, authorization)
 
 Get Mine Section Role And Authority
 
@@ -777,8 +747,6 @@ async function example() {
     mineSectionRoleAndAuthorityRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequest;
 
   try {
@@ -800,7 +768,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mineSectionRoleAndAuthorityRequest** | [MineSectionRoleAndAuthorityRequest](MineSectionRoleAndAuthorityRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -827,7 +794,7 @@ No authorization required
 
 ## getMySubscribedSectionsSectionSubscribedPost
 
-> InifiniteScrollPagnitionSectionInfo getMySubscribedSectionsSectionSubscribedPost(searchSubscribedSectionRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionSectionInfo getMySubscribedSectionsSectionSubscribedPost(searchSubscribedSectionRequest, authorization)
 
 Get My Subscribed Sections
 
@@ -849,8 +816,6 @@ async function example() {
     searchSubscribedSectionRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetMySubscribedSectionsSectionSubscribedPostRequest;
 
   try {
@@ -872,7 +837,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchSubscribedSectionRequest** | [SearchSubscribedSectionRequest](SearchSubscribedSectionRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -899,7 +863,7 @@ No authorization required
 
 ## getSectionDetailSectionDetailPost
 
-> SectionInfo getSectionDetailSectionDetailPost(sectionDetailRequest, authorization, xForwardedFor)
+> SectionInfo getSectionDetailSectionDetailPost(sectionDetailRequest, authorization)
 
 Get Section Detail
 
@@ -921,8 +885,6 @@ async function example() {
     sectionDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetSectionDetailSectionDetailPostRequest;
 
   try {
@@ -944,7 +906,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionDetailRequest** | [SectionDetailRequest](SectionDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -971,7 +932,7 @@ No authorization required
 
 ## getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost
 
-> SectionUserRoleAndAuthorityResponse getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost(sectionUserRoleAndAuthorityRequest, authorization, xForwardedFor)
+> SectionUserRoleAndAuthorityResponse getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost(sectionUserRoleAndAuthorityRequest, authorization)
 
 Get Section User Role And Authority
 
@@ -993,8 +954,6 @@ async function example() {
     sectionUserRoleAndAuthorityRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest;
 
   try {
@@ -1016,7 +975,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionUserRoleAndAuthorityRequest** | [SectionUserRoleAndAuthorityRequest](SectionUserRoleAndAuthorityRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1043,7 +1001,7 @@ No authorization required
 
 ## listLabelSectionLabelListPost
 
-> SchemasDocumentLabelListResponse listLabelSectionLabelListPost(authorization, xForwardedFor)
+> SchemasDocumentLabelListResponse listLabelSectionLabelListPost(authorization)
 
 List Label
 
@@ -1063,8 +1021,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies ListLabelSectionLabelListPostRequest;
 
   try {
@@ -1085,7 +1041,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1112,7 +1067,7 @@ No authorization required
 
 ## publicSectionsSectionPublicSearchPost
 
-> InifiniteScrollPagnitionSectionInfo publicSectionsSectionPublicSearchPost(searchPublicSectionsRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionSectionInfo publicSectionsSectionPublicSearchPost(searchPublicSectionsRequest, authorization)
 
 Public Sections
 
@@ -1134,8 +1089,6 @@ async function example() {
     searchPublicSectionsRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies PublicSectionsSectionPublicSearchPostRequest;
 
   try {
@@ -1157,7 +1110,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchPublicSectionsRequest** | [SearchPublicSectionsRequest](SearchPublicSectionsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1184,7 +1136,7 @@ No authorization required
 
 ## searchMineSectionsSectionMineSearchPost
 
-> InifiniteScrollPagnitionSectionInfo searchMineSectionsSectionMineSearchPost(searchMineSectionsRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionSectionInfo searchMineSectionsSectionMineSearchPost(searchMineSectionsRequest, authorization)
 
 Search Mine Sections
 
@@ -1206,8 +1158,6 @@ async function example() {
     searchMineSectionsRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchMineSectionsSectionMineSearchPostRequest;
 
   try {
@@ -1229,7 +1179,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchMineSectionsRequest** | [SearchMineSectionsRequest](SearchMineSectionsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1256,7 +1205,7 @@ No authorization required
 
 ## searchSectionCommentSectionCommentSearchPost
 
-> InifiniteScrollPagnitionSectionCommentInfo searchSectionCommentSectionCommentSearchPost(sectionCommentSearchRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionSectionCommentInfo searchSectionCommentSectionCommentSearchPost(sectionCommentSearchRequest, authorization)
 
 Search Section Comment
 
@@ -1278,8 +1227,6 @@ async function example() {
     sectionCommentSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchSectionCommentSectionCommentSearchPostRequest;
 
   try {
@@ -1301,7 +1248,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionCommentSearchRequest** | [SectionCommentSearchRequest](SectionCommentSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1328,7 +1274,7 @@ No authorization required
 
 ## searchUserSectionsSectionUserSearchPost
 
-> InifiniteScrollPagnitionSectionInfo searchUserSectionsSectionUserSearchPost(searchUserSectionsRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionSectionInfo searchUserSectionsSectionUserSearchPost(searchUserSectionsRequest, authorization)
 
 Search User Sections
 
@@ -1350,8 +1296,6 @@ async function example() {
     searchUserSectionsRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchUserSectionsSectionUserSearchPostRequest;
 
   try {
@@ -1373,7 +1317,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchUserSectionsRequest** | [SearchUserSectionsRequest](SearchUserSectionsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1400,7 +1343,7 @@ No authorization required
 
 ## sectionDocumentRequestSectionDocumentsPost
 
-> InifiniteScrollPagnitionSectionDocumentInfo sectionDocumentRequestSectionDocumentsPost(sectionDocumentRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionSectionDocumentInfo sectionDocumentRequestSectionDocumentsPost(sectionDocumentRequest, authorization)
 
 Section Document Request
 
@@ -1422,8 +1365,6 @@ async function example() {
     sectionDocumentRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SectionDocumentRequestSectionDocumentsPostRequest;
 
   try {
@@ -1445,7 +1386,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionDocumentRequest** | [SectionDocumentRequest](SectionDocumentRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1472,7 +1412,7 @@ No authorization required
 
 ## sectionPublishGetRequestSectionPublishGetPost
 
-> SectionPublishGetResponse sectionPublishGetRequestSectionPublishGetPost(sectionPublishGetRequest, authorization, xForwardedFor)
+> SectionPublishGetResponse sectionPublishGetRequestSectionPublishGetPost(sectionPublishGetRequest, authorization)
 
 Section Publish Get Request
 
@@ -1494,8 +1434,6 @@ async function example() {
     sectionPublishGetRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SectionPublishGetRequestSectionPublishGetPostRequest;
 
   try {
@@ -1517,7 +1455,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionPublishGetRequest** | [SectionPublishGetRequest](SectionPublishGetRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1544,7 +1481,7 @@ No authorization required
 
 ## sectionPublishRequestSectionPublishPost
 
-> NormalResponse sectionPublishRequestSectionPublishPost(sectionPublishRequest, authorization, xForwardedFor)
+> NormalResponse sectionPublishRequestSectionPublishPost(sectionPublishRequest, authorization)
 
 Section Publish Request
 
@@ -1566,8 +1503,6 @@ async function example() {
     sectionPublishRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SectionPublishRequestSectionPublishPostRequest;
 
   try {
@@ -1589,7 +1524,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionPublishRequest** | [SectionPublishRequest](SectionPublishRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1616,7 +1550,7 @@ No authorization required
 
 ## sectionRepublishSectionRepublishPost
 
-> NormalResponse sectionRepublishSectionRepublishPost(sectionRePublishRequest, authorization, xForwardedFor)
+> NormalResponse sectionRepublishSectionRepublishPost(sectionRePublishRequest, authorization)
 
 Section Republish
 
@@ -1638,8 +1572,6 @@ async function example() {
     sectionRePublishRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SectionRepublishSectionRepublishPostRequest;
 
   try {
@@ -1661,7 +1593,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionRePublishRequest** | [SectionRePublishRequest](SectionRePublishRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1688,7 +1619,7 @@ No authorization required
 
 ## sectionSeoDetailRequestSectionDetailSeoPost
 
-> SectionInfo sectionSeoDetailRequestSectionDetailSeoPost(sectionSeoDetailRequest, authorization, xForwardedFor)
+> SectionInfo sectionSeoDetailRequestSectionDetailSeoPost(sectionSeoDetailRequest, authorization)
 
 Section Seo Detail Request
 
@@ -1710,8 +1641,6 @@ async function example() {
     sectionSeoDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SectionSeoDetailRequestSectionDetailSeoPostRequest;
 
   try {
@@ -1733,7 +1662,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionSeoDetailRequest** | [SectionSeoDetailRequest](SectionSeoDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1760,7 +1688,7 @@ No authorization required
 
 ## sectionUserAddRequestSectionUserAddPost
 
-> NormalResponse sectionUserAddRequestSectionUserAddPost(sectionUserAddRequest, authorization, xForwardedFor)
+> NormalResponse sectionUserAddRequestSectionUserAddPost(sectionUserAddRequest, authorization)
 
 Section User Add Request
 
@@ -1782,8 +1710,6 @@ async function example() {
     sectionUserAddRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SectionUserAddRequestSectionUserAddPostRequest;
 
   try {
@@ -1805,7 +1731,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionUserAddRequest** | [SectionUserAddRequest](SectionUserAddRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1832,7 +1757,7 @@ No authorization required
 
 ## sectionUserModifyRequestSectionUserModifyPost
 
-> NormalResponse sectionUserModifyRequestSectionUserModifyPost(sectionUserModifyRequest, authorization, xForwardedFor)
+> NormalResponse sectionUserModifyRequestSectionUserModifyPost(sectionUserModifyRequest, authorization)
 
 Section User Modify Request
 
@@ -1854,8 +1779,6 @@ async function example() {
     sectionUserModifyRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SectionUserModifyRequestSectionUserModifyPostRequest;
 
   try {
@@ -1877,7 +1800,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionUserModifyRequest** | [SectionUserModifyRequest](SectionUserModifyRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1904,7 +1826,7 @@ No authorization required
 
 ## sectionUserRequestSectionUserPost
 
-> InifiniteScrollPagnitionSectionUserPublicInfo sectionUserRequestSectionUserPost(sectionUserRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionSectionUserPublicInfo sectionUserRequestSectionUserPost(sectionUserRequest, authorization)
 
 Section User Request
 
@@ -1926,8 +1848,6 @@ async function example() {
     sectionUserRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SectionUserRequestSectionUserPostRequest;
 
   try {
@@ -1949,7 +1869,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionUserRequest** | [SectionUserRequest](SectionUserRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1976,7 +1895,7 @@ No authorization required
 
 ## subscribeSectionSectionSubscribePost
 
-> NormalResponse subscribeSectionSectionSubscribePost(sectionSubscribeRequest, authorization, xForwardedFor)
+> NormalResponse subscribeSectionSectionSubscribePost(sectionSubscribeRequest, authorization)
 
 Subscribe Section
 
@@ -1998,8 +1917,6 @@ async function example() {
     sectionSubscribeRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SubscribeSectionSectionSubscribePostRequest;
 
   try {
@@ -2021,7 +1938,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionSubscribeRequest** | [SectionSubscribeRequest](SectionSubscribeRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2048,7 +1964,7 @@ No authorization required
 
 ## updateSectionSectionUpdatePost
 
-> NormalResponse updateSectionSectionUpdatePost(sectionUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateSectionSectionUpdatePost(sectionUpdateRequest, authorization)
 
 Update Section
 
@@ -2070,8 +1986,6 @@ async function example() {
     sectionUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateSectionSectionUpdatePostRequest;
 
   try {
@@ -2093,7 +2007,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionUpdateRequest** | [SectionUpdateRequest](SectionUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

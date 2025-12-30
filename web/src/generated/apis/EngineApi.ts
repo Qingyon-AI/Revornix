@@ -49,31 +49,26 @@ import {
 export interface DeleteEngineEngineDeletePostRequest {
     engineDeleteRequest: EngineDeleteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface InstallEngineEngineInstallPostRequest {
     engineInstallRequest: EngineInstallRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface ProvideDocumentParseEngineEngineProvidePostRequest {
     engineSearchRequest: EngineSearchRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchDocumentParseEngineEngineMinePostRequest {
     engineSearchRequest: EngineSearchRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateEngineEngineUpdatePostRequest {
     engineUpdateRequest: EngineUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 /**
@@ -100,10 +95,6 @@ export class EngineApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -149,10 +140,6 @@ export class EngineApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/engine/install`;
 
@@ -194,10 +181,6 @@ export class EngineApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -243,10 +226,6 @@ export class EngineApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/engine/mine`;
 
@@ -288,10 +267,6 @@ export class EngineApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 

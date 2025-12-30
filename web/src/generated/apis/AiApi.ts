@@ -79,67 +79,56 @@ import {
 export interface AskAiAiAskPostRequest {
     chatMessages: ChatMessages;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface CreateModelAiModelCreatePostRequest {
     modelCreateRequest: ModelCreateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface CreateModelProviderAiModelProviderCreatePostRequest {
     modelProviderCreateRequest: ModelProviderCreateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteAiModelAiModelDeletePostRequest {
     deleteModelRequest: DeleteModelRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteAiModelProviderAiModelProviderDeletePostRequest {
     deleteModelProviderRequest: DeleteModelProviderRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetAiModelAiModelDetailPostRequest {
     modelRequest: ModelRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetAiModelProviderAiModelProviderDetailPostRequest {
     modelProviderRequest: ModelProviderRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface ListAiModelAiModelSearchPostRequest {
     modelSearchRequest: ModelSearchRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface ListAiModelProviderAiModelProviderSearchPostRequest {
     modelProviderSearchRequest: ModelProviderSearchRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateAiModelAiModelUpdatePostRequest {
     modelUpdateRequest: ModelUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateAiModelProviderAiModelProviderUpdatePostRequest {
     modelProviderUpdateRequest: ModelProviderUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 /**
@@ -166,10 +155,6 @@ export class AiApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -219,10 +204,6 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/ai/model/create`;
 
@@ -264,10 +245,6 @@ export class AiApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -313,10 +290,6 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/ai/model/delete`;
 
@@ -358,10 +331,6 @@ export class AiApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -407,10 +376,6 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/ai/model/detail`;
 
@@ -452,10 +417,6 @@ export class AiApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -501,10 +462,6 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/ai/model/search`;
 
@@ -546,10 +503,6 @@ export class AiApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -595,10 +548,6 @@ export class AiApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/ai/model/update`;
 
@@ -640,10 +589,6 @@ export class AiApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 

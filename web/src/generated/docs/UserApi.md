@@ -112,7 +112,7 @@ No authorization required
 
 ## bindEmailUserBindEmailPost
 
-> NormalResponse bindEmailUserBindEmailPost(bindEmailVerifyRequest, authorization, xForwardedFor)
+> NormalResponse bindEmailUserBindEmailPost(bindEmailVerifyRequest, authorization)
 
 Bind Email
 
@@ -136,8 +136,6 @@ async function example() {
     bindEmailVerifyRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies BindEmailUserBindEmailPostRequest;
 
   try {
@@ -159,7 +157,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **bindEmailVerifyRequest** | [BindEmailVerifyRequest](BindEmailVerifyRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -186,7 +183,7 @@ No authorization required
 
 ## bindEmailVerifyUserBindEmailVerifyPost
 
-> NormalResponse bindEmailVerifyUserBindEmailVerifyPost(bindEmailCodeVerifyRequest, authorization, xForwardedFor)
+> NormalResponse bindEmailVerifyUserBindEmailVerifyPost(bindEmailCodeVerifyRequest, authorization)
 
 Bind Email Verify
 
@@ -208,8 +205,6 @@ async function example() {
     bindEmailCodeVerifyRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies BindEmailVerifyUserBindEmailVerifyPostRequest;
 
   try {
@@ -231,7 +226,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **bindEmailCodeVerifyRequest** | [BindEmailCodeVerifyRequest](BindEmailCodeVerifyRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -258,7 +252,7 @@ No authorization required
 
 ## bindGithubUserBindGithubPost
 
-> NormalResponse bindGithubUserBindGithubPost(githubUserBind, authorization, xForwardedFor)
+> NormalResponse bindGithubUserBindGithubPost(githubUserBind, authorization)
 
 Bind Github
 
@@ -280,8 +274,6 @@ async function example() {
     githubUserBind: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies BindGithubUserBindGithubPostRequest;
 
   try {
@@ -303,7 +295,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **githubUserBind** | [GithubUserBind](GithubUserBind.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -330,7 +321,7 @@ No authorization required
 
 ## bindGoogleUserBindGooglePost
 
-> NormalResponse bindGoogleUserBindGooglePost(googleUserBind, authorization, xForwardedFor)
+> NormalResponse bindGoogleUserBindGooglePost(googleUserBind, authorization)
 
 Bind Google
 
@@ -352,8 +343,6 @@ async function example() {
     googleUserBind: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies BindGoogleUserBindGooglePostRequest;
 
   try {
@@ -375,7 +364,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **googleUserBind** | [GoogleUserBind](GoogleUserBind.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -402,7 +390,7 @@ No authorization required
 
 ## bindPhoneUserBindPhoneCodePost
 
-> NormalResponse bindPhoneUserBindPhoneCodePost(bindPhoneCodeCreateRequest, authorization, xForwardedFor)
+> NormalResponse bindPhoneUserBindPhoneCodePost(bindPhoneCodeCreateRequest, authorization)
 
 Bind Phone
 
@@ -424,8 +412,6 @@ async function example() {
     bindPhoneCodeCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies BindPhoneUserBindPhoneCodePostRequest;
 
   try {
@@ -447,7 +433,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **bindPhoneCodeCreateRequest** | [BindPhoneCodeCreateRequest](BindPhoneCodeCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -474,7 +459,7 @@ No authorization required
 
 ## bindPhoneVerifyUserBindPhoneVerifyPost
 
-> NormalResponse bindPhoneVerifyUserBindPhoneVerifyPost(bindPhoneCodeVerifyRequest, authorization, xForwardedFor)
+> NormalResponse bindPhoneVerifyUserBindPhoneVerifyPost(bindPhoneCodeVerifyRequest, authorization)
 
 Bind Phone Verify
 
@@ -496,8 +481,6 @@ async function example() {
     bindPhoneCodeVerifyRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies BindPhoneVerifyUserBindPhoneVerifyPostRequest;
 
   try {
@@ -519,7 +502,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **bindPhoneCodeVerifyRequest** | [BindPhoneCodeVerifyRequest](BindPhoneCodeVerifyRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -546,7 +528,7 @@ No authorization required
 
 ## bindWechatUserBindWechatWebPost
 
-> NormalResponse bindWechatUserBindWechatWebPost(weChatWebUserBindRequest, authorization, xForwardedFor)
+> NormalResponse bindWechatUserBindWechatWebPost(weChatWebUserBindRequest, authorization)
 
 Bind Wechat
 
@@ -568,8 +550,6 @@ async function example() {
     weChatWebUserBindRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies BindWechatUserBindWechatWebPostRequest;
 
   try {
@@ -591,7 +571,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **weChatWebUserBindRequest** | [WeChatWebUserBindRequest](WeChatWebUserBindRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1214,7 +1193,7 @@ No authorization required
 
 ## deleteUserUserDeletePost
 
-> NormalResponse deleteUserUserDeletePost(authorization, xForwardedFor)
+> NormalResponse deleteUserUserDeletePost(authorization)
 
 Delete User
 
@@ -1234,8 +1213,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteUserUserDeletePostRequest;
 
   try {
@@ -1256,7 +1233,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1283,7 +1259,7 @@ No authorization required
 
 ## followUserUserFollowPost
 
-> NormalResponse followUserUserFollowPost(followUserRequest, authorization, xForwardedFor)
+> NormalResponse followUserUserFollowPost(followUserRequest, authorization)
 
 Follow User
 
@@ -1305,8 +1281,6 @@ async function example() {
     followUserRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies FollowUserUserFollowPostRequest;
 
   try {
@@ -1328,7 +1302,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **followUserRequest** | [FollowUserRequest](FollowUserRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1355,7 +1328,7 @@ No authorization required
 
 ## initialSeePasswordUserPasswordInitialSeePost
 
-> InitialPasswordResponse initialSeePasswordUserPasswordInitialSeePost(authorization, xForwardedFor)
+> InitialPasswordResponse initialSeePasswordUserPasswordInitialSeePost(authorization)
 
 Initial See Password
 
@@ -1375,8 +1348,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies InitialSeePasswordUserPasswordInitialSeePostRequest;
 
   try {
@@ -1397,7 +1368,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1424,7 +1394,7 @@ No authorization required
 
 ## loginUserLoginPost
 
-> TokenResponse loginUserLoginPost(userLoginRequest)
+> TokenResponse loginUserLoginPost(userLoginRequest, xForwardedFor)
 
 Login
 
@@ -1444,6 +1414,8 @@ async function example() {
   const body = {
     // UserLoginRequest
     userLoginRequest: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
   } satisfies LoginUserLoginPostRequest;
 
   try {
@@ -1464,6 +1436,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **userLoginRequest** | [UserLoginRequest](UserLoginRequest.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1490,7 +1463,7 @@ No authorization required
 
 ## myInfoUserMineInfoPost
 
-> PrivateUserInfo myInfoUserMineInfoPost(authorization, xForwardedFor)
+> PrivateUserInfo myInfoUserMineInfoPost(authorization)
 
 My Info
 
@@ -1510,8 +1483,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies MyInfoUserMineInfoPostRequest;
 
   try {
@@ -1532,7 +1503,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1559,7 +1529,7 @@ No authorization required
 
 ## searchUserFansUserFansPost
 
-> InifiniteScrollPagnitionUserPublicInfo searchUserFansUserFansPost(searchUserFansRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionUserPublicInfo searchUserFansUserFansPost(searchUserFansRequest, authorization)
 
 Search User Fans
 
@@ -1581,8 +1551,6 @@ async function example() {
     searchUserFansRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchUserFansUserFansPostRequest;
 
   try {
@@ -1604,7 +1572,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchUserFansRequest** | [SearchUserFansRequest](SearchUserFansRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1631,7 +1598,7 @@ No authorization required
 
 ## searchUserFollowsUserFollowsPost
 
-> InifiniteScrollPagnitionUserPublicInfo searchUserFollowsUserFollowsPost(searchUserFollowsRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionUserPublicInfo searchUserFollowsUserFollowsPost(searchUserFollowsRequest, authorization)
 
 Search User Follows
 
@@ -1653,8 +1620,6 @@ async function example() {
     searchUserFollowsRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchUserFollowsUserFollowsPostRequest;
 
   try {
@@ -1676,7 +1641,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchUserFollowsRequest** | [SearchUserFollowsRequest](SearchUserFollowsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1703,7 +1667,7 @@ No authorization required
 
 ## searchUserUserSearchPost
 
-> InifiniteScrollPagnitionUserPublicInfo searchUserUserSearchPost(searchUserRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionUserPublicInfo searchUserUserSearchPost(searchUserRequest, authorization)
 
 Search User
 
@@ -1725,8 +1689,6 @@ async function example() {
     searchUserRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchUserUserSearchPostRequest;
 
   try {
@@ -1748,7 +1710,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchUserRequest** | [SearchUserRequest](SearchUserRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1775,7 +1736,7 @@ No authorization required
 
 ## unbindGithubUserUnbindGithubPost
 
-> NormalResponse unbindGithubUserUnbindGithubPost(authorization, xForwardedFor)
+> NormalResponse unbindGithubUserUnbindGithubPost(authorization)
 
 Unbind Github
 
@@ -1795,8 +1756,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UnbindGithubUserUnbindGithubPostRequest;
 
   try {
@@ -1817,7 +1776,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1844,7 +1802,7 @@ No authorization required
 
 ## unbindGoogleUserUnbindGooglePost
 
-> NormalResponse unbindGoogleUserUnbindGooglePost(authorization, xForwardedFor)
+> NormalResponse unbindGoogleUserUnbindGooglePost(authorization)
 
 Unbind Google
 
@@ -1864,8 +1822,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UnbindGoogleUserUnbindGooglePostRequest;
 
   try {
@@ -1886,7 +1842,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1913,7 +1868,7 @@ No authorization required
 
 ## unbindPhoneUserUnbindPhonePost
 
-> NormalResponse unbindPhoneUserUnbindPhonePost(authorization, xForwardedFor)
+> NormalResponse unbindPhoneUserUnbindPhonePost(authorization)
 
 Unbind Phone
 
@@ -1933,8 +1888,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UnbindPhoneUserUnbindPhonePostRequest;
 
   try {
@@ -1955,7 +1908,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1982,7 +1934,7 @@ No authorization required
 
 ## unbindWechatUserUnbindWechatPost
 
-> NormalResponse unbindWechatUserUnbindWechatPost(authorization, xForwardedFor)
+> NormalResponse unbindWechatUserUnbindWechatPost(authorization)
 
 Unbind Wechat
 
@@ -2002,8 +1954,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UnbindWechatUserUnbindWechatPostRequest;
 
   try {
@@ -2024,7 +1974,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2051,7 +2000,7 @@ No authorization required
 
 ## updateDefaultEngineUserDefaultEngineUpdatePost
 
-> NormalResponse updateDefaultEngineUserDefaultEngineUpdatePost(defaultEngineUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateDefaultEngineUserDefaultEngineUpdatePost(defaultEngineUpdateRequest, authorization)
 
 Update Default Engine
 
@@ -2073,8 +2022,6 @@ async function example() {
     defaultEngineUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateDefaultEngineUserDefaultEngineUpdatePostRequest;
 
   try {
@@ -2096,7 +2043,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **defaultEngineUpdateRequest** | [DefaultEngineUpdateRequest](DefaultEngineUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2123,7 +2069,7 @@ No authorization required
 
 ## updateDefaultFileSystemUserDefaultFileSystemUpdatePost
 
-> NormalResponse updateDefaultFileSystemUserDefaultFileSystemUpdatePost(defaultFileSystemUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateDefaultFileSystemUserDefaultFileSystemUpdatePost(defaultFileSystemUpdateRequest, authorization)
 
 Update Default File System
 
@@ -2145,8 +2091,6 @@ async function example() {
     defaultFileSystemUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateDefaultFileSystemUserDefaultFileSystemUpdatePostRequest;
 
   try {
@@ -2168,7 +2112,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **defaultFileSystemUpdateRequest** | [DefaultFileSystemUpdateRequest](DefaultFileSystemUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2195,7 +2138,7 @@ No authorization required
 
 ## updateDefaultModelUserDefaultModelUpdatePost
 
-> NormalResponse updateDefaultModelUserDefaultModelUpdatePost(defaultModelUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateDefaultModelUserDefaultModelUpdatePost(defaultModelUpdateRequest, authorization)
 
 Update Default Model
 
@@ -2217,8 +2160,6 @@ async function example() {
     defaultModelUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateDefaultModelUserDefaultModelUpdatePostRequest;
 
   try {
@@ -2240,7 +2181,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **defaultModelUpdateRequest** | [DefaultModelUpdateRequest](DefaultModelUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2267,7 +2207,7 @@ No authorization required
 
 ## updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost
 
-> NormalResponse updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost(defaultReadMarkReasonUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost(defaultReadMarkReasonUpdateRequest, authorization)
 
 Update My Default Read Mark Reason
 
@@ -2289,8 +2229,6 @@ async function example() {
     defaultReadMarkReasonUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequest;
 
   try {
@@ -2312,7 +2250,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **defaultReadMarkReasonUpdateRequest** | [DefaultReadMarkReasonUpdateRequest](DefaultReadMarkReasonUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2339,7 +2276,7 @@ No authorization required
 
 ## updateMyInfoUserUpdatePost
 
-> NormalResponse updateMyInfoUserUpdatePost(userInfoUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateMyInfoUserUpdatePost(userInfoUpdateRequest, authorization)
 
 Update My Info
 
@@ -2361,8 +2298,6 @@ async function example() {
     userInfoUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateMyInfoUserUpdatePostRequest;
 
   try {
@@ -2384,7 +2319,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **userInfoUpdateRequest** | [UserInfoUpdateRequest](UserInfoUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2411,7 +2345,7 @@ No authorization required
 
 ## updatePasswordUserPasswordUpdatePost
 
-> NormalResponse updatePasswordUserPasswordUpdatePost(passwordUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updatePasswordUserPasswordUpdatePost(passwordUpdateRequest, authorization)
 
 Update Password
 
@@ -2433,8 +2367,6 @@ async function example() {
     passwordUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdatePasswordUserPasswordUpdatePostRequest;
 
   try {
@@ -2456,7 +2388,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **passwordUpdateRequest** | [PasswordUpdateRequest](PasswordUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2483,7 +2414,7 @@ No authorization required
 
 ## updateTokenUserTokenUpdatePost
 
-> TokenResponse updateTokenUserTokenUpdatePost(tokenUpdateRequest)
+> TokenResponse updateTokenUserTokenUpdatePost(tokenUpdateRequest, xForwardedFor)
 
 Update Token
 
@@ -2503,6 +2434,8 @@ async function example() {
   const body = {
     // TokenUpdateRequest
     tokenUpdateRequest: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateTokenUserTokenUpdatePostRequest;
 
   try {
@@ -2523,6 +2456,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **tokenUpdateRequest** | [TokenUpdateRequest](TokenUpdateRequest.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2549,7 +2483,7 @@ No authorization required
 
 ## userInfoUserInfoPost
 
-> UserPublicInfo userInfoUserInfoPost(userInfoRequest, authorization, xForwardedFor)
+> UserPublicInfo userInfoUserInfoPost(userInfoRequest, authorization)
 
 User Info
 
@@ -2571,8 +2505,6 @@ async function example() {
     userInfoRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UserInfoUserInfoPostRequest;
 
   try {
@@ -2594,7 +2526,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **userInfoRequest** | [UserInfoRequest](UserInfoRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

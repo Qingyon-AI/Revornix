@@ -14,7 +14,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## deleteEngineEngineDeletePost
 
-> NormalResponse deleteEngineEngineDeletePost(engineDeleteRequest, authorization, xForwardedFor)
+> NormalResponse deleteEngineEngineDeletePost(engineDeleteRequest, authorization)
 
 Delete Engine
 
@@ -36,8 +36,6 @@ async function example() {
     engineDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteEngineEngineDeletePostRequest;
 
   try {
@@ -59,7 +57,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **engineDeleteRequest** | [EngineDeleteRequest](EngineDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -86,7 +83,7 @@ No authorization required
 
 ## installEngineEngineInstallPost
 
-> EngineInstallResponse installEngineEngineInstallPost(engineInstallRequest, authorization, xForwardedFor)
+> EngineInstallResponse installEngineEngineInstallPost(engineInstallRequest, authorization)
 
 Install Engine
 
@@ -108,8 +105,6 @@ async function example() {
     engineInstallRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies InstallEngineEngineInstallPostRequest;
 
   try {
@@ -131,7 +126,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **engineInstallRequest** | [EngineInstallRequest](EngineInstallRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -158,7 +152,7 @@ No authorization required
 
 ## provideDocumentParseEngineEngineProvidePost
 
-> ProvideEngineSearchResponse provideDocumentParseEngineEngineProvidePost(engineSearchRequest, authorization, xForwardedFor)
+> ProvideEngineSearchResponse provideDocumentParseEngineEngineProvidePost(engineSearchRequest, authorization)
 
 Provide Document Parse Engine
 
@@ -180,8 +174,6 @@ async function example() {
     engineSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies ProvideDocumentParseEngineEngineProvidePostRequest;
 
   try {
@@ -203,7 +195,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **engineSearchRequest** | [EngineSearchRequest](EngineSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -230,7 +221,7 @@ No authorization required
 
 ## searchDocumentParseEngineEngineMinePost
 
-> MineEngineSearchResponse searchDocumentParseEngineEngineMinePost(engineSearchRequest, authorization, xForwardedFor)
+> MineEngineSearchResponse searchDocumentParseEngineEngineMinePost(engineSearchRequest, authorization)
 
 Search Document Parse Engine
 
@@ -252,8 +243,6 @@ async function example() {
     engineSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchDocumentParseEngineEngineMinePostRequest;
 
   try {
@@ -275,7 +264,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **engineSearchRequest** | [EngineSearchRequest](EngineSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -302,7 +290,7 @@ No authorization required
 
 ## updateEngineEngineUpdatePost
 
-> NormalResponse updateEngineEngineUpdatePost(engineUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateEngineEngineUpdatePost(engineUpdateRequest, authorization)
 
 Update Engine
 
@@ -324,8 +312,6 @@ async function example() {
     engineUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateEngineEngineUpdatePostRequest;
 
   try {
@@ -347,7 +333,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **engineUpdateRequest** | [EngineUpdateRequest](EngineUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

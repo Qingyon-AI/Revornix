@@ -21,7 +21,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## deleteUserFileSystemFileSystemUserFileSystemDeletePost
 
-> NormalResponse deleteUserFileSystemFileSystemUserFileSystemDeletePost(userFileSystemDeleteRequest, authorization, xForwardedFor)
+> NormalResponse deleteUserFileSystemFileSystemUserFileSystemDeletePost(userFileSystemDeleteRequest, authorization)
 
 Delete User File System
 
@@ -43,8 +43,6 @@ async function example() {
     userFileSystemDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest;
 
   try {
@@ -66,7 +64,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **userFileSystemDeleteRequest** | [UserFileSystemDeleteRequest](UserFileSystemDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -93,7 +90,7 @@ No authorization required
 
 ## getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost
 
-> AliyunOSSPresignUploadURLResponse getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost(aliyunOSSPresignUploadURLRequest, authorization, xForwardedFor)
+> AliyunOSSPresignUploadURLResponse getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost(aliyunOSSPresignUploadURLRequest, authorization)
 
 Get Aliyun Oss Presigned Url
 
@@ -115,8 +112,6 @@ async function example() {
     aliyunOSSPresignUploadURLRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest;
 
   try {
@@ -138,7 +133,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **aliyunOSSPresignUploadURLRequest** | [AliyunOSSPresignUploadURLRequest](AliyunOSSPresignUploadURLRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -165,7 +159,7 @@ No authorization required
 
 ## getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPost
 
-> S3PresignUploadURLResponse getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPost(s3PresignUploadURLRequest, authorization, xForwardedFor)
+> S3PresignUploadURLResponse getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPost(s3PresignUploadURLRequest, authorization)
 
 Get Aws S3 Presigned Url
 
@@ -187,8 +181,6 @@ async function example() {
     s3PresignUploadURLRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPostRequest;
 
   try {
@@ -210,7 +202,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **s3PresignUploadURLRequest** | [S3PresignUploadURLRequest](S3PresignUploadURLRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -237,7 +228,7 @@ No authorization required
 
 ## getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPost
 
-> S3PresignUploadURLResponse getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPost(s3PresignUploadURLRequest, authorization, xForwardedFor)
+> S3PresignUploadURLResponse getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPost(s3PresignUploadURLRequest, authorization)
 
 Get Built In Presigned Url
 
@@ -259,8 +250,6 @@ async function example() {
     s3PresignUploadURLRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPostRequest;
 
   try {
@@ -282,7 +271,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **s3PresignUploadURLRequest** | [S3PresignUploadURLRequest](S3PresignUploadURLRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -309,7 +297,7 @@ No authorization required
 
 ## getFileSystemInfoFileSystemDetailPost
 
-> FileSystemInfo getFileSystemInfoFileSystemDetailPost(fileSystemInfoRequest, authorization, xForwardedFor)
+> FileSystemInfo getFileSystemInfoFileSystemDetailPost(fileSystemInfoRequest, authorization)
 
 Get File System Info
 
@@ -331,8 +319,6 @@ async function example() {
     fileSystemInfoRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetFileSystemInfoFileSystemDetailPostRequest;
 
   try {
@@ -354,7 +340,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **fileSystemInfoRequest** | [FileSystemInfoRequest](FileSystemInfoRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -447,7 +432,7 @@ No authorization required
 
 ## getUserFileSystemInfoFileSystemUserFileSystemDetailPost
 
-> UserFileSystemInfo getUserFileSystemInfoFileSystemUserFileSystemDetailPost(userFileSystemInfoRequest, authorization, xForwardedFor)
+> UserFileSystemInfo getUserFileSystemInfoFileSystemUserFileSystemDetailPost(userFileSystemInfoRequest, authorization)
 
 Get User File System Info
 
@@ -469,8 +454,6 @@ async function example() {
     userFileSystemInfoRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetUserFileSystemInfoFileSystemUserFileSystemDetailPostRequest;
 
   try {
@@ -492,7 +475,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **userFileSystemInfoRequest** | [UserFileSystemInfoRequest](UserFileSystemInfoRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -519,7 +501,7 @@ No authorization required
 
 ## installUserFileSystemFileSystemInstallPost
 
-> FileSystemInstallResponse installUserFileSystemFileSystemInstallPost(fileSystemInstallRequest, authorization, xForwardedFor)
+> FileSystemInstallResponse installUserFileSystemFileSystemInstallPost(fileSystemInstallRequest, authorization)
 
 Install User File System
 
@@ -541,8 +523,6 @@ async function example() {
     fileSystemInstallRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies InstallUserFileSystemFileSystemInstallPostRequest;
 
   try {
@@ -564,7 +544,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **fileSystemInstallRequest** | [FileSystemInstallRequest](FileSystemInstallRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -591,7 +570,7 @@ No authorization required
 
 ## provideFileSystemFileSystemProvidePost
 
-> ProvideFileSystemSearchResponse provideFileSystemFileSystemProvidePost(fileSystemSearchRequest, authorization, xForwardedFor)
+> ProvideFileSystemSearchResponse provideFileSystemFileSystemProvidePost(fileSystemSearchRequest, authorization)
 
 Provide File System
 
@@ -613,8 +592,6 @@ async function example() {
     fileSystemSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies ProvideFileSystemFileSystemProvidePostRequest;
 
   try {
@@ -636,7 +613,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **fileSystemSearchRequest** | [FileSystemSearchRequest](FileSystemSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -663,7 +639,7 @@ No authorization required
 
 ## searchMineFileSystemFileSystemMinePost
 
-> MineFileSystemSearchResponse searchMineFileSystemFileSystemMinePost(fileSystemSearchRequest, authorization, xForwardedFor)
+> MineFileSystemSearchResponse searchMineFileSystemFileSystemMinePost(fileSystemSearchRequest, authorization)
 
 Search Mine File System
 
@@ -685,8 +661,6 @@ async function example() {
     fileSystemSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchMineFileSystemFileSystemMinePostRequest;
 
   try {
@@ -708,7 +682,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **fileSystemSearchRequest** | [FileSystemSearchRequest](FileSystemSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -735,7 +708,7 @@ No authorization required
 
 ## updateFileSystemFileSystemUpdatePost
 
-> NormalResponse updateFileSystemFileSystemUpdatePost(userFileSystemUpdateRequest, authorization, xForwardedFor)
+> NormalResponse updateFileSystemFileSystemUpdatePost(userFileSystemUpdateRequest, authorization)
 
 Update File System
 
@@ -757,8 +730,6 @@ async function example() {
     userFileSystemUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateFileSystemFileSystemUpdatePostRequest;
 
   try {
@@ -780,7 +751,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **userFileSystemUpdateRequest** | [UserFileSystemUpdateRequest](UserFileSystemUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -807,7 +777,7 @@ No authorization required
 
 ## uploadFileSystemFileSystemGenericS3UploadPost
 
-> GenericFileSystemUploadResponse uploadFileSystemFileSystemGenericS3UploadPost(file, filePath, contentType, authorization, xForwardedFor)
+> GenericFileSystemUploadResponse uploadFileSystemFileSystemGenericS3UploadPost(file, filePath, contentType, authorization)
 
 Upload File System
 
@@ -833,8 +803,6 @@ async function example() {
     contentType: contentType_example,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UploadFileSystemFileSystemGenericS3UploadPostRequest;
 
   try {
@@ -858,7 +826,6 @@ example().catch(console.error);
 | **filePath** | `string` |  | [Defaults to `undefined`] |
 | **contentType** | `string` |  | [Defaults to `undefined`] |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

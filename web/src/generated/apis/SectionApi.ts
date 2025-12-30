@@ -145,173 +145,144 @@ import {
 export interface AddLabelSectionLabelCreatePostRequest {
     schemasDocumentLabelAddRequest: SchemasDocumentLabelAddRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface CreateSectionCommentSectionCommentCreatePostRequest {
     sectionCommentCreateRequest: SectionCommentCreateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface CreateSectionSectionCreatePostRequest {
     sectionCreateRequest: SectionCreateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteLabelSectionLabelDeletePostRequest {
     schemasSectionLabelDeleteRequest: SchemasSectionLabelDeleteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteSectionCommentSectionCommentDeletePostRequest {
     sectionCommentDeleteRequest: SectionCommentDeleteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteSectionSectionDeletePostRequest {
     sectionDeleteRequest: SectionDeleteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteSectionUserSectionUserDeletePostRequest {
     sectionUserDeleteRequest: SectionUserDeleteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GeneratePodcastSectionPodcastGeneratePostRequest {
     generateSectionPodcastRequest: GenerateSectionPodcastRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetAllMineSectionsSectionMineAllPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetDateSectionInfoSectionDatePostRequest {
     daySectionRequest: DaySectionRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequest {
     mineSectionRoleAndAuthorityRequest: MineSectionRoleAndAuthorityRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetMySubscribedSectionsSectionSubscribedPostRequest {
     searchSubscribedSectionRequest: SearchSubscribedSectionRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetSectionDetailSectionDetailPostRequest {
     sectionDetailRequest: SectionDetailRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest {
     sectionUserRoleAndAuthorityRequest: SectionUserRoleAndAuthorityRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface ListLabelSectionLabelListPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface PublicSectionsSectionPublicSearchPostRequest {
     searchPublicSectionsRequest: SearchPublicSectionsRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchMineSectionsSectionMineSearchPostRequest {
     searchMineSectionsRequest: SearchMineSectionsRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchSectionCommentSectionCommentSearchPostRequest {
     sectionCommentSearchRequest: SectionCommentSearchRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchUserSectionsSectionUserSearchPostRequest {
     searchUserSectionsRequest: SearchUserSectionsRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SectionDocumentRequestSectionDocumentsPostRequest {
     sectionDocumentRequest: SectionDocumentRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SectionPublishGetRequestSectionPublishGetPostRequest {
     sectionPublishGetRequest: SectionPublishGetRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SectionPublishRequestSectionPublishPostRequest {
     sectionPublishRequest: SectionPublishRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SectionRepublishSectionRepublishPostRequest {
     sectionRePublishRequest: SectionRePublishRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SectionSeoDetailRequestSectionDetailSeoPostRequest {
     sectionSeoDetailRequest: SectionSeoDetailRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SectionUserAddRequestSectionUserAddPostRequest {
     sectionUserAddRequest: SectionUserAddRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SectionUserModifyRequestSectionUserModifyPostRequest {
     sectionUserModifyRequest: SectionUserModifyRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SectionUserRequestSectionUserPostRequest {
     sectionUserRequest: SectionUserRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SubscribeSectionSectionSubscribePostRequest {
     sectionSubscribeRequest: SectionSubscribeRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateSectionSectionUpdatePostRequest {
     sectionUpdateRequest: SectionUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 /**
@@ -338,10 +309,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -387,10 +354,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/comment/create`;
 
@@ -432,10 +395,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -481,10 +440,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/label/delete`;
 
@@ -526,10 +481,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -575,10 +526,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/delete`;
 
@@ -620,10 +567,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -669,10 +612,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/podcast/generate`;
 
@@ -705,10 +644,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -751,10 +686,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -800,10 +731,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/mine/role-and-authority`;
 
@@ -845,10 +772,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -894,10 +817,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/detail`;
 
@@ -941,10 +860,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/user/role-and-authority`;
 
@@ -977,10 +892,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1023,10 +934,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1072,10 +979,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/mine/search`;
 
@@ -1117,10 +1020,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1166,10 +1065,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/user/search`;
 
@@ -1211,10 +1106,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1260,10 +1151,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/publish/get`;
 
@@ -1305,10 +1192,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1354,10 +1237,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/republish`;
 
@@ -1399,10 +1278,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1448,10 +1323,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/user/add`;
 
@@ -1493,10 +1364,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1542,10 +1409,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/user`;
 
@@ -1589,10 +1452,6 @@ export class SectionApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/section/subscribe`;
 
@@ -1634,10 +1493,6 @@ export class SectionApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
