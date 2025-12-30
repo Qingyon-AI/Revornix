@@ -8,7 +8,7 @@ from typing import cast
 from sqlalchemy.orm import Session
 from common.dependencies import get_db, get_current_user, get_current_user_without_throw, plan_ability_checked
 from common.common import get_user_remote_file_system
-from enums.section import UserSectionAuthority, UserSectionRole, SectionPodcastStatus, SectionProcessStatus
+from enums.section import UserSectionAuthority, UserSectionRole, SectionPodcastStatus, SectionProcessStatus, SectionProcessTriggerType
 from common.celery.app import start_process_section_podcast, update_section_process_status, start_trigger_user_notification_event
 from celery import chain
 from enums.notification import NotificationTriggerEventUUID
@@ -1117,7 +1117,18 @@ def get_section_detail(
                 res.authority = db_section_user.authority
                 if db_section_user.role == UserSectionRole.SUBSCRIBER:
                     res.is_subscribed = True
-            
+    db_section_process_trigger_type = crud.task.get_section_process_task_by_section_id(
+        db=db,
+        section_id=section_detail_request.section_id
+    )
+    if db_section_process_trigger_type is not None:
+        res.process_task_trigger_type = db_section_process_trigger_type.trigger_type
+        db_section_process_trigger_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
+            db=db,
+            section_id=section_detail_request.section_id
+        )
+        if db_section_process_trigger_scheduler is not None:
+            res.process_task_trigger_scheduler = db_section_process_trigger_scheduler.cron_expr
     return res
 
 @section_router.post('/date', response_model=schemas.section.DaySectionResponse)

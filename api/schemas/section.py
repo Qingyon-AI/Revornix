@@ -258,6 +258,8 @@ class SectionInfo(BaseModel):
     cover: str | None
     podcast_task: SectionPodcastTask | None = None
     process_task: SectionProcessTask | None = None
+    process_task_trigger_type: int | None = None
+    process_task_trigger_scheduler: str | None = None
     
     def _url_prefix(self) -> str:
         return RemoteFileServiceProtocol.get_user_file_system_url_prefix(

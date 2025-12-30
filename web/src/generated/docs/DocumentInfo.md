@@ -15,7 +15,7 @@ Name | Type
 `update_time` | Date
 `cover` | string
 `description` | string
-`labels` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
+`labels` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
 `sections` | [Array&lt;SchemasDocumentBaseSectionInfo&gt;](SchemasDocumentBaseSectionInfo.md)
 `users` | [Array&lt;UserPublicInfo&gt;](UserPublicInfo.md)
 `convert_task` | [DocumentConvertTask](DocumentConvertTask.md)

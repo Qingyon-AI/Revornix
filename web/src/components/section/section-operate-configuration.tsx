@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, OctagonAlert, PencilIcon } from 'lucide-react';
+import { Info, Loader2, OctagonAlert, PencilIcon } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import CoverUpdate from './cover-update';
 import {
@@ -41,6 +41,10 @@ import { cn } from '@/lib/utils';
 import { Switch } from '../ui/switch';
 import { Alert, AlertDescription } from '../ui/alert';
 import { useUserContext } from '@/provider/user-provider';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { Label } from '../ui/label';
+import Link from 'next/link';
 
 const SectionOperateConfiguration = ({
 	section_id,
@@ -58,6 +62,8 @@ const SectionOperateConfiguration = ({
 		description: z.string().min(1),
 		labels: z.array(z.number()),
 		auto_podcast: z.boolean(),
+		process_task_trigger_type: z.number(),
+		process_task_trigger_scheduler: z.string().optional(),
 	});
 	const id = section_id;
 
@@ -90,11 +96,20 @@ const SectionOperateConfiguration = ({
 	});
 
 	useEffect(() => {
-		form.setValue('title', section?.title || '');
-		form.setValue('description', section?.description || '');
-		form.setValue('cover', section?.cover || undefined);
-		form.setValue('labels', section?.labels?.map((label) => label.id) || []);
-		form.setValue('auto_podcast', section?.auto_podcast || false);
+		if (!section) return;
+		form.setValue('title', section.title || '');
+		form.setValue('description', section.description || '');
+		form.setValue('cover', section.cover || undefined);
+		form.setValue('labels', section.labels?.map((label) => label.id) || []);
+		form.setValue('auto_podcast', section.auto_podcast || false);
+		form.setValue(
+			'process_task_trigger_type',
+			section.process_task_trigger_type
+		);
+		form.setValue(
+			'process_task_trigger_scheduler',
+			section.process_task_trigger_scheduler || ''
+		);
 	}, [section]);
 
 	const getLabelByValue = (value: number): Option | undefined => {
@@ -303,6 +318,96 @@ const SectionOperateConfiguration = ({
 									);
 								}}
 							/>
+							<FormField
+								name='process_task_trigger_type'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem className='mb-5'>
+											<FormLabel>
+												{t('section_create_form_process_task_trigger_type')}
+												<Tooltip>
+													<TooltipTrigger>
+														<Info size={15} />
+													</TooltipTrigger>
+													<TooltipContent>
+														{t(
+															'section_create_form_process_task_trigger_type_description'
+														)}
+													</TooltipContent>
+												</Tooltip>
+											</FormLabel>
+											<RadioGroup
+												className='grid grid-cols-1 md:grid-cols-2 gap-5'
+												value={
+													field.value !== undefined
+														? field.value.toString()
+														: undefined
+												}
+												onValueChange={(e) => {
+													field.onChange(Number(e));
+												}}>
+												<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
+													<Label htmlFor='r1'>
+														{t(
+															'section_create_form_process_task_trigger_type_updated'
+														)}
+													</Label>
+													<RadioGroupItem value='1' id='r1' />
+												</div>
+												<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
+													<Label htmlFor='r0'>
+														{t(
+															'section_create_form_process_task_trigger_type_scheduler'
+														)}
+													</Label>
+													<RadioGroupItem value='0' id='r0' />
+												</div>
+											</RadioGroup>
+										</FormItem>
+									);
+								}}
+							/>
+							{form.watch('process_task_trigger_type') === 0 && (
+								<FormField
+									control={form.control}
+									name='process_task_trigger_scheduler'
+									render={({ field }) => {
+										return (
+											<FormItem className='mb-5'>
+												<FormLabel>
+													{t(
+														'section_create_form_process_task_trigger_scheduler'
+													)}
+													<Tooltip>
+														<TooltipTrigger>
+															<Info size={15} />
+														</TooltipTrigger>
+														<TooltipContent>
+															{t(
+																'section_create_form_process_task_trigger_scheduler_alert'
+															)}
+															<Link
+																className='ml-1 underline underline-offset-2'
+																href={'https://en.wikipedia.org/wiki/Cron'}>
+																Cron wiki
+															</Link>
+														</TooltipContent>
+													</Tooltip>
+												</FormLabel>
+												<Input
+													className='font-mono'
+													placeholder={t(
+														'section_create_form_process_task_trigger_scheduler_placeholder'
+													)}
+													{...field}
+												/>
+												<FormMessage />
+											</FormItem>
+										);
+									}}
+								/>
+							)}
 						</form>
 					</Form>
 				</div>

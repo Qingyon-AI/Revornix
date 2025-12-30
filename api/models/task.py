@@ -82,7 +82,7 @@ class SectionProcessTask(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    trigger_type: Mapped[Optional[int]] = mapped_column(Integer, nullable=False, comment='0: scheduler, 1: updated')
+    trigger_type: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: scheduler, 1: updated')
 
 
 class SectionTriggerScheduler(Base):
