@@ -1,6 +1,5 @@
 import { DocumentInfo } from '@/generated';
 import { useRouter } from 'nextjs-toploader/app';
-import React from 'react';
 import CustomImage from '../ui/custom-image';
 
 const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
@@ -32,7 +31,9 @@ const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 									{document.title ? document.title : 'Untitled'}
 								</div>
 								<div className='text-sm line-clamp-2 text-muted-foreground'>
-									{document.description ? document.description : 'No description'}
+									{document.description
+										? document.description
+										: 'No description'}
 								</div>
 							</div>
 
