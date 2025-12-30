@@ -27,13 +27,13 @@ import {
     SectionPodcastTaskToJSON,
     SectionPodcastTaskToJSONTyped,
 } from './SectionPodcastTask';
-import type { SchemasSectionLabel } from './SchemasSectionLabel';
+import type { SchemasDocumentLabel } from './SchemasDocumentLabel';
 import {
-    SchemasSectionLabelFromJSON,
-    SchemasSectionLabelFromJSONTyped,
-    SchemasSectionLabelToJSON,
-    SchemasSectionLabelToJSONTyped,
-} from './SchemasSectionLabel';
+    SchemasDocumentLabelFromJSON,
+    SchemasDocumentLabelFromJSONTyped,
+    SchemasDocumentLabelToJSON,
+    SchemasDocumentLabelToJSONTyped,
+} from './SchemasDocumentLabel';
 import type { UserPublicInfo } from './UserPublicInfo';
 import {
     UserPublicInfoFromJSON,
@@ -122,10 +122,10 @@ export interface SectionInfo {
     md_file_name?: string | null;
     /**
      * 
-     * @type {Array<SchemasSectionLabel>}
+     * @type {Array<SchemasDocumentLabel>}
      * @memberof SectionInfo
      */
-    labels?: Array<SchemasSectionLabel> | null;
+    labels?: Array<SchemasDocumentLabel> | null;
     /**
      * 
      * @type {string}
@@ -144,6 +144,18 @@ export interface SectionInfo {
      * @memberof SectionInfo
      */
     process_task?: SectionProcessTask | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionInfo
+     */
+    process_task_trigger_type: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof SectionInfo
+     */
+    process_task_trigger_scheduler?: string | null;
 }
 
 /**
@@ -156,6 +168,7 @@ export function instanceOfSectionInfo(value: object): value is SectionInfo {
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('cover' in value) || value['cover'] === undefined) return false;
+    if (!('process_task_trigger_type' in value) || value['process_task_trigger_type'] === undefined) return false;
     return true;
 }
 
@@ -181,10 +194,12 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'authority': json['authority'] == null ? undefined : json['authority'],
         'is_subscribed': json['is_subscribed'] == null ? undefined : json['is_subscribed'],
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
-        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasSectionLabelFromJSON)),
+        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasDocumentLabelFromJSON)),
         'cover': json['cover'],
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
         'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),
+        'process_task_trigger_type': json['process_task_trigger_type'],
+        'process_task_trigger_scheduler': json['process_task_trigger_scheduler'] == null ? undefined : json['process_task_trigger_scheduler'],
     };
 }
 
@@ -211,10 +226,12 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'authority': value['authority'],
         'is_subscribed': value['is_subscribed'],
         'md_file_name': value['md_file_name'],
-        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasSectionLabelToJSON)),
+        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasDocumentLabelToJSON)),
         'cover': value['cover'],
         'podcast_task': SectionPodcastTaskToJSON(value['podcast_task']),
         'process_task': SectionProcessTaskToJSON(value['process_task']),
+        'process_task_trigger_type': value['process_task_trigger_type'],
+        'process_task_trigger_scheduler': value['process_task_trigger_scheduler'],
     };
 }
 

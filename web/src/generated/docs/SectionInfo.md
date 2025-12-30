@@ -18,10 +18,12 @@ Name | Type
 `authority` | number
 `is_subscribed` | boolean
 `md_file_name` | string
-`labels` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
+`labels` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
 `cover` | string
 `podcast_task` | [SectionPodcastTask](SectionPodcastTask.md)
 `process_task` | [SectionProcessTask](SectionProcessTask.md)
+`process_task_trigger_type` | number
+`process_task_trigger_scheduler` | string
 
 ## Example
 
@@ -46,6 +48,8 @@ const example = {
   "cover": null,
   "podcast_task": null,
   "process_task": null,
+  "process_task_trigger_type": null,
+  "process_task_trigger_scheduler": null,
 } satisfies SectionInfo
 
 console.log(example)

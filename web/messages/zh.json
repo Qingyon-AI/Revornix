@@ -530,7 +530,7 @@
     "section_create_form_process_task_trigger_type": "专栏任务触发方式",
     "section_create_form_process_task_trigger_type_description": "专栏进程即包含专栏文章生成、播客生成、向量数据库注入等操作的工作流。",
     "section_create_form_process_task_trigger_type_scheduler": "定时触发",
-    "section_create_form_process_task_trigger_type_updated": "专栏发生更新触发（评论以外）",
+    "section_create_form_process_task_trigger_type_updated": "专栏发生更新（评论以外）",
     "section_create_form_process_task_trigger_scheduler": "专栏进程触发时间",
     "section_create_form_process_task_trigger_scheduler_alert": "此处填写的是类Unix的cron表达式，详情查看",
     "section_create_form_process_task_trigger_scheduler_placeholder": "请输入专栏进程触发时间",
