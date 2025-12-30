@@ -7,7 +7,6 @@
 Name | Type
 ------------ | -------------
 `category` | number
-`from_plat` | string
 `sections` | Array&lt;number&gt;
 `labels` | Array&lt;number&gt;
 `title` | string
@@ -18,6 +17,7 @@ Name | Type
 `file_name` | string
 `auto_summary` | boolean
 `auto_podcast` | boolean
+`from_plat` | string
 
 ## Example
 
@@ -27,7 +27,6 @@ import type { DocumentCreateRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "category": null,
-  "from_plat": null,
   "sections": null,
   "labels": null,
   "title": null,
@@ -38,6 +37,7 @@ const example = {
   "file_name": null,
   "auto_summary": null,
   "auto_podcast": null,
+  "from_plat": null,
 } satisfies DocumentCreateRequest
 
 console.log(example)

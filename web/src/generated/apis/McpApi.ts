@@ -49,31 +49,26 @@ import {
 export interface CreateServerMcpServerCreatePostRequest {
     mCPServerCreateRequest: MCPServerCreateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteServerMcpServerDeletePostRequest {
     mCPServerDeleteRequest: MCPServerDeleteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetMcpServerDetailMcpServerDetailPostRequest {
     mCPServerDetailRequest: MCPServerDetailRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetMcpServerListMcpServerSearchPostRequest {
     mCPServerSearchRequest: MCPServerSearchRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateServerMcpServerUpdatePostRequest {
     mCPServerUpdateRequest: MCPServerUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 /**
@@ -100,10 +95,6 @@ export class McpApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -149,10 +140,6 @@ export class McpApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/mcp/server/delete`;
 
@@ -194,10 +181,6 @@ export class McpApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -243,10 +226,6 @@ export class McpApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/mcp/server/search`;
 
@@ -288,10 +267,6 @@ export class McpApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 

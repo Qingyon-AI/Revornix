@@ -12,7 +12,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## documentGraphGraphDocumentPost
 
-> GraphResponse documentGraphGraphDocumentPost(documentGraphRequest, authorization, xForwardedFor)
+> GraphResponse documentGraphGraphDocumentPost(documentGraphRequest, authorization)
 
 Document Graph
 
@@ -34,8 +34,6 @@ async function example() {
     documentGraphRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DocumentGraphGraphDocumentPostRequest;
 
   try {
@@ -57,7 +55,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentGraphRequest** | [DocumentGraphRequest](DocumentGraphRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -84,7 +81,7 @@ No authorization required
 
 ## graphGraphSearchPost
 
-> GraphResponse graphGraphSearchPost(authorization, xForwardedFor)
+> GraphResponse graphGraphSearchPost(authorization)
 
 Graph
 
@@ -104,8 +101,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GraphGraphSearchPostRequest;
 
   try {
@@ -126,7 +121,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -153,7 +147,7 @@ No authorization required
 
 ## sectionGraphGraphSectionPost
 
-> GraphResponse sectionGraphGraphSectionPost(sectionGraphRequest, authorization, xForwardedFor)
+> GraphResponse sectionGraphGraphSectionPost(sectionGraphRequest, authorization)
 
 Section Graph
 
@@ -175,8 +169,6 @@ async function example() {
     sectionGraphRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SectionGraphGraphSectionPostRequest;
 
   try {
@@ -198,7 +190,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionGraphRequest** | [SectionGraphRequest](SectionGraphRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

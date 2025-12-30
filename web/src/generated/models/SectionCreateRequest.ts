@@ -55,6 +55,18 @@ export interface SectionCreateRequest {
      * @memberof SectionCreateRequest
      */
     auto_podcast?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionCreateRequest
+     */
+    process_task_trigger_type: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof SectionCreateRequest
+     */
+    process_task_trigger_scheduler?: string | null;
 }
 
 /**
@@ -64,6 +76,7 @@ export function instanceOfSectionCreateRequest(value: object): value is SectionC
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('labels' in value) || value['labels'] === undefined) return false;
+    if (!('process_task_trigger_type' in value) || value['process_task_trigger_type'] === undefined) return false;
     return true;
 }
 
@@ -83,6 +96,8 @@ export function SectionCreateRequestFromJSONTyped(json: any, ignoreDiscriminator
         'labels': json['labels'],
         'auto_publish': json['auto_publish'] == null ? undefined : json['auto_publish'],
         'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
+        'process_task_trigger_type': json['process_task_trigger_type'],
+        'process_task_trigger_scheduler': json['process_task_trigger_scheduler'] == null ? undefined : json['process_task_trigger_scheduler'],
     };
 }
 
@@ -103,6 +118,8 @@ export function SectionCreateRequestToJSONTyped(value?: SectionCreateRequest | n
         'labels': value['labels'],
         'auto_publish': value['auto_publish'],
         'auto_podcast': value['auto_podcast'],
+        'process_task_trigger_type': value['process_task_trigger_type'],
+        'process_task_trigger_scheduler': value['process_task_trigger_scheduler'],
     };
 }
 

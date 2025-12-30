@@ -27,12 +27,6 @@ export interface DocumentCreateRequest {
     category: number;
     /**
      * 
-     * @type {string}
-     * @memberof DocumentCreateRequest
-     */
-    from_plat: string;
-    /**
-     * 
      * @type {Array<number>}
      * @memberof DocumentCreateRequest
      */
@@ -91,6 +85,12 @@ export interface DocumentCreateRequest {
      * @memberof DocumentCreateRequest
      */
     auto_podcast?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof DocumentCreateRequest
+     */
+    from_plat: string;
 }
 
 /**
@@ -113,7 +113,6 @@ export function DocumentCreateRequestFromJSONTyped(json: any, ignoreDiscriminato
     return {
         
         'category': json['category'],
-        'from_plat': json['from_plat'],
         'sections': json['sections'] == null ? undefined : json['sections'],
         'labels': json['labels'] == null ? undefined : json['labels'],
         'title': json['title'] == null ? undefined : json['title'],
@@ -124,6 +123,7 @@ export function DocumentCreateRequestFromJSONTyped(json: any, ignoreDiscriminato
         'file_name': json['file_name'] == null ? undefined : json['file_name'],
         'auto_summary': json['auto_summary'] == null ? undefined : json['auto_summary'],
         'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
+        'from_plat': json['from_plat'],
     };
 }
 
@@ -139,7 +139,6 @@ export function DocumentCreateRequestToJSONTyped(value?: DocumentCreateRequest |
     return {
         
         'category': value['category'],
-        'from_plat': value['from_plat'],
         'sections': value['sections'],
         'labels': value['labels'],
         'title': value['title'],
@@ -150,6 +149,7 @@ export function DocumentCreateRequestToJSONTyped(value?: DocumentCreateRequest |
         'file_name': value['file_name'],
         'auto_summary': value['auto_summary'],
         'auto_podcast': value['auto_podcast'],
+        'from_plat': value['from_plat'],
     };
 }
 

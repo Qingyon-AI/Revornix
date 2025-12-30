@@ -43,19 +43,16 @@ import {
 export interface CreateApiKeyApiKeyCreatePostRequest {
     apiKeyCreateRequest: ApiKeyCreateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteApiKeyApiKeyDeletePostRequest {
     apiKeysDeleteRequest: ApiKeysDeleteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchApiKeyApiKeySearchPostRequest {
     searchApiKeysRequest: SearchApiKeysRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 /**
@@ -82,10 +79,6 @@ export class ApiKeyApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -131,10 +124,6 @@ export class ApiKeyApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/api-key/delete`;
 
@@ -176,10 +165,6 @@ export class ApiKeyApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 

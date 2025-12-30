@@ -12,6 +12,8 @@ Name | Type
 `labels` | Array&lt;number&gt;
 `auto_publish` | boolean
 `auto_podcast` | boolean
+`process_task_trigger_type` | number
+`process_task_trigger_scheduler` | string
 
 ## Example
 
@@ -26,6 +28,8 @@ const example = {
   "labels": null,
   "auto_publish": null,
   "auto_podcast": null,
+  "process_task_trigger_type": null,
+  "process_task_trigger_scheduler": null,
 } satisfies SectionCreateRequest
 
 console.log(example)

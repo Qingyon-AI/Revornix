@@ -127,77 +127,64 @@ import {
 export interface AddNotificationSourceNotificationSourceAddPostRequest {
     addNotificationSourceRequest: AddNotificationSourceRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface AddNotificationTargetNotificationTargetAddPostRequest {
     addNotificationTargetRequest: AddNotificationTargetRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface AddNotificationTaskNotificationTaskAddPostRequest {
     addNotificationTaskRequest: AddNotificationTaskRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteEmailSourceNotificationSourceDeletePostRequest {
     deleteUserNotificationSourceRequest: DeleteUserNotificationSourceRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteNotificationRecordNotificationRecordDeletePostRequest {
     deleteNotificationRecordRequest: DeleteNotificationRecordRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteNotificationTargetNotificationTargetDeletePostRequest {
     deleteUserNotificationTargetRequest: DeleteUserNotificationTargetRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteNotificationTaskNotificationTaskDeletePostRequest {
     deleteNotificationTaskRequest: DeleteNotificationTaskRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetEmailSourceNotificationSourceMinePostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetMineNotificationTargetNotificationTargetMinePostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetMineNotificationTaskNotificationTaskMinePostRequest {
     pageableRequest: PageableRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetNotificationDetailNotificationSourceDetailPostRequest {
     userNotificationSourceDetailRequest: UserNotificationSourceDetailRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetNotificationRecordDetailNotificationRecordDetailPostRequest {
     notificationRecordDetailRequest: NotificationRecordDetailRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetNotificationSourceRelatedTaskNotificationSourceTaskPostRequest {
     getNotificationSourceRelatedTaskRequest: GetNotificationSourceRelatedTaskRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetNotificationTargetDetailNotificationTargetDetailPostRequest {
@@ -207,68 +194,56 @@ export interface GetNotificationTargetDetailNotificationTargetDetailPostRequest 
 export interface GetNotificationTargetRelatedTaskNotificationTargetTaskPostRequest {
     getNotificationTargetRelatedTaskRequest: GetNotificationTargetRelatedTaskRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetNotificationTaskNotificationTaskDetailPostRequest {
     notificationTaskDetailRequest: NotificationTaskDetailRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetNotificationTemplatesNotificationTemplateAllPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetProvidedNotificationSourceNotificationSourceProvidedPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetProvidedNotificationTargetNotificationTargetProvidedPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetTriggerEventsNotificationTriggerEventAllPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface ReadAllNotificationRecordNotificationRecordReadAllPostRequest {
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface ReadNotificationRecordNotificationRecordReadPostRequest {
     readNotificationRecordRequest: ReadNotificationRecordRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchNotificationRecordNotificationRecordSearchPostRequest {
     searchNotificationRecordRequest: SearchNotificationRecordRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateEmailSourceNotificationSourceUpdatePostRequest {
     updateNotificationSourceRequest: UpdateNotificationSourceRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateNotificationTargetNotificationTargetUpdatePostRequest {
     updateNotificationTargetRequest: UpdateNotificationTargetRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateNotificationTaskNotificationTaskUpdatePostRequest {
     updateNotificationTaskRequest: UpdateNotificationTaskRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 /**
@@ -295,10 +270,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -344,10 +315,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/target/add`;
 
@@ -389,10 +356,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -438,10 +401,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/source/delete`;
 
@@ -483,10 +442,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -532,10 +487,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/target/delete`;
 
@@ -579,10 +530,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/task/delete`;
 
@@ -617,10 +564,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/source/mine`;
 
@@ -652,10 +595,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -698,10 +637,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -747,10 +682,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/source/detail`;
 
@@ -794,10 +725,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/record/detail`;
 
@@ -839,10 +766,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -927,10 +850,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/target/task`;
 
@@ -974,10 +893,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/task/detail`;
 
@@ -1010,10 +925,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1049,10 +960,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/source/provided`;
 
@@ -1084,10 +991,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1123,10 +1026,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/trigger-event/all`;
 
@@ -1158,10 +1057,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1204,10 +1099,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1253,10 +1144,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/record/search`;
 
@@ -1298,10 +1185,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -1347,10 +1230,6 @@ export class NotificationApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/notification/target/update`;
 
@@ -1392,10 +1271,6 @@ export class NotificationApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 

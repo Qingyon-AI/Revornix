@@ -82,31 +82,26 @@ import {
 export interface DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest {
     userFileSystemDeleteRequest: UserFileSystemDeleteRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest {
     aliyunOSSPresignUploadURLRequest: AliyunOSSPresignUploadURLRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPostRequest {
     s3PresignUploadURLRequest: S3PresignUploadURLRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPostRequest {
     s3PresignUploadURLRequest: S3PresignUploadURLRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetFileSystemInfoFileSystemDetailPostRequest {
     fileSystemInfoRequest: FileSystemInfoRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetUrlPrefixFileSystemUrlPrefixPostRequest {
@@ -116,31 +111,26 @@ export interface GetUrlPrefixFileSystemUrlPrefixPostRequest {
 export interface GetUserFileSystemInfoFileSystemUserFileSystemDetailPostRequest {
     userFileSystemInfoRequest: UserFileSystemInfoRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface InstallUserFileSystemFileSystemInstallPostRequest {
     fileSystemInstallRequest: FileSystemInstallRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface ProvideFileSystemFileSystemProvidePostRequest {
     fileSystemSearchRequest: FileSystemSearchRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchMineFileSystemFileSystemMinePostRequest {
     fileSystemSearchRequest: FileSystemSearchRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateFileSystemFileSystemUpdatePostRequest {
     userFileSystemUpdateRequest: UserFileSystemUpdateRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UploadFileSystemFileSystemGenericS3UploadPostRequest {
@@ -148,7 +138,6 @@ export interface UploadFileSystemFileSystemGenericS3UploadPostRequest {
     filePath: string;
     contentType: string;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 /**
@@ -175,10 +164,6 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -224,10 +209,6 @@ export class FileSystemApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/file-system/aliyun-oss/presign-upload-url`;
 
@@ -269,10 +250,6 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -318,10 +295,6 @@ export class FileSystemApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/file-system/built-in/presign-upload-url`;
 
@@ -363,10 +336,6 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -451,10 +420,6 @@ export class FileSystemApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/file-system/user-file-system/detail`;
 
@@ -496,10 +461,6 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -545,10 +506,6 @@ export class FileSystemApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/file-system/provide`;
 
@@ -592,10 +549,6 @@ export class FileSystemApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/file-system/mine`;
 
@@ -637,10 +590,6 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -696,10 +645,6 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
         const consumes: runtime.Consume[] = [

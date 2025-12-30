@@ -15,7 +15,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## addRssServerRssAddPost
 
-> AddRssServerResponse addRssServerRssAddPost(addRssServerRequest, authorization, xForwardedFor)
+> AddRssServerResponse addRssServerRssAddPost(addRssServerRequest, authorization)
 
 Addrssserver
 
@@ -37,8 +37,6 @@ async function example() {
     addRssServerRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies AddRssServerRssAddPostRequest;
 
   try {
@@ -60,7 +58,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **addRssServerRequest** | [AddRssServerRequest](AddRssServerRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -87,7 +84,7 @@ No authorization required
 
 ## deleteRssServerRssDeletePost
 
-> NormalResponse deleteRssServerRssDeletePost(deleteRssServerRequest, authorization, xForwardedFor)
+> NormalResponse deleteRssServerRssDeletePost(deleteRssServerRequest, authorization)
 
 Deleterssserver
 
@@ -109,8 +106,6 @@ async function example() {
     deleteRssServerRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteRssServerRssDeletePostRequest;
 
   try {
@@ -132,7 +127,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteRssServerRequest** | [DeleteRssServerRequest](DeleteRssServerRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -159,7 +153,7 @@ No authorization required
 
 ## getRssServerDetailRssDetailPost
 
-> RssServerInfo getRssServerDetailRssDetailPost(getRssServerDetailRequest, authorization, xForwardedFor)
+> RssServerInfo getRssServerDetailRssDetailPost(getRssServerDetailRequest, authorization)
 
 Getrssserverdetail
 
@@ -181,8 +175,6 @@ async function example() {
     getRssServerDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetRssServerDetailRssDetailPostRequest;
 
   try {
@@ -204,7 +196,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **getRssServerDetailRequest** | [GetRssServerDetailRequest](GetRssServerDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -231,7 +222,7 @@ No authorization required
 
 ## getRssServerDocumentRssDocumentPost
 
-> InifiniteScrollPagnitionDocumentInfo getRssServerDocumentRssDocumentPost(getRssServerDocumentRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionDocumentInfo getRssServerDocumentRssDocumentPost(getRssServerDocumentRequest, authorization)
 
 Getrssserverdocument
 
@@ -253,8 +244,6 @@ async function example() {
     getRssServerDocumentRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetRssServerDocumentRssDocumentPostRequest;
 
   try {
@@ -276,7 +265,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **getRssServerDocumentRequest** | [GetRssServerDocumentRequest](GetRssServerDocumentRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -303,7 +291,7 @@ No authorization required
 
 ## searchRssServerRssSearchPost
 
-> InifiniteScrollPagnitionRssServerInfo searchRssServerRssSearchPost(searchRssServerRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionRssServerInfo searchRssServerRssSearchPost(searchRssServerRequest, authorization)
 
 Searchrssserver
 
@@ -325,8 +313,6 @@ async function example() {
     searchRssServerRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchRssServerRssSearchPostRequest;
 
   try {
@@ -348,7 +334,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchRssServerRequest** | [SearchRssServerRequest](SearchRssServerRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -375,7 +360,7 @@ No authorization required
 
 ## updateRssServerRssUpdatePost
 
-> NormalResponse updateRssServerRssUpdatePost(updateRssServerRequest, authorization, xForwardedFor)
+> NormalResponse updateRssServerRssUpdatePost(updateRssServerRequest, authorization)
 
 Updaterssserver
 
@@ -397,8 +382,6 @@ async function example() {
     updateRssServerRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateRssServerRssUpdatePostRequest;
 
   try {
@@ -420,7 +403,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **updateRssServerRequest** | [UpdateRssServerRequest](UpdateRssServerRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

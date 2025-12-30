@@ -12,7 +12,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## createApiKeyApiKeyCreatePost
 
-> ApiKeyCreateResponse createApiKeyApiKeyCreatePost(apiKeyCreateRequest, authorization, xForwardedFor)
+> ApiKeyCreateResponse createApiKeyApiKeyCreatePost(apiKeyCreateRequest, authorization)
 
 Create Api Key
 
@@ -34,8 +34,6 @@ async function example() {
     apiKeyCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies CreateApiKeyApiKeyCreatePostRequest;
 
   try {
@@ -57,7 +55,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **apiKeyCreateRequest** | [ApiKeyCreateRequest](ApiKeyCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -84,7 +81,7 @@ No authorization required
 
 ## deleteApiKeyApiKeyDeletePost
 
-> NormalResponse deleteApiKeyApiKeyDeletePost(apiKeysDeleteRequest, authorization, xForwardedFor)
+> NormalResponse deleteApiKeyApiKeyDeletePost(apiKeysDeleteRequest, authorization)
 
 Delete Api Key
 
@@ -106,8 +103,6 @@ async function example() {
     apiKeysDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteApiKeyApiKeyDeletePostRequest;
 
   try {
@@ -129,7 +124,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **apiKeysDeleteRequest** | [ApiKeysDeleteRequest](ApiKeysDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -156,7 +150,7 @@ No authorization required
 
 ## searchApiKeyApiKeySearchPost
 
-> PaginationApiKeyInfo searchApiKeyApiKeySearchPost(searchApiKeysRequest, authorization, xForwardedFor)
+> PaginationApiKeyInfo searchApiKeyApiKeySearchPost(searchApiKeysRequest, authorization)
 
 Search Api Key
 
@@ -178,8 +172,6 @@ async function example() {
     searchApiKeysRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchApiKeyApiKeySearchPostRequest;
 
   try {
@@ -201,7 +193,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchApiKeysRequest** | [SearchApiKeysRequest](SearchApiKeysRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

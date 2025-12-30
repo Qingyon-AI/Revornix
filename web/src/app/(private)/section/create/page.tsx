@@ -23,13 +23,21 @@ import { createSection, getMineLabels } from '@/service/section';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { utils } from '@kinda/utils';
 import { useQuery } from '@tanstack/react-query';
-import { OctagonAlert } from 'lucide-react';
+import { Info, OctagonAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '@/components/ui/hybrid-tooltip';
+import Link from 'next/link';
 
 const CreatePage = () => {
 	const t = useTranslations();
@@ -43,6 +51,8 @@ const CreatePage = () => {
 		auto_podcast: z.boolean(),
 		cover: z.string().nullable(),
 		labels: z.array(z.number()),
+		process_task_trigger_type: z.number(),
+		process_task_trigger_scheduler: z.string().optional(),
 	});
 
 	const queryClient = getQueryClient();
@@ -57,6 +67,7 @@ const CreatePage = () => {
 			labels: [],
 			auto_publish: false,
 			auto_podcast: false,
+			process_task_trigger_type: 1,
 		},
 	});
 
@@ -96,6 +107,9 @@ const CreatePage = () => {
 				cover: values.cover,
 				labels: values.labels,
 				auto_publish: values.auto_publish,
+				auto_podcast: values.auto_podcast,
+				process_task_trigger_type: values.process_task_trigger_type,
+				process_task_trigger_scheduler: values.process_task_trigger_scheduler,
 			})
 		);
 		if (err || !res) {
@@ -225,6 +239,90 @@ const CreatePage = () => {
 							);
 						}}
 					/>
+					<FormField
+						name='process_task_trigger_type'
+						control={form.control}
+						render={({ field }) => {
+							return (
+								<FormItem className='mb-5'>
+									<FormLabel>
+										{t('section_create_form_process_task_trigger_type')}
+										<Tooltip>
+											<TooltipTrigger>
+												<Info size={15} />
+											</TooltipTrigger>
+											<TooltipContent>
+												{t(
+													'section_create_form_process_task_trigger_type_description'
+												)}
+											</TooltipContent>
+										</Tooltip>
+									</FormLabel>
+									<RadioGroup
+										className='grid grid-cols-1 md:grid-cols-2 gap-5'
+										value={field.value ? field.value.toString() : undefined}
+										onValueChange={(e) => {
+											field.onChange(Number(e));
+										}}>
+										<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
+											<Label htmlFor='r1'>
+												{t(
+													'section_create_form_process_task_trigger_type_updated'
+												)}
+											</Label>
+											<RadioGroupItem value='1' id='r1' />
+										</div>
+										<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
+											<Label htmlFor='r0'>
+												{t(
+													'section_create_form_process_task_trigger_type_scheduler'
+												)}
+											</Label>
+											<RadioGroupItem value='0' id='r0' />
+										</div>
+									</RadioGroup>
+								</FormItem>
+							);
+						}}
+					/>
+					{form.watch('process_task_trigger_type') === 0 && (
+						<FormField
+							control={form.control}
+							name='process_task_trigger_scheduler'
+							render={({ field }) => {
+								return (
+									<FormItem className='mb-5'>
+										<FormLabel>
+											{t('section_create_form_process_task_trigger_scheduler')}
+											<Tooltip>
+												<TooltipTrigger>
+													<Info size={15} />
+												</TooltipTrigger>
+												<TooltipContent>
+													{t(
+														'section_create_form_process_task_trigger_scheduler_alert'
+													)}
+													<Link
+														className='ml-1 underline underline-offset-2'
+														href={'https://en.wikipedia.org/wiki/Cron'}>
+														Cron wiki
+													</Link>
+												</TooltipContent>
+											</Tooltip>
+										</FormLabel>
+										<Input
+											className='font-mono'
+											placeholder={t(
+												'section_create_form_process_task_trigger_scheduler_placeholder'
+											)}
+											{...field}
+										/>
+										<FormMessage />
+									</FormItem>
+								);
+							}}
+						/>
+					)}
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-5 mb-5'>
 						<FormField
 							name='auto_publish'

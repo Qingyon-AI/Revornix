@@ -58,37 +58,31 @@ import {
 export interface AddRssServerRssAddPostRequest {
     addRssServerRequest: AddRssServerRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface DeleteRssServerRssDeletePostRequest {
     deleteRssServerRequest: DeleteRssServerRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetRssServerDetailRssDetailPostRequest {
     getRssServerDetailRequest: GetRssServerDetailRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface GetRssServerDocumentRssDocumentPostRequest {
     getRssServerDocumentRequest: GetRssServerDocumentRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface SearchRssServerRssSearchPostRequest {
     searchRssServerRequest: SearchRssServerRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 export interface UpdateRssServerRssUpdatePostRequest {
     updateRssServerRequest: UpdateRssServerRequest;
     authorization?: string | null;
-    xForwardedFor?: string | null;
 }
 
 /**
@@ -115,10 +109,6 @@ export class RssApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -164,10 +154,6 @@ export class RssApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/rss/delete`;
 
@@ -209,10 +195,6 @@ export class RssApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 
@@ -258,10 +240,6 @@ export class RssApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/rss/document`;
 
@@ -305,10 +283,6 @@ export class RssApi extends runtime.BaseAPI {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
 
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
-        }
-
 
         let urlPath = `/rss/search`;
 
@@ -350,10 +324,6 @@ export class RssApi extends runtime.BaseAPI {
 
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xForwardedFor'] != null) {
-            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
         }
 
 

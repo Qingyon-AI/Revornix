@@ -35,7 +35,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## addNotificationSourceNotificationSourceAddPost
 
-> NormalResponse addNotificationSourceNotificationSourceAddPost(addNotificationSourceRequest, authorization, xForwardedFor)
+> NormalResponse addNotificationSourceNotificationSourceAddPost(addNotificationSourceRequest, authorization)
 
 Add Notification Source
 
@@ -57,8 +57,6 @@ async function example() {
     addNotificationSourceRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies AddNotificationSourceNotificationSourceAddPostRequest;
 
   try {
@@ -80,7 +78,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **addNotificationSourceRequest** | [AddNotificationSourceRequest](AddNotificationSourceRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -107,7 +104,7 @@ No authorization required
 
 ## addNotificationTargetNotificationTargetAddPost
 
-> NormalResponse addNotificationTargetNotificationTargetAddPost(addNotificationTargetRequest, authorization, xForwardedFor)
+> NormalResponse addNotificationTargetNotificationTargetAddPost(addNotificationTargetRequest, authorization)
 
 Add Notification Target
 
@@ -129,8 +126,6 @@ async function example() {
     addNotificationTargetRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies AddNotificationTargetNotificationTargetAddPostRequest;
 
   try {
@@ -152,7 +147,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **addNotificationTargetRequest** | [AddNotificationTargetRequest](AddNotificationTargetRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -179,7 +173,7 @@ No authorization required
 
 ## addNotificationTaskNotificationTaskAddPost
 
-> NormalResponse addNotificationTaskNotificationTaskAddPost(addNotificationTaskRequest, authorization, xForwardedFor)
+> NormalResponse addNotificationTaskNotificationTaskAddPost(addNotificationTaskRequest, authorization)
 
 Add Notification Task
 
@@ -201,8 +195,6 @@ async function example() {
     addNotificationTaskRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies AddNotificationTaskNotificationTaskAddPostRequest;
 
   try {
@@ -224,7 +216,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **addNotificationTaskRequest** | [AddNotificationTaskRequest](AddNotificationTaskRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -251,7 +242,7 @@ No authorization required
 
 ## deleteEmailSourceNotificationSourceDeletePost
 
-> NormalResponse deleteEmailSourceNotificationSourceDeletePost(deleteUserNotificationSourceRequest, authorization, xForwardedFor)
+> NormalResponse deleteEmailSourceNotificationSourceDeletePost(deleteUserNotificationSourceRequest, authorization)
 
 Delete Email Source
 
@@ -273,8 +264,6 @@ async function example() {
     deleteUserNotificationSourceRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteEmailSourceNotificationSourceDeletePostRequest;
 
   try {
@@ -296,7 +285,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteUserNotificationSourceRequest** | [DeleteUserNotificationSourceRequest](DeleteUserNotificationSourceRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -323,7 +311,7 @@ No authorization required
 
 ## deleteNotificationRecordNotificationRecordDeletePost
 
-> NormalResponse deleteNotificationRecordNotificationRecordDeletePost(deleteNotificationRecordRequest, authorization, xForwardedFor)
+> NormalResponse deleteNotificationRecordNotificationRecordDeletePost(deleteNotificationRecordRequest, authorization)
 
 Delete Notification Record
 
@@ -345,8 +333,6 @@ async function example() {
     deleteNotificationRecordRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteNotificationRecordNotificationRecordDeletePostRequest;
 
   try {
@@ -368,7 +354,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteNotificationRecordRequest** | [DeleteNotificationRecordRequest](DeleteNotificationRecordRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -395,7 +380,7 @@ No authorization required
 
 ## deleteNotificationTargetNotificationTargetDeletePost
 
-> NormalResponse deleteNotificationTargetNotificationTargetDeletePost(deleteUserNotificationTargetRequest, authorization, xForwardedFor)
+> NormalResponse deleteNotificationTargetNotificationTargetDeletePost(deleteUserNotificationTargetRequest, authorization)
 
 Delete Notification Target
 
@@ -417,8 +402,6 @@ async function example() {
     deleteUserNotificationTargetRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteNotificationTargetNotificationTargetDeletePostRequest;
 
   try {
@@ -440,7 +423,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteUserNotificationTargetRequest** | [DeleteUserNotificationTargetRequest](DeleteUserNotificationTargetRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -467,7 +449,7 @@ No authorization required
 
 ## deleteNotificationTaskNotificationTaskDeletePost
 
-> NormalResponse deleteNotificationTaskNotificationTaskDeletePost(deleteNotificationTaskRequest, authorization, xForwardedFor)
+> NormalResponse deleteNotificationTaskNotificationTaskDeletePost(deleteNotificationTaskRequest, authorization)
 
 Delete Notification Task
 
@@ -489,8 +471,6 @@ async function example() {
     deleteNotificationTaskRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies DeleteNotificationTaskNotificationTaskDeletePostRequest;
 
   try {
@@ -512,7 +492,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteNotificationTaskRequest** | [DeleteNotificationTaskRequest](DeleteNotificationTaskRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -539,7 +518,7 @@ No authorization required
 
 ## getEmailSourceNotificationSourceMinePost
 
-> UserNotificationSourcesResponse getEmailSourceNotificationSourceMinePost(authorization, xForwardedFor)
+> UserNotificationSourcesResponse getEmailSourceNotificationSourceMinePost(authorization)
 
 Get Email Source
 
@@ -559,8 +538,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetEmailSourceNotificationSourceMinePostRequest;
 
   try {
@@ -581,7 +558,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -608,7 +584,7 @@ No authorization required
 
 ## getMineNotificationTargetNotificationTargetMinePost
 
-> UserNotificationTargetsResponse getMineNotificationTargetNotificationTargetMinePost(authorization, xForwardedFor)
+> UserNotificationTargetsResponse getMineNotificationTargetNotificationTargetMinePost(authorization)
 
 Get Mine Notification Target
 
@@ -628,8 +604,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetMineNotificationTargetNotificationTargetMinePostRequest;
 
   try {
@@ -650,7 +624,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -677,7 +650,7 @@ No authorization required
 
 ## getMineNotificationTaskNotificationTaskMinePost
 
-> PaginationNotificationTask getMineNotificationTaskNotificationTaskMinePost(pageableRequest, authorization, xForwardedFor)
+> PaginationNotificationTask getMineNotificationTaskNotificationTaskMinePost(pageableRequest, authorization)
 
 Get Mine Notification Task
 
@@ -699,8 +672,6 @@ async function example() {
     pageableRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetMineNotificationTaskNotificationTaskMinePostRequest;
 
   try {
@@ -722,7 +693,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **pageableRequest** | [PageableRequest](PageableRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -749,7 +719,7 @@ No authorization required
 
 ## getNotificationDetailNotificationSourceDetailPost
 
-> UserNotificationSource getNotificationDetailNotificationSourceDetailPost(userNotificationSourceDetailRequest, authorization, xForwardedFor)
+> UserNotificationSource getNotificationDetailNotificationSourceDetailPost(userNotificationSourceDetailRequest, authorization)
 
 Get Notification Detail
 
@@ -771,8 +741,6 @@ async function example() {
     userNotificationSourceDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetNotificationDetailNotificationSourceDetailPostRequest;
 
   try {
@@ -794,7 +762,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **userNotificationSourceDetailRequest** | [UserNotificationSourceDetailRequest](UserNotificationSourceDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -821,7 +788,7 @@ No authorization required
 
 ## getNotificationRecordDetailNotificationRecordDetailPost
 
-> NotificationRecord getNotificationRecordDetailNotificationRecordDetailPost(notificationRecordDetailRequest, authorization, xForwardedFor)
+> NotificationRecord getNotificationRecordDetailNotificationRecordDetailPost(notificationRecordDetailRequest, authorization)
 
 Get Notification Record Detail
 
@@ -843,8 +810,6 @@ async function example() {
     notificationRecordDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetNotificationRecordDetailNotificationRecordDetailPostRequest;
 
   try {
@@ -866,7 +831,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **notificationRecordDetailRequest** | [NotificationRecordDetailRequest](NotificationRecordDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -893,7 +857,7 @@ No authorization required
 
 ## getNotificationSourceRelatedTaskNotificationSourceTaskPost
 
-> GetNotificationSourceRelatedTaskResponse getNotificationSourceRelatedTaskNotificationSourceTaskPost(getNotificationSourceRelatedTaskRequest, authorization, xForwardedFor)
+> GetNotificationSourceRelatedTaskResponse getNotificationSourceRelatedTaskNotificationSourceTaskPost(getNotificationSourceRelatedTaskRequest, authorization)
 
 Get Notification Source Related Task
 
@@ -915,8 +879,6 @@ async function example() {
     getNotificationSourceRelatedTaskRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetNotificationSourceRelatedTaskNotificationSourceTaskPostRequest;
 
   try {
@@ -938,7 +900,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **getNotificationSourceRelatedTaskRequest** | [GetNotificationSourceRelatedTaskRequest](GetNotificationSourceRelatedTaskRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1031,7 +992,7 @@ No authorization required
 
 ## getNotificationTargetRelatedTaskNotificationTargetTaskPost
 
-> GetNotificationTargetRelatedTaskResponse getNotificationTargetRelatedTaskNotificationTargetTaskPost(getNotificationTargetRelatedTaskRequest, authorization, xForwardedFor)
+> GetNotificationTargetRelatedTaskResponse getNotificationTargetRelatedTaskNotificationTargetTaskPost(getNotificationTargetRelatedTaskRequest, authorization)
 
 Get Notification Target Related Task
 
@@ -1053,8 +1014,6 @@ async function example() {
     getNotificationTargetRelatedTaskRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetNotificationTargetRelatedTaskNotificationTargetTaskPostRequest;
 
   try {
@@ -1076,7 +1035,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **getNotificationTargetRelatedTaskRequest** | [GetNotificationTargetRelatedTaskRequest](GetNotificationTargetRelatedTaskRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1103,7 +1061,7 @@ No authorization required
 
 ## getNotificationTaskNotificationTaskDetailPost
 
-> NotificationTask getNotificationTaskNotificationTaskDetailPost(notificationTaskDetailRequest, authorization, xForwardedFor)
+> NotificationTask getNotificationTaskNotificationTaskDetailPost(notificationTaskDetailRequest, authorization)
 
 Get Notification Task
 
@@ -1125,8 +1083,6 @@ async function example() {
     notificationTaskDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetNotificationTaskNotificationTaskDetailPostRequest;
 
   try {
@@ -1148,7 +1104,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **notificationTaskDetailRequest** | [NotificationTaskDetailRequest](NotificationTaskDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1175,7 +1130,7 @@ No authorization required
 
 ## getNotificationTemplatesNotificationTemplateAllPost
 
-> NotificationTemplatesResponse getNotificationTemplatesNotificationTemplateAllPost(authorization, xForwardedFor)
+> NotificationTemplatesResponse getNotificationTemplatesNotificationTemplateAllPost(authorization)
 
 Get Notification Templates
 
@@ -1195,8 +1150,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetNotificationTemplatesNotificationTemplateAllPostRequest;
 
   try {
@@ -1217,7 +1170,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1244,7 +1196,7 @@ No authorization required
 
 ## getProvidedNotificationSourceNotificationSourceProvidedPost
 
-> NotificationSourcesResponse getProvidedNotificationSourceNotificationSourceProvidedPost(authorization, xForwardedFor)
+> NotificationSourcesResponse getProvidedNotificationSourceNotificationSourceProvidedPost(authorization)
 
 Get Provided Notification Source
 
@@ -1264,8 +1216,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetProvidedNotificationSourceNotificationSourceProvidedPostRequest;
 
   try {
@@ -1286,7 +1236,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1313,7 +1262,7 @@ No authorization required
 
 ## getProvidedNotificationTargetNotificationTargetProvidedPost
 
-> NotificationTargetsResponse getProvidedNotificationTargetNotificationTargetProvidedPost(authorization, xForwardedFor)
+> NotificationTargetsResponse getProvidedNotificationTargetNotificationTargetProvidedPost(authorization)
 
 Get Provided Notification Target
 
@@ -1333,8 +1282,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetProvidedNotificationTargetNotificationTargetProvidedPostRequest;
 
   try {
@@ -1355,7 +1302,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1382,7 +1328,7 @@ No authorization required
 
 ## getTriggerEventsNotificationTriggerEventAllPost
 
-> TriggerEventsResponse getTriggerEventsNotificationTriggerEventAllPost(authorization, xForwardedFor)
+> TriggerEventsResponse getTriggerEventsNotificationTriggerEventAllPost(authorization)
 
 Get Trigger Events
 
@@ -1402,8 +1348,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies GetTriggerEventsNotificationTriggerEventAllPostRequest;
 
   try {
@@ -1424,7 +1368,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1451,7 +1394,7 @@ No authorization required
 
 ## readAllNotificationRecordNotificationRecordReadAllPost
 
-> NormalResponse readAllNotificationRecordNotificationRecordReadAllPost(authorization, xForwardedFor)
+> NormalResponse readAllNotificationRecordNotificationRecordReadAllPost(authorization)
 
 Read All Notification Record
 
@@ -1471,8 +1414,6 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies ReadAllNotificationRecordNotificationRecordReadAllPostRequest;
 
   try {
@@ -1493,7 +1434,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1520,7 +1460,7 @@ No authorization required
 
 ## readNotificationRecordNotificationRecordReadPost
 
-> NormalResponse readNotificationRecordNotificationRecordReadPost(readNotificationRecordRequest, authorization, xForwardedFor)
+> NormalResponse readNotificationRecordNotificationRecordReadPost(readNotificationRecordRequest, authorization)
 
 Read Notification Record
 
@@ -1542,8 +1482,6 @@ async function example() {
     readNotificationRecordRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies ReadNotificationRecordNotificationRecordReadPostRequest;
 
   try {
@@ -1565,7 +1503,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **readNotificationRecordRequest** | [ReadNotificationRecordRequest](ReadNotificationRecordRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1592,7 +1529,7 @@ No authorization required
 
 ## searchNotificationRecordNotificationRecordSearchPost
 
-> InifiniteScrollPagnitionNotificationRecord searchNotificationRecordNotificationRecordSearchPost(searchNotificationRecordRequest, authorization, xForwardedFor)
+> InifiniteScrollPagnitionNotificationRecord searchNotificationRecordNotificationRecordSearchPost(searchNotificationRecordRequest, authorization)
 
 Search Notification Record
 
@@ -1614,8 +1551,6 @@ async function example() {
     searchNotificationRecordRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies SearchNotificationRecordNotificationRecordSearchPostRequest;
 
   try {
@@ -1637,7 +1572,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchNotificationRecordRequest** | [SearchNotificationRecordRequest](SearchNotificationRecordRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1664,7 +1598,7 @@ No authorization required
 
 ## updateEmailSourceNotificationSourceUpdatePost
 
-> NormalResponse updateEmailSourceNotificationSourceUpdatePost(updateNotificationSourceRequest, authorization, xForwardedFor)
+> NormalResponse updateEmailSourceNotificationSourceUpdatePost(updateNotificationSourceRequest, authorization)
 
 Update Email Source
 
@@ -1686,8 +1620,6 @@ async function example() {
     updateNotificationSourceRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateEmailSourceNotificationSourceUpdatePostRequest;
 
   try {
@@ -1709,7 +1641,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **updateNotificationSourceRequest** | [UpdateNotificationSourceRequest](UpdateNotificationSourceRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1736,7 +1667,7 @@ No authorization required
 
 ## updateNotificationTargetNotificationTargetUpdatePost
 
-> NormalResponse updateNotificationTargetNotificationTargetUpdatePost(updateNotificationTargetRequest, authorization, xForwardedFor)
+> NormalResponse updateNotificationTargetNotificationTargetUpdatePost(updateNotificationTargetRequest, authorization)
 
 Update Notification Target
 
@@ -1758,8 +1689,6 @@ async function example() {
     updateNotificationTargetRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateNotificationTargetNotificationTargetUpdatePostRequest;
 
   try {
@@ -1781,7 +1710,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **updateNotificationTargetRequest** | [UpdateNotificationTargetRequest](UpdateNotificationTargetRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1808,7 +1736,7 @@ No authorization required
 
 ## updateNotificationTaskNotificationTaskUpdatePost
 
-> NormalResponse updateNotificationTaskNotificationTaskUpdatePost(updateNotificationTaskRequest, authorization, xForwardedFor)
+> NormalResponse updateNotificationTaskNotificationTaskUpdatePost(updateNotificationTaskRequest, authorization)
 
 Update Notification Task
 
@@ -1830,8 +1758,6 @@ async function example() {
     updateNotificationTaskRequest: ...,
     // string (optional)
     authorization: authorization_example,
-    // string (optional)
-    xForwardedFor: xForwardedFor_example,
   } satisfies UpdateNotificationTaskNotificationTaskUpdatePostRequest;
 
   try {
@@ -1853,7 +1779,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **updateNotificationTaskRequest** | [UpdateNotificationTaskRequest](UpdateNotificationTaskRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
