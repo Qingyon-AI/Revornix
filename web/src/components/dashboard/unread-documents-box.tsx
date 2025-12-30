@@ -36,7 +36,7 @@ const UnReadDocumentBox = () => {
 				onClick={() => {
 					router.push('/document/unread');
 				}}>
-				<CardHeader className='flex-1'>
+				<CardHeader className='flex-1 flex flex-col'>
 					<CardTitle className='flex flex-row items-center'>
 						<span>{t('unread_documents_card_title')}</span>
 						<span className='ml-2 font-bold text-sm'>
@@ -44,7 +44,7 @@ const UnReadDocumentBox = () => {
 							{!isFetchingUnReadDocuments && unReadDocuments?.total}
 						</span>
 					</CardTitle>
-					<CardDescription>
+					<CardDescription className='flex-1'>
 						{t('unread_documents_card_description')}
 					</CardDescription>
 				</CardHeader>
