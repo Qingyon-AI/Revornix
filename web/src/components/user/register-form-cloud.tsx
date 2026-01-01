@@ -22,11 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import {
-	createEmailUser,
-	createEmailUserCode,
-	createEmailUserCodeVerify,
-} from '@/service/user';
+import { createEmailUserCode, createEmailUserCodeVerify } from '@/service/user';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
