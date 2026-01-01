@@ -10,7 +10,7 @@ export default async function RegisterPage() {
 	return (
 		<div className='flex items-center justify-center min-h-[calc(theme("height.screen")-theme("height.16"))]'>
 			{host && isAllowedDeployHost(host) && <RegisterFormCloud />}
-			{host && isAllowedDeployHost(host) && <RegisterFormLocal />}
+			{host && !isAllowedDeployHost(host) && <RegisterFormLocal />}
 		</div>
 	);
 }
