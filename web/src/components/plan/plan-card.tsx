@@ -34,8 +34,20 @@ import { useGetSet } from 'react-use';
 import { useQuery } from '@tanstack/react-query';
 import { PayWay } from '@/enums/product';
 import { useLocale, useTranslations } from 'next-intl';
-import { cn } from '@/lib/utils';
-import { PrePayProductResponseDTO } from '@/generated-pay';
+import { cn, getPrice } from '@/lib/utils';
+import {
+	PrePayProductRequestDTOCurrencyCodeEnum,
+	PrePayProductResponseDTO,
+} from '@/generated-pay';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuLabel,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export type IntroduceAbility = {
 	name: string;
@@ -64,6 +76,9 @@ const PlanCard = ({
 		targetDate: targetTime,
 	});
 	const alipayIframeBox = useRef<HTMLIFrameElement>(null);
+
+	const [currencyCode, setCurrencyCode] =
+		useState<PrePayProductRequestDTOCurrencyCodeEnum>('USD');
 	const [showPayDialog, setShowPayDialog] = useState(false);
 	const [showScanCode, setShowScanCode] = useState(false);
 	const { refreshMainUserInfo, mainUserInfo, refreshPaySystemInfo } =
@@ -122,7 +137,12 @@ const PlanCard = ({
 		setPayWay(pay_way);
 		setShowScanCode(true);
 		const [res, err] = await utils.to(
-			prePayProduct({ product_uuid, pay_way, category: 'plan_subscribe' })
+			prePayProduct({
+				product_uuid,
+				pay_way,
+				category: 'plan_subscribe',
+				currency_code: currencyCode,
+			})
 		);
 		if (err || !res) {
 			console.error(err);
@@ -178,16 +198,20 @@ const PlanCard = ({
 								<p>{t('order_info_getting')}...</p>
 							</div>
 						)}
-						{payWay == PayWay.WECHAT && prepayBackData && (
-							<div className='size-[200px] relative rounded overflow-hidden shrink-0 mx-auto my-5'>
-								<Image src={prepayBackData?.code} alt='qr code' fill />
-							</div>
-						)}
-						{payWay == PayWay.ALIPAY && prepayBackData && (
-							<iframe
-								className='size-[200px] relative rounded overflow-hidden shrink-0 mx-auto my-5'
-								ref={alipayIframeBox}></iframe>
-						)}
+						{currencyCode === 'CNY' &&
+							payWay == PayWay.WECHAT &&
+							prepayBackData && (
+								<div className='size-[200px] relative rounded overflow-hidden shrink-0 mx-auto my-5'>
+									<Image src={prepayBackData?.code} alt='qr code' fill />
+								</div>
+							)}
+						{currencyCode === 'CNY' &&
+							payWay == PayWay.ALIPAY &&
+							prepayBackData && (
+								<iframe
+									className='size-[200px] relative rounded overflow-hidden shrink-0 mx-auto my-5'
+									ref={alipayIframeBox}></iframe>
+							)}
 						{countdown != null && countdown !== 0 && (
 							<div className='text-sm text-center my-5'>
 								<span>{t('account_plan_pay_qr_code_description') + ' '}</span>
@@ -217,9 +241,8 @@ const PlanCard = ({
 											{t('account_plan_pay_price')}
 										</TableCell>
 										<TableCell>
-											{'¥'}{' '}
 											{prepayBackData?.price
-												? (prepayBackData.price / 100).toFixed(2)
+												? `${prepayBackData.price.currency_code} ${prepayBackData.price.price}`
 												: 'Loading...'}
 										</TableCell>
 									</TableRow>
@@ -238,9 +261,11 @@ const PlanCard = ({
 							{t('account_plan_pay_way_choose_description')}
 						</DialogDescription>
 					</DialogHeader>
+
 					<div className='w-full grid grid-cols-1 md:grid-cols-3 gap-2'>
 						<Button
 							className='relative'
+							disabled={currencyCode !== 'CNY'}
 							onClick={() => {
 								if (productDetail?.id) {
 									handlePrePayProduct(productDetail.uuid, PayWay.WECHAT);
@@ -251,6 +276,8 @@ const PlanCard = ({
 							<WechatIcon />
 						</Button>
 						<Button
+							className='relative'
+							disabled={currencyCode !== 'CNY'}
 							onClick={() => {
 								if (productDetail?.id) {
 									handlePrePayProduct(productDetail.uuid, PayWay.ALIPAY);
@@ -260,6 +287,8 @@ const PlanCard = ({
 							<AlipayIcon />
 						</Button>
 						<Button
+							className='relative'
+							disabled={currencyCode !== 'USD'}
 							onClick={() => {
 								if (productDetail?.id) {
 									handlePrePayProduct(productDetail.uuid, PayWay.PAYPAL);
@@ -269,6 +298,7 @@ const PlanCard = ({
 							<FaPaypal />
 						</Button>
 					</div>
+
 					<div className='text-muted-foreground text-xs flex flex-row gap-1'>
 						<Info size={15} />
 						{t('account_plan_pay_way_choose_advice')}
@@ -290,18 +320,44 @@ const PlanCard = ({
 				)}
 				<CardHeader>
 					<CardTitle>
+						{!productDetail && t('loading')}
 						{locale === 'zh' ? productDetail?.name_zh : productDetail?.name}
 					</CardTitle>
 				</CardHeader>
 				<CardContent className='flex flex-col gap-5 flex-1'>
-					<div>
-						<span className='font-bold text-2xl'>
-							{'¥'}{' '}
-							{productDetail?.price
-								? (productDetail.price / 100).toFixed(2)
-								: t('account_plan_free')}
-						</span>
-						<span>/{t('account_plan_month')}</span>
+					<div className='flex justify-between items-center'>
+						<div>
+							<span className='font-bold text-2xl'>
+								{productDetail?.prices
+									? `${
+											getPrice(productDetail?.prices, currencyCode)
+												?.currency_code
+									  } ${getPrice(productDetail?.prices, currencyCode)?.price}`
+									: t('loading')}
+							</span>
+							<span>/{t('account_plan_month')}</span>
+						</div>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant='outline'>{t('currency_type')}</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className='w-56'>
+								<DropdownMenuLabel>
+									{t('currency_type_can_choose')}
+								</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								<DropdownMenuRadioGroup
+									value={currencyCode}
+									onValueChange={(e) =>
+										setCurrencyCode(
+											e as PrePayProductRequestDTOCurrencyCodeEnum
+										)
+									}>
+									<DropdownMenuRadioItem value='USD'>USD</DropdownMenuRadioItem>
+									<DropdownMenuRadioItem value='CNY'>CNY</DropdownMenuRadioItem>
+								</DropdownMenuRadioGroup>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 					<div className='flex flex-col gap-2 text-sm'>
 						{introduction_abilities &&
@@ -319,11 +375,11 @@ const PlanCard = ({
 				<CardFooter>
 					<Button
 						className='w-full'
-						disabled={!productDetail?.price}
+						disabled={!productDetail?.prices}
 						onClick={() => {
 							setShowPayDialog(true);
 						}}>
-						{productDetail?.price
+						{productDetail?.prices
 							? t('account_plan_subscribe')
 							: t('account_plan_free')}
 					</Button>

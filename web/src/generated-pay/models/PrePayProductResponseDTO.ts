@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { PriceItem } from './PriceItem';
+import {
+    PriceItemFromJSON,
+    PriceItemFromJSONTyped,
+    PriceItemToJSON,
+    PriceItemToJSONTyped,
+} from './PriceItem';
+
 /**
  * 
  * @export
@@ -45,10 +53,10 @@ export interface PrePayProductResponseDTO {
     product_name_zh: string;
     /**
      * 
-     * @type {number}
+     * @type {PriceItem}
      * @memberof PrePayProductResponseDTO
      */
-    price: number;
+    price: PriceItem;
 }
 
 /**
@@ -77,7 +85,7 @@ export function PrePayProductResponseDTOFromJSONTyped(json: any, ignoreDiscrimin
         'code': json['code'],
         'product_name': json['product_name'],
         'product_name_zh': json['product_name_zh'],
-        'price': json['price'],
+        'price': PriceItemFromJSON(json['price']),
     };
 }
 
@@ -96,7 +104,7 @@ export function PrePayProductResponseDTOToJSONTyped(value?: PrePayProductRespons
         'code': value['code'],
         'product_name': value['product_name'],
         'product_name_zh': value['product_name_zh'],
-        'price': value['price'],
+        'price': PriceItemToJSON(value['price']),
     };
 }
 

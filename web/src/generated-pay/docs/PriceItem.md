@@ -1,40 +1,24 @@
 
-# Product
+# PriceItem
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`id` | number
-`uuid` | string
-`name` | string
-`name_zh` | string
-`description` | string
-`description_zh` | string
-`category` | number
-`createTime` | Date
-`updateTime` | Date
-`deleteAt` | Date
+`price` | number
+`currency_code` | string
 
 ## Example
 
 ```typescript
-import type { Product } from ''
+import type { PriceItem } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": null,
-  "uuid": null,
-  "name": null,
-  "name_zh": null,
-  "description": null,
-  "description_zh": null,
-  "category": null,
-  "createTime": null,
-  "updateTime": null,
-  "deleteAt": null,
-} satisfies Product
+  "price": null,
+  "currency_code": null,
+} satisfies PriceItem
 
 console.log(example)
 
@@ -43,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as Product
+const exampleParsed = JSON.parse(exampleJSON) as PriceItem
 console.log(exampleParsed)
 ```
 

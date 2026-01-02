@@ -12,7 +12,7 @@ Name | Type
 `name_zh` | string
 `description` | string
 `description_zh` | string
-`price` | number
+`prices` | [Array&lt;PriceItem&gt;](PriceItem.md)
 
 ## Example
 
@@ -27,7 +27,7 @@ const example = {
   "name_zh": null,
   "description": null,
   "description_zh": null,
-  "price": null,
+  "prices": null,
 } satisfies GetProductResponseDTO
 
 console.log(example)

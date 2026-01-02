@@ -63,12 +63,6 @@ export interface Product {
     category: number;
     /**
      * 
-     * @type {number}
-     * @memberof Product
-     */
-    price: number;
-    /**
-     * 
      * @type {Date}
      * @memberof Product
      */
@@ -97,7 +91,6 @@ export function instanceOfProduct(value: object): value is Product {
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('description_zh' in value) || value['description_zh'] === undefined) return false;
     if (!('category' in value) || value['category'] === undefined) return false;
-    if (!('price' in value) || value['price'] === undefined) return false;
     if (!('createTime' in value) || value['createTime'] === undefined) return false;
     return true;
 }
@@ -119,7 +112,6 @@ export function ProductFromJSONTyped(json: any, ignoreDiscriminator: boolean): P
         'description': json['description'],
         'description_zh': json['description_zh'],
         'category': json['category'],
-        'price': json['price'],
         'createTime': (new Date(json['createTime'])),
         'updateTime': json['updateTime'] == null ? undefined : (new Date(json['updateTime'])),
         'deleteAt': json['deleteAt'] == null ? undefined : (new Date(json['deleteAt'])),
@@ -144,7 +136,6 @@ export function ProductToJSONTyped(value?: Product | null, ignoreDiscriminator: 
         'description': value['description'],
         'description_zh': value['description_zh'],
         'category': value['category'],
-        'price': value['price'],
         'createTime': value['createTime'].toISOString(),
         'updateTime': value['updateTime'] == null ? value['updateTime'] : value['updateTime'].toISOString(),
         'deleteAt': value['deleteAt'] == null ? value['deleteAt'] : value['deleteAt'].toISOString(),

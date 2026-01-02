@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { PriceItem } from './PriceItem';
+import {
+    PriceItemFromJSON,
+    PriceItemFromJSONTyped,
+    PriceItemToJSON,
+    PriceItemToJSONTyped,
+} from './PriceItem';
 import type { ProductResponseDTO } from './ProductResponseDTO';
 import {
     ProductResponseDTOFromJSON,
@@ -41,10 +48,10 @@ export interface GetOrderDetailResponseDTO {
     order_no: string;
     /**
      * 
-     * @type {number}
+     * @type {PriceItem}
      * @memberof GetOrderDetailResponseDTO
      */
-    price: number;
+    price: PriceItem;
     /**
      * 
      * @type {number}
@@ -83,7 +90,7 @@ export function GetOrderDetailResponseDTOFromJSONTyped(json: any, ignoreDiscrimi
         
         'id': json['id'],
         'order_no': json['order_no'],
-        'price': json['price'],
+        'price': PriceItemFromJSON(json['price']),
         'status': json['status'],
         'product': ProductResponseDTOFromJSON(json['product']),
     };
@@ -102,7 +109,7 @@ export function GetOrderDetailResponseDTOToJSONTyped(value?: GetOrderDetailRespo
         
         'id': value['id'],
         'order_no': value['order_no'],
-        'price': value['price'],
+        'price': PriceItemToJSON(value['price']),
         'status': value['status'],
         'product': ProductResponseDTOToJSON(value['product']),
     };

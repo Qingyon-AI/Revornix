@@ -10,7 +10,7 @@ Name | Type
 `code` | string
 `product_name` | string
 `product_name_zh` | string
-`price` | number
+`price` | [PriceItem](PriceItem.md)
 
 ## Example
 

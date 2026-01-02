@@ -37,7 +37,27 @@ export interface PrePayProductRequestDTO {
      * @memberof PrePayProductRequestDTO
      */
     category: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PrePayProductRequestDTO
+     */
+    currency_code: PrePayProductRequestDTOCurrencyCodeEnum;
 }
+
+
+/**
+ * @export
+ */
+export const PrePayProductRequestDTOCurrencyCodeEnum = {
+    Cny: 'CNY',
+    Usd: 'USD',
+    Eur: 'EUR',
+    Hkd: 'HKD',
+    Jpy: 'JPY'
+} as const;
+export type PrePayProductRequestDTOCurrencyCodeEnum = typeof PrePayProductRequestDTOCurrencyCodeEnum[keyof typeof PrePayProductRequestDTOCurrencyCodeEnum];
+
 
 /**
  * Check if a given object implements the PrePayProductRequestDTO interface.
@@ -46,6 +66,7 @@ export function instanceOfPrePayProductRequestDTO(value: object): value is PrePa
     if (!('product_uuid' in value) || value['product_uuid'] === undefined) return false;
     if (!('pay_way' in value) || value['pay_way'] === undefined) return false;
     if (!('category' in value) || value['category'] === undefined) return false;
+    if (!('currency_code' in value) || value['currency_code'] === undefined) return false;
     return true;
 }
 
@@ -62,6 +83,7 @@ export function PrePayProductRequestDTOFromJSONTyped(json: any, ignoreDiscrimina
         'product_uuid': json['product_uuid'],
         'pay_way': json['pay_way'],
         'category': json['category'],
+        'currency_code': json['currency_code'],
     };
 }
 
@@ -79,6 +101,7 @@ export function PrePayProductRequestDTOToJSONTyped(value?: PrePayProductRequestD
         'product_uuid': value['product_uuid'],
         'pay_way': value['pay_way'],
         'category': value['category'],
+        'currency_code': value['currency_code'],
     };
 }
 

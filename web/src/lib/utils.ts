@@ -5,6 +5,11 @@ import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeStringify from 'rehype-stringify'
+import { PriceItem, PriceItemCurrencyCodeEnum } from "@/generated-pay"
+
+export function getPrice(prices: PriceItem[], currency_code: PriceItemCurrencyCodeEnum) {
+  return prices.find(p => p.currency_code === currency_code)
+}
 
 export function isAllowedDeployHost(host?: string) {
   if (!host) return false

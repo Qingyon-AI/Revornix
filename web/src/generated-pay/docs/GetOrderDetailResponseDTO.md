@@ -8,7 +8,7 @@ Name | Type
 ------------ | -------------
 `id` | number
 `order_no` | string
-`price` | number
+`price` | [PriceItem](PriceItem.md)
 `status` | number
 `product` | [ProductResponseDTO](ProductResponseDTO.md)
 

@@ -9,6 +9,7 @@ Name | Type
 `product_uuid` | string
 `pay_way` | number
 `category` | string
+`currency_code` | string
 
 ## Example
 
@@ -20,6 +21,7 @@ const example = {
   "product_uuid": null,
   "pay_way": null,
   "category": null,
+  "currency_code": null,
 } satisfies PrePayProductRequestDTO
 
 console.log(example)
