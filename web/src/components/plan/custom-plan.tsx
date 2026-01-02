@@ -28,7 +28,7 @@ const CustomPlan = () => {
 				<CardContent className='flex flex-col gap-5 flex-1'>
 					<div>
 						<span className='font-bold text-2xl'>
-							{'¥'} {t('account_plan_pay_price_custom')}
+							{t('account_plan_pay_price_custom')}
 						</span>
 						<span>/{t('account_plan_month')}</span>
 					</div>

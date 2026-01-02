@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { PriceItem } from './PriceItem';
+import {
+    PriceItemFromJSON,
+    PriceItemFromJSONTyped,
+    PriceItemToJSON,
+    PriceItemToJSONTyped,
+} from './PriceItem';
+
 /**
  * 
  * @export
@@ -57,10 +65,10 @@ export interface GetProductResponseDTO {
     description_zh: string;
     /**
      * 
-     * @type {number}
+     * @type {Array<PriceItem>}
      * @memberof GetProductResponseDTO
      */
-    price: number;
+    prices: Array<PriceItem>;
 }
 
 /**
@@ -73,7 +81,7 @@ export function instanceOfGetProductResponseDTO(value: object): value is GetProd
     if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('description_zh' in value) || value['description_zh'] === undefined) return false;
-    if (!('price' in value) || value['price'] === undefined) return false;
+    if (!('prices' in value) || value['prices'] === undefined) return false;
     return true;
 }
 
@@ -93,7 +101,7 @@ export function GetProductResponseDTOFromJSONTyped(json: any, ignoreDiscriminato
         'name_zh': json['name_zh'],
         'description': json['description'],
         'description_zh': json['description_zh'],
-        'price': json['price'],
+        'prices': ((json['prices'] as Array<any>).map(PriceItemFromJSON)),
     };
 }
 
@@ -114,7 +122,7 @@ export function GetProductResponseDTOToJSONTyped(value?: GetProductResponseDTO |
         'name_zh': value['name_zh'],
         'description': value['description'],
         'description_zh': value['description_zh'],
-        'price': value['price'],
+        'prices': ((value['prices'] as Array<any>).map(PriceItemToJSON)),
     };
 }
 

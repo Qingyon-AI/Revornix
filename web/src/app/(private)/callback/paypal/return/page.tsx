@@ -92,7 +92,7 @@ const PayPalReturnPage = () => {
 								<TableRow>
 									<TableCell className='font-bold'>{t('pay_price')}</TableCell>
 									<TableCell align='right'>
-										{'¥'} {orderDetail?.price}
+										{orderDetail.price.currency_code} {orderDetail.price.price}
 									</TableCell>
 								</TableRow>
 							</TableBody>

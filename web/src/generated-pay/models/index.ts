@@ -16,6 +16,7 @@ export * from './OrderStatusResponseDTO';
 export * from './Plan';
 export * from './PrePayProductRequestDTO';
 export * from './PrePayProductResponseDTO';
+export * from './PriceItem';
 export * from './Product';
 export * from './ProductResponseDTO';
 export * from './User';
