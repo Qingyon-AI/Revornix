@@ -18,10 +18,12 @@ from common.jwt_utils import create_token
 from langchain_openai import ChatOpenAI
 from langfuse import propagate_attributes
 from langchain_core.messages import AIMessage, HumanMessage
-from common.common import to_serializable, safe_json_loads
+from common.common import safe_json_loads
 from enums.mcp import MCPCategory
 from enums.model import OfficialModelProvider, OfficialModel
 from common.encrypt import encrypt_api_key
+from common.interpret_event import EventInterpreter
+from typing import AsyncGenerator
 
 ai_router = APIRouter()
 
@@ -475,55 +477,83 @@ async def create_agent(
 
 async def stream_ops_with_agent(
     user_id: int,
-    agent: MCPAgent, 
-    messages: list
-):
+    agent: MCPAgent,
+    messages: list,
+) -> AsyncGenerator[str, None]:
     run_id = None
+    interpreter = EventInterpreter()
+
     try:
+        # ==========================
+        # 1️⃣ 初始化上下文
+        # ==========================
         agent.clear_conversation_history()
-        # 弹出最后一条消息并将其作为query
+
         query = messages.pop().content
         for message in messages:
             if message.role == "user":
                 agent.add_to_history(HumanMessage(content=message.content))
             elif message.role == "assistant":
                 agent.add_to_history(AIMessage(content=message.content))
+
+        # ==========================
+        # 2️⃣ 开始流式执行
+        # ==========================
         with propagate_attributes(
             user_id=str(user_id),
-            tags=[f'model:{agent._model_name}']
+            tags=[f"model:{agent._model_name}"],
         ):
-            async for event in agent.stream_events(
-                query=f"{query}",
-            ):
-                event_type = event.get("event")
-                data = event.get("data", {})
-                run_id = event.get("run_id")
-                parent_ids = event.get("parent_ids")
-                sse_data = {
-                    "parent_ids": parent_ids,
-                    "run_id": run_id,
-                    "event": event_type,
-                    "timestamp": time.time(),
-                    "data": to_serializable(data),
-                }
-                yield f"{json.dumps(to_serializable(sse_data), ensure_ascii=False)}\n\n"
+            async for raw_event in agent.stream_events(query=query):
+                run_id = raw_event.get("run_id", run_id)
+
+                # 🔥 核心：解释 LangGraph / MCP 事件
+                for interpreted in interpreter.interpret(
+                    raw_event,
+                    run_id=run_id,
+                ):
+                    if not interpreted:
+                        continue
+
+                    yield _sse(interpreted)
+
     except Exception as e:
-        error_event = {
-            "event": "error",
-            "run_id": run_id,
-            "timestamp": time.time(),
-            "data": {
-                "content": str(e)
+        # ==========================
+        # 3️⃣ 错误事件
+        # ==========================
+        yield _sse(
+            {
+                "id": f"evt_error_{int(time.time() * 1000)}",
+                "type": "error",
+                "timestamp": time.time(),
+                "run_id": run_id,
+                "trace": {},
+                "payload": {
+                    "code": "SERVER_ERROR",
+                    "message": str(e),
+                    "recoverable": False,
+                },
             }
+        )
+
+    # ==========================
+    # 4️⃣ 完成事件
+    # ==========================
+    yield _sse(
+        {
+            "id": f"evt_done_{int(time.time() * 1000)}",
+            "type": "done",
+            "timestamp": time.time(),
+            "run_id": run_id,
+            "trace": {},
+            "payload": {"success": True},
         }
-        yield json.dumps(error_event, ensure_ascii=False) + "\n\n"
-    sse_data = {
-        "event": "done",
-        "timestamp": time.time(),
-        "data": {},
-        "run_id": run_id,
-    }
-    yield f"{json.dumps(to_serializable(sse_data), ensure_ascii=False)}\n\n"
+    )
+
+def _sse(event: dict) -> str:
+    """
+    SSE 格式统一出口
+    """
+    return f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
 
 @ai_router.post("/ask")
 async def ask_ai(
