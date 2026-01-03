@@ -54,7 +54,7 @@ const GraphPage = () => {
 
 	const { resolvedTheme } = useTheme();
 
-	const { data, isLoading, isError, error, isFetched } = useQuery({
+	const { data, isLoading, isError, error, isFetched, isSuccess } = useQuery({
 		queryKey: ['searchGraphData'],
 		queryFn: async () => searchGraph(),
 	});
@@ -264,13 +264,13 @@ const GraphPage = () => {
 
 	return (
 		<div className='w-full h-full flex justify-center items-center relative'>
-			{isError && <div className='text-red-500'>Error: {error.message}</div>}
 			{isLoading && (
 				<div className='px-5 pb-5 w-full h-full'>
 					<Skeleton className='w-full h-full' />
 				</div>
 			)}
-			{isFetched && (
+			{isError && <div className='text-red-500'>Error: {error.message}</div>}
+			{isSuccess && isFetched && (
 				<>
 					{!data?.edges.length && !data?.nodes.length && (
 						<div className='text-xs text-muted-foreground'>
