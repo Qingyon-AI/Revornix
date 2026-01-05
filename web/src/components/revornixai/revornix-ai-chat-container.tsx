@@ -2,16 +2,16 @@
 
 import { useRef } from 'react';
 import ChatHistory from './chat-history';
-import { useAIChatContext } from '@/provider/ai-chat-provider';
 import MessageCard from './message-card';
 import MessageSendForm from './message-send-form';
 import CreateSessionButton from './create-session-button';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
+import { useAiChatStore } from '@/store/ai-chat';
 
 const RevornixAI = () => {
 	const t = useTranslations();
-	const { currentSession } = useAIChatContext();
+	const currentSession = useAiChatStore((s) => s.currentSession());
 
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -29,7 +29,7 @@ const RevornixAI = () => {
 		messageEndRef.current?.scrollIntoView({
 			behavior: 'auto',
 		});
-	}, [currentSession()?.messages?.at(-1)?.content]);
+	}, [currentSession?.messages?.at(-1)?.content]);
 
 	return (
 		<>
@@ -57,8 +57,8 @@ const RevornixAI = () => {
 						ref={containerRef}
 						className={`overflow-auto flex-1 col-span-12`}>
 						<div className='flex flex-col gap-2'>
-							{currentSession()?.messages &&
-								currentSession()?.messages.map((message, index) => {
+							{currentSession?.messages &&
+								currentSession?.messages.map((message, index) => {
 									return <MessageCard key={index} message={message} />;
 								})}
 							<div ref={messageEndRef} />

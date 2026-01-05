@@ -1,12 +1,13 @@
-import { useAIChatContext } from '@/provider/ai-chat-provider';
 import { Button } from '../ui/button';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
+import { useAiChatStore } from '@/store/ai-chat';
 
 const CreateSessionButton = () => {
 	const t = useTranslations();
-	const { addSession, setCurrentSessionId } = useAIChatContext();
+	const addSession = useAiChatStore((s) => s.addSession);
+	const setCurrentSessionId = useAiChatStore((s) => s.setCurrentSessionId);
 	const handleCreateNewSession = () => {
 		const newSession = {
 			id: uuidv4(),

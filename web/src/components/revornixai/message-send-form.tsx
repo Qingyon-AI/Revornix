@@ -1,6 +1,5 @@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { uniqueId } from 'lodash-es';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import aiApi from '@/api/ai';
 import Cookies from 'js-cookie';
@@ -11,7 +10,6 @@ import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Switch } from '../ui/switch';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAIChatContext } from '@/provider/ai-chat-provider';
 import { Button } from '../ui/button';
 import { useTranslations } from 'next-intl';
 import { useUserContext } from '@/provider/user-provider';
@@ -24,8 +22,7 @@ import {
 	TooltipTrigger,
 } from '../ui/hybrid-tooltip';
 import { useRouter } from 'nextjs-toploader/app';
-import { useReducer } from 'react';
-import { aiReducer, initialAIState } from './fsm';
+import { useAiChatStore } from '@/store/ai-chat';
 
 const MessageSendForm = () => {
 	const router = useRouter();
@@ -50,31 +47,39 @@ const MessageSendForm = () => {
 		enabled: !!mainUserInfo?.default_revornix_model_id,
 	});
 
-	const {
-		addSession,
-		currentSession,
-		setCurrentSessionId,
-		appendChatToken,
-		sessions,
-	} = useAIChatContext();
+	const addSession = useAiChatStore((s) => s.addSession);
+	const setCurrentSessionId = useAiChatStore((s) => s.setCurrentSessionId);
+	const updateChatMessage = useAiChatStore((s) => s.updateChatMessage);
+	const updateChatMessageAIState = useAiChatStore(
+		(s) => s.updateChatMessageAIState
+	);
+	const currentSession = useAiChatStore((s) => s.currentSession());
+	const sessions = useAiChatStore((s) => s.sessions);
 
-	const [state, dispatch] = useReducer(aiReducer, initialAIState);
-
-	const addOrUpdateAIMessageToMessages = (responseItem: AIEvent) => {
+	const handleAIResponseEvent = (event: AIEvent) => {
 		if (!currentSession) {
 			return;
 		}
-		dispatch(responseItem);
-
-		if (
-			responseItem.type === 'output' &&
-			responseItem.payload.kind === 'token'
-		) {
-			appendChatToken(
-				responseItem.chat_id,
-				'assistant',
-				responseItem.payload.content
-			);
+		if (event.type === 'status') {
+			updateChatMessageAIState(event.chat_id, 'assistant', {
+				...event.payload,
+			});
+		}
+		if (event.type === 'output' && event.payload.kind === 'token') {
+			updateChatMessage(event.chat_id, 'assistant', event.payload.content);
+		}
+		if (event.type === 'error') {
+			updateChatMessageAIState(event.chat_id, 'assistant', {
+				...event.payload,
+				phase: 'error',
+				label: 'Error',
+			});
+		}
+		if (event.type === 'done') {
+			updateChatMessageAIState(event.chat_id, 'assistant', {
+				phase: 'done',
+				label: 'Completed',
+			});
 		}
 	};
 
@@ -119,6 +124,7 @@ const MessageSendForm = () => {
 			content: values.message,
 			role: 'user',
 		};
+
 		// if there is no current session
 		if (!currentSession && !sessions.length) {
 			const newSession = {
@@ -130,10 +136,14 @@ const MessageSendForm = () => {
 			setCurrentSessionId(newSession.id);
 		}
 		// create a new array to update the state
-		appendChatToken(newMessage.chat_id, 'user', newMessage.content);
+		updateChatMessage(newMessage.chat_id, 'user', newMessage.content);
+
+		const baseMessages = currentSession?.messages ?? [];
+
+		const messagesToSend = [...baseMessages, newMessage];
 
 		mutateSendMessage.mutate({
-			messages: currentSession()?.messages || [],
+			messages: messagesToSend,
 			enable_mcp: values.enable_mcp,
 		});
 		form.resetField('message');
@@ -199,7 +209,7 @@ const MessageSendForm = () => {
 				enable_mcp,
 			}),
 		});
-		await consumeSSE(response, addOrUpdateAIMessageToMessages);
+		await consumeSSE(response, handleAIResponseEvent);
 	};
 
 	const mutateSendMessage = useMutation({

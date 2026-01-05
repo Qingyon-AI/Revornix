@@ -1,7 +1,8 @@
 export type Message = {
-    content: string;
-    role: string;
     chat_id: string;
+    role: string;
+    content: string;
+    ai_state?: AIState;
 };
 
 export type SessionItem = {
@@ -20,20 +21,8 @@ export type AIPhase =
 
 export interface AIState {
     phase: AIPhase;
-    statusLabel?: string;
+    label?: string;
     error?: string;
-}
-
-export interface StatusEvent {
-    type: "status";
-    payload: {
-        phase: AIPhase;
-        label?: string;
-    };
-};
-
-export interface AIEventBase {
-    type: 'status' | 'output' | 'done' | 'error';
 }
 
 export type AIEvent =
