@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware'
 import { get, set, del } from 'idb-keyval'
-import { SessionItem } from '@/types/ai'
+import { AIState, SessionItem } from '@/types/ai'
 
 export type AIChatState = {
     currentSessionId: string | null;
@@ -15,11 +15,13 @@ export type AIChatAction = {
     addSession: (chat: SessionItem) => void;
     deleteSession: (id: string) => void;
     setHasHydrated: (status: boolean) => void;
-    appendChatToken: (
+    updateChatMessage: (
         chat_id: string,
         role: 'assistant' | 'user',
-        token: string
+        token: string,
+        ai_state?: AIState
     ) => void;
+    updateChatMessageAIState: (chat_id: string, role: string, new_state: AIState) => void;
 };
 
 const storage: StateStorage = {
@@ -42,15 +44,44 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
         (set, get) => {
             return ({
                 _hasHydrated: false,
-                sessions: [],
                 currentSessionId: null,
+                sessions: [],
                 currentSession: () => {
                     const currentSessionId = get().currentSessionId;
                     if (!currentSessionId) return null;
                     return get().sessions.find((session) => session.id === currentSessionId) || null;
                 },
                 setCurrentSessionId: (id) => set({ currentSessionId: id }),
-                appendChatToken: (chat_id: string, role: string, token: string) => {
+                updateChatMessageAIState: (chat_id: string, role: string, new_state: AIState) => {
+                    set((state) => {
+                        const sessions = state.sessions.map((session) => {
+                            if (session.id !== state.currentSessionId) return session;
+
+                            const messages = [...session.messages];
+
+                            const idx = messages.findIndex(m => m.chat_id === chat_id);
+
+                            if (idx === -1) {
+                                messages.push({
+                                    chat_id: chat_id,
+                                    role: role,
+                                    content: '',
+                                    ai_state: new_state,
+                                });
+                            } else {
+                                messages[idx] = {
+                                    ...messages[idx],
+                                    ai_state: new_state,
+                                };
+                            }
+
+                            return { ...session, messages };
+                        });
+
+                        return { sessions };
+                    });
+                },
+                updateChatMessage: (chat_id: string, role: string, token: string) => {
                     return set((state) => {
                         const sessions = state.sessions.map(session => {
                             if (session.id !== state.currentSessionId) return session;

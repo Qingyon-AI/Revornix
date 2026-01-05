@@ -15,7 +15,6 @@ import { useState } from 'react';
 import { useAiChatStore } from '@/store/ai-chat';
 import { cloneDeep } from 'lodash-es';
 import { format } from 'date-fns';
-import { useAIChatContext } from '@/provider/ai-chat-provider';
 import { useTranslations } from 'next-intl';
 import { SessionItem } from '@/types/ai';
 
