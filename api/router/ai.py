@@ -3,6 +3,7 @@ import time
 import crud
 import schemas
 import models
+from uuid import uuid4
 from pydantic import SecretStr
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
@@ -24,6 +25,7 @@ from enums.model import OfficialModelProvider, OfficialModel
 from common.encrypt import encrypt_api_key
 from common.interpret_event import EventInterpreter
 from typing import AsyncGenerator
+from schemas.ai import ChatItem
 
 ai_router = APIRouter()
 
@@ -478,9 +480,8 @@ async def create_agent(
 async def stream_ops_with_agent(
     user_id: int,
     agent: MCPAgent,
-    messages: list,
+    messages: list[ChatItem],
 ) -> AsyncGenerator[str, None]:
-    run_id = None
     interpreter = EventInterpreter()
 
     try:
@@ -496,6 +497,8 @@ async def stream_ops_with_agent(
             elif message.role == "assistant":
                 agent.add_to_history(AIMessage(content=message.content))
 
+        # 返回的消息的id
+        chat_id = uuid4().hex
         # ==========================
         # 2️⃣ 开始流式执行
         # ==========================
@@ -503,13 +506,12 @@ async def stream_ops_with_agent(
             user_id=str(user_id),
             tags=[f"model:{agent._model_name}"],
         ):
+            
             async for raw_event in agent.stream_events(query=query):
-                run_id = raw_event.get("run_id", run_id)
-
                 # 🔥 核心：解释 LangGraph / MCP 事件
                 for interpreted in interpreter.interpret(
-                    raw_event,
-                    run_id=run_id,
+                    event=raw_event,
+                    chat_id=chat_id
                 ):
                     if not interpreted:
                         continue
@@ -522,15 +524,13 @@ async def stream_ops_with_agent(
         # ==========================
         yield _sse(
             {
-                "id": f"evt_error_{int(time.time() * 1000)}",
+                "chat_id": chat_id,
                 "type": "error",
                 "timestamp": time.time(),
-                "run_id": run_id,
                 "trace": {},
                 "payload": {
                     "code": "SERVER_ERROR",
-                    "message": str(e),
-                    "recoverable": False,
+                    "message": str(e)
                 },
             }
         )
@@ -540,10 +540,9 @@ async def stream_ops_with_agent(
     # ==========================
     yield _sse(
         {
-            "id": f"evt_done_{int(time.time() * 1000)}",
+            "chat_id": chat_id,
             "type": "done",
             "timestamp": time.time(),
-            "run_id": run_id,
             "trace": {},
             "payload": {"success": True},
         }

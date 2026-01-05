@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional, cast
 
 
 # ============
@@ -18,17 +18,15 @@ def gen_event_id() -> str:
 
 
 def base_event(
-    *,
     event_type: str,
-    run_id: str,
+    chat_id: str,
     payload: Dict[str, Any],
     trace: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     return {
-        "id": gen_event_id(),
+        "chat_id": chat_id,
         "type": event_type,          # status | output | error | done
         "timestamp": now_ts(),
-        "run_id": run_id,
         "trace": trace or {},
         "payload": payload,
     }
@@ -50,9 +48,8 @@ class EventInterpreter:
     # ========= 主入口 =========
     def interpret(
         self,
-        event: Dict[str, Any],
-        *,
-        run_id: str,
+        chat_id: str,
+        event: Dict[str, Any]
     ) -> Iterable[Dict[str, Any]]:
         event_type = event.get("event")
         name = event.get("name")
@@ -73,8 +70,8 @@ class EventInterpreter:
         if event_type == "on_chain_start":
             if is_root:
                 evt = self._status_once(
-                    run_id,
-                    trace,
+                    chat_id=chat_id,
+                    trace=trace,
                     phase="thinking",
                     label="正在理解你的问题",
                 )
@@ -93,8 +90,8 @@ class EventInterpreter:
         # =========================
         if event_type == "on_chat_model_start":
             evt = self._status_once(
-                run_id,
-                trace,
+                chat_id=chat_id,
+                trace=trace,
                 phase="writing",
                 label="正在生成回答",
             )
@@ -109,15 +106,15 @@ class EventInterpreter:
             chunk = data.get("chunk")
 
             # LangChain 有时是 AIMessageChunk
-            if hasattr(chunk, "content"):
+            if chunk is not None and hasattr(chunk, "content"):
                 content = chunk.content
             else:
                 content = chunk
 
             if isinstance(content, str) and content:
                 yield base_event(
+                    chat_id=chat_id,
                     event_type="output",
-                    run_id=run_id,
                     trace=trace,
                     payload={
                         "kind": "token",
@@ -138,8 +135,8 @@ class EventInterpreter:
         if event_type == "on_tool_start":
             tool_name = name or "tool"
             evt = self._status_once(
-                run_id,
-                trace,
+                chat_id=chat_id,
+                trace=trace,
                 phase="tool",
                 label=f"正在调用工具：{tool_name}",
                 detail={"tool": tool_name},
@@ -153,8 +150,8 @@ class EventInterpreter:
         # =========================
         if event_type == "on_tool_end":
             evt = self._status_once(
-                run_id,
-                trace,
+                chat_id=chat_id,
+                trace=trace,
                 phase="thinking",
                 label="工具返回结果，继续思考",
             )
@@ -169,8 +166,8 @@ class EventInterpreter:
             if is_root and not self._done_sent:
                 self._done_sent = True
                 yield base_event(
+                    chat_id=chat_id,
                     event_type="done",
-                    run_id=run_id,
                     trace=trace,
                     payload={"success": True},
                 )
@@ -181,13 +178,12 @@ class EventInterpreter:
         # =========================
         if event_type in ("on_chain_error", "on_tool_error"):
             yield base_event(
+                chat_id=chat_id,
                 event_type="error",
-                run_id=run_id,
                 trace=trace,
                 payload={
                     "code": "EXECUTION_ERROR",
-                    "message": str(data),
-                    "recoverable": False,
+                    "message": str(data)
                 },
             )
             return
@@ -202,9 +198,8 @@ class EventInterpreter:
     # =========================
     def _status_once(
         self,
-        run_id: str,
+        chat_id: str,
         trace: Dict[str, Any],
-        *,
         phase: str,
         label: str,
         detail: Optional[Dict[str, Any]] = None,
@@ -215,8 +210,8 @@ class EventInterpreter:
         self._last_status = phase
 
         return base_event(
+            chat_id=chat_id,
             event_type="status",
-            run_id=run_id,
             trace=trace,
             payload={
                 "phase": phase,   # thinking | writing | tool

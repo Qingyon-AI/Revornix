@@ -1,42 +1,26 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware'
 import { get, set, del } from 'idb-keyval'
-
-export type ResponseItem = {
-    event: string;
-    data: any;
-    name: string;
-    tags: string[];
-    run_id: string;
-    metadata: any;
-    parent_ids: string[];
-}
-
-export type Message = {
-    content: string;
-    role: string;
-    chat_id: string;
-};
-
-export type SessionItem = {
-    id: string
-    title: string
-    messages: Message[]
-}
+import { SessionItem } from '@/types/ai'
 
 export type AIChatState = {
-    currentSessionId: string | null
-    sessions: SessionItem[]
-    _hasHydrated: boolean
-}
+    currentSessionId: string | null;
+    currentSession: () => SessionItem | null;
+    sessions: SessionItem[];
+    _hasHydrated: boolean;
+};
 
-export type AIChacAction = {
-    setCurrentSessionId: (id: string | null) => void
-    addSession: (chat: SessionItem) => void
-    updateSessionMessages: (id: string, new_messages: Message[]) => void
-    deleteSession: (id: string) => void
-    setHasHydrated: (status: boolean) => void
-}
+export type AIChatAction = {
+    setCurrentSessionId: (id: string | null) => void;
+    addSession: (chat: SessionItem) => void;
+    deleteSession: (id: string) => void;
+    setHasHydrated: (status: boolean) => void;
+    appendChatToken: (
+        chat_id: string,
+        role: 'assistant' | 'user',
+        token: string
+    ) => void;
+};
 
 const storage: StateStorage = {
     getItem: async (name: string): Promise<string | null> => {
@@ -53,26 +37,46 @@ const storage: StateStorage = {
     },
 }
 
-export const useAiChatStore = create<AIChatState & AIChacAction>()(
+export const useAiChatStore = create<AIChatState & AIChatAction>()(
     persist(
         (set, get) => {
             return ({
                 _hasHydrated: false,
                 sessions: [],
                 currentSessionId: null,
+                currentSession: () => {
+                    const currentSessionId = get().currentSessionId;
+                    if (!currentSessionId) return null;
+                    return get().sessions.find((session) => session.id === currentSessionId) || null;
+                },
                 setCurrentSessionId: (id) => set({ currentSessionId: id }),
-                updateSessionMessages: (id, new_messages) => {
-                    return set((state) => ({
-                        sessions: state.sessions.map((session) => {
-                            if (session.id == id) {
-                                return {
-                                    ...session,
-                                    messages: new_messages,
+                appendChatToken: (chat_id: string, role: string, token: string) => {
+                    return set((state) => {
+                        const sessions = state.sessions.map(session => {
+                            if (session.id !== state.currentSessionId) return session;
+
+                            const messages = [...session.messages];
+
+                            const idx = messages.findIndex(m => m.chat_id === chat_id);
+
+                            if (idx === -1) {
+                                messages.push({
+                                    chat_id: chat_id,
+                                    role: role,
+                                    content: token,
+                                });
+                            } else {
+                                messages[idx] = {
+                                    ...messages[idx],
+                                    content: messages[idx].content + token,
                                 };
                             }
-                            return session;
-                        }),
-                    }));
+
+                            return { ...session, messages };
+                        });
+
+                        return { sessions }; // ✅ 必须 return
+                    })
                 },
                 addSession: (session: SessionItem) => set((state) => ({ sessions: [...state.sessions, session] })),
                 deleteSession: (id: string) => set((state) => ({ sessions: state.sessions.filter((item) => item.id !== id) })),
@@ -91,9 +95,8 @@ export const useAiChatStore = create<AIChatState & AIChacAction>()(
                 return (state, error) => {
                     state && state.setHasHydrated(true)
                     if (error) {
-                    } else {
+                        console.error('onRehydrateStorage error: ', error)
                     }
-
                 }
             },
         },
