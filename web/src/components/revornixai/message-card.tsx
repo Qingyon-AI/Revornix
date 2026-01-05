@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Message } from '@/store/ai-chat';
+import { Message } from '@/types/ai';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
