@@ -6,14 +6,8 @@ import aiApi from '@/api/ai';
 import Cookies from 'js-cookie';
 import { Info, Send } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { Message, ResponseItem } from '@/store/ai-chat';
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-} from '@/components/ui/form';
+import { AIEvent, Message } from '@/types/ai';
+import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Switch } from '../ui/switch';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,7 +24,8 @@ import {
 	TooltipTrigger,
 } from '../ui/hybrid-tooltip';
 import { useRouter } from 'nextjs-toploader/app';
-import { isEmpty } from 'lodash-es';
+import { useReducer } from 'react';
+import { aiReducer, initialAIState } from './fsm';
 
 const MessageSendForm = () => {
 	const router = useRouter();
@@ -56,15 +51,33 @@ const MessageSendForm = () => {
 	});
 
 	const {
-		aiStatus,
-		setAiStatus,
-		tempMessages,
-		setTempMessages,
 		addSession,
 		currentSession,
 		setCurrentSessionId,
+		appendChatToken,
 		sessions,
 	} = useAIChatContext();
+
+	const [state, dispatch] = useReducer(aiReducer, initialAIState);
+
+	const addOrUpdateAIMessageToMessages = (responseItem: AIEvent) => {
+		if (!currentSession) {
+			return;
+		}
+		dispatch(responseItem);
+
+		if (
+			responseItem.type === 'output' &&
+			responseItem.payload.kind === 'token'
+		) {
+			appendChatToken(
+				responseItem.chat_id,
+				'assistant',
+				responseItem.payload.content
+			);
+		}
+	};
+
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -72,39 +85,6 @@ const MessageSendForm = () => {
 			enable_mcp: false,
 		},
 	});
-
-	const addOrUpdateAIMessageToMessages = (responseItem: ResponseItem) => {
-		if (!currentSession) {
-			return;
-		}
-		const { event, data, run_id } = responseItem;
-		setAiStatus(event);
-
-		if (isEmpty(data) || isEmpty(data?.chunk?.content)) return;
-
-		if (event === 'on_chat_model_stream') {
-			const messageItem = tempMessages().find(
-				(item) => item.chat_id === run_id
-			);
-			if (!messageItem) {
-				const newMessageItem = {
-					chat_id: run_id,
-					content: data.chunk.content,
-					role: 'assistant',
-				};
-				setTempMessages([...tempMessages(), newMessageItem]);
-			} else {
-				if (data.chunk.content && data.chunk.content.length > 0) {
-					messageItem.content = messageItem.content + data.chunk.content;
-				}
-				setTempMessages(
-					tempMessages().map((item) =>
-						item.chat_id === messageItem.chat_id ? messageItem : item
-					)
-				);
-			}
-		}
-	};
 
 	const onSubmitMessageForm = async (
 		event: React.FormEvent<HTMLFormElement>
@@ -121,6 +101,7 @@ const MessageSendForm = () => {
 	};
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
+		// 如果用户没有设置默认交互模型则引导用户前往设置
 		if (!mainUserInfo?.default_revornix_model_id) {
 			toast.error(t('revornix_ai_model_not_set'), {
 				action: {
@@ -132,16 +113,16 @@ const MessageSendForm = () => {
 			});
 			return;
 		}
+
 		const newMessage = {
-			chat_id: uniqueId(),
+			chat_id: crypto.randomUUID(),
 			content: values.message,
 			role: 'user',
-			finish_reason: 'stop',
 		};
 		// if there is no current session
 		if (!currentSession && !sessions.length) {
 			const newSession = {
-				id: uniqueId(),
+				id: crypto.randomUUID(),
 				title: 'New Session',
 				messages: [newMessage],
 			};
@@ -149,9 +130,10 @@ const MessageSendForm = () => {
 			setCurrentSessionId(newSession.id);
 		}
 		// create a new array to update the state
-		setTempMessages([...tempMessages(), newMessage]);
+		appendChatToken(newMessage.chat_id, 'user', newMessage.content);
+
 		mutateSendMessage.mutate({
-			messages: [...tempMessages()],
+			messages: currentSession()?.messages || [],
 			enable_mcp: values.enable_mcp,
 		});
 		form.resetField('message');
@@ -160,6 +142,39 @@ const MessageSendForm = () => {
 	const onFormValidateError = (errors: any) => {
 		console.error(errors);
 		toast.error(t('form_validate_failed'));
+	};
+
+	const consumeSSE = async (
+		response: Response,
+		onEvent: (evt: any) => void
+	) => {
+		const reader = response.body!.getReader();
+		const decoder = new TextDecoder();
+		let buffer = '';
+
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+
+			buffer += decoder.decode(value, { stream: true });
+			const parts = buffer.split('\n\n');
+			buffer = parts.pop() || '';
+
+			for (let raw of parts) {
+				if (!raw.trim()) continue;
+
+				if (raw.startsWith('data:')) {
+					raw = raw.slice(5).trim();
+				}
+
+				try {
+					const evt = JSON.parse(raw);
+					onEvent(evt);
+				} catch (e) {
+					console.error('Invalid SSE chunk', raw);
+				}
+			}
+		}
 	};
 
 	const fetchStream = async ({
@@ -184,31 +199,7 @@ const MessageSendForm = () => {
 				enable_mcp,
 			}),
 		});
-		const reader = response.body?.getReader();
-		const decoder = new TextDecoder();
-		if (!reader) return;
-		let buffer = ''; // use to store partial data
-		while (true) {
-			const { done, value } = await reader.read();
-			if (done) break;
-			buffer += decoder.decode(value, { stream: true }); // add data to the buffer
-			try {
-				// resove multiple lines JSON
-				const lines = buffer.split('\n\n'); // 后段按照\n分段
-				buffer = lines.pop() || ''; // may json fragment, save back
-				for (const line of lines) {
-					if (!line.trim()) continue;
-					try {
-						const messageItem = JSON.parse(line);
-						addOrUpdateAIMessageToMessages(messageItem);
-					} catch (error) {
-						console.error('JSON decede error', line, error);
-					}
-				}
-			} catch (error) {
-				console.error(error, decoder.decode(value, { stream: true }));
-			}
-		}
+		await consumeSSE(response, addOrUpdateAIMessageToMessages);
 	};
 
 	const mutateSendMessage = useMutation({
@@ -229,60 +220,56 @@ const MessageSendForm = () => {
 						name='message'
 						render={({ field }) => (
 							<FormItem className='flex-1'>
-								<FormControl>
-									<Textarea
-										className='dark:bg-transparent shadow-none p-0 border-none outline-none ring-0 focus-visible:ring-0 resize-none'
-										placeholder={t('revornix_ai_message_placeholder')}
-										{...field}
-										onKeyDown={(e) => {
-											if (e.metaKey && e.key === 'Enter') {
-												e.preventDefault(); // 阻止换行
-												form.handleSubmit(
-													onFormValidateSuccess,
-													onFormValidateError
-												)();
-											}
-										}}
-									/>
-								</FormControl>
+								<Textarea
+									className='dark:bg-transparent shadow-none p-0 border-none outline-none ring-0 focus-visible:ring-0 resize-none'
+									placeholder={t('revornix_ai_message_placeholder')}
+									{...field}
+									onKeyDown={(e) => {
+										if (e.metaKey && e.key === 'Enter') {
+											e.preventDefault(); // 阻止换行
+											form.handleSubmit(
+												onFormValidateSuccess,
+												onFormValidateError
+											)();
+										}
+									}}
+								/>
 							</FormItem>
 						)}
 					/>
 					<div className='flex flex-row justify-between items-end gap-5'>
-						<div className='flex flex-row items-center gap-5'>
-							<FormField
-								control={form.control}
-								name='enable_mcp'
-								render={({ field }) => (
-									<FormItem className='flex flex-row items-center'>
-										<FormLabel className='flex flex-row gap-1 items-center'>
-											{t('revornix_ai_mcp_status')}
-											<TooltipProvider>
-												<Tooltip>
-													<TooltipTrigger asChild>
-														<Info className='size-4 text-muted-foreground' />
-													</TooltipTrigger>
-													<TooltipContent>
-														<p>{t('revornix_ai_mcp_description')}</p>
-													</TooltipContent>
-												</Tooltip>
-											</TooltipProvider>
-										</FormLabel>
-										<Switch
-											checked={field.value}
-											onCheckedChange={(e) => {
-												field.onChange(e);
-											}}
-										/>
-										<Link
-											href={'/setting/mcp'}
-											className='text-xs text-muted-foreground underline underline-offset-4'>
-											{t('revornix_ai_go_to_configure_mcp')}
-										</Link>
-									</FormItem>
-								)}
-							/>
-						</div>
+						<FormField
+							control={form.control}
+							name='enable_mcp'
+							render={({ field }) => (
+								<FormItem className='flex flex-row items-center'>
+									<FormLabel className='flex flex-row gap-1 items-center'>
+										{t('revornix_ai_mcp_status')}
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<Info className='size-4 text-muted-foreground' />
+												</TooltipTrigger>
+												<TooltipContent>
+													<p>{t('revornix_ai_mcp_description')}</p>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									</FormLabel>
+									<Switch
+										checked={field.value}
+										onCheckedChange={(e) => {
+											field.onChange(e);
+										}}
+									/>
+									<Link
+										href={'/setting/mcp'}
+										className='text-xs text-muted-foreground underline underline-offset-4'>
+										{t('revornix_ai_go_to_configure_mcp')}
+									</Link>
+								</FormItem>
+							)}
+						/>
 						<Button type='submit' size={'icon'} variant={'outline'}>
 							<Send />
 						</Button>

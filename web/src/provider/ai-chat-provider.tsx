@@ -1,25 +1,15 @@
 'use client';
 
-import {
-	AIChacAction,
-	AIChatState,
-	Message,
-	SessionItem,
-	useAiChatStore,
-} from '@/store/ai-chat';
-import { createContext, useContext, useMemo, useState } from 'react';
-import { useGetSet } from 'react-use';
+import { AIChatAction, AIChatState, useAiChatStore } from '@/store/ai-chat';
+import { SessionItem } from '@/types/ai';
+import { createContext, useContext } from 'react';
 
 interface AIChatContextProps {
-	aiStatus: string;
-	currentSession?: SessionItem;
-	setAiStatus: (status: string) => void;
-	tempMessages: () => Message[];
-	setTempMessages: (messages: Message[]) => void;
+	currentSession?: () => SessionItem | null;
 }
 
 const AIChatContext = createContext<
-	(AIChatContextProps & AIChatState & AIChacAction) | null
+	(AIChatContextProps & AIChatState & AIChatAction) | null
 >(null);
 
 export const AIChatProvider = ({ children }: { children: React.ReactNode }) => {
@@ -27,24 +17,14 @@ export const AIChatProvider = ({ children }: { children: React.ReactNode }) => {
 	const setCurrentSessionId = useAiChatStore(
 		(state) => state.setCurrentSessionId
 	);
+	const appendChatToken = useAiChatStore((state) => state.appendChatToken);
 	const setHasHydrated = useAiChatStore((state) => state.setHasHydrated);
 	const deleteSession = useAiChatStore((state) => state.deleteSession);
 	const currentSessionId = useAiChatStore((state) => state.currentSessionId);
 	const sessions = useAiChatStore((state) => state.sessions);
 	const addSession = useAiChatStore((state) => state.addSession);
-	const updateSessionMessages = useAiChatStore(
-		(state) => state.updateSessionMessages
-	);
-	
-	const currentSession = useMemo(() => {
-		return sessions.find((session) => session.id === currentSessionId);
-	}, [currentSessionId, sessions]);
+	const currentSession = useAiChatStore((state) => state.currentSession);
 
-	const [aiStatus, setAiStatus] = useState('');
-
-	const [tempMessages, setTempMessages] = useGetSet<Message[]>(
-		currentSession?.messages || []
-	);
 	return (
 		<AIChatContext.Provider
 			value={{
@@ -52,15 +32,11 @@ export const AIChatProvider = ({ children }: { children: React.ReactNode }) => {
 				deleteSession,
 				setCurrentSessionId,
 				addSession,
-				updateSessionMessages,
 				currentSessionId,
 				currentSession,
 				sessions,
 				_hasHydrated,
-				aiStatus,
-				setAiStatus,
-				tempMessages,
-				setTempMessages,
+				appendChatToken,
 			}}>
 			{children}
 		</AIChatContext.Provider>

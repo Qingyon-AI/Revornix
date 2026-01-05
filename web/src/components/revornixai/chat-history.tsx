@@ -12,15 +12,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { Card, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { useState } from 'react';
-import { SessionItem, useAiChatStore } from '@/store/ai-chat';
+import { useAiChatStore } from '@/store/ai-chat';
 import { cloneDeep } from 'lodash-es';
 import { format } from 'date-fns';
 import { useAIChatContext } from '@/provider/ai-chat-provider';
 import { useTranslations } from 'next-intl';
+import { SessionItem } from '@/types/ai';
 
 const ChatHistory = () => {
 	const t = useTranslations();
-	const { setTempMessages, setAiStatus } = useAIChatContext();
 	const sessions = useAiChatStore((state) => state.sessions);
 	const deleteSession = useAiChatStore((state) => state.deleteSession);
 	const setCurrentSessionId = useAiChatStore(
@@ -38,14 +38,11 @@ const ChatHistory = () => {
 		};
 		addSession(newSession);
 		setCurrentSessionId(newSession.id);
-		setTempMessages([]);
 	};
 
 	const handleSwitchSesison = (session: SessionItem) => {
 		setCurrentSessionId(session.id);
-		setTempMessages(session.messages);
 		setShowHistory(false);
-		setAiStatus('');
 	};
 
 	const handleDeleteSession = (session: SessionItem) => {
