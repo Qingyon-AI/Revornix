@@ -23,6 +23,7 @@ class UserAuthMiddleware(Middleware):
         
         if context.fastmcp_context:
             context.fastmcp_context.set_state("api_key", api_key)
+            context.fastmcp_context.set_state("user_id", user_id)
             
         return await call_next(context)
 
