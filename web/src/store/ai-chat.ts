@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware'
 import { get, set, del } from 'idb-keyval'
-import { AIState, SessionItem } from '@/types/ai'
+import { AIPhase, AIWorkflow, SessionItem } from '@/types/ai'
 
 export type AIChatState = {
     currentSessionId: string | null;
@@ -18,10 +18,13 @@ export type AIChatAction = {
     updateChatMessage: (
         chat_id: string,
         role: 'assistant' | 'user',
-        token: string,
-        ai_state?: AIState
+        token: string
     ) => void;
-    updateChatMessageAIState: (chat_id: string, role: string, new_state: AIState) => void;
+    advanceChatMessageWorkflow: (
+        chat_id: string,
+        step: AIPhase,
+        meta?: any
+    ) => void;
 };
 
 const storage: StateStorage = {
@@ -39,6 +42,40 @@ const storage: StateStorage = {
     },
 }
 
+const phaseLabelMap: Record<AIPhase, (meta?: any) => string> = {
+    idle: () => '空闲',
+    thinking: () => '思考中…',
+    writing: () => '生成回答中',
+    tool: () => '调用工具',
+    tool_result: () => '工具返回',
+    done: () => '已完成',
+    error: (meta) => meta?.message ?? '发生错误',
+};
+
+function pushWorkflowStep(
+    workflow: AIWorkflow | undefined,
+    phase: AIPhase,
+    label: string,
+    meta?: any
+): AIWorkflow {
+    const steps = workflow ? [...workflow] : [];
+
+    const last = steps[steps.length - 1];
+
+    // ✅ 只有在 phase + label 都相同时才认为是重复
+    if (last && last.phase === phase && last.label === label) {
+        return steps;
+    }
+
+    steps.push({
+        phase,
+        label,
+        meta,
+    });
+
+    return steps;
+}
+
 export const useAiChatStore = create<AIChatState & AIChatAction>()(
     persist(
         (set, get) => {
@@ -52,35 +89,6 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                     return get().sessions.find((session) => session.id === currentSessionId) || null;
                 },
                 setCurrentSessionId: (id) => set({ currentSessionId: id }),
-                updateChatMessageAIState: (chat_id: string, role: string, new_state: AIState) => {
-                    set((state) => {
-                        const sessions = state.sessions.map((session) => {
-                            if (session.id !== state.currentSessionId) return session;
-
-                            const messages = [...session.messages];
-
-                            const idx = messages.findIndex(m => m.chat_id === chat_id);
-
-                            if (idx === -1) {
-                                messages.push({
-                                    chat_id: chat_id,
-                                    role: role,
-                                    content: '',
-                                    ai_state: new_state,
-                                });
-                            } else {
-                                messages[idx] = {
-                                    ...messages[idx],
-                                    ai_state: new_state,
-                                };
-                            }
-
-                            return { ...session, messages };
-                        });
-
-                        return { sessions };
-                    });
-                },
                 updateChatMessage: (chat_id: string, role: string, token: string) => {
                     return set((state) => {
                         const sessions = state.sessions.map(session => {
@@ -108,6 +116,51 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
 
                         return { sessions }; // ✅ 必须 return
                     })
+                },
+                advanceChatMessageWorkflow: (chat_id, phase, meta) => {
+                    set((state) => {
+                        const sessions = state.sessions.map((session) => {
+                            if (session.id !== state.currentSessionId) return session;
+
+                            const messages = [...session.messages];
+                            const idx = messages.findIndex((m) => m.chat_id === chat_id);
+
+                            const label = phaseLabelMap[phase]?.(meta);
+
+                            if (idx === -1) {
+                                messages.push({
+                                    chat_id,
+                                    role: 'assistant',
+                                    content: '',
+                                    ai_state: {
+                                        phase,
+                                        label,
+                                    },
+                                    ai_workflow: pushWorkflowStep(undefined, phase, label, meta),
+                                });
+                            } else {
+                                const msg = messages[idx];
+
+                                messages[idx] = {
+                                    ...msg,
+                                    ai_state: {
+                                        phase,
+                                        label,
+                                    },
+                                    ai_workflow: pushWorkflowStep(
+                                        msg.ai_workflow,
+                                        phase,
+                                        label,
+                                        meta
+                                    ),
+                                };
+                            }
+
+                            return { ...session, messages };
+                        });
+
+                        return { sessions };
+                    });
                 },
                 addSession: (session: SessionItem) => set((state) => ({ sessions: [...state.sessions, session] })),
                 deleteSession: (id: string) => set((state) => ({ sessions: state.sessions.filter((item) => item.id !== id) })),

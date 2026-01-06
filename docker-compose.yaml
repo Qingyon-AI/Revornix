@@ -118,8 +118,8 @@ services:
   file-backend:
     image: minio/minio
     environment:
-      - MINIO_ACCESS_KEY=${FILE_SYSTEM_USER_NAME}
-      - MINIO_SECRET_KEY=${FILE_SYSTEM_PASSWORD}
+      - MINIO_ROOT_USER=${FILE_SYSTEM_USER_NAME}
+      - MINIO_ROOT_PASSWORD=${FILE_SYSTEM_PASSWORD}
     ports:
       - "9011:9011"
       - "9010:9010"
@@ -201,8 +201,8 @@ services:
     container_name: milvus-minio
     image: minio/minio:RELEASE.2023-03-20T20-16-18Z
     environment:
-      MINIO_ACCESS_KEY: ${MILVUS_MINIO_USER_NAME}
-      MINIO_SECRET_KEY: ${MILVUS_MINIO_PASSWORD}
+      MINIO_ROOT_USER: ${MILVUS_MINIO_USER_NAME}
+      MINIO_ROOT_PASSWORD: ${MILVUS_MINIO_PASSWORD}
     ports:
       - "9001:9001"
       - "9000:9000"
