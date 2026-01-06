@@ -50,36 +50,45 @@ const MessageSendForm = () => {
 	const addSession = useAiChatStore((s) => s.addSession);
 	const setCurrentSessionId = useAiChatStore((s) => s.setCurrentSessionId);
 	const updateChatMessage = useAiChatStore((s) => s.updateChatMessage);
-	const updateChatMessageAIState = useAiChatStore(
-		(s) => s.updateChatMessageAIState
-	);
-	const currentSession = useAiChatStore((s) => s.currentSession());
+	const currentSession = useAiChatStore((s) => s.currentSession);
 	const sessions = useAiChatStore((s) => s.sessions);
 
 	const handleAIResponseEvent = (event: AIEvent) => {
-		if (!currentSession) {
-			return;
-		}
-		if (event.type === 'status') {
-			updateChatMessageAIState(event.chat_id, 'assistant', {
-				...event.payload,
-			});
-		}
-		if (event.type === 'output' && event.payload.kind === 'token') {
-			updateChatMessage(event.chat_id, 'assistant', event.payload.content);
-		}
-		if (event.type === 'error') {
-			updateChatMessageAIState(event.chat_id, 'assistant', {
-				...event.payload,
-				phase: 'error',
-				label: 'Error',
-			});
-		}
-		if (event.type === 'done') {
-			updateChatMessageAIState(event.chat_id, 'assistant', {
-				phase: 'done',
-				label: 'Completed',
-			});
+		const store = useAiChatStore.getState();
+		switch (event.type) {
+			case 'status':
+				store.advanceChatMessageWorkflow(
+					event.chat_id,
+					event.payload.phase,
+					event.payload.detail
+				);
+				break;
+
+			case 'output':
+				if (event.payload.kind === 'tool_result') {
+					store.advanceChatMessageWorkflow(event.chat_id, 'tool_result', {
+						tool: event.payload.tool,
+						result: event.payload.content,
+					});
+					break;
+				}
+
+				// 普通 token
+				store.advanceChatMessageWorkflow(event.chat_id, 'writing');
+				store.updateChatMessage(
+					event.chat_id,
+					'assistant',
+					event.payload.content
+				);
+				break;
+
+			case 'done':
+				store.advanceChatMessageWorkflow(event.chat_id, 'done');
+				break;
+
+			case 'error':
+				store.advanceChatMessageWorkflow(event.chat_id, 'error', event.payload);
+				break;
 		}
 	};
 
@@ -126,7 +135,7 @@ const MessageSendForm = () => {
 		};
 
 		// if there is no current session
-		if (!currentSession && !sessions.length) {
+		if (!currentSession() && !sessions.length) {
 			const newSession = {
 				id: crypto.randomUUID(),
 				title: 'New Session',
@@ -138,7 +147,7 @@ const MessageSendForm = () => {
 		// create a new array to update the state
 		updateChatMessage(newMessage.chat_id, 'user', newMessage.content);
 
-		const baseMessages = currentSession?.messages ?? [];
+		const baseMessages = currentSession()?.messages ?? [];
 
 		const messagesToSend = [...baseMessages, newMessage];
 

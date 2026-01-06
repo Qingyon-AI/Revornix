@@ -149,6 +149,29 @@ class EventInterpreter:
         # 7️⃣ Tool End
         # =========================
         if event_type == "on_tool_end":
+            output = data.get("output")
+
+            if output is not None and hasattr(output, "content"):
+                content = output.content
+            else:
+                content = output
+
+            tool_name = name or "tool"
+
+            # 1️⃣ 先把工具结果作为 output 发出去
+            if content:
+                yield base_event(
+                    chat_id=chat_id,
+                    event_type="output",
+                    trace=trace,
+                    payload={
+                        "kind": "tool_result",
+                        "tool": tool_name,
+                        "content": content,
+                    },
+                )
+
+            # 2️⃣ 再切回 thinking 状态
             evt = self._status_once(
                 chat_id=chat_id,
                 trace=trace,
@@ -157,6 +180,7 @@ class EventInterpreter:
             )
             if evt:
                 yield evt
+
             return
 
         # =========================

@@ -2,8 +2,23 @@ export type Message = {
     chat_id: string;
     role: string;
     content: string;
-    ai_state?: AIState;
+    ai_state?: AIState;              // 当前态
+    ai_workflow?: AIWorkflow;  // 历史态
+    tool_results?: ToolResult[];
 };
+
+type ToolResult = {
+    tool: string;
+    content: string;
+};
+
+export type AIWorkflowStep = {
+    phase: AIPhase;
+    label: string;
+    meta?: any;
+};
+
+export type AIWorkflow = AIWorkflowStep[];
 
 export type SessionItem = {
     id: string
@@ -16,6 +31,7 @@ export type AIPhase =
     | "thinking"
     | "writing"
     | "tool"
+    | "tool_result"
     | "done"
     | "error";
 
@@ -32,14 +48,21 @@ export type AIEvent =
         payload: {
             phase: AIPhase;
             label?: string;
+            detail?: any;
         };
     }
     | {
         chat_id: string;
         type: 'output';
-        payload: {
-            kind: 'token' | 'message';
+        payload:
+        | {
+            kind: 'token';
             content: string;
+        }
+        | {
+            kind: 'tool_result';
+            tool: string;
+            content: any;
         };
     }
     | {
