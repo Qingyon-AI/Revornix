@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 from neo4j import GraphDatabase
 from config.neo4j import NEO4J_USER, NEO4J_PASS, NEO4J_URI
 
