@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 import os, base64
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 

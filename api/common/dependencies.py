@@ -284,7 +284,7 @@ async def list_traces(
         )
 
     async with httpx.AsyncClient(
-        timeout=10
+        timeout=20
     ) as client:
         resp = await client.get(
             f"{LANGFUSE_BASE_URL}/api/public/traces",
@@ -326,7 +326,7 @@ async def calc_token_usage(
     to_be_sumed = []
     
     async with httpx.AsyncClient(
-        timeout=10
+        timeout=20
     ) as client:
         for trace_id in trace_ids:
             resp = await client.get(

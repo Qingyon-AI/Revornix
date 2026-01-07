@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 import re
 from enums.engine import Engine, EngineCategory
 from protocol.image_generate_engine import ImageGenerateEngineProtocol
@@ -75,7 +78,6 @@ class OfficialBananaImageGenerateEngine(ImageGenerateEngineProtocol):
             )
             response = llm_client.chat.completions.create(
                 model=model_name,
-                stream=True,
                 temperature=0.2,  # 降低发散
                 messages=[
                     {
@@ -88,10 +90,6 @@ class OfficialBananaImageGenerateEngine(ImageGenerateEngineProtocol):
                     },   
                 ]
             )
-            for chunk in response:
-                if isinstance(chunk, ChatCompletionChunk):
-                    # 实际的图片chunk
-                    if len(chunk.choices) > 0 and chunk.choices[0].delta is not None and chunk.choices[0].delta.content is not None:
-                        return chunk.choices[0].delta.content
-
+            if len(response.choices) > 0 and response.choices[0].message is not None and response.choices[0].message.content is not None:
+                return response.choices[0].message.content
             return None

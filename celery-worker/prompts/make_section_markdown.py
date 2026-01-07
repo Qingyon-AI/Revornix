@@ -74,8 +74,6 @@ Your output **must** include the following sections:
 ## 2. Visual & Rich-Content Requirements (Mandatory)
 Your report **must** incorporate visual elements using Markdown:
 
-- At least one **image placeholder**, such as:  
-  `![Illustration](placeholder)`
 - When helpful, include **Mermaid diagrams** (flowchart, concept graph, or sequence diagram)
 - Use **tables**, **lists**, **callouts**, and **code blocks** when appropriate
 
