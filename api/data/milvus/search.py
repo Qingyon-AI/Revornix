@@ -29,9 +29,11 @@ def _parse_results(results: SearchResult) -> list[dict[str, Any]]:
     return out
 
 # ===================== 稠密向量检索 =====================
-def naive_search(user_id: int, 
-                 search_text: str, 
-                 top_k: int = 5) -> list[dict[str, Any]]:
+def naive_search(
+    user_id: int, 
+    search_text: str, 
+    top_k: int = 5
+) -> list[dict[str, Any]]:
     qvec = embedding_model.encode(search_text).tolist()
     search_params = {
         "anns_field": "embedding",

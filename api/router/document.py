@@ -1117,6 +1117,7 @@ def search_knowledge_vector(
     db: Session = Depends(get_db), 
     user: models.user.User = Depends(get_current_user)
 ):
+    # TODO 待修复 如果文档被删除但是向量没删除的话 可能会出现向量搜索到了旧文档（因为旧文档匹配率高于新的文档） 但是对应的文档由于被删除后无法获取 所以明明我有新的文档但是搜索结果还是为空
     hybrid_results = naive_search(
         user_id=user.id,
         search_text=vector_search_request.query
