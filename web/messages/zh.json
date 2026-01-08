@@ -569,7 +569,7 @@
     "section_configuration_form_label_create_placeholder": "请输入标签名称",
     "section_configuration_form_auto_podcast": "播客自动更新",
     "section_configuration_form_auto_podcast_description": "如果开启播客自动更新，则每次专栏的内容（评论以外）更新后，会自动生成新的播客音频文件。",
-    "section_configuration_formpublic": "是否公开",
+    "section_configuration_form_auto_illustration": "自动插图",
     "section_configuration_form_submit": "保存",
     "section_update_success": "专栏更新成功",
     "section_update_failed": "专栏更新失败",
