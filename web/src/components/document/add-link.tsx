@@ -17,9 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from '@/components/ui/form';
-import MultipleSelector, {
-	type Option,
-} from '@/components/ui/multiple-selector';
+import MultipleSelector from '@/components/ui/multiple-selector';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '../ui/switch';
@@ -184,8 +182,11 @@ const AddLink = () => {
 									return (
 										<FormItem className='gap-0'>
 											<MultipleSelector
-												defaultOptions={labels.data.map((label) => {
-													return { label: label.name, value: label.id };
+												options={labels.data.map((label) => {
+													return {
+														label: label.name,
+														value: label.id.toString(),
+													};
 												})}
 												onChange={(value) => {
 													field.onChange(
@@ -193,17 +194,11 @@ const AddLink = () => {
 													);
 												}}
 												value={
-													field.value &&
 													field.value
-														.map((id) => getLabelByValue(id))
-														.filter((option) => !!option)
+														? field.value.map((item) => item.toString())
+														: []
 												}
 												placeholder={t('document_create_label_placeholder')}
-												emptyIndicator={
-													<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-														{t('document_create_label_empty')}
-													</p>
-												}
 											/>
 											<div className='text-muted-foreground text-xs flex flex-row gap-0 items-center'>
 												<span>{t('document_create_label_empty_tips')}</span>
@@ -304,8 +299,11 @@ const AddLink = () => {
 									return (
 										<FormItem className='space-y-0'>
 											<MultipleSelector
-												defaultOptions={sections.data.map((section) => {
-													return { label: section.title, value: section.id };
+												options={sections.data.map((section) => {
+													return {
+														label: section.title,
+														value: section.id.toString(),
+													};
 												})}
 												onChange={(value) => {
 													field.onChange(
@@ -319,11 +317,6 @@ const AddLink = () => {
 														.filter((option) => !!option)
 												}
 												placeholder={t('document_create_section_choose')}
-												emptyIndicator={
-													<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-														{t('document_create_section_empty')}
-													</p>
-												}
 											/>
 										</FormItem>
 									);

@@ -15,7 +15,7 @@ import z from 'zod';
 import { Form, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
-import MultipleSelector, { type Option } from '../ui/multiple-selector';
+import MultipleSelector from '../ui/multiple-selector';
 import { Skeleton } from '../ui/skeleton';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getAllMineSections } from '@/service/section';
@@ -349,8 +349,12 @@ const AddRss = () => {
 											</FormLabel>
 											<div className='col-span-9'>
 												<MultipleSelector
-													defaultOptions={sections.data.map((section) => {
-														return { label: section.title, value: section.id };
+													placeholder={t('rss_form_sections_placeholder')}
+													options={sections.data.map((section) => {
+														return {
+															label: section.title,
+															value: section.id.toString(),
+														};
 													})}
 													onChange={(value) => {
 														field.onChange(
@@ -362,11 +366,6 @@ const AddRss = () => {
 														field.value
 															.map((id) => getSectionByValue(id))
 															.filter((option) => !!option)
-													}
-													emptyIndicator={
-														<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-															{t('rss_form_section_empty')}
-														</p>
 													}
 												/>
 											</div>

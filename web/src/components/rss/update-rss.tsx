@@ -14,7 +14,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getAllMineSections } from '@/service/section';
-import MultipleSelector, { Option } from '../ui/multiple-selector';
+import MultipleSelector from '../ui/multiple-selector';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -370,10 +370,11 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 												</FormLabel>
 												<div className='col-span-9'>
 													<MultipleSelector
-														defaultOptions={sections.data.map((section) => {
+														placeholder={t('rss_form_sections_placeholder')}
+														options={sections.data.map((section) => {
 															return {
 																label: section.title,
-																value: section.id,
+																value: section.id.toString(),
 															};
 														})}
 														onChange={(value) => {
@@ -386,11 +387,6 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 															field.value
 																.map((id) => getSectionByValue(id))
 																.filter((option) => !!option)
-														}
-														emptyIndicator={
-															<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-																{t('rss_form_section_empty')}
-															</p>
 														}
 													/>
 												</div>

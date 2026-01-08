@@ -33,7 +33,7 @@ import {
 } from '@/service/section';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
-import MultipleSelector, { Option } from '../ui/multiple-selector';
+import MultipleSelector from '../ui/multiple-selector';
 import { Skeleton } from '../ui/skeleton';
 import AddSectionLabelDialog from './add-section-label-dialog';
 import { useTranslations } from 'next-intl';
@@ -232,8 +232,11 @@ const SectionOperateConfiguration = ({
 											<FormLabel>{t('section_form_labels')}</FormLabel>
 											{labels ? (
 												<MultipleSelector
-													defaultOptions={labels.data.map((label) => {
-														return { label: label.name, value: label.id };
+													options={labels.data.map((label) => {
+														return {
+															label: label.name,
+															value: label.id.toString(),
+														};
 													})}
 													onChange={(value) => {
 														field.onChange(
@@ -247,11 +250,6 @@ const SectionOperateConfiguration = ({
 															.filter((option) => !!option)
 													}
 													placeholder={t('section_form_labels_placeholder')}
-													emptyIndicator={
-														<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-															{t('section_form_labels_empty')}
-														</p>
-													}
 												/>
 											) : (
 												<Skeleton className='h-10' />

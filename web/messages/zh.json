@@ -134,6 +134,7 @@
     "rss_form_description": "RSS源描述",
     "rss_form_address": "RSS源",
     "rss_form_sections": "RSS推送专栏",
+    "rss_form_sections_placeholder": "请选择推送专栏",
     "rss_form_section_empty": "当前暂无专栏",
     "rss_update_title": "更新RSS",
     "rss_update_tips": "更新后，原订阅涉及的自动爬取会停止，但保留已抓取文档。",
