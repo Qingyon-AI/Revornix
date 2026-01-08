@@ -363,7 +363,7 @@ const SectionOperateConfiguration = ({
 												className='grid grid-cols-1 md:grid-cols-2 gap-5'
 												value={
 													field.value !== undefined
-														? field.value.toString()
+														? field.value!.toString()
 														: undefined
 												}
 												onValueChange={(e) => {
@@ -421,6 +421,7 @@ const SectionOperateConfiguration = ({
 														'section_form_process_task_trigger_scheduler_placeholder'
 													)}
 													{...field}
+													value={field.value || ''}
 												/>
 												<FormMessage />
 											</FormItem>
