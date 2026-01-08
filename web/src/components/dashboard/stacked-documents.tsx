@@ -7,7 +7,7 @@ const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 	documents = documents.slice(0, 5);
 	return (
 		<div className='relative flex justify-center items-center'>
-			<div className='relative w-full h-24'>
+			<div className='relative w-full h-40'>
 				{documents &&
 					documents.map((document, index) => (
 						<div
@@ -30,7 +30,7 @@ const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 								<div className='text-sm font-bold line-clamp-1'>
 									{document.title ? document.title : 'Untitled'}
 								</div>
-								<div className='text-sm line-clamp-2 text-muted-foreground'>
+								<div className='text-sm line-clamp-4 text-muted-foreground'>
 									{document.description
 										? document.description
 										: 'No description'}

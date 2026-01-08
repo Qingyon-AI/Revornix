@@ -123,7 +123,7 @@ const TodayNews = () => {
 			</CardHeader>
 			<CardContent className='flex-1'>
 				{refreshStatus ? (
-					<Skeleton className='w-full min-h-[140px] h-full' />
+					<Skeleton className='w-full min-h-[240px] h-full' />
 				) : error ? (
 					<Empty>
 						<EmptyHeader>
@@ -140,7 +140,7 @@ const TodayNews = () => {
 						</EmptyContent>
 					</Empty>
 				) : (
-					<AutoScrollList visibleCount={5} itemHeight={28} gap={1}>
+					<AutoScrollList visibleCount={8} itemHeight={28} gap={2}>
 						{websites.map((website, index) => (
 							<Link
 								key={index}

@@ -45,12 +45,12 @@ const RecentReadDocumentBox = () => {
 						{!isFetchingRecentReadDocuments && recentReadDocuments?.total}
 					</span>
 				</CardTitle>
-				<CardDescription className='flex-1'>
+				<CardDescription>
 					{t('recent_read_documents_card_description')}
 				</CardDescription>
 			</CardHeader>
 			<CardContent className='flex-1'>
-				{isFetchingRecentReadDocuments && <Skeleton className='w-full h-24' />}
+				{isFetchingRecentReadDocuments && <Skeleton className='w-full h-40' />}
 				{!isFetchingRecentReadDocuments &&
 					recentReadDocuments &&
 					recentReadDocuments.total > 0 && (

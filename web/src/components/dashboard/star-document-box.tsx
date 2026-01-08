@@ -44,12 +44,12 @@ const StarDocumentBox = () => {
 						{!isFetchingStarDocuments && starDocuments?.total}
 					</span>
 				</CardTitle>
-				<CardDescription className='flex-1'>
+				<CardDescription>
 					{t('star_documents_card_description')}
 				</CardDescription>
 			</CardHeader>
 			<CardContent className='flex-1'>
-				{isFetchingStarDocuments && <Skeleton className='w-full h-24' />}
+				{isFetchingStarDocuments && <Skeleton className='w-full h-40' />}
 				{!isFetchingStarDocuments &&
 					starDocuments &&
 					starDocuments.total > 0 && (
