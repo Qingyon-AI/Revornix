@@ -28,7 +28,7 @@ const AddSectionLabelDialog = ({
 }) => {
 	const t = useTranslations();
 	const formSchema = z.object({
-		name: z.string().min(1, t('section_create_label_create_title_needed')),
+		name: z.string().min(1, t('section_label_create_title_needed')),
 	});
 
 	const queryClient = getQueryClient();
@@ -68,7 +68,7 @@ const AddSectionLabelDialog = ({
 			toast.error(mutate.error.message);
 			return;
 		}
-		toast.success(t('section_create_label_create_success'));
+		toast.success(t('section_label_create_success'));
 		onOpenChange(false);
 		form.reset();
 	};
@@ -81,7 +81,7 @@ const AddSectionLabelDialog = ({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>{t('section_create_form_label_create')}</DialogTitle>
+					<DialogTitle>{t('section_form_label_create')}</DialogTitle>
 				</DialogHeader>
 				<Form {...form}>
 					<form onSubmit={onSubmitLabelForm}>
@@ -94,7 +94,7 @@ const AddSectionLabelDialog = ({
 										<Input
 											{...field}
 											placeholder={t(
-												'section_create_form_label_create_placeholder'
+												'section_form_label_create_placeholder'
 											)}
 										/>
 										<FormMessage />
@@ -104,12 +104,12 @@ const AddSectionLabelDialog = ({
 						/>
 						<DialogFooter className='mt-5'>
 							<Button type='submit' disabled={mutate.isPending}>
-								{t('section_create_form_label_create_submit')}
+								{t('section_form_label_create_submit')}
 								{mutate.isPending && <Loader2 />}
 							</Button>
 							<DialogClose asChild>
 								<Button type='button' variant={'outline'}>
-									{t('section_create_form_label_create_cancel')}
+									{t('section_form_label_create_cancel')}
 								</Button>
 							</DialogClose>
 						</DialogFooter>

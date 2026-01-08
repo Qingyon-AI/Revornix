@@ -154,7 +154,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 					<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 						<OctagonAlert className='h-4 w-4 text-destructive!' />
 						<AlertDescription>
-							{t('section_create_auto_podcast_engine_unset')}
+							{t('section_form_auto_podcast_engine_unset')}
 						</AlertDescription>
 					</Alert>
 				)}

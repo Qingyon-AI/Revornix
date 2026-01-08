@@ -133,7 +133,7 @@ const SEOSectionDetail = async (props: {
 	}
 
 	return (
-		<div className='px-5 p-5 w-full grid grid-cols-12 gap-5 relative h-[calc(100vh-theme(spacing.16))]'>
+		<div className='px-5 p-5 w-full grid grid-cols-12 gap-5 relative h-[calc(100vh-(--spacing.16))]'>
 			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
 				<Card className='py-0 pb-5 flex-1 relative shadow-none overflow-auto'>
 					<div>{section && <SectionInfo id={Number(section.id)} />}</div>

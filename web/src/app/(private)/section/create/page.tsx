@@ -43,10 +43,10 @@ const CreatePage = () => {
 	const t = useTranslations();
 
 	const formSchema = z.object({
-		title: z.string().min(1, { message: t('section_create_title_needed') }),
+		title: z.string().min(1, { message: t('section_form_title_needed') }),
 		description: z
 			.string()
-			.min(1, { message: t('section_create_description_needed') }),
+			.min(1, { message: t('section_form_description_needed') }),
 		auto_publish: z.boolean(),
 		auto_podcast: z.boolean(),
 		auto_illustration: z.boolean(),
@@ -169,9 +169,9 @@ const CreatePage = () => {
 						render={({ field }) => {
 							return (
 								<FormItem className='mb-5'>
-									<FormLabel>{t('section_create_form_title')}</FormLabel>
+									<FormLabel>{t('section_form_title')}</FormLabel>
 									<Input
-										placeholder={t('section_create_form_title_placeholder')}
+										placeholder={t('section_form_title_placeholder')}
 										{...field}
 									/>
 									<FormMessage />
@@ -185,10 +185,10 @@ const CreatePage = () => {
 						render={({ field }) => {
 							return (
 								<FormItem className='mb-5'>
-									<FormLabel>{t('section_create_form_description')}</FormLabel>
+									<FormLabel>{t('section_form_description')}</FormLabel>
 									<Textarea
 										placeholder={t(
-											'section_create_form_description_placeholder'
+											'section_form_description_placeholder'
 										)}
 										{...field}
 									/>
@@ -203,7 +203,7 @@ const CreatePage = () => {
 						render={({ field }) => {
 							return (
 								<FormItem className='space-y-0 mb-5'>
-									<FormLabel>{t('section_create_form_labels')}</FormLabel>
+									<FormLabel>{t('section_form_labels')}</FormLabel>
 									{labels ? (
 										<MultipleSelector
 											defaultOptions={labels.data.map((label) => {
@@ -218,10 +218,10 @@ const CreatePage = () => {
 													.map((id) => getLabelByValue(id))
 													.filter((option) => !!option)
 											}
-											placeholder={t('section_create_form_labels_placeholder')}
+											placeholder={t('section_form_labels_placeholder')}
 											emptyIndicator={
 												<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-													{t('section_create_form_labels_empty')}
+													{t('section_form_labels_empty')}
 												</p>
 											}
 										/>
@@ -229,13 +229,13 @@ const CreatePage = () => {
 										<Skeleton className='h-10' />
 									)}
 									<div className='text-muted-foreground text-xs flex flex-row gap-0 items-center'>
-										<span>{t('section_create_form_labels_empty_tips')}</span>
+										<span>{t('section_form_labels_empty_tips')}</span>
 										<Button
 											type='button'
 											className='text-xs text-muted-foreground px-0 py-0 h-fit'
 											variant={'link'}
 											onClick={() => setShowAddLabelDialog(true)}>
-											{t('section_create_form_label_create')}
+											{t('section_form_label_create')}
 										</Button>
 									</div>
 								</FormItem>
@@ -249,14 +249,14 @@ const CreatePage = () => {
 							return (
 								<FormItem className='mb-5'>
 									<FormLabel>
-										{t('section_create_form_process_task_trigger_type')}
+										{t('section_form_process_task_trigger_type')}
 										<Tooltip>
 											<TooltipTrigger>
 												<Info size={15} />
 											</TooltipTrigger>
 											<TooltipContent>
 												{t(
-													'section_create_form_process_task_trigger_type_description'
+													'section_form_process_task_trigger_type_description'
 												)}
 											</TooltipContent>
 										</Tooltip>
@@ -270,7 +270,7 @@ const CreatePage = () => {
 										<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
 											<Label htmlFor='r1'>
 												{t(
-													'section_create_form_process_task_trigger_type_updated'
+													'section_form_process_task_trigger_type_updated'
 												)}
 											</Label>
 											<RadioGroupItem value='1' id='r1' />
@@ -278,7 +278,7 @@ const CreatePage = () => {
 										<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
 											<Label htmlFor='r0'>
 												{t(
-													'section_create_form_process_task_trigger_type_scheduler'
+													'section_form_process_task_trigger_type_scheduler'
 												)}
 											</Label>
 											<RadioGroupItem value='0' id='r0' />
@@ -296,14 +296,14 @@ const CreatePage = () => {
 								return (
 									<FormItem className='mb-5'>
 										<FormLabel>
-											{t('section_create_form_process_task_trigger_scheduler')}
+											{t('section_form_process_task_trigger_scheduler')}
 											<Tooltip>
 												<TooltipTrigger>
 													<Info size={15} />
 												</TooltipTrigger>
 												<TooltipContent>
 													{t(
-														'section_create_form_process_task_trigger_scheduler_alert'
+														'section_form_process_task_trigger_scheduler_alert'
 													)}
 													<Link
 														className='ml-1 underline underline-offset-2'
@@ -316,7 +316,7 @@ const CreatePage = () => {
 										<Input
 											className='font-mono'
 											placeholder={t(
-												'section_create_form_process_task_trigger_scheduler_placeholder'
+												'section_form_process_task_trigger_scheduler_placeholder'
 											)}
 											{...field}
 										/>
@@ -335,7 +335,7 @@ const CreatePage = () => {
 									<FormItem className='rounded-lg border border-input p-3'>
 										<div className='flex flex-row gap-1 items-center'>
 											<FormLabel className='flex flex-row gap-1 items-center'>
-												{t('section_create_form_auto_publish')}
+												{t('section_form_auto_publish')}
 											</FormLabel>
 											<Switch
 												checked={field.value}
@@ -345,7 +345,7 @@ const CreatePage = () => {
 											/>
 										</div>
 										<FormDescription>
-											{t('section_create_form_auto_publish_description')}
+											{t('section_form_auto_publish_description')}
 										</FormDescription>
 									</FormItem>
 								);
@@ -359,7 +359,7 @@ const CreatePage = () => {
 									<FormItem className='rounded-lg border border-input p-3'>
 										<div className='flex flex-row gap-1 items-center'>
 											<FormLabel className='flex flex-row gap-1 items-center'>
-												{t('section_create_form_auto_podcast')}
+												{t('section_form_auto_podcast')}
 											</FormLabel>
 											<Switch
 												disabled={!mainUserInfo?.default_podcast_user_engine_id}
@@ -370,13 +370,13 @@ const CreatePage = () => {
 											/>
 										</div>
 										<FormDescription>
-											{t('section_create_form_auto_podcast_description')}
+											{t('section_form_auto_podcast_description')}
 										</FormDescription>
 										{!mainUserInfo?.default_podcast_user_engine_id && (
 											<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 												<OctagonAlert className='h-4 w-4 text-destructive!' />
 												<AlertDescription>
-													{t('section_create_auto_podcast_engine_unset')}
+													{t('section_form_auto_podcast_engine_unset')}
 												</AlertDescription>
 											</Alert>
 										)}
@@ -392,7 +392,7 @@ const CreatePage = () => {
 									<FormItem className='rounded-lg border border-input p-3'>
 										<div className='flex flex-row gap-1 items-center'>
 											<FormLabel className='flex flex-row gap-1 items-center'>
-												{t('section_create_form_auto_illustration')}
+												{t('section_form_auto_illustration')}
 											</FormLabel>
 											<Switch
 												disabled={
@@ -405,13 +405,13 @@ const CreatePage = () => {
 											/>
 										</div>
 										<FormDescription>
-											{t('section_create_form_auto_illustration_description')}
+											{t('section_form_auto_illustration_description')}
 										</FormDescription>
 										{!mainUserInfo?.default_image_generate_engine_id && (
 											<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 												<OctagonAlert className='h-4 w-4 text-destructive!' />
 												<AlertDescription>
-													{t('section_create_auto_illustration_engine_unset')}
+													{t('section_form_auto_illustration_engine_unset')}
 												</AlertDescription>
 											</Alert>
 										)}

@@ -246,8 +246,8 @@ class SectionInfo(BaseModel):
     title: str
     creator: UserPublicInfo
     description: str
-    auto_podcast: bool | None = None
-    auto_illustration: bool | None = None
+    auto_podcast: bool
+    auto_illustration: bool
     documents_count: int = 0
     subscribers_count: int = 0
     create_time: datetime

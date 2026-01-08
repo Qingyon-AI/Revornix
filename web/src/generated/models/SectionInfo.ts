@@ -77,13 +77,13 @@ export interface SectionInfo {
      * @type {boolean}
      * @memberof SectionInfo
      */
-    auto_podcast?: boolean | null;
+    auto_podcast: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof SectionInfo
      */
-    auto_illustration?: boolean | null;
+    auto_illustration: boolean;
     /**
      * 
      * @type {number}
@@ -172,6 +172,8 @@ export function instanceOfSectionInfo(value: object): value is SectionInfo {
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('creator' in value) || value['creator'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
+    if (!('auto_podcast' in value) || value['auto_podcast'] === undefined) return false;
+    if (!('auto_illustration' in value) || value['auto_illustration'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('cover' in value) || value['cover'] === undefined) return false;
     return true;
@@ -191,8 +193,8 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'title': json['title'],
         'creator': UserPublicInfoFromJSON(json['creator']),
         'description': json['description'],
-        'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
-        'auto_illustration': json['auto_illustration'] == null ? undefined : json['auto_illustration'],
+        'auto_podcast': json['auto_podcast'],
+        'auto_illustration': json['auto_illustration'],
         'documents_count': json['documents_count'] == null ? undefined : json['documents_count'],
         'subscribers_count': json['subscribers_count'] == null ? undefined : json['subscribers_count'],
         'create_time': (new Date(json['create_time'])),
