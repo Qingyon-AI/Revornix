@@ -2,19 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import { Skeleton } from '../ui/skeleton';
 import { getSectionDetail } from '@/service/section';
 import { useEffect, useState } from 'react';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import rehypeRaw from 'rehype-raw';
-import Markdown from 'react-markdown';
 import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
-import CustomImage from '../ui/custom-image';
 import { useUserContext } from '@/provider/user-provider';
 import { toast } from 'sonner';
 import { FileService } from '@/lib/file';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { cn } from '@/lib/utils';
+import CustomMarkdown from '../ui/custom-markdown';
 
 const SectionMarkdown = ({
 	id,
@@ -71,6 +66,7 @@ const SectionMarkdown = ({
 				return;
 			}
 			if (typeof res === 'string') {
+				console.log(res);
 				setMarkdown(res);
 			}
 			setMarkdownIsFetching(false);
@@ -116,16 +112,7 @@ const SectionMarkdown = ({
 						className
 					)}>
 					<div className='prose dark:prose-invert mx-auto py-5'>
-						<Markdown
-							components={{
-								img: (props) => {
-									return <CustomImage {...props} />;
-								},
-							}}
-							remarkPlugins={[remarkMath, remarkGfm]}
-							rehypePlugins={[rehypeKatex, rehypeRaw]}>
-							{markdown}
-						</Markdown>
+						<CustomMarkdown content={markdown} />
 						<p className='text-sm text-center text-muted-foreground bg-muted rounded py-2'>
 							{t('section_ai_tips')}
 						</p>

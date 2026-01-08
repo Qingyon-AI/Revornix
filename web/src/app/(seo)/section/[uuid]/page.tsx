@@ -1,15 +1,9 @@
 import {
-	SectionDocumentInfo,
 	SectionInfo as SectionInfoType,
 	SectionSeoDetailRequest,
 } from '@/generated';
 import { serverRequest } from '@/lib/request-server';
 import sectionApi from '@/api/section';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import rehypeRaw from 'rehype-raw';
 import {
 	Card,
 	CardContent,
@@ -33,14 +27,14 @@ import { Expand } from 'lucide-react';
 import SectionGraphSEO from '@/components/section/section-graph-seo';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import SectionInfo from '@/components/section/section-info';
-import SectionDocumentCard from '@/components/section/section-document-card';
 import SectionCommentsList from '@/components/section/section-comments-list';
 import SectionCommentForm from '@/components/section/section-comment-form';
 import { Separator } from '@/components/ui/separator';
-import { searchSectionDocuments } from '@/service/section';
 import SectionDocumentsList from '@/components/section/section-documents-list';
 import { SectionPodcastStatus } from '@/enums/section';
 import AudioPlayer from '@/components/ui/audio-player';
+import { XMarkdown } from '@ant-design/x-markdown';
+import CustomMarkdown from '@/components/ui/custom-markdown';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -174,12 +168,7 @@ const SEOSectionDetail = async (props: {
 					<Alert className='bg-blue-500/10 dark:bg-blue-600/20 text-blue-500 dark:text-blue-400 border-blue-400/50 dark:border-blue-600/60 mb-5'>
 						<AlertTitle>{t('section_ai_tips')}</AlertTitle>
 					</Alert>
-					<Markdown
-						components={{}}
-						remarkPlugins={[remarkMath, remarkGfm]}
-						rehypePlugins={[rehypeKatex, rehypeRaw]}>
-						{markdown ? markdown : t('section_no_md')}
-					</Markdown>
+					<CustomMarkdown content={markdown ? markdown : t('section_no_md')} />
 				</div>
 				<div className='max-w-prose mx-auto'>
 					<Separator className='mb-5' />

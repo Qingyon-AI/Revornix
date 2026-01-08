@@ -9,10 +9,6 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from '@/components/ui/sheet';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import rehypeRaw from 'rehype-raw';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import {
 	getDayDocumentsSummarySection,
@@ -22,10 +18,8 @@ import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import SectionDocumentCard from '@/components/section/section-document-card';
-import Markdown from 'react-markdown';
 import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
-import CustomImage from '@/components/ui/custom-image';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
 import { toast } from 'sonner';
@@ -41,6 +35,7 @@ import {
 import { RefreshCcwIcon, TrashIcon, XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'nextjs-toploader/app';
+import CustomMarkdown from '@/components/ui/custom-markdown';
 
 const SectionDetailPage = () => {
 	const t = useTranslations();
@@ -256,16 +251,7 @@ const SectionDetailPage = () => {
 					)}
 					{markdown && !isError && !markdownGetError && (
 						<div className='prose dark:prose-invert mx-auto'>
-							<Markdown
-								components={{
-									img: (props) => {
-										return <CustomImage {...props} />;
-									},
-								}}
-								remarkPlugins={[remarkMath, remarkGfm]}
-								rehypePlugins={[rehypeKatex, rehypeRaw]}>
-								{markdown}
-							</Markdown>
+							<CustomMarkdown content={markdown} />
 							<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
 								{t('section_ai_tips')}
 							</p>

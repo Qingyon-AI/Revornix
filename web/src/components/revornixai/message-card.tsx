@@ -1,11 +1,5 @@
 import { cn } from '@/lib/utils';
 import { Message } from '@/types/ai';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeKatex from 'rehype-katex';
-import remarkMath from 'remark-math';
-import rehypeRaw from 'rehype-raw';
-import CustomImage from '../ui/custom-image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
 	Accordion,
@@ -21,6 +15,7 @@ import {
 	XCircleIcon,
 } from 'lucide-react';
 import { isEmpty } from 'lodash-es';
+import CustomMarkdown from '../ui/custom-markdown';
 
 const MessageCard = ({ message }: { message: Message }) => {
 	const ai_workflow = message.ai_workflow;
@@ -123,16 +118,7 @@ const MessageCard = ({ message }: { message: Message }) => {
 					)}
 
 					<div className='prose dark:prose-invert max-w-none'>
-						<Markdown
-							components={{
-								img: (props) => {
-									return <CustomImage {...props} />;
-								},
-							}}
-							remarkPlugins={[remarkMath, remarkGfm]}
-							rehypePlugins={[rehypeKatex, rehypeRaw]}>
-							{message.content}
-						</Markdown>
+						<CustomMarkdown content={message.content} />
 					</div>
 				</div>
 			</div>
