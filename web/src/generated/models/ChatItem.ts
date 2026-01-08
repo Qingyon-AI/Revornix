@@ -13,21 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { ReferenceItem } from './ReferenceItem';
-import {
-    ReferenceItemFromJSON,
-    ReferenceItemFromJSONTyped,
-    ReferenceItemToJSON,
-    ReferenceItemToJSONTyped,
-} from './ReferenceItem';
-import type { Document } from './Document';
-import {
-    DocumentFromJSON,
-    DocumentFromJSONTyped,
-    DocumentToJSON,
-    DocumentToJSONTyped,
-} from './Document';
-
 /**
  * 
  * @export
@@ -42,40 +27,16 @@ export interface ChatItem {
     chat_id: string;
     /**
      * 
-     * @type {Array<Document>}
-     * @memberof ChatItem
-     */
-    quote?: Array<Document> | null;
-    /**
-     * 
      * @type {string}
      * @memberof ChatItem
      */
-    content?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ChatItem
-     */
-    reasoning_content?: string | null;
+    content: string;
     /**
      * 
      * @type {string}
      * @memberof ChatItem
      */
     role: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ChatItem
-     */
-    finish_reason?: string | null;
-    /**
-     * 
-     * @type {Array<ReferenceItem>}
-     * @memberof ChatItem
-     */
-    references?: Array<ReferenceItem> | null;
 }
 
 /**
@@ -83,6 +44,7 @@ export interface ChatItem {
  */
 export function instanceOfChatItem(value: object): value is ChatItem {
     if (!('chat_id' in value) || value['chat_id'] === undefined) return false;
+    if (!('content' in value) || value['content'] === undefined) return false;
     if (!('role' in value) || value['role'] === undefined) return false;
     return true;
 }
@@ -98,12 +60,8 @@ export function ChatItemFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     return {
         
         'chat_id': json['chat_id'],
-        'quote': json['quote'] == null ? undefined : ((json['quote'] as Array<any>).map(DocumentFromJSON)),
-        'content': json['content'] == null ? undefined : json['content'],
-        'reasoning_content': json['reasoning_content'] == null ? undefined : json['reasoning_content'],
+        'content': json['content'],
         'role': json['role'],
-        'finish_reason': json['finish_reason'] == null ? undefined : json['finish_reason'],
-        'references': json['references'] == null ? undefined : ((json['references'] as Array<any>).map(ReferenceItemFromJSON)),
     };
 }
 
@@ -119,12 +77,8 @@ export function ChatItemToJSONTyped(value?: ChatItem | null, ignoreDiscriminator
     return {
         
         'chat_id': value['chat_id'],
-        'quote': value['quote'] == null ? undefined : ((value['quote'] as Array<any>).map(DocumentToJSON)),
         'content': value['content'],
-        'reasoning_content': value['reasoning_content'],
         'role': value['role'],
-        'finish_reason': value['finish_reason'],
-        'references': value['references'] == null ? undefined : ((value['references'] as Array<any>).map(ReferenceItemToJSON)),
     };
 }
 

@@ -74,7 +74,8 @@ def create_section(
     cover: str | None = None,
     description: str | None = None,
     md_file_name: str | None = None,
-    auto_podcast: bool = False
+    auto_podcast: bool = False,
+    auto_illustration: bool = False
 ):
     now = datetime.now(timezone.utc)
     db_section = models.section.Section(title=title, 
@@ -82,6 +83,7 @@ def create_section(
                                         cover=cover,
                                         description=description,
                                         auto_podcast=auto_podcast,
+                                        auto_illustration=auto_illustration,
                                         md_file_name=md_file_name,
                                         create_time=now)
     db.add(db_section)

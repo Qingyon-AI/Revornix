@@ -7,12 +7,8 @@
 Name | Type
 ------------ | -------------
 `chat_id` | string
-`quote` | [Array&lt;Document&gt;](Document.md)
 `content` | string
-`reasoning_content` | string
 `role` | string
-`finish_reason` | string
-`references` | [Array&lt;ReferenceItem&gt;](ReferenceItem.md)
 
 ## Example
 
@@ -22,12 +18,8 @@ import type { ChatItem } from ''
 // TODO: Update the object below with actual values
 const example = {
   "chat_id": null,
-  "quote": null,
   "content": null,
-  "reasoning_content": null,
   "role": null,
-  "finish_reason": null,
-  "references": null,
 } satisfies ChatItem
 
 console.log(example)

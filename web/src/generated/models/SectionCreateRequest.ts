@@ -57,6 +57,12 @@ export interface SectionCreateRequest {
     auto_podcast?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof SectionCreateRequest
+     */
+    auto_illustration?: boolean;
+    /**
+     * 
      * @type {number}
      * @memberof SectionCreateRequest
      */
@@ -96,6 +102,7 @@ export function SectionCreateRequestFromJSONTyped(json: any, ignoreDiscriminator
         'labels': json['labels'],
         'auto_publish': json['auto_publish'] == null ? undefined : json['auto_publish'],
         'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
+        'auto_illustration': json['auto_illustration'] == null ? undefined : json['auto_illustration'],
         'process_task_trigger_type': json['process_task_trigger_type'],
         'process_task_trigger_scheduler': json['process_task_trigger_scheduler'] == null ? undefined : json['process_task_trigger_scheduler'],
     };
@@ -118,6 +125,7 @@ export function SectionCreateRequestToJSONTyped(value?: SectionCreateRequest | n
         'labels': value['labels'],
         'auto_publish': value['auto_publish'],
         'auto_podcast': value['auto_podcast'],
+        'auto_illustration': value['auto_illustration'],
         'process_task_trigger_type': value['process_task_trigger_type'],
         'process_task_trigger_scheduler': value['process_task_trigger_scheduler'],
     };
