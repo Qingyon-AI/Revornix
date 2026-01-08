@@ -17,9 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from '@/components/ui/form';
-import MultipleSelector, {
-	type Option,
-} from '@/components/ui/multiple-selector';
+import MultipleSelector from '@/components/ui/multiple-selector';
 import AddLabelDialog from '@/components/document/add-document-label-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '../ui/switch';
@@ -90,16 +88,7 @@ const AddFile = () => {
 		},
 	});
 
-	const getLabelByValue = (value: number): Option | undefined => {
-		if (!labels) return;
-		return labels.data
-			.map((label) => {
-				return { label: label.name, value: label.id };
-			})
-			.find((label) => label.value === value);
-	};
-
-	const getSectionByValue = (value: number): Option | undefined => {
+	const getSectionByValue = (value: number) => {
 		if (!sections) return;
 		return sections.data
 			.map((section) => {
@@ -186,8 +175,11 @@ const AddFile = () => {
 									return (
 										<FormItem className='gap-0'>
 											<MultipleSelector
-												defaultOptions={labels.data.map((label) => {
-													return { label: label.name, value: label.id };
+												options={labels.data.map((label) => {
+													return {
+														label: label.name,
+														value: label.id.toString(),
+													};
 												})}
 												onChange={(value) => {
 													field.onChange(
@@ -195,17 +187,11 @@ const AddFile = () => {
 													);
 												}}
 												value={
-													field.value &&
 													field.value
-														.map((id) => getLabelByValue(id))
-														.filter((option) => !!option)
+														? field.value.map((item) => item.toString())
+														: []
 												}
 												placeholder={t('document_create_label_placeholder')}
-												emptyIndicator={
-													<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-														{t('document_create_label_empty')}
-													</p>
-												}
 											/>
 											<div className='text-muted-foreground text-xs flex flex-row gap-0 items-center'>
 												<span>{t('document_create_label_empty_tips')}</span>

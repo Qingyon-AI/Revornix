@@ -32,7 +32,7 @@ import {
 } from '@/service/document';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
-import MultipleSelector, { Option } from '../ui/multiple-selector';
+import MultipleSelector from '../ui/multiple-selector';
 import { Skeleton } from '../ui/skeleton';
 import { cn } from '@/lib/utils';
 import AddDocumentLabelDialog from './add-document-label-dialog';
@@ -235,8 +235,11 @@ const DocumentConfiguration = ({
 											</FormLabel>
 											{labels ? (
 												<MultipleSelector
-													defaultOptions={labels.data.map((label) => {
-														return { label: label.name, value: label.id };
+													options={labels.data.map((label) => {
+														return {
+															label: label.name,
+															value: label.id.toString(),
+														};
 													})}
 													onChange={(value) => {
 														field.onChange(
@@ -252,11 +255,6 @@ const DocumentConfiguration = ({
 													placeholder={t(
 														'document_configuration_form_labels_placeholder'
 													)}
-													emptyIndicator={
-														<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-															{t('document_configuration_form_labels_empty')}
-														</p>
-													}
 												/>
 											) : (
 												<Skeleton className='h-10' />
@@ -306,10 +304,14 @@ const DocumentConfiguration = ({
 																.map((id) => getSectionByValue(id))
 																.filter((option) => !!option)
 														}
-														placeholder={t('document_configuration_form_sections_placeholder')}
+														placeholder={t(
+															'document_configuration_form_sections_placeholder'
+														)}
 														emptyIndicator={
 															<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-																{t('document_configuration_form_sections_empty')}
+																{t(
+																	'document_configuration_form_sections_empty'
+																)}
 															</p>
 														}
 													/>

@@ -134,6 +134,7 @@
     "rss_form_description": "RSS Source Description",
     "rss_form_address": "RSS Feed URL",
     "rss_form_sections": "RSS Target Section",
+    "rss_form_sections_placeholder": "Please select the target section",
     "rss_form_section_empty": "No sections available",
     "rss_update_title": "Update RSS",
     "rss_update_tips": "After updating, the original scheduled crawling will stop, but already fetched documents will be retained.",

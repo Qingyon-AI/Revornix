@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/form';
 import ImageUpload from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
-import MultipleSelector, { Option } from '@/components/ui/multiple-selector';
+import MultipleSelector from '@/components/ui/multiple-selector';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
@@ -187,9 +187,7 @@ const CreatePage = () => {
 								<FormItem className='mb-5'>
 									<FormLabel>{t('section_form_description')}</FormLabel>
 									<Textarea
-										placeholder={t(
-											'section_form_description_placeholder'
-										)}
+										placeholder={t('section_form_description_placeholder')}
 										{...field}
 									/>
 									<FormMessage />
@@ -206,8 +204,11 @@ const CreatePage = () => {
 									<FormLabel>{t('section_form_labels')}</FormLabel>
 									{labels ? (
 										<MultipleSelector
-											defaultOptions={labels.data.map((label) => {
-												return { label: label.name, value: label.id };
+											options={labels.data.map((label) => {
+												return {
+													label: label.name,
+													value: label.id.toString(),
+												};
 											})}
 											onChange={(value) => {
 												field.onChange(value.map(({ label, value }) => value));
@@ -219,11 +220,6 @@ const CreatePage = () => {
 													.filter((option) => !!option)
 											}
 											placeholder={t('section_form_labels_placeholder')}
-											emptyIndicator={
-												<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-													{t('section_form_labels_empty')}
-												</p>
-											}
 										/>
 									) : (
 										<Skeleton className='h-10' />
@@ -269,17 +265,13 @@ const CreatePage = () => {
 										}}>
 										<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
 											<Label htmlFor='r1'>
-												{t(
-													'section_form_process_task_trigger_type_updated'
-												)}
+												{t('section_form_process_task_trigger_type_updated')}
 											</Label>
 											<RadioGroupItem value='1' id='r1' />
 										</div>
 										<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
 											<Label htmlFor='r0'>
-												{t(
-													'section_form_process_task_trigger_type_scheduler'
-												)}
+												{t('section_form_process_task_trigger_type_scheduler')}
 											</Label>
 											<RadioGroupItem value='0' id='r0' />
 										</div>
