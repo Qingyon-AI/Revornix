@@ -3,11 +3,6 @@ import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { getDocumentDetail, transformToMarkdown } from '@/service/document';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { Info, Loader2 } from 'lucide-react';
@@ -31,6 +26,7 @@ import {
 	DocumentMdConvertStatus,
 	DocumentEmbeddingConvertStatus,
 } from '@/enums/document';
+import CustomMarkdown from '../ui/custom-markdown';
 
 const FileDocumentDetail = ({
 	id,
@@ -266,16 +262,7 @@ const FileDocumentDetail = ({
 				<div className='w-full h-full flex flex-col'>
 					<div className='flex-1 overflow-auto relative'>
 						<div className='prose dark:prose-invert mx-auto pb-5'>
-							<Markdown
-								components={{
-									img: (props) => {
-										return <img {...props} className='mx-auto' />;
-									},
-								}}
-								remarkPlugins={[remarkMath, remarkGfm]}
-								rehypePlugins={[rehypeKatex, rehypeRaw]}>
-								{markdown}
-							</Markdown>
+							<CustomMarkdown content={markdown} />
 							<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
 								{t('document_ai_tips')}
 							</p>

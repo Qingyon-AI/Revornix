@@ -1,11 +1,6 @@
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { getDocumentDetail } from '@/service/document';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 import { Skeleton } from '../ui/skeleton';
 import { Separator } from '../ui/separator';
@@ -16,6 +11,8 @@ import { DocumentProcessStatus } from '@/enums/document';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useInterval } from 'ahooks';
 import { useUserContext } from '@/provider/user-provider';
+import CustomMarkdown from '../ui/custom-markdown';
+import { useTranslations } from 'next-intl';
 
 const QuickDocumentDetail = ({
 	id,
@@ -26,6 +23,7 @@ const QuickDocumentDetail = ({
 	className?: string;
 	onFinishRead?: () => void;
 }) => {
+	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
 	const {
@@ -89,16 +87,13 @@ const QuickDocumentDetail = ({
 				<div className='w-full h-full flex flex-col'>
 					<div className='flex-1 overflow-auto relative'>
 						<div className='prose dark:prose-invert mx-auto pb-5'>
-							<Markdown
-								components={{
-									img: (props) => {
-										return <img {...props} className='mx-auto' />;
-									},
-								}}
-								remarkPlugins={[remarkMath, remarkGfm]}
-								rehypePlugins={[rehypeKatex, rehypeRaw]}>
-								{document?.quick_note_info?.content}
-							</Markdown>
+							<CustomMarkdown
+								content={
+									document?.quick_note_info?.content
+										? document.quick_note_info.content
+										: t('document_no_md')
+								}
+							/>
 						</div>
 						<div ref={bottomRef}></div>
 					</div>
