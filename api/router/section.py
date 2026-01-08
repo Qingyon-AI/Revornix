@@ -1191,7 +1191,8 @@ def create_section(
         cover=section_create_request.cover,
         title=section_create_request.title, 
         description=section_create_request.description,
-        auto_podcast=section_create_request.auto_podcast
+        auto_podcast=section_create_request.auto_podcast,
+        auto_illustration=section_create_request.auto_illustration
     )
     if section_create_request.labels:
         crud.section.create_section_labels(

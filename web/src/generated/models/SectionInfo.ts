@@ -149,7 +149,7 @@ export interface SectionInfo {
      * @type {number}
      * @memberof SectionInfo
      */
-    process_task_trigger_type: number;
+    process_task_trigger_type?: number | null;
     /**
      * 
      * @type {string}
@@ -168,7 +168,6 @@ export function instanceOfSectionInfo(value: object): value is SectionInfo {
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('cover' in value) || value['cover'] === undefined) return false;
-    if (!('process_task_trigger_type' in value) || value['process_task_trigger_type'] === undefined) return false;
     return true;
 }
 
@@ -198,7 +197,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'cover': json['cover'],
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
         'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),
-        'process_task_trigger_type': json['process_task_trigger_type'],
+        'process_task_trigger_type': json['process_task_trigger_type'] == null ? undefined : json['process_task_trigger_type'],
         'process_task_trigger_scheduler': json['process_task_trigger_scheduler'] == null ? undefined : json['process_task_trigger_scheduler'],
     };
 }

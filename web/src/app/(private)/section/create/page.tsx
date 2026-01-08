@@ -49,6 +49,7 @@ const CreatePage = () => {
 			.min(1, { message: t('section_create_description_needed') }),
 		auto_publish: z.boolean(),
 		auto_podcast: z.boolean(),
+		auto_illustration: z.boolean(),
 		cover: z.string().nullable(),
 		labels: z.array(z.number()),
 		process_task_trigger_type: z.number(),
@@ -67,6 +68,7 @@ const CreatePage = () => {
 			labels: [],
 			auto_publish: false,
 			auto_podcast: false,
+			auto_illustration: false,
 			process_task_trigger_type: 1,
 		},
 	});
@@ -108,6 +110,7 @@ const CreatePage = () => {
 				labels: values.labels,
 				auto_publish: values.auto_publish,
 				auto_podcast: values.auto_podcast,
+				auto_illustration: values.auto_illustration,
 				process_task_trigger_type: values.process_task_trigger_type,
 				process_task_trigger_scheduler: values.process_task_trigger_scheduler,
 			})
@@ -323,7 +326,7 @@ const CreatePage = () => {
 							}}
 						/>
 					)}
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-5 mb-5'>
+					<div className='grid grid-cols-1 md:grid-cols-3 gap-5 mb-5'>
 						<FormField
 							name='auto_publish'
 							control={form.control}
@@ -374,6 +377,41 @@ const CreatePage = () => {
 												<OctagonAlert className='h-4 w-4 text-destructive!' />
 												<AlertDescription>
 													{t('section_create_auto_podcast_engine_unset')}
+												</AlertDescription>
+											</Alert>
+										)}
+									</FormItem>
+								);
+							}}
+						/>
+						<FormField
+							name='auto_illustration'
+							control={form.control}
+							render={({ field }) => {
+								return (
+									<FormItem className='rounded-lg border border-input p-3'>
+										<div className='flex flex-row gap-1 items-center'>
+											<FormLabel className='flex flex-row gap-1 items-center'>
+												{t('section_create_form_auto_illustration')}
+											</FormLabel>
+											<Switch
+												disabled={
+													!mainUserInfo?.default_image_generate_engine_id
+												}
+												checked={field.value}
+												onCheckedChange={(e) => {
+													field.onChange(e);
+												}}
+											/>
+										</div>
+										<FormDescription>
+											{t('section_create_form_auto_illustration_description')}
+										</FormDescription>
+										{!mainUserInfo?.default_image_generate_engine_id && (
+											<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+												<OctagonAlert className='h-4 w-4 text-destructive!' />
+												<AlertDescription>
+													{t('section_create_auto_illustration_engine_unset')}
 												</AlertDescription>
 											</Alert>
 										)}

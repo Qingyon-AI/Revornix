@@ -872,7 +872,7 @@ async def handle_process_section(
         relations=relations
     )
     
-    if db_user.default_image_generate_engine_id is not None:
+    if db_section.auto_illustration and db_user.default_image_generate_engine_id is not None:
         # 如果用户设置了图像生成引擎，那么基于专栏当前的markdown生成插图
         db_image_generator = crud.engine.get_user_engine_by_user_engine_id(
             db=db, 

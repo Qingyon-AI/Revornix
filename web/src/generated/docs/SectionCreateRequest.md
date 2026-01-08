@@ -12,6 +12,7 @@ Name | Type
 `labels` | Array&lt;number&gt;
 `auto_publish` | boolean
 `auto_podcast` | boolean
+`auto_illustration` | boolean
 `process_task_trigger_type` | number
 `process_task_trigger_scheduler` | string
 
@@ -28,6 +29,7 @@ const example = {
   "labels": null,
   "auto_publish": null,
   "auto_podcast": null,
+  "auto_illustration": null,
   "process_task_trigger_type": null,
   "process_task_trigger_scheduler": null,
 } satisfies SectionCreateRequest

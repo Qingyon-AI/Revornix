@@ -58,6 +58,7 @@ class Section(Base):
     description: Mapped[Optional[str]] = mapped_column(String(500), index=True)
     md_file_name: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the markdown file which you uploaded to the file system')
     auto_podcast: Mapped[bool] = mapped_column(Boolean, nullable=False, comment='Whether to automatically generate a podcast after uploading the markdown file')
+    auto_illustration: Mapped[bool] = mapped_column(Boolean, nullable=False, comment='Whether to automatically generate illustrations for the section markdown')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))

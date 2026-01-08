@@ -33,7 +33,6 @@ docs/BindPhoneCodeCreateRequest.md
 docs/BindPhoneCodeVerifyRequest.md
 docs/ChatItem.md
 docs/ChatMessages.md
-docs/CoverImage.md
 docs/DaySectionRequest.md
 docs/DaySectionResponse.md
 docs/DefaultApi.md
@@ -48,7 +47,6 @@ docs/DeleteNotificationTaskRequest.md
 docs/DeleteRssServerRequest.md
 docs/DeleteUserNotificationSourceRequest.md
 docs/DeleteUserNotificationTargetRequest.md
-docs/Document.md
 docs/DocumentAiSummaryRequest.md
 docs/DocumentApi.md
 docs/DocumentConvertTask.md
@@ -174,7 +172,6 @@ docs/ProvideFileSystemSearchResponse.md
 docs/QuickNoteDocumentInfo.md
 docs/ReadNotificationRecordRequest.md
 docs/ReadRequest.md
-docs/ReferenceItem.md
 docs/RssApi.md
 docs/RssDocumentInfo.md
 docs/RssSectionInfo.md
@@ -291,7 +288,6 @@ models/BindPhoneCodeCreateRequest.ts
 models/BindPhoneCodeVerifyRequest.ts
 models/ChatItem.ts
 models/ChatMessages.ts
-models/CoverImage.ts
 models/DaySectionRequest.ts
 models/DaySectionResponse.ts
 models/DefaultEngineUpdateRequest.ts
@@ -305,7 +301,6 @@ models/DeleteNotificationTaskRequest.ts
 models/DeleteRssServerRequest.ts
 models/DeleteUserNotificationSourceRequest.ts
 models/DeleteUserNotificationTargetRequest.ts
-models/Document.ts
 models/DocumentAiSummaryRequest.ts
 models/DocumentConvertTask.ts
 models/DocumentCreateRequest.ts
@@ -425,7 +420,6 @@ models/ProvideFileSystemSearchResponse.ts
 models/QuickNoteDocumentInfo.ts
 models/ReadNotificationRecordRequest.ts
 models/ReadRequest.ts
-models/ReferenceItem.ts
 models/RssDocumentInfo.ts
 models/RssSectionInfo.ts
 models/RssServerInfo.ts
