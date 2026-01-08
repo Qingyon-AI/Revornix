@@ -63,7 +63,7 @@ const SectionOperateConfiguration = ({
 		labels: z.array(z.number()),
 		auto_podcast: z.boolean(),
 		auto_illustration: z.boolean(),
-		process_task_trigger_type: z.number().optional(),
+		process_task_trigger_type: z.number().optional().nullable(),
 		process_task_trigger_scheduler: z.string().optional().nullable(),
 	});
 	const id = section_id;
@@ -103,7 +103,7 @@ const SectionOperateConfiguration = ({
 		form.setValue('description', section.description || '');
 		form.setValue('cover', section.cover || undefined);
 		form.setValue('labels', section.labels?.map((label) => label.id) || []);
-		form.setValue('auto_podcast', section.auto_podcast || false);
+		form.setValue('auto_podcast', section.auto_podcast);
 		form.setValue(
 			'process_task_trigger_type',
 			section.process_task_trigger_type
@@ -172,15 +172,13 @@ const SectionOperateConfiguration = ({
 			<SheetTrigger asChild>
 				<Button className={cn('text-xs', className)} variant={'ghost'}>
 					<PencilIcon />
-					{t('section_configuration_title')}
+					{t('section_configuration_label')}
 				</Button>
 			</SheetTrigger>
 			<SheetContent onOpenAutoFocus={(e) => e.preventDefault()}>
 				<SheetHeader>
-					<SheetTitle>{t('section_configuration_title')}</SheetTitle>
-					<SheetDescription>
-						{t('section_configuration_description')}
-					</SheetDescription>
+					<SheetTitle>{t('section_configuration_label')}</SheetTitle>
+					<SheetDescription>{t('section_form_description')}</SheetDescription>
 				</SheetHeader>
 				<div className='px-5 flex flex-col gap-5 overflow-auto flex-1'>
 					<Form {...form}>
@@ -195,14 +193,10 @@ const SectionOperateConfiguration = ({
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>
-												{t('section_configuration_form_title')}
-											</FormLabel>
+											<FormLabel>{t('section_form_title')}</FormLabel>
 											<Input
 												{...field}
-												placeholder={t(
-													'section_configuration_form_title_placeholder'
-												)}
+												placeholder={t('section_form_title_placeholder')}
 											/>
 											<FormMessage />
 										</FormItem>
@@ -215,14 +209,10 @@ const SectionOperateConfiguration = ({
 								render={({ field }) => {
 									return (
 										<FormItem>
-											<FormLabel>
-												{t('section_configuration_form_description')}
-											</FormLabel>
+											<FormLabel>{t('section_form_description')}</FormLabel>
 											<Textarea
 												{...field}
-												placeholder={t(
-													'section_configuration_form_description_placeholder'
-												)}
+												placeholder={t('section_form_description_placeholder')}
 											/>
 											<FormMessage />
 										</FormItem>
@@ -239,9 +229,7 @@ const SectionOperateConfiguration = ({
 												open={showAddLabelDialog}
 												onOpenChange={setShowAddLabelDialog}
 											/>
-											<FormLabel>
-												{t('section_configuration_form_labels')}
-											</FormLabel>
+											<FormLabel>{t('section_form_labels')}</FormLabel>
 											{labels ? (
 												<MultipleSelector
 													defaultOptions={labels.data.map((label) => {
@@ -258,12 +246,10 @@ const SectionOperateConfiguration = ({
 															.map((id) => getLabelByValue(id))
 															.filter((option) => !!option)
 													}
-													placeholder={t(
-														'section_configuration_form_labels_placeholder'
-													)}
+													placeholder={t('section_form_labels_placeholder')}
 													emptyIndicator={
 														<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-															{t('section_configuration_form_labels_empty')}
+															{t('section_form_labels_empty')}
 														</p>
 													}
 												/>
@@ -271,15 +257,13 @@ const SectionOperateConfiguration = ({
 												<Skeleton className='h-10' />
 											)}
 											<div className='text-muted-foreground text-xs flex flex-row gap-0 items-center'>
-												<span>
-													{t('section_configuration_form_labels_empty_tips')}
-												</span>
+												<span>{t('section_form_labels_empty_tips')}</span>
 												<Button
 													type='button'
 													className='text-xs text-muted-foreground px-0 py-0 h-fit'
 													variant={'link'}
 													onClick={() => setShowAddLabelDialog(true)}>
-													{t('section_configuration_form_label_create')}
+													{t('section_form_label_create')}
 												</Button>
 											</div>
 										</FormItem>
@@ -294,7 +278,7 @@ const SectionOperateConfiguration = ({
 										<FormItem className='rounded-lg border border-input p-3'>
 											<div className='flex flex-row gap-1 items-center'>
 												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('section_configuration_form_auto_podcast')}
+													{t('section_form_auto_podcast')}
 												</FormLabel>
 												<Switch
 													disabled={
@@ -307,13 +291,13 @@ const SectionOperateConfiguration = ({
 												/>
 											</div>
 											<FormDescription>
-												{t('section_create_form_auto_podcast_description')}
+												{t('section_form_auto_podcast_description')}
 											</FormDescription>
 											{!mainUserInfo?.default_podcast_user_engine_id && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('section_create_auto_podcast_engine_unset')}
+														{t('section_form_auto_podcast_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}
@@ -329,7 +313,7 @@ const SectionOperateConfiguration = ({
 										<FormItem className='rounded-lg border border-input p-3'>
 											<div className='flex flex-row gap-1 items-center'>
 												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('section_configuration_form_auto_illustration')}
+													{t('section_form_auto_illustration')}
 												</FormLabel>
 												<Switch
 													disabled={
@@ -342,13 +326,13 @@ const SectionOperateConfiguration = ({
 												/>
 											</div>
 											<FormDescription>
-												{t('section_create_form_auto_illustration_description')}
+												{t('section_form_auto_illustration_description')}
 											</FormDescription>
 											{!mainUserInfo?.default_podcast_user_engine_id && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('section_create_auto_illustration_engine_unset')}
+														{t('section_form_auto_illustration_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}
@@ -363,14 +347,14 @@ const SectionOperateConfiguration = ({
 									return (
 										<FormItem className='mb-5'>
 											<FormLabel>
-												{t('section_create_form_process_task_trigger_type')}
+												{t('section_form_process_task_trigger_type')}
 												<Tooltip>
 													<TooltipTrigger>
 														<Info size={15} />
 													</TooltipTrigger>
 													<TooltipContent>
 														{t(
-															'section_create_form_process_task_trigger_type_description'
+															'section_form_process_task_trigger_type_description'
 														)}
 													</TooltipContent>
 												</Tooltip>
@@ -388,7 +372,7 @@ const SectionOperateConfiguration = ({
 												<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
 													<Label htmlFor='r1'>
 														{t(
-															'section_create_form_process_task_trigger_type_updated'
+															'section_form_process_task_trigger_type_updated'
 														)}
 													</Label>
 													<RadioGroupItem value='1' id='r1' />
@@ -396,7 +380,7 @@ const SectionOperateConfiguration = ({
 												<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
 													<Label htmlFor='r0'>
 														{t(
-															'section_create_form_process_task_trigger_type_scheduler'
+															'section_form_process_task_trigger_type_scheduler'
 														)}
 													</Label>
 													<RadioGroupItem value='0' id='r0' />
@@ -414,16 +398,14 @@ const SectionOperateConfiguration = ({
 										return (
 											<FormItem className='mb-5'>
 												<FormLabel>
-													{t(
-														'section_create_form_process_task_trigger_scheduler'
-													)}
+													{t('section_form_process_task_trigger_scheduler')}
 													<Tooltip>
 														<TooltipTrigger>
 															<Info size={15} />
 														</TooltipTrigger>
 														<TooltipContent>
 															{t(
-																'section_create_form_process_task_trigger_scheduler_alert'
+																'section_form_process_task_trigger_scheduler_alert'
 															)}
 															<Link
 																className='ml-1 underline underline-offset-2'
@@ -436,7 +418,7 @@ const SectionOperateConfiguration = ({
 												<Input
 													className='font-mono'
 													placeholder={t(
-														'section_create_form_process_task_trigger_scheduler_placeholder'
+														'section_form_process_task_trigger_scheduler_placeholder'
 													)}
 													{...field}
 												/>

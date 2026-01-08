@@ -62,14 +62,14 @@ const CoverUpdate = () => {
 				return (
 					<FormItem>
 						<div className='flex flex-row items-center justify-between'>
-							<FormLabel>{t('section_cover')}</FormLabel>
+							<FormLabel>{t('section_form_cover')}</FormLabel>
 							<Button
 								type='button'
 								variant={'link'}
 								className='text-xs'
 								disabled={uploadingStatus === 'uploading'}
 								onClick={handleOnUploadFile}>
-								{t('section_cover_upload_new')}
+								{t('section_form_cover_upload_new')}
 								{uploadingStatus === 'uploading' && (
 									<Loader2 className='animate-spin' />
 								)}
