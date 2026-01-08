@@ -80,6 +80,12 @@ export interface SectionInfo {
     auto_podcast?: boolean | null;
     /**
      * 
+     * @type {boolean}
+     * @memberof SectionInfo
+     */
+    auto_illustration?: boolean | null;
+    /**
+     * 
      * @type {number}
      * @memberof SectionInfo
      */
@@ -186,6 +192,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'creator': UserPublicInfoFromJSON(json['creator']),
         'description': json['description'],
         'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
+        'auto_illustration': json['auto_illustration'] == null ? undefined : json['auto_illustration'],
         'documents_count': json['documents_count'] == null ? undefined : json['documents_count'],
         'subscribers_count': json['subscribers_count'] == null ? undefined : json['subscribers_count'],
         'create_time': (new Date(json['create_time'])),
@@ -218,6 +225,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'creator': UserPublicInfoToJSON(value['creator']),
         'description': value['description'],
         'auto_podcast': value['auto_podcast'],
+        'auto_illustration': value['auto_illustration'],
         'documents_count': value['documents_count'],
         'subscribers_count': value['subscribers_count'],
         'create_time': value['create_time'].toISOString(),

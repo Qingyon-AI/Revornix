@@ -568,7 +568,7 @@
     "section_configuration_form_label_create_placeholder": "Please enter tag name",
     "section_configuration_form_auto_podcast": "Auto Podcast",
     "section_configuration_form_auto_podcast_description": "If selected as auto podcast, the podcast will be automatically generated when the content of this section is updated.",
-    "section_configuration_formpublic": "Public",
+    "section_configuration_form_auto_illustration": "Auto Illustration",
     "section_configuration_form_submit": "Save",
     "section_update_success": "Section updated successfully",
     "section_update_failed": "Section update failed",

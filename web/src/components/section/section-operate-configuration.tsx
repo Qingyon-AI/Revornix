@@ -62,8 +62,9 @@ const SectionOperateConfiguration = ({
 		description: z.string().min(1),
 		labels: z.array(z.number()),
 		auto_podcast: z.boolean(),
-		process_task_trigger_type: z.number(),
-		process_task_trigger_scheduler: z.string().optional(),
+		auto_illustration: z.boolean(),
+		process_task_trigger_type: z.number().optional(),
+		process_task_trigger_scheduler: z.string().optional().nullable(),
 	});
 	const id = section_id;
 
@@ -91,6 +92,7 @@ const SectionOperateConfiguration = ({
 			description: '',
 			labels: [],
 			auto_podcast: false,
+			auto_illustration: false,
 		},
 		resolver: zodResolver(updateFormSchema),
 	});
@@ -110,6 +112,7 @@ const SectionOperateConfiguration = ({
 			'process_task_trigger_scheduler',
 			section.process_task_trigger_scheduler || ''
 		);
+		form.setValue('auto_illustration', section.auto_illustration);
 	}, [section]);
 
 	const getLabelByValue = (value: number): Option | undefined => {
@@ -311,6 +314,41 @@ const SectionOperateConfiguration = ({
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
 														{t('section_create_auto_podcast_engine_unset')}
+													</AlertDescription>
+												</Alert>
+											)}
+										</FormItem>
+									);
+								}}
+							/>
+							<FormField
+								name='auto_illustration'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem className='rounded-lg border border-input p-3'>
+											<div className='flex flex-row gap-1 items-center'>
+												<FormLabel className='flex flex-row gap-1 items-center'>
+													{t('section_configuration_form_auto_illustration')}
+												</FormLabel>
+												<Switch
+													disabled={
+														!mainUserInfo?.default_image_generate_engine_id
+													}
+													checked={field.value}
+													onCheckedChange={(e) => {
+														field.onChange(e);
+													}}
+												/>
+											</div>
+											<FormDescription>
+												{t('section_create_form_auto_illustration_description')}
+											</FormDescription>
+											{!mainUserInfo?.default_podcast_user_engine_id && (
+												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+													<OctagonAlert className='h-4 w-4 text-destructive!' />
+													<AlertDescription>
+														{t('section_create_auto_illustration_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}

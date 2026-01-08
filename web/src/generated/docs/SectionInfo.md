@@ -11,6 +11,7 @@ Name | Type
 `creator` | [UserPublicInfo](UserPublicInfo.md)
 `description` | string
 `auto_podcast` | boolean
+`auto_illustration` | boolean
 `documents_count` | number
 `subscribers_count` | number
 `create_time` | Date
@@ -37,6 +38,7 @@ const example = {
   "creator": null,
   "description": null,
   "auto_podcast": null,
+  "auto_illustration": null,
   "documents_count": null,
   "subscribers_count": null,
   "create_time": null,

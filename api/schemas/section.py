@@ -247,6 +247,7 @@ class SectionInfo(BaseModel):
     creator: UserPublicInfo
     description: str
     auto_podcast: bool | None = None
+    auto_illustration: bool | None = None
     documents_count: int = 0
     subscribers_count: int = 0
     create_time: datetime
@@ -349,3 +350,4 @@ class SectionUpdateRequest(BaseModel):
     documents: list[int] | None = None
     labels: list[int] | None = None
     auto_podcast: bool | None = None
+    auto_illustration: bool | None = None

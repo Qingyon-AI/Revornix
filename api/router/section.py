@@ -720,6 +720,8 @@ def update_section(
         )
     if section_update_request.auto_podcast is not None:
         db_section.auto_podcast = section_update_request.auto_podcast
+    if section_update_request.auto_illustration is not None:
+        db_section.auto_illustration = section_update_request.auto_illustration
     db_section.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()

@@ -13,6 +13,7 @@ Name | Type
 `documents` | Array&lt;number&gt;
 `labels` | Array&lt;number&gt;
 `auto_podcast` | boolean
+`auto_illustration` | boolean
 
 ## Example
 
@@ -28,6 +29,7 @@ const example = {
   "documents": null,
   "labels": null,
   "auto_podcast": null,
+  "auto_illustration": null,
 } satisfies SectionUpdateRequest
 
 console.log(example)
