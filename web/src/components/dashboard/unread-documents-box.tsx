@@ -44,12 +44,12 @@ const UnReadDocumentBox = () => {
 							{!isFetchingUnReadDocuments && unReadDocuments?.total}
 						</span>
 					</CardTitle>
-					<CardDescription className='flex-1'>
+					<CardDescription>
 						{t('unread_documents_card_description')}
 					</CardDescription>
 				</CardHeader>
 				<CardContent className='flex-1'>
-					{isFetchingUnReadDocuments && <Skeleton className='w-full h-24' />}
+					{isFetchingUnReadDocuments && <Skeleton className='w-full h-40' />}
 					{!isFetchingUnReadDocuments &&
 						unReadDocuments &&
 						unReadDocuments.total > 0 && (
