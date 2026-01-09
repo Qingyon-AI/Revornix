@@ -116,15 +116,6 @@ const SectionOperateConfiguration = ({
 		form.setValue('auto_illustration', section.auto_illustration);
 	}, [section]);
 
-	const getLabelByValue = (value: number): Option | undefined => {
-		if (!labels) return;
-		return labels.data
-			.map((label) => {
-				return { label: label.name, value: label.id };
-			})
-			.find((label) => label.value === value);
-	};
-
 	const [updating, setUpdating] = useState<boolean>(false);
 
 	const queryClient = getQueryClient();
