@@ -343,6 +343,7 @@ async def create_document(
             user_id=user.id, 
             auto_summary=document_create_request.auto_summary, 
             auto_podcast=document_create_request.auto_podcast,
+            auto_tag=document_create_request.auto_tag,
             override=schemas.task.DocumentOverrideProperty(
                 title=document_create_request.title, 
                 description=document_create_request.description, 

@@ -420,7 +420,7 @@ async def handle_convert_document_md(
         raise e
     finally:
         db.close()
-        
+
 async def handle_tag_document(
     document_id: int,
     user_id: int
