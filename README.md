@@ -104,7 +104,7 @@ fastapi run --port 8001
 ### Launch the Daily Hot service
 
 ```shell
-cd daily-hot
+cd hot-news
 pnpm build
 pnpm start
 ```

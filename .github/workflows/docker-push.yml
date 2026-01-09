@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [web, daily-hot, celery-worker, api]
+        service: [web, hot-news, celery-worker, api]
         arch: [amd64, arm64]
     steps:
       - name: Checkout
@@ -81,7 +81,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        service: [web, daily-hot, celery-worker, api]
+        service: [web, hot-news, celery-worker, api]
     steps:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
