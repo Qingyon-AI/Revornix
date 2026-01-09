@@ -101,7 +101,6 @@ const PhoneBind = () => {
 			const [res, err] = await utils.to(
 				bindPhoneCode({ phone: form.getValues('phone') })
 			);
-			console.log(res, err);
 			if (err || !res) {
 				toast.error(err.message);
 				return;
