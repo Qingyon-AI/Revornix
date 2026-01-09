@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { SchemasDocumentLabel } from './SchemasDocumentLabel';
+import type { SchemasSectionLabel } from './SchemasSectionLabel';
 import {
-    SchemasDocumentLabelFromJSON,
-    SchemasDocumentLabelFromJSONTyped,
-    SchemasDocumentLabelToJSON,
-    SchemasDocumentLabelToJSONTyped,
-} from './SchemasDocumentLabel';
+    SchemasSectionLabelFromJSON,
+    SchemasSectionLabelFromJSONTyped,
+    SchemasSectionLabelToJSON,
+    SchemasSectionLabelToJSONTyped,
+} from './SchemasSectionLabel';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface SchemasDocumentLabelListResponse {
     /**
      * 
-     * @type {Array<SchemasDocumentLabel>}
+     * @type {Array<SchemasSectionLabel>}
      * @memberof SchemasDocumentLabelListResponse
      */
-    data: Array<SchemasDocumentLabel>;
+    data: Array<SchemasSectionLabel>;
 }
 
 /**
@@ -53,7 +53,7 @@ export function SchemasDocumentLabelListResponseFromJSONTyped(json: any, ignoreD
     }
     return {
         
-        'data': ((json['data'] as Array<any>).map(SchemasDocumentLabelFromJSON)),
+        'data': ((json['data'] as Array<any>).map(SchemasSectionLabelFromJSON)),
     };
 }
 
@@ -68,7 +68,7 @@ export function SchemasDocumentLabelListResponseToJSONTyped(value?: SchemasDocum
 
     return {
         
-        'data': ((value['data'] as Array<any>).map(SchemasDocumentLabelToJSON)),
+        'data': ((value['data'] as Array<any>).map(SchemasSectionLabelToJSON)),
     };
 }
 
