@@ -42,6 +42,7 @@ from enums.section import SectionPodcastStatus, SectionDocumentIntegration, Sect
 from proxy.ai_model_proxy import AIModelProxy
 from engine.image.banana import BananaImageGenerateEngine
 from engine.image.official_banana import OfficialBananaImageGenerateEngine
+from engine.tag.llm_document import LLMDocumentTagEngine
 from protocol.image_generate_engine import ImageGenerateEngineProtocol
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from enums.ability import Ability
@@ -430,9 +431,30 @@ async def handle_convert_document_md(
     finally:
         db.close()
 
+async def handle_tag_document(
+    document_id: int,
+    user_id: int
+):
+    db = SessionLocal()
+    tag_engine = LLMDocumentTagEngine(user_id=user_id)
+    tags = await tag_engine.generate_tags(
+        document_id=document_id
+    )
+    if tags is None:
+        return
+    tag_ids = [
+        tag.id for tag in tags
+    ]
+    crud.document.create_document_labels(
+        db=db,
+        document_id=document_id,
+        label_ids=tag_ids
+    )
+
 async def handle_process_document(
     document_id: int, 
     user_id: int,
+    auto_tag: bool = False,
     auto_summary: bool = False,
     auto_podcast: bool = False,
     override: DocumentOverrideProperty | None = None
@@ -497,6 +519,12 @@ async def handle_process_document(
             if override.description is not None:
                 db_document.description = override.description
             db.commit()
+        
+        if auto_tag:
+            await handle_tag_document(
+                document_id=document_id,
+                user_id=user_id
+            )
             
         db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
             db=db,
@@ -975,6 +1003,7 @@ def start_process_document(
     user_id: int,
     auto_summary: bool = False,
     auto_podcast: bool = False,
+    auto_tag: bool = False,
     override: DocumentOverrideProperty | None = None
 ):
     asyncio.run(
@@ -983,6 +1012,7 @@ def start_process_document(
             user_id=user_id, 
             auto_summary=auto_summary, 
             auto_podcast=auto_podcast, 
+            auto_tag=auto_tag,
             override=override
         )
     )

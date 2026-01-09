@@ -51,6 +51,18 @@ class Document(Base):
     creator: Mapped["User"] = relationship("User", backref="created_documents")
 
 
+
+class DocumentLabel(Base):
+    __tablename__ = "document_document_label"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
+    label_id: Mapped[int] = mapped_column(ForeignKey("document_label.id"), index=True, nullable=False)
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
 class QuickNoteDocument(Base):
     __tablename__ = "quick_note_document"
 

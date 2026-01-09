@@ -1,14 +1,19 @@
 import models
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session, selectinload
 
-def get_user_labels_by_user_id(
+def create_document_labels(
     db: Session, 
-    user_id: int
+    document_id: int, 
+    label_ids: list[int]
 ):
-    query = db.query(models.document.Label)
-    query = query.filter(models.document.Label.delete_at == None,
-                         models.document.Label.user_id == user_id)
-    return query.all()
+    now = datetime.now(timezone.utc)
+    db_document_labels = [models.document.DocumentLabel(document_id=document_id, 
+                                                        label_id=label_id,
+                                                        create_time=now) for label_id in label_ids]
+    db.add_all(db_document_labels)
+    db.flush()
+    return db_document_labels
 
 def create_quick_note_document(
     db: Session, 
@@ -44,6 +49,15 @@ def create_file_document(
     db.add(db_file_document)
     db.flush()
     return db_file_document
+
+def get_user_labels_by_user_id(
+    db: Session, 
+    user_id: int
+):
+    query = db.query(models.document.Label)
+    query = query.filter(models.document.Label.delete_at == None,
+                         models.document.Label.user_id == user_id)
+    return query.all()
 
 def get_document_by_document_id(
     db: Session, 
