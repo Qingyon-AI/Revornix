@@ -6,7 +6,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createDocument, createLabel, getLabels } from '@/service/document';
 import { useState } from 'react';
-import { AlertCircleIcon, Loader2, OctagonAlert, Sparkles } from 'lucide-react';
+import {
+	AlertCircleIcon,
+	Info,
+	Loader2,
+	OctagonAlert,
+	Sparkles,
+} from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,6 +36,7 @@ import { useUserContext } from '@/provider/user-provider';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getQueryClient } from '@/lib/get-query-client';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 
 const AddLink = () => {
 	const queryClient = getQueryClient();
@@ -51,6 +58,7 @@ const AddLink = () => {
 		sections: z.array(z.number()),
 		auto_summary: z.boolean(),
 		auto_podcast: z.boolean(),
+		auto_tag: z.boolean(),
 	});
 	const router = useRouter();
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -63,6 +71,7 @@ const AddLink = () => {
 			labels: [],
 			sections: sectionId ? [Number(sectionId)] : [],
 			auto_podcast: false,
+			auto_tag: false,
 		},
 	});
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
@@ -168,54 +177,89 @@ const AddLink = () => {
 								);
 							}}
 						/>
-						{labels ? (
+						<div className='flex flex-row gap-3 items-center'>
+							{labels ? (
+								<FormField
+									control={form.control}
+									name='labels'
+									render={({ field }) => {
+										return (
+											<FormItem className='gap-0 flex-1'>
+												<MultipleSelector
+													onCreate={async ({ label }) => {
+														await mutateCreateDocumentLabel.mutateAsync({
+															name: label,
+														});
+													}}
+													options={labels.data.map((label) => {
+														return {
+															label: label.name,
+															value: label.id.toString(),
+														};
+													})}
+													onChange={(value) => {
+														field.onChange(
+															value.map(({ label, value }) => value)
+														);
+													}}
+													value={
+														field.value
+															? field.value.map((item) => item.toString())
+															: []
+													}
+													placeholder={t('document_create_label_placeholder')}
+												/>
+											</FormItem>
+										);
+									}}
+								/>
+							) : (
+								<Skeleton className='h-10' />
+							)}
 							<FormField
+								name='auto_tag'
 								control={form.control}
-								name='labels'
 								render={({ field }) => {
 									return (
-										<FormItem className='gap-0'>
-											<MultipleSelector
-												onCreate={async ({ label }) => {
-													await mutateCreateDocumentLabel.mutateAsync({
-														name: label,
-													});
-												}}
-												options={labels.data.map((label) => {
-													return {
-														label: label.name,
-														value: label.id.toString(),
-													};
-												})}
-												onChange={(value) => {
-													field.onChange(
-														value.map(({ label, value }) => value)
-													);
-												}}
-												value={
-													field.value
-														? field.value.map((item) => item.toString())
-														: []
-												}
-												placeholder={t('document_create_label_placeholder')}
-											/>
-											<div className='text-muted-foreground text-xs flex flex-row gap-0 items-center'>
-												<span>{t('document_create_label_empty_tips')}</span>
-												<Button
-													type='button'
-													className='text-xs text-muted-foreground px-0 py-0'
-													variant={'link'}
-													onClick={() => setShowAddLabelDialog(true)}>
-													{t('document_create_label_add')}
-												</Button>
+										<FormItem className='rounded-md border border-input p-2'>
+											<div className='flex flex-row gap-1 items-center'>
+												<FormLabel className='flex flex-row gap-1 items-center'>
+													{t('document_create_auto_tag')}
+													<Tooltip>
+														<TooltipTrigger>
+															<Info size={15} />
+														</TooltipTrigger>
+														<TooltipContent>
+															{t('document_create_auto_tag_description')}
+														</TooltipContent>
+													</Tooltip>
+												</FormLabel>
+												<Switch
+													disabled={
+														!mainUserInfo?.default_document_reader_model_id
+													}
+													checked={field.value}
+													onCheckedChange={(e) => {
+														field.onChange(e);
+													}}
+												/>
+												{!mainUserInfo?.default_document_reader_model_id && (
+													<Tooltip>
+														<TooltipTrigger>
+															<OctagonAlert className='h-4 w-4 text-destructive!' />
+														</TooltipTrigger>
+														<TooltipContent>
+															{t('document_create_auto_tag_engine_unset')}
+														</TooltipContent>
+													</Tooltip>
+												)}
 											</div>
 										</FormItem>
 									);
 								}}
 							/>
-						) : (
-							<Skeleton className='h-10' />
-						)}
+						</div>
+
 						<div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
 							<FormField
 								name='auto_summary'
