@@ -1,6 +1,14 @@
 import models
-from datetime import datetime, timezone
 from sqlalchemy.orm import Session, selectinload
+
+def get_user_labels_by_user_id(
+    db: Session, 
+    user_id: int
+):
+    query = db.query(models.document.Label)
+    query = query.filter(models.document.Label.delete_at == None,
+                         models.document.Label.user_id == user_id)
+    return query.all()
 
 def create_quick_note_document(
     db: Session, 

@@ -10,6 +10,17 @@ from data.sql.base import Base
 from models.user import User
 
 
+class Label(Base):
+    __tablename__ = "document_label"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
 class UserDocument(Base):
     __tablename__ = "user_document"
 

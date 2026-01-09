@@ -466,6 +466,7 @@ async def create_document(
         start_process_document.si(
             document_id=db_document.id, 
             user_id=user.id, 
+            auto_tag=document_create_request.auto_tag,
             auto_summary=document_create_request.auto_summary,
             auto_podcast=document_create_request.auto_podcast
         ),

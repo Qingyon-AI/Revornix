@@ -96,6 +96,7 @@ class BaseDocumentCreateRequest(BaseModel):
     file_name: str | None = None
     auto_summary: bool = False
     auto_podcast: bool = False
+    auto_tag: bool = False
 
 class DocumentCreateRequest(BaseDocumentCreateRequest):
     from_plat: str
