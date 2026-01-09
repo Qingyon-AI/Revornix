@@ -150,8 +150,9 @@ const CreatePage = () => {
 						name='cover'
 						render={({ field }) => {
 							return (
-								<FormItem className='mb-5 w-full p-5 flex justify-center items-center'>
+								<FormItem className='mb-5'>
 									<ImageUpload
+										className='h-40'
 										onSuccess={async (fileName) => {
 											field.onChange(fileName);
 										}}
