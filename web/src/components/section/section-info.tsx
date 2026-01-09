@@ -40,8 +40,8 @@ const SectionInfo = ({ id }: { id: number }) => {
 			</div>
 
 			{isFetching && !isFetched && (
-				<div className='px-5 mb-3'>
-					<Skeleton className='w-full h-40' />
+				<div className='px-5'>
+					<Skeleton className='w-full h-50' />
 				</div>
 			)}
 

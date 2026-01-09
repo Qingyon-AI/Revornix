@@ -98,7 +98,7 @@ const QuickDocumentDetail = ({
 						<div ref={bottomRef}></div>
 					</div>
 					<Separator className='mb-5' />
-					<DocumentOperate id={id} />
+					<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
 				</div>
 			)}
 		</div>

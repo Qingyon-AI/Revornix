@@ -48,8 +48,15 @@ import DocumentNotes from './document-notes';
 import { DocumentCategory, DocumentMdConvertStatus } from '@/enums/document';
 import DocumentConfiguration from './document-configuration';
 import { useUserContext } from '@/provider/user-provider';
+import { cn } from '@/lib/utils';
 
-const DocumentOperate = ({ id }: { id: number }) => {
+const DocumentOperate = ({
+	id,
+	className,
+}: {
+	id: number;
+	className?: string;
+}) => {
 	const t = useTranslations();
 	const router = useRouter();
 	const queryClient = getQueryClient();
@@ -182,7 +189,7 @@ const DocumentOperate = ({ id }: { id: number }) => {
 	return (
 		<>
 			{data && (
-				<div className='w-full flex justify-between'>
+				<div className={cn('w-full flex justify-between', className)}>
 					{data.category === DocumentCategory.WEBSITE && data.website_info && (
 						<Link
 							title={t('website_document_go_to_origin')}
