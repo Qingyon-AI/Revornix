@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createDocument, getLabels } from '@/service/document';
+import { createDocument, createLabel, getLabels } from '@/service/document';
 import { useState } from 'react';
 import { AlertCircleIcon, Loader2, OctagonAlert, Sparkles } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -29,8 +29,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useUserContext } from '@/provider/user-provider';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { getQueryClient } from '@/lib/get-query-client';
 
 const AddLink = () => {
+	const queryClient = getQueryClient();
 	const searchParams = useSearchParams();
 	const sectionId = searchParams.get('section_id');
 	const t = useTranslations();
@@ -129,6 +131,16 @@ const AddLink = () => {
 		console.error(errors);
 	};
 
+	const mutateCreateDocumentLabel = useMutation({
+		mutationKey: ['createDocumentLabel'],
+		mutationFn: createLabel,
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['getDocumentLabels'],
+			});
+		},
+	});
+
 	return (
 		<>
 			<AddDocumentLabelDialog
@@ -182,6 +194,11 @@ const AddLink = () => {
 									return (
 										<FormItem className='gap-0'>
 											<MultipleSelector
+												onCreate={async ({ label }) => {
+													await mutateCreateDocumentLabel.mutateAsync({
+														name: label,
+													});
+												}}
 												options={labels.data.map((label) => {
 													return {
 														label: label.name,
