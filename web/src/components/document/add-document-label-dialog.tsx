@@ -40,7 +40,7 @@ const AddDocumentLabelDialog = ({
 	});
 
 	const mutate = useMutation({
-		mutationKey: ['createLabel'],
+		mutationKey: ['createDocumentLabel'],
 		mutationFn: createLabel,
 		onSuccess: () => {
 			queryClient.invalidateQueries({

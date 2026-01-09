@@ -40,7 +40,7 @@ const AddSectionLabelDialog = ({
 	});
 
 	const mutate = useMutation({
-		mutationKey: ['createLabel'],
+		mutationKey: ['createSectionLabel'],
 		mutationFn: createLabel,
 		onSuccess: () => {
 			queryClient.invalidateQueries({

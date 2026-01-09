@@ -1,15 +1,22 @@
 'use client';
 
-import { ChevronsUpDown, TrashIcon, XIcon } from 'lucide-react';
+import {
+	CheckIcon,
+	ChevronsUpDown,
+	PlusCircleIcon,
+	TrashIcon,
+	XIcon,
+} from 'lucide-react';
 import * as _ from 'lodash-es';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
 import { Command, CommandInput, CommandItem, CommandList } from './command';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Badge } from './badge';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia } from './empty';
 import { useTranslations } from 'next-intl';
+import { Separator } from './separator';
 
 interface Element {
 	label: string;
@@ -21,11 +28,14 @@ interface MultipleSelectorProps {
 	value: string[];
 	options: Element[];
 	onChange: (e: Element[]) => void;
+	onCreate?: (params: any) => Promise<void>;
 }
 
 const MultipleSelector = (props: MultipleSelectorProps) => {
 	const t = useTranslations();
-	const { onChange, placeholder, value, options } = props;
+	const { onChange, placeholder, value, options, onCreate } = props;
+
+	const [creating, setCreating] = useState(false);
 
 	const [open, setOpen] = useState(false);
 	const [keyword, setKeyword] = useState('');
@@ -40,6 +50,11 @@ const MultipleSelector = (props: MultipleSelectorProps) => {
 		const newValue = value.filter((option) => option !== option_value);
 		onChange(newValue.map((elem) => getElementByValue(elem)!));
 	};
+
+	const filterOptions = useMemo(() => {
+		if (!options) return [];
+		return options.filter((option) => option.label.includes(keyword));
+	}, [keyword, value, options]);
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} modal={true}>
@@ -84,7 +99,33 @@ const MultipleSelector = (props: MultipleSelectorProps) => {
 						}}
 					/>
 					<CommandList>
-						{options.length === 0 && (
+						{keyword &&
+							options.findIndex((option) => option.label === keyword) === -1 &&
+							onCreate && (
+								<>
+									<CommandItem
+										className='flex flex-row justify-between items-center'
+										disabled={creating}
+										onSelect={async () => {
+											if (!onCreate) return;
+											try {
+												setCreating(true);
+												await onCreate({ label: keyword });
+											} finally {
+												setCreating(false);
+											}
+										}}>
+										<p className='text-xs'>{keyword}</p>
+										<p className='text-xs flex flex-row gap-1 items-center'>
+											{t('create')}
+											<PlusCircleIcon className='size-4' />
+										</p>
+									</CommandItem>
+									<Separator />
+								</>
+							)}
+						{((filterOptions.length === 0 && !onCreate) ||
+							options.length === 0) && (
 							<Empty className='h-full'>
 								<EmptyHeader>
 									<EmptyMedia variant='icon'>
@@ -94,33 +135,33 @@ const MultipleSelector = (props: MultipleSelectorProps) => {
 								</EmptyHeader>
 							</Empty>
 						)}
-						{options.length > 0 &&
-							options
-								.filter((option) => option.label.includes(keyword))
-								.map((option, index) => {
-									const isLast = index === options.length - 1;
-									return (
-										<CommandItem
-											key={index}
-											ref={isLast ? loadMoreRef : null}
-											value={option.value}
-											onSelect={(currentValue) => {
-												if (value.includes(currentValue)) {
-													setOpen(false);
-													return;
-												}
-												const newChosed = [...value, currentValue];
-												onChange(
-													newChosed.map(
-														(element) => getElementByValue(element)!
-													)
-												);
+						{filterOptions.length > 0 &&
+							filterOptions.map((option, index) => {
+								const isLast = index === options.length - 1;
+								return (
+									<CommandItem
+										key={index}
+										className='flex flex-row justify-between items-center'
+										ref={isLast ? loadMoreRef : null}
+										value={option.value}
+										onSelect={(currentValue) => {
+											if (value.includes(currentValue)) {
 												setOpen(false);
-											}}>
-											<p className='text-xs ml-2'>{option.label}</p>
-										</CommandItem>
-									);
-								})}
+												return;
+											}
+											const newChosed = [...value, currentValue];
+											onChange(
+												newChosed.map((element) => getElementByValue(element)!)
+											);
+											setOpen(false);
+										}}>
+										<p className='text-xs'>{option.label}</p>
+										{value.includes(option.value) && (
+											<CheckIcon className='size-4' />
+										)}
+									</CommandItem>
+								);
+							})}
 					</CommandList>
 				</Command>
 			</PopoverContent>
