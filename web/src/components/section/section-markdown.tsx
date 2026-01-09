@@ -66,7 +66,6 @@ const SectionMarkdown = ({
 				return;
 			}
 			if (typeof res === 'string') {
-				console.log(res);
 				setMarkdown(res);
 			}
 			setMarkdownIsFetching(false);

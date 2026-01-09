@@ -45,14 +45,14 @@ async function refreshToken() {
     refreshTokenTimes++;
     const refresh_token = Cookies.get('refresh_token');
     if (!refresh_token) {
-        console.error('本地cookie中找不到refresh_token')
+        console.error('Cannot find refresh_token in local cookie')
         Cookies.remove('access_token');
         window.location.reload()
         return;
     };
     const [res, err] = await utils.to(updateToken(refresh_token));
     if (err) {
-        console.error(`第${refreshTokenTimes}次刷新token，刷新失败，上限三次，超过则强制退出`)
+        console.error(`Token refresh attempt #${refreshTokenTimes}. Refresh failed. Maximum of three attempts allowed; exceeding this limit will force a logout.`)
         isRefreshing = false;
         refreshToken();
     }

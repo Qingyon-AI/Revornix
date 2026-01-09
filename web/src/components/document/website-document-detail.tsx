@@ -108,7 +108,6 @@ const WebsiteDocumentDetail = ({
 			let [res, err] = await utils.to(
 				fileService.getFileContent(document.convert_task?.md_file_name)
 			);
-			console.log(res, err);
 			if (!res || err) {
 				throw new Error(err.message);
 			}

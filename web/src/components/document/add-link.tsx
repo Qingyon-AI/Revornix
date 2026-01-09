@@ -199,7 +199,7 @@ const AddLink = () => {
 													})}
 													onChange={(value) => {
 														field.onChange(
-															value.map(({ label, value }) => value)
+															value.map(({ label, value }) => Number(value))
 														);
 													}}
 													value={
@@ -349,7 +349,7 @@ const AddLink = () => {
 												})}
 												onChange={(value) => {
 													field.onChange(
-														value.map(({ label, value }) => value)
+														value.map(({ label, value }) => Number(value))
 													);
 												}}
 												value={
