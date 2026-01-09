@@ -65,6 +65,7 @@ const MCPPage = () => {
 			queryClient.invalidateQueries({
 				queryKey: ['mcp-server-search'],
 			});
+			setShowDeleteDialog(false);
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -110,10 +111,6 @@ const MCPPage = () => {
 							<TableHead>{t('mcp_server_name')}</TableHead>
 							<TableHead>{t('mcp_server_category')}</TableHead>
 							<TableHead>{t('mcp_server_url')}</TableHead>
-							<TableHead>{t('mcp_server_headers')}</TableHead>
-							<TableHead>{t('mcp_server_script')}</TableHead>
-							<TableHead>{t('mcp_server_args')}</TableHead>
-							<TableHead>{t('mcp_server_env')}</TableHead>
 							<TableHead>{t('mcp_server_enable')}</TableHead>
 							<TableHead>{t('mcp_server_action')}</TableHead>
 						</TableRow>
@@ -130,23 +127,15 @@ const MCPPage = () => {
 										</TableCell>
 										<TableCell>
 											<Badge>
-												{mcp_server.category === MCPCategory.STD ? 'std' : 'stream'}
+												{mcp_server.category === MCPCategory.STD
+													? 'std'
+													: 'stream'}
 											</Badge>
 										</TableCell>
 										<TableCell>
-											{mcp_server.category === MCPCategory.HTTP ? mcp_server.url : '-'}
-										</TableCell>
-										<TableCell>
-											{mcp_server.category === MCPCategory.HTTP ? mcp_server.headers : '-'}
-										</TableCell>
-										<TableCell className='font-mono'>
-											{mcp_server.category === MCPCategory.STD ? mcp_server.cmd : '-'}
-										</TableCell>
-										<TableCell className='font-mono'>
-											{mcp_server.category === MCPCategory.STD ? mcp_server.args : '-'}
-										</TableCell>
-										<TableCell className='font-mono'>
-											{mcp_server.category === MCPCategory.STD ? mcp_server.env : '-'}
+											{mcp_server.category === MCPCategory.HTTP
+												? mcp_server.url
+												: '-'}
 										</TableCell>
 										<TableCell>
 											<Switch
@@ -181,9 +170,7 @@ const MCPPage = () => {
 														<Button
 															variant={'destructive'}
 															onClick={() => {
-																mutateDeleteMCPServer.mutateAsync(
-																	mcp_server.id
-																);
+																mutateDeleteMCPServer.mutate(mcp_server.id);
 															}}
 															disabled={mutateDeleteMCPServer.isPending}>
 															{t('confirm')}
