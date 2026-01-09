@@ -113,12 +113,8 @@ export type RouterType = {
   baidu: {
     index: number;
     word: string;
-    desc: string;
-    img: string;
-    hotScore: string;
-    show: string;
-    rawUrl: string;
-    query: string;
+    hotTag: string;
+    url: string;
   };
   miyoushe: {
     post: {
