@@ -51,7 +51,7 @@ async def websocket_ask(
     try:
         while True:
             data = await websocket.receive_text()
-            print(f'接收到来自{websocket_id}的消息：', data)
+            print(f'Received message from {websocket_id}: {data}')
     except WebSocketDisconnect:
         notificationManager.disconnect(websocket_id)
         await notificationManager.broadcast(f"Client #{websocket} left the chat")

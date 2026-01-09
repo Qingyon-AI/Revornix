@@ -1,4 +1,3 @@
-from rich import print
 from datetime import datetime, timezone
 from data.custom_types.all import ChunkInfo, RelationInfo, EntityInfo, DocumentInfo
 from data.neo4j.base import neo4j_driver

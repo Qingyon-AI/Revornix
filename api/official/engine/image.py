@@ -3,7 +3,6 @@ load_dotenv(override=True)
 
 import os
 import re
-from rich import print
 from langfuse.openai import OpenAI
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 

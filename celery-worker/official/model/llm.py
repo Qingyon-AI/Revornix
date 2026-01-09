@@ -3,7 +3,6 @@ load_dotenv(override=True)
 
 import os
 from langfuse.openai import OpenAI
-from rich import print
 from openai.types.responses.response_completed_event import ResponseCompletedEvent
 
 OFFICIAL_LLM_AI_BASE_URL = os.environ.get('OFFICIAL_LLM_AI_BASE_URL')
@@ -44,4 +43,4 @@ class OfficialLLMAIClient:
 
 if __name__ == '__main__':
     client = OfficialLLMAIClient()
-    print(client.generate("Hello, how are you?"))
+    client.generate("Hello, how are you?")
