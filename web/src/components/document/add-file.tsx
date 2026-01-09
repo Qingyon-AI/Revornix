@@ -90,15 +90,6 @@ const AddFile = () => {
 		},
 	});
 
-	const getSectionByValue = (value: number) => {
-		if (!sections) return;
-		return sections.data
-			.map((section) => {
-				return { label: section.title, value: section.id };
-			})
-			.find((section) => section.value === value);
-	};
-
 	const onSubmitMessageForm = async (
 		event: React.FormEvent<HTMLFormElement>
 	) => {
@@ -309,8 +300,11 @@ const AddFile = () => {
 									return (
 										<FormItem className='space-y-0'>
 											<MultipleSelector
-												defaultOptions={sections.data.map((section) => {
-													return { label: section.title, value: section.id };
+												options={sections.data.map((section) => {
+													return {
+														label: section.title,
+														value: section.id.toString(),
+													};
 												})}
 												onChange={(value) => {
 													field.onChange(
@@ -318,17 +312,11 @@ const AddFile = () => {
 													);
 												}}
 												value={
-													field.value &&
 													field.value
-														.map((id) => getSectionByValue(id))
-														.filter((option) => !!option)
+														? field.value.map((item) => item.toString())
+														: []
 												}
 												placeholder={t('document_create_section_choose')}
-												emptyIndicator={
-													<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-														{t('document_create_section_empty')}
-													</p>
-												}
 											/>
 										</FormItem>
 									);

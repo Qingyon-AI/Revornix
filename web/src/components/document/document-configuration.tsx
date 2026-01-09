@@ -29,9 +29,10 @@ import {
 	getLabels,
 	getDocumentDetail,
 	updateDocument,
+	createLabel,
 } from '@/service/document';
 import { toast } from 'sonner';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import MultipleSelector from '../ui/multiple-selector';
 import { Skeleton } from '../ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -88,24 +89,6 @@ const DocumentConfiguration = ({
 		resolver: zodResolver(updateFormSchema),
 	});
 
-	const getLabelByValue = (value: number): Option | undefined => {
-		if (!labels) return;
-		return labels.data
-			.map((label) => {
-				return { label: label.name, value: label.id };
-			})
-			.find((label) => label.value === value);
-	};
-
-	const getSectionByValue = (value: number): Option | undefined => {
-		if (!sections) return;
-		return sections.data
-			.map((section) => {
-				return { label: section.title, value: section.id };
-			})
-			.find((section) => section.value === value);
-	};
-
 	const [updating, setUpdating] = useState<boolean>(false);
 
 	const queryClient = getQueryClient();
@@ -159,6 +142,16 @@ const DocumentConfiguration = ({
 		console.error(errors);
 		toast.error(t('form_validate_failed'));
 	};
+
+	const mutateCreateDocumentLabel = useMutation({
+		mutationKey: ['createDocumentLabel'],
+		mutationFn: createLabel,
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['getDocumentLabels'],
+			});
+		},
+	});
 
 	return (
 		<Sheet>
@@ -235,6 +228,11 @@ const DocumentConfiguration = ({
 											</FormLabel>
 											{labels ? (
 												<MultipleSelector
+													onCreate={async ({ label }) => {
+														await mutateCreateDocumentLabel.mutateAsync({
+															name: label,
+														});
+													}}
 													options={labels.data.map((label) => {
 														return {
 															label: label.name,
@@ -247,10 +245,9 @@ const DocumentConfiguration = ({
 														);
 													}}
 													value={
-														field.value &&
 														field.value
-															.map((id) => getLabelByValue(id))
-															.filter((option) => !!option)
+															? field.value.map((item) => item.toString())
+															: []
 													}
 													placeholder={t(
 														'document_configuration_form_labels_placeholder'
@@ -287,10 +284,10 @@ const DocumentConfiguration = ({
 												</FormLabel>
 												{sections ? (
 													<MultipleSelector
-														defaultOptions={sections.data.map((section) => {
+														options={sections.data.map((section) => {
 															return {
 																label: section.title,
-																value: section.id,
+																value: section.id.toString(),
 															};
 														})}
 														onChange={(value) => {
@@ -299,21 +296,13 @@ const DocumentConfiguration = ({
 															);
 														}}
 														value={
-															field.value &&
 															field.value
-																.map((id) => getSectionByValue(id))
-																.filter((option) => !!option)
+																? field.value.map((item) => item.toString())
+																: []
 														}
 														placeholder={t(
 															'document_configuration_form_sections_placeholder'
 														)}
-														emptyIndicator={
-															<p className='text-center text-sm leading-10 text-gray-600 dark:text-gray-400'>
-																{t(
-																	'document_configuration_form_sections_empty'
-																)}
-															</p>
-														}
 													/>
 												) : (
 													<Skeleton className='h-10' />

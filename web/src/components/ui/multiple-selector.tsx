@@ -29,6 +29,9 @@ interface MultipleSelectorProps {
 	options: Element[];
 	onChange: (e: Element[]) => void;
 	onCreate?: (params: any) => Promise<void>;
+
+	// 动态获取数据
+	onSearch?: (params: any) => Promise<void>;
 }
 
 const MultipleSelector = (props: MultipleSelectorProps) => {
@@ -125,7 +128,7 @@ const MultipleSelector = (props: MultipleSelectorProps) => {
 								</>
 							)}
 						{((filterOptions.length === 0 && !onCreate) ||
-							options.length === 0) && (
+							(options.length === 0 && onCreate && !keyword)) && (
 							<Empty className='h-full'>
 								<EmptyHeader>
 									<EmptyMedia variant='icon'>

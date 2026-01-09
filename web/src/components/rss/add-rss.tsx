@@ -79,15 +79,6 @@ const AddRss = () => {
 		queryFn: getAllMineSections,
 	});
 
-	const getSectionByValue = (value: number): Option | undefined => {
-		if (!sections) return;
-		return sections.data
-			.map((section) => {
-				return { label: section.title, value: section.id };
-			})
-			.find((section) => section.value === value);
-	};
-
 	const mutateAddRssServer = useMutation({
 		mutationFn: createRssServer,
 		onSuccess(data, variables, context) {
@@ -362,10 +353,9 @@ const AddRss = () => {
 														);
 													}}
 													value={
-														field.value &&
 														field.value
-															.map((id) => getSectionByValue(id))
-															.filter((option) => !!option)
+															? field.value.map((item) => item.toString())
+															: []
 													}
 												/>
 											</div>

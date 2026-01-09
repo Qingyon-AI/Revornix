@@ -19,10 +19,10 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useUserContext } from '@/provider/user-provider';
-import { createSection, getMineLabels } from '@/service/section';
+import { createLabel, createSection, getMineLabels } from '@/service/section';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { utils } from '@kinda/utils';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Info, OctagonAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
@@ -136,6 +136,16 @@ const CreatePage = () => {
 		console.error(error);
 	};
 
+	const mutateCreateSectionLabel = useMutation({
+		mutationKey: ['createSectionLabel'],
+		mutationFn: createLabel,
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['getSectionLabels'],
+			});
+		},
+	});
+
 	return (
 		<div className='px-5 pb-5'>
 			<AddSectionLabelDialog
@@ -204,6 +214,11 @@ const CreatePage = () => {
 									<FormLabel>{t('section_form_labels')}</FormLabel>
 									{labels ? (
 										<MultipleSelector
+											onCreate={async ({ label }) => {
+												await mutateCreateSectionLabel.mutateAsync({
+													name: label,
+												});
+											}}
 											options={labels.data.map((label) => {
 												return {
 													label: label.name,
@@ -214,10 +229,9 @@ const CreatePage = () => {
 												field.onChange(value.map(({ label, value }) => value));
 											}}
 											value={
-												field.value &&
 												field.value
-													.map((id) => getLabelByValue(id))
-													.filter((option) => !!option)
+													? field.value.map((item) => item.toString())
+													: []
 											}
 											placeholder={t('section_form_labels_placeholder')}
 										/>
