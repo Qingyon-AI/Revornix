@@ -367,7 +367,6 @@ for db_section, db_section_process_task in db_section_trigger_schedulers:
         kwargs={
             "section_id": db_section.id,
             "user_id": db_section.creator_id,
-            "auto_summary": db_section.auto_summary,
             "auto_podcast": db_section.auto_podcast
         },
         trigger=CronTrigger.from_crontab(db_section_process_task_scheduler.cron_expr),

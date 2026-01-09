@@ -14,6 +14,9 @@ from celery import chain
 from enums.notification import NotificationTriggerEventUUID
 from enums.ability import Ability
 from enums.section import SectionProcessTriggerType
+from common.apscheduler.app import scheduler
+from common.celery.app import start_process_section
+from apscheduler.triggers.cron import CronTrigger
 
 section_router = APIRouter()
 
@@ -722,6 +725,47 @@ def update_section(
         db_section.auto_podcast = section_update_request.auto_podcast
     if section_update_request.auto_illustration is not None:
         db_section.auto_illustration = section_update_request.auto_illustration
+
+    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+        db=db,
+        section_id=db_section.id
+    )
+    if db_section_process_task is None:
+        db_section_process_task = crud.task.create_section_process_task(
+            db=db,
+            user_id=user.id,
+            section_id=db_section.id,
+        )
+    db_section_process_task.trigger_type = section_update_request.process_task_trigger_type
+    
+    if section_update_request.process_task_trigger_type == SectionProcessTriggerType.UPDATED:
+        if scheduler.get_job(f"section-process-{str(db_section.id)}") is not None:
+            scheduler.remove_job(f"section-process-{str(db_section.id)}")
+    
+    if section_update_request.process_task_trigger_scheduler is not None and section_update_request.process_task_trigger_type == SectionProcessTriggerType.SCHEDULER:
+        db_section_process_task_trigger_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
+            db=db,
+            section_id=db_section.id
+        )
+        if db_section_process_task_trigger_scheduler is None:
+            db_section_process_task_trigger_scheduler = crud.task.create_section_process_task_trigger_scheduler(
+                db=db,
+                section_process_task_id=db_section_process_task.id,
+                cron_expr=section_update_request.process_task_trigger_scheduler
+            )
+        db_section_process_task_trigger_scheduler.cron_expr = section_update_request.process_task_trigger_scheduler
+        if scheduler.get_job(f"section-process-{str(db_section.id)}") is not None:
+            scheduler.remove_job(f"section-process-{str(db_section.id)}")
+        scheduler.add_job(
+            func=start_process_section,
+            kwargs={
+                "section_id": db_section.id,
+                "user_id": db_section.creator_id,
+                "auto_podcast": db_section.auto_podcast
+            },
+            trigger=CronTrigger.from_crontab(section_update_request.process_task_trigger_scheduler),
+            id=f"section-process-{str(db_section.id)}"
+        )
     db_section.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()
@@ -1222,15 +1266,28 @@ def create_section(
         db_section_process_task = crud.task.create_section_process_task(
             db=db,
             user_id=user.id,
-            section_id=db_section.id,
-            trigger_type=SectionProcessTriggerType(section_create_request.process_task_trigger_type)
+            section_id=db_section.id
         )
-    if section_create_request.process_task_trigger_scheduler:
+    db_section_process_task.trigger_type = section_create_request.process_task_trigger_type
+    
+    if section_create_request.process_task_trigger_scheduler is not None:
         crud.task.create_section_process_task_trigger_scheduler(
             db=db,
             section_process_task_id=db_section_process_task.id,
             cron_expr=section_create_request.process_task_trigger_scheduler
         )
+        db.commit()
+        if db_section_process_task.trigger_type == SectionProcessTriggerType.SCHEDULER:
+            scheduler.add_job(
+                func=start_process_section,
+                kwargs={
+                    "section_id": db_section.id,
+                    "user_id": db_section.creator_id,
+                    "auto_podcast": db_section.auto_podcast
+                },
+                trigger=CronTrigger.from_crontab(section_create_request.process_task_trigger_scheduler),
+                id=f"section-process-{str(db_section.id)}"
+            )
     db.commit()
     return schemas.section.SectionCreateResponse(id=db_section.id)
 
