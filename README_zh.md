@@ -104,7 +104,7 @@ fastapi run --port 8001
 ### 启动热搜聚集服务
 
 ```shell
-cd daily-hot
+cd hot-news
 pnpm build
 pnpm start
 ```
