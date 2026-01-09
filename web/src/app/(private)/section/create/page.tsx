@@ -80,15 +80,6 @@ const CreatePage = () => {
 
 	const { mainUserInfo } = useUserContext();
 
-	const getLabelByValue = (value: number): Option | undefined => {
-		if (!labels) return;
-		return labels.data
-			.map((label) => {
-				return { label: label.name, value: label.id };
-			})
-			.find((label) => label.value === value);
-	};
-
 	const onSubmitForm = async (event: React.FormEvent<HTMLFormElement>) => {
 		if (event) {
 			if (typeof event.preventDefault === 'function') {
