@@ -5,7 +5,6 @@ import crud
 import models
 import schemas
 import httpx
-from rich import print
 from jose import jwt
 from redis import Redis
 from collections import defaultdict

@@ -59,9 +59,9 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         bucket = s3.Bucket(bucket_name)
         try:
             bucket.delete()
-            print(f"Bucket `{bucket_name}` 删除成功")
+            print(f"Delete Bucket Successfully: {bucket_name}")
         except ClientError as e:
-            print("删除失败:", e.response['Error']['Message'])
+            print(f"Deleted Bucket Error: {e.response['Error']['Message']}",)
             raise
     
     @staticmethod
