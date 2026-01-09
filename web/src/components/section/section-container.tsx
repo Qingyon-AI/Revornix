@@ -78,22 +78,22 @@ const SectionContainer = ({ id }: { id: number }) => {
 	}, [section?.process_task?.status]);
 
 	return (
-		<div className='px-5 pb-5 h-full w-full grid grid-cols-12 gap-5 relative'>
-			<div className='col-span-8 h-full relative min-h-0 flex flex-col'>
+		<div className='px-5 pb-5 md:h-full w-full md:grid md:grid-cols-12 md:gap-5 relative'>
+			<div className='md:col-span-8 md:h-full relative min-h-0 flex flex-col'>
 				<div className='flex-1 overflow-auto'>
 					<SectionMarkdown id={id} />
 				</div>
 				<Separator className='mb-5' />
-				<SectionOperate id={id} />
+				<SectionOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
 			</div>
 
-			<div className='col-span-4 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
-				<Card className='py-0 flex-1 overflow-auto relative pb-5'>
+			<div className='md:col-span-4 py-0 md:h-full flex flex-col gap-5 min-h-0 relative'>
+				<Card className='py-0 md:flex-1 overflow-auto relative pb-5'>
 					<div>
 						<SectionInfo id={id} />
 					</div>
 				</Card>
-				<Card className='py-0 flex-1 relative'>
+				<Card className='py-0 md:flex-1 relative'>
 					<Dialog>
 						<DialogTrigger asChild>
 							<Button

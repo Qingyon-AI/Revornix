@@ -119,9 +119,9 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	};
 
 	return (
-		<div className='px-5 pb-5 h-full w-full grid grid-cols-12 gap-5 relative'>
+		<div className='px-5 pb-5 md:h-full w-full md:grid md:grid-cols-12 md:gap-5 relative'>
 			{/* 此处的min-h-0是因为父级的grid布局会导致子元素的h-full无法准确继承到父级的实际高度，导致其高度被内容撑开 */}
-			<div className='col-span-8 h-full relative min-h-0'>
+			<div className='md:col-span-8 md:h-full relative min-h-0'>
 				{isError && (
 					<div className='text-sm text-muted-foreground h-full w-full flex justify-center items-center'>
 						{error.message}
@@ -137,11 +137,11 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					<QuickDocumentDetail onFinishRead={handleFinishRead} id={id} />
 				)}
 			</div>
-			<div className='col-span-4 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
-				<Card className='py-0 flex-2 overflow-auto relative'>
+			<div className='md:col-span-4 md:py-0 md:h-full flex flex-col gap-5 min-h-0 relative'>
+				<Card className='py-0 md:flex-2 overflow-auto relative'>
 					<DocumentInfo id={id} />
 				</Card>
-				<Card className='py-0 flex-1 relative'>
+				<Card className='py-0 md:flex-1 relative'>
 					<Dialog>
 						<DialogTrigger asChild>
 							<Button

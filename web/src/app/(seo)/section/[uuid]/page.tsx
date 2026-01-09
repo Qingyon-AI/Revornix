@@ -133,12 +133,12 @@ const SEOSectionDetail = async (props: {
 	}
 
 	return (
-		<div className='px-5 p-5 w-full grid grid-cols-12 gap-5 relative h-[calc(100vh-(--spacing.16))]'>
-			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
-				<Card className='py-0 pb-5 flex-1 relative shadow-none overflow-auto'>
+		<div className='px-5 w-full md:grid md:grid-cols-12 flex flex-col gap-5 relative'>
+			<div className='md:col-span-3 gap-5 min-h-0 md:h-[calc(100vh-var(--spacing)*16)] pb-5 md:sticky top-16'>
+				<Card className='py-0 pb-5 shadow-none overflow-hidden mb-5'>
 					<div>{section && <SectionInfo id={Number(section.id)} />}</div>
 				</Card>
-				<Card className='py-0 flex-1 relative shadow-none'>
+				<Card className='py-0 shadow-none relative h-[500px]'>
 					<Dialog>
 						<DialogTrigger asChild>
 							<Button
@@ -148,22 +148,20 @@ const SEOSectionDetail = async (props: {
 								<Expand size={4} className='text-muted-foreground' />
 							</Button>
 						</DialogTrigger>
-						<DialogContent className='max-w-[80vw]! h-[80vh] flex flex-col'>
+						<DialogContent className='max-w-[80vw]! md:h-[80vh] flex flex-col'>
 							<DialogHeader>
 								<DialogTitle>{t('section_graph')}</DialogTitle>
 								<DialogDescription>
 									{t('section_graph_description')}
 								</DialogDescription>
 							</DialogHeader>
-							<div className='flex-1'>
-								{section && <SectionGraphSEO section_id={section.id} />}
-							</div>
+							{section && <SectionGraphSEO section_id={section.id} />}
 						</DialogContent>
 					</Dialog>
 					{section && <SectionGraphSEO section_id={section.id} />}
 				</Card>
 			</div>
-			<div className='col-span-6 h-full relative min-h-0 overflow-auto'>
+			<div className='col-span-6 relative min-h-0'>
 				<div className='prose dark:prose-invert mx-auto mb-5'>
 					<Alert className='bg-blue-500/10 dark:bg-blue-600/20 text-blue-500 dark:text-blue-400 border-blue-400/50 dark:border-blue-600/60 mb-5'>
 						<AlertTitle>{t('section_ai_tips')}</AlertTitle>
@@ -183,57 +181,53 @@ const SEOSectionDetail = async (props: {
 					)}
 				</div>
 			</div>
-			<div className='col-span-3 py-0 h-full flex flex-col gap-5 min-h-0 relative'>
-				<Card className='relative shadow-none h-full flex flex-col gap-0!'>
+			<div className='col-span-3 flex flex-col gap-5 min-h-0 md:h-[calc(100vh-var(--spacing)*16)] pb-5 md:sticky top-16'>
+				<Card className='relative shadow-none max:h-full overflow-auto flex flex-col gap-0!'>
 					<CardHeader className='mb-5'>
 						<CardTitle>{t('section_documents')}</CardTitle>
 						<CardDescription>
 							{t('section_documents_description')}
 						</CardDescription>
 					</CardHeader>
-					<CardContent className='flex-1 overflow-auto flex flex-col gap-5'>
+					<CardContent className='overflow-auto flex flex-col gap-5'>
 						{section && <SectionDocumentsList section_id={section.id} />}
 					</CardContent>
 				</Card>
-				<Card className='p-5 relative shadow-none'>
-					{!section?.podcast_task && (
-						<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
-							<AlertDescription className='flex flex-row items-center'>
-								<span className='inline-flex'>
-									{t('section_podcast_unset')}
-								</span>
-							</AlertDescription>
-						</Alert>
+
+				{!section?.podcast_task && (
+					<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
+						<AlertDescription className='flex flex-row items-center'>
+							<span className='inline-flex'>{t('section_podcast_unset')}</span>
+						</AlertDescription>
+					</Alert>
+				)}
+
+				{section?.podcast_task?.status === SectionPodcastStatus.GENERATING && (
+					<Card className='p-5 relative shadow-none text-center text-muted-foreground text-xs'>
+						{t('section_podcast_processing')}
+					</Card>
+				)}
+
+				{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
+					section?.podcast_task?.podcast_file_name && (
+						<Card className='p-5 relative shadow-none'>
+							<AudioPlayer
+								src={section?.podcast_task?.podcast_file_name}
+								cover={
+									section.cover ??
+									'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
+								}
+								title={section.title ?? 'Unkown Title'}
+								artist={'AI Generated'}
+							/>
+						</Card>
 					)}
-					{section?.podcast_task && (
-						<>
-							{section?.podcast_task?.status ===
-								SectionPodcastStatus.GENERATING && (
-								<div className='text-center text-muted-foreground text-xs p-3'>
-									{t('section_podcast_processing')}
-								</div>
-							)}
-							{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
-								section?.podcast_task?.podcast_file_name && (
-									<AudioPlayer
-										src={section?.podcast_task?.podcast_file_name}
-										cover={
-											section.cover ??
-											'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
-										}
-										title={section.title ?? 'Unkown Title'}
-										artist={'AI Generated'}
-									/>
-								)}
-							{section?.podcast_task?.status ===
-								SectionPodcastStatus.FAILED && (
-								<div className='text-center text-muted-foreground text-xs p-3'>
-									{t('section_podcast_failed')}
-								</div>
-							)}
-						</>
-					)}
-				</Card>
+
+				{section?.podcast_task?.status === SectionPodcastStatus.FAILED && (
+					<Card className='p-5 relative shadow-none text-center text-muted-foreground text-xs'>
+						{t('section_podcast_failed')}
+					</Card>
+				)}
 			</div>
 		</div>
 	);

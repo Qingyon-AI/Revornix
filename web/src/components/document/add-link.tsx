@@ -177,7 +177,7 @@ const AddLink = () => {
 								);
 							}}
 						/>
-						<div className='flex flex-row gap-3 items-center'>
+						<div className='flex md:flex-row md:items-center flex-col gap-5 w-full'>
 							{labels ? (
 								<FormField
 									control={form.control}
@@ -221,39 +221,38 @@ const AddLink = () => {
 								control={form.control}
 								render={({ field }) => {
 									return (
-										<FormItem className='rounded-md border border-input p-2'>
-											<div className='flex flex-row gap-1 items-center'>
-												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('document_create_auto_tag')}
-													<Tooltip>
-														<TooltipTrigger>
-															<Info size={15} />
-														</TooltipTrigger>
-														<TooltipContent>
-															{t('document_create_auto_tag_description')}
-														</TooltipContent>
-													</Tooltip>
-												</FormLabel>
-												<Switch
-													disabled={
-														!mainUserInfo?.default_document_reader_model_id
-													}
-													checked={field.value}
-													onCheckedChange={(e) => {
-														field.onChange(e);
-													}}
-												/>
-												{!mainUserInfo?.default_document_reader_model_id && (
-													<Tooltip>
-														<TooltipTrigger>
-															<OctagonAlert className='h-4 w-4 text-destructive!' />
-														</TooltipTrigger>
-														<TooltipContent>
-															{t('document_create_auto_tag_engine_unset')}
-														</TooltipContent>
-													</Tooltip>
-												)}
-											</div>
+										<FormItem className='p-2 rounded-md border border-input flex flex-row items-center relative'>
+											<FormLabel className='flex flex-row gap-1 items-center'>
+												{t('document_create_auto_tag')}
+												<Tooltip>
+													<TooltipTrigger>
+														<Info size={15} />
+													</TooltipTrigger>
+													<TooltipContent>
+														{t('document_create_auto_tag_description')}
+													</TooltipContent>
+												</Tooltip>
+											</FormLabel>
+											<Switch
+												className='ml-auto'
+												disabled={
+													!mainUserInfo?.default_document_reader_model_id
+												}
+												checked={field.value}
+												onCheckedChange={(e) => {
+													field.onChange(e);
+												}}
+											/>
+											{!mainUserInfo?.default_document_reader_model_id && (
+												<Tooltip>
+													<TooltipTrigger>
+														<OctagonAlert className='h-4 w-4 text-destructive!' />
+													</TooltipTrigger>
+													<TooltipContent>
+														{t('document_create_auto_tag_engine_unset')}
+													</TooltipContent>
+												</Tooltip>
+											)}
 										</FormItem>
 									);
 								}}

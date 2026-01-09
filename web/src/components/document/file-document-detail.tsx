@@ -171,7 +171,7 @@ const FileDocumentDetail = ({
 						<div className='flex flex-col text-center gap-2'>
 							<p>{markdownGetError}</p>
 							<Separator />
-							<DocumentOperate id={id} />
+							<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
 						</div>
 					)}
 				</div>
@@ -196,7 +196,7 @@ const FileDocumentDetail = ({
 							)}
 						</Button>
 						<Separator />
-						<DocumentOperate id={id} />
+						<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
 					</div>
 				)}
 			{document &&
@@ -228,7 +228,7 @@ const FileDocumentDetail = ({
 							)}
 						</Button>
 						<Separator />
-						<DocumentOperate id={id} />
+						<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
 					</div>
 				)}
 			{document &&
@@ -248,7 +248,7 @@ const FileDocumentDetail = ({
 							)}
 						</Button>
 						<Separator />
-						<DocumentOperate id={id} />
+						<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
 					</div>
 				)}
 			{document &&
@@ -270,7 +270,7 @@ const FileDocumentDetail = ({
 						<div ref={bottomRef}></div>
 					</div>
 					<Separator className='mb-5' />
-					<DocumentOperate id={id} />
+					<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
 				</div>
 			)}
 		</div>
