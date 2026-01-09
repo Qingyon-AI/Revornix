@@ -90,24 +90,6 @@ const AddLink = () => {
 		},
 	});
 
-	const getLabelByValue = (value: number): Option | undefined => {
-		if (!labels) return;
-		return labels.data
-			.map((label) => {
-				return { label: label.name, value: label.id };
-			})
-			.find((label) => label.value === value);
-	};
-
-	const getSectionByValue = (value: number): Option | undefined => {
-		if (!sections) return;
-		return sections.data
-			.map((section) => {
-				return { label: section.title, value: section.id };
-			})
-			.find((section) => section.value === value);
-	};
-
 	const onSubmitMessageForm = async (
 		event: React.FormEvent<HTMLFormElement>
 	) => {
@@ -328,10 +310,9 @@ const AddLink = () => {
 													);
 												}}
 												value={
-													field.value &&
 													field.value
-														.map((id) => getSectionByValue(id))
-														.filter((option) => !!option)
+														? field.value.map((item) => item.toString())
+														: []
 												}
 												placeholder={t('document_create_section_choose')}
 											/>

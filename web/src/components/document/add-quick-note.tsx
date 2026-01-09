@@ -287,10 +287,9 @@ const AddQuickNote = () => {
 													);
 												}}
 												value={
-													field.value &&
 													field.value
-														.map((id) => getSectionByValue(id))
-														.filter((option) => !!option)
+														? field.value.map((item) => item.toString())
+														: []
 												}
 												placeholder={t('document_create_section_choose')}
 											/>

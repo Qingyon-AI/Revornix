@@ -80,15 +80,6 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 		queryFn: getAllMineSections,
 	});
 
-	const getSectionByValue = (value: number): Option | undefined => {
-		if (!sections) return;
-		return sections.data
-			.map((section) => {
-				return { label: section.title, value: section.id };
-			})
-			.find((section) => section.value === value);
-	};
-
 	const mutateUpdateRssServer = useMutation({
 		mutationFn: updateRssServer,
 		onSuccess(data, variables, context) {
@@ -383,10 +374,9 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 															);
 														}}
 														value={
-															field.value &&
 															field.value
-																.map((id) => getSectionByValue(id))
-																.filter((option) => !!option)
+																? field.value.map((item) => item.toString())
+																: []
 														}
 													/>
 												</div>

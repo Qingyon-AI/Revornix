@@ -27,12 +27,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { utils } from '@kinda/utils';
 import {
+	createLabel,
 	getMineLabels,
 	getSectionDetail,
 	updateSection,
 } from '@/service/section';
 import { toast } from 'sonner';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import MultipleSelector from '../ui/multiple-selector';
 import { Skeleton } from '../ui/skeleton';
 import AddSectionLabelDialog from './add-section-label-dialog';
@@ -167,6 +168,16 @@ const SectionOperateConfiguration = ({
 		toast.error(t('form_validate_failed'));
 	};
 
+	const mutateCreateSectionLabel = useMutation({
+		mutationKey: ['createSectionLabel'],
+		mutationFn: createLabel,
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['getSectionLabels'],
+			});
+		},
+	});
+
 	return (
 		<Sheet>
 			<SheetTrigger asChild>
@@ -232,6 +243,11 @@ const SectionOperateConfiguration = ({
 											<FormLabel>{t('section_form_labels')}</FormLabel>
 											{labels ? (
 												<MultipleSelector
+													onCreate={async ({ label }) => {
+														await mutateCreateSectionLabel.mutateAsync({
+															name: label,
+														});
+													}}
 													options={labels.data.map((label) => {
 														return {
 															label: label.name,
@@ -244,10 +260,9 @@ const SectionOperateConfiguration = ({
 														);
 													}}
 													value={
-														field.value &&
 														field.value
-															.map((id) => getLabelByValue(id))
-															.filter((option) => !!option)
+															? field.value.map((item) => item.toString())
+															: []
 													}
 													placeholder={t('section_form_labels_placeholder')}
 												/>
