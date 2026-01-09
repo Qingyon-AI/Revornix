@@ -421,25 +421,33 @@ async def handle_convert_document_md(
     finally:
         db.close()
 
+
 async def handle_tag_document(
     document_id: int,
     user_id: int
 ):
     db = SessionLocal()
-    tag_engine = LLMDocumentTagEngine(user_id=user_id)
-    tags = await tag_engine.generate_tags(
-        document_id=document_id
-    )
-    if tags is None:
-        return
-    tag_ids = [
-        tag.id for tag in tags
-    ]
-    crud.document.create_document_labels(
-        db=db,
-        document_id=document_id,
-        label_ids=tag_ids
-    )
+    try:
+        tag_engine = LLMDocumentTagEngine(user_id=user_id)
+        tags = await tag_engine.generate_tags(
+            document_id=document_id
+        )
+        if tags is None:
+            return
+        tag_ids = [
+            tag.id for tag in tags
+        ]
+        crud.document.create_document_labels(
+            db=db,
+            document_id=document_id,
+            label_ids=tag_ids
+        )
+        db.commit()
+    except Exception as e:
+        exception_logger.error(f"Something is error while tagging the document: {e}")
+        raise e
+    finally:
+        db.close()
 
 async def handle_process_document(
     document_id: int, 
