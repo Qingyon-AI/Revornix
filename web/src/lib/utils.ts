@@ -7,6 +7,33 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeStringify from 'rehype-stringify'
 import { PriceItem, PriceItemCurrencyCodeEnum } from "@/generated-pay"
 
+export const diffValues = <T extends Record<string, any>>(
+  current: T,
+  initial: Partial<T>
+): Partial<T> => {
+  const diff: Partial<T> = {};
+
+  Object.keys(current).forEach((key) => {
+    const k = key as keyof T;
+
+    if (Array.isArray(current[k])) {
+      if (
+        JSON.stringify(current[k]) !==
+        JSON.stringify(initial[k])
+      ) {
+        diff[k] = current[k];
+      }
+      return;
+    }
+
+    if (current[k] !== initial[k]) {
+      diff[k] = current[k];
+    }
+  });
+
+  return diff;
+}
+
 export function getPrice(prices: PriceItem[], currency_code: PriceItemCurrencyCodeEnum) {
   return prices.find(p => p.currency_code === currency_code)
 }
