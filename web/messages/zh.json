@@ -36,6 +36,7 @@
     "copy_successfully": "复制成功",
     "copy_failed": "复制失败",
     "form_validate_failed": "表单校验失败",
+    "form_no_change": "表单未做任何修改",
     "upload_image": "上传图片",
     "sidebar_add_document": "增加文稿",
     "sidebar_dashboard": "仪表盘",

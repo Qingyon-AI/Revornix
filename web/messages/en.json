@@ -36,6 +36,7 @@
     "copy_successfully": "Copy Successfully",
     "copy_failed": "Copy Failed",
     "form_validate_failed": "Form validation failed",
+    "form_no_change": "No changes made",
     "upload_image": "Upload Image",
     "sidebar_add_document": "Add Document",
     "sidebar_dashboard": "Dashboard",

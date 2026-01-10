@@ -38,7 +38,7 @@ import MultipleSelector from '../ui/multiple-selector';
 import { Skeleton } from '../ui/skeleton';
 import AddSectionLabelDialog from './add-section-label-dialog';
 import { useTranslations } from 'next-intl';
-import { cn } from '@/lib/utils';
+import { cn, diffValues } from '@/lib/utils';
 import { Switch } from '../ui/switch';
 import { Alert, AlertDescription } from '../ui/alert';
 import { useUserContext } from '@/provider/user-provider';
@@ -46,6 +46,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Label } from '../ui/label';
 import Link from 'next/link';
+import { useRef } from 'react';
 
 const SectionOperateConfiguration = ({
 	section_id,
@@ -55,6 +56,10 @@ const SectionOperateConfiguration = ({
 	className?: string;
 }) => {
 	const t = useTranslations();
+
+	const initialValuesRef = useRef<Partial<
+		z.infer<typeof updateFormSchema>
+	> | null>(null);
 
 	const updateFormSchema = z.object({
 		section_id: z.number().int(),
@@ -100,20 +105,22 @@ const SectionOperateConfiguration = ({
 
 	useEffect(() => {
 		if (!section) return;
-		form.setValue('title', section.title || '');
-		form.setValue('description', section.description || '');
-		form.setValue('cover', section.cover || undefined);
-		form.setValue('labels', section.labels?.map((label) => label.id) || []);
-		form.setValue('auto_podcast', section.auto_podcast);
-		form.setValue(
-			'process_task_trigger_type',
-			section.process_task_trigger_type
-		);
-		form.setValue(
-			'process_task_trigger_scheduler',
-			section.process_task_trigger_scheduler || ''
-		);
-		form.setValue('auto_illustration', section.auto_illustration);
+
+		const initialValues = {
+			section_id: id,
+			title: section.title || '',
+			description: section.description || '',
+			cover: section.cover || undefined,
+			labels: section.labels?.map((label) => label.id) || [],
+			auto_podcast: section.auto_podcast,
+			auto_illustration: section.auto_illustration,
+			process_task_trigger_type: section.process_task_trigger_type,
+			process_task_trigger_scheduler:
+				section.process_task_trigger_scheduler || '',
+		};
+
+		form.reset(initialValues);
+		initialValuesRef.current = initialValues;
 	}, [section]);
 
 	const [updating, setUpdating] = useState<boolean>(false);
@@ -137,7 +144,18 @@ const SectionOperateConfiguration = ({
 	const onFormValidateSuccess = async (
 		values: z.infer<typeof updateFormSchema>
 	) => {
+		if (!initialValuesRef.current) return;
+
+		const patch = diffValues(values, initialValuesRef.current);
+
+		// 如果啥都没改
+		if (Object.keys(patch).length === 0) {
+			toast.info(t('form_no_change'));
+			return;
+		}
+
 		setUpdating(true);
+
 		const [res, err] = await utils.to(
 			updateSection({
 				...values,
