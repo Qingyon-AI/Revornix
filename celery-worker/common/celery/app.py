@@ -557,6 +557,7 @@ async def handle_process_document(
         final_summary = None
         # chunking & embedding
         try:
+            from rich import print
             async for chunk_info in stream_chunk_document(doc_id=document_id):
                 embedding_model = get_embedding_model()
                 embedding = embedding_model.encode(chunk_info.text)

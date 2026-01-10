@@ -70,8 +70,7 @@ class ImageGenerateEngineProtocol(EngineProtocol):
                         {"role": "user", "content": user_prompt},
                     ],
                     temperature=0.3,
-                    response_format={"type": "json_object"},
-                    max_tokens=4096,
+                    response_format={"type": "json_object"}
                 )
 
                 resp_text = completion.choices[0].message.content

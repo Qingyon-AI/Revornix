@@ -43,8 +43,7 @@ async def summary_content(
                 {"role": "user", "content": system_prompt}
             ],
             temperature=0.3,
-            response_format={"type": "json_object"},
-            max_tokens=4096
+            response_format={"type": "json_object"}
         )
         res_summary = completion.choices[0].message.content
         if res_summary is None:
@@ -94,8 +93,7 @@ async def reducer_summary(
                 {"role": "user", "content": system_prompt}
             ],
             temperature=0.3,
-            response_format={"type": "json_object"},
-            max_tokens=4096
+            response_format={"type": "json_object"}
         )
         res_summary = completion.choices[0].message.content
         if res_summary is None:
@@ -145,8 +143,7 @@ async def make_section_markdown(
                 {"role": "system", "content": "You are an expert in summarizing document content."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3,
-            max_tokens=8192
+            temperature=0.3
         )
         content = completion.choices[0].message.content
         if content is None:
