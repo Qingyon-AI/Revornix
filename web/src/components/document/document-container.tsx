@@ -169,7 +169,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 
 				{!document?.podcast_task && (
 					<>
-						<Alert className='bg-destructive/10 dark:bg-destructive/20 flex flex-row items-center'>
+						<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 							<AlertDescription>
 								<span className='inline-flex'>
 									{t('document_podcast_unset')}

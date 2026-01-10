@@ -222,7 +222,7 @@ const AddLink = () => {
 								render={({ field }) => {
 									return (
 										<FormItem className='p-2 rounded-md border border-input flex flex-row items-center relative'>
-											<FormLabel className='flex flex-row gap-1 items-center'>
+											<FormLabel htmlFor='auto_tag'>
 												{t('document_create_auto_tag')}
 												<Tooltip>
 													<TooltipTrigger>
@@ -234,6 +234,7 @@ const AddLink = () => {
 												</Tooltip>
 											</FormLabel>
 											<Switch
+												id='auto_tag'
 												className='ml-auto'
 												disabled={
 													!mainUserInfo?.default_document_reader_model_id

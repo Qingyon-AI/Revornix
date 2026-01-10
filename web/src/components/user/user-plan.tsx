@@ -7,6 +7,8 @@ import { Button } from '../ui/button';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { Plan } from '@/enums/product';
+import { Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const UserPlan = () => {
 	const t = useTranslations();
@@ -15,7 +17,15 @@ const UserPlan = () => {
 	return (
 		<div className='flex flex-row items-center justify-end'>
 			{paySystemUserInfo?.userPlan?.plan && (
-				<Badge variant='outline'>
+				<Badge
+					variant='outline'
+					className={cn('flex items-center gap-1 rounded-full text-white', {
+						'border-none bg-linear-to-r from-sky-500 to-indigo-600':
+							paySystemUserInfo?.userPlan.plan.product?.uuid !== Plan.FREE,
+					})}>
+					{paySystemUserInfo.userPlan.plan.product?.uuid !== Plan.FREE && (
+						<Sparkles className='size-3' />
+					)}
 					{paySystemUserInfo.userPlan.plan.product?.name}
 					{new Date().getTime() >
 						new Date(paySystemUserInfo.userPlan.expireTime).getTime() && (

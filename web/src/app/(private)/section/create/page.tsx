@@ -265,7 +265,11 @@ const CreatePage = () => {
 									</FormLabel>
 									<RadioGroup
 										className='grid grid-cols-1 md:grid-cols-2 gap-5'
-										value={field.value ? field.value.toString() : undefined}
+										value={
+											field.value || field.value === 0
+												? field.value.toString()
+												: undefined
+										}
 										onValueChange={(e) => {
 											field.onChange(Number(e));
 										}}>
