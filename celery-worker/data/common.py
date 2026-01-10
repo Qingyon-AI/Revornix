@@ -1,11 +1,12 @@
 import crud
-import hashlib
 import json
+import hashlib
 import asyncio
 import torch
 import models
 from typing import cast
 from langfuse.openai import OpenAI
+from common.logger import exception_logger
 from langfuse import propagate_attributes
 from enums.document import DocumentMdConvertStatus
 from chonkie.types import Chunk
@@ -68,6 +69,7 @@ async def stream_chunk_document(
             db_document, 
             remote_file_service
         )
+        
         if not markdown_content.strip():
             raise ValueError("Document content is empty")
 
@@ -152,49 +154,96 @@ async def _load_markdown_content(
 # ----------------------------
 def extract_entities_relations(
     user_id: int,
-    llm_client: OpenAI, 
+    llm_client: OpenAI,
     llm_model: str,
-    chunk: ChunkInfo
+    chunk: ChunkInfo,
+    max_continue_rounds: int = 8,   # 防止死循环
 ) -> tuple[list[EntityInfo], list[RelationInfo]]:
     """
-    调用 LLM 模型抽取实体与关系
+    调用 LLM 模型抽取实体与关系（支持自动续写直到完成）
     """
+
     prompt = entity_and_relation_extraction_prompt(chunk=chunk)
+
+    output_text = ""
+    rounds = 0
+
     with propagate_attributes(
         user_id=str(user_id),
-        tags=[f'model:{llm_model}']
+        tags=[f"model:{llm_model}"]
     ):
+        # 第一轮
         resp = llm_client.chat.completions.create(
             model=llm_model,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.0,
             response_format={"type": "json_object"},
+            max_tokens=8192,
         )
-        output_text = resp.choices[0].message.content
-        if output_text is None:
-            data = {"entities": [], "relations": []}
-        else:
-            try:
-                data = json.loads(output_text)
-            except:
-                data = {"entities": [], "relations": []}
 
-        entities = [
-            EntityInfo(
-                id=e['id'],
-                text=e['text'],
-                chunks=[chunk.id],
-                entity_type=e['entity_type']
-            ) for e in data.get("entities", [])
-        ]
-        relations = [
-            RelationInfo(
-                src_node=r["src_entity_id"],
-                tgt_node=r["tgt_entity_id"],
-                relation_type=r["relation_type"]
-            ) for r in data.get("relations", [])
-        ]
-        return entities, relations
+        choice = resp.choices[0]
+        output_text += choice.message.content or ""
+
+        # === 循环续写 ===
+        while (
+            choice.finish_reason == "length"
+            and llm_model.startswith("kimi")
+            and rounds < max_continue_rounds
+        ):
+            rounds += 1
+
+            resp = llm_client.chat.completions.create(
+                model=llm_model,
+                messages=[
+                    {"role": "user", "content": prompt},
+                    {
+                        "role": "assistant",
+                        "content": output_text,
+                        "partial": True,  # kimi 专用
+                    },
+                ],
+                temperature=0.0,
+                max_tokens=8192,
+            )
+
+            choice = resp.choices[0]
+            output_text += choice.message.content or ""
+
+        if rounds >= max_continue_rounds:
+            exception_logger.error(
+                f"LLM output truncated after {max_continue_rounds} continuation rounds"
+            )
+    # === JSON 解析 ===
+    if not output_text:
+        data = {"entities": [], "relations": []}
+    else:
+        try:
+            data = json.loads(output_text)
+        except Exception:
+            exception_logger.error(f"Failed to parse LLM output: {output_text}")
+            data = {"entities": [], "relations": []}
+
+    # === 结构化 ===
+    entities = [
+        EntityInfo(
+            id=e["id"],
+            text=e["text"],
+            chunks=[chunk.id],
+            entity_type=e["entity_type"],
+        )
+        for e in data.get("entities", [])
+    ]
+
+    relations = [
+        RelationInfo(
+            src_node=r["src_entity_id"],
+            tgt_node=r["tgt_entity_id"],
+            relation_type=r["relation_type"],
+        )
+        for r in data.get("relations", [])
+    ]
+
+    return entities, relations
 
 # -----------------------------
 # 合并实体和关系
