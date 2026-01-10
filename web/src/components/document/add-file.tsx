@@ -224,7 +224,7 @@ const AddFile = () => {
 								render={({ field }) => {
 									return (
 										<FormItem className='p-2 rounded-md border border-input flex flex-row items-center relative'>
-											<FormLabel>
+											<FormLabel htmlFor='auto_tag'>
 												{t('document_create_auto_tag')}
 												<Tooltip>
 													<TooltipTrigger>
@@ -236,6 +236,7 @@ const AddFile = () => {
 												</Tooltip>
 											</FormLabel>
 											<Switch
+												id='auto_tag'
 												className='ml-auto'
 												disabled={
 													!mainUserInfo?.default_document_reader_model_id
