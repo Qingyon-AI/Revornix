@@ -971,6 +971,17 @@ def delete_section_user_by_section_id_and_user_id(
         raise Exception("Section user is not found")
     db_section_user.delete_at = now
     db.flush()
+
+def delete_section_comments_by_section_id(
+    db: Session,
+    section_id: int
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.section.SectionComment)
+    query = query.filter(models.section.SectionComment.section_id == section_id,
+                         models.section.SectionComment.delete_at == None)
+    query.update({models.section.SectionComment.delete_at: now}, synchronize_session=False)
+    db.flush()
     
 def delete_section_comments_by_section_comment_ids(
     db: Session,
@@ -983,6 +994,17 @@ def delete_section_comments_by_section_comment_ids(
                          models.section.SectionComment.delete_at == None,
                          models.section.SectionComment.creator_id == user_id)
     query.update({models.section.SectionComment.delete_at: now}, synchronize_session=False)
+    db.flush()
+
+def delete_section_labels_by_section_id(
+    db: Session,
+    section_id: int
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.section.SectionLabel)
+    query = query.filter(models.section.SectionLabel.section_id == section_id,
+                         models.section.SectionLabel.delete_at == None)
+    query = query.update({models.section.SectionLabel.delete_at: now}, synchronize_session=False)
     db.flush()
 
 def delete_section_labels_by_label_ids(

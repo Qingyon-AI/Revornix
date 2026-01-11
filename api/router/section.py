@@ -1376,6 +1376,14 @@ def delete_section(
         db=db,
         section_id=section_delete_request.section_id
     )
+    crud.section.delete_section_labels_by_section_id(
+        db=db,
+        section_id=section_delete_request.section_id
+    )
+    crud.section.delete_section_comments_by_section_id(
+        db=db,
+        section_id=section_delete_request.section_id
+    )
     crud.section.delete_section_by_section_id(
         db=db, 
         section_id=section_delete_request.section_id
