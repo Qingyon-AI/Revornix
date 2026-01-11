@@ -14,7 +14,7 @@ import {
 	DialogTitle,
 } from '../ui/dialog';
 import { Textarea } from '../ui/textarea';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,10 +32,14 @@ import {
 } from '../ui/select';
 import { getProvideEngines, installEngine } from '@/service/engine';
 import { Separator } from '../ui/separator';
+import { EngineCategory, EngineCategoryList } from '@/enums/engine';
+import { Field, FieldLabel } from '@/components/ui/field';
 
 const MineEngineAddCard = ({}: {}) => {
 	const t = useTranslations();
+	const locale = useLocale();
 	const { refreshMainUserInfo } = useUserContext();
+	const [engineCategory, setEngineCategory] = useState(EngineCategory.Markdown);
 	const [showMineEngineAddDialog, setShowMineEngineAddDialog] = useState(false);
 	const formSchema = z.object({
 		engine_id: z.number().int(),
@@ -57,9 +61,12 @@ const MineEngineAddCard = ({}: {}) => {
 		isFetching: isFetchingProvideEngines,
 		isRefetching: isRefetchingProvideEngines,
 	} = useQuery({
-		queryKey: ['provide-engine'],
+		queryKey: ['provide-engine', engineCategory],
 		queryFn: async () => {
-			return await getProvideEngines({ keyword: '' });
+			return await getProvideEngines({
+				keyword: '',
+				filter_category: engineCategory,
+			});
 		},
 	});
 	const mutateInstallEngine = useMutation({
@@ -124,6 +131,40 @@ const MineEngineAddCard = ({}: {}) => {
 							className='flex flex-col gap-5 flex-1 overflow-auto'
 							id='install_form'
 							onSubmit={handleSubmit}>
+							<Field className='grid grid-cols-12 gap-2'>
+								<FieldLabel className='col-span-3'>
+									{t('setting_engine_page_engine_form_engine_category')}
+								</FieldLabel>
+								<div className='col-span-9'>
+									<Select
+										onValueChange={(e) => {
+											setEngineCategory(Number(e));
+										}}
+										value={engineCategory.toString()}>
+										<SelectTrigger className='w-full'>
+											<SelectValue
+												placeholder={t(
+													'setting_engine_page_engine_form_engine_category_placeholder'
+												)}
+											/>
+										</SelectTrigger>
+										<SelectContent>
+											<SelectGroup>
+												{EngineCategoryList?.map((item) => {
+													return (
+														<SelectItem
+															key={item.id}
+															value={String(item.id)}
+															className='w-full'>
+															{locale === 'zh' ? item.zh : item.en}
+														</SelectItem>
+													);
+												})}
+											</SelectGroup>
+										</SelectContent>
+									</Select>
+								</div>
+							</Field>
 							<FormField
 								control={form.control}
 								name='engine_id'

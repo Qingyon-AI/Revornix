@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `keyword` | string
+`filter_category` | number
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { EngineSearchRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "keyword": null,
+  "filter_category": null,
 } satisfies EngineSearchRequest
 
 console.log(example)

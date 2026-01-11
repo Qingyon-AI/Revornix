@@ -14,7 +14,7 @@ import {
 	updateEngine,
 } from '@/service/engine';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { AudioLinesIcon, ImageIcon, Loader2, TextIcon } from 'lucide-react';
 import {
 	Dialog,
 	DialogClose,
@@ -28,7 +28,7 @@ import {
 import { Textarea } from '../ui/textarea';
 import { UserEngineInfo } from '@/generated';
 import { Separator } from '../ui/separator';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -54,12 +54,23 @@ import {
 	SelectValue,
 } from '../ui/select';
 import { Input } from '../ui/input';
+import {
+	EngineCategory,
+	EngineCategoryList,
+	getEngineCategoryLabel,
+} from '@/enums/engine';
+import { Badge } from '../ui/badge';
+import { Field, FieldLabel } from '@/components/ui/field';
 
 const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
+	const locale = useLocale();
 	const t = useTranslations();
 	const { refreshMainUserInfo } = useUserContext();
 	const [configDialogOpen, setConfigDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+	const [engineCategory, setEngineCategory] = useState(user_engine.category);
+
 	const formSchema = z.object({
 		title: z.string().optional().nullable(),
 		description: z.string().optional().nullable(),
@@ -147,11 +158,28 @@ const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 	return (
 		<>
 			<Card className='bg-muted/50'>
-				<CardHeader>
+				<CardHeader className='flex-1'>
 					<CardTitle>{user_engine.title}</CardTitle>
 					<CardDescription>{user_engine.description}</CardDescription>
 				</CardHeader>
-				<CardFooter className='flex justify-end gap-2'>
+				<CardFooter className='relative gap-2'>
+					<Badge className='rounded-full mr-auto pl-[2px]' variant={'outline'}>
+						<div className='rounded-full bg-indigo-600 p-1'>
+							{user_engine.category === EngineCategory.IMAGE && (
+								<ImageIcon className='size-4' />
+							)}
+							{user_engine.category === EngineCategory.TTS && (
+								<AudioLinesIcon className='size-4' />
+							)}
+							{user_engine.category === EngineCategory.Markdown && (
+								<TextIcon className='size-4' />
+							)}
+						</div>
+						{getEngineCategoryLabel(
+							user_engine.category,
+							locale as 'en' | 'zh'
+						)}
+					</Badge>
 					<Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
 						<DialogTrigger asChild>
 							<Button className='text-xs shadow-none'>{t('config')}</Button>
@@ -170,6 +198,41 @@ const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 									onSubmit={handleSubmit}
 									id='update_form'
 									className='space-y-5 flex-1 overflow-auto'>
+									<Field className='grid grid-cols-12 gap-2'>
+										<FieldLabel className='col-span-3'>
+											{t('setting_engine_page_engine_form_engine_category')}
+										</FieldLabel>
+										<div className='col-span-9'>
+											<Select
+												disabled
+												onValueChange={(e) => {
+													setEngineCategory(Number(e));
+												}}
+												value={engineCategory.toString()}>
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'setting_engine_page_engine_form_engine_category_placeholder'
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														{EngineCategoryList?.map((item) => {
+															return (
+																<SelectItem
+																	key={item.id}
+																	value={String(item.id)}
+																	className='w-full'>
+																	{locale === 'zh' ? item.zh : item.en}
+																</SelectItem>
+															);
+														})}
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+										</div>
+									</Field>
 									<FormItem>
 										<div className='grid grid-cols-12 gap-2'>
 											<FormLabel className='col-span-3'>
