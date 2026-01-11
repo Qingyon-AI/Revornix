@@ -5,6 +5,11 @@ import os
 import random
 import string
 import models
+from enums.document import DocumentCategory
+from enums.section import UserSectionRole
+from enums.notification import NotificationTriggerEventUUID
+from data.neo4j.delete import delete_documents_and_related_from_neo4j
+from data.milvus.delete import delete_documents_from_milvus
 from datetime import datetime, timezone
 from official.hooks.user import on_user_created
 from uuid import uuid4
@@ -19,6 +24,7 @@ from common.dependencies import get_current_user, get_db, get_cache, decode_jwt_
 from common.tp_auth.google_utils import get_google_token
 from common.tp_auth.wechat_utils import get_web_user_info, get_web_wechat_tokens, get_mini_wechat_tokens
 from common.system_email.email import RevornixSystemEmail
+from common.celery.app import start_trigger_user_notification_event
 from redis import Redis
 from common.tp_auth.github_utils import get_github_token, get_github_userInfo
 from google.oauth2 import id_token
@@ -813,6 +819,88 @@ def delete_user(
         db=db,
         user_id=user.id
     )
+    db_documents = crud.document.get_documents_by_user_id(
+        db=db,
+        user_id=user.id
+    )
+    document_ids = [document.id for document in db_documents]
+    
+    crud.document.delete_user_documents_by_document_ids(
+        db=db, 
+        document_ids=document_ids, 
+        user_id=user.id
+    )
+    crud.document.delete_document_labels_by_document_ids(
+        db=db, 
+        document_ids=document_ids
+    )
+    crud.document.delete_document_notes_by_document_ids(
+        db=db,
+        document_ids=document_ids
+    )
+    for db_document in db_documents:
+        if db_document.category == DocumentCategory.FILE:
+            crud.document.delete_file_documents_by_document_ids(
+                db=db,
+                document_ids=document_ids
+            )
+        elif db_document.category == DocumentCategory.WEBSITE:
+            crud.document.delete_website_documents_by_document_ids(
+                db=db,
+                document_ids=document_ids
+            )
+        elif db_document.category == DocumentCategory.QUICK_NOTE:
+            crud.document.delete_quick_note_documents_by_document_ids(
+                db=db,
+                document_ids=document_ids
+            )
+    delete_documents_and_related_from_neo4j(
+        doc_ids=document_ids
+    )
+    delete_documents_from_milvus(
+        doc_ids=document_ids
+    )
+    db_sections = crud.section.get_sections_by_user_id(
+        db=db,
+        user_id=user.id
+    )
+    for db_section in db_sections:
+        crud.section.delete_section_users_by_section_id(
+            db=db, 
+            section_id=db_section.id
+        )
+        crud.section.delete_section_documents_by_section_id(
+            db=db,
+            section_id=db_section.id
+        )
+        crud.section.delete_section_labels_by_section_id(
+            db=db,
+            section_id=db_section.id
+        )
+        crud.section.delete_section_comments_by_section_id(
+            db=db,
+            section_id=db_section.id
+        )
+        crud.section.delete_section_by_section_id(
+            db=db, 
+            section_id=db_section.id
+        )
+        db_users = crud.section.get_users_for_section_by_section_id(
+            db=db,
+            section_id=db_section.id,
+            filter_roles=[UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER]
+        )
+        for db_user in db_users:
+            if db_user.id != user.id:
+                start_trigger_user_notification_event.delay(
+                    user_id=db_user.id,
+                    trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value,
+                    params={
+                        "section_id": db_section.id,
+                        "user_id": db_user.id
+                    }
+                )
+        
     db.commit()
     return schemas.common.SuccessResponse(message="The user is deleted successfully.")
 

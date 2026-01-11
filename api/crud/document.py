@@ -119,6 +119,15 @@ def create_document_labels(
     db.flush()
     return db_document_labels
 
+def get_documents_by_user_id(
+    db: Session,
+    user_id: int
+):
+    query = db.query(models.document.Document)
+    query = query.filter(models.document.Document.delete_at == None,
+                         models.document.Document.creator_id == user_id)
+    return query.all()
+
 def get_read_document_by_document_id_and_user_id(
     db: Session,
     document_id: int,

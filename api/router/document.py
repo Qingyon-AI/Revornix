@@ -1202,7 +1202,6 @@ def delete_document(
             raise Exception("The document is not found")
         if db_document.creator_id != user.id:
             raise Exception("You are not the owner of the document")
-    # TODO 需要补充一些删除附属资源的逻辑
     crud.document.delete_user_documents_by_document_ids(
         db=db, 
         document_ids=documents_delete_request.document_ids, 

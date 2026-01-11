@@ -137,6 +137,17 @@ def create_date_section(
     db.flush()
     return db_day_section
 
+def get_sections_by_user_id(
+    db: Session, 
+    user_id: int
+):
+    query = db.query(models.section.Section)
+    query = query.filter(
+        models.section.Section.delete_at == None,
+        models.section.Section.creator_id == user_id
+    )
+    return query.all()
+
 def get_user_labels_by_user_id(
     db: Session, 
     user_id: int
