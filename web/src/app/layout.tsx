@@ -15,6 +15,8 @@ export const metadata: Metadata = {
 	description: 'An Information Management Tool for the AI Era',
 };
 
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+
 export default async function RootLayout({
 	children,
 }: Readonly<{
@@ -38,7 +40,7 @@ export default async function RootLayout({
 					<Toaster position='top-right' richColors />
 				</NextIntlClientProvider>
 			</body>
-			<GoogleAnalytics gaId='G-GQX7YQFD7T' />
+			{GA_ID && <GoogleAnalytics gaId={GA_ID} />}
 		</html>
 	);
 }
