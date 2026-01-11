@@ -1,7 +1,6 @@
 import crud
 import models
 import schemas
-import asyncio
 from celery import chain, group
 from datetime import datetime, timezone
 from schemas.common import SuccessResponse
@@ -10,7 +9,8 @@ from fastapi import APIRouter, Depends
 from common.ai import summary_content
 from common.dependencies import get_db
 from data.milvus.search import naive_search
-from data.milvus.create import milvus_client
+from data.milvus.delete import delete_documents_from_milvus
+from data.neo4j.delete import delete_documents_and_related_from_neo4j
 from typing import cast
 from common.dependencies import get_db, get_current_user, check_deployed_by_official, plan_ability_checked_in_func, get_authorization_header
 from common.common import get_user_remote_file_system
@@ -1208,10 +1208,34 @@ def delete_document(
         document_ids=documents_delete_request.document_ids, 
         user_id=user.id
     )
-    expr = f"doc_id IN {documents_delete_request.document_ids}"
-    milvus_client.delete(
-        collection_name="document",
-        filter=expr,
-    )   
+    crud.document.delete_document_labels_by_document_ids(
+        db=db, 
+        document_ids=documents_delete_request.document_ids
+    )
+    crud.document.delete_document_notes_by_document_ids(
+        db=db,
+        document_ids=documents_delete_request.document_ids
+    )
+    if db_document.category == DocumentCategory.FILE:
+        crud.document.delete_file_documents_by_document_ids(
+            db=db,
+            document_ids=documents_delete_request.document_ids
+        )
+    elif db_document.category == DocumentCategory.WEBSITE:
+        crud.document.delete_website_documents_by_document_ids(
+            db=db,
+            document_ids=documents_delete_request.document_ids
+        )
+    elif db_document.category == DocumentCategory.QUICK_NOTE:
+        crud.document.delete_quick_note_documents_by_document_ids(
+            db=db,
+            document_ids=documents_delete_request.document_ids
+        )
+    delete_documents_and_related_from_neo4j(
+        doc_ids=documents_delete_request.document_ids
+    )
+    delete_documents_from_milvus(
+        doc_ids=documents_delete_request.document_ids
+    )
     db.commit()
     return SuccessResponse(message="The documents is deleted successfully")

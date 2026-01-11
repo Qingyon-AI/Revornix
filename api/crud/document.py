@@ -988,6 +988,17 @@ def delete_labels_by_label_ids(
                          models.document.Label.delete_at == None)
     query = query.update({models.document.Label.delete_at: now}, synchronize_session=False)
     db.flush()
+    
+def delete_document_labels_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.document.DocumentLabel)
+    query = query.filter(models.document.DocumentLabel.document_id.in_(document_ids),
+                         models.document.DocumentLabel.delete_at == None)
+    query = query.update({models.document.DocumentLabel.delete_at: now}, synchronize_session=False)
+    db.flush()
 
 def delete_document_labels_by_label_ids(
     db: Session, 
@@ -1071,6 +1082,17 @@ def delete_user_documents_by_document_ids(
 
     db.flush()
     
+def delete_document_notes_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.document.DocumentNote)
+    query = query.filter(models.document.DocumentNote.document_id.in_(document_ids), 
+                         models.document.DocumentNote.delete_at == None)
+    query = query.update({models.document.DocumentNote.delete_at: now})
+    db.flush()
+    
 def delete_document_notes_by_user_id_and_note_ids(
     db: Session, 
     user_id: int, 
@@ -1082,6 +1104,39 @@ def delete_document_notes_by_user_id_and_note_ids(
                          models.document.DocumentNote.user_id == user_id,
                          models.document.DocumentNote.delete_at == None)
     query = query.update({models.document.DocumentNote.delete_at: now})
+    db.flush()
+    
+def delete_quick_note_documents_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.document.QuickNoteDocument)
+    query = query.filter(models.document.QuickNoteDocument.document_id.in_(document_ids), 
+                         models.document.QuickNoteDocument.delete_at == None)
+    query = query.update({models.document.QuickNoteDocument.delete_at: now})
+    db.flush()
+    
+def delete_website_documents_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.document.WebsiteDocument)
+    query = query.filter(models.document.WebsiteDocument.document_id.in_(document_ids), 
+                         models.document.WebsiteDocument.delete_at == None)
+    query = query.update({models.document.WebsiteDocument.delete_at: now})
+    db.flush()
+    
+def delete_file_documents_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.document.FileDocument)
+    query = query.filter(models.document.FileDocument.document_id.in_(document_ids),
+                         models.document.FileDocument.delete_at == None)
+    query = query.update({models.document.FileDocument.delete_at: now})
     db.flush()
     
 def delete_website_document_by_website_document_ids(
