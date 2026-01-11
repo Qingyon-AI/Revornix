@@ -1368,10 +1368,6 @@ def delete_section(
         db=db, 
         section_id=section_delete_request.section_id
     )
-    db_section_documents = crud.section.get_documents_for_section_by_section_id(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
     crud.section.delete_section_documents_by_section_id(
         db=db,
         section_id=section_delete_request.section_id
