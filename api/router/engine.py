@@ -19,7 +19,8 @@ def search_document_parse_engine(
     db_user_engines = crud.engine.get_user_engine_by_user_id(
         db=db,
         user_id=current_user.id,
-        keyword=engine_search_request.keyword
+        keyword=engine_search_request.keyword,
+        filter_category=engine_search_request.filter_category,
     )
     typed_user_engines = cast(
         list[tuple[models.engine.UserEngine, models.engine.Engine]], 
@@ -49,7 +50,8 @@ def provide_document_parse_engine(
 ):
     db_engines = crud.engine.get_all_engines(
         db=db, 
-        keyword=engine_search_request.keyword
+        keyword=engine_search_request.keyword,
+        filter_category=engine_search_request.filter_category,
     )
     engines = [
         schemas.engine.EngineInfo.model_validate(db_engine, from_attributes=True) for db_engine in db_engines

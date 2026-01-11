@@ -13,14 +13,18 @@ import { getMineEngines } from '@/service/engine';
 import { utils } from '@kinda/utils';
 import { updateUserDefaultEngine } from '@/service/user';
 import { toast } from 'sonner';
+import { EngineCategory } from '@/enums/engine';
 
 const DefaultPodcastEngineChange = () => {
 	const t = useTranslations();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const { data } = useQuery({
-		queryKey: ['mine-engine'],
+		queryKey: ['mine-engine', EngineCategory.TTS],
 		queryFn: async () => {
-			const res = await getMineEngines({ keyword: '' });
+			const res = await getMineEngines({
+				keyword: '',
+				filter_category: EngineCategory.TTS,
+			});
 			return res;
 		},
 	});

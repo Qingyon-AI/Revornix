@@ -25,6 +25,12 @@ export interface EngineSearchRequest {
      * @memberof EngineSearchRequest
      */
     keyword: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof EngineSearchRequest
+     */
+    filter_category?: number | null;
 }
 
 /**
@@ -46,6 +52,7 @@ export function EngineSearchRequestFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'keyword': json['keyword'],
+        'filter_category': json['filter_category'] == null ? undefined : json['filter_category'],
     };
 }
 
@@ -61,6 +68,7 @@ export function EngineSearchRequestToJSONTyped(value?: EngineSearchRequest | nul
     return {
         
         'keyword': value['keyword'],
+        'filter_category': value['filter_category'],
     };
 }
 

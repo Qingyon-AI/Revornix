@@ -58,6 +58,7 @@ class UserEngineInfo(BaseModel):
         
 class EngineSearchRequest(BaseModel):
     keyword: str
+    filter_category: int | None = None
     
 class MineEngineSearchResponse(BaseModel):
     data: list[UserEngineInfo]

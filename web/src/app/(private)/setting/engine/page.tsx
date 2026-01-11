@@ -2,19 +2,14 @@
 
 import MineEngineAddCard from '@/components/setting/mine-engine-add-card';
 import MineEngineCard from '@/components/setting/mine-engine-card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMineEngines } from '@/service/engine';
 import { useQuery } from '@tanstack/react-query';
-import { Info } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 const EnginePage = () => {
-	const t = useTranslations();
 	const {
 		data: mineEngines,
 		isFetching,
-		isRefetching,
 		isSuccess,
 		isError,
 	} = useQuery({
