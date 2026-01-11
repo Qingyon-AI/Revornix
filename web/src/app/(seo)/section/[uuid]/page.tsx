@@ -134,11 +134,11 @@ const SEOSectionDetail = async (props: {
 
 	return (
 		<div className='px-5 w-full md:grid md:grid-cols-12 flex flex-col gap-5 relative'>
-			<div className='md:col-span-3 gap-5 min-h-0 md:h-[calc(100vh-var(--spacing)*16)] pb-5 md:sticky top-16'>
+			<div className='md:col-span-3 gap-5 min-h-0 md:h-[calc(100vh-var(--spacing)*16)] pb-5 md:sticky top-16 overflow-auto'>
 				<Card className='py-0 pb-5 shadow-none overflow-hidden mb-5'>
 					<div>{section && <SectionInfo id={Number(section.id)} />}</div>
 				</Card>
-				<Card className='py-0 shadow-none relative h-[500px]'>
+				<Card className='py-0 shadow-none relative h-[400px]'>
 					<Dialog>
 						<DialogTrigger asChild>
 							<Button

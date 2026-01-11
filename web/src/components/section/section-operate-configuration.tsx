@@ -69,7 +69,7 @@ const SectionOperateConfiguration = ({
 		labels: z.array(z.number()),
 		auto_podcast: z.boolean(),
 		auto_illustration: z.boolean(),
-		process_task_trigger_type: z.number().optional().nullable(),
+		process_task_trigger_type: z.number(),
 		process_task_trigger_scheduler: z.string().optional().nullable(),
 	});
 	const id = section_id;
@@ -114,7 +114,7 @@ const SectionOperateConfiguration = ({
 			labels: section.labels?.map((label) => label.id) || [],
 			auto_podcast: section.auto_podcast,
 			auto_illustration: section.auto_illustration,
-			process_task_trigger_type: section.process_task_trigger_type,
+			process_task_trigger_type: section.process_task_trigger_type || undefined,
 			process_task_trigger_scheduler:
 				section.process_task_trigger_scheduler || '',
 		};
