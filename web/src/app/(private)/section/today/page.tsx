@@ -110,7 +110,7 @@ const SectionDetailPage = () => {
 		fetchNextPage,
 		hasNextPage,
 	} = useInfiniteQuery({
-		queryKey: ['searchSectionDocument', ''],
+		queryKey: ['searchSectionDocument', section?.section_id, ''],
 		// @ts-expect-error
 		queryFn: (pageParam) => searchSectionDocuments({ ...pageParam.pageParam }),
 		initialPageParam: {

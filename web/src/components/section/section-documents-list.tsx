@@ -19,7 +19,7 @@ const SectionDocumentsList = ({ section_id }: { section_id: number }) => {
 		fetchNextPage,
 		hasNextPage,
 	} = useInfiniteQuery({
-		queryKey: ['searchSectionDocument', ''],
+		queryKey: ['searchSectionDocument', section_id, ''],
 		queryFn: (pageParam) => searchSectionDocuments({ ...pageParam.pageParam }),
 		initialPageParam: {
 			limit: 10,
