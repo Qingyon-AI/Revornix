@@ -19,7 +19,7 @@ def delete_documents_from_milvus(
     
     milvus_client.delete(
         collection_name="document",
-        expr=expr
+        filter=expr
     )
 
     # flush 单 collection 版本
