@@ -377,7 +377,8 @@ async def create_user_by_email_verify(
     email_user_create_verify_request: schemas.user.EmailUserCreateCodeVerifyRequest, 
     db: Session = Depends(get_db), 
     cache: Redis = Depends(get_cache),
-    deployed_by_official: bool = Depends(check_deployed_by_official)
+    deployed_by_official: bool = Depends(check_deployed_by_official),
+    ip: str | None = Depends(get_real_ip)
 ):
     if crud.user.get_user_by_email(
         db=db, 
@@ -393,6 +394,9 @@ async def create_user_by_email_verify(
         nickname=email_user_create_verify_request.email,
         avatar="files/default_avatar.png"
     )
+    db_user.last_login_ip = ip
+    db_user.last_login_time = datetime.now(timezone.utc)
+    
     crud.user.create_email_user(
         db=db, 
         user_id=db_user.id, 
@@ -451,7 +455,8 @@ async def create_user_by_email_verify(
 def create_user_by_email(
     email_user_create_verify_request: schemas.user.EmailUserCreateVerifyRequest, 
     db: Session = Depends(get_db),
-    _ = Depends(reject_if_official)
+    _ = Depends(reject_if_official),
+    ip: str | None = Depends(get_real_ip)
 ):
     if crud.user.get_user_by_email(
         db=db, 
@@ -463,6 +468,9 @@ def create_user_by_email(
         nickname=email_user_create_verify_request.email,
         avatar="files/default_avatar.png"
     )
+    db_user.last_login_ip = ip
+    db_user.last_login_time = datetime.now(timezone.utc)
+    
     crud.user.create_email_user(
         db=db, 
         user_id=db_user.id, 
@@ -908,7 +916,8 @@ def delete_user(
 async def create_user_by_google(
     user: schemas.user.GoogleUserCreate, 
     db: Session = Depends(get_db),
-    deployed_by_official: bool = Depends(check_deployed_by_official)
+    deployed_by_official: bool = Depends(check_deployed_by_official),
+    ip: str | None = Depends(get_real_ip)
 ):
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
@@ -950,6 +959,9 @@ async def create_user_by_google(
         avatar="files/default_avatar.png",
         nickname=idinfo.get('name')
     )
+    db_user.last_login_ip = ip
+    db_user.last_login_time = datetime.now(timezone.utc)
+    
     crud.user.create_google_user(
         db=db, 
         user_id=db_user.id, 
@@ -1064,7 +1076,8 @@ def unbind_google(
 async def create_user_by_github(
     user: schemas.user.GithubUserCreate, 
     db: Session = Depends(get_db),
-    deployed_by_official: bool = Depends(check_deployed_by_official)
+    deployed_by_official: bool = Depends(check_deployed_by_official),
+    ip: str | None = Depends(get_real_ip)
 ):
     GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
     GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')
@@ -1101,6 +1114,9 @@ async def create_user_by_github(
         nickname=github_user_info.get('login'),
         avatar="files/default_avatar.png"
     )
+    db_user.last_login_ip = ip
+    db_user.last_login_time = datetime.now(timezone.utc)
+    
     crud.user.create_github_user(
         db=db, 
         user_id=db_user.id, 
@@ -1232,7 +1248,8 @@ async def create_user_by_sms_verify(
     sms_user_code_verify_request: schemas.user.SmsUserCodeVerifyCreate,
     db: Session = Depends(get_db),
     cache: Redis = Depends(get_cache),
-    deployed_by_official: bool = Depends(check_deployed_by_official)
+    deployed_by_official: bool = Depends(check_deployed_by_official),
+    ip: str | None = Depends(get_real_ip)
 ):
     code = await cache.get(sms_user_code_verify_request.phone)
     if code is None:
@@ -1261,6 +1278,9 @@ async def create_user_by_sms_verify(
             nickname=f'Revornix User {uuid4().hex[:8]}',
             avatar="files/default_avatar.png"
         )
+        db_user.last_login_ip = ip
+        db_user.last_login_time = datetime.now(timezone.utc)
+        
         crud.user.create_phone_user(
             db=db, 
             user_id=db_user.id, 
@@ -1376,7 +1396,8 @@ def unbind_phone(
 async def create_user_by_wechat_mini(
     wechat_mini_user_create_request: schemas.user.WeChatMiniUserCreateRequest,
     db: Session = Depends(get_db),
-    deployed_by_official: bool = Depends(check_deployed_by_official)
+    deployed_by_official: bool = Depends(check_deployed_by_official),
+    ip: str | None = Depends(get_real_ip)
 ):
     WECHAT_MINI_APP_ID = os.environ.get('WECHAT_MINI_APP_ID')
     WECHAT_MINI_APP_SECRET = os.environ.get('WECHAT_MINI_APP_SECRET')
@@ -1420,6 +1441,9 @@ async def create_user_by_wechat_mini(
             avatar="files/default_avatar.png",
             nickname=nickname
         )
+        db_user.last_login_ip = ip
+        db_user.last_login_time = datetime.now(timezone.utc)
+        
         crud.user.create_wechat_user(
             db=db, 
             user_id=db_user.id, 
@@ -1494,7 +1518,8 @@ async def create_user_by_wechat_mini(
 async def create_user_by_wechat_web(
     wechat_web_user_create_request: schemas.user.WeChatWebUserCreateRequest, 
     db: Session = Depends(get_db),
-    deployed_by_official: bool = Depends(check_deployed_by_official)
+    deployed_by_official: bool = Depends(check_deployed_by_official),
+    ip: str | None = Depends(get_real_ip)
 ):
     WECHAT_WEB_APP_ID = os.environ.get('WECHAT_WEB_APP_ID')
     WECHAT_WEB_APP_SECRET = os.environ.get('WECHAT_WEB_APP_SECRET')
@@ -1539,6 +1564,9 @@ async def create_user_by_wechat_web(
             avatar="files/default_avatar.png",
             nickname=nickname
         )
+        db_user.last_login_ip = ip
+        db_user.last_login_time = datetime.now(timezone.utc)
+        
         crud.user.create_wechat_user(
             db=db, 
             user_id=db_user.id, 
