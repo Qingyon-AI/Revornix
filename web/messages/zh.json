@@ -147,7 +147,7 @@
     "rss_section_card_no_description": "暂无描述",
     "rss_document_card_no_title": "未命名",
     "rss_document_card_no_description": "暂无描述",
-    "graph_empty": "暂无相关数据",
+    "graph_empty": "暂无相关节点和关系数据",
     "graph_data": "当前共有节点数{node_count}个，边数{edge_count}条",
     "setting_base_config": "基础配置",
     "setting_document": "文稿设置",

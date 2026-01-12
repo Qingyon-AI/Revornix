@@ -7,6 +7,13 @@ import * as d3 from 'd3';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef } from 'react';
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
+import { TrashIcon } from 'lucide-react';
 
 interface Node {
 	id: string;
@@ -273,9 +280,14 @@ const GraphPage = () => {
 			{isSuccess && isFetched && (
 				<>
 					{!data?.edges.length && !data?.nodes.length && (
-						<div className='text-xs text-muted-foreground'>
-							{t('graph_empty')}
-						</div>
+						<Empty className='h-full'>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<TrashIcon />
+								</EmptyMedia>
+								<EmptyDescription>{t('graph_empty')}</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
 					)}
 					{data?.nodes && data?.nodes.length > 0 && <svg ref={svgRef}></svg>}
 					<div className='fixed bg-muted w-fit px-3 py-2 rounded right-5 bottom-5 text-xs text-muted-foreground flex justify-center items-center'>
