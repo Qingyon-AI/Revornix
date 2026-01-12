@@ -27,6 +27,7 @@ import { useInterval } from 'ahooks';
 import { useUserContext } from '@/provider/user-provider';
 import { Separator } from '../ui/separator';
 import SectionOperate from './section-operate';
+import { Spinner } from '../ui/spinner';
 
 const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -159,16 +160,21 @@ const SectionContainer = ({ id }: { id: number }) => {
 					</Alert>
 				)}
 
-				{section?.podcast_task && (
-					<Card className='p-5 relative flex flex-col gap-5'>
-						{section?.podcast_task?.status ===
-							SectionPodcastStatus.GENERATING && (
-							<div className='text-center text-muted-foreground text-xs p-3'>
+				{/* {section?.podcast_task && ( */}
+				<>
+					{section?.podcast_task?.status ===
+						SectionPodcastStatus.GENERATING && (
+						<Card className='p-5 relative flex flex-col gap-5'>
+							<div className='text-center text-muted-foreground text-xs flex flex-row items-center gap-2'>
 								{t('section_podcast_processing')}
+								<Spinner />
 							</div>
-						)}
-						{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
-							section?.podcast_task?.podcast_file_name && (
+						</Card>
+					)}
+
+					{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
+						section?.podcast_task?.podcast_file_name && (
+							<Card className='p-5 relative flex flex-col gap-5'>
 								<AudioPlayer
 									src={section?.podcast_task?.podcast_file_name}
 									cover={
@@ -178,14 +184,31 @@ const SectionContainer = ({ id }: { id: number }) => {
 									title={section.title ?? 'Unkown Title'}
 									artist={'AI Generated'}
 								/>
-							)}
-						{section?.podcast_task?.status === SectionPodcastStatus.FAILED && (
-							<div className='text-center text-muted-foreground text-xs p-3'>
-								{t('section_podcast_failed')}
-							</div>
+							</Card>
 						)}
-					</Card>
-				)}
+
+					{section?.podcast_task?.status === SectionPodcastStatus.FAILED && (
+						<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+							<AlertDescription>
+								<span>{t('section_podcast_failed')}</span>
+								<Button
+									variant={'link'}
+									size='sm'
+									className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
+									onClick={() => mutateGeneratePodcast.mutate()}
+									disabled={
+										mutateGeneratePodcast.isPending ||
+										!mainUserInfo?.default_podcast_user_engine_id
+									}>
+									{t('section_podcast_generate')}
+									{mutateGeneratePodcast.isPending && (
+										<Loader2 className='animate-spin' />
+									)}
+								</Button>
+							</AlertDescription>
+						</Alert>
+					)}
+				</>
 			</div>
 		</div>
 	);
