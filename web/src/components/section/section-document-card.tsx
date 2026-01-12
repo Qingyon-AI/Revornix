@@ -42,45 +42,48 @@ const SectionDocumentCard = ({
 					/>
 				)}
 			</div>
-			<div className='flex flex-row items-center gap-2 overflow-auto mb-3'>
-				<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
-					{document.category === DocumentCategory.WEBSITE
-						? t('document_category_link')
-						: document.category === DocumentCategory.FILE
-						? t('document_category_file')
-						: document.category === DocumentCategory.QUICK_NOTE
-						? t('document_category_quick_note')
-						: t('document_category_others')}
-				</div>
-				<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
-					{document.status === SectionDocumentIntegration.WAIT_TO
-						? t('section_document_card_section_supplement_todo')
-						: document.status === SectionDocumentIntegration.SUPPLEMENTING
-						? t('section_document_card_section_supplement_doing')
-						: document.status === SectionDocumentIntegration.SUCCESS
-						? t('section_document_card_section_supplement_done')
-						: document.status === SectionDocumentIntegration.FAILED
-						? t('section_document_card_section_supplement_failed')
-						: t('section_document_card_section_supplement_unknown')}
-				</div>
-			</div>
 
 			{document.labels && document.labels.length > 0 && (
-				<div className='flex flex-row gap-3 items-center'>
+				<div className='flex flex-row gap-3 items-center mb-3'>
 					{document.labels?.map((label, index) => {
 						return (
 							<div
 								key={index}
 								className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
-								{label.name}
+								{'# ' + label.name}
 							</div>
 						);
 					})}
 				</div>
 			)}
-			<div className='text-xs text-muted-foreground'>
-				{document.create_time &&
-					format(new Date(document.create_time), 'yyyy-MM-dd HH:mm:ss')}
+
+			<div className='flex justify-between items-center'>
+				<div className='flex flex-row items-center gap-2 overflow-auto'>
+					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
+						{document.category === DocumentCategory.WEBSITE
+							? t('document_category_link')
+							: document.category === DocumentCategory.FILE
+							? t('document_category_file')
+							: document.category === DocumentCategory.QUICK_NOTE
+							? t('document_category_quick_note')
+							: t('document_category_others')}
+					</div>
+					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
+						{document.status === SectionDocumentIntegration.WAIT_TO
+							? t('section_document_card_section_supplement_todo')
+							: document.status === SectionDocumentIntegration.SUPPLEMENTING
+							? t('section_document_card_section_supplement_doing')
+							: document.status === SectionDocumentIntegration.SUCCESS
+							? t('section_document_card_section_supplement_done')
+							: document.status === SectionDocumentIntegration.FAILED
+							? t('section_document_card_section_supplement_failed')
+							: t('section_document_card_section_supplement_unknown')}
+					</div>
+				</div>
+				<div className='text-xs text-muted-foreground'>
+					{document.create_time &&
+						format(new Date(document.create_time), 'yyyy-MM-dd HH:mm:ss')}
+				</div>
 			</div>
 		</div>
 	);
