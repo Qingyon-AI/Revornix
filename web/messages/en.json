@@ -147,7 +147,7 @@
     "rss_section_card_no_description": "No Description",
     "rss_document_card_no_title": "No Title",
     "rss_document_card_no_description": "No Description",
-    "graph_empty": "No data available",
+    "graph_empty": "No related node and relationship data",
     "graph_data": "Now there are {node_count} nodes and {edge_count} edges",
     "setting_base_config": "Basic Configuration",
     "setting_document": "Document Settings",
