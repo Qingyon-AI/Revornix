@@ -173,7 +173,7 @@ const SectionDetailPage = () => {
 											<EmptyMedia variant='icon'>
 												<TrashIcon />
 											</EmptyMedia>
-											<EmptyDescription>{t('sections_empty')}</EmptyDescription>
+											<EmptyDescription>{t('documents_empty')}</EmptyDescription>
 										</EmptyHeader>
 										<EmptyContent>
 											<div className='flex gap-2'>
