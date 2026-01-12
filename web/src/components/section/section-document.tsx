@@ -14,20 +14,27 @@ import {
 import SectionDocumentCard from './section-document-card';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
-import { PlusCircleIcon, TableOfContentsIcon } from 'lucide-react';
+import { PlusCircleIcon, TableOfContentsIcon, TrashIcon } from 'lucide-react';
 import { useRouter } from 'nextjs-toploader/app';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { UserSectionRole } from '@/enums/section';
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
 
 const SectionDocument = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
 	const router = useRouter();
 
-	const handleAddDocument = () => {
+	const handleAddDocument = (section_id: string) => {
 		const params = new URLSearchParams({
-			section_id: section_id.toString(),
+			section_id: section_id,
 		});
 		router.push(`/document/create?${params.toString()}`);
 	};
@@ -92,6 +99,16 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 					</SheetDescription>
 				</SheetHeader>
 				<div className='px-5 flex flex-col gap-5 overflow-auto pb-5 flex-1'>
+					{isSuccess && documents && documents.length === 0 && (
+						<Empty className='h-full'>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<TrashIcon />
+								</EmptyMedia>
+								<EmptyDescription>{t('documents_empty')}</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
+					)}
 					{isSuccess &&
 						documents &&
 						documents.map((document, index) => {
@@ -116,7 +133,11 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 				{(sectionUserRoleAndAuthority?.role === UserSectionRole.CERATOR ||
 					sectionUserRoleAndAuthority?.role === UserSectionRole.MEMBER) && (
 					<div className='p-5 w-full'>
-						<Button className='w-full' onClick={handleAddDocument}>
+						<Button
+							className='w-full'
+							onClick={() => {
+								handleAddDocument(section_id.toString());
+							}}>
 							{t('section_documents_add')}
 							<PlusCircleIcon />
 						</Button>
