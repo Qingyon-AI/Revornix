@@ -218,7 +218,9 @@ const CreatePage = () => {
 												};
 											})}
 											onChange={(value) => {
-												field.onChange(value.map(({ label, value }) => value));
+												field.onChange(
+													value.map(({ label, value }) => Number(value))
+												);
 											}}
 											value={
 												field.value

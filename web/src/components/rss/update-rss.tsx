@@ -370,7 +370,7 @@ const UpdateRss = ({ rss_id }: { rss_id: number }) => {
 														})}
 														onChange={(value) => {
 															field.onChange(
-																value.map(({ label, value }) => value)
+																value.map(({ label, value }) => Number(value))
 															);
 														}}
 														value={

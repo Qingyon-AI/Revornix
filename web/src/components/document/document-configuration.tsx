@@ -292,7 +292,7 @@ const DocumentConfiguration = ({
 														})}
 														onChange={(value) => {
 															field.onChange(
-																value.map(({ label, value }) => value)
+																value.map(({ label, value }) => Number(value))
 															);
 														}}
 														value={
