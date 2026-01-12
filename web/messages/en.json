@@ -558,6 +558,7 @@
     "section_podcast_user_unable": "You are not the creator of this column and cannot generate a podcast for it",
     "section_podcast_unset": "The podcast generation function for this column has not been configured yet",
     "section_podcast_generate": "Click To Generate",
+    "section_podcast_regenerate": "Click To Regenerate",
     "section_podcast_generate_task_submitted": "Task submitted, please wait",
     "section_podcast_generate_task_submitted_failed": "Task submission failed",
     "section_podcast_processing": "The podcast is being processed",
