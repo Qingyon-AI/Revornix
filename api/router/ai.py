@@ -26,6 +26,7 @@ from common.encrypt import encrypt_api_key
 from common.interpret_event import EventInterpreter
 from typing import AsyncGenerator
 from schemas.ai import ChatItem
+from common.logger import exception_logger
 
 ai_router = APIRouter()
 
@@ -474,6 +475,9 @@ async def create_agent(
             base_url=base_url
         )
         return MCPAgent(llm=llm, client=mcp_client)
+    except Exception as e:
+        exception_logger.error(f"Failed to create agent: {e}")
+        raise e
     finally:
         db.close()
 
@@ -522,6 +526,7 @@ async def stream_ops_with_agent(
         # ==========================
         # 3️⃣ 错误事件
         # ==========================
+        exception_logger.error(f"Failed to stream ops with agent: {e}")
         yield _sse(
             {
                 "chat_id": chat_id,

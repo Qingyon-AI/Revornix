@@ -110,7 +110,9 @@ async def stream_chunk_document(
                 torch.mps.empty_cache()
             elif torch.cuda.is_available():
                 torch.cuda.empty_cache()
-
+    except Exception as e:
+        exception_logger.error(f"Error while streaming chunk document: {e}")
+        raise e
     finally:
         db.close()
 
@@ -219,8 +221,8 @@ def extract_entities_relations(
     else:
         try:
             data = json.loads(output_text)
-        except Exception:
-            exception_logger.error(f"Failed to parse LLM output: {output_text}")
+        except json.JSONDecodeError as e:
+            exception_logger.error(f"Failed to decode JSON: {e}")
             data = {"entities": [], "relations": []}
 
     # === 结构化 ===

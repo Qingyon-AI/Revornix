@@ -9,6 +9,7 @@ from botocore.client import Config
 from botocore.exceptions import ClientError
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from enums.file import RemoteFileService
+from common.logger import info_logger, exception_logger
 
 class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     
@@ -59,11 +60,11 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         bucket = s3.Bucket(bucket_name)
         try:
             bucket.delete()
-            print(f"Delete Bucket Successfully: {bucket_name}")
+            info_logger.info(f"Delete Bucket Successfully: {bucket_name}")
         except ClientError as e:
-            print(f"Deleted Bucket Error: {e.response['Error']['Message']}",)
-            raise
-    
+            exception_logger.error(f"Deleted Bucket Error: {e.response['Error']['Message']}",)
+            raise e
+
     @staticmethod
     def ensure_bucket_exists(bucket_name: str):
         s3 = boto3.client(
@@ -142,6 +143,9 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                     verify=False
                 )
                 self.s3_client = s3
+            except Exception as e:
+                exception_logger.error(f"Init User File System Error: {e}")
+                raise e
             finally:
                 db.close()
 

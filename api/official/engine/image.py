@@ -1,3 +1,5 @@
+# This file is only for testing
+
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
@@ -75,9 +77,6 @@ class OfficialImageAIClient:
                 # 实际的图片chunk
                 if len(chunk.choices) > 0 and chunk.choices[0].delta is not None and chunk.choices[0].delta.content is not None:
                     return chunk
-                # usage chunk
-                elif chunk.usage is not None:
-                    print(chunk.usage)
 
 if __name__ == "__main__":
     client = OfficialImageAIClient()

@@ -5,8 +5,7 @@ import websockets
 from dataclasses import dataclass
 from enum import IntEnum
 from typing import Callable, List
-
-logger = logging.getLogger(__name__)
+from common.logger import exception_logger
 
 class MsgType(IntEnum):
     """Message type enumeration"""
@@ -443,7 +442,7 @@ async def receive_message(websocket: websockets.ClientConnection) -> Message:
         else:
             raise ValueError(f"Unexpected message type: {type(data)}")
     except Exception as e:
-        logger.error(f"Failed to receive message: {e}")
+        exception_logger.error(f"Failed to receive message: {e}")
         raise
 
 

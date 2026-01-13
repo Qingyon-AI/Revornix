@@ -9,6 +9,7 @@ from typing import Type
 from pathlib import Path
 from data.sql.base import SessionLocal
 from enums.file import RemoteFileService
+from common.logger import exception_logger
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.aws_s3_remote_file_service import AWSS3RemoteFileService
@@ -103,6 +104,9 @@ async def get_user_remote_file_system(
                 else:
                     raise Exception("There is something wrong with the user's default file system.")
             return remote_file_service
+        except Exception as e:
+            exception_logger.error(f'Get user remote file system failed: {e}', e)
+            raise e
         finally:
             db.close()
 
@@ -131,5 +135,6 @@ def safe_json_loads(
         return default
     try:
         return json.loads(data)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError) as e:
+        exception_logger.error(f'Failed to parse JSON data: {e}', e)
         return default

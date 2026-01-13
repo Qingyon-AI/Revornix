@@ -13,6 +13,7 @@ from playwright.async_api import async_playwright
 from common.common import get_user_remote_file_system, is_dir_empty, extract_title_and_summary
 from common.mineru import parse_doc
 from data.sql.base import SessionLocal
+from common.logger import exception_logger
 
 
 class MineruEngine(MarkdownEngineProtocol):
@@ -120,6 +121,9 @@ class MineruEngine(MarkdownEngineProtocol):
                 cover=cover,
                 keywords=keywords
             )
+        except Exception as e:
+            exception_logger.error(f"Error occurred while analysing website using MinerU: {e}")
+            raise e
 
         finally:
             db.close()
@@ -183,7 +187,9 @@ class MineruEngine(MarkdownEngineProtocol):
                 description=description,
                 content=content,
             )
-
+        except Exception as e:
+            exception_logger.error(f"Error occurred while analysing file using MinerU: {e}")
+            raise e
         finally:
             shutil.rmtree(BASE_DIR / "temp" / temp_id, ignore_errors=True)
             if temp_file_path.exists():

@@ -3,6 +3,7 @@ from protocol.engine import EngineProtocol
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
 from playwright.async_api import async_playwright
+from common.logger import exception_logger
 
 class WebsiteInfo(BaseModel):
     url: str
@@ -73,6 +74,7 @@ class MarkdownEngineProtocol(EngineProtocol):
                     head = await client.head(src)
                     size = int(head.headers.get("Content-Length", 0))
                 except:
+                    exception_logger.error(f"Failed to get image size: {src}")
                     continue
 
                 if size > biggest_size:

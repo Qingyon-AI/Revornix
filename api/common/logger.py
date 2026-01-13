@@ -31,6 +31,7 @@ class BaseLogger(object):
 
 exception_logger = BaseLogger("exception.log").logger
 info_logger = BaseLogger("info.log").logger
+warning_logger = BaseLogger("warning.log").logger
 
 def log_exception():
     exception_logger.error(traceback.format_exc())

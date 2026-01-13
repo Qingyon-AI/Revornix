@@ -15,6 +15,7 @@ from enums.engine import Engine, EngineCategory
 from playwright.async_api import async_playwright
 from typing import Tuple
 from data.sql.base import SessionLocal
+from common.logger import exception_logger
 
 class MineruApiEngine(MarkdownEngineProtocol):
 
@@ -229,9 +230,10 @@ class MineruApiEngine(MarkdownEngineProtocol):
                     await asyncio.gather(*(upload_img(img) for img in images_dir.iterdir()))
 
                 final_data.append((title, summary, content))
-
             return final_data
-
+        except Exception as e:
+            exception_logger.error(f"MinerU extraction failed: {e}")
+            raise e
         finally:
             db.close()
         

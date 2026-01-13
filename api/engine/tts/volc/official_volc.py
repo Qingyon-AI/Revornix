@@ -9,6 +9,7 @@ from pydantic import AnyUrl
 from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
 from common.langfuse import langfuse
 from langfuse import propagate_attributes
+from common.logger import exception_logger
 
 class OfficialVolcTTSEngine(TTSEngineProtocol):
     """此引擎使用的是字节跳动的播客TTS引擎，具体文档参照https://www.volcengine.com/docs/6561/1668014
@@ -171,6 +172,7 @@ class OfficialVolcTTSEngine(TTSEngineProtocol):
                         )
                         break
                 except Exception as e:
+                    exception_logger.error(f"Synthesis error: {e}")
                     gen.update(
                         status_message=str(e)
                     )

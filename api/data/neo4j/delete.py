@@ -1,9 +1,10 @@
 from data.neo4j.base import neo4j_driver
+from common.logger import info_logger
 
 def clear_data():
     with neo4j_driver.session() as session:
         session.run("MATCH (n) DETACH DELETE n")
-        print("All Neo4j nodes and relationships deleted.")
+        info_logger.info("All Neo4j nodes and relationships deleted.")
 
 def delete_documents_and_related_from_neo4j(
     doc_ids: list[int]

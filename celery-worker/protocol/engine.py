@@ -9,6 +9,7 @@ from official.engine.tts import OFFICIAL_VOLC_TTS_ACCESS_TOKEN, OFFICIAL_VOLC_TT
 from common.dependencies import plan_ability_checked_in_func, check_deployed_by_official_in_fuc, get_user_token_usage
 from common.jwt_utils import create_token
 from datetime import datetime, timedelta, timezone
+from common.logger import exception_logger
 
 class EngineProtocol(Protocol):
     
@@ -145,6 +146,8 @@ class EngineProtocol(Protocol):
                 self.engine_config = config
                 
             self.user_id = user_engine.user_id
-
+        except Exception as e:
+            exception_logger.error(f"engine init error: {e}")
+            raise e
         finally:
             db.close()

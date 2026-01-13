@@ -18,6 +18,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 from fastapi import Request, HTTPException, status, Depends, Header
 from config.langfuse import LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
+from common.logger import exception_logger
 
 if OAUTH_SECRET_KEY is None:
     raise Exception("OAUTH_SECRET_KEY is not set")
@@ -60,9 +61,10 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
-    except Exception:
+    except Exception as e:
         db.rollback()
-        raise
+        exception_logger.error(f"Error occurred while getting db: {e}")
+        raise e
     finally:
         db.close()
 
@@ -136,6 +138,7 @@ def get_current_user_without_throw(
         if uuid is None:
             return None
     except Exception as e:
+        exception_logger.error(f"Error occurred while decoding token: {e}")
         return None
     user = crud.user.get_user_by_uuid(db, user_uuid=uuid)
     if user is None:
@@ -165,6 +168,7 @@ def get_current_user(
         if uuid is None:
             raise credentials_exception
     except Exception as e:
+        exception_logger.error(f"Error occurred while decoding token: {e}")
         raise credentials_exception
     user = crud.user.get_user_by_uuid(db, user_uuid=uuid)
     if user is None:
@@ -231,7 +235,7 @@ def plan_ability_checked(
                         code=403
                     )
                 except Exception as e:
-                    errMsg = "Something is wrong with the ability check service"
+                    errMsg = f"Something is wrong with the ability check service: {e}"
                     err = schemas.error.CustomException(
                         message=errMsg, 
                         code=503

@@ -9,6 +9,7 @@ from prompts.section_image import build_image_planner_user_prompt, IMAGE_PLANNER
 from data.sql.base import SessionLocal
 from data.custom_types.all import EntityInfo, RelationInfo
 from schemas.section import ImagePlan, ImagePlanResult
+from common.logger import exception_logger
 
 class ImageGenerateEngineProtocol(EngineProtocol):
     
@@ -87,6 +88,8 @@ class ImageGenerateEngineProtocol(EngineProtocol):
                     markdown_with_markers=data["markdown_with_markers"],
                     plans=[ImagePlan(**p) for p in plans],
                 )
-
+        except Exception as e:
+            exception_logger.error(f"Error planning images: {e}")
+            raise e
         finally:
             db.close()

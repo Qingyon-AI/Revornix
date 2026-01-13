@@ -654,7 +654,6 @@ async def handle_process_document(
         final_summary = None
         # chunking & embedding
         try:
-            from rich import print
             async for chunk_info in stream_chunk_document(doc_id=document_id):
                 embedding_model = get_embedding_model()
                 embedding = embedding_model.encode(chunk_info.text)
@@ -742,6 +741,7 @@ async def handle_process_document(
                 db_graph_task_id.status = DocumentGraphStatus.SUCCESS.value
                 db.commit()
             except Exception as e:
+                exception_logger.error(f"Something is error while graphing document info: {e}")
                 db_graph_task_id.status = DocumentGraphStatus.FAILED.value
                 db.commit()
                 raise e

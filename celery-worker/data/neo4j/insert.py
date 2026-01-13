@@ -1,4 +1,3 @@
-from rich import print
 from datetime import datetime, timezone
 from data.custom_types.all import ChunkInfo, RelationInfo, EntityInfo, DocumentInfo
 from data.neo4j.base import neo4j_driver
@@ -169,8 +168,6 @@ def create_communities_from_chunks():
                 { writeProperty: 'community' }
             ) YIELD communityCount, modularity
         """)
-        for record in result:
-            print(record['communityCount'], record['modularity'])
         session.run("CALL gds.graph.drop('communityGraph')")
 
 # -----------------------------
