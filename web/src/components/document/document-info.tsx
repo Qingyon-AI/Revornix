@@ -2,7 +2,10 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
-import { getDocumentDetail } from '@/service/document';
+import {
+	getDocumentDetail,
+	summaryDocumentContentByAi,
+} from '@/service/document';
 import { useRouter } from 'nextjs-toploader/app';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -16,15 +19,59 @@ import {
 	DocumentPodcastStatus,
 	DocumentProcessStatus,
 } from '@/enums/document';
+import { toast } from 'sonner';
+import { getQueryClient } from '@/lib/get-query-client';
+import { utils } from '@kinda/utils';
+import { Button } from '../ui/button';
+import { Loader2, TrashIcon } from 'lucide-react';
+import { useState } from 'react';
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
+import { Alert, AlertDescription } from '../ui/alert';
 
 const DocumentInfo = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const router = useRouter();
+	const queryClient = getQueryClient();
+
+	const [aiSummarizing, setAiSummarizing] = useState(false);
 
 	const { data, isPending, isError, error } = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
+
+	const handleAiSummarize = async () => {
+		if (data?.convert_task?.status === DocumentMdConvertStatus.FAILED) {
+			toast.error(t('ai_summary_failed_as_markdown_transform_failed'));
+			return;
+		}
+		if (data?.convert_task?.status === DocumentMdConvertStatus.CONVERTING) {
+			toast.error(t('ai_summary_failed_as_markdown_transform_doing'));
+			return;
+		}
+		if (data?.convert_task?.status === DocumentMdConvertStatus.WAIT_TO) {
+			toast.error(t('ai_summary_failed_as_markdown_transform_waiting'));
+			return;
+		}
+		setAiSummarizing(true);
+		const [res, err] = await utils.to(
+			summaryDocumentContentByAi({ document_id: id })
+		);
+		if (err) {
+			toast.error(err.message);
+			setAiSummarizing(false);
+			return;
+		}
+		toast.success(t('ai_summary_success'));
+		setAiSummarizing(false);
+		queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
+	};
 
 	return (
 		<>
@@ -198,9 +245,32 @@ const DocumentInfo = ({ id }: { id: number }) => {
 						</div>
 						<div className='text-sm rounded mx-5 mb-3'>
 							<h1 className='text-lg font-bold mb-3'>{t('ai_summary')}</h1>
-							<p className='text-muted-foreground text-sm/6'>
-								{data.ai_summary ? data.ai_summary : t('ai_summary_empty')}
-							</p>
+							{data.ai_summary && (
+								<p className='text-muted-foreground text-sm/6'>
+									{data.ai_summary}
+								</p>
+							)}
+							{!data.ai_summary && (
+								<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+									<AlertDescription>
+										<span className='inline-flex'>{t('ai_summary_empty')}</span>
+										<Button
+											variant={'link'}
+											size='sm'
+											className='text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
+											disabled={aiSummarizing}
+											title={t('ai_summary')}
+											onClick={() => {
+												handleAiSummarize();
+											}}>
+											{t('ai_summary')}
+											{aiSummarizing && (
+												<Loader2 className='size-4 animate-spin' />
+											)}
+										</Button>
+									</AlertDescription>
+								</Alert>
+							)}
 						</div>
 					</div>
 				</div>
