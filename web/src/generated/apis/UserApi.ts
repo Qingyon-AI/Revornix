@@ -175,18 +175,22 @@ export interface CreateUserByEmailCodeUserCreateEmailCodePostRequest {
 
 export interface CreateUserByEmailUserCreateEmailPostRequest {
     emailUserCreateVerifyRequest: EmailUserCreateVerifyRequest;
+    xForwardedFor?: string | null;
 }
 
 export interface CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest {
     emailUserCreateCodeVerifyRequest: EmailUserCreateCodeVerifyRequest;
+    xForwardedFor?: string | null;
 }
 
 export interface CreateUserByGithubUserCreateGithubPostRequest {
     githubUserCreate: GithubUserCreate;
+    xForwardedFor?: string | null;
 }
 
 export interface CreateUserByGoogleUserCreateGooglePostRequest {
     googleUserCreate: GoogleUserCreate;
+    xForwardedFor?: string | null;
 }
 
 export interface CreateUserBySmsCodeUserCreateSmsCodePostRequest {
@@ -195,14 +199,17 @@ export interface CreateUserBySmsCodeUserCreateSmsCodePostRequest {
 
 export interface CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest {
     smsUserCodeVerifyCreate: SmsUserCodeVerifyCreate;
+    xForwardedFor?: string | null;
 }
 
 export interface CreateUserByWechatMiniUserCreateWechatMiniPostRequest {
     weChatMiniUserCreateRequest: WeChatMiniUserCreateRequest;
+    xForwardedFor?: string | null;
 }
 
 export interface CreateUserByWechatWebUserCreateWechatWebPostRequest {
     weChatWebUserCreateRequest: WeChatWebUserCreateRequest;
+    xForwardedFor?: string | null;
 }
 
 export interface DeleteUserUserDeletePostRequest {
@@ -702,6 +709,10 @@ export class UserApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
 
         let urlPath = `/user/create/email`;
 
@@ -742,6 +753,10 @@ export class UserApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
 
         let urlPath = `/user/create/email/verify`;
 
@@ -781,6 +796,10 @@ export class UserApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
 
         let urlPath = `/user/create/github`;
 
@@ -819,6 +838,10 @@ export class UserApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
 
 
         let urlPath = `/user/create/google`;
@@ -898,6 +921,10 @@ export class UserApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
 
         let urlPath = `/user/create/sms/verify`;
 
@@ -937,6 +964,10 @@ export class UserApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
 
         let urlPath = `/user/create/wechat/mini`;
 
@@ -975,6 +1006,10 @@ export class UserApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
 
 
         let urlPath = `/user/create/wechat/web`;

@@ -22,6 +22,7 @@ Name | Type
 `embedding_task` | [DocumentEmbeddingTask](DocumentEmbeddingTask.md)
 `graph_task` | [DocumentGraphTask](DocumentGraphTask.md)
 `podcast_task` | [DocumentPodcastTask](DocumentPodcastTask.md)
+`summarize_task` | [DocumentSummarizeTask](DocumentSummarizeTask.md)
 `process_task` | [DocumentProcessTask](DocumentProcessTask.md)
 
 ## Example
@@ -47,6 +48,7 @@ const example = {
   "embedding_task": null,
   "graph_task": null,
   "podcast_task": null,
+  "summarize_task": null,
   "process_task": null,
 } satisfies DocumentInfo
 

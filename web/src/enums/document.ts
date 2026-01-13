@@ -39,6 +39,13 @@ export enum DocumentGraphStatus {
     FAILED = 3
 }
 
+export enum DocumentSummarizeStatus {
+    WAIT_TO = 0,
+    SUMMARIZING = 1,
+    SUCCESS = 2,
+    FAILED = 3
+}
+
 export enum SectionDocumentIntegration {
     WAIT_TO = 0,
     SUPPLEMENTING = 1,

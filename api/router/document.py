@@ -14,8 +14,8 @@ from data.neo4j.delete import delete_documents_and_related_from_neo4j
 from typing import cast
 from common.dependencies import get_db, get_current_user, check_deployed_by_official, plan_ability_checked_in_func, get_authorization_header
 from common.common import get_user_remote_file_system
-from common.celery.app import start_process_document, start_process_document_podcast, update_document_process_status, start_process_section
-from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus, UserDocumentAuthority
+from common.celery.app import start_process_document, start_process_document_podcast, update_document_process_status, start_process_section, start_process_document_summarize
+from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus, UserDocumentAuthority, DocumentSummarizeStatus
 from enums.section import UserSectionRole, UserSectionAuthority, SectionDocumentIntegration, SectionProcessTriggerType
 from enums.ability import Ability
 
@@ -160,59 +160,46 @@ async def create_ai_summary(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if user.default_user_file_system is None:
-        raise Exception('Please set the default file system for the user first.')
-    else:
-        remote_file_service = await get_user_remote_file_system(
-            user_id=user.id
-        )
-        await remote_file_service.init_client_by_user_file_system_id(
-            user_file_system_id=user.default_user_file_system
-        )
-        
     db_document = crud.document.get_document_by_document_id(
         db=db,
         document_id=ai_summary_request.document_id
     )
     if db_document is None:
-        raise Exception('The document you want to summary is not found')
-    if db_document.category == DocumentCategory.WEBSITE or db_document.category == DocumentCategory.FILE:
-        db_convert_task = crud.task.get_document_convert_task_by_document_id(
-            db=db,
-            document_id=ai_summary_request.document_id
-        )
-        if db_convert_task is None or db_convert_task.status != DocumentMdConvertStatus.SUCCESS or db_convert_task.md_file_name is None:
-            raise Exception("The document convert task of the document you want to summary havn't been finished")
-        markdown_content = await remote_file_service.get_file_content_by_file_path(
-            file_path=db_convert_task.md_file_name
-        )
-    if db_document.category == DocumentCategory.QUICK_NOTE:
-        db_quick_note_document = crud.document.get_quick_note_document_by_document_id(
-            db=db,
-            document_id=ai_summary_request.document_id
-        )
-        if db_quick_note_document is None:
-            raise Exception('The document you want to summary has no quick note info')
-        markdown_content = db_quick_note_document.content
-    model_id = user.default_document_reader_model_id
-    if model_id is None:
-        raise Exception('Please set the default document reader model for the user first.')
-    ai_summary_result = await summary_content(
-        user_id=user.id,
-        model_id=model_id,
-        content=markdown_content,
-    )
-        
-    db_document = crud.document.get_document_by_document_id(
+        raise Exception('The document you want to summarize is not found')
+    
+    db_exist_summarize_task = crud.task.get_document_summarize_task_by_document_id(
         db=db,
         document_id=ai_summary_request.document_id
     )
-    if db_document is None:
-        raise Exception('The document you want to summary is not found')
-    db_document.title = ai_summary_result.title
-    db_document.description = ai_summary_result.description
-    db_document.ai_summary = ai_summary_result.summary
+    if db_exist_summarize_task is not None:
+        if db_exist_summarize_task.status == DocumentSummarizeStatus.SUCCESS:
+            raise Exception('The summarize task is already finished, please refresh the page')
+        if db_exist_summarize_task.status == DocumentSummarizeStatus.WAIT_TO:
+            raise Exception('The summarize task is already in the queue, please wait')
+        if db_exist_summarize_task.status == DocumentSummarizeStatus.SUMMARIZING:
+            raise Exception('The summarize task is already processing, please wait')
+
+    db_process_task = crud.task.get_document_process_task_by_document_id(
+        db=db,
+        document_id=ai_summary_request.document_id
+    )
+    if db_process_task is None:
+        raise Exception('The document you want to summarize is not processed')
+    db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
+    
+    workflow = chain(
+        start_process_document_summarize.si(
+            document_id=db_document.id, 
+            user_id=user.id
+        ),
+        update_document_process_status.si(
+            document_id=db_document.id, 
+            status=DocumentProcessStatus.SUCCESS
+        )
+    )
+    workflow()
+    
     return schemas.common.SuccessResponse()
 
 @document_router.post('/podcast/generate', response_model=schemas.common.NormalResponse)
@@ -682,6 +669,16 @@ def get_document_info(
             status=db_podcast_task.status,
             podcast_file_name=db_podcast_task.podcast_file_name
         )
+    db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+        db=db,
+        document_id=document.id
+    )
+    if db_summarize_task is not None:
+        summarize_task = schemas.task.DocumentSummarizeTask(
+            creator_id=document.creator_id,
+            status=db_summarize_task.status,
+            summary=db_summarize_task.summary
+        )
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
         document_id=document.id
@@ -708,6 +705,7 @@ def get_document_info(
     res.graph_task=graph_task
     res.process_task=process_task
     res.podcast_task = podcast_task
+    res.summarize_task = summarize_task
     return res
 
 def get_document_infos(
@@ -722,6 +720,7 @@ def get_document_infos(
     embedding_tasks = crud.task.get_document_embedding_tasks_by_document_ids(db=db, document_ids=document_ids)
     graph_tasks = crud.task.get_document_graph_tasks_by_document_ids(db=db, document_ids=document_ids)
     podcast_tasks = crud.task.get_document_podcast_tasks_by_document_ids(db=db, document_ids=document_ids)
+    summarize_tasks = crud.task.get_document_summarize_tasks_by_document_ids(db=db, document_ids=document_ids)
     process_tasks = crud.task.get_document_process_tasks_by_document_ids(db=db, document_ids=document_ids)
     labels_by_document_id = crud.document.get_labels_by_document_ids(db=db, document_ids=document_ids)
 
@@ -729,6 +728,7 @@ def get_document_infos(
     embedding_task_by_document_id = {task.document_id: task for task in embedding_tasks}
     graph_task_by_document_id = {task.document_id: task for task in graph_tasks}
     podcast_task_by_document_id = {task.document_id: task for task in podcast_tasks}
+    summarize_task_by_document_id = {task.document_id: task for task in summarize_tasks}
     process_task_by_document_id = {task.document_id: task for task in process_tasks}
 
     res = []
@@ -767,6 +767,14 @@ def get_document_infos(
                 creator_id=document.creator_id,
                 status=podcast_task.status,
                 podcast_file_name=podcast_task.podcast_file_name,
+            )
+        
+        summarize_task = summarize_task_by_document_id.get(document.id)
+        if summarize_task is not None:
+            info.summarize_task = schemas.task.DocumentSummarizeTask(
+                creator_id=document.creator_id,
+                status=summarize_task.status,
+                summary=summarize_task.summary,
             )
 
         process_task = process_task_by_document_id.get(document.id)
@@ -849,7 +857,6 @@ def get_document_detail(
         description=document.description,
         creator=document.creator,
         cover=document.cover,
-        ai_summary=document.ai_summary,
         from_plat=document.from_plat,
         create_time=document.create_time, 
         update_time=document.update_time,
@@ -905,6 +912,16 @@ def get_document_detail(
             creator_id=podcast_task.user_id,
             status=podcast_task.status,
             podcast_file_name=podcast_task.podcast_file_name
+        )
+    summarize_task = crud.task.get_document_summarize_task_by_document_id(
+        db=db,
+        document_id=document_detail_request.document_id
+    )
+    if summarize_task is not None:
+        res.summarize_task = schemas.document.DocumentSummarizeTask(
+            creator_id=summarize_task.user_id,
+            status=summarize_task.status,
+            summary=summarize_task.summary
         )
     embedding_task = crud.task.get_document_embedding_task_by_document_id(
         db=db,

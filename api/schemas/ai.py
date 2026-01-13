@@ -82,7 +82,6 @@ class Document(BaseModel):
     id: int
     title: str
     description: str | None
-    ai_summary: str | None
 
 class CoverImage(BaseModel):
     url: str

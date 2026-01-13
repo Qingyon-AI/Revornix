@@ -41,7 +41,6 @@ def create_base_document(
     from_plat: str,
     cover: str | None = None,
     description: str | None = None, 
-    ai_summary: str | None = None
 ):
     now = datetime.now(timezone.utc)
     db_document = models.document.Document(category=category, 
@@ -50,8 +49,7 @@ def create_base_document(
                                            cover=cover,
                                            description=description, 
                                            from_plat=from_plat,
-                                           create_time=now,
-                                           ai_summary=ai_summary)
+                                           create_time=now)
     db.add(db_document)
     db.flush()
     return db_document

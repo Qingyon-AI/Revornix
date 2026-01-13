@@ -10,7 +10,6 @@ Name | Type
 `category` | number
 `title` | string
 `from_plat` | string
-`ai_summary` | string
 `description` | string
 `cover` | string
 `create_time` | Date
@@ -28,6 +27,7 @@ Name | Type
 `embedding_task` | [DocumentEmbeddingTask](DocumentEmbeddingTask.md)
 `graph_task` | [DocumentGraphTask](DocumentGraphTask.md)
 `podcast_task` | [DocumentPodcastTask](DocumentPodcastTask.md)
+`summarize_task` | [DocumentSummarizeTask](DocumentSummarizeTask.md)
 `process_task` | [DocumentProcessTask](DocumentProcessTask.md)
 
 ## Example
@@ -41,7 +41,6 @@ const example = {
   "category": null,
   "title": null,
   "from_plat": null,
-  "ai_summary": null,
   "description": null,
   "cover": null,
   "create_time": null,
@@ -59,6 +58,7 @@ const example = {
   "embedding_task": null,
   "graph_task": null,
   "podcast_task": null,
+  "summarize_task": null,
   "process_task": null,
 } satisfies DocumentDetailResponse
 

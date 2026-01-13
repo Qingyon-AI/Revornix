@@ -1,7 +1,7 @@
 import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentEmbeddingStatus, DocumentProcessStatus, DocumentMdConvertStatus
+from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentEmbeddingStatus, DocumentProcessStatus, DocumentMdConvertStatus, DocumentSummarizeStatus
 from enums.section import SectionPodcastStatus, SectionProcessStatus, SectionProcessTriggerType
 
 def create_section_process_task_trigger_scheduler(
@@ -47,6 +47,21 @@ def create_section_podcast_task(
                                           status=status,
                                           section_id=section_id,
                                           create_time=now)
+    db.add(task)
+    db.flush()
+    return task
+
+def create_document_summarize_task(
+    db: Session,
+    user_id: int,
+    document_id: int,
+    status: DocumentSummarizeStatus = DocumentSummarizeStatus.WAIT_TO
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentSummarizeTask(user_id=user_id,
+                                             status=status,
+                                             document_id=document_id,
+                                             create_time=now)
     db.add(task)
     db.flush()
     return task
@@ -166,6 +181,15 @@ def get_section_process_task_by_section_id(
                          models.task.SectionProcessTask.delete_at == None)
     return query.one_or_none()
 
+def get_document_summarize_task_by_document_id(
+    db: Session,
+    document_id: int
+):
+    query = db.query(models.task.DocumentSummarizeTask)
+    query = query.filter(models.task.DocumentSummarizeTask.document_id == document_id,
+                         models.task.DocumentSummarizeTask.delete_at == None)
+    return query.one_or_none()
+
 def get_document_graph_task_by_document_id(
     db: Session,
     document_id: int
@@ -256,6 +280,19 @@ def get_document_graph_tasks_by_document_ids(
     query = query.filter(
         models.task.DocumentGraphTask.document_id.in_(document_ids),
         models.task.DocumentGraphTask.delete_at == None,
+    )
+    return query.all()
+
+def get_document_summarize_tasks_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    if not document_ids:
+        return []
+    query = db.query(models.task.DocumentSummarizeTask)
+    query = query.filter(
+        models.task.DocumentSummarizeTask.document_id.in_(document_ids),
+        models.task.DocumentSummarizeTask.delete_at == None,
     )
     return query.all()
 

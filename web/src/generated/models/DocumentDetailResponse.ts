@@ -27,6 +27,13 @@ import {
     DocumentGraphTaskToJSON,
     DocumentGraphTaskToJSONTyped,
 } from './DocumentGraphTask';
+import type { DocumentSummarizeTask } from './DocumentSummarizeTask';
+import {
+    DocumentSummarizeTaskFromJSON,
+    DocumentSummarizeTaskFromJSONTyped,
+    DocumentSummarizeTaskToJSON,
+    DocumentSummarizeTaskToJSONTyped,
+} from './DocumentSummarizeTask';
 import type { SchemasDocumentLabel } from './SchemasDocumentLabel';
 import {
     SchemasDocumentLabelFromJSON,
@@ -121,12 +128,6 @@ export interface DocumentDetailResponse {
      * @memberof DocumentDetailResponse
      */
     from_plat: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DocumentDetailResponse
-     */
-    ai_summary?: string | null;
     /**
      * 
      * @type {string}
@@ -231,6 +232,12 @@ export interface DocumentDetailResponse {
     podcast_task?: DocumentPodcastTask | null;
     /**
      * 
+     * @type {DocumentSummarizeTask}
+     * @memberof DocumentDetailResponse
+     */
+    summarize_task?: DocumentSummarizeTask | null;
+    /**
+     * 
      * @type {DocumentProcessTask}
      * @memberof DocumentDetailResponse
      */
@@ -265,7 +272,6 @@ export function DocumentDetailResponseFromJSONTyped(json: any, ignoreDiscriminat
         'category': json['category'],
         'title': json['title'],
         'from_plat': json['from_plat'],
-        'ai_summary': json['ai_summary'] == null ? undefined : json['ai_summary'],
         'description': json['description'] == null ? undefined : json['description'],
         'cover': json['cover'] == null ? undefined : json['cover'],
         'create_time': (new Date(json['create_time'])),
@@ -283,6 +289,7 @@ export function DocumentDetailResponseFromJSONTyped(json: any, ignoreDiscriminat
         'embedding_task': json['embedding_task'] == null ? undefined : DocumentEmbeddingTaskFromJSON(json['embedding_task']),
         'graph_task': json['graph_task'] == null ? undefined : DocumentGraphTaskFromJSON(json['graph_task']),
         'podcast_task': json['podcast_task'] == null ? undefined : DocumentPodcastTaskFromJSON(json['podcast_task']),
+        'summarize_task': json['summarize_task'] == null ? undefined : DocumentSummarizeTaskFromJSON(json['summarize_task']),
         'process_task': json['process_task'] == null ? undefined : DocumentProcessTaskFromJSON(json['process_task']),
     };
 }
@@ -302,7 +309,6 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'category': value['category'],
         'title': value['title'],
         'from_plat': value['from_plat'],
-        'ai_summary': value['ai_summary'],
         'description': value['description'],
         'cover': value['cover'],
         'create_time': value['create_time'].toISOString(),
@@ -320,6 +326,7 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'embedding_task': DocumentEmbeddingTaskToJSON(value['embedding_task']),
         'graph_task': DocumentGraphTaskToJSON(value['graph_task']),
         'podcast_task': DocumentPodcastTaskToJSON(value['podcast_task']),
+        'summarize_task': DocumentSummarizeTaskToJSON(value['summarize_task']),
         'process_task': DocumentProcessTaskToJSON(value['process_task']),
     };
 }
