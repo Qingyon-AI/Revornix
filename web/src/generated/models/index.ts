@@ -40,6 +40,7 @@ export * from './DocumentDeleteRequest';
 export * from './DocumentDetailRequest';
 export * from './DocumentDetailResponse';
 export * from './DocumentEmbeddingTask';
+export * from './DocumentGraphGenerateRequest';
 export * from './DocumentGraphRequest';
 export * from './DocumentGraphTask';
 export * from './DocumentInfo';

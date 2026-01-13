@@ -21,5 +21,6 @@ export default {
     transformToMarkdown: API_PREFIX + '/document/markdown/transform',
     generateDocumentPodcast: API_PREFIX + '/document/podcast/generate',
     summaryContent: API_PREFIX + '/document/ai/summary',
-    getDocumentLabelSummary: API_PREFIX + '/document/label/summary'
+    getDocumentLabelSummary: API_PREFIX + '/document/label/summary',
+    generateDocumentGraph: API_PREFIX + '/document/graph/generate',
 } 

@@ -2,13 +2,17 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { DocumentGraphStatus } from '@/enums/document';
-import { getDocumentDetail } from '@/service/document';
+import { getQueryClient } from '@/lib/get-query-client';
+import { generateDocumentGraph, getDocumentDetail } from '@/service/document';
 import { searchDocumentGraph } from '@/service/graph';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import * as d3 from 'd3';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import { Button } from '../ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface Node {
 	id: string;
@@ -282,6 +286,25 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 		}
 	}, [document?.graph_task?.status]);
 
+	const queryClient = getQueryClient();
+
+	const mutateGenerateDocumentGraph = useMutation({
+		mutationFn: () =>
+			generateDocumentGraph({
+				document_id: document_id,
+			}),
+		onSuccess(data, variables, onMutateResult, context) {
+			toast.success(t('document_graph_generate_task_submitted'));
+			queryClient.invalidateQueries({
+				queryKey: ['getDocumentDetail', document_id],
+			});
+		},
+		onError(error, variables, onMutateResult, context) {
+			toast.error(error.message);
+			console.error(error);
+		},
+	});
+
 	return (
 		<div className='w-full h-full flex justify-center items-center relative'>
 			{isDocumentDetailError && (
@@ -289,13 +312,31 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 					Error: {documentDetailError.message}
 				</div>
 			)}
-			{isError && <div className='text-sm text-muted-foreground'>Error: {error.message}</div>}
+			{isError && (
+				<div className='text-sm text-muted-foreground'>
+					Error: {error.message}
+				</div>
+			)}
 			{isLoading && <Skeleton className='w-full h-full' />}
 			{isFetched && !isError && !isDocumentDetailError && (
 				<>
 					{!document?.graph_task && (
-						<div className='text-sm text-muted-foreground'>
+						<div className='text-sm text-muted-foreground flex flex-col justify-center items-center'>
 							{t('document_graph_empty')}
+							<Button
+								variant={'link'}
+								size='sm'
+								className='text-muted-foreground underline underline-offset-3 p-0 m-0'
+								disabled={mutateGenerateDocumentGraph.isPending}
+								title={t('document_graph_generate')}
+								onClick={() => {
+									mutateGenerateDocumentGraph.mutate();
+								}}>
+								{t('document_graph_generate')}
+								{mutateGenerateDocumentGraph.isPending && (
+									<Loader2 className='size-4 animate-spin' />
+								)}
+							</Button>
 						</div>
 					)}
 					{document?.graph_task?.status === DocumentGraphStatus.WAIT_TO && (
@@ -309,8 +350,22 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 						</div>
 					)}
 					{document?.graph_task?.status === DocumentGraphStatus.FAILED && (
-						<div className='text-sm text-muted-foreground'>
+						<div className='text-sm text-muted-foreground flex flex-col justify-center items-center'>
 							{t('document_graph_failed')}
+							<Button
+								variant={'link'}
+								size='sm'
+								className='text-muted-foreground underline underline-offset-3 p-0 m-0'
+								disabled={mutateGenerateDocumentGraph.isPending}
+								title={t('document_graph_regenerate')}
+								onClick={() => {
+									mutateGenerateDocumentGraph.mutate();
+								}}>
+								{t('document_graph_regenerate')}
+								{mutateGenerateDocumentGraph.isPending && (
+									<Loader2 className='size-4 animate-spin' />
+								)}
+							</Button>
 						</div>
 					)}
 					{document?.graph_task?.status === DocumentGraphStatus.SUCCESS &&
