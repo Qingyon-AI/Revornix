@@ -19,7 +19,6 @@ import {
 	Trash,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { FaBars } from 'react-icons/fa6';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import {
@@ -27,7 +26,6 @@ import {
 	deleteDocument,
 	readDocument,
 	starDocument,
-	summaryDocumentContentByAi,
 } from '@/service/document';
 import { getQueryClient } from '@/lib/get-query-client';
 import { DocumentDetailResponse } from '@/generated';
@@ -35,7 +33,6 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'nextjs-toploader/app';
-import { utils } from '@kinda/utils';
 import {
 	Sheet,
 	SheetContent,
@@ -45,7 +42,7 @@ import {
 	SheetTrigger,
 } from '../ui/sheet';
 import DocumentNotes from './document-notes';
-import { DocumentCategory, DocumentMdConvertStatus } from '@/enums/document';
+import { DocumentCategory } from '@/enums/document';
 import DocumentConfiguration from './document-configuration';
 import { useUserContext } from '@/provider/user-provider';
 import { cn } from '@/lib/utils';
@@ -60,7 +57,6 @@ const DocumentOperate = ({
 	const t = useTranslations();
 	const router = useRouter();
 	const queryClient = getQueryClient();
-	const [aiSummaizing, setAiSummaizing] = useState(false);
 	const [showDeleteDocumentDialog, setShowDeleteDocumentDialog] =
 		useState(false);
 
@@ -160,32 +156,6 @@ const DocumentOperate = ({
 		},
 	});
 
-	const handleAiSummarize = async () => {
-		if (data?.convert_task?.status === DocumentMdConvertStatus.FAILED) {
-			toast.error(t('ai_summary_failed_as_markdown_transform_failed'));
-			return;
-		}
-		if (data?.convert_task?.status === DocumentMdConvertStatus.CONVERTING) {
-			toast.error(t('ai_summary_failed_as_markdown_transform_doing'));
-			return;
-		}
-		if (data?.convert_task?.status === DocumentMdConvertStatus.WAIT_TO) {
-			toast.error(t('ai_summary_failed_as_markdown_transform_waiting'));
-			return;
-		}
-		setAiSummaizing(true);
-		const [res, err] = await utils.to(
-			summaryDocumentContentByAi({ document_id: id })
-		);
-		if (err) {
-			toast.error(err.message);
-			setAiSummaizing(false);
-			return;
-		}
-		toast.success(t('ai_summary_success'));
-		setAiSummaizing(false);
-		queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
-	};
 	return (
 		<>
 			{data && (
@@ -271,17 +241,6 @@ const DocumentOperate = ({
 					</Sheet>
 					{data.creator.id === mainUserInfo?.id && (
 						<>
-							<Button
-								variant={'ghost'}
-								className='flex-1 w-full'
-								disabled={aiSummaizing}
-								title={t('ai_summary')}
-								onClick={() => {
-									handleAiSummarize();
-								}}>
-								<FaBars />
-								{aiSummaizing && <Loader2 className='size-4 animate-spin' />}
-							</Button>
 							<Dialog
 								open={showDeleteDocumentDialog}
 								onOpenChange={setShowDeleteDocumentDialog}>
