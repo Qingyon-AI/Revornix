@@ -1,7 +1,7 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
 	getDocumentDetail,
 	summaryDocumentContentByAi,
@@ -18,20 +18,12 @@ import {
 	DocumentMdConvertStatus,
 	DocumentPodcastStatus,
 	DocumentProcessStatus,
+	DocumentSummarizeStatus,
 } from '@/enums/document';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
-import { utils } from '@kinda/utils';
 import { Button } from '../ui/button';
-import { Loader2, TrashIcon } from 'lucide-react';
-import { useState } from 'react';
-import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyMedia,
-} from '@/components/ui/empty';
+import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '../ui/alert';
 
 const DocumentInfo = ({ id }: { id: number }) => {
@@ -39,39 +31,27 @@ const DocumentInfo = ({ id }: { id: number }) => {
 	const router = useRouter();
 	const queryClient = getQueryClient();
 
-	const [aiSummarizing, setAiSummarizing] = useState(false);
-
 	const { data, isPending, isError, error } = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
 
-	const handleAiSummarize = async () => {
-		if (data?.convert_task?.status === DocumentMdConvertStatus.FAILED) {
-			toast.error(t('ai_summary_failed_as_markdown_transform_failed'));
-			return;
-		}
-		if (data?.convert_task?.status === DocumentMdConvertStatus.CONVERTING) {
-			toast.error(t('ai_summary_failed_as_markdown_transform_doing'));
-			return;
-		}
-		if (data?.convert_task?.status === DocumentMdConvertStatus.WAIT_TO) {
-			toast.error(t('ai_summary_failed_as_markdown_transform_waiting'));
-			return;
-		}
-		setAiSummarizing(true);
-		const [res, err] = await utils.to(
-			summaryDocumentContentByAi({ document_id: id })
-		);
-		if (err) {
-			toast.error(err.message);
-			setAiSummarizing(false);
-			return;
-		}
-		toast.success(t('ai_summary_success'));
-		setAiSummarizing(false);
-		queryClient.invalidateQueries({ queryKey: ['getDocumentDetail', id] });
-	};
+	const mutateSummaryDocument = useMutation({
+		mutationFn: () =>
+			summaryDocumentContentByAi({
+				document_id: id,
+			}),
+		onSuccess(data, variables, onMutateResult, context) {
+			toast.success(t('ai_summary_submit'));
+			queryClient.invalidateQueries({
+				queryKey: ['getDocumentDetail', id],
+			});
+		},
+		onError(error, variables, onMutateResult, context) {
+			toast.error(error.message);
+			console.error(error);
+		},
+	});
 
 	return (
 		<>
@@ -190,6 +170,20 @@ const DocumentInfo = ({ id }: { id: number }) => {
 									</div>
 								</div>
 							)}
+							{data.summarize_task && (
+								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
+									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
+										{t('document_summarize_status') + ': '}
+										{data.summarize_task?.status === DocumentSummarizeStatus.WAIT_TO
+											? t('document_summarize_status_todo')
+											: data.summarize_task?.status === DocumentSummarizeStatus.SUMMARIZING
+											? t('document_summarize_status_doing')
+											: data.summarize_task?.status === DocumentSummarizeStatus.SUCCESS
+											? t('document_summarize_status_success')
+											: t('document_summarize_status_failed')}
+									</div>
+								</div>
+							)}
 							{data.convert_task && (
 								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
 									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
@@ -245,12 +239,47 @@ const DocumentInfo = ({ id }: { id: number }) => {
 						</div>
 						<div className='text-sm rounded mx-5 mb-3'>
 							<h1 className='text-lg font-bold mb-3'>{t('ai_summary')}</h1>
-							{data.ai_summary && (
-								<p className='text-muted-foreground text-sm/6'>
-									{data.ai_summary}
-								</p>
+							{data.summarize_task && (
+								<>
+									{data.summarize_task.status ===
+										DocumentSummarizeStatus.SUCCESS && (
+										<p className='text-muted-foreground text-sm/6'>
+											{data.summarize_task.summary}
+										</p>
+									)}
+									{data.summarize_task.status ===
+										DocumentSummarizeStatus.SUMMARIZING && (
+										<p className='text-muted-foreground text-sm/6'>
+											{t('ai_summarizing')}
+										</p>
+									)}
+									{data.summarize_task.status ===
+										DocumentSummarizeStatus.FAILED && (
+										<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+											<AlertDescription>
+												<span className='inline-flex'>
+													{t('ai_summary_failed')}
+												</span>
+												<Button
+													variant={'link'}
+													size='sm'
+													className='text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
+													disabled={mutateSummaryDocument.isPending}
+													title={t('ai_resummary')}
+													onClick={() => {
+														mutateSummaryDocument.mutate();
+													}}>
+													{t('ai_resummary')}
+													{mutateSummaryDocument.isPending && (
+														<Loader2 className='size-4 animate-spin' />
+													)}
+												</Button>
+											</AlertDescription>
+										</Alert>
+									)}
+								</>
 							)}
-							{!data.ai_summary && (
+							{!data.summarize_task && (
 								<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 									<AlertDescription>
 										<span className='inline-flex'>{t('ai_summary_empty')}</span>
@@ -258,13 +287,13 @@ const DocumentInfo = ({ id }: { id: number }) => {
 											variant={'link'}
 											size='sm'
 											className='text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
-											disabled={aiSummarizing}
+											disabled={mutateSummaryDocument.isPending}
 											title={t('ai_summary')}
 											onClick={() => {
-												handleAiSummarize();
+												mutateSummaryDocument.mutate();
 											}}>
 											{t('ai_summary')}
-											{aiSummarizing && (
+											{mutateSummaryDocument.isPending && (
 												<Loader2 className='size-4 animate-spin' />
 											)}
 										</Button>

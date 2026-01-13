@@ -2,7 +2,7 @@ from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone, date as date_type
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from .user import UserPublicInfo
-from .task import DocumentConvertTask, DocumentEmbeddingTask, DocumentGraphTask, DocumentProcessTask, DocumentPodcastTask
+from .task import DocumentConvertTask, DocumentEmbeddingTask, DocumentGraphTask, DocumentProcessTask, DocumentPodcastTask, DocumentSummarizeTask
 
 class GenerateDocumentPodcastRequest(BaseModel):
     document_id: int
@@ -168,6 +168,7 @@ class DocumentInfo(BaseModel):
     embedding_task: DocumentEmbeddingTask | None = None
     graph_task: DocumentGraphTask | None = None
     podcast_task: DocumentPodcastTask | None = None
+    summarize_task: DocumentSummarizeTask | None = None
     process_task: DocumentProcessTask | None = None
     
     @field_serializer("create_time")
@@ -208,7 +209,6 @@ class DocumentDetailResponse(BaseModel):
     category: int
     title: str
     from_plat: str
-    ai_summary: str | None = None
     description: str | None = None
     cover: str | None = None
     create_time: datetime
@@ -226,6 +226,7 @@ class DocumentDetailResponse(BaseModel):
     embedding_task: DocumentEmbeddingTask | None = None
     graph_task: DocumentGraphTask | None = None
     podcast_task: DocumentPodcastTask | None = None
+    summarize_task: DocumentSummarizeTask | None = None
     process_task: DocumentProcessTask | None = None
     
     @field_serializer("create_time")

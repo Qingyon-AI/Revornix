@@ -663,7 +663,7 @@ No authorization required
 
 ## createUserByEmailUserCreateEmailPost
 
-> TokenResponse createUserByEmailUserCreateEmailPost(emailUserCreateVerifyRequest)
+> TokenResponse createUserByEmailUserCreateEmailPost(emailUserCreateVerifyRequest, xForwardedFor)
 
 Create User By Email
 
@@ -685,6 +685,8 @@ async function example() {
   const body = {
     // EmailUserCreateVerifyRequest
     emailUserCreateVerifyRequest: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
   } satisfies CreateUserByEmailUserCreateEmailPostRequest;
 
   try {
@@ -705,6 +707,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **emailUserCreateVerifyRequest** | [EmailUserCreateVerifyRequest](EmailUserCreateVerifyRequest.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -731,7 +734,7 @@ No authorization required
 
 ## createUserByEmailVerifyUserCreateEmailVerifyPost
 
-> TokenResponse createUserByEmailVerifyUserCreateEmailVerifyPost(emailUserCreateCodeVerifyRequest)
+> TokenResponse createUserByEmailVerifyUserCreateEmailVerifyPost(emailUserCreateCodeVerifyRequest, xForwardedFor)
 
 Create User By Email Verify
 
@@ -751,6 +754,8 @@ async function example() {
   const body = {
     // EmailUserCreateCodeVerifyRequest
     emailUserCreateCodeVerifyRequest: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
   } satisfies CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest;
 
   try {
@@ -771,6 +776,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **emailUserCreateCodeVerifyRequest** | [EmailUserCreateCodeVerifyRequest](EmailUserCreateCodeVerifyRequest.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -797,7 +803,7 @@ No authorization required
 
 ## createUserByGithubUserCreateGithubPost
 
-> TokenResponse createUserByGithubUserCreateGithubPost(githubUserCreate)
+> TokenResponse createUserByGithubUserCreateGithubPost(githubUserCreate, xForwardedFor)
 
 Create User By Github
 
@@ -817,6 +823,8 @@ async function example() {
   const body = {
     // GithubUserCreate
     githubUserCreate: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
   } satisfies CreateUserByGithubUserCreateGithubPostRequest;
 
   try {
@@ -837,6 +845,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **githubUserCreate** | [GithubUserCreate](GithubUserCreate.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -863,7 +872,7 @@ No authorization required
 
 ## createUserByGoogleUserCreateGooglePost
 
-> TokenResponse createUserByGoogleUserCreateGooglePost(googleUserCreate)
+> TokenResponse createUserByGoogleUserCreateGooglePost(googleUserCreate, xForwardedFor)
 
 Create User By Google
 
@@ -883,6 +892,8 @@ async function example() {
   const body = {
     // GoogleUserCreate
     googleUserCreate: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
   } satisfies CreateUserByGoogleUserCreateGooglePostRequest;
 
   try {
@@ -903,6 +914,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **googleUserCreate** | [GoogleUserCreate](GoogleUserCreate.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -995,7 +1007,7 @@ No authorization required
 
 ## createUserBySmsVerifyUserCreateSmsVerifyPost
 
-> TokenResponse createUserBySmsVerifyUserCreateSmsVerifyPost(smsUserCodeVerifyCreate)
+> TokenResponse createUserBySmsVerifyUserCreateSmsVerifyPost(smsUserCodeVerifyCreate, xForwardedFor)
 
 Create User By Sms Verify
 
@@ -1015,6 +1027,8 @@ async function example() {
   const body = {
     // SmsUserCodeVerifyCreate
     smsUserCodeVerifyCreate: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
   } satisfies CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest;
 
   try {
@@ -1035,6 +1049,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **smsUserCodeVerifyCreate** | [SmsUserCodeVerifyCreate](SmsUserCodeVerifyCreate.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1061,7 +1076,7 @@ No authorization required
 
 ## createUserByWechatMiniUserCreateWechatMiniPost
 
-> TokenResponse createUserByWechatMiniUserCreateWechatMiniPost(weChatMiniUserCreateRequest)
+> TokenResponse createUserByWechatMiniUserCreateWechatMiniPost(weChatMiniUserCreateRequest, xForwardedFor)
 
 Create User By Wechat Mini
 
@@ -1081,6 +1096,8 @@ async function example() {
   const body = {
     // WeChatMiniUserCreateRequest
     weChatMiniUserCreateRequest: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
   } satisfies CreateUserByWechatMiniUserCreateWechatMiniPostRequest;
 
   try {
@@ -1101,6 +1118,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **weChatMiniUserCreateRequest** | [WeChatMiniUserCreateRequest](WeChatMiniUserCreateRequest.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1127,7 +1145,7 @@ No authorization required
 
 ## createUserByWechatWebUserCreateWechatWebPost
 
-> TokenResponse createUserByWechatWebUserCreateWechatWebPost(weChatWebUserCreateRequest)
+> TokenResponse createUserByWechatWebUserCreateWechatWebPost(weChatWebUserCreateRequest, xForwardedFor)
 
 Create User By Wechat Web
 
@@ -1147,6 +1165,8 @@ async function example() {
   const body = {
     // WeChatWebUserCreateRequest
     weChatWebUserCreateRequest: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
   } satisfies CreateUserByWechatWebUserCreateWechatWebPostRequest;
 
   try {
@@ -1167,6 +1187,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **weChatWebUserCreateRequest** | [WeChatWebUserCreateRequest](WeChatWebUserCreateRequest.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

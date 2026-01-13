@@ -22,6 +22,19 @@ class DocumentConvertToMdTask(Base):
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
 
 
+class DocumentSummarizeTask(Base):
+    __tablename__ = "document_summarize_task"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
+    status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to summarized, 1: summarizing, 2: summarized successfully, 3: summarized failed')
+    summary: Mapped[Optional[str]] = mapped_column(String(5000), comment='The summary of the document')
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
 class DocumentEmbeddingTask(Base):
     __tablename__ = "document_embedding_task"
 

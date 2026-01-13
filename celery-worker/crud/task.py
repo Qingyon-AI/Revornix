@@ -1,7 +1,7 @@
 import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentEmbeddingStatus, DocumentMdConvertStatus
+from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentEmbeddingStatus, DocumentMdConvertStatus, DocumentSummarizeStatus
 from enums.section import SectionPodcastStatus, SectionProcessStatus, SectionProcessTriggerType
 
 def create_document_convert_task(
@@ -51,6 +51,21 @@ def create_section_podcast_task(
                                           status=status,
                                           section_id=section_id,
                                           create_time=now)
+    db.add(task)
+    db.flush()
+    return task
+
+def create_document_summarize_task(
+    db: Session,
+    user_id: int,
+    document_id: int,
+    status: DocumentSummarizeStatus = DocumentSummarizeStatus.WAIT_TO
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentSummarizeTask(user_id=user_id,
+                                             status=status,
+                                             document_id=document_id,
+                                             create_time=now)
     db.add(task)
     db.flush()
     return task
@@ -149,6 +164,15 @@ def get_section_process_task_by_section_id(
     query = db.query(models.task.SectionProcessTask)
     query = query.filter(models.task.SectionProcessTask.section_id == section_id,
                          models.task.SectionProcessTask.delete_at == None)
+    return query.one_or_none()
+
+def get_document_summarize_task_by_document_id(
+    db: Session,
+    document_id: int
+):
+    query = db.query(models.task.DocumentSummarizeTask)
+    query = query.filter(models.task.DocumentSummarizeTask.document_id == document_id,
+                         models.task.DocumentSummarizeTask.delete_at == None)
     return query.one_or_none()
 
 def get_document_process_task_by_document_id(

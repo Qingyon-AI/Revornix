@@ -41,7 +41,6 @@ class Document(Base):
     from_plat: Mapped[str] = mapped_column(String(100), nullable=False)
     title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(1000))
-    ai_summary: Mapped[Optional[str]] = mapped_column(String(10000))
     cover: Mapped[Optional[str]] = mapped_column(String(500))
     category: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: file, 1: website, 2: quick-note')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

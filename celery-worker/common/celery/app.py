@@ -37,7 +37,7 @@ from engine.tts.openai import OpenAIAudioEngine
 from engine.tts.volc.official_volc import OfficialVolcTTSEngine
 from enums.engine import Engine
 from common.ai import make_section_markdown
-from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentGraphStatus
+from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentEmbeddingStatus, DocumentPodcastStatus, DocumentGraphStatus, DocumentSummarizeStatus
 from enums.section import SectionPodcastStatus, SectionDocumentIntegration, SectionProcessStatus
 from proxy.ai_model_proxy import AIModelProxy
 from engine.image.banana import BananaImageGenerateEngine
@@ -167,11 +167,9 @@ async def handle_update_document_ai_podcast(
             db=db,
             user_id=user_id,
             document_id=document_id,
-            status = DocumentPodcastStatus.GENERATING
         )
-    else:
-        if db_podcast_task.status == DocumentPodcastStatus.GENERATING:
-            db_podcast_task.status = DocumentPodcastStatus.GENERATING
+    if db_podcast_task.status != DocumentPodcastStatus.GENERATING:
+        db_podcast_task.status = DocumentPodcastStatus.GENERATING
     db.commit()
     try:
         db_document = crud.document.get_document_by_document_id(
@@ -249,6 +247,91 @@ async def handle_update_document_ai_podcast(
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai podcast: {e}")
         db_podcast_task.status = DocumentPodcastStatus.FAILED
+        db.commit()
+        raise e
+    finally:
+        db.close()
+
+async def handle_update_document_ai_summarize(
+    document_id: int, 
+    user_id: int
+):
+    db = SessionLocal()
+    db_document = crud.document.get_document_by_document_id(
+        db=db,
+        document_id=document_id
+    )
+    if db_document is None:
+        raise Exception("The document which you want to summarize is not found")
+    
+    db_user = crud.user.get_user_by_id(
+        db=db, 
+        user_id=user_id
+    )
+    if db_user is None:
+        raise Exception("The user which you want to summarize document is not found")
+    if db_user.default_user_file_system is None:
+        raise Exception("The user which you want to summarize document has not set default user file system")
+    if db_user.default_document_reader_model_id is None:
+        raise Exception("The user which you want to summarize document has not set default document reader model")
+    
+    db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+        db=db,
+        document_id=document_id
+    )
+    if db_summarize_task is None:
+        db_summarize_task = crud.task.create_document_summarize_task(
+            db=db,
+            user_id=user_id,
+            document_id=document_id,
+        )
+    if db_summarize_task.status != DocumentSummarizeStatus.SUMMARIZING:
+        db_summarize_task.status = DocumentSummarizeStatus.SUMMARIZING
+    db.commit()
+    
+    try:
+        model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=db_user.default_document_reader_model_id
+        )).get_configuration()
+        
+        llm_client = await get_extract_llm_client(
+            user_id=user_id
+        )
+        entities = []
+        relations = []
+        
+        final_summary = None
+
+        async for chunk_info in stream_chunk_document(doc_id=document_id):
+            sub_entities, sub_relations = extract_entities_relations(
+                user_id=user_id,
+                llm_client=llm_client, 
+                llm_model=model_configuration.model_name,
+                chunk=chunk_info
+            )
+            entities.extend(sub_entities)
+            relations.extend(sub_relations)
+            # map summary
+            chunk_info.summary = (await summary_content(
+                user_id=user_id, 
+                model_id=db_user.default_document_reader_model_id, 
+                content=chunk_info.text
+            )).summary
+            final_summary = (await reducer_summary(
+                user_id=user_id,
+                model_id=db_user.default_document_reader_model_id,
+                current_summary=final_summary, 
+                new_summary_to_append=chunk_info.summary,
+                new_entities=sub_entities,
+                new_relations=sub_relations
+            )).summary
+            db_summarize_task.summary = final_summary
+            db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+        db.commit()
+    except Exception as e:
+        exception_logger.error(f"Something is error while updating the ai summary: {e}")
+        db_summarize_task.status = DocumentSummarizeStatus.FAILED
         db.commit()
         raise e
     finally:
@@ -543,9 +626,23 @@ async def handle_process_document(
                 user_id=user_id,
                 document_id=document_id
             )
-        else:
-            if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
-                db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
+        if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
+            db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
+
+        if auto_summary:
+            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_summarize_task is None:
+                db_summarize_task = crud.task.create_document_summarize_task(
+                    db=db,
+                    user_id=user_id,
+                    document_id=document_id,
+                )
+            if db_summarize_task.status != DocumentSummarizeStatus.SUMMARIZING:
+                db_summarize_task.status = DocumentSummarizeStatus.SUMMARIZING
+
         db.commit()
 
         llm_client = await get_extract_llm_client(
@@ -594,10 +691,12 @@ async def handle_process_document(
                 )
             db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
             if auto_summary:
-                db_document.ai_summary = final_summary
+                db_summarize_task.summary = final_summary
+                db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
         except Exception as e:
             exception_logger.error(f"Something is error while embedding document info: {e}")
             db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+            db_summarize_task.status = DocumentSummarizeStatus.FAILED
             raise e
         finally:
             db.commit()
@@ -1042,7 +1141,19 @@ def start_process_section(
         )
     )
     db.close()
-    
+
+@celery_app.task
+def start_process_document_summarize(
+    document_id: int,
+    user_id: int
+):
+    asyncio.run(
+        handle_update_document_ai_summarize(
+            document_id=document_id, 
+            user_id=user_id
+        )
+    )
+
 @celery_app.task
 def start_process_document_podcast(
     document_id: int,

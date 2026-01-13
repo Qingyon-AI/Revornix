@@ -13,13 +13,20 @@ class DocumentConvertTask(BaseModel):
         return f'{url_prefix}/{v}'
     class Config:
         from_attributes = True 
-        
+
+class DocumentSummarizeTask(BaseModel):
+    creator_id: int
+    status: int
+    summary: str | None
+    class Config:
+        from_attributes = True
+
 class DocumentEmbeddingTask(BaseModel):
     creator_id: int
     status: int
     class Config:
         from_attributes = True
-        
+
 class DocumentGraphTask(BaseModel):
     creator_id: int
     status: int

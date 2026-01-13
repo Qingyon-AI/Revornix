@@ -50,6 +50,7 @@ export * from './DocumentNoteDeleteRequest';
 export * from './DocumentNoteInfo';
 export * from './DocumentPodcastTask';
 export * from './DocumentProcessTask';
+export * from './DocumentSummarizeTask';
 export * from './DocumentUpdateRequest';
 export * from './Edge';
 export * from './EmailCreateRequest';

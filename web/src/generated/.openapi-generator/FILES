@@ -66,6 +66,7 @@ docs/DocumentNoteDeleteRequest.md
 docs/DocumentNoteInfo.md
 docs/DocumentPodcastTask.md
 docs/DocumentProcessTask.md
+docs/DocumentSummarizeTask.md
 docs/DocumentUpdateRequest.md
 docs/Edge.md
 docs/EmailCreateRequest.md
@@ -319,6 +320,7 @@ models/DocumentNoteDeleteRequest.ts
 models/DocumentNoteInfo.ts
 models/DocumentPodcastTask.ts
 models/DocumentProcessTask.ts
+models/DocumentSummarizeTask.ts
 models/DocumentUpdateRequest.ts
 models/Edge.ts
 models/EmailCreateRequest.ts

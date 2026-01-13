@@ -27,6 +27,13 @@ import {
     DocumentGraphTaskToJSON,
     DocumentGraphTaskToJSONTyped,
 } from './DocumentGraphTask';
+import type { DocumentSummarizeTask } from './DocumentSummarizeTask';
+import {
+    DocumentSummarizeTaskFromJSON,
+    DocumentSummarizeTaskFromJSONTyped,
+    DocumentSummarizeTaskToJSON,
+    DocumentSummarizeTaskToJSONTyped,
+} from './DocumentSummarizeTask';
 import type { SchemasDocumentLabel } from './SchemasDocumentLabel';
 import {
     SchemasDocumentLabelFromJSON,
@@ -174,6 +181,12 @@ export interface DocumentInfo {
     podcast_task?: DocumentPodcastTask | null;
     /**
      * 
+     * @type {DocumentSummarizeTask}
+     * @memberof DocumentInfo
+     */
+    summarize_task?: DocumentSummarizeTask | null;
+    /**
+     * 
      * @type {DocumentProcessTask}
      * @memberof DocumentInfo
      */
@@ -220,6 +233,7 @@ export function DocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'embedding_task': json['embedding_task'] == null ? undefined : DocumentEmbeddingTaskFromJSON(json['embedding_task']),
         'graph_task': json['graph_task'] == null ? undefined : DocumentGraphTaskFromJSON(json['graph_task']),
         'podcast_task': json['podcast_task'] == null ? undefined : DocumentPodcastTaskFromJSON(json['podcast_task']),
+        'summarize_task': json['summarize_task'] == null ? undefined : DocumentSummarizeTaskFromJSON(json['summarize_task']),
         'process_task': json['process_task'] == null ? undefined : DocumentProcessTaskFromJSON(json['process_task']),
     };
 }
@@ -251,6 +265,7 @@ export function DocumentInfoToJSONTyped(value?: DocumentInfo | null, ignoreDiscr
         'embedding_task': DocumentEmbeddingTaskToJSON(value['embedding_task']),
         'graph_task': DocumentGraphTaskToJSON(value['graph_task']),
         'podcast_task': DocumentPodcastTaskToJSON(value['podcast_task']),
+        'summarize_task': DocumentSummarizeTaskToJSON(value['summarize_task']),
         'process_task': DocumentProcessTaskToJSON(value['process_task']),
     };
 }
