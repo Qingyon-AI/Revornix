@@ -237,7 +237,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 						<div className='px-5 mb-3'>
 							<Separator />
 						</div>
-						<div className='text-sm rounded mx-5 mb-3'>
+						<div className='text-sm rounded mx-5'>
 							<h1 className='text-lg font-bold mb-3'>{t('ai_summary')}</h1>
 							{data.summarize_task && (
 								<>
