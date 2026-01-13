@@ -21,6 +21,7 @@ import type {
   DocumentDeleteRequest,
   DocumentDetailRequest,
   DocumentDetailResponse,
+  DocumentGraphGenerateRequest,
   DocumentMarkdownConvertRequest,
   DocumentMonthSummaryResponse,
   DocumentNoteCreateRequest,
@@ -60,6 +61,8 @@ import {
     DocumentDetailRequestToJSON,
     DocumentDetailResponseFromJSON,
     DocumentDetailResponseToJSON,
+    DocumentGraphGenerateRequestFromJSON,
+    DocumentGraphGenerateRequestToJSON,
     DocumentMarkdownConvertRequestFromJSON,
     DocumentMarkdownConvertRequestToJSON,
     DocumentMonthSummaryResponseFromJSON,
@@ -144,6 +147,11 @@ export interface DeleteLabelDocumentLabelDeletePostRequest {
 
 export interface DeleteNoteDocumentNoteDeletePostRequest {
     documentNoteDeleteRequest: DocumentNoteDeleteRequest;
+    authorization?: string | null;
+}
+
+export interface GenerateGraphDocumentGraphGeneratePostRequest {
+    documentGraphGenerateRequest: DocumentGraphGenerateRequest;
     authorization?: string | null;
 }
 
@@ -522,6 +530,49 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async deleteNoteDocumentNoteDeletePost(requestParameters: DeleteNoteDocumentNoteDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.deleteNoteDocumentNoteDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Generate Graph
+     */
+    async generateGraphDocumentGraphGeneratePostRaw(requestParameters: GenerateGraphDocumentGraphGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['documentGraphGenerateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentGraphGenerateRequest',
+                'Required parameter "documentGraphGenerateRequest" was null or undefined when calling generateGraphDocumentGraphGeneratePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/document/graph/generate`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentGraphGenerateRequestToJSON(requestParameters['documentGraphGenerateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Generate Graph
+     */
+    async generateGraphDocumentGraphGeneratePost(requestParameters: GenerateGraphDocumentGraphGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.generateGraphDocumentGraphGeneratePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

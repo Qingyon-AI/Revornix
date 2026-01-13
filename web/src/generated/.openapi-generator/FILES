@@ -56,6 +56,7 @@ docs/DocumentDeleteRequest.md
 docs/DocumentDetailRequest.md
 docs/DocumentDetailResponse.md
 docs/DocumentEmbeddingTask.md
+docs/DocumentGraphGenerateRequest.md
 docs/DocumentGraphRequest.md
 docs/DocumentGraphTask.md
 docs/DocumentInfo.md
@@ -310,6 +311,7 @@ models/DocumentDeleteRequest.ts
 models/DocumentDetailRequest.ts
 models/DocumentDetailResponse.ts
 models/DocumentEmbeddingTask.ts
+models/DocumentGraphGenerateRequest.ts
 models/DocumentGraphRequest.ts
 models/DocumentGraphTask.ts
 models/DocumentInfo.ts
