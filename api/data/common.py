@@ -19,6 +19,7 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 from langfuse import propagate_attributes
 from langfuse.openai import OpenAI
 from proxy.ai_model_proxy import AIModelProxy
+from common.logger import exception_logger
 
 def make_chunk_id(
     doc_id: int, 
@@ -108,7 +109,9 @@ async def stream_chunk_document(
                 torch.mps.empty_cache()
             elif torch.cuda.is_available():
                 torch.cuda.empty_cache()
-
+    except Exception as e:
+        exception_logger.error(f"Error while streaming chunk document: {e}")
+        raise e
     finally:
         db.close()
 
@@ -174,7 +177,8 @@ def extract_entities_relations(
         else:
             try:
                 data = json.loads(output_text)
-            except:
+            except json.JSONDecodeError as e:
+                exception_logger.error(f"Failed to decode JSON: {e}")
                 data = {"entities": [], "relations": []}
 
         entities = [

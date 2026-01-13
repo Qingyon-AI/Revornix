@@ -38,7 +38,6 @@ class OfficialLLMAIClient:
         )
         for chunk in response:
             if isinstance(chunk, ResponseCompletedEvent):
-                print(chunk.response.usage)
                 return chunk
 
 if __name__ == '__main__':

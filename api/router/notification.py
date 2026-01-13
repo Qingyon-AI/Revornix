@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from common.apscheduler.app import send_notification_scheduler
 from enums.notification import NotificationContentType, NotificationTriggerType
 from common.dependencies import decode_jwt_token
+from common.logger import exception_logger, info_logger
 
 notification_router = APIRouter()
     
@@ -33,6 +34,7 @@ async def websocket_ask(
         if uuid is None:
             raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
     except Exception as e:
+        exception_logger.error(f"decode jwt token error for websocket connection: {e}")
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
     user = crud.user.get_user_by_uuid(
         db=db, 
@@ -51,7 +53,7 @@ async def websocket_ask(
     try:
         while True:
             data = await websocket.receive_text()
-            print(f'Received message from {websocket_id}: {data}')
+            info_logger.info(f'Received message from {websocket_id}: {data}')
     except WebSocketDisconnect:
         notificationManager.disconnect(websocket_id)
         await notificationManager.broadcast(f"Client #{websocket} left the chat")

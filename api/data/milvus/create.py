@@ -1,6 +1,7 @@
 from data.milvus.delete import clear_milvus_collection
 from data.milvus.base import milvus_client
 from pymilvus import DataType, Function, FunctionType
+from common.logger import info_logger
 
 def init_document_collection():
     clear_milvus_collection()
@@ -48,7 +49,7 @@ def init_document_collection():
         schema=schema,
         index_params=index_params
     )
-    print('Milvus collection created')
+    info_logger.info('Milvus collection created')
 
 if __name__ == "__main__":
     init_document_collection()

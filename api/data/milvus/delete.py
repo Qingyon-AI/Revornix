@@ -1,9 +1,10 @@
 from data.milvus.base import milvus_client, MILVUS_COLLECTION
+from common.logger import info_logger
 
 def clear_milvus_collection():
     if milvus_client.has_collection(MILVUS_COLLECTION): 
         milvus_client.drop_collection(MILVUS_COLLECTION)
-        print(f"Milvus collection {MILVUS_COLLECTION} dropped.")
+        info_logger.info(f"Milvus collection {MILVUS_COLLECTION} dropped.")
 
 def delete_documents_from_milvus(
     doc_ids: list[int]
@@ -24,4 +25,4 @@ def delete_documents_from_milvus(
 
     # flush 单 collection 版本
     milvus_client.flush("document")
-    print(f"Deleted {len(doc_ids)} documents from Milvus")
+    info_logger.info(f"Deleted {len(doc_ids)} documents from Milvus")

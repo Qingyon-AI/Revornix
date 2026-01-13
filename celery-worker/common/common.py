@@ -13,6 +13,7 @@ from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.aws_s3_remote_file_service import AWSS3RemoteFileService
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
+from common.logger import exception_logger
 
 def collect_classes(
     package_name: str, 
@@ -131,5 +132,7 @@ def safe_json_loads(
         return default
     try:
         return json.loads(data)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError) as e:
+        exception_logger.error(f'Failed to parse JSON data: {e}', e)
         return default
+

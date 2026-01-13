@@ -119,7 +119,6 @@ if __name__ == '__main__':
             user_id=1
         )
         res = await engine.generate_tags(document_id=4)
-        from rich import print
         print(res)
     import asyncio
     asyncio.run(main())

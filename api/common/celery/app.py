@@ -44,6 +44,7 @@ from engine.tag.llm_document import LLMDocumentTagEngine
 from protocol.image_generate_engine import ImageGenerateEngineProtocol
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from enums.ability import Ability
+from common.logger import exception_logger
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
@@ -732,6 +733,7 @@ async def handle_process_document(
                 db_graph_task_id.status = DocumentGraphStatus.SUCCESS.value
                 db.commit()
             except Exception as e:
+                exception_logger.error(f"Something is error while graphing document info: {e}")
                 db_graph_task_id.status = DocumentGraphStatus.FAILED.value
                 db.commit()
                 raise e

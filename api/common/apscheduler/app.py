@@ -18,6 +18,7 @@ from enums.document import DocumentMdConvertStatus, UserDocumentAuthority, Docum
 from enums.notification import NotificationContentType, NotificationSourceUUID, NotificationTemplateUUID, NotificationTriggerType
 from enums.section import SectionDocumentIntegration, UserSectionRole, UserSectionAuthority
 from common.celery.app import start_process_section
+from common.logger import info_logger, warning_logger
 
 scheduler = AsyncIOScheduler()
 
@@ -43,7 +44,7 @@ async def fetch_and_save(
             description = entry.summary
             
             if len(description) > 500:
-                print(f"Warning: description is too long! Truncating to 500 characters.")
+                warning_logger.warning(f"Warning: description is too long! Truncating to 500 characters.")
                 description = description[:500]
             
             # 获取文档的最近更新时间

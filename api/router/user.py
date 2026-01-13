@@ -34,6 +34,7 @@ from file.built_in_remote_file_service import BuiltInRemoteFileService
 from enums.user import WeChatUserSource
 from enums.file import RemoteFileService
 from enums.engine import Engine
+from common.logger import exception_logger
 
 user_router = APIRouter()
 
@@ -778,6 +779,7 @@ def update_token(
     try:
         payload = decode_jwt_token(token=token_update_request.refresh_token)
     except ExpiredSignatureError as e:
+        exception_logger.error(f"Decode refresh token error: {e}")
         return Exception("Refresh token is expired, please login again.")
     user_uuid: str | None = payload.get("sub")
     if user_uuid is None:

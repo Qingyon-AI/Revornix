@@ -61,6 +61,8 @@ from protocol.notification_target import NotificationTargetProtocol
 from protocol.engine import EngineProtocol
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
+from common.logger import exception_logger
+
 
 # =========================================================
 # 环境保护（防止误删生产）
@@ -252,7 +254,8 @@ if __name__ == "__main__":
         try:
             seed_database(db)
             db.commit()
-        except Exception:
+        except Exception as e:
+            exception_logger.error(f"❌ Database seeding failed: {e}")
             db.rollback()
             raise
         finally:

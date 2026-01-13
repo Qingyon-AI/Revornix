@@ -6,6 +6,7 @@ from typing import Protocol
 from data.sql.base import SessionLocal
 from config.file_system import FILE_SYSTEM_SERVER_PUBLIC_URL
 from enums.file import RemoteFileService
+from common.logger import exception_logger
 
 class RemoteFileServiceProtocol(Protocol):
 
@@ -106,7 +107,8 @@ class RemoteFileServiceProtocol(Protocol):
                 cache[user_id] = (now, url_prefix)
             return url_prefix
         except Exception as e:
-            raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")
+            exception_logger.error(f"There is something wrong with the file system for the user who you want to get his/her file system url prefix, {e}")
+            raise e
         finally:
             db.close()
         

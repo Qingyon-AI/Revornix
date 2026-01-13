@@ -9,6 +9,7 @@ from enums.file import RemoteFileService
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 from botocore.config import Config
+from common.logger import exception_logger
 
 class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
     
@@ -80,6 +81,9 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
                     config=config
                 )
                 self.oss_client = s3
+            except Exception as e:
+                exception_logger.error("Failed to initialize the user's file system", exc_info=e)
+                raise e
             finally:
                 db.close()
 

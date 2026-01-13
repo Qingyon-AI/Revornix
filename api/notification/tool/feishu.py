@@ -193,7 +193,7 @@ class FeishuNotificationTool(NotificationToolProtocol):
             async with httpx.AsyncClient(timeout=10) as client:
                 res = await client.post(webhook_url, json=payload, headers=headers)
             if res.json().get('code') != 0:
-                exception_logger.error('Failed to send notification to Feishu: {}'.format(res.json()))
+                exception_logger.error(f'Failed to send notification to Feishu: {res.json()}')
             
         except Exception as e:
             exception_logger.error(f"Failed to send notification to Feishu: {e}")

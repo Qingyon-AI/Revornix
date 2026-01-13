@@ -77,6 +77,7 @@ class AppleNotificationTool(NotificationToolProtocol):
             key = jwk.JWK.from_json(json.dumps(jwk_data))
             return key.export_to_pem().decode('utf-8')
         except Exception as e:
+            exception_logger.error(f"Failed to convert JWK to PEM: {e}")
             raise Exception(f"Failed to convert JWK to PEM: {e}")
 
     def _verify_jwt(
@@ -112,6 +113,7 @@ class AppleNotificationTool(NotificationToolProtocol):
             header = jwt.get_unverified_header(identity_token)
             kid = header["kid"]
         except Exception as e:
+            exception_logger.error(f"Failed to decode JWT header: {e}")
             raise Exception(f"Invalid ID token header: {e}")
 
         # Step 3: 根据 kid 获取对应的公钥

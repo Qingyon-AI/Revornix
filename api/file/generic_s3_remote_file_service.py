@@ -7,6 +7,7 @@ from data.sql.base import SessionLocal
 from botocore.client import Config
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from enums.file import RemoteFileService
+from common.logger import exception_logger
 
 class GenericS3RemoteFileService(RemoteFileServiceProtocol):
     
@@ -57,6 +58,9 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
                     region_name=region_name
                 )
                 self.s3_client = s3
+            except Exception as e:
+                exception_logger.error(f"Failed to initialize the user's file system, {e}")
+                raise e
             finally:
                 db.close()
 
