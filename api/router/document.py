@@ -14,8 +14,8 @@ from data.neo4j.delete import delete_documents_and_related_from_neo4j
 from typing import cast
 from common.dependencies import get_db, get_current_user, check_deployed_by_official, plan_ability_checked_in_func, get_authorization_header
 from common.common import get_user_remote_file_system
-from common.celery.app import start_process_document, start_process_document_podcast, update_document_process_status, start_process_section, start_process_document_summarize
-from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus, UserDocumentAuthority, DocumentSummarizeStatus
+from common.celery.app import start_process_document, start_process_document_podcast, update_document_process_status, start_process_section, start_process_document_summarize, start_process_document_graph
+from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus, UserDocumentAuthority, DocumentSummarizeStatus, DocumentGraphStatus
 from enums.section import UserSectionRole, UserSectionAuthority, SectionDocumentIntegration, SectionProcessTriggerType
 from enums.ability import Ability
 
@@ -153,7 +153,7 @@ def search_note(
         has_more=has_more,
         next_start=next_start
     )
-    
+
 @document_router.post('/ai/summary', response_model=schemas.common.NormalResponse)
 async def create_ai_summary(
     ai_summary_request: schemas.document.DocumentAiSummaryRequest,
@@ -190,6 +190,54 @@ async def create_ai_summary(
     
     workflow = chain(
         start_process_document_summarize.si(
+            document_id=db_document.id, 
+            user_id=user.id
+        ),
+        update_document_process_status.si(
+            document_id=db_document.id, 
+            status=DocumentProcessStatus.SUCCESS
+        )
+    )
+    workflow()
+    
+    return schemas.common.SuccessResponse()
+
+@document_router.post('/graph/generate', response_model=schemas.common.NormalResponse)
+async def generate_graph(
+    graph_generate_request: schemas.document.DocumentGraphGenerateRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_document = crud.document.get_document_by_document_id(
+        db=db,
+        document_id=graph_generate_request.document_id
+    )
+    if db_document is None:
+        raise Exception('The document you want to summarize is not found')
+    
+    db_graph_generate_task = crud.task.get_document_graph_task_by_document_id(
+        db=db,
+        document_id=graph_generate_request.document_id
+    )
+    if db_graph_generate_task is not None:
+        if db_graph_generate_task.status == DocumentGraphStatus.SUCCESS:
+            raise Exception('The generate task is already finished, please refresh the page')
+        if db_graph_generate_task.status == DocumentGraphStatus.WAIT_TO:
+            raise Exception('The generate task is already in the queue, please wait')
+        if db_graph_generate_task.status == DocumentGraphStatus.BUILDING:
+            raise Exception('The generate task is already processing, please wait')
+
+    db_process_task = crud.task.get_document_process_task_by_document_id(
+        db=db,
+        document_id=graph_generate_request.document_id
+    )
+    if db_process_task is None:
+        raise Exception('The document you want to generate the graph is not processed')
+    db_process_task.status = DocumentProcessStatus.PROCESSING
+    db.commit()
+    
+    workflow = chain(
+        start_process_document_graph.si(
             document_id=db_document.id, 
             user_id=user.id
         ),
