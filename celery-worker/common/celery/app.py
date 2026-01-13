@@ -5,8 +5,6 @@ import re
 import uuid
 import crud
 import asyncio
-import sentry_sdk
-from sentry_sdk.integrations.celery import CeleryIntegration
 from data.custom_types.all import EntityInfo, RelationInfo
 from schemas.section import GeneratedImage
 from data.neo4j.base import neo4j_driver
@@ -46,14 +44,7 @@ from engine.tag.llm_document import LLMDocumentTagEngine
 from protocol.image_generate_engine import ImageGenerateEngineProtocol
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from enums.ability import Ability
-from config.sentry import WORKER_SENTRY_DSN, WORKER_SENTRY_ENABLE
-
-if WORKER_SENTRY_ENABLE:
-    sentry_sdk.init(
-        dsn=WORKER_SENTRY_DSN,
-        integrations=[CeleryIntegration()],
-        send_default_pii=True,
-    )
+from common.logger import exception_logger
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
@@ -251,6 +242,108 @@ async def handle_update_document_ai_podcast(
         raise e
     finally:
         db.close()
+
+async def handle_update_document_ai_graph(
+    document_id: int,
+    user_id: int
+):
+    db = SessionLocal()
+    db_document = crud.document.get_document_by_document_id(
+        db=db,
+        document_id=document_id
+    )
+    if db_document is None:
+        raise Exception("The document which you want to summarize is not found")
+    
+    db_user = crud.user.get_user_by_id(
+        db=db, 
+        user_id=user_id
+    )
+    if db_user is None:
+        raise Exception("The user which you want to summarize document is not found")
+    if db_user.default_user_file_system is None:
+        raise Exception("The user which you want to summarize document has not set default user file system")
+    if db_user.default_document_reader_model_id is None:
+        raise Exception("The user which you want to summarize document has not set default document reader model")
+    
+    access_token, _ = create_token(
+        user=db_user
+    )
+    auth_status = await plan_ability_checked_in_func(
+        ability=Ability.KNOWLEDGE_GRAPH.value,
+        authorization=f'Bearer {access_token}'
+    )
+    deployed_by_official = check_deployed_by_official_in_fuc()
+    if deployed_by_official and not auth_status:
+        raise Exception("The user has not access to the knowledge graph ability")
+
+    db_graph_task = crud.task.get_document_graph_task_by_document_id(
+        db=db,
+        document_id=document_id
+    )
+    if db_graph_task is None:
+        db_graph_task = crud.task.create_document_graph_task(
+            db=db,
+            user_id=user_id,
+            document_id=document_id,
+        )
+    if db_graph_task.status != DocumentGraphStatus.BUILDING:
+        db_graph_task.status = DocumentGraphStatus.BUILDING
+    db.commit()
+
+    try:
+        model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=db_user.default_document_reader_model_id
+        )).get_configuration()
+        
+        llm_client = await get_extract_llm_client(
+            user_id=user_id
+        )
+        entities = []
+        relations = []
+        async for chunk_info in stream_chunk_document(doc_id=document_id):
+            sub_entities, sub_relations = extract_entities_relations(
+                user_id=user_id,
+                llm_client=llm_client, 
+                llm_model=model_configuration.model_name,
+                chunk=chunk_info
+            )
+            entities.extend(sub_entities)
+            relations.extend(sub_relations)
+            upsert_chunks_neo4j(
+                chunks_info=[chunk_info]
+            )
+    
+        upsert_doc_neo4j(
+            docs_info=[
+                DocumentInfo(
+                    id=db_document.id,
+                    title=db_document.title,
+                    description=db_document.description,
+                    creator_id=db_document.creator_id,
+                    update_time=db_document.update_time,
+                    create_time=db_document.create_time
+                )
+            ]
+        )
+        upsert_doc_chunk_relations()
+        upsert_entities_neo4j(entities)
+        upsert_relations_neo4j(relations)
+        upsert_chunk_entity_relations()
+        create_communities_from_chunks()
+        create_community_nodes_and_relationships_with_size()
+        annotate_node_degrees()
+        db_graph_task.status = DocumentGraphStatus.SUCCESS.value
+        db.commit()
+    except Exception as e:
+        exception_logger.error(f"Something is error while graphing document info: {e}")
+        db_graph_task.status = DocumentGraphStatus.FAILED.value
+        db.commit()
+        raise e
+    finally:
+        db.close()
+
 
 async def handle_update_document_ai_summarize(
     document_id: int, 
@@ -514,6 +607,7 @@ async def handle_convert_document_md(
     finally:
         db.close()
 
+
 async def handle_tag_document(
     document_id: int,
     user_id: int
@@ -628,7 +722,7 @@ async def handle_process_document(
             )
         if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
             db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
-
+        
         if auto_summary:
             db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
                 db=db,
@@ -701,6 +795,19 @@ async def handle_process_document(
             db.commit()
         
         # graphing
+        db_graph_task = crud.task.get_document_graph_task_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_graph_task is None:
+            db_graph_task = crud.task.create_document_graph_task(
+                db=db,
+                user_id=user_id,
+                document_id=document_id
+            )
+        if db_graph_task.status != DocumentGraphStatus.BUILDING:
+            db_graph_task.status = DocumentGraphStatus.BUILDING
+        db.commit()
         access_token, _ = create_token(
             user=db_user
         )
@@ -722,14 +829,8 @@ async def handle_process_document(
                     )
                 ]
             )
-            db_graph_task_id = crud.task.create_document_graph_task(
-                db=db,
-                user_id=user_id,
-                document_id=document_id
-            )
-            db.commit()
             try:
-                db_graph_task_id.status = DocumentGraphStatus.BUILDING.value
+                db_graph_task.status = DocumentGraphStatus.BUILDING.value
                 db.commit()
                 upsert_doc_chunk_relations()
                 upsert_entities_neo4j(entities)
@@ -738,14 +839,16 @@ async def handle_process_document(
                 create_communities_from_chunks()
                 create_community_nodes_and_relationships_with_size()
                 annotate_node_degrees()
-                db_graph_task_id.status = DocumentGraphStatus.SUCCESS.value
+                db_graph_task.status = DocumentGraphStatus.SUCCESS.value
                 db.commit()
             except Exception as e:
                 exception_logger.error(f"Something is error while graphing document info: {e}")
-                db_graph_task_id.status = DocumentGraphStatus.FAILED.value
+                db_graph_task.status = DocumentGraphStatus.FAILED.value
                 db.commit()
                 raise e
-
+        else:
+            db_graph_task.status = DocumentGraphStatus.FAILED.value
+            db.commit()
         # podcast
         if auto_podcast:
             await handle_update_document_ai_podcast(
@@ -1141,6 +1244,18 @@ def start_process_section(
         )
     )
     db.close()
+    
+@celery_app.task
+def start_process_document_graph(
+    document_id: int,
+    user_id: int
+):
+    asyncio.run(
+        handle_update_document_ai_graph(
+            document_id=document_id, 
+            user_id=user_id
+        )
+    )
 
 @celery_app.task
 def start_process_document_summarize(

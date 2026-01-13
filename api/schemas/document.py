@@ -4,6 +4,9 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 from .user import UserPublicInfo
 from .task import DocumentConvertTask, DocumentEmbeddingTask, DocumentGraphTask, DocumentProcessTask, DocumentPodcastTask, DocumentSummarizeTask
 
+class DocumentGraphGenerateRequest(BaseModel):
+    document_id: int
+
 class GenerateDocumentPodcastRequest(BaseModel):
     document_id: int
 
