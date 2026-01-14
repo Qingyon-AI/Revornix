@@ -44,7 +44,7 @@ from protocol.image_generate_engine import ImageGenerateEngineProtocol
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from enums.ability import Ability
 from common.logger import exception_logger
-from protocol.embedding_engine import EmbeddingEngine
+from engine.embedding.factory import get_embedding_engine
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
@@ -750,7 +750,7 @@ async def handle_process_document(
         try:
             async for chunk_info in stream_chunk_document(doc_id=document_id):
                 deployed_by_official = check_deployed_by_official_in_fuc()
-                embedding_engine = EmbeddingEngine.get_embedding_engine()
+                embedding_engine = get_embedding_engine()
                 embedding = embedding_engine.embed([chunk_info.text])[0]
                 chunk_info.embedding = embedding.tolist()
                 sub_entities, sub_relations = extract_entities_relations(
