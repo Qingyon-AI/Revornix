@@ -243,6 +243,59 @@ async def handle_update_document_ai_podcast(
     finally:
         db.close()
 
+async def handle_update_document_embedding(
+    document_id: int,
+    user_id: int
+):
+    db = SessionLocal()
+    db_document = crud.document.get_document_by_document_id(
+        db=db,
+        document_id=document_id
+    )
+    if db_document is None:
+        raise Exception("The document which you want to embedding is not found")
+    
+    db_user = crud.user.get_user_by_id(
+        db=db, 
+        user_id=user_id
+    )
+    if db_user is None:
+        raise Exception("The user which you want to summarize document is not found")
+    if db_user.default_user_file_system is None:
+        raise Exception("The user which you want to summarize document has not set default user file system")
+    if db_user.default_document_reader_model_id is None:
+        raise Exception("The user which you want to summarize document has not set default document reader model")
+    
+    db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+        db=db,
+        document_id=document_id
+    )
+    if db_embedding_task is None:
+        db_embedding_task = crud.task.create_document_embedding_task(
+            db=db,
+            user_id=user_id,
+            document_id=document_id,
+        )
+    if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
+        db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
+    db.commit()
+    try:
+        async for chunk_info in stream_chunk_document(doc_id=document_id):
+            embedding_engine = get_embedding_engine()
+            embedding = embedding_engine.embed([chunk_info.text])[0]
+            chunk_info.embedding = embedding.tolist()
+            upsert_milvus(
+                user_id=user_id,
+                chunks_info=[chunk_info]
+            )
+        db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+    except Exception as e:
+        exception_logger.error(f"Something is error while embedding document info: {e}")
+        db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+        raise e
+    finally:
+        db.commit()
+
 async def handle_update_document_ai_graph(
     document_id: int,
     user_id: int
@@ -1245,7 +1298,19 @@ def start_process_section(
         )
     )
     db.close()
-    
+
+@celery_app.task
+def start_process_document_embedding(
+    document_id: int,
+    user_id: int
+):
+    asyncio.run(
+        handle_update_document_embedding(
+            document_id=document_id, 
+            user_id=user_id
+        )
+    )
+
 @celery_app.task
 def start_process_document_graph(
     document_id: int,
