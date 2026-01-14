@@ -166,13 +166,13 @@ const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 					<Badge className='rounded-full mr-auto pl-[2px]' variant={'outline'}>
 						<div className='rounded-full bg-indigo-600 p-1'>
 							{user_engine.category === EngineCategory.IMAGE && (
-								<ImageIcon className='size-4' />
+								<ImageIcon className='size-4' color='white' />
 							)}
 							{user_engine.category === EngineCategory.TTS && (
-								<AudioLinesIcon className='size-4' />
+								<AudioLinesIcon className='size-4' color='white' />
 							)}
 							{user_engine.category === EngineCategory.Markdown && (
-								<TextIcon className='size-4' />
+								<TextIcon className='size-4' color='white' />
 							)}
 						</div>
 						{getEngineCategoryLabel(
