@@ -107,9 +107,10 @@ const TodaySummary = () => {
 				</Link>
 			</CardHeader>
 			<CardContent className='flex-1'>
-				{isFetching ||
-					(!isError && !markdown && <Skeleton className='h-full w-full' />)}
-				{((isError && error) || markdownGetError) && (
+				{(isFetching || (!isError && !markdown)) && (
+					<Skeleton className='h-full w-full' />
+				)}
+				{(isError || markdownGetError) && (
 					<Empty>
 						<EmptyHeader>
 							<EmptyMedia variant='icon'>
