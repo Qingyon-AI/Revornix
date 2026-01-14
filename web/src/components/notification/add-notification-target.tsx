@@ -23,7 +23,7 @@ import {
 	getProvidedNotificationTargets,
 } from '@/service/notification';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -41,6 +41,7 @@ import { Loader2, PlusCircleIcon } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 
 const AddNotificationTarget = () => {
+	const locale = useLocale();
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const formSchema = z.object({
@@ -122,49 +123,6 @@ const AddNotificationTarget = () => {
 							className='space-y-3'
 							id='add-notification-target-form'>
 							<FormField
-								name='title'
-								control={form.control}
-								render={({ field }) => {
-									return (
-										<FormItem>
-											<FormLabel>
-												{t('setting_notification_target_manage_form_title')}
-											</FormLabel>
-											<Input
-												{...field}
-												placeholder={t(
-													'setting_notification_target_manage_form_title_placeholder'
-												)}
-											/>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-							<FormField
-								name='description'
-								control={form.control}
-								render={({ field }) => {
-									return (
-										<FormItem>
-											<FormLabel>
-												{t(
-													'setting_notification_target_manage_form_description'
-												)}
-											</FormLabel>
-											<Input
-												{...field}
-												placeholder={t(
-													'setting_notification_target_manage_form_description_placeholder'
-												)}
-												value={field.value || ''}
-											/>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-							<FormField
 								name='notification_target_id'
 								control={form.control}
 								render={({ field }) => {
@@ -192,7 +150,7 @@ const AddNotificationTarget = () => {
 																<SelectItem
 																	key={item.id}
 																	value={String(item.id)}>
-																	{item.name}
+																	{locale === 'zh' ? item.name_zh : item.name}
 																</SelectItem>
 															);
 														})}
@@ -244,6 +202,49 @@ const AddNotificationTarget = () => {
 									</div>
 								</>
 							)}
+							<FormField
+								name='title'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>
+												{t('setting_notification_target_manage_form_title')}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_notification_target_manage_form_title_placeholder'
+												)}
+											/>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
+							<FormField
+								name='description'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>
+												{t(
+													'setting_notification_target_manage_form_description'
+												)}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'setting_notification_target_manage_form_description_placeholder'
+												)}
+												value={field.value || ''}
+											/>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
 						</form>
 					</Form>
 					<DialogFooter>

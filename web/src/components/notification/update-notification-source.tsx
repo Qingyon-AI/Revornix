@@ -23,7 +23,7 @@ import {
 	updateNotificationSource,
 } from '@/service/notification';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -45,6 +45,7 @@ const UpdateNotificationSource = ({
 }: {
 	user_notification_source_id: number;
 }) => {
+	const locale = useLocale();
 	const { data, isFetching } = useQuery({
 		queryKey: ['notification-source-detail', user_notification_source_id],
 		queryFn: async () => {
@@ -147,6 +148,86 @@ const UpdateNotificationSource = ({
 							className='space-y-3'
 							id='update-form'>
 							<FormField
+								name='notification_source_id'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>
+												{t('setting_notification_source_manage_form_category')}
+											</FormLabel>
+											<Select
+												value={field.value ? field.value.toString() : undefined}
+												disabled>
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'setting_notification_source_manage_form_category_placeholder'
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent className='w-full'>
+													<SelectGroup>
+														{notificationSources?.data.map((item) => {
+															return (
+																<SelectItem
+																	key={item.id}
+																	value={String(item.id)}>
+																	{locale === 'zh' ? item.name_zh : item.name}
+																</SelectItem>
+															);
+														})}
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
+							{notificationSources?.data.find((item) => {
+								return item.id === form.watch('notification_source_id');
+							})?.demo_config && (
+								<>
+									<FormField
+										name='config_json'
+										control={form.control}
+										render={({ field }) => {
+											return (
+												<FormItem>
+													<FormLabel>
+														{t(
+															'setting_notification_source_manage_form_config_json'
+														)}
+													</FormLabel>
+													<Textarea
+														placeholder={t(
+															'setting_notification_source_manage_form_config_json_placeholder'
+														)}
+														className='font-mono break-all'
+														{...field}
+														value={field.value ?? ''}
+													/>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									<FormLabel>
+										{t(
+											'setting_notification_source_manage_form_config_json_demo'
+										)}
+									</FormLabel>
+									<div className='p-5 rounded bg-muted font-mono text-sm break-all'>
+										{
+											notificationSources?.data.find((item) => {
+												return item.id === form.watch('notification_source_id');
+											})?.demo_config
+										}
+									</div>
+								</>
+							)}
+							<FormField
 								name='title'
 								control={form.control}
 								render={({ field }) => {
@@ -189,84 +270,6 @@ const UpdateNotificationSource = ({
 									);
 								}}
 							/>
-							<FormField
-								name='notification_source_id'
-								control={form.control}
-								render={({ field }) => {
-									return (
-										<FormItem>
-											<FormLabel>
-												{t('setting_notification_source_manage_form_category')}
-											</FormLabel>
-											<Select
-												value={field.value ? field.value.toString() : undefined}
-												disabled>
-												<SelectTrigger className='w-full'>
-													<SelectValue
-														placeholder={t(
-															'setting_notification_source_manage_form_category_placeholder'
-														)}
-													/>
-												</SelectTrigger>
-												<SelectContent className='w-full'>
-													<SelectGroup>
-														{notificationSources?.data.map((item) => {
-															return (
-																<SelectItem
-																	key={item.id}
-																	value={String(item.id)}>
-																	{item.name}
-																</SelectItem>
-															);
-														})}
-													</SelectGroup>
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-							{notificationSources?.data.find((item) => {
-								return item.id === form.watch('notification_source_id');
-							})?.demo_config && (
-								<>
-									<FormField
-										name='config_json'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<FormLabel>
-														{t(
-															'setting_notification_source_manage_form_config_json'
-														)}
-													</FormLabel>
-													<Textarea
-														placeholder={t(
-															'setting_notification_source_manage_form_config_json_placeholder'
-														)}
-														className='font-mono break-all'
-														{...field}
-														value={field.value ?? ''}
-													/>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-									<FormLabel>
-										{t('setting_notification_source_manage_form_config_json_demo')}
-									</FormLabel>
-									<div className='p-5 rounded bg-muted font-mono text-sm break-all'>
-										{
-											notificationSources?.data.find((item) => {
-												return item.id === form.watch('notification_source_id');
-											})?.demo_config
-										}
-									</div>
-								</>
-							)}
 						</form>
 					</Form>
 					<DialogFooter>
