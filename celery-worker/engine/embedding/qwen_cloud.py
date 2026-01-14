@@ -11,7 +11,7 @@ class CloudQwen3EmbeddingEngine(EmbeddingEngine):
     
     def __init__(
         self,
-        model: str = "text-embedding-v3",
+        model: str = "text-embedding-v4",
         dim: int = 1024,
     ):
         if not os.environ.get('ALI_DASHSCOPE_EMBEDDING_API_KEY'):
