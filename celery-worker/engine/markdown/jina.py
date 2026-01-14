@@ -31,7 +31,7 @@ class JinaEngine(MarkdownEngineProtocol):
         }
         # as jina ai sometimes do take a lot of times to response, so we set a timeout
         timeout = httpx.Timeout(30.0, connect=10.0)
-        async with httpx.AsyncClient(timeout=timeout, verify=False) as client:
+        async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.get(f'https://r.jina.ai/{url}', headers=headers)
             title = response.json().get('data').get('title')
             description = response.json().get('data').get('description')
