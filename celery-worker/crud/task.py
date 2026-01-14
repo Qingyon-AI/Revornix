@@ -130,6 +130,15 @@ def create_document_embedding_task(
     db.flush()
     return task
 
+def get_document_graph_task_by_document_id(
+    db: Session,
+    document_id: int
+):
+    query = db.query(models.task.DocumentGraphTask)
+    query = query.filter(models.task.DocumentGraphTask.document_id == document_id,
+                         models.task.DocumentGraphTask.delete_at == None)
+    return query.one_or_none()
+
 def get_section_podcast_task_by_section_id(
     db: Session,
     section_id: int
