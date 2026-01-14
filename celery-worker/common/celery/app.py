@@ -8,7 +8,7 @@ import asyncio
 from data.custom_types.all import EntityInfo, RelationInfo
 from schemas.section import GeneratedImage
 from data.neo4j.base import neo4j_driver
-from protocol.embedding_engine import EmbeddingEngine
+from engine.embedding.factory import get_embedding_engine
 from data.common import stream_chunk_document
 from notification.common import trigger_user_notification_event
 from celery import Celery
@@ -750,7 +750,7 @@ async def handle_process_document(
         try:
             async for chunk_info in stream_chunk_document(doc_id=document_id):
                 deployed_by_official = check_deployed_by_official_in_fuc()
-                embedding_engine = EmbeddingEngine.get_embedding_engine()
+                embedding_engine = get_embedding_engine()
                 embedding = embedding_engine.embed([chunk_info.text])[0]
                 chunk_info.embedding = embedding.tolist()
                 sub_entities, sub_relations = extract_entities_relations(

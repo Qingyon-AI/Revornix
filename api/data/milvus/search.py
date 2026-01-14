@@ -2,7 +2,7 @@ from typing import cast, Any
 from pymilvus.client.search_result import SearchResult
 from data.milvus.base import milvus_client, MILVUS_COLLECTION
 from pymilvus import AnnSearchRequest, WeightedRanker
-from protocol.embedding_engine import EmbeddingEngine
+from engine.embedding.factory import get_embedding_engine
 
 def _normalize_search_result(results):
     if hasattr(results, "result"):  # SearchFuture
@@ -31,7 +31,7 @@ def naive_search(
     search_text: str, 
     top_k: int = 5
 ) -> list[dict[str, Any]]:
-    embedding_engine = EmbeddingEngine.get_embedding_engine()
+    embedding_engine = get_embedding_engine()
     qvec = embedding_engine.embed([search_text])[0].tolist()
     search_params = {
         "anns_field": "embedding",
@@ -69,7 +69,7 @@ def full_text_search(user_id: int, search_text: str, top_k: int = 5) -> list[dic
 
 def hybrid_search(user_id: int, search_text: str, top_k: int = 5, alpha: float = 0.2) -> list[dict[str, Any]]:
     # 1. 计算 dense 向量
-    embedding_engine = EmbeddingEngine.get_embedding_engine()
+    embedding_engine = get_embedding_engine()
     qvec = embedding_engine.embed([search_text])[0].tolist()
 
     # 2. 构造两条搜索请求
