@@ -8,7 +8,6 @@ import asyncio
 from data.custom_types.all import EntityInfo, RelationInfo
 from schemas.section import GeneratedImage
 from data.neo4j.base import neo4j_driver
-from embedding.qwen import get_embedding_model
 from data.common import stream_chunk_document
 from notification.common import trigger_user_notification_event
 from celery import Celery
@@ -45,6 +44,7 @@ from protocol.image_generate_engine import ImageGenerateEngineProtocol
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from enums.ability import Ability
 from common.logger import exception_logger
+from protocol.embedding_engine import EmbeddingEngine
 
 celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
 
@@ -749,8 +749,9 @@ async def handle_process_document(
         # chunking & embedding
         try:
             async for chunk_info in stream_chunk_document(doc_id=document_id):
-                embedding_model = get_embedding_model()
-                embedding = embedding_model.encode(chunk_info.text)
+                deployed_by_official = check_deployed_by_official_in_fuc()
+                embedding_engine = EmbeddingEngine.get_embedding_engine()
+                embedding = embedding_engine.embed([chunk_info.text])[0]
                 chunk_info.embedding = embedding.tolist()
                 sub_entities, sub_relations = extract_entities_relations(
                     user_id=user_id,

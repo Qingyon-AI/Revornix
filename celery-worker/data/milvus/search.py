@@ -1,9 +1,7 @@
 from typing import cast, Any
 from pymilvus.client.search_result import SearchResult
-from embedding.qwen import get_embedding_model
+from protocol.embedding_engine import EmbeddingEngine
 from data.milvus.base import milvus_client, MILVUS_COLLECTION
-
-embedding_model = get_embedding_model()
 
 def _normalize_search_result(
     results
@@ -36,7 +34,8 @@ def naive_search(
     search_text: str, 
     top_k: int = 5
 ) -> list[dict[str, Any]]:
-    qvec = embedding_model.encode(search_text).tolist()
+    embedding_engine = EmbeddingEngine.get_embedding_engine()
+    qvec = embedding_engine.embed([search_text])[0].tolist()
     search_params = {
         "anns_field": "embedding",
         "metric_type": "IP",
