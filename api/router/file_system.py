@@ -17,6 +17,7 @@ from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 from common.common import get_user_remote_file_system
+from common.dependencies import check_deployed_by_official_in_fuc
 
 file_system_router = APIRouter()
 
@@ -38,6 +39,7 @@ def get_built_in_presigned_url(
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
+    deployed_by_official = check_deployed_by_official_in_fuc()
     sts = boto3.client(
         'sts',
         endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
@@ -59,7 +61,7 @@ def get_built_in_presigned_url(
         aws_secret_access_key=creds['SecretAccessKey'],
         aws_session_token=creds['SessionToken'],
         config=Config(signature_version='s3v4'),
-        verify=False
+        verify=deployed_by_official
     )
     expires_in = 3600
     now = datetime.now(timezone.utc)

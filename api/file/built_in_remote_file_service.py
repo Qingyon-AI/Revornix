@@ -10,6 +10,7 @@ from botocore.exceptions import ClientError
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from enums.file import RemoteFileService
 from common.logger import info_logger, exception_logger
+from common.dependencies import check_deployed_by_official_in_fuc
 from io import BytesIO
 from boto3.s3.transfer import TransferConfig
 
@@ -31,13 +32,14 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     def empty_bucket(
         bucket_name: str
     ):
+        deployed_by_official = check_deployed_by_official_in_fuc()
         s3 = boto3.resource(
             's3',
             endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
             aws_access_key_id=FILE_SYSTEM_USER_NAME,
             aws_secret_access_key=FILE_SYSTEM_PASSWORD,
             config=Config(signature_version='s3v4'),
-            verify=False
+            verify=deployed_by_official
         )
         bucket = s3.Bucket(bucket_name)
         versioning = bucket.Versioning().status
@@ -51,13 +53,14 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     def delete_bucket(
         bucket_name: str
     ):
+        deployed_by_official = check_deployed_by_official_in_fuc()
         BuiltInRemoteFileService.empty_bucket(bucket_name)
         s3 = boto3.resource('s3',
             endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
             aws_access_key_id=FILE_SYSTEM_USER_NAME,
             aws_secret_access_key=FILE_SYSTEM_PASSWORD,
             config=Config(signature_version='s3v4'),
-            verify=False
+            verify=deployed_by_official
         )
         bucket = s3.Bucket(bucket_name)
         try:
@@ -69,13 +72,14 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     
     @staticmethod
     def ensure_bucket_exists(bucket_name: str):
+        deployed_by_official = check_deployed_by_official_in_fuc()
         s3 = boto3.client(
             's3',
             endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
             aws_access_key_id=FILE_SYSTEM_USER_NAME,
             aws_secret_access_key=FILE_SYSTEM_PASSWORD,
             config=Config(signature_version='s3v4'),
-            verify=False
+            verify=deployed_by_official
         )
         try:
             s3.head_bucket(Bucket=bucket_name)
@@ -105,6 +109,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     ):
         def _init():
             db = SessionLocal()
+            deployed_by_official = check_deployed_by_official_in_fuc()
             try:
                 db_user_file_system = crud.file_system.get_user_file_system_by_id(
                     db=db,
@@ -142,7 +147,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                     aws_secret_access_key=creds['SecretAccessKey'],
                     aws_session_token=creds['SessionToken'],
                     config=Config(signature_version='s3v4'),
-                    verify=False
+                    verify=deployed_by_official
                 )
                 self.s3_client = s3
             except Exception as e:
