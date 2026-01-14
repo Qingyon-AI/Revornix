@@ -13,31 +13,42 @@
 
 ## 简介
 
-🚀 开发计划: [RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
-
 🖥️ 官网链接: [https://revornix.com](https://revornix.com)
 
-❤️ 加入社区: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
+🚀 开发计划: [RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
 
-AI时代的资讯管理工具。Revornix可以帮助你便捷整合所有可见资讯，并在特定时间给你一份完整的报告。
+❤️ 加入社群: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
 
-![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251011141251012.png)
+一句话描述：Revornix是在AI时代可高度自定义的资讯、文档管理工具，帮助你便捷整合任意资讯，并基于这些资讯输出图文并茂、有播客音频的报告，然后通知你。
+
+**一些界面UI**
+
+![首页](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114204108304.png)
+
+![文档页面](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114203737293.png)
+
+![专栏页面](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114204036225.png)
+
+注：**热搜头条功能源自[DailyHotApi](https://github.com/imsyy/DailyHotApi)项目**
+
+![热搜](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114225533807.png)
 
 ## 功能特性
 
-- 输入源自由：当前支持RSS、网页、PDF、Word、Excel、PPT、手动输入文本、API、PIP库、NODEJS库等输入源，未来还将接入更多三方平台。
-- 先进文本转化技术：依赖MinerU等先进的markdown转化技术，输入源转化情况达到行业领先水平，并且支持自定义转化引擎。
-- 向量化存储&知识图谱：基于个性化GraphRag和Embedding技术，将输入源转化为向量存储，并生成知识图谱，方便用户进行检索与查询，且提高模型上下文准确度。
-- 集成分享机制：Revornix内置了分享机制，用户可以分享自己的指定知识库，也可以使用他人的公开知识库，方便用户进行知识共享。
+- 输入源自由：根据不同类型的解析引擎，当前支持网页、PDF、Word、Excel、PPT、手动输入文本、API、PIP库、NODEJS库等输入源，未来还将接入更多三方平台。
+- 先进文本转化技术：依赖MinerU、Jina等先进的文本内容转化技术，输入源转化情况达到行业领先水平，并且支持自定义转化引擎。
+- 向量化存储：Revornix会将所有的输入内容拆碎了然后转化为向量最终存储到向量数据库中，便于用户进行检索与查询，同时也给AI模型提供更丰富的上下文信息。
+- 知识图谱：基于个性化GraphRag技术，Revornix会将信息源分析并生成知识图谱，大大提高模型上下文准确度，同时一份大大的知识图谱也会让人有着不小的爽感。
+- 集成分享机制：Revornix内置了分享机制，用户可以分享自己的指定知识库和他人共建，甚者可以将自己的知识库推送到公域供搜索引擎搜索，也可以使用他人的公开知识库，知识共享这一块儿是Revornix的重点。
 - 本地化&开源：代码开源，同时若使用本地部署方式，所有数据均存储在本地，无需担心数据泄露问题。
 - 智能助手&内置MCP：Revornix内置了MCP服务客户端和服务端，既可以向第三方提供MCP服务，也可以使用AI助手来调用本地或者三方的MCP服务。
-- 大模型无缝接入：模型不固定，你可以任意选择想要使用的模型，并且针对不同的功能点，模型可以独立。
+- 大模型无缝接入：模型不固定，只要兼容openai的api的模型，你都可以任意选择，并且针对不同的功能点，模型可以独立。
 - 多语言&响应式：无论你是中文用户还是英文用户，无论你是使用手机还是电脑，都能获得良好的使用体验。
-- 自动播客：用户可以开启文档/专栏的自动播客生成/更新功能，开启后，Revornix会自动生成文档/专栏的音频文件，提供一种额外的方式获取信息。
+- 自动播客：用户可以开启文档/专栏的自动播客生成/更新功能，开启后，Revornix会自动生成文档/专栏的播客音频文件，提供一种更加便利的方式获取信息。
+- 热搜集成：Revornix内嵌了[DailyHotApi](https://github.com/imsyy/DailyHotApi)服务，用户可以一站式查看各大平台的热搜榜单。
+- 插图能力：基于Banana Pro等大模型强大的生图能力，Revornix可以生成高质量的图片，并且支持将图片嵌入到文档/专栏中。
 
 ## 快速开始
-
-由于当前系统架构设计并非最终版，docker打包仍然有不少问题，因此目前推荐使用手动部署方式。
 
 > [!NOTE]
 > 强烈建议使用 conda 针对每个服务创建不同的 python 虚拟环境，因为不同服务之间的python依赖可能存在冲突。当然如果你有别的python虚拟环境管理工具，也可以使用别的。
