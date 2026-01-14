@@ -33,8 +33,8 @@ import { Separator } from '@/components/ui/separator';
 import SectionDocumentsList from '@/components/section/section-documents-list';
 import { SectionPodcastStatus } from '@/enums/section';
 import AudioPlayer from '@/components/ui/audio-player';
-import { XMarkdown } from '@ant-design/x-markdown';
 import CustomMarkdown from '@/components/ui/custom-markdown';
+import { Spinner } from '@/components/ui/spinner';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -203,8 +203,11 @@ const SEOSectionDetail = async (props: {
 				)}
 
 				{section?.podcast_task?.status === SectionPodcastStatus.GENERATING && (
-					<Card className='p-5 relative shadow-none text-center text-muted-foreground text-xs'>
-						{t('section_podcast_processing')}
+					<Card className='p-5 relative shadow-none'>
+						<div className='w-full text-muted-foreground text-xs flex flex-row justify-center items-center gap-2'>
+							{t('section_podcast_processing')}
+							<Spinner />
+						</div>
 					</Card>
 				)}
 

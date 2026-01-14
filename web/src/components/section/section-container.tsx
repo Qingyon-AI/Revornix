@@ -160,12 +160,11 @@ const SectionContainer = ({ id }: { id: number }) => {
 					</Alert>
 				)}
 
-				{/* {section?.podcast_task && ( */}
 				<>
 					{section?.podcast_task?.status ===
 						SectionPodcastStatus.GENERATING && (
-						<Card className='p-5 relative flex flex-col gap-5'>
-							<div className='text-center text-muted-foreground text-xs flex flex-row items-center gap-2'>
+						<Card className='p-5 relative'>
+							<div className='text-muted-foreground text-xs flex flex-row justify-center items-center gap-2'>
 								{t('section_podcast_processing')}
 								<Spinner />
 							</div>
