@@ -10,6 +10,8 @@ from botocore.exceptions import ClientError
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from enums.file import RemoteFileService
 from common.logger import info_logger, exception_logger
+from io import BytesIO
+from boto3.s3.transfer import TransferConfig
 
 class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     
@@ -194,18 +196,42 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
 
         return await asyncio.to_thread(_upload)
     
-    async def upload_raw_content_to_path(self, file_path, content, content_type: str | None = None):
+    async def upload_raw_content_to_path(
+        self,
+        file_path: str,
+        content: bytes | str,
+        content_type: str | None = None
+    ):
         def _upload_raw():
             if self.s3_client is None:
                 raise Exception("The user's file system has not been initialized")
-            kwargs = {
-                'Bucket': self.bucket,
-                'Key': file_path,
-                'Body': content,
-            }
+
+            # str → bytes
+            if isinstance(content, str):
+                body = content.encode("utf-8")
+            else:
+                body = content
+
+            fileobj = BytesIO(body)
+
+            extra_args = {}
             if content_type:
-                kwargs['ContentType'] = content_type
-            return self.s3_client.put_object(**kwargs)
+                extra_args["ContentType"] = content_type
+
+            config = TransferConfig(
+                multipart_threshold=8 * 1024 * 1024,  # 8MB 以上自动 multipart
+                multipart_chunksize=8 * 1024 * 1024,
+                max_concurrency=4,
+                use_threads=True,
+            )
+
+            self.s3_client.upload_fileobj(
+                Fileobj=fileobj,
+                Bucket=self.bucket,
+                Key=file_path,
+                ExtraArgs=extra_args if extra_args else None,
+                Config=config,
+            )
 
         return await asyncio.to_thread(_upload_raw)
         
