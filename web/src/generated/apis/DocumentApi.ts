@@ -21,6 +21,7 @@ import type {
   DocumentDeleteRequest,
   DocumentDetailRequest,
   DocumentDetailResponse,
+  DocumentEmbeddingRequest,
   DocumentGraphGenerateRequest,
   DocumentMarkdownConvertRequest,
   DocumentMonthSummaryResponse,
@@ -61,6 +62,8 @@ import {
     DocumentDetailRequestToJSON,
     DocumentDetailResponseFromJSON,
     DocumentDetailResponseToJSON,
+    DocumentEmbeddingRequestFromJSON,
+    DocumentEmbeddingRequestToJSON,
     DocumentGraphGenerateRequestFromJSON,
     DocumentGraphGenerateRequestToJSON,
     DocumentMarkdownConvertRequestFromJSON,
@@ -127,6 +130,11 @@ export interface CreateAiSummaryDocumentAiSummaryPostRequest {
 
 export interface CreateDocumentDocumentCreatePostRequest {
     documentCreateRequest: DocumentCreateRequest;
+    authorization?: string | null;
+}
+
+export interface CreateEmbeddingDocumentEmbeddingPostRequest {
+    documentEmbeddingRequest: DocumentEmbeddingRequest;
     authorization?: string | null;
 }
 
@@ -358,6 +366,49 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async createDocumentDocumentCreatePost(requestParameters: CreateDocumentDocumentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentCreateResponse> {
         const response = await this.createDocumentDocumentCreatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Create Embedding
+     */
+    async createEmbeddingDocumentEmbeddingPostRaw(requestParameters: CreateEmbeddingDocumentEmbeddingPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['documentEmbeddingRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentEmbeddingRequest',
+                'Required parameter "documentEmbeddingRequest" was null or undefined when calling createEmbeddingDocumentEmbeddingPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/document/embedding`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentEmbeddingRequestToJSON(requestParameters['documentEmbeddingRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Embedding
+     */
+    async createEmbeddingDocumentEmbeddingPost(requestParameters: CreateEmbeddingDocumentEmbeddingPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.createEmbeddingDocumentEmbeddingPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

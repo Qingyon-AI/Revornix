@@ -3,6 +3,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
+	embeddingDocument,
 	getDocumentDetail,
 	summaryDocumentContentByAi,
 } from '@/service/document';
@@ -43,6 +44,23 @@ const DocumentInfo = ({ id }: { id: number }) => {
 			}),
 		onSuccess(data, variables, onMutateResult, context) {
 			toast.success(t('ai_summary_submit'));
+			queryClient.invalidateQueries({
+				queryKey: ['getDocumentDetail', id],
+			});
+		},
+		onError(error, variables, onMutateResult, context) {
+			toast.error(error.message);
+			console.error(error);
+		},
+	});
+
+	const mutateEmbeddingDocument = useMutation({
+		mutationFn: () =>
+			embeddingDocument({
+				document_id: id,
+			}),
+		onSuccess(data, variables, onMutateResult, context) {
+			toast.success(t('ai_embedding_submit'));
 			queryClient.invalidateQueries({
 				queryKey: ['getDocumentDetail', id],
 			});
@@ -143,16 +161,58 @@ const DocumentInfo = ({ id }: { id: number }) => {
 								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
 									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 										{t('document_embedding_status') + ': '}
+										{!data.embedding_task && t('document_md_status_undo')}
 										{data.embedding_task?.status ===
-										DocumentEmbeddingConvertStatus.WAIT_TO
-											? t('document_md_status_todo')
-											: data.embedding_task?.status ===
-											  DocumentEmbeddingConvertStatus.Embedding
-											? t('document_md_status_doing')
-											: data.embedding_task?.status ===
-											  DocumentEmbeddingConvertStatus.SUCCESS
-											? t('document_md_status_success')
-											: t('document_md_status_failed')}
+											DocumentEmbeddingConvertStatus.WAIT_TO &&
+											t('document_embedding_status_todo')}
+										{data.embedding_task?.status ===
+											DocumentEmbeddingConvertStatus.Embedding &&
+											t('document_embedding_status_doing')}
+										{data.embedding_task?.status ===
+											DocumentEmbeddingConvertStatus.SUCCESS &&
+											t('document_embedding_status_success')}
+										{data.embedding_task?.status ===
+											DocumentEmbeddingConvertStatus.FAILED &&
+											t('document_embedding_status_failed')}
+										{data.embedding_task?.status ===
+											DocumentEmbeddingConvertStatus.FAILED && (
+											<>
+												<span className='mx-1.5 text-muted-foreground'>|</span>
+												<Button
+													variant={'link'}
+													size='sm'
+													className='text-muted-foreground underline underline-offset-3 p-0 m-0 text-xs h-fit font-normal'
+													disabled={mutateEmbeddingDocument.isPending}
+													title={t('ai_reembedding')}
+													onClick={() => {
+														mutateEmbeddingDocument.mutate();
+													}}>
+													{t('ai_reembedding')}
+													{mutateEmbeddingDocument.isPending && (
+														<Loader2 className='size-4 animate-spin' />
+													)}
+												</Button>
+											</>
+										)}
+										{!data.embedding_task && (
+											<>
+												<span className='mx-1.5 text-muted-foreground'>|</span>
+												<Button
+													variant={'link'}
+													size='sm'
+													className='text-muted-foreground underline underline-offset-3 p-0 m-0 text-xs h-fit font-normal'
+													disabled={mutateEmbeddingDocument.isPending}
+													title={t('ai_embedding')}
+													onClick={() => {
+														mutateEmbeddingDocument.mutate();
+													}}>
+													{t('ai_embedding')}
+													{mutateEmbeddingDocument.isPending && (
+														<Loader2 className='size-4 animate-spin' />
+													)}
+												</Button>
+											</>
+										)}
 									</div>
 								</div>
 							)}
@@ -174,11 +234,14 @@ const DocumentInfo = ({ id }: { id: number }) => {
 								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
 									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 										{t('document_summarize_status') + ': '}
-										{data.summarize_task?.status === DocumentSummarizeStatus.WAIT_TO
+										{data.summarize_task?.status ===
+										DocumentSummarizeStatus.WAIT_TO
 											? t('document_summarize_status_todo')
-											: data.summarize_task?.status === DocumentSummarizeStatus.SUMMARIZING
+											: data.summarize_task?.status ===
+											  DocumentSummarizeStatus.SUMMARIZING
 											? t('document_summarize_status_doing')
-											: data.summarize_task?.status === DocumentSummarizeStatus.SUCCESS
+											: data.summarize_task?.status ===
+											  DocumentSummarizeStatus.SUCCESS
 											? t('document_summarize_status_success')
 											: t('document_summarize_status_failed')}
 									</div>

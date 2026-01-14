@@ -39,6 +39,7 @@ export * from './DocumentCreateResponse';
 export * from './DocumentDeleteRequest';
 export * from './DocumentDetailRequest';
 export * from './DocumentDetailResponse';
+export * from './DocumentEmbeddingRequest';
 export * from './DocumentEmbeddingTask';
 export * from './DocumentGraphGenerateRequest';
 export * from './DocumentGraphRequest';

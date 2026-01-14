@@ -23,4 +23,5 @@ export default {
     summaryContent: API_PREFIX + '/document/ai/summary',
     getDocumentLabelSummary: API_PREFIX + '/document/label/summary',
     generateDocumentGraph: API_PREFIX + '/document/graph/generate',
+    embeddingDocument: API_PREFIX + '/document/embedding',
 } 
