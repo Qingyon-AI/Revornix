@@ -173,7 +173,9 @@ const SectionDetailPage = () => {
 											<EmptyMedia variant='icon'>
 												<TrashIcon />
 											</EmptyMedia>
-											<EmptyDescription>{t('documents_empty')}</EmptyDescription>
+											<EmptyDescription>
+												{t('documents_empty')}
+											</EmptyDescription>
 										</EmptyHeader>
 										<EmptyContent>
 											<div className='flex gap-2'>
@@ -234,6 +236,29 @@ const SectionDetailPage = () => {
 								</EmptyMedia>
 								<EmptyDescription>
 									{markdownGetError || error?.message}
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button
+									variant='outline'
+									size='sm'
+									onClick={() => {
+										refetch();
+									}}>
+									<RefreshCcwIcon />
+									{t('refresh')}
+								</Button>
+							</EmptyContent>
+						</Empty>
+					)}
+					{section && !section?.md_file_name && (
+						<Empty className='h-full'>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<XIcon />
+								</EmptyMedia>
+								<EmptyDescription>
+									{t('dashboard_today_summary_md_empty')}
 								</EmptyDescription>
 							</EmptyHeader>
 							<EmptyContent>
