@@ -107,8 +107,32 @@ const TodaySummary = () => {
 				</Link>
 			</CardHeader>
 			<CardContent className='flex-1'>
-				{(isFetching || (!isError && !markdown)) && (
+				{(isFetching ||
+					(section && section.md_file_name && !isError && !markdown)) && (
 					<Skeleton className='h-full w-full' />
+				)}
+				{section && !section?.md_file_name && (
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<XIcon />
+							</EmptyMedia>
+							<EmptyDescription>
+								{t('dashboard_today_summary_md_empty')}
+							</EmptyDescription>
+						</EmptyHeader>
+						<EmptyContent>
+							<Button
+								variant='outline'
+								size='sm'
+								onClick={() => {
+									refetch();
+								}}>
+								<RefreshCcwIcon />
+								{t('refresh')}
+							</Button>
+						</EmptyContent>
+					</Empty>
 				)}
 				{(isError || markdownGetError) && (
 					<Empty>

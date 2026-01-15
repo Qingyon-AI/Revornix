@@ -102,6 +102,7 @@
     "document_label_collection_title": "文档标签集",
     "section_label_collection_title": "专栏标签集",
     "dashboard_today_summary": "今日总结",
+    "dashboard_today_summary_md_empty": "暂无今日总结",
     "dashboard_today_summary_description": "今日总结这里会显示今天的文档总结内容。",
     "dashboard_today_summary_full": "查看完整总结",
     "dashboard_today_hot_search": "今日热搜",

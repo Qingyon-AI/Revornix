@@ -102,6 +102,7 @@
     "document_label_collection_title": "Document Tag Collection",
     "section_label_collection_title": "Section Tag Collection",
     "dashboard_today_summary": "Today Summary",
+    "dashboard_today_summary_md_empty": "No document summary content yet",
     "dashboard_today_summary_description": "This part will display today's document summary content.",
     "dashboard_today_summary_full": "View Full Summary",
     "dashboard_today_hot_search": "Today Hot Search",
