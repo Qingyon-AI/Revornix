@@ -551,7 +551,12 @@ async def create_document(
             user_id=user.id, 
             auto_tag=document_create_request.auto_tag,
             auto_summary=document_create_request.auto_summary,
-            auto_podcast=document_create_request.auto_podcast
+            auto_podcast=document_create_request.auto_podcast,
+            override=schemas.task.DocumentOverrideProperty(
+                title=document_create_request.title, 
+                description=document_create_request.description, 
+                cover=document_create_request.cover
+            ).model_dump(mode='json')
         ),
         section_process_tasks
     )
