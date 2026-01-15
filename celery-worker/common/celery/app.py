@@ -1215,8 +1215,9 @@ def start_process_document(
     auto_summary: bool = False,
     auto_podcast: bool = False,
     auto_tag: bool = False,
-    override: DocumentOverrideProperty | None = None
+    override: dict | None = None
 ):
+    override_obj = DocumentOverrideProperty.model_validate(override)
     asyncio.run(
         handle_process_document(
             document_id=document_id, 
@@ -1224,7 +1225,7 @@ def start_process_document(
             auto_summary=auto_summary, 
             auto_podcast=auto_podcast, 
             auto_tag=auto_tag,
-            override=override
+            override=override_obj
         )
     )
 

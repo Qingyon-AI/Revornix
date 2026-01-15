@@ -348,7 +348,7 @@ async def create_document(
                 title=document_create_request.title, 
                 description=document_create_request.description, 
                 cover=document_create_request.cover
-            )
+            ).model_dump(mode='json')
         ),
         section_process_tasks
     )
