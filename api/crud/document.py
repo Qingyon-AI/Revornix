@@ -328,7 +328,7 @@ def count_user_documents(
     if filter_category is not None:
         query = query.filter(models.document.Document.category == filter_category)
     if filter_platform is not None:
-        query = query.filter(models.document.Document.platform == filter_platform)
+        query = query.filter(models.document.Document.from_plat == filter_platform)
     if filter_date is not None:
         start = datetime.combine(filter_date, datetime.min.time())
         end = start + timedelta(days=1)
