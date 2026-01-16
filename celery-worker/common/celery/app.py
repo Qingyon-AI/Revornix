@@ -46,7 +46,11 @@ from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_
 from enums.ability import Ability
 from common.logger import exception_logger
 
-celery_app = Celery('worker', broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0')
+celery_app = Celery(
+    'worker', 
+    broker=f'redis://{REDIS_URL}:{REDIS_PORT}/0', 
+    backend=f'redis://{REDIS_URL}:{REDIS_PORT}/0'
+)
 
 async def get_markdown_content_by_section_id(
     section_id: int, 
@@ -1238,7 +1242,6 @@ def start_process_section(
     auto_podcast: bool = False,
     override: SectionOverrideProperty | None = None
 ):
-    db = SessionLocal()
     asyncio.run(
         handle_process_section(
             section_id=section_id,
@@ -1247,7 +1250,6 @@ def start_process_section(
             override=override
         )
     )
-    db.close()
     
 @celery_app.task
 def start_process_document_graph(

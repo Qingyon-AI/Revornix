@@ -36,17 +36,16 @@ async def upload_file_system(
     if user_file_system is None:
         raise schemas.error.CustomException(message="There are something wrong with the user file system")
     
-    content = await file.read()
-    
     remote_file_service = await get_user_remote_file_system(
         user.id
     )
     await remote_file_service.init_client_by_user_file_system_id(
         user_file_system_id=user.default_user_file_system
     )
-    await remote_file_service.upload_raw_content_to_path(
+    await file.seek(0)
+    await remote_file_service.upload_file_to_path(
         file_path=file_path,
-        content=content,
+        file=file.file,
         content_type=content_type
     )
     return schemas.common.SuccessResponse()
