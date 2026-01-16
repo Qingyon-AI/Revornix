@@ -592,7 +592,6 @@ async def transform_markdown(
     if db_process_task is None:
         raise Exception('The document you want to transform is not processed')
     db_process_task.status = DocumentProcessStatus.PROCESSING
-    db.commit()
     
     db_convert_task = crud.task.get_document_convert_task_by_document_id(
         db=db,
@@ -614,6 +613,7 @@ async def transform_markdown(
             user_id=user.id,
             document_id=transform_markdown_request.document_id
         )
+    db.commit()
 
     # Background tasks
     start_process_document.delay(
@@ -642,6 +642,7 @@ def update_document(
     if db_document.creator_id != user.id:
         raise schemas.error.CustomException("You dont have permission to update this document", code=403)
     
+    section_process_tasks = None
     if document_update_request.title is not None:
         db_document.title = document_update_request.title
     if document_update_request.description is not None:
@@ -718,9 +719,10 @@ def update_document(
                 )
                 for db_section in db_section_to_process
             )
-            section_process_tasks.apply_async()
     db_document.update_time = now
     db.commit()
+    if section_process_tasks is not None:
+        section_process_tasks.apply_async()
     return schemas.common.NormalResponse()
 
 def get_document_info(

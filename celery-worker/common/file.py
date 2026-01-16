@@ -3,6 +3,8 @@ import uuid
 import httpx
 import zipfile
 import mimetypes
+import shutil
+import time
 from pydantic import BaseModel
 from urllib.parse import urlparse
 from config.base import BASE_DIR
@@ -60,27 +62,64 @@ class DownloadRes(BaseModel):
     file_path: str
     file_name: str
 
+def _remove_path(path: Path) -> None:
+    try:
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+    except FileNotFoundError:
+        return
+
+def cleanup_temp_dir(
+    *,
+    max_age_seconds: int = 24 * 60 * 60,
+    max_entries: int = 1000
+) -> None:
+    temp_dir = BASE_DIR / "temp"
+    if not temp_dir.exists():
+        return
+    now = time.time()
+    remaining: list[tuple[float, Path]] = []
+    for entry in temp_dir.iterdir():
+        try:
+            stat = entry.stat()
+        except FileNotFoundError:
+            continue
+        age = now - stat.st_mtime
+        if age > max_age_seconds:
+            _remove_path(entry)
+            continue
+        remaining.append((stat.st_mtime, entry))
+    if len(remaining) > max_entries:
+        remaining.sort(key=lambda item: item[0])
+        for _, entry in remaining[:-max_entries]:
+            _remove_path(entry)
+
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
 async def download_file_to_temp(url: str):
     temp_dir = BASE_DIR / "temp"
     temp_dir.mkdir(parents=True, exist_ok=True)
+    cleanup_temp_dir()
 
     async with httpx.AsyncClient(proxy=None, trust_env=False) as client:
-        response = await client.get(url)
-        response.raise_for_status()
+        async with client.stream("GET", url) as response:
+            response.raise_for_status()
 
-        file_name, _ = resolve_filename_and_suffix(
-            url=url,
-            response=response,
-            keep_origin_name=False,  # temp 文件强烈建议 False
-        )
+            file_name, _ = resolve_filename_and_suffix(
+                url=url,
+                response=response,
+                keep_origin_name=False,  # temp 文件强烈建议 False
+            )
 
-        file_path = temp_dir / file_name
+            file_path = temp_dir / file_name
 
-        info_logger.info(f"Downloading file from {url} to {file_path}")
+            info_logger.info(f"Downloading file from {url} to {file_path}")
 
-        with open(file_path, "wb") as f:
-            f.write(response.content)
+            with open(file_path, "wb") as f:
+                async for chunk in response.aiter_bytes():
+                    if chunk:
+                        f.write(chunk)
 
     return DownloadRes(
         file_path=str(file_path),
@@ -89,6 +128,8 @@ async def download_file_to_temp(url: str):
         
 def extract_files_to_temp_from_zip(file_path: str):
     temp_dir = BASE_DIR / "temp"
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    cleanup_temp_dir()
     extracted_dir = temp_dir / uuid.uuid4().hex
     # 解压文件到指定文件夹
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
