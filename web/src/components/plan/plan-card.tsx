@@ -65,6 +65,7 @@ const PlanCard = ({
 	introduction_abilities?: IntroduceAbility[];
 }) => {
 	const t = useTranslations();
+	const locale = useLocale();
 
 	const [prepayBackData, setPrepayBackData] =
 		useState<PrePayProductResponseDTO>();
@@ -78,13 +79,13 @@ const PlanCard = ({
 	const alipayIframeBox = useRef<HTMLIFrameElement>(null);
 
 	const [currencyCode, setCurrencyCode] =
-		useState<PrePayProductRequestDTOCurrencyCodeEnum>('USD');
+		useState<PrePayProductRequestDTOCurrencyCodeEnum>(
+			locale === 'zh' ? 'CNY' : 'USD'
+		);
 	const [showPayDialog, setShowPayDialog] = useState(false);
 	const [showScanCode, setShowScanCode] = useState(false);
 	const { refreshMainUserInfo, mainUserInfo, refreshPaySystemInfo } =
 		useUserContext();
-
-	const locale = useLocale();
 
 	const clean = useInterval(
 		async () => {
