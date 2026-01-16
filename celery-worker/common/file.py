@@ -1,10 +1,60 @@
+import re
 import uuid
 import httpx
 import zipfile
+import mimetypes
 from pydantic import BaseModel
+from urllib.parse import urlparse
 from config.base import BASE_DIR
 from common.logger import info_logger
 from tenacity import retry, stop_after_attempt, wait_fixed
+from pathlib import Path
+
+def resolve_filename_and_suffix(
+    *,
+    url: str,
+    response: httpx.Response,
+    keep_origin_name: bool = False,
+) -> tuple[str, str]:
+    """
+    根据 response 和 url 智能解析文件名与后缀
+
+    返回：
+        (file_name, suffix)
+
+    keep_origin_name:
+        - True  : 尽量保留原始文件名
+        - False : 使用 UUID，仅保留后缀（推荐用于 temp 目录）
+    """
+
+    def filename_from_content_disposition() -> str | None:
+        cd = response.headers.get("content-disposition")
+        if not cd:
+            return None
+        match = re.search(r'filename\*?="?([^";]+)"?', cd)
+        return match.group(1) if match else None
+
+    origin_name: str | None = (
+        filename_from_content_disposition()
+        or Path(urlparse(url).path).name
+        or None
+    )
+
+    # 1️⃣ 尝试从原始文件名拿后缀
+    suffix = Path(origin_name).suffix if origin_name else ""
+
+    # 2️⃣ URL / CD 都没有后缀 → Content-Type
+    if not suffix:
+        content_type = response.headers.get("content-type", "").split(";")[0]
+        suffix = mimetypes.guess_extension(content_type) or ""
+
+    # 3️⃣ 生成最终文件名
+    if keep_origin_name and origin_name:
+        file_name = origin_name
+    else:
+        file_name = f"{uuid.uuid4().hex}{suffix}"
+
+    return file_name, suffix
 
 class DownloadRes(BaseModel):
     file_path: str
@@ -13,18 +63,29 @@ class DownloadRes(BaseModel):
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
 async def download_file_to_temp(url: str):
     temp_dir = BASE_DIR / "temp"
-    file_name = uuid.uuid4().hex
-    file_path = temp_dir / f"{file_name}"
-    info_logger.info(f"Downloading file from {url} to {file_path}")
-    
-    # Some MinerU APIs only support requests from ip located in china
-    # NOTE: If you are not located in China, you can remove the proxy=None and trust_env=False parameters. Besides, please use an IP proxy located in the China region.
+    temp_dir.mkdir(parents=True, exist_ok=True)
+
     async with httpx.AsyncClient(proxy=None, trust_env=False) as client:
         response = await client.get(url)
-        response.raise_for_status()  # throw exception if the status code is not 200
-        with open(str(file_path), "wb") as file:
-            file.write(response.content)
-            return DownloadRes(file_path=str(file_path), file_name=file_name)
+        response.raise_for_status()
+
+        file_name, _ = resolve_filename_and_suffix(
+            url=url,
+            response=response,
+            keep_origin_name=False,  # temp 文件强烈建议 False
+        )
+
+        file_path = temp_dir / file_name
+
+        info_logger.info(f"Downloading file from {url} to {file_path}")
+
+        with open(file_path, "wb") as f:
+            f.write(response.content)
+
+    return DownloadRes(
+        file_path=str(file_path),
+        file_name=file_name,
+    )
         
 def extract_files_to_temp_from_zip(file_path: str):
     temp_dir = BASE_DIR / "temp"
