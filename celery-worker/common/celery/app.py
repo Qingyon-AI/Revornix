@@ -1217,7 +1217,9 @@ def start_process_document(
     auto_tag: bool = False,
     override: dict | None = None
 ):
-    override_obj = DocumentOverrideProperty.model_validate(override)
+    override_obj = None
+    if override is not None:
+        override_obj = DocumentOverrideProperty.model_validate(override)
     asyncio.run(
         handle_process_document(
             document_id=document_id, 
