@@ -112,7 +112,7 @@ async def stream_chunk_document(
                 torch.cuda.empty_cache()
     except Exception as e:
         exception_logger.error(f"Error while streaming chunk document: {e}")
-        raise e
+        raise
     finally:
         db.close()
 

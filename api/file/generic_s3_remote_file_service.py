@@ -60,7 +60,7 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
                 self.s3_client = s3
             except Exception as e:
                 exception_logger.error(f"Failed to initialize the user's file system, {e}")
-                raise e
+                raise
             finally:
                 db.close()
 

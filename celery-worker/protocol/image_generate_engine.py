@@ -90,6 +90,6 @@ class ImageGenerateEngineProtocol(EngineProtocol):
                 )
         except Exception as e:
             exception_logger.error(f"Error planning images: {e}")
-            raise e
+            raise
         finally:
             db.close()

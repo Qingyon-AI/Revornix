@@ -9,13 +9,12 @@ from sqlalchemy.orm import Session
 from common.dependencies import get_db, get_current_user, get_current_user_without_throw, plan_ability_checked
 from common.common import get_user_remote_file_system
 from enums.section import UserSectionAuthority, UserSectionRole, SectionPodcastStatus, SectionProcessStatus, SectionProcessTriggerType
-from common.celery.app import start_process_section_podcast, update_section_process_status, start_trigger_user_notification_event
+from common.celery.app import start_process_section_podcast, update_section_process_status, start_trigger_user_notification_event, start_process_section
 from celery import chain
 from enums.notification import NotificationTriggerEventUUID
 from enums.ability import Ability
 from enums.section import SectionProcessTriggerType
 from common.apscheduler.app import scheduler
-from common.celery.app import start_process_section
 from apscheduler.triggers.cron import CronTrigger
 
 section_router = APIRouter()

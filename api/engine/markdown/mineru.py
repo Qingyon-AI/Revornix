@@ -123,7 +123,7 @@ class MineruEngine(MarkdownEngineProtocol):
             )
         except Exception as e:
             exception_logger.error(f"Error occurred while analysing website using MinerU: {e}")
-            raise e
+            raise
 
         finally:
             db.close()
@@ -189,7 +189,7 @@ class MineruEngine(MarkdownEngineProtocol):
             )
         except Exception as e:
             exception_logger.error(f"Error occurred while analysing file using MinerU: {e}")
-            raise e
+            raise
         finally:
             shutil.rmtree(BASE_DIR / "temp" / temp_id, ignore_errors=True)
             if temp_file_path.exists():

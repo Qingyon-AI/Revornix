@@ -83,7 +83,7 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
                 self.oss_client = s3
             except Exception as e:
                 exception_logger.error("Failed to initialize the user's file system", exc_info=e)
-                raise e
+                raise
             finally:
                 db.close()
 
