@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
         app.state.redis = await redis_pool()
     except Exception as e:
         exception_logger.exception("❌ Redis Init Failed: ", e)
-        raise e
+        raise
     # TODO: init the dataset and vector
     scheduler.start()
     async with AsyncExitStack() as stack:

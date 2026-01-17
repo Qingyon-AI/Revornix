@@ -106,7 +106,7 @@ async def get_user_remote_file_system(
             return remote_file_service
         except Exception as e:
             exception_logger.error(f'Get user remote file system failed: {e}', e)
-            raise e
+            raise
         finally:
             db.close()
 

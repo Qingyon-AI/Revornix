@@ -64,7 +64,7 @@ def get_db():
     except Exception as e:
         db.rollback()
         exception_logger.error(f"Error occurred while getting db: {e}")
-        raise e
+        raise
     finally:
         db.close()
 
@@ -240,7 +240,7 @@ def plan_ability_checked(
                         message=errMsg, 
                         code=503
                     )
-                raise err
+                raiserr
         return True
     return dependency
 

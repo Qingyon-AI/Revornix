@@ -68,7 +68,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             info_logger.info(f"Delete Bucket Successfully: {bucket_name}")
         except ClientError as e:
             exception_logger.error(f"Deleted Bucket Error: {e.response['Error']['Message']}",)
-            raise e
+            raise
     
     @staticmethod
     def ensure_bucket_exists(bucket_name: str):
@@ -101,7 +101,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             elif code == '403':
                 raise Exception("Access denied. You may not have permission to create this bucket.")
             else:
-                raise e
+                raise
         
     async def init_client_by_user_file_system_id(
         self, 
@@ -152,7 +152,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                 self.s3_client = s3
             except Exception as e:
                 exception_logger.error(f"Init User File System Error: {e}")
-                raise e
+                raise
             finally:
                 db.close()
 

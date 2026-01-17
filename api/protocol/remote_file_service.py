@@ -108,7 +108,7 @@ class RemoteFileServiceProtocol(Protocol):
             return url_prefix
         except Exception as e:
             exception_logger.error(f"There is something wrong with the file system for the user who you want to get his/her file system url prefix, {e}")
-            raise e
+            raise
         finally:
             db.close()
         

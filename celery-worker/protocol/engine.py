@@ -148,6 +148,6 @@ class EngineProtocol(Protocol):
             self.user_id = user_engine.user_id
         except Exception as e:
             exception_logger.error(f"engine init error: {e}")
-            raise e
+            raise
         finally:
             db.close()

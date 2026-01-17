@@ -477,7 +477,7 @@ async def create_agent(
         return MCPAgent(llm=llm, client=mcp_client)
     except Exception as e:
         exception_logger.error(f"Failed to create agent: {e}")
-        raise e
+        raise
     finally:
         db.close()
 
