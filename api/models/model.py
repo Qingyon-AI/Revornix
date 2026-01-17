@@ -3,22 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from data.sql.base import Base
-
-
-class UserAIModel(Base):
-    __tablename__ = "user_ai_model"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
-    ai_model_id: Mapped[int] = mapped_column(ForeignKey("ai_model.id"), index=True, nullable=False)
-    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-
+from models.user import User
 
 class AIModel(Base):
     __tablename__ = "ai_model"
@@ -31,6 +20,8 @@ class AIModel(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    
+    provider: Mapped["AIModelProvider"] = relationship("AIModelProvider", backref="models")
 
 
 class UserAIModelProvider(Base):
@@ -47,13 +38,17 @@ class UserAIModelProvider(Base):
     base_url: Mapped[Optional[str]] = mapped_column(String(255))
 
 
-class AIModelPorvider(Base):
+class AIModelProvider(Base):
     __tablename__ = "ai_model_provider"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     uuid: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255))
+    creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    is_public: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    
+    creator: Mapped["User"] = relationship("User", backref="model_providers")

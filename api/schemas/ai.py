@@ -1,4 +1,10 @@
 from pydantic import BaseModel
+from .user import UserPublicInfo
+from datetime import datetime, timezone
+from pydantic import field_serializer
+
+class ModelProviderIncludeRequest(BaseModel):
+    provider_id: int
 
 class ModelCreateRequest(BaseModel):
     name: str
@@ -13,8 +19,25 @@ class ModelProvider(BaseModel):
     uuid: str
     name: str
     description: str | None
-    api_key: str | None
-    base_url: str | None
+    api_key: str | None = None
+    base_url: str | None = None
+    create_time: datetime
+    update_time: datetime | None
+    creator: UserPublicInfo
+    
+    @field_serializer("create_time")
+    def serializer_create_timezone(self, v: datetime):
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    @field_serializer("update_time")
+    def serializer_update_timezone(self, v: datetime | None):
+        if v is None:
+            return None
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    
     class Config:
         from_attributes = True
 
@@ -23,7 +46,24 @@ class Model(BaseModel):
     uuid: str
     name: str
     description: str | None
+    create_time: datetime
+    update_time: datetime | None
+    
     provider: ModelProvider
+    
+    @field_serializer("create_time")
+    def serializer_create_timezone(self, v: datetime):
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    @field_serializer("update_time")
+    def serializer_update_timezone(self, v: datetime | None):
+        if v is None:
+            return None
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    
     class Config:
         from_attributes = True
 
@@ -46,7 +86,7 @@ class DeleteModelRequest(BaseModel):
     model_ids: list[int]
 
 class DeleteModelProviderRequest(BaseModel):
-    provider_ids: list[int]
+    provider_id: int
 
 class ModelSearchRequest(BaseModel):
     keyword: str | None = None
@@ -59,12 +99,8 @@ class ModelSearchResponse(BaseModel):
 
 class ModelProviderSearchRequest(BaseModel):
     keyword: str | None = None
-    provider_id: int | None = None
-
-class ModelProviderSearchResponse(BaseModel):
-    data: list[ModelProvider] | None = None
-    class Config:
-        from_attributes = True
+    start: int | None = None
+    limit: int = 10
 
 class ModelUpdateRequest(BaseModel):
     id: int
@@ -78,21 +114,11 @@ class ModelProviderUpdateRequest(BaseModel):
     api_key: str | None = None
     base_url: str | None = None
 
-class Document(BaseModel):
-    id: int
-    title: str
-    description: str | None
-
-class CoverImage(BaseModel):
-    url: str
-    width: int
-    height: int
-    
 class ChatItem(BaseModel):
     chat_id: str
     content: str
     role: str
-    
+
 class ChatMessages(BaseModel):
     messages: list[ChatItem]
     enable_mcp: bool = False
