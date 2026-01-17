@@ -82,7 +82,7 @@ const SectionDocumentCard = ({
 				</div>
 				<div className='text-xs text-muted-foreground'>
 					{document.create_time &&
-						format(new Date(document.create_time), 'yyyy-MM-dd HH:mm:ss')}
+						format(new Date(document.create_time), 'yyyy-MM-dd HH:mm')}
 				</div>
 			</div>
 		</div>
