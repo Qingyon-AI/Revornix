@@ -4,24 +4,6 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from common.encrypt import encrypt_api_key, decrypt_api_key
 
-def create_user_ai_model(
-    db: Session, 
-    user_id: int, 
-    ai_model_id: int, 
-):
-    """
-    Create a new user AI model.
-    """
-    now = datetime.now(timezone.utc)
-    db_user_ai_model = models.model.UserAIModel(
-        user_id=user_id,
-        ai_model_id=ai_model_id,
-        create_time=now
-    )
-    db.add(db_user_ai_model)
-    db.flush()
-    return db_user_ai_model
-
 def create_user_ai_model_provider(
     db: Session, 
     user_id: int, 
@@ -58,7 +40,7 @@ def create_ai_model_provider(
     now = datetime.now(timezone.utc)
     if uuid is None:
         uuid = uuid4().hex
-    db_ai_provider = models.model.AIModelPorvider(
+    db_ai_provider = models.model.AIModelProvider(
         name=name,
         description=description,
         uuid=uuid,
@@ -111,9 +93,9 @@ def get_ai_model_provider_by_uuid(
     """
     Get an AI model provider by its UUID.
     """
-    query = db.query(models.model.AIModelPorvider)
-    query = query.filter(models.model.AIModelPorvider.uuid == uuid,
-                         models.model.AIModelPorvider.delete_at == None)
+    query = db.query(models.model.AIModelProvider)
+    query = query.filter(models.model.AIModelProvider.uuid == uuid,
+                         models.model.AIModelProvider.delete_at == None)
     return query.one_or_none()
 
 def get_user_ai_model_provider_by_id_decrypted(
@@ -132,22 +114,6 @@ def get_user_ai_model_provider_by_id_decrypted(
 
     if record and record.api_key:
         record.api_key = decrypt_api_key(record.api_key)
-    return record
-
-def get_user_ai_model_by_id(
-    db: Session, 
-    user_id: int, 
-    ai_model_id: int
-):
-    """
-    获取用户 AI 模型
-    """
-    record = db.query(models.model.UserAIModel).filter(
-        models.model.UserAIModel.user_id == user_id,
-        models.model.UserAIModel.ai_model_id == ai_model_id,
-        models.model.UserAIModel.delete_at == None
-    ).one_or_none()
-
     return record
 
 def get_ai_model_by_id(
@@ -169,26 +135,7 @@ def get_ai_model_provider_by_id(
     """
     Get an AI model provider by its ID.
     """
-    query = db.query(models.model.AIModelPorvider)
-    query = query.filter(models.model.AIModelPorvider.id == provider_id,
-                         models.model.AIModelPorvider.delete_at == None)
+    query = db.query(models.model.AIModelProvider)
+    query = query.filter(models.model.AIModelProvider.id == provider_id,
+                         models.model.AIModelProvider.delete_at == None)
     return query.one_or_none()
-
-def search_ai_models_for_user_ai_model_provider(
-    db: Session, 
-    user_id: int, 
-    keyword: str | None = None, 
-    provider_id: int | None = None
-):
-    query = db.query(models.model.AIModel).join(models.model.UserAIModel)
-    
-    query = query.filter(models.model.UserAIModel.user_id == user_id,
-                         models.model.AIModel.delete_at == None)
-    
-    if keyword and len(keyword) > 0:
-        query = query.filter(models.model.AIModel.name.ilike(f"%{keyword}%"))
-    
-    if provider_id:
-        query = query.filter(models.model.AIModel.provider_id == provider_id)
-    
-    return query.all()

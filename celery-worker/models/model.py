@@ -9,17 +9,6 @@ from sqlalchemy.orm import Mapped, mapped_column
 from data.sql.base import Base
 
 
-class UserAIModel(Base):
-    __tablename__ = "user_ai_model"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
-    ai_model_id: Mapped[int] = mapped_column(ForeignKey("ai_model.id"), index=True, nullable=False)
-    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-
-
 class AIModel(Base):
     __tablename__ = "ai_model"
 
@@ -47,7 +36,7 @@ class UserAIModelProvider(Base):
     base_url: Mapped[Optional[str]] = mapped_column(String(255))
 
 
-class AIModelPorvider(Base):
+class AIModelProvider(Base):
     __tablename__ = "ai_model_provider"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

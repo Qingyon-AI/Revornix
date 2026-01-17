@@ -1,8 +1,9 @@
 import models
 from uuid import uuid4
 from datetime import datetime, timezone
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from common.encrypt import encrypt_api_key, decrypt_api_key
+from sqlalchemy import and_, or_
 
 def create_user_ai_model_provider(
     db: Session, 
@@ -31,8 +32,9 @@ def create_user_ai_model_provider(
 def create_ai_model_provider(
     db: Session, 
     name: str, 
+    creator_id: int,
     description: str | None = None,
-    uuid: str | None = None
+    uuid: str | None = None,
 ):
     """
     Create a new AI model provider.
@@ -40,33 +42,16 @@ def create_ai_model_provider(
     now = datetime.now(timezone.utc)
     if uuid is None:
         uuid = uuid4().hex
-    db_ai_provider = models.model.AIModelPorvider(
+    db_ai_provider = models.model.AIModelProvider(
         name=name,
         description=description,
         uuid=uuid,
+        creator_id=creator_id,
         create_time=now
     )
     db.add(db_ai_provider)
     db.flush()
     return db_ai_provider
-
-def create_user_ai_model(
-    db: Session, 
-    user_id: int, 
-    ai_model_id: int, 
-):
-    """
-    Create a new user AI model.
-    """
-    now = datetime.now(timezone.utc)
-    db_user_ai_model = models.model.UserAIModel(
-        user_id=user_id,
-        ai_model_id=ai_model_id,
-        create_time=now
-    )
-    db.add(db_user_ai_model)
-    db.flush()
-    return db_user_ai_model
 
 def create_ai_model(
     db: Session, 
@@ -92,24 +77,21 @@ def create_ai_model(
     db.flush()
     return new_model
 
-def get_user_ai_model_provider_by_uuid_decripted(
+def get_user_ai_model_provider_by_user_and_model_provider_id(
     db: Session,
     user_id: int,
-    uuid: str
+    ai_model_provider_id: int
 ):
     """
-    获取用户 AI 模型 Provider，并解密 API Key
+    Get a user AI model provider by user and model provider ID.
     """
-    record = db.query(models.model.UserAIModelProvider).filter(
+    query = db.query(models.model.UserAIModelProvider).filter(
         models.model.UserAIModelProvider.user_id == user_id,
-        models.model.UserAIModelProvider.uuid == uuid,
+        models.model.UserAIModelProvider.ai_model_provider_id == ai_model_provider_id,
         models.model.UserAIModelProvider.delete_at == None
-    ).one_or_none()
-    
-    if record and record.api_key:
-        record.api_key = decrypt_api_key(record.api_key)
-    return record
-    
+    )
+    return query.one_or_none()
+
 def get_user_ai_model_provider_by_id_decrypted(
     db: Session, 
     user_id: int, 
@@ -126,22 +108,6 @@ def get_user_ai_model_provider_by_id_decrypted(
 
     if record and record.api_key:
         record.api_key = decrypt_api_key(record.api_key)
-    return record
-
-def get_user_ai_model_by_id(
-    db: Session, 
-    user_id: int, 
-    ai_model_id: int
-):
-    """
-    获取用户 AI 模型
-    """
-    record = db.query(models.model.UserAIModel).filter(
-        models.model.UserAIModel.user_id == user_id,
-        models.model.UserAIModel.ai_model_id == ai_model_id,
-        models.model.UserAIModel.delete_at == None
-    ).one_or_none()
-
     return record
 
 def get_ai_model_by_uuid(
@@ -164,6 +130,9 @@ def get_ai_model_by_id(
     Get an AI model by its ID.
     """
     query = db.query(models.model.AIModel)
+    query = query.options(
+        joinedload(models.model.AIModel.provider)
+    )
     query = query.filter(models.model.AIModel.id == model_id,
                          models.model.AIModel.delete_at == None)
     return query.one_or_none()
@@ -175,9 +144,9 @@ def get_ai_model_provider_by_uuid(
     """
     Get an AI model provider by its UUID.
     """
-    query = db.query(models.model.AIModelPorvider)
-    query = query.filter(models.model.AIModelPorvider.uuid == uuid,
-                         models.model.AIModelPorvider.delete_at == None)
+    query = db.query(models.model.AIModelProvider)
+    query = query.filter(models.model.AIModelProvider.uuid == uuid,
+                         models.model.AIModelProvider.delete_at == None)
     return query.one_or_none()
 
 def get_ai_model_provider_by_id(
@@ -187,81 +156,143 @@ def get_ai_model_provider_by_id(
     """
     Get an AI model provider by its ID.
     """
-    query = db.query(models.model.AIModelPorvider)
-    query = query.filter(models.model.AIModelPorvider.id == provider_id,
-                         models.model.AIModelPorvider.delete_at == None)
+    query = db.query(models.model.AIModelProvider)
+    query = query.options(
+        joinedload(models.model.AIModelProvider.creator)
+    )
+    query = query.filter(models.model.AIModelProvider.id == provider_id,
+                         models.model.AIModelProvider.delete_at == None)
     return query.one_or_none()
 
-def search_ai_models_for_user_ai_model_provider(
-    db: Session, 
-    user_id: int, 
-    keyword: str | None = None, 
-    provider_id: int | None = None
+def get_ai_models_for_ai_model_provider(
+    db: Session,
+    provider_id: int
 ):
-    query = db.query(models.model.AIModel).join(models.model.UserAIModel)
+    """
+    Get all AI models for a given AI model provider.
+    """
+    query = db.query(models.model.AIModel)
+    query = query.options(
+        joinedload(models.model.AIModel.provider)
+    )
+    query = query.filter(
+        models.model.AIModel.provider_id == provider_id,
+        models.model.AIModel.delete_at == None
+    )
+    return query.all()
     
-    query = query.filter(models.model.UserAIModel.user_id == user_id,
-                         models.model.AIModel.delete_at == None)
-    
-    if keyword and len(keyword) > 0:
-        query = query.filter(models.model.AIModel.name.ilike(f"%{keyword}%"))
-    
-    if provider_id:
-        query = query.filter(models.model.AIModel.provider_id == provider_id)
+def get_ai_model_providers_for_user(
+    db: Session,
+    user_id: int,
+    keyword: str | None = None,
+):
+    """
+    Get all AI model providers for a given user.
+    """
+    query = db.query(models.model.AIModelProvider)
+    query = query.join(models.model.UserAIModelProvider)
+    query = query.filter(
+        models.model.UserAIModelProvider.user_id == user_id,
+        models.model.UserAIModelProvider.delete_at == None,
+        models.model.AIModelProvider.delete_at == None
+    )
+    if keyword:
+        query = query.filter(models.model.AIModelProvider.name.ilike(f"%{keyword}%"))
+    query = query.order_by(models.model.AIModelProvider.id.desc())
     
     return query.all()
 
 def search_ai_model_providers_for_user(
     db: Session, 
     user_id: int, 
-    keyword: str | None = None
+    keyword: str | None = None,
+    start: int | None = None, 
+    limit: int | None = None
 ):
-    query = db.query(models.model.AIModelPorvider).join(models.model.UserAIModelProvider)
-    
-    query = query.filter(models.model.AIModelPorvider.delete_at == None,
-                         models.model.UserAIModelProvider.user_id == user_id)
-    
-    if keyword and len(keyword.strip()) > 0:
-        query = query.filter(models.model.AIModelPorvider.name.ilike(f"%{keyword}%"))
-    
+    query = db.query(models.model.AIModelProvider, models.model.UserAIModelProvider)
+    query = query.options(
+        joinedload(models.model.AIModelProvider.creator)
+    )
+    query = query.outerjoin(
+        models.model.UserAIModelProvider,
+        and_(
+            models.model.UserAIModelProvider.ai_model_provider_id == models.model.AIModelProvider.id,
+            models.model.UserAIModelProvider.user_id == user_id,
+            models.model.UserAIModelProvider.delete_at.is_(None),
+        ),
+    )
+    query = query.filter(models.model.AIModelProvider.delete_at.is_(None))
+    query = query.filter(
+        or_(
+            models.model.AIModelProvider.creator_id == user_id,
+            models.model.AIModelProvider.is_public.is_(True),
+        )
+    )
+    if keyword:
+        query = query.filter(models.model.AIModelProvider.name.ilike(f"%{keyword}%"))
+    query = query.order_by(models.model.AIModelProvider.id.desc())
+    if start is not None:
+        query = query.filter(models.model.AIModelProvider.id <= start)
+    if limit is not None:
+        query = query.limit(limit)
+    # 返回 [(provider, user_provider_config_or_none), ...]
     return query.all()
 
-def delete_ai_models_by_user_id_and_model_ids(
-    db: Session, 
-    user_id: int, 
-    model_ids: list[int]
+
+def search_next_ai_model_providers_for_user(
+    db: Session,
+    user_id: int,
+    provider: models.model.AIModelProvider,
+    keyword: str | None = None
 ):
-    """
-    Delete AI models by their IDs.
-    """
-    if not model_ids:
-        return
+    query = db.query(models.model.AIModelProvider, models.model.UserAIModelProvider)
+    query = query.outerjoin(
+        models.model.UserAIModelProvider,
+        and_(
+            models.model.UserAIModelProvider.ai_model_provider_id == models.model.AIModelProvider.id,
+            models.model.UserAIModelProvider.user_id == user_id,
+            models.model.UserAIModelProvider.delete_at.is_(None),
+        ),
+    )
+    query = query.filter(models.model.AIModelProvider.delete_at.is_(None))
+    query = query.filter(
+        or_(
+            models.model.AIModelProvider.creator_id == user_id,
+            models.model.AIModelProvider.is_public.is_(True),
+        )
+    )
+    if keyword:
+        query = query.filter(models.model.AIModelProvider.name.ilike(f"%{keyword}%"))
+    query = query.order_by(models.model.AIModelProvider.id.desc())
+    query = query.filter(models.model.AIModelProvider.id < provider.id)
+    return query.first()
 
-    now = datetime.now(timezone.utc)
-    
-    # 第一步：找出 user 拥有的 ai_model_ids（通过 join）
-    ai_model_ids_to_delete = db.query(models.model.AIModel.id)\
-        .join(models.model.UserAIModel)\
-        .filter(models.model.AIModel.id.in_(model_ids),
-                models.model.AIModel.delete_at == None,
-                models.model.UserAIModel.user_id == user_id,
-                models.model.UserAIModel.delete_at == None)\
-        .all()
+def count_all_ai_model_providers_for_user(
+    db: Session,
+    user_id: int,
+    keyword: str | None = None
+):
+    query = db.query(models.model.AIModelProvider, models.model.UserAIModelProvider)
+    query = query.outerjoin(
+        models.model.UserAIModelProvider,
+        and_(
+            models.model.UserAIModelProvider.ai_model_provider_id == models.model.AIModelProvider.id,
+            models.model.UserAIModelProvider.user_id == user_id,
+            models.model.UserAIModelProvider.delete_at.is_(None),
+        ),
+    )
+    query = query.filter(models.model.AIModelProvider.delete_at.is_(None))
+    query = query.filter(
+        or_(
+            models.model.AIModelProvider.creator_id == user_id,
+            models.model.AIModelProvider.is_public.is_(True),
+        )
+    )
+    if keyword:
+        query = query.filter(models.model.AIModelProvider.name.ilike(f"%{keyword}%"))
+    query = query.order_by(models.model.AIModelProvider.id.desc())
+    return query.count()
 
-    ai_model_ids_to_delete = [row.id for row in ai_model_ids_to_delete]
-
-    # 第二步：分别 update 两张表（不用 join）
-    db.query(models.model.AIModel)\
-        .filter(models.model.AIModel.id.in_(ai_model_ids_to_delete))\
-        .update({models.model.AIModel.delete_at: now}, synchronize_session="fetch")
-
-    db.query(models.model.UserAIModel)\
-        .filter(models.model.UserAIModel.ai_model_id.in_(ai_model_ids_to_delete),
-                models.model.UserAIModel.user_id == user_id)\
-        .update({models.model.UserAIModel.delete_at: now}, synchronize_session="fetch")
-
-    db.flush()
-    
 def delete_ai_model_providers(
     db: Session, 
     user_id: int, 
@@ -276,11 +307,11 @@ def delete_ai_model_providers(
     now = datetime.now(timezone.utc)
 
     # 找出当前用户绑定的 provider_id
-    provider_ids_to_delete = db.query(models.model.AIModelPorvider.id)\
+    provider_ids_to_delete = db.query(models.model.AIModelProvider.id)\
         .join(models.model.UserAIModelProvider)\
-        .filter(models.model.AIModelPorvider.id.in_(provider_ids),
+        .filter(models.model.AIModelProvider.id.in_(provider_ids),
                 models.model.UserAIModelProvider.user_id == user_id,
-                models.model.AIModelPorvider.delete_at == None,
+                models.model.AIModelProvider.delete_at == None,
                 models.model.UserAIModelProvider.delete_at == None)\
         .all()
 
@@ -290,9 +321,9 @@ def delete_ai_model_providers(
         return  # 没有匹配项，也不需要执行 update
 
     # 执行 soft delete（不使用 join）
-    db.query(models.model.AIModelPorvider)\
-        .filter(models.model.AIModelPorvider.id.in_(provider_ids_to_delete))\
-        .update({models.model.AIModelPorvider.delete_at: now}, synchronize_session="fetch")
+    db.query(models.model.AIModelProvider)\
+        .filter(models.model.AIModelProvider.id.in_(provider_ids_to_delete))\
+        .update({models.model.AIModelProvider.delete_at: now}, synchronize_session="fetch")
 
     db.query(models.model.UserAIModelProvider)\
         .filter(models.model.UserAIModelProvider.ai_model_provider_id.in_(provider_ids_to_delete),

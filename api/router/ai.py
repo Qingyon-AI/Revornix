@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from common.dependencies import get_db, get_current_user, check_deployed_by_official, plan_ability_checked_in_func, check_deployed_by_official_in_fuc
+from common.dependencies import get_db, get_current_user, plan_ability_checked_in_func, check_deployed_by_official_in_fuc
 from enums.ability import Ability
 from fastapi.responses import StreamingResponse
 from data.sql.base import SessionLocal
@@ -21,7 +21,6 @@ from langfuse import propagate_attributes
 from langchain_core.messages import AIMessage, HumanMessage
 from common.common import safe_json_loads
 from enums.mcp import MCPCategory
-from enums.model import OfficialModelProvider, OfficialModel
 from common.encrypt import encrypt_api_key
 from common.interpret_event import EventInterpreter
 from typing import AsyncGenerator
@@ -34,8 +33,7 @@ ai_router = APIRouter()
 def create_model(
     model_create_request: schemas.ai.ModelCreateRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user),
-    deployed_by_official: bool = Depends(check_deployed_by_official)
+    user: models.user.User = Depends(get_current_user)
 ):
     db_model_provider = crud.model.get_ai_model_provider_by_id(
         db=db,
@@ -43,22 +41,14 @@ def create_model(
     )
     if db_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
-    
-    if deployed_by_official and db_model_provider.uuid in [
-        OfficialModelProvider.Revornix.meta.id
-    ]:
-        raise schemas.error.CustomException("The official revornix proxied model provider is forbidden to add model", code=403)
-    
+    if db_model_provider.creator_id != user.id:
+        raise schemas.error.CustomException("The model provider is not belong to you, so you can't add model to it", code=403)
+
     db_ai_model = crud.model.create_ai_model(
         db=db, 
         name=model_create_request.name, 
         description=model_create_request.description,
         provider_id=model_create_request.provider_id
-    )
-    crud.model.create_user_ai_model(
-        db=db,
-        user_id=user.id,
-        ai_model_id=db_ai_model.id,
     )
     db.commit()
     return schemas.ai.ModelCreateResponse(id=db_ai_model.id)
@@ -76,44 +66,25 @@ def get_ai_model(
     if ai_model is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
     
-    db_user_model = crud.model.get_user_ai_model_by_id(
-        db=db,
-        user_id=user.id,
-        ai_model_id=model_request.model_id
-    )
-    
-    if db_user_model is None or db_user_model.user_id != user.id:
-        raise schemas.error.CustomException("The model is not belong to you", code=403)
-    
     ai_model_provider = crud.model.get_ai_model_provider_by_id(
         db=db,
         provider_id=ai_model.provider_id
     )
-    
     if ai_model_provider is None:
-        raise schemas.error.CustomException("The model provider is not exist", code=404)
+        raise schemas.error.CustomException("The model provider of the model is not exist", code=404)
     
     db_user_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
         db=db,
         user_id=user.id,
         ai_model_provider_id=ai_model.provider_id
     )
-    if db_user_provider is None or db_user_provider.user_id != user.id:
-        raise schemas.error.CustomException("The model provider is not belong to you", code=403)
-    return schemas.ai.Model(
-        id=ai_model.id,
-        uuid=ai_model.uuid,
-        name=ai_model.name,
-        description=ai_model.description,
-        provider=schemas.ai.ModelProvider(
-            id=ai_model_provider.id,
-            uuid=ai_model.uuid,
-            name=ai_model_provider.name,
-            description=ai_model_provider.description,
-            api_key=db_user_provider.api_key,
-            base_url=db_user_provider.base_url
-        ),
-    )
+    if db_user_provider is None:
+        if not ai_model_provider.is_public:
+            raise schemas.error.CustomException("The model provider of the model is not belong to you", code=403)
+        else:
+            return schemas.ai.Model.model_validate(ai_model)
+    else:
+        return schemas.ai.Model.model_validate(ai_model)
 
 @ai_router.post("/model-provider/detail", response_model=schemas.ai.ModelProvider)
 def get_ai_model_provider(
@@ -127,24 +98,18 @@ def get_ai_model_provider(
     )
     if ai_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
-    if ai_model_provider.user_id != user.id:
-        raise schemas.error.CustomException("The model provider is not belong to you", code=403)
     db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
         db=db,
         user_id=user.id,
         ai_model_provider_id=model_provider_request.provider_id
     )
-    if db_user_model_provider is None or db_user_model_provider.user_id != user.id:
-        raise schemas.error.CustomException("The model provider is not belong to you", code=403)
-    
-    return schemas.ai.ModelProvider(
-        id=ai_model_provider.id,
-        uuid=ai_model_provider.uuid,
-        name=ai_model_provider.name,
-        description=ai_model_provider.description,
-        api_key=db_user_model_provider.api_key,
-        base_url=db_user_model_provider.base_url
-    )
+    if db_user_model_provider is None:
+        if not ai_model_provider.is_public:
+            raise schemas.error.CustomException("The model provider is not belong to you", code=403)
+        else:
+            return schemas.ai.ModelProvider.model_validate(ai_model_provider)
+    else:
+        return schemas.ai.ModelProvider.model_validate(ai_model_provider)
  
 @ai_router.post("/model-provider/create", response_model=schemas.ai.ModelProviderCreateResponse)
 def create_model_provider(
@@ -155,7 +120,8 @@ def create_model_provider(
     db_ai_model_provider = crud.model.create_ai_model_provider(
         db=db, 
         name=model_provider_request.name, 
-        description=model_provider_request.description
+        description=model_provider_request.description,
+        creator_id=user.id,
     )
     crud.model.create_user_ai_model_provider(
         db=db,
@@ -171,9 +137,10 @@ def create_model_provider(
 def delete_ai_model(
     delete_model_request: schemas.ai.DeleteModelRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user),
-    deployed_by_official: bool = Depends(check_deployed_by_official)
+    user: models.user.User = Depends(get_current_user)
 ):
+    now = datetime.now(tz=timezone.utc)
+
     for model_id in delete_model_request.model_ids:
         db_model = crud.model.get_ai_model_by_id(
             db=db,
@@ -181,15 +148,16 @@ def delete_ai_model(
         )
         if db_model is None:
             raise schemas.error.CustomException("The model is not exist", code=404)
-        if deployed_by_official and db_model.uuid in [
-            OfficialModel.llm.meta.id, 
-        ]:
-            raise schemas.error.CustomException("The Official Model is forbidden to delete", code=403)
-        crud.model.delete_ai_models_by_user_id_and_model_ids(
-            db=db, 
-            user_id=user.id,
-            model_ids=[model_id]
+        db_model_provider = crud.model.get_ai_model_provider_by_id(
+            db=db,
+            provider_id=db_model.provider_id
         )
+        if db_model_provider is None:
+            raise schemas.error.CustomException("The model provider of the model is not exist, please contact the administrator for help", code=500)
+        if db_model_provider.creator_id != user.id:
+            raise schemas.error.CustomException("The model provider of this model is not belong to you, so you can not delete this model", code=403)
+        db_model.delete_at = now
+
     if user.default_revornix_model_id in delete_model_request.model_ids:
         user.default_revornix_model_id = None
     if user.default_document_reader_model_id in delete_model_request.model_ids:
@@ -202,43 +170,111 @@ def delete_ai_model_provider(
     delete_model_request: schemas.ai.DeleteModelProviderRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user),
-    deployed_by_official: bool = Depends(check_deployed_by_official)
 ):  
-    for provider_id in delete_model_request.provider_ids:
-        db_model_provider = crud.model.get_ai_model_provider_by_id(
-            db=db,
-            provider_id=provider_id
-        )
-        if db_model_provider is None:
-            raise schemas.error.CustomException("The model provider is not exist", code=404)
-        if deployed_by_official and db_model_provider.uuid in [
-            OfficialModelProvider.Revornix.meta.id
-        ]:
-            raise schemas.error.CustomException("The Official Model Provider is forbidden to delete", code=403)
+    now = datetime.now(tz=timezone.utc)
+    
+    db_model_provider = crud.model.get_ai_model_provider_by_id(
+        db=db,
+        provider_id=delete_model_request.provider_id
+    )
+    if db_model_provider is None:
+        raise schemas.error.CustomException("The model provider is not exist", code=404)
+    if db_model_provider.creator_id != user.id:
+        raise schemas.error.CustomException("The model provider is not belong to you", code=403)
+    
+    db_models = crud.model.get_ai_models_for_ai_model_provider(
+        db=db, 
+        provider_id=delete_model_request.provider_id
+    )
+    for db_model in db_models:
+        db_model.delete_at = now
         
-        crud.model.delete_ai_model_providers(
-            db=db, 
-            user_id=user.id,
-            provider_ids=[provider_id]
-        )
-        db_models = crud.model.search_ai_models_for_user_ai_model_provider(
-            db=db, 
-            user_id=user.id, 
-            provider_id=provider_id
-        )
-        db_model_ids = [model.id for model in db_models]
-        crud.model.delete_ai_models_by_user_id_and_model_ids(
-            db=db, 
-            user_id=user.id, 
-            model_ids=db_model_ids
-        )
+    db_model_provider.delete_at = now
+
+    db_model_ids = [
+        model.id for model in db_models
+    ]
     if user.default_revornix_model_id in db_model_ids:
         user.default_revornix_model_id = None
     if user.default_document_reader_model_id in db_model_ids:
         user.default_document_reader_model_id = None
     db.commit()
     return schemas.common.SuccessResponse()
-     
+
+# 搜索当前所有我可以使用的模型供应商
+@ai_router.post("/model-provider/provided", response_model=schemas.pagination.InifiniteScrollPagnition[schemas.ai.ModelProvider])
+def list_ai_model_provider(
+    model_provider_search_request: schemas.ai.ModelProviderSearchRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    has_more = True
+    next_start = None
+    next_model_provider = None
+    db_ai_model_providers = crud.model.search_ai_model_providers_for_user(
+        db=db, 
+        user_id=user.id,
+        keyword=model_provider_search_request.keyword
+    )
+    if len(db_ai_model_providers) < model_provider_search_request.limit or len(db_ai_model_providers) == 0:
+        has_more = False
+    if len(db_ai_model_providers) == model_provider_search_request.limit:
+        next_model_provider = crud.model.search_next_ai_model_providers_for_user(
+            db=db, 
+            user_id=user.id,
+            provider=db_ai_model_providers[-1][0],
+            keyword=model_provider_search_request.keyword
+        )
+        has_more = next_model_provider is not None
+        next_start = next_model_provider.id if next_model_provider is not None else None
+    total = crud.model.count_all_ai_model_providers_for_user(
+        db=db,
+        user_id=user.id,
+        keyword=model_provider_search_request.keyword
+    )
+    next_start = next_model_provider.id if next_model_provider is not None else None
+    data = [
+        schemas.ai.ModelProvider.model_validate(item[0])
+        for item in db_ai_model_providers
+    ]
+    return schemas.pagination.InifiniteScrollPagnition(
+        total=total,
+        elements=data,
+        start=model_provider_search_request.start,
+        limit=model_provider_search_request.limit,
+        has_more=has_more,
+        next_start=next_start
+    )
+
+# 将对应的model provider加入自己的备选区
+@ai_router.post("/model-provider/include", response_model=schemas.common.NormalResponse)
+def include_ai_model_provider(
+    model_provider_include_request: schemas.ai.ModelProviderIncludeRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    db_ai_model_provider = crud.model.get_ai_model_provider_by_id(
+        db=db,
+        provider_id=model_provider_include_request.provider_id
+    )
+    if db_ai_model_provider is None:
+        raise schemas.error.CustomException("The model provider is not exist", code=404)
+    if db_ai_model_provider.creator_id != user.id and db_ai_model_provider.is_public == False:
+        raise schemas.error.CustomException("You can't include the private model provider", code=403)
+    db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
+        db=db,
+        user_id=user.id,
+        ai_model_provider_id=model_provider_include_request.provider_id
+    )
+    if db_user_ai_model_provider is not None:
+        db_user_ai_model_provider = crud.model.create_user_ai_model_provider(
+            db=db,
+            user_id=user.id,
+            ai_model_provider_id=model_provider_include_request.provider_id
+        )
+    db.commit()
+    return schemas.common.SuccessResponse()
+
 @ai_router.post("/model/search", response_model=schemas.ai.ModelSearchResponse)
 def list_ai_model(
     model_search_request: schemas.ai.ModelSearchRequest,
@@ -246,88 +282,46 @@ def list_ai_model(
     user: models.user.User = Depends(get_current_user)
 ):
     data = []
-    db_ai_models = crud.model.search_ai_models_for_user_ai_model_provider(
-        db=db, 
-        user_id=user.id, 
-        keyword=model_search_request.keyword,
-        provider_id=model_search_request.provider_id
-    )
-    for item in db_ai_models:
-        db_model_provider = crud.model.get_ai_model_provider_by_id(
+    # 如果传递了provider_id 那么就获取该provider目录下的所有模型
+    if model_search_request.provider_id is not None:
+        db_ai_model_provider = crud.model.get_ai_model_provider_by_id(
+            db=db,
+            provider_id=model_search_request.provider_id
+        )
+        if db_ai_model_provider is None:
+            raise schemas.error.CustomException("The model provider is not exist", code=404)
+        if db_ai_model_provider.creator_id != user.id and db_ai_model_provider.is_public == False:
+            raise schemas.error.CustomException("You can't search the private model provider", code=403)
+        db_models = crud.model.get_ai_models_for_ai_model_provider(
             db=db, 
-            provider_id=item.provider_id
+            provider_id=model_search_request.provider_id
         )
-        if db_model_provider is None:
-            continue
-        db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-            db=db,
+        for db_model in db_models:
+            data.append(schemas.ai.Model.model_validate(db_model))
+    # 如果没有传递 那就获取当前用户所有可用模型
+    else:
+        db_ai_model_providers = crud.model.get_ai_model_providers_for_user(
+            db=db, 
             user_id=user.id,
-            ai_model_provider_id=db_model_provider.id
+            keyword=model_search_request.keyword 
         )
-        db_user_ai_model = crud.model.get_user_ai_model_by_id(
-            db=db,
-            user_id=user.id,
-            ai_model_id=item.id
-        )
-        if db_user_ai_model is None or db_user_model_provider is None:
-            continue
-        data.append(
-            schemas.ai.Model(
-                id=item.id,
-                uuid=item.uuid,
-                name=item.name,
-                description=item.description,
-                provider=schemas.ai.ModelProvider(
-                    id=db_model_provider.id,
-                    uuid=db_model_provider.uuid,
-                    name=db_model_provider.name,
-                    description=db_model_provider.description,
-                    api_key=db_user_model_provider.api_key,
-                    base_url=db_user_model_provider.base_url)
-                )
-        )
-    return schemas.ai.ModelSearchResponse(data=data)
-
-@ai_router.post("/model-provider/search", response_model=schemas.ai.ModelProviderSearchResponse)
-def list_ai_model_provider(
-    model_provider_search_request: schemas.ai.ModelProviderSearchRequest,
-    db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
-):
-    data = []
-    db_ai_model_providers = crud.model.search_ai_model_providers_for_user(
-        db=db, 
-        user_id=user.id,
-        keyword=model_provider_search_request.keyword
-    )
-    if not db_ai_model_providers:
-        return schemas.ai.ModelProviderSearchResponse(data=data)
-    for item in db_ai_model_providers:
-        db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-            db=db,
-            user_id=user.id,
-            ai_model_provider_id=item.id
-        )
-        if db_user_ai_model_provider is None:
-            continue
-        data.append(
-            schemas.ai.ModelProvider(
-                id=item.id,
-                uuid=item.uuid,
-                name=item.name,
-                description=item.description,
-                api_key=db_user_ai_model_provider.api_key,
-                base_url=db_user_ai_model_provider.base_url
+        for db_ai_model_provider in db_ai_model_providers:
+            if db_ai_model_provider.is_public == False and db_ai_model_provider.creator_id != user.id:
+                continue
+            db_models = crud.model.get_ai_models_for_ai_model_provider(
+                db=db, 
+                provider_id=db_ai_model_provider.id
             )
-        )
-    return schemas.ai.ModelProviderSearchResponse(data=data)
+            for db_model in db_models:
+                data.append(schemas.ai.Model.model_validate(db_model))
+        
+    return schemas.ai.ModelSearchResponse(data=data)
 
 @ai_router.post("/model/update", response_model=schemas.common.NormalResponse)
 def update_ai_model(
     model_update_request: schemas.ai.ModelUpdateRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user),
-    deployed_by_official: bool = Depends(check_deployed_by_official)
+    user: models.user.User = Depends(get_current_user)
 ):
     now = datetime.now(timezone.utc)
     db_ai_model = crud.model.get_ai_model_by_id(
@@ -336,17 +330,15 @@ def update_ai_model(
     )
     if db_ai_model is None:
         raise schemas.error.CustomException("The model is not exist", code=404)
-    if deployed_by_official and db_ai_model.uuid in [
-        OfficialModel.llm.meta.id
-    ]:
-        raise schemas.error.CustomException("The Official Model is forbidden to update", code=403)
-    db_user_ai_model = crud.model.get_user_ai_model_by_id(
+    db_ai_model_provider = crud.model.get_ai_model_provider_by_id(
         db=db,
-        user_id=user.id,
-        ai_model_id=db_ai_model.id
+        provider_id=db_ai_model.provider_id
     )
-    if db_user_ai_model is None or db_user_ai_model.user_id != user.id:
-        raise schemas.error.CustomException("The model is not belong to you", code=403)
+    if db_ai_model_provider is None:
+        raise schemas.error.CustomException("The model provider of the model is not exist, please contact the admin for help", code=500)
+    if db_ai_model_provider.creator_id != user.id:
+        raise schemas.error.CustomException("The model provider of the model is not belong to you", code=403)
+
     if model_update_request.name is not None:
         db_ai_model.name = model_update_request.name
     if model_update_request.description is not None:
@@ -359,8 +351,7 @@ def update_ai_model(
 def update_ai_model_provider(
     model_provider_update_request: schemas.ai.ModelProviderUpdateRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user),
-    deployed_by_official: bool = Depends(check_deployed_by_official)
+    user: models.user.User = Depends(get_current_user)
 ):
     now = datetime.now(timezone.utc)
     db_ai_model_provider = crud.model.get_ai_model_provider_by_id(
@@ -369,27 +360,27 @@ def update_ai_model_provider(
     )
     if db_ai_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
-    if deployed_by_official and db_ai_model_provider.uuid in [
-        OfficialModelProvider.Revornix.meta.id
-    ]:
-        raise schemas.error.CustomException("The Official Model Provider is forbidden to update", code=403)
+    if db_ai_model_provider.creator_id != user.id:
+        raise schemas.error.CustomException("The model provider is not belong to you", code=403)
+
+    if model_provider_update_request.name is not None:
+        db_ai_model_provider.name = model_provider_update_request.name
+    if model_provider_update_request.description is not None:
+        db_ai_model_provider.description = model_provider_update_request.description
+    db_ai_model_provider.update_time = now
+    
     db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
         db=db,
         user_id=user.id,
         ai_model_provider_id=model_provider_update_request.id
     )
-    if db_user_ai_model_provider is None or db_user_ai_model_provider.user_id != user.id:
-        raise schemas.error.CustomException("The model provider is not belong to you", code=403)
-    if model_provider_update_request.name is not None:
-        db_ai_model_provider.name = model_provider_update_request.name
-    if model_provider_update_request.description is not None:
-        db_ai_model_provider.description = model_provider_update_request.description
-    if model_provider_update_request.api_key is not None:
-        db_user_ai_model_provider.api_key = encrypt_api_key(model_provider_update_request.api_key)
-    if model_provider_update_request.base_url is not None:
-        db_user_ai_model_provider.base_url = model_provider_update_request.base_url
-    db_ai_model_provider.update_time = now
-    db_user_ai_model_provider.update_time = now
+    if db_user_ai_model_provider is not None:
+        if model_provider_update_request.api_key is not None:
+            db_user_ai_model_provider.api_key = encrypt_api_key(model_provider_update_request.api_key)
+        if model_provider_update_request.base_url is not None:
+            db_user_ai_model_provider.base_url = model_provider_update_request.base_url
+        db_user_ai_model_provider.update_time = now
+
     db.commit()
     return schemas.common.SuccessResponse()
 
