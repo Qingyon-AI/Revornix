@@ -300,6 +300,8 @@
     "setting_model": "Model Settings",
     "setting_model_select": "Select Model",
     "setting_model_collection": "Model Ensemble",
+    "ai_model_provider_community_tips_title": "Model Provider Community Tips",
+    "ai_model_provider_community_tips_description": "This page not only displays the model providers you have created yourself, but also shows all model providers in the Revornix community that users have set to public. You can conveniently use these public model providers by clicking the Fork button. After forking, you can configure the models provided by these forked model providers on your settings page.At the same time, you can also create your own public model providers for other community members to use. Note: For security reasons, after a model provider is made public, other users can use your models but cannot see your model API keys or URLs.",
     "ai_model_provider_search_placeholder": "Search Model Provider",
     "ai_model_provider_empty": "No Model Providers Available",
     "setting_model_provider_configure": "Config",

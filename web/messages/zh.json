@@ -300,6 +300,8 @@
     "setting_model": "模型配置",
     "setting_model_select": "选择模型",
     "setting_model_collection": "模型集成",
+    "ai_model_provider_community_tips_title": "模型供应商社区提醒",
+    "ai_model_provider_community_tips_description": "这里不单单显示你自己创建的模型供应商，也会显示所有Revornix社区中用户设置为公开的模型供应商，你可以通过点击复刻按钮来便利的使用这些公开的模型供应商。复刻完成之后，即可在你的设置页面中配置这些复刻的模型供应商提供的模型。同时，你也可以创建自己的公开模型供应商来供社区中的其他人使用。注意：为了安全起见，公开模型供应商之后，其他用户可以使用你的模型，但无法看到你的模型密钥和URL。",
     "ai_model_provider_search_placeholder": "搜索模型供应商",
     "ai_model_provider_empty": "暂无模型供应商",
     "setting_model_provider_configure": "配置",

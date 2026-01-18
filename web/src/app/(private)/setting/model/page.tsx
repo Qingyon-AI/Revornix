@@ -12,11 +12,12 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { TrashIcon } from 'lucide-react';
+import { Info, TrashIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useTranslations } from 'next-intl';
 import ModelProviderAddButton from '@/components/setting/model-provider-add';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const ModelSettingPage = () => {
 	const t = useTranslations();
@@ -55,6 +56,15 @@ const ModelSettingPage = () => {
 	return (
 		<>
 			<Separator className='mb-5' />
+			<div className='flex flex-row px-5 pb-5 gap-3'>
+				<Alert className='bg-emerald-600/10 dark:bg-emerald-600/15 text-emerald-500 border-none'>
+					<Info className='size-4' />
+					<AlertTitle>{t('ai_model_provider_community_tips_title')}</AlertTitle>
+					<AlertDescription>
+						{t('ai_model_provider_community_tips_description')}
+					</AlertDescription>
+				</Alert>
+			</div>
 			<div className='flex flex-row px-5 pb-5 gap-3'>
 				<Input
 					placeholder={t('ai_model_provider_search_placeholder')}
