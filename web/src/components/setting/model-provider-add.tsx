@@ -10,6 +10,7 @@ import { utils } from '@kinda/utils';
 import { getQueryClient } from '@/lib/get-query-client';
 import {
 	Form,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -26,14 +27,16 @@ import {
 	DialogTrigger,
 } from '@/components/ui/dialog';
 import { Loader2, PlusCircleIcon } from 'lucide-react';
+import { Switch } from '../ui/switch';
 
 const ModelProviderAddButton = () => {
 	const t = useTranslations();
 	const formSchema = z.object({
 		name: z.string().min(1, 'Name is required'),
-		description: z.string(),
-		api_key: z.string().min(1, 'API Key is required'),
-		base_url: z.string(),
+		description: z.string().optional(),
+		api_key: z.string().optional(),
+		base_url: z.string().min(1, 'Base Url is required'),
+		is_public: z.boolean(),
 	});
 	const queryClient = getQueryClient();
 
@@ -44,6 +47,7 @@ const ModelProviderAddButton = () => {
 			description: '',
 			api_key: '',
 			base_url: '',
+			is_public: false,
 		},
 	});
 	const [showModelProviderConfigDialog, setShowModelProviderConfigDialog] =
@@ -81,6 +85,7 @@ const ModelProviderAddButton = () => {
 			queryClient.invalidateQueries({
 				queryKey: ['getModels'],
 			});
+			form.reset();
 		});
 	};
 
@@ -184,6 +189,30 @@ const ModelProviderAddButton = () => {
 											<FormMessage />
 										</FormItem>
 									)}
+								/>
+								<FormField
+									name='is_public'
+									control={form.control}
+									render={({ field }) => {
+										return (
+											<FormItem className='rounded-lg border border-input p-3'>
+												<div className='flex flex-row gap-1 items-center'>
+													<FormLabel className='flex flex-row gap-1 items-center'>
+														{t('setting_model_provider_is_public')}
+													</FormLabel>
+													<Switch
+														checked={field.value}
+														onCheckedChange={(e) => {
+															field.onChange(e);
+														}}
+													/>
+												</div>
+												<FormDescription>
+													{t('setting_model_provider_is_public_tips')}
+												</FormDescription>
+											</FormItem>
+										);
+									}}
 								/>
 								<Button type='submit' disabled={submitUpdating}>
 									{t('save')}

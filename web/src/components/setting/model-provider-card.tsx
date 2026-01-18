@@ -145,7 +145,9 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 								</Badge>
 							)}
 						</div>
-						<Dialog>
+						<Dialog
+							open={showDeleteModelProviderDialog}
+							onOpenChange={setShowDeleteModelProviderDialog}>
 							<DialogTrigger asChild>
 								<Button
 									size={'icon'}

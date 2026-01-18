@@ -34,11 +34,11 @@ const ModelConfig = ({
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
 	const formSchema = z.object({
-		name: z.string().min(1, 'Name is required'),
-		description: z.string().optional().nullable(),
-		api_key: z.string().optional().nullable(),
-		base_url: z.string(),
-		is_public: z.boolean(),
+		name: z.string().optional(),
+		description: z.string().optional(),
+		api_key: z.string().optional(),
+		base_url: z.string().optional(),
+		is_public: z.boolean().optional(),
 	});
 	const form = useForm({
 		resolver: zodResolver(formSchema),
@@ -154,6 +154,7 @@ const ModelConfig = ({
 										className='col-span-9'
 										placeholder='Name'
 										{...field}
+										value={field.value ?? ''}
 										disabled={!authorized}
 									/>
 								</div>
