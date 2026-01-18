@@ -26,6 +26,7 @@ from common.interpret_event import EventInterpreter
 from typing import AsyncGenerator
 from schemas.ai import ChatItem
 from common.logger import exception_logger
+from enums.model import UserModelProviderRole
 
 ai_router = APIRouter()
 
@@ -86,31 +87,6 @@ def get_ai_model(
     else:
         return schemas.ai.Model.model_validate(ai_model)
 
-@ai_router.post("/model-provider/detail", response_model=schemas.ai.ModelProvider)
-def get_ai_model_provider(
-    model_provider_request: schemas.ai.ModelProviderRequest,
-    db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
-):
-    ai_model_provider = crud.model.get_ai_model_provider_by_id(
-        db=db,
-        provider_id=model_provider_request.provider_id
-    )
-    if ai_model_provider is None:
-        raise schemas.error.CustomException("The model provider is not exist", code=404)
-    db_user_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-        db=db,
-        user_id=user.id,
-        ai_model_provider_id=model_provider_request.provider_id
-    )
-    if db_user_model_provider is None:
-        if not ai_model_provider.is_public:
-            raise schemas.error.CustomException("The model provider is not belong to you", code=403)
-        else:
-            return schemas.ai.ModelProvider.model_validate(ai_model_provider)
-    else:
-        return schemas.ai.ModelProvider.model_validate(ai_model_provider)
- 
 @ai_router.post("/model-provider/create", response_model=schemas.ai.ModelProviderCreateResponse)
 def create_model_provider(
     model_provider_request: schemas.ai.ModelProviderCreateRequest,
@@ -128,10 +104,32 @@ def create_model_provider(
         user_id=user.id,
         ai_model_provider_id=db_ai_model_provider.id,
         api_key=model_provider_request.api_key,
-        base_url=model_provider_request.base_url
+        base_url=model_provider_request.base_url,
+        role=UserModelProviderRole.CREATOR
     )
     db.commit()
     return schemas.ai.ModelProviderCreateResponse(id=db_ai_model_provider.id)
+
+# 只有创建者能获取到模型的完整配置 否则即使公开 其他用户也只能获取到除密钥和url以外的信息
+@ai_router.post("/model-provider/detail", response_model=schemas.ai.ModelProviderDetail)
+def get_ai_model_provider(
+    model_provider_request: schemas.ai.ModelProviderRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    ai_model_provider = crud.model.get_ai_model_provider_by_id(
+        db=db,
+        provider_id=model_provider_request.provider_id
+    )
+    if ai_model_provider is None:
+        raise schemas.error.CustomException("The model provider is not exist", code=404)
+    if ai_model_provider.creator_id == user.id:
+        return schemas.ai.ModelProviderDetail.model_validate(ai_model_provider)
+    
+    if ai_model_provider.is_public:
+        return schemas.ai.ModelProvider.model_validate(ai_model_provider)
+    else:
+        raise schemas.error.CustomException("The private model provider is not belong to you", code=403)
  
 @ai_router.post("/model/delete", response_model=schemas.common.NormalResponse)
 def delete_ai_model(
@@ -247,7 +245,7 @@ def list_ai_model_provider(
     )
 
 # 将对应的model provider加入自己的备选区
-@ai_router.post("/model-provider/include", response_model=schemas.common.NormalResponse)
+@ai_router.post("/model-provider/fork", response_model=schemas.common.NormalResponse)
 def include_ai_model_provider(
     model_provider_include_request: schemas.ai.ModelProviderIncludeRequest,
     db: Session = Depends(get_db),
@@ -266,12 +264,13 @@ def include_ai_model_provider(
         user_id=user.id,
         ai_model_provider_id=model_provider_include_request.provider_id
     )
-    if db_user_ai_model_provider is not None:
+    if db_user_ai_model_provider is None:
         db_user_ai_model_provider = crud.model.create_user_ai_model_provider(
             db=db,
             user_id=user.id,
             ai_model_provider_id=model_provider_include_request.provider_id
         )
+    db_user_ai_model_provider.role = UserModelProviderRole.FORKER
     db.commit()
     return schemas.common.SuccessResponse()
 

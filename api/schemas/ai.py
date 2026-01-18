@@ -13,14 +13,39 @@ class ModelCreateRequest(BaseModel):
 
 class ModelCreateResponse(BaseModel):
     id: int
-
-class ModelProvider(BaseModel):
+    
+class ModelProviderDetail(BaseModel):
     id: int
     uuid: str
     name: str
     description: str | None
     api_key: str | None = None
     base_url: str | None = None
+    create_time: datetime
+    update_time: datetime | None
+    creator: UserPublicInfo
+    
+    @field_serializer("create_time")
+    def serializer_create_timezone(self, v: datetime):
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    @field_serializer("update_time")
+    def serializer_update_timezone(self, v: datetime | None):
+        if v is None:
+            return None
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    
+    class Config:
+        from_attributes = True
+
+class ModelProvider(BaseModel):
+    id: int
+    uuid: str
+    name: str
+    description: str | None
     create_time: datetime
     update_time: datetime | None
     creator: UserPublicInfo

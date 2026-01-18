@@ -10,7 +10,8 @@ def create_user_ai_model_provider(
     user_id: int, 
     ai_model_provider_id: int, 
     api_key: str | None = None, 
-    base_url: str | None = None
+    base_url: str | None = None,
+    role: int | None = None
 ):
     """
     Create a new user AI model provider.
@@ -23,6 +24,7 @@ def create_user_ai_model_provider(
         ai_model_provider_id=ai_model_provider_id,
         api_key=api_key,
         base_url=base_url,
+        role=role,
         create_time=now
     )
     db.add(db_user_provider)

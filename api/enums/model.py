@@ -1,5 +1,9 @@
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import NamedTuple
+
+class UserModelProviderRole(IntEnum):
+    CREATOR = 0
+    FORKER = 1
 
 class ModelMeta(NamedTuple):
     id: str
