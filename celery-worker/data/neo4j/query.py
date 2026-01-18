@@ -51,6 +51,7 @@ async def global_query(
         raise Exception("User not found")
     if db_user.default_revornix_model_id is None:
         raise Exception("User default model not found")
+
     model_configuration = (await AIModelProxy.create(
         user_id=user_id,
         model_id=db_user.default_revornix_model_id

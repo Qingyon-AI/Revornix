@@ -34,6 +34,7 @@ class LLMDocumentTagEngine:
             raise Exception('User does not have a default document reader model')
         if db_user.default_user_file_system is None:
             raise Exception('User does not have a default user file system')
+
         model_configuration = (await AIModelProxy.create(
             user_id=self.user_id,
             model_id=db_user.default_document_reader_model_id
