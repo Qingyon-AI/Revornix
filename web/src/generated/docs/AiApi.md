@@ -11,8 +11,9 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**deleteAiModelProviderAiModelProviderDeletePost**](AiApi.md#deleteaimodelprovideraimodelproviderdeletepost) | **POST** /ai/model-provider/delete | Delete Ai Model Provider |
 | [**getAiModelAiModelDetailPost**](AiApi.md#getaimodelaimodeldetailpost) | **POST** /ai/model/detail | Get Ai Model |
 | [**getAiModelProviderAiModelProviderDetailPost**](AiApi.md#getaimodelprovideraimodelproviderdetailpost) | **POST** /ai/model-provider/detail | Get Ai Model Provider |
+| [**includeAiModelProviderAiModelProviderIncludePost**](AiApi.md#includeaimodelprovideraimodelproviderincludepost) | **POST** /ai/model-provider/include | Include Ai Model Provider |
 | [**listAiModelAiModelSearchPost**](AiApi.md#listaimodelaimodelsearchpost) | **POST** /ai/model/search | List Ai Model |
-| [**listAiModelProviderAiModelProviderSearchPost**](AiApi.md#listaimodelprovideraimodelprovidersearchpost) | **POST** /ai/model-provider/search | List Ai Model Provider |
+| [**listAiModelProviderAiModelProviderProvidedPost**](AiApi.md#listaimodelprovideraimodelproviderprovidedpost) | **POST** /ai/model-provider/provided | List Ai Model Provider |
 | [**updateAiModelAiModelUpdatePost**](AiApi.md#updateaimodelaimodelupdatepost) | **POST** /ai/model/update | Update Ai Model |
 | [**updateAiModelProviderAiModelProviderUpdatePost**](AiApi.md#updateaimodelprovideraimodelproviderupdatepost) | **POST** /ai/model-provider/update | Update Ai Model Provider |
 
@@ -501,6 +502,75 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## includeAiModelProviderAiModelProviderIncludePost
+
+> NormalResponse includeAiModelProviderAiModelProviderIncludePost(modelProviderIncludeRequest, authorization)
+
+Include Ai Model Provider
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AiApi,
+} from '';
+import type { IncludeAiModelProviderAiModelProviderIncludePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new AiApi();
+
+  const body = {
+    // ModelProviderIncludeRequest
+    modelProviderIncludeRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies IncludeAiModelProviderAiModelProviderIncludePostRequest;
+
+  try {
+    const data = await api.includeAiModelProviderAiModelProviderIncludePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **modelProviderIncludeRequest** | [ModelProviderIncludeRequest](ModelProviderIncludeRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## listAiModelAiModelSearchPost
 
 > ModelSearchResponse listAiModelAiModelSearchPost(modelSearchRequest, authorization)
@@ -570,9 +640,9 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## listAiModelProviderAiModelProviderSearchPost
+## listAiModelProviderAiModelProviderProvidedPost
 
-> ModelProviderSearchResponse listAiModelProviderAiModelProviderSearchPost(modelProviderSearchRequest, authorization)
+> InifiniteScrollPagnitionModelProvider listAiModelProviderAiModelProviderProvidedPost(modelProviderSearchRequest, authorization)
 
 List Ai Model Provider
 
@@ -583,7 +653,7 @@ import {
   Configuration,
   AiApi,
 } from '';
-import type { ListAiModelProviderAiModelProviderSearchPostRequest } from '';
+import type { ListAiModelProviderAiModelProviderProvidedPostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -594,10 +664,10 @@ async function example() {
     modelProviderSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-  } satisfies ListAiModelProviderAiModelProviderSearchPostRequest;
+  } satisfies ListAiModelProviderAiModelProviderProvidedPostRequest;
 
   try {
-    const data = await api.listAiModelProviderAiModelProviderSearchPost(body);
+    const data = await api.listAiModelProviderAiModelProviderProvidedPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -618,7 +688,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**ModelProviderSearchResponse**](ModelProviderSearchResponse.md)
+[**InifiniteScrollPagnitionModelProvider**](InifiniteScrollPagnitionModelProvider.md)
 
 ### Authorization
 

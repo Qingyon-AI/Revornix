@@ -16,30 +16,30 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface DeleteModelProviderRequest
+ * @interface ModelProviderIncludeRequest
  */
-export interface DeleteModelProviderRequest {
+export interface ModelProviderIncludeRequest {
     /**
      * 
      * @type {number}
-     * @memberof DeleteModelProviderRequest
+     * @memberof ModelProviderIncludeRequest
      */
     provider_id: number;
 }
 
 /**
- * Check if a given object implements the DeleteModelProviderRequest interface.
+ * Check if a given object implements the ModelProviderIncludeRequest interface.
  */
-export function instanceOfDeleteModelProviderRequest(value: object): value is DeleteModelProviderRequest {
+export function instanceOfModelProviderIncludeRequest(value: object): value is ModelProviderIncludeRequest {
     if (!('provider_id' in value) || value['provider_id'] === undefined) return false;
     return true;
 }
 
-export function DeleteModelProviderRequestFromJSON(json: any): DeleteModelProviderRequest {
-    return DeleteModelProviderRequestFromJSONTyped(json, false);
+export function ModelProviderIncludeRequestFromJSON(json: any): ModelProviderIncludeRequest {
+    return ModelProviderIncludeRequestFromJSONTyped(json, false);
 }
 
-export function DeleteModelProviderRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): DeleteModelProviderRequest {
+export function ModelProviderIncludeRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelProviderIncludeRequest {
     if (json == null) {
         return json;
     }
@@ -49,11 +49,11 @@ export function DeleteModelProviderRequestFromJSONTyped(json: any, ignoreDiscrim
     };
 }
 
-export function DeleteModelProviderRequestToJSON(json: any): DeleteModelProviderRequest {
-    return DeleteModelProviderRequestToJSONTyped(json, false);
+export function ModelProviderIncludeRequestToJSON(json: any): ModelProviderIncludeRequest {
+    return ModelProviderIncludeRequestToJSONTyped(json, false);
 }
 
-export function DeleteModelProviderRequestToJSONTyped(value?: DeleteModelProviderRequest | null, ignoreDiscriminator: boolean = false): any {
+export function ModelProviderIncludeRequestToJSONTyped(value?: ModelProviderIncludeRequest | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

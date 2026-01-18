@@ -53,6 +53,18 @@ export interface Model {
     description: string | null;
     /**
      * 
+     * @type {Date}
+     * @memberof Model
+     */
+    create_time: Date;
+    /**
+     * 
+     * @type {Date}
+     * @memberof Model
+     */
+    update_time: Date | null;
+    /**
+     * 
      * @type {ModelProvider}
      * @memberof Model
      */
@@ -67,6 +79,8 @@ export function instanceOfModel(value: object): value is Model {
     if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
+    if (!('create_time' in value) || value['create_time'] === undefined) return false;
+    if (!('update_time' in value) || value['update_time'] === undefined) return false;
     if (!('provider' in value) || value['provider'] === undefined) return false;
     return true;
 }
@@ -85,6 +99,8 @@ export function ModelFromJSONTyped(json: any, ignoreDiscriminator: boolean): Mod
         'uuid': json['uuid'],
         'name': json['name'],
         'description': json['description'],
+        'create_time': (new Date(json['create_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
         'provider': ModelProviderFromJSON(json['provider']),
     };
 }
@@ -104,6 +120,8 @@ export function ModelToJSONTyped(value?: Model | null, ignoreDiscriminator: bool
         'uuid': value['uuid'],
         'name': value['name'],
         'description': value['description'],
+        'create_time': value['create_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'provider': ModelProviderToJSON(value['provider']),
     };
 }
