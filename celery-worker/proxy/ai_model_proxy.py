@@ -1,11 +1,10 @@
-import crud
-from typing import Optional
 
 from pydantic import BaseModel
 
+import crud
 from data.sql.base import SessionLocal
 from enums.model import UserModelProviderRole
-
+from common.encrypt import decrypt_api_key
 
 # =========================
 # DTO
@@ -14,7 +13,7 @@ from enums.model import UserModelProviderRole
 class AIModelConfiguration(BaseModel):
     model_name: str
     base_url: str
-    api_key: Optional[str]
+    api_key: str | None
 
 
 # =========================
@@ -103,7 +102,7 @@ class AIModelProxy:
 
     def get_configuration(self) -> AIModelConfiguration:
         return AIModelConfiguration(
-            api_key=self.api_key,
+            api_key=decrypt_api_key(self.api_key) if self.api_key is not None else None,
             base_url=self.base_url,
             model_name=self.model_name,
         )
