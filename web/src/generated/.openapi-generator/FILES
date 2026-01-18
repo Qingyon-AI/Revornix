@@ -141,7 +141,8 @@ docs/ModelCreateResponse.md
 docs/ModelProvider.md
 docs/ModelProviderCreateRequest.md
 docs/ModelProviderCreateResponse.md
-docs/ModelProviderIncludeRequest.md
+docs/ModelProviderDetail.md
+docs/ModelProviderForkRequest.md
 docs/ModelProviderRequest.md
 docs/ModelProviderSearchRequest.md
 docs/ModelProviderUpdateRequest.md
@@ -394,7 +395,8 @@ models/ModelCreateResponse.ts
 models/ModelProvider.ts
 models/ModelProviderCreateRequest.ts
 models/ModelProviderCreateResponse.ts
-models/ModelProviderIncludeRequest.ts
+models/ModelProviderDetail.ts
+models/ModelProviderForkRequest.ts
 models/ModelProviderRequest.ts
 models/ModelProviderSearchRequest.ts
 models/ModelProviderUpdateRequest.ts

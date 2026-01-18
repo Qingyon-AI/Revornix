@@ -351,5 +351,5 @@ class SectionUpdateRequest(BaseModel):
     labels: list[int] | None = None
     auto_podcast: bool | None = None
     auto_illustration: bool | None = None
-    process_task_trigger_type: int
+    process_task_trigger_type: int | None = None
     process_task_trigger_scheduler: str | None = None

@@ -8,7 +8,7 @@ export default {
     deleteAiModelProvider: API_PREFIX + '/ai/model-provider/delete',
     searchAiModel: API_PREFIX + '/ai/model/search',
     searchAiModelProvider: API_PREFIX + '/ai/model-provider/provided',
-    includeAiModelProvider: API_PREFIX + '/ai/model-provider/include',
+    forkAiModelProvider: API_PREFIX + '/ai/model-provider/fork',
     updateAiModel: API_PREFIX + '/ai/model/update',
     updateAiModelProvider: API_PREFIX + '/ai/model-provider/update',
     getAiModelDetail: API_PREFIX + '/ai/model/detail',

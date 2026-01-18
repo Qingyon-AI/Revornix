@@ -1,10 +1,9 @@
 'use client';
 
-import ModelProviderAddCard from '@/components/setting/model-provider-add-card';
 import ModelProviderCard from '@/components/setting/model-provider-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { searchAiModelProvider } from '@/service/ai';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import {
@@ -17,6 +16,7 @@ import { TrashIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useTranslations } from 'next-intl';
+import ModelProviderAddButton from '@/components/setting/model-provider-add';
 
 const ModelSettingPage = () => {
 	const t = useTranslations();
@@ -61,6 +61,7 @@ const ModelSettingPage = () => {
 					value={keyword}
 					onChange={(e) => setKeyword(e.target.value)}
 				/>
+				<ModelProviderAddButton />
 			</div>
 			{isSuccess && modelProviders.length === 0 && (
 				<Empty>

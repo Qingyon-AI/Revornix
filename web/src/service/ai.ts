@@ -1,9 +1,9 @@
 import aiApi from '@/api/ai'
-import { ChatMessages, DeleteModelProviderRequest, DeleteModelRequest, InifiniteScrollPagnitionModelProvider, Model, ModelCreateRequest, ModelCreateResponse, ModelProvider, ModelProviderCreateRequest, ModelProviderCreateResponse, ModelProviderIncludeRequest, ModelProviderRequest, ModelProviderSearchRequest, ModelProviderSearchResponse, ModelProviderUpdateRequest, ModelRequest, ModelSearchRequest, ModelSearchResponse, ModelUpdateRequest, NormalResponse } from '@/generated'
+import { ChatMessages, DeleteModelProviderRequest, DeleteModelRequest, InifiniteScrollPagnitionModelProvider, Model, ModelCreateRequest, ModelCreateResponse, ModelProvider, ModelProviderCreateRequest, ModelProviderCreateResponse, ModelProviderDetail, ModelProviderForkRequest, ModelProviderRequest, ModelProviderSearchRequest, ModelProviderUpdateRequest, ModelRequest, ModelSearchRequest, ModelSearchResponse, ModelUpdateRequest, NormalResponse } from '@/generated'
 import { request } from '@/lib/request'
 
-export const includeAiModelProvider = async (data: ModelProviderIncludeRequest) => {
-    return await request(aiApi.includeAiModelProvider, {
+export const forkAiModelProvider = async (data: ModelProviderForkRequest) => {
+    return await request(aiApi.forkAiModelProvider, {
         data: data
     })
 }
@@ -68,7 +68,7 @@ export const getAiModel = async (data: ModelRequest): Promise<Model> => {
     })
 }
 
-export const getAiModelProvider = async (data: ModelProviderRequest): Promise<ModelProvider> => {
+export const getAiModelProvider = async (data: ModelProviderRequest): Promise<ModelProviderDetail | ModelProvider> => {
     return await request(aiApi.getAiModelProviderDetail, {
         data: data
     })

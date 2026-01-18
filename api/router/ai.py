@@ -98,13 +98,14 @@ def create_model_provider(
         name=model_provider_request.name, 
         description=model_provider_request.description,
         creator_id=user.id,
+        api_key=model_provider_request.api_key,
+        base_url=model_provider_request.base_url,
+        is_public=model_provider_request.is_public
     )
     crud.model.create_user_ai_model_provider(
         db=db,
         user_id=user.id,
         ai_model_provider_id=db_ai_model_provider.id,
-        api_key=model_provider_request.api_key,
-        base_url=model_provider_request.base_url,
         role=UserModelProviderRole.CREATOR
     )
     db.commit()
@@ -123,13 +124,27 @@ def get_ai_model_provider(
     )
     if ai_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
+    
     if ai_model_provider.creator_id == user.id:
         return schemas.ai.ModelProviderDetail.model_validate(ai_model_provider)
     
-    if ai_model_provider.is_public:
-        return schemas.ai.ModelProvider.model_validate(ai_model_provider)
-    else:
+    if not ai_model_provider.is_public:
         raise schemas.error.CustomException("The private model provider is not belong to you", code=403)
+    
+    db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
+        db=db,
+        user_id=user.id,
+        ai_model_provider_id=ai_model_provider.id,
+        filter_role=UserModelProviderRole.FORKER
+    )
+    if db_user_ai_model_provider is not None:
+        return schemas.ai.ModelProviderDetail.model_validate(ai_model_provider).model_copy(update={
+            "is_forked": False
+        })
+    
+    return schemas.ai.ModelProvider.model_validate(ai_model_provider).model_copy(update={
+        "is_forked": True   
+    })
  
 @ai_router.post("/model/delete", response_model=schemas.common.NormalResponse)
 def delete_ai_model(
@@ -232,7 +247,14 @@ def list_ai_model_provider(
     )
     next_start = next_model_provider.id if next_model_provider is not None else None
     data = [
-        schemas.ai.ModelProvider.model_validate(item[0])
+        schemas.ai.ModelProvider.model_validate(item[0]).model_copy(update={
+            "is_forked": crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
+                db=db,
+                user_id=user.id,
+                ai_model_provider_id=item[0].id,
+                filter_role=UserModelProviderRole.FORKER
+            ) is not None
+        })
         for item in db_ai_model_providers
     ]
     return schemas.pagination.InifiniteScrollPagnition(
@@ -246,31 +268,45 @@ def list_ai_model_provider(
 
 # 将对应的model provider加入自己的备选区
 @ai_router.post("/model-provider/fork", response_model=schemas.common.NormalResponse)
-def include_ai_model_provider(
-    model_provider_include_request: schemas.ai.ModelProviderIncludeRequest,
+def fork_ai_model_provider(
+    model_provider_fork_request: schemas.ai.ModelProviderForkRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
+    now = datetime.now(tz=timezone.utc)
     db_ai_model_provider = crud.model.get_ai_model_provider_by_id(
         db=db,
-        provider_id=model_provider_include_request.provider_id
+        provider_id=model_provider_fork_request.provider_id
     )
     if db_ai_model_provider is None:
         raise schemas.error.CustomException("The model provider is not exist", code=404)
     if db_ai_model_provider.creator_id != user.id and db_ai_model_provider.is_public == False:
         raise schemas.error.CustomException("You can't include the private model provider", code=403)
+    
+    if db_ai_model_provider.creator_id == user.id:
+        raise schemas.error.CustomException("You can't fork your own model provider", code=403)
+    
     db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
         db=db,
         user_id=user.id,
-        ai_model_provider_id=model_provider_include_request.provider_id
+        ai_model_provider_id=model_provider_fork_request.provider_id,
+        filter_role=UserModelProviderRole.FORKER
     )
-    if db_user_ai_model_provider is None:
-        db_user_ai_model_provider = crud.model.create_user_ai_model_provider(
-            db=db,
-            user_id=user.id,
-            ai_model_provider_id=model_provider_include_request.provider_id
-        )
-    db_user_ai_model_provider.role = UserModelProviderRole.FORKER
+    if db_user_ai_model_provider is not None:
+        if model_provider_fork_request.status == True:
+            raise schemas.error.CustomException("You have already fork the model provider", code=403)
+        else:
+            db_user_ai_model_provider.delete_at = now
+    else:
+        if model_provider_fork_request.status == False:
+            raise schemas.error.CustomException("You have not fork the model provider", code=403)
+        else:
+            db_user_ai_model_provider = crud.model.create_user_ai_model_provider(
+                db=db,
+                user_id=user.id,
+                ai_model_provider_id=model_provider_fork_request.provider_id,
+                role=UserModelProviderRole.FORKER
+            )
     db.commit()
     return schemas.common.SuccessResponse()
 
@@ -367,18 +403,13 @@ def update_ai_model_provider(
     if model_provider_update_request.description is not None:
         db_ai_model_provider.description = model_provider_update_request.description
     db_ai_model_provider.update_time = now
-    
-    db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-        db=db,
-        user_id=user.id,
-        ai_model_provider_id=model_provider_update_request.id
-    )
-    if db_user_ai_model_provider is not None:
-        if model_provider_update_request.api_key is not None:
-            db_user_ai_model_provider.api_key = encrypt_api_key(model_provider_update_request.api_key)
-        if model_provider_update_request.base_url is not None:
-            db_user_ai_model_provider.base_url = model_provider_update_request.base_url
-        db_user_ai_model_provider.update_time = now
+    if model_provider_update_request.api_key is not None:
+        db_ai_model_provider.api_key = encrypt_api_key(model_provider_update_request.api_key)
+    if model_provider_update_request.base_url is not None:
+        db_ai_model_provider.base_url = model_provider_update_request.base_url
+    if model_provider_update_request.is_public is not None:
+        db_ai_model_provider.is_public = model_provider_update_request.is_public
+    db_ai_model_provider.update_time = now
 
     db.commit()
     return schemas.common.SuccessResponse()

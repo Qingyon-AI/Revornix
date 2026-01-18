@@ -53,7 +53,7 @@ const UserContainer = ({ id }: { id: number }) => {
 						limit: lastPage.limit,
 						keyword: keyword,
 						user_id: id,
-				  }
+					}
 				: undefined;
 		},
 	});
@@ -116,7 +116,11 @@ const UserContainer = ({ id }: { id: number }) => {
 									title={
 										userInfo.nickname ? userInfo.nickname : 'Unknown User'
 									}>
-									<AvatarImage src={userInfo.avatar} alt='user avatar' />
+									<AvatarImage
+										className='object-cover'
+										src={userInfo.avatar}
+										alt='user avatar'
+									/>
 									<AvatarFallback>{userInfo.nickname}</AvatarFallback>
 								</Avatar>
 							)}

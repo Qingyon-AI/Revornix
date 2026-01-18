@@ -1,30 +1,24 @@
 
-# ModelProviderCreateRequest
+# ModelProviderForkRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`name` | string
-`description` | string
-`api_key` | string
-`base_url` | string
-`is_public` | boolean
+`provider_id` | number
+`status` | boolean
 
 ## Example
 
 ```typescript
-import type { ModelProviderCreateRequest } from ''
+import type { ModelProviderForkRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "name": null,
-  "description": null,
-  "api_key": null,
-  "base_url": null,
-  "is_public": null,
-} satisfies ModelProviderCreateRequest
+  "provider_id": null,
+  "status": null,
+} satisfies ModelProviderForkRequest
 
 console.log(example)
 
@@ -33,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as ModelProviderCreateRequest
+const exampleParsed = JSON.parse(exampleJSON) as ModelProviderForkRequest
 console.log(exampleParsed)
 ```
 

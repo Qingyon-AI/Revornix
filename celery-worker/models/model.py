@@ -30,7 +30,7 @@ class UserAIModelProvider(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     ai_model_provider_id: Mapped[int] = mapped_column(ForeignKey("ai_model_provider.id"), index=True, nullable=False)
-    role: Mapped[int] = mapped_column(Integer, nullable=False)
+    role: Mapped[int] = mapped_column(Integer, nullable=False, comment="0: creator, 1: forker")
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))

@@ -9,9 +9,9 @@ Name | Type
 `id` | number
 `uuid` | string
 `name` | string
+`is_forked` | boolean
+`is_public` | boolean
 `description` | string
-`api_key` | string
-`base_url` | string
 `create_time` | Date
 `update_time` | Date
 `creator` | [UserPublicInfo](UserPublicInfo.md)
@@ -26,9 +26,9 @@ const example = {
   "id": null,
   "uuid": null,
   "name": null,
+  "is_forked": null,
+  "is_public": null,
   "description": null,
-  "api_key": null,
-  "base_url": null,
   "create_time": null,
   "update_time": null,
   "creator": null,

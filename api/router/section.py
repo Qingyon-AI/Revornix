@@ -735,36 +735,35 @@ def update_section(
             user_id=user.id,
             section_id=db_section.id,
         )
-    db_section_process_task.trigger_type = section_update_request.process_task_trigger_type
-    
-    if section_update_request.process_task_trigger_type == SectionProcessTriggerType.UPDATED:
-        if scheduler.get_job(f"section-process-{str(db_section.id)}") is not None:
-            scheduler.remove_job(f"section-process-{str(db_section.id)}")
-    
-    if section_update_request.process_task_trigger_scheduler is not None and section_update_request.process_task_trigger_type == SectionProcessTriggerType.SCHEDULER:
-        db_section_process_task_trigger_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
-            db=db,
-            section_id=db_section.id
-        )
-        if db_section_process_task_trigger_scheduler is None:
-            db_section_process_task_trigger_scheduler = crud.task.create_section_process_task_trigger_scheduler(
+    if section_update_request.process_task_trigger_type is not None:
+        if section_update_request.process_task_trigger_type == SectionProcessTriggerType.UPDATED:
+            if scheduler.get_job(f"section-process-{str(db_section.id)}") is not None:
+                scheduler.remove_job(f"section-process-{str(db_section.id)}")
+        
+        if section_update_request.process_task_trigger_scheduler is not None and section_update_request.process_task_trigger_type == SectionProcessTriggerType.SCHEDULER:
+            db_section_process_task_trigger_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
                 db=db,
-                section_process_task_id=db_section_process_task.id,
-                cron_expr=section_update_request.process_task_trigger_scheduler
+                section_id=db_section.id
             )
-        db_section_process_task_trigger_scheduler.cron_expr = section_update_request.process_task_trigger_scheduler
-        if scheduler.get_job(f"section-process-{str(db_section.id)}") is not None:
-            scheduler.remove_job(f"section-process-{str(db_section.id)}")
-        scheduler.add_job(
-            func=start_process_section,
-            kwargs={
-                "section_id": db_section.id,
-                "user_id": db_section.creator_id,
-                "auto_podcast": db_section.auto_podcast
-            },
-            trigger=CronTrigger.from_crontab(section_update_request.process_task_trigger_scheduler),
-            id=f"section-process-{str(db_section.id)}"
-        )
+            if db_section_process_task_trigger_scheduler is None:
+                db_section_process_task_trigger_scheduler = crud.task.create_section_process_task_trigger_scheduler(
+                    db=db,
+                    section_process_task_id=db_section_process_task.id,
+                    cron_expr=section_update_request.process_task_trigger_scheduler
+                )
+            db_section_process_task_trigger_scheduler.cron_expr = section_update_request.process_task_trigger_scheduler
+            if scheduler.get_job(f"section-process-{str(db_section.id)}") is not None:
+                scheduler.remove_job(f"section-process-{str(db_section.id)}")
+            scheduler.add_job(
+                func=start_process_section,
+                kwargs={
+                    "section_id": db_section.id,
+                    "user_id": db_section.creator_id,
+                    "auto_podcast": db_section.auto_podcast
+                },
+                trigger=CronTrigger.from_crontab(section_update_request.process_task_trigger_scheduler),
+                id=f"section-process-{str(db_section.id)}"
+            )
     db_section.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()

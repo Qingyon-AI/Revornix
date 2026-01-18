@@ -9,9 +9,9 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**createModelProviderAiModelProviderCreatePost**](AiApi.md#createmodelprovideraimodelprovidercreatepost) | **POST** /ai/model-provider/create | Create Model Provider |
 | [**deleteAiModelAiModelDeletePost**](AiApi.md#deleteaimodelaimodeldeletepost) | **POST** /ai/model/delete | Delete Ai Model |
 | [**deleteAiModelProviderAiModelProviderDeletePost**](AiApi.md#deleteaimodelprovideraimodelproviderdeletepost) | **POST** /ai/model-provider/delete | Delete Ai Model Provider |
+| [**forkAiModelProviderAiModelProviderForkPost**](AiApi.md#forkaimodelprovideraimodelproviderforkpost) | **POST** /ai/model-provider/fork | Fork Ai Model Provider |
 | [**getAiModelAiModelDetailPost**](AiApi.md#getaimodelaimodeldetailpost) | **POST** /ai/model/detail | Get Ai Model |
 | [**getAiModelProviderAiModelProviderDetailPost**](AiApi.md#getaimodelprovideraimodelproviderdetailpost) | **POST** /ai/model-provider/detail | Get Ai Model Provider |
-| [**includeAiModelProviderAiModelProviderIncludePost**](AiApi.md#includeaimodelprovideraimodelproviderincludepost) | **POST** /ai/model-provider/include | Include Ai Model Provider |
 | [**listAiModelAiModelSearchPost**](AiApi.md#listaimodelaimodelsearchpost) | **POST** /ai/model/search | List Ai Model |
 | [**listAiModelProviderAiModelProviderProvidedPost**](AiApi.md#listaimodelprovideraimodelproviderprovidedpost) | **POST** /ai/model-provider/provided | List Ai Model Provider |
 | [**updateAiModelAiModelUpdatePost**](AiApi.md#updateaimodelaimodelupdatepost) | **POST** /ai/model/update | Update Ai Model |
@@ -364,6 +364,75 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## forkAiModelProviderAiModelProviderForkPost
+
+> NormalResponse forkAiModelProviderAiModelProviderForkPost(modelProviderForkRequest, authorization)
+
+Fork Ai Model Provider
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AiApi,
+} from '';
+import type { ForkAiModelProviderAiModelProviderForkPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new AiApi();
+
+  const body = {
+    // ModelProviderForkRequest
+    modelProviderForkRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies ForkAiModelProviderAiModelProviderForkPostRequest;
+
+  try {
+    const data = await api.forkAiModelProviderAiModelProviderForkPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **modelProviderForkRequest** | [ModelProviderForkRequest](ModelProviderForkRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## getAiModelAiModelDetailPost
 
 > Model getAiModelAiModelDetailPost(modelRequest, authorization)
@@ -435,7 +504,7 @@ No authorization required
 
 ## getAiModelProviderAiModelProviderDetailPost
 
-> ModelProvider getAiModelProviderAiModelProviderDetailPost(modelProviderRequest, authorization)
+> ModelProviderDetail getAiModelProviderAiModelProviderDetailPost(modelProviderRequest, authorization)
 
 Get Ai Model Provider
 
@@ -481,76 +550,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**ModelProvider**](ModelProvider.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## includeAiModelProviderAiModelProviderIncludePost
-
-> NormalResponse includeAiModelProviderAiModelProviderIncludePost(modelProviderIncludeRequest, authorization)
-
-Include Ai Model Provider
-
-### Example
-
-```ts
-import {
-  Configuration,
-  AiApi,
-} from '';
-import type { IncludeAiModelProviderAiModelProviderIncludePostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new AiApi();
-
-  const body = {
-    // ModelProviderIncludeRequest
-    modelProviderIncludeRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-  } satisfies IncludeAiModelProviderAiModelProviderIncludePostRequest;
-
-  try {
-    const data = await api.includeAiModelProviderAiModelProviderIncludePost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **modelProviderIncludeRequest** | [ModelProviderIncludeRequest](ModelProviderIncludeRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**NormalResponse**](NormalResponse.md)
+[**ModelProviderDetail**](ModelProviderDetail.md)
 
 ### Authorization
 

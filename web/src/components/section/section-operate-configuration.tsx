@@ -63,14 +63,14 @@ const SectionOperateConfiguration = ({
 
 	const updateFormSchema = z.object({
 		section_id: z.number().int(),
-		cover: z.string().optional(),
-		title: z.string().min(1),
-		description: z.string().min(1),
-		labels: z.array(z.number()),
-		auto_podcast: z.boolean(),
-		auto_illustration: z.boolean(),
-		process_task_trigger_type: z.number(),
-		process_task_trigger_scheduler: z.string().optional().nullable(),
+		cover: z.string().optional().optional(),
+		title: z.string().optional(),
+		description: z.string().optional(),
+		labels: z.array(z.number()).optional(),
+		auto_podcast: z.boolean().optional(),
+		auto_illustration: z.boolean().optional(),
+		process_task_trigger_type: z.number().optional(),
+		process_task_trigger_scheduler: z.string().optional(),
 	});
 	const id = section_id;
 
@@ -158,8 +158,8 @@ const SectionOperateConfiguration = ({
 
 		const [res, err] = await utils.to(
 			updateSection({
-				...values,
-				cover: values.cover,
+				section_id: id,
+				...patch,
 			})
 		);
 		if (err) {

@@ -72,7 +72,7 @@ export interface SectionUpdateRequest {
      * @type {number}
      * @memberof SectionUpdateRequest
      */
-    process_task_trigger_type: number;
+    process_task_trigger_type?: number | null;
     /**
      * 
      * @type {string}
@@ -86,7 +86,6 @@ export interface SectionUpdateRequest {
  */
 export function instanceOfSectionUpdateRequest(value: object): value is SectionUpdateRequest {
     if (!('section_id' in value) || value['section_id'] === undefined) return false;
-    if (!('process_task_trigger_type' in value) || value['process_task_trigger_type'] === undefined) return false;
     return true;
 }
 
@@ -108,7 +107,7 @@ export function SectionUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator
         'labels': json['labels'] == null ? undefined : json['labels'],
         'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
         'auto_illustration': json['auto_illustration'] == null ? undefined : json['auto_illustration'],
-        'process_task_trigger_type': json['process_task_trigger_type'],
+        'process_task_trigger_type': json['process_task_trigger_type'] == null ? undefined : json['process_task_trigger_type'],
         'process_task_trigger_scheduler': json['process_task_trigger_scheduler'] == null ? undefined : json['process_task_trigger_scheduler'],
     };
 }
