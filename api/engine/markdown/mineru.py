@@ -1,19 +1,21 @@
-import os
-import uuid
-import shutil
-import aiofiles
-import crud
 import io
-from bs4 import BeautifulSoup
+import os
+import shutil
+import uuid
 from pathlib import Path
-from config.base import BASE_DIR
-from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
-from enums.engine import Engine, EngineCategory
+
+import aiofiles
+from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
-from common.common import get_user_remote_file_system, is_dir_empty, extract_title_and_summary
-from common.mineru import parse_doc
-from data.sql.base import SessionLocal
+
+import crud
+from common.common import extract_title_and_summary, get_user_remote_file_system, is_dir_empty
 from common.logger import exception_logger
+from common.mineru import parse_doc
+from config.base import BASE_DIR
+from data.sql.base import SessionLocal
+from enums.engine import Engine, EngineCategory
+from protocol.markdown_engine import FileInfo, MarkdownEngineProtocol, WebsiteInfo
 
 
 class MineruEngine(MarkdownEngineProtocol):
@@ -64,7 +66,7 @@ class MineruEngine(MarkdownEngineProtocol):
             parse_doc([shot_pdf_path], output_dir=str(temp_dir))
 
             md_path = md_output_dir / "scene-snap.md"
-            async with aiofiles.open(md_path, "r", encoding="utf-8") as f:
+            async with aiofiles.open(md_path, encoding="utf-8") as f:
                 content = await f.read()
 
             # 3. Upload extracted images
@@ -144,7 +146,7 @@ class MineruEngine(MarkdownEngineProtocol):
         temp_file_path = BASE_DIR / "temp" / f"{temp_id}{suffix}"
         md_output_dir = BASE_DIR / "temp" / temp_id / "auto"
         os.makedirs(BASE_DIR / "temp", exist_ok=True)
-        
+
         db = SessionLocal()
 
         try:
@@ -153,7 +155,7 @@ class MineruEngine(MarkdownEngineProtocol):
                 raise Exception("The owner of the engine is not found.")
             if db_user.default_user_file_system is None:
                 raise Exception("The owner of the engine has not set a default file system yet.")
-            
+
             # 1. Copy to temp
             shutil.copy(file_path, temp_file_path)
 
@@ -161,7 +163,7 @@ class MineruEngine(MarkdownEngineProtocol):
             parse_doc([temp_file_path], output_dir=str(BASE_DIR / "temp"))
 
             md_path = md_output_dir / f"{temp_id}.md"
-            async with aiofiles.open(md_path, "r", encoding="utf-8") as f:
+            async with aiofiles.open(md_path, encoding="utf-8") as f:
                 content = await f.read()
 
             # 3. Extract Title + Summary
@@ -172,7 +174,7 @@ class MineruEngine(MarkdownEngineProtocol):
             if images_dir.exists() and images_dir.is_dir() and not is_dir_empty(images_dir):
                 remote_fs = await get_user_remote_file_system(self.user_id)
                 await remote_fs.init_client_by_user_file_system_id(db_user.default_user_file_system)
-                
+
                 for img_file in images_dir.iterdir():
                     async with aiofiles.open(img_file, "rb") as f:
                         img_data = await f.read()

@@ -1,8 +1,11 @@
-from typing import cast, Any
-from pymilvus.client.search_result import SearchResult
-from data.milvus.base import milvus_client, MILVUS_COLLECTION
+from typing import Any, cast
+
 from pymilvus import AnnSearchRequest, WeightedRanker
+from pymilvus.client.search_result import SearchResult
+
+from data.milvus.base import MILVUS_COLLECTION, milvus_client
 from engine.embedding.factory import get_embedding_engine
+
 
 def _normalize_search_result(results):
     if hasattr(results, "result"):  # SearchFuture
@@ -27,8 +30,8 @@ def _parse_results(results: SearchResult) -> list[dict[str, Any]]:
 
 # ===================== 稠密向量检索 =====================
 def naive_search(
-    user_id: int, 
-    search_text: str, 
+    user_id: int,
+    search_text: str,
     top_k: int = 5
 ) -> list[dict[str, Any]]:
     embedding_engine = get_embedding_engine()

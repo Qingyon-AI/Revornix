@@ -1,12 +1,14 @@
-import crud
 import json
 import threading
 import time
 from typing import Protocol
-from data.sql.base import SessionLocal
-from config.file_system import FILE_SYSTEM_SERVER_PUBLIC_URL
-from enums.file import RemoteFileService
+
+import crud
 from common.logger import exception_logger
+from config.file_system import FILE_SYSTEM_SERVER_PUBLIC_URL
+from data.sql.base import SessionLocal
+from enums.file import RemoteFileService
+
 
 class RemoteFileServiceProtocol(Protocol):
 
@@ -17,14 +19,14 @@ class RemoteFileServiceProtocol(Protocol):
     file_service_description_zh: str | None
     file_service_demo_config: str | None
     file_service_config: str | None
-    
+
     def __init__(
-        self, 
+        self,
         file_service_uuid: str,
-        file_service_name: str, 
-        file_service_name_zh: str, 
-        file_service_description: str | None = None, 
-        file_service_description_zh: str | None = None, 
+        file_service_name: str,
+        file_service_name_zh: str,
+        file_service_description: str | None = None,
+        file_service_description_zh: str | None = None,
         file_service_demo_config: str | None = None,
         file_service_config: str | None = None
     ):
@@ -45,15 +47,15 @@ class RemoteFileServiceProtocol(Protocol):
         cache = getattr(RemoteFileServiceProtocol, "_url_prefix_cache", None)
         if cache is None:
             cache = {}
-            setattr(RemoteFileServiceProtocol, "_url_prefix_cache", cache)
+            RemoteFileServiceProtocol._url_prefix_cache = cache
         lock = getattr(RemoteFileServiceProtocol, "_url_prefix_cache_lock", None)
         if lock is None:
             lock = threading.Lock()
-            setattr(RemoteFileServiceProtocol, "_url_prefix_cache_lock", lock)
+            RemoteFileServiceProtocol._url_prefix_cache_lock = lock
         ttl_seconds = getattr(RemoteFileServiceProtocol, "_url_prefix_cache_ttl_seconds", None)
         if ttl_seconds is None:
             ttl_seconds = 60.0
-            setattr(RemoteFileServiceProtocol, "_url_prefix_cache_ttl_seconds", ttl_seconds)
+            RemoteFileServiceProtocol._url_prefix_cache_ttl_seconds = ttl_seconds
 
         now = time.monotonic()
         with lock:
@@ -66,7 +68,7 @@ class RemoteFileServiceProtocol(Protocol):
         db = SessionLocal()
         try:
             db_user = crud.user.get_user_by_id(
-                db=db, 
+                db=db,
                 user_id=user_id
             )
             if db_user is None:
@@ -88,11 +90,7 @@ class RemoteFileServiceProtocol(Protocol):
 
             if db_file_system.uuid == RemoteFileService.Built_In.meta.id:
                 url_prefix = f'{FILE_SYSTEM_SERVER_PUBLIC_URL}/{db_user.uuid}'
-            elif db_file_system.uuid == RemoteFileService.AWS_S3.meta.id:
-                config_str = db_user_file_system.config_json
-            elif db_file_system.uuid == RemoteFileService.AWS_S3.meta.id:
-                config_str = db_user_file_system.config_json
-            elif db_file_system.uuid == RemoteFileService.Generic_S3.meta.id:
+            elif db_file_system.uuid == RemoteFileService.AWS_S3.meta.id or db_file_system.uuid == RemoteFileService.AWS_S3.meta.id or db_file_system.uuid == RemoteFileService.Generic_S3.meta.id:
                 config_str = db_user_file_system.config_json
             else:
                 raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")
@@ -111,37 +109,37 @@ class RemoteFileServiceProtocol(Protocol):
             raise
         finally:
             db.close()
-        
+
     async def init_client_by_user_file_system_id(
-        self, 
+        self,
         user_file_system_id: int
     ) -> None:
         raise NotImplementedError("Method not implemented")
-    
+
     async def get_file_content_by_file_path(
-        self, 
+        self,
         file_path: str
     ) -> dict:
         raise NotImplementedError("Method not implemented")
-    
+
     async def upload_file_to_path(
-        self, 
-        file_path: str, 
-        file, 
+        self,
+        file_path: str,
+        file,
         content_type: str | None = None
     ) -> dict:
         raise NotImplementedError("Method not implemented")
-    
+
     async def upload_raw_content_to_path(
-        self, 
-        file_path: str, 
-        content: bytes, 
+        self,
+        file_path: str,
+        content: bytes,
         content_type: str | None = None
     ) -> dict:
         raise NotImplementedError("Method not implemented")
-    
+
     async def delete_file(
-        self, 
+        self,
         file_path
     ) -> dict:
         raise NotImplementedError("Method not implemented")

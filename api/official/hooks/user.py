@@ -1,7 +1,8 @@
 import crud
-from common.logger import info_logger, exception_logger
+from common.logger import exception_logger, info_logger
 from data.sql.base import SessionLocal
 from enums.engine import Engine
+
 
 async def on_user_created(
     user_id: int

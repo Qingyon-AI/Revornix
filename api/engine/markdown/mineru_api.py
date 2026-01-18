@@ -1,23 +1,24 @@
-import uuid
-import httpx
-import hashlib
 import asyncio
-import crud
-import aiofiles
-import time
+import hashlib
 import io
 import os
+import time
+import uuid
 from pathlib import Path
-from typing import Tuple, Any
+from typing import Any
 
-from common.file import download_file_to_temp, extract_files_to_temp_from_zip
-from config.base import BASE_DIR
-from common.common import get_user_remote_file_system, extract_title_and_summary
-from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
-from enums.engine import Engine, EngineCategory
+import aiofiles
+import httpx
 from playwright.async_api import async_playwright
-from data.sql.base import SessionLocal
+
+import crud
+from common.common import extract_title_and_summary, get_user_remote_file_system
+from common.file import download_file_to_temp, extract_files_to_temp_from_zip
 from common.logger import exception_logger
+from config.base import BASE_DIR
+from data.sql.base import SessionLocal
+from enums.engine import Engine, EngineCategory
+from protocol.markdown_engine import FileInfo, MarkdownEngineProtocol, WebsiteInfo
 
 
 class MineruApiEngine(MarkdownEngineProtocol):
@@ -91,7 +92,7 @@ class MineruApiEngine(MarkdownEngineProtocol):
             if size <= 0:
                 raise Exception(f"Local file is empty (0 bytes): {p}")
 
-    async def _extract_files(self, file_paths: list[str]) -> list[Tuple[str, str, str]]:
+    async def _extract_files(self, file_paths: list[str]) -> list[tuple[str, str, str]]:
         token, _uid = self._require_engine_config()
         user_id = self.user_id
         if not user_id:
@@ -207,7 +208,7 @@ class MineruApiEngine(MarkdownEngineProtocol):
             extract_result = await poll_result()
 
             # 4) Process results
-            final_data: list[Tuple[str, str, str]] = []
+            final_data: list[tuple[str, str, str]] = []
 
             for item in extract_result:
                 state = item.get("state")
@@ -238,7 +239,7 @@ class MineruApiEngine(MarkdownEngineProtocol):
                         files = []
                     raise Exception(f"full.md not found in extracted zip; extracted_dir={extracted_dir}, sample_files={files}")
 
-                async with aiofiles.open(md_path, "r", encoding="utf-8") as f:
+                async with aiofiles.open(md_path, encoding="utf-8") as f:
                     content = await f.read()
 
                 if not content.strip():

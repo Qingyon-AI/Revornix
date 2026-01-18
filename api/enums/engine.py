@@ -1,6 +1,7 @@
 from enum import Enum, IntEnum
 from typing import NamedTuple
-  
+
+
 class EngineCategory(IntEnum):
     Markdown = 0
     TTS = 1

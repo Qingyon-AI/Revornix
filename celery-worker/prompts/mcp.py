@@ -1,6 +1,4 @@
-from typing import List
-
-def get_prompt_to_identify_tool_and_arguments(query: str, tools: List, context: List[str]) -> str:
+def get_prompt_to_identify_tool_and_arguments(query: str, tools: list, context: list[str]) -> str:
     tools_description = "\n".join([
         f"{tool['name']}: {tool['description']}, {tool['inputSchema']}" for tool in tools
     ])
@@ -23,7 +21,7 @@ def get_prompt_to_identify_tool_and_arguments(query: str, tools: List, context: 
         "IMPORTANT: If no tool is needed or there is no tool that can be used to answer the question, tool-name should be none.\n"
     )
     
-def get_if_down_prompt(query: str, tool_response: str, context: List[str]) -> str:
+def get_if_down_prompt(query: str, tool_response: str, context: list[str]) -> str:
     return (
         "You are a helpful assistant."
         " Your job is to decide whether to respond directly to the user or continue processing using additional tools, based on:"

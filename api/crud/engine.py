@@ -1,9 +1,12 @@
-import models
 from datetime import datetime, timezone
+
 from sqlalchemy.orm import Session
 
+import models
+
+
 def create_engine(
-    db: Session, 
+    db: Session,
     uuid: str,
     category: int,
     name: str,
@@ -15,7 +18,7 @@ def create_engine(
     now = datetime.now(timezone.utc)
     db_engine = models.engine.Engine(uuid=uuid,
                                      category=category,
-                                     name=name, 
+                                     name=name,
                                      name_zh=name_zh,
                                      description=description,
                                      description_zh=description_zh,
@@ -26,8 +29,8 @@ def create_engine(
     return db_engine
 
 def create_user_engine(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     engine_id: int,
     title: str,
     description: str | None = None,
@@ -46,7 +49,7 @@ def create_user_engine(
     return db_user_engine
 
 def get_engine_by_id(
-    db: Session, 
+    db: Session,
     id: int
 ):
     query = db.query(models.engine.Engine)
@@ -55,7 +58,7 @@ def get_engine_by_id(
     return query.one_or_none()
 
 def get_engine_by_uuid(
-    db: Session, 
+    db: Session,
     uuid: str
 ):
     query = db.query(models.engine.Engine)
@@ -64,7 +67,7 @@ def get_engine_by_uuid(
     return query.one_or_none()
 
 def get_user_engine_by_user_engine_id(
-    db: Session, 
+    db: Session,
     user_engine_id: int
 ):
     query = db.query(models.engine.UserEngine)
@@ -73,8 +76,8 @@ def get_user_engine_by_user_engine_id(
     return query.one_or_none()
 
 def get_all_engines(
-    db: Session, 
-    keyword: str | None = None, 
+    db: Session,
+    keyword: str | None = None,
     filter_category: int | None = None
 ):
     query = db.query(models.engine.Engine)
@@ -103,9 +106,9 @@ def get_engine_by_user_id(
     return query.all()
 
 def get_user_engine_by_user_id(
-    db: Session, 
-    user_id: int, 
-    keyword: str | None = None, 
+    db: Session,
+    user_id: int,
+    keyword: str | None = None,
     filter_category: int | None = None
 ):
     query = db.query(models.engine.UserEngine, models.engine.Engine)
@@ -118,10 +121,10 @@ def get_user_engine_by_user_id(
     if filter_category is not None:
         query = query.filter(models.engine.Engine.category == filter_category)
     return query.all()
-    
+
 def delete_user_engine_by_user_id_and_user_engine_id(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     user_engine_id: int
 ):
     now = datetime.now(timezone.utc)

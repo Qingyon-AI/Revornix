@@ -1,4 +1,5 @@
 from typing import Generic, TypeVar
+
 from pydantic import BaseModel
 
 # 定义一个泛型类型变量
@@ -20,9 +21,9 @@ class Pagination(BaseModel, Generic[T]):
 class PageableRequest(BaseModel):
     page_num: int
     page_size: int
-    
+
 class InifiniteScrollPagnition(BaseModel, Generic[T]):
-    total: int 
+    total: int
     start: int | None = None
     limit: int
     has_more: bool

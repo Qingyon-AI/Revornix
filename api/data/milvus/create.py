@@ -1,7 +1,9 @@
-from data.milvus.delete import clear_milvus_collection
-from data.milvus.base import milvus_client
 from pymilvus import DataType, Function, FunctionType
+
 from common.logger import info_logger
+from data.milvus.base import milvus_client
+from data.milvus.delete import clear_milvus_collection
+
 
 def init_document_collection():
     clear_milvus_collection()
@@ -16,7 +18,7 @@ def init_document_collection():
     schema.add_field(field_name="doc_id", datatype=DataType.INT32)
     schema.add_field(field_name="idx", datatype=DataType.INT64)
     schema.add_field(field_name="creator_id", datatype=DataType.INT8, max_length=100)
-    
+
     bm25_function = Function(
         name="text_bm25_emb", # Function name
         input_field_names=["text"], # Name of the VARCHAR field containing raw text data

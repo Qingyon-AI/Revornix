@@ -1,5 +1,6 @@
 from data.custom_types.all import ChunkInfo
-from data.milvus.base import milvus_client, MILVUS_COLLECTION
+from data.milvus.base import MILVUS_COLLECTION, milvus_client
+
 
 def upsert_milvus(
     user_id: int,

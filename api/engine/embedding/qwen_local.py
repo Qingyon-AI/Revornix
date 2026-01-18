@@ -1,7 +1,8 @@
-import torch
 import numpy as np
-from sentence_transformers import SentenceTransformer
+import torch
 from numpy.typing import NDArray
+from sentence_transformers import SentenceTransformer
+
 from protocol.embedding_engine import EmbeddingEngine
 
 _model = None

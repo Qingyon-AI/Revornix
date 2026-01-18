@@ -1,13 +1,15 @@
-import crud
-import schemas
-from data.sql.base import SessionLocal
 from datetime import date as date_type
 from typing import cast
+
+import crud
+import schemas
 from common.common import get_user_remote_file_system
+from data.sql.base import SessionLocal
 from protocol.notification_template import NotificationTemplate
 
+
 class DailySummaryNotificationTemplate(NotificationTemplate):
-    
+
     def __init__(self):
         super().__init__(
             uuid='8f5016dc375e447f82729df765b12847',
@@ -16,7 +18,7 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
             description="This is a daily summary template",
             description_zh="这是一个每日总结模板"
         )
-        
+
     async def generate(
         self,
         params: dict | None
@@ -27,7 +29,7 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
         user_id = cast(int, params.get('user_id'))
         date = cast(date_type, params.get('date'))
         db_user = crud.user.get_user_by_id(
-            db=db, 
+            db=db,
             user_id=user_id
         )
         if db_user is None:
@@ -36,7 +38,7 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
             raise Exception("The user who is about to send notification havn't set default user file system")
 
         db_section = crud.section.get_section_by_user_and_date(
-            db=db, 
+            db=db,
             user_id=user_id,
             date=date
         )
@@ -45,7 +47,7 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
                 title=f"Daily Summary Of {date.isoformat()}",
                 content="No Summary Today For Now"
             )
-        
+
         remote_file_service = await get_user_remote_file_system(
             user_id=user_id
         )
@@ -61,4 +63,3 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
             content=markdown_content,
             link='/section/today'
         )
-        

@@ -1,17 +1,19 @@
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
-import smtplib
 import asyncio
-import ssl
 import os
-from pathlib import Path
-from typing import Optional
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import smtplib
+import ssl
 from email.header import Header
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from email.utils import formataddr
+from pathlib import Path
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
 from common.logger import exception_logger
 
 SMTP_HOST = os.environ.get('SMTP_HOST')
@@ -30,7 +32,7 @@ class RevornixSystemEmail:
         port: int = int(SMTP_PORT),
         username: str = SMTP_USERNAME,
         password: str = SMTP_PASSWORD,
-        sender_name: Optional[str] = "Revornix-No-Reply"
+        sender_name: str | None = "Revornix-No-Reply"
     ):
         self.host = host
         self.port = port
@@ -49,9 +51,9 @@ class RevornixSystemEmail:
         self,
         recipient: str,
         title: str,
-        content: Optional[str] = None,
-        cover: Optional[str] = None,
-        template: Optional[str] = "default.html"
+        content: str | None = None,
+        cover: str | None = None,
+        template: str | None = "default.html"
     ) -> bool:
 
         try:

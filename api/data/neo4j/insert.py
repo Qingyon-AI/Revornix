@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
-from data.custom_types.all import ChunkInfo, RelationInfo, EntityInfo, DocumentInfo
+
+from data.custom_types.all import ChunkInfo, DocumentInfo, EntityInfo, RelationInfo
 from data.neo4j.base import neo4j_driver
+
 
 def now_str():
     return datetime.now(tz=timezone.utc).isoformat()
@@ -45,7 +47,7 @@ def upsert_doc_chunk_relations():
     """
     with neo4j_driver.session() as session:
         session.run(cypher)
-        
+
 # -----------------------------
 # 4) 批量 upsert Chunk 节点
 # -----------------------------

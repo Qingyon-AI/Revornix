@@ -1,5 +1,7 @@
-from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone
+
+from pydantic import BaseModel, field_serializer
+
 
 class EngineDeleteRequest(BaseModel):
     user_engine_id: int
@@ -9,10 +11,10 @@ class EngineInstallRequest(BaseModel):
     title: str
     description: str | None = None
     config_json: str | None = None
-    
+
 class EngineInstallResponse(BaseModel):
     user_engine_id: int
-    
+
 class EngineUpdateRequest(BaseModel):
     user_engine_id: int
     config_json: str| None = None
@@ -29,7 +31,7 @@ class EngineInfo(BaseModel):
     demo_config: str | None = None
     class Config:
         from_attributes = True
-        
+
 class UserEngineInfo(BaseModel):
     id: int
     engine_id: int
@@ -55,14 +57,14 @@ class UserEngineInfo(BaseModel):
         return v
     class Config:
         from_attributes = True
-        
+
 class EngineSearchRequest(BaseModel):
     keyword: str
     filter_category: int | None = None
-    
+
 class MineEngineSearchResponse(BaseModel):
     data: list[UserEngineInfo]
-    
+
 class ProvideEngineSearchResponse(BaseModel):
     data: list[EngineInfo]
     class Config:

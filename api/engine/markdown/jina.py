@@ -1,9 +1,11 @@
 import httpx
-from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo
+
 from enums.engine import Engine, EngineCategory
+from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo
+
 
 class JinaEngine(MarkdownEngineProtocol):
-    
+
     def __init__(self):
         super().__init__(
             engine_uuid=Engine.Jina.meta.uuid,
@@ -16,7 +18,7 @@ class JinaEngine(MarkdownEngineProtocol):
         )
 
     async def analyse_website(
-        self, 
+        self,
         url: str
     ):
         engine_config = self.get_engine_config()

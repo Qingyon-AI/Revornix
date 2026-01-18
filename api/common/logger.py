@@ -1,9 +1,11 @@
 import logging
 import traceback
 from logging import handlers
+
 from config.base import BASE_DIR
 
-class BaseLogger(object):
+
+class BaseLogger:
 
     level_relations = {
         'debug': logging.DEBUG,

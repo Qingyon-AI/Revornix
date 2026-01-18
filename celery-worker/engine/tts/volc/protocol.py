@@ -4,7 +4,7 @@ import struct
 import websockets
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Callable, List
+from typing import Callable
 from common.logger import exception_logger
 
 class MsgType(IntEnum):
@@ -267,7 +267,7 @@ class Message:
         if remaining:
             raise ValueError(f"Unexpected data after message: {remaining}")
 
-    def _get_writers(self) -> List[Callable[[io.BytesIO], None]]:
+    def _get_writers(self) -> list[Callable[[io.BytesIO], None]]:
         """Get list of writer functions"""
         writers = []
 
@@ -291,7 +291,7 @@ class Message:
         writers.append(self._write_payload)
         return writers
 
-    def _get_readers(self) -> List[Callable[[io.BytesIO], None]]:
+    def _get_readers(self) -> list[Callable[[io.BytesIO], None]]:
         """Get list of reader functions"""
         readers = []
 

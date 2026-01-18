@@ -1,11 +1,14 @@
-import models
 from datetime import datetime, timezone
+
 from sqlalchemy.orm import Session
+
+import models
+
 
 def create_mcp_server_base(
     db: Session,
-    user_id: int, 
-    name: str, 
+    user_id: int,
+    name: str,
     category: int
 ):
     now = datetime.now(timezone.utc)
@@ -21,10 +24,10 @@ def create_mcp_server_base(
     return db_mcp_server
 
 def create_std_mcp(
-    db: Session, 
+    db: Session,
     server_id: int,
-    cmd: str, 
-    args: str | None = None, 
+    cmd: str,
+    args: str | None = None,
     env: str | None = None,
 ):
     now = datetime.now(timezone.utc)
@@ -40,7 +43,7 @@ def create_std_mcp(
     return db_std_mcp
 
 def create_http_mcp(
-    db: Session, 
+    db: Session,
     server_id: int,
     url: str,
     headers: str | None = None
@@ -68,9 +71,9 @@ def search_mcp_servers(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.mcp.MCPServer.name.like(f'%{keyword}%'))
     return query.all()
-    
+
 def get_base_mcp_server_by_id(
-    db: Session, 
+    db: Session,
     id: int
 ):
     query = db.query(models.mcp.MCPServer)
@@ -96,7 +99,7 @@ def get_http_mcp_server_by_base_server_id(
     query = db.query(models.mcp.HttpMCP)
     query = query.join(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.id == base_server_id,
-                         models.mcp.HttpMCP.delete_at == None, 
+                         models.mcp.HttpMCP.delete_at == None,
                          models.mcp.MCPServer.delete_at == None)
     return query.one_or_none()
 
@@ -124,7 +127,7 @@ def delete_http_mcp_server_by_base_server_id(
     if http_mcp_server is not None:
         http_mcp_server.delete_at = now
         db.flush()
-    
+
 def delete_std_mcp_server_by_base_server_id(
     db: Session,
     base_server_id: int
@@ -133,7 +136,7 @@ def delete_std_mcp_server_by_base_server_id(
     query = db.query(models.mcp.StdMCP)
     query = query.join(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.id == base_server_id,
-                         models.mcp.StdMCP.delete_at == None, 
+                         models.mcp.StdMCP.delete_at == None,
                          models.mcp.MCPServer.delete_at == None)
     std_mcp_server = query.one_or_none()
     if std_mcp_server is not None:

@@ -1,8 +1,10 @@
-from typing import List, Dict, Any
 from datetime import datetime
+from typing import Any
+
 from data.custom_types.all import *
-from data.neo4j.base import neo4j_driver
 from data.milvus.search import naive_search
+from data.neo4j.base import neo4j_driver
+
 
 def to_neo4j_datetime_str(
     iso: str
@@ -10,8 +12,8 @@ def to_neo4j_datetime_str(
     return datetime.fromisoformat(iso).strftime("%Y-%m-%dT%H:%M:%S")
 
 def build_time_filter(
-    time_start: str | None, 
-    time_end: str | None, 
+    time_start: str | None,
+    time_end: str | None,
     param_prefix=""
 ) -> tuple[str, dict]:
     """
@@ -35,7 +37,7 @@ def local_search_by_entity(
     entity_name: str,
     hops: int = 1,
     limit: int = 50
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     局部实体子图搜索（带用户权限）：
     - Entity 名称模糊匹配
@@ -95,7 +97,7 @@ def global_search(
     expand_limit: int = 50,
     time_start: str | None = None,
     time_end: str | None = None
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     全局检索流程（带 user_id 权限过滤）：
     1) 在 Milvus 上做全局向量检索（得到 top_k chunk）
@@ -103,7 +105,7 @@ def global_search(
     """
     seed_chunks = naive_search(
         user_id=user_id,
-        search_text=search_text, 
+        search_text=search_text,
         top_k=top_k
     )
     chunk_ids = [c["chunk_id"] for c in seed_chunks]
@@ -194,10 +196,10 @@ def global_search(
 
 # ===================== 小工具：一条 API 把三种策略合并并返回（可选） =====================
 def hybrid_search(
-    user_id: int, 
-    search_text: str, 
-    naive_k: int = 5, 
-    local_hops: int = 1, 
+    user_id: int,
+    search_text: str,
+    naive_k: int = 5,
+    local_hops: int = 1,
     global_k: int = 10
 ):
     """
@@ -209,15 +211,15 @@ def hybrid_search(
     # 1. local attempt（若能匹配实体，则优先）
     local_chunks = local_search_by_entity(
         user_id=user_id,
-        entity_name=search_text, 
-        hops=local_hops, 
+        entity_name=search_text,
+        hops=local_hops,
         limit=50
     )
     if local_chunks:
         # 若 local 有结果，则也同时拿 naive 做补充
         naive_chunks = naive_search(
             user_id=user_id,
-            search_text=search_text, 
+            search_text=search_text,
             top_k=naive_k
         )
         # 做简单合并（保序且去重）
@@ -232,9 +234,9 @@ def hybrid_search(
     else:
         # local 没有命中实体，退回 global (naive + expand)
         g = global_search(
-            user_id=user_id, 
-            search_text=search_text, 
-            top_k=global_k, 
+            user_id=user_id,
+            search_text=search_text,
+            top_k=global_k,
             expand_limit=50
         )
         # 合并 seed + expanded，按 score 已在 seed 中返回

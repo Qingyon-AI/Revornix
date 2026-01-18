@@ -1,13 +1,15 @@
-import models
+from datetime import datetime, timedelta, timezone
+
 import jwt
-from datetime import datetime, timezone, timedelta
+
+import models
 from config.oauth2 import OAUTH_SECRET_KEY
 
 if OAUTH_SECRET_KEY is None:
     raise ValueError("OAUTH_SECRET_KEY is not set")
 
 def create_jwt(
-    data: dict, 
+    data: dict,
     expires_delta: timedelta | None = None
 ):
     to_encode = data.copy()
@@ -18,13 +20,12 @@ def create_jwt(
                 "exp": expire
             }
         )
-    encoded_jwt = jwt.encode(
-        payload=to_encode, 
-        key=OAUTH_SECRET_KEY, 
+    return jwt.encode(
+        payload=to_encode,
+        key=OAUTH_SECRET_KEY,
         algorithm='HS256',
         headers={"alg": 'HS256'}
     )
-    return encoded_jwt
 
 def create_token(
     user: models.user.User
@@ -34,11 +35,11 @@ def create_token(
         "sub": user.uuid
     }
     access_token = create_jwt(
-        data, 
+        data,
         expires_delta=timedelta(hours=1)
     )
     refresh_token = create_jwt(
-        data, 
+        data,
         expires_delta=timedelta(days=7)
     )
     return access_token, refresh_token

@@ -1,21 +1,24 @@
-import crud
-import json
-import boto3
 import asyncio
+import json
 from typing import Any
-from data.sql.base import SessionLocal
-from protocol.remote_file_service import RemoteFileServiceProtocol
-from enums.file import RemoteFileService
+
+import boto3
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
 from botocore.config import Config
+
+import crud
 from common.logger import exception_logger
+from data.sql.base import SessionLocal
+from enums.file import RemoteFileService
+from protocol.remote_file_service import RemoteFileServiceProtocol
+
 
 class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
-    
+
     oss_client: Any | None = None
     bucket: str | None = None
-    
+
     def __init__(self):
         super().__init__(
             file_service_uuid=RemoteFileService.AliyunOSS.meta.id,
@@ -25,9 +28,9 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
             file_service_description_zh='Aliyun OSS 文件系统，基于阿里云官方的OSS，具有极强的稳定性和可用性，但需要收费。',
             file_service_demo_config='{"role_arn":"","user_access_key_id":"","user_access_key_secret":"","region_id":"","endpoint_url":"","bucket":"","url_prefix":""}'
         )
-    
+
     async def init_client_by_user_file_system_id(
-        self, 
+        self,
         user_file_system_id: int
     ):
         def _init():
@@ -88,9 +91,9 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
                 db.close()
 
         await asyncio.to_thread(_init)
-    
+
     async def get_file_content_by_file_path(
-        self, 
+        self,
         file_path: str
     ):
         def _get():
@@ -108,7 +111,7 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
             return content
 
         return await asyncio.to_thread(_get)
-    
+
     async def upload_file_to_path(self, file_path, file, content_type: str | None = None):
         def _upload():
             if self.oss_client is None:
@@ -126,11 +129,11 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
             return self.oss_client.upload_fileobj(**kwargs)
 
         return await asyncio.to_thread(_upload)
-    
+
     async def upload_raw_content_to_path(
-        self, 
-        file_path, 
-        content, 
+        self,
+        file_path,
+        content,
         content_type: str | None = None
     ):
         def _upload_raw():
@@ -146,9 +149,9 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
             return self.oss_client.put_object(**kwargs)
 
         return await asyncio.to_thread(_upload_raw)
-        
+
     async def delete_file(
-        self, 
+        self,
         file_path
     ):
         def _delete():
@@ -157,7 +160,7 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
             return self.oss_client.delete_object(Bucket=self.bucket, Key=file_path)
 
         return await asyncio.to_thread(_delete)
-    
+
     async def list_files(
         self
     ):

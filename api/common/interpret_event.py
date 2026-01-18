@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import time
 import uuid
-from typing import Any, Dict, Iterable, Optional, cast
-
+from collections.abc import Iterable
+from typing import Any
 
 # ============
 # 工具函数
@@ -20,9 +20,9 @@ def gen_event_id() -> str:
 def base_event(
     event_type: str,
     chat_id: str,
-    payload: Dict[str, Any],
-    trace: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    payload: dict[str, Any],
+    trace: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     return {
         "chat_id": chat_id,
         "type": event_type,          # status | output | error | done
@@ -42,15 +42,15 @@ class EventInterpreter:
     """
 
     def __init__(self):
-        self._last_status: Optional[str] = None
+        self._last_status: str | None = None
         self._done_sent: bool = False
 
     # ========= 主入口 =========
     def interpret(
         self,
         chat_id: str,
-        event: Dict[str, Any]
-    ) -> Iterable[Dict[str, Any]]:
+        event: dict[str, Any]
+    ) -> Iterable[dict[str, Any]]:
         event_type = event.get("event")
         name = event.get("name")
         data = event.get("data", {}) or {}
@@ -223,11 +223,11 @@ class EventInterpreter:
     def _status_once(
         self,
         chat_id: str,
-        trace: Dict[str, Any],
+        trace: dict[str, Any],
         phase: str,
         label: str,
-        detail: Optional[Dict[str, Any]] = None,
-    ) -> Optional[Dict[str, Any]]:
+        detail: dict[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
         if self._last_status == phase:
             return None
 

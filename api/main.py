@@ -1,34 +1,36 @@
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
+import functools
 import io
 import time
+from contextlib import AsyncExitStack, asynccontextmanager
+
 import yaml
-import schemas
-import functools
-from common.redis import redis_pool
-from common.apscheduler.app import scheduler
-from contextlib import asynccontextmanager, AsyncExitStack
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
-from fastapi import status
-from router.user import user_router
-from router.mcp import mcp_router
-from router.document import document_router
-from router.ai import ai_router
-from router.notification import notification_router
-from router.section import section_router
-from router.engine import engine_router
-from router.file_system import file_system_router
-from router.api_key import api_key_router
-from router.tp import tp_router
-from router.rss import rss_router
-from router.graph import graph_router
+
+import schemas
+from common.apscheduler.app import scheduler
+from common.logger import exception_logger, info_logger
+from common.redis import redis_pool
+from config.sentry import API_SENTRY_DSN, API_SENTRY_ENABLE
 from mcp_router.common import common_mcp_router
 from mcp_router.document import document_mcp_router
-from common.logger import exception_logger, info_logger, exception_logger
-from config.sentry import API_SENTRY_DSN, API_SENTRY_ENABLE
+from router.ai import ai_router
+from router.api_key import api_key_router
+from router.document import document_router
+from router.engine import engine_router
+from router.file_system import file_system_router
+from router.graph import graph_router
+from router.mcp import mcp_router
+from router.notification import notification_router
+from router.rss import rss_router
+from router.section import section_router
+from router.tp import tp_router
+from router.user import user_router
 
 common_mcp_app = common_mcp_router.http_app()
 document_mcp_app = document_mcp_router.http_app()
@@ -59,7 +61,7 @@ async def lifespan(app: FastAPI):
         info_logger.info("🛑 FastAPI shutting down...")
         await app.state.redis.close()
         info_logger.info("✅ Redis connection closed.")
-    
+
 app = FastAPI(
         title="Revornix Main Backend",
         version="0.5.1",
@@ -111,13 +113,13 @@ async def health():
     return {"status": "ok"}
 
 @app.get('/openapi.yaml', include_in_schema=False)
-@functools.lru_cache()
+@functools.lru_cache
 def read_openapi_yaml() -> Response:
     openapi_json= app.openapi()
     yaml_s = io.StringIO()
     yaml.dump(openapi_json, yaml_s)
     return Response(yaml_s.getvalue(), media_type='text/yaml')
-    
+
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.perf_counter()

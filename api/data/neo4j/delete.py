@@ -1,5 +1,6 @@
-from data.neo4j.base import neo4j_driver
 from common.logger import info_logger
+from data.neo4j.base import neo4j_driver
+
 
 def clear_data():
     with neo4j_driver.session() as session:
@@ -19,7 +20,7 @@ def delete_documents_and_related_from_neo4j(
         session.execute_write(_delete_documents_tx, doc_ids)
 
 def _delete_documents_tx(
-    tx, 
+    tx,
     doc_ids: list[int]
 ):
     # -----------------------------
@@ -49,6 +50,6 @@ def _delete_documents_tx(
         WHERE NOT (com)<-[:BELONGS_TO]-()
         DETACH DELETE com
     """)
-        
+
 if __name__ == "__main__":
     clear_data()

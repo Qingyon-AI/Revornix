@@ -1,0 +1,70 @@
+[tool.ruff]
+# 你项目用的 Python 版本（按实际改）
+target-version = "py311"
+
+line-length = 200
+
+# Ruff 会跳过这些目录
+exclude = [
+  ".venv",
+  "venv",
+  "dist",
+  "build",
+  "__pycache__",
+  ".pytest_cache",
+  ".mypy_cache",
+  "node_modules",
+]
+
+
+[tool.ruff.lint]
+# 这套组合适合 FastAPI/后端：抓 bug、风格、import、简化、异常、pytest 等
+select = [
+  "F",    # pyflakes: 未使用变量、潜在错误
+  "E",    # pycodestyle errors
+  "W",    # pycodestyle warnings
+  "I",    # isort: import 排序
+  "B",    # flake8-bugbear: 常见坑
+  "UP",   # pyupgrade: 语法升级建议
+  "SIM",  # flake8-simplify: 简化代码
+  "C4",   # flake8-comprehensions: 推导式改进
+  "A",    # flake8-builtins: 避免覆盖 builtins 名字
+  "T20",  # flake8-print: 禁止 print（后端很常见）
+  "RUF",  # ruff 自带规则
+  "PIE",  # flake8-pie: 小优化
+  "RET",  # flake8-return
+  "TRY",  # tryceratops: 异常处理习惯（可选，觉得吵可以移除）
+]
+
+ignore = [
+  "E402",
+  "UP017",
+  "TRY003",
+  "B008",
+  "TRY002",
+  "RUF003",
+  "RET505",
+  "RET506",
+  "SIM102",
+  "SIM108"
+]
+
+# 对自动修复的策略：通常建议打开
+# fixable = ["ALL"]
+# unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI 的 __init__.py 经常用于导出 API；没必要纠结未使用 import
+"**/__init__.py" = ["F401"]
+
+# Alembic migration 文件会经常有“看似未使用”的 import / 长行 / 顶部 import 顺序等
+"**/alembic/versions/*.py" = ["E501", "F401", "F841", "E402"]
+
+# 测试文件允许 assert / magic value 等更宽松（按需）
+"**/tests/**/*.py" = ["S101"]
+
+[tool.ruff.format]
+# Ruff formatter，和 black 类似
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

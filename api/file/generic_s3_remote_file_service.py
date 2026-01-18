@@ -1,16 +1,19 @@
-import boto3
-import crud
-import json
 import asyncio
+import json
 from typing import Any
-from data.sql.base import SessionLocal
+
+import boto3
 from botocore.client import Config
-from protocol.remote_file_service import RemoteFileServiceProtocol
-from enums.file import RemoteFileService
+
+import crud
 from common.logger import exception_logger
+from data.sql.base import SessionLocal
+from enums.file import RemoteFileService
+from protocol.remote_file_service import RemoteFileServiceProtocol
+
 
 class GenericS3RemoteFileService(RemoteFileServiceProtocol):
-    
+
     s3_client: Any | None = None
     bucket: str | None = None
 
@@ -67,7 +70,7 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
         await asyncio.to_thread(_init)
 
     async def get_file_content_by_file_path(
-        self, 
+        self,
         file_path: str
     ):
         def _get():
@@ -87,9 +90,9 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
         return await asyncio.to_thread(_get)
 
     async def upload_file_to_path(
-        self, 
-        file_path, 
-        file, 
+        self,
+        file_path,
+        file,
         content_type: str | None = None
     ):
         def _upload():
@@ -108,11 +111,11 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
             return self.s3_client.upload_fileobj(**kwargs)
 
         return await asyncio.to_thread(_upload)
-    
+
     async def upload_raw_content_to_path(
-        self, 
-        file_path, 
-        content, 
+        self,
+        file_path,
+        content,
         content_type: str | None = None
     ):
         def _upload_raw():
@@ -128,9 +131,9 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
             return self.s3_client.put_object(**kwargs)
 
         return await asyncio.to_thread(_upload_raw)
-        
+
     async def delete_file(
-        self, 
+        self,
         file_path
     ):
         def _delete():
@@ -139,7 +142,7 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
             return self.s3_client.delete_object(Bucket=self.bucket, Key=file_path)
 
         return await asyncio.to_thread(_delete)
-    
+
     async def list_files(
         self
     ):

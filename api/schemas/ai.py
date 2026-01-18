@@ -1,7 +1,9 @@
-from pydantic import BaseModel
-from .user import UserPublicInfo
 from datetime import datetime, timezone
-from pydantic import field_serializer
+
+from pydantic import BaseModel, field_serializer
+
+from .user import UserPublicInfo
+
 
 class ModelProviderForkRequest(BaseModel):
     provider_id: int
@@ -14,7 +16,7 @@ class ModelCreateRequest(BaseModel):
 
 class ModelCreateResponse(BaseModel):
     id: int
-    
+
 class ModelProviderDetail(BaseModel):
     id: int
     uuid: str
@@ -26,7 +28,7 @@ class ModelProviderDetail(BaseModel):
     create_time: datetime
     update_time: datetime | None
     creator: UserPublicInfo
-    
+
     @field_serializer("create_time")
     def serializer_create_timezone(self, v: datetime):
         if v.tzinfo is None:
@@ -39,7 +41,7 @@ class ModelProviderDetail(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    
+
     class Config:
         from_attributes = True
 
@@ -53,7 +55,7 @@ class ModelProvider(BaseModel):
     create_time: datetime
     update_time: datetime | None
     creator: UserPublicInfo
-    
+
     @field_serializer("create_time")
     def serializer_create_timezone(self, v: datetime):
         if v.tzinfo is None:
@@ -66,7 +68,7 @@ class ModelProvider(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    
+
     class Config:
         from_attributes = True
 
@@ -77,9 +79,9 @@ class Model(BaseModel):
     description: str | None
     create_time: datetime
     update_time: datetime | None
-    
+
     provider: ModelProvider
-    
+
     @field_serializer("create_time")
     def serializer_create_timezone(self, v: datetime):
         if v.tzinfo is None:
@@ -92,7 +94,7 @@ class Model(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    
+
     class Config:
         from_attributes = True
 
@@ -136,7 +138,7 @@ class ModelUpdateRequest(BaseModel):
     id: int
     name: str | None = None
     description: str | None = None
-    
+
 class ModelProviderUpdateRequest(BaseModel):
     id: int
     name: str | None = None

@@ -1,9 +1,11 @@
 from contextlib import AsyncExitStack
-from typing import Dict
-from common.logger import info_logger
+
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
+
+from common.logger import info_logger
+
 
 class MCPClientWrapper:
     def __init__(self, mcp_type: str = "stream", base_url: str | None = None, command: str | None = None, args: str | None = None):
@@ -25,7 +27,7 @@ class MCPClientWrapper:
             )
             self.read_stream, self.write_stream = await self.stack.enter_async_context(
                 stdio_client(server_params)
-            )   
+            )
         elif self.mcp_type == "stream":
             self.read_stream, self.write_stream, _ = await self.stack.enter_async_context(
                 streamablehttp_client(self.base_url)
@@ -45,5 +47,5 @@ class MCPClientWrapper:
     async def list_tools(self):
         return (await self.session.list_tools()).tools
 
-    async def call_tool(self, tool_name: str, arguments: Dict[str, str]):
+    async def call_tool(self, tool_name: str, arguments: dict[str, str]):
         return await self.session.call_tool(tool_name, arguments=arguments)

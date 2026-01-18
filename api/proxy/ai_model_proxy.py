@@ -1,11 +1,9 @@
-import crud
-from typing import Optional
 
 from pydantic import BaseModel
 
+import crud
 from data.sql.base import SessionLocal
 from enums.model import UserModelProviderRole
-
 
 # =========================
 # DTO
@@ -14,7 +12,7 @@ from enums.model import UserModelProviderRole
 class AIModelConfiguration(BaseModel):
     model_name: str
     base_url: str
-    api_key: Optional[str]
+    api_key: str | None
 
 
 # =========================

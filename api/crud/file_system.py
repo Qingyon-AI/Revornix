@@ -1,14 +1,17 @@
-import models
 from datetime import datetime, timezone
+
 from sqlalchemy.orm import Session
 
+import models
+
+
 def create_file_system(
-    db: Session, 
-    uuid: str, 
-    name: str, 
-    name_zh: str, 
-    description: str | None = None, 
-    description_zh: str | None = None, 
+    db: Session,
+    uuid: str,
+    name: str,
+    name_zh: str,
+    description: str | None = None,
+    description_zh: str | None = None,
     demo_config: str | None = None
 ):
     now = datetime.now(timezone.utc)
@@ -24,11 +27,11 @@ def create_file_system(
     return db_file_system
 
 def create_user_file_system(
-    db: Session, 
-    user_id: int, 
-    file_system_id: int, 
-    title: str | None = None, 
-    description: str | None = None, 
+    db: Session,
+    user_id: int,
+    file_system_id: int,
+    title: str | None = None,
+    description: str | None = None,
     config_json: str | None = None
 ):
     now = datetime.now(timezone.utc)
@@ -43,7 +46,7 @@ def create_user_file_system(
     return db_file_system_user
 
 def get_all_file_systems(
-    db: Session, 
+    db: Session,
     keyword: str | None = None
 ):
     query = db.query(models.file_system.FileSystem)
@@ -53,7 +56,7 @@ def get_all_file_systems(
     return query.all()
 
 def get_file_system_by_uuid(
-    db: Session, 
+    db: Session,
     uuid: str
 ):
     query = db.query(models.file_system.FileSystem)
@@ -62,8 +65,8 @@ def get_file_system_by_uuid(
     return query.one_or_none()
 
 def get_user_file_systems_by_user_id(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     keyword: str | None = None
 ):
     query = db.query(models.file_system.UserFileSystem, models.file_system.FileSystem)
@@ -77,7 +80,7 @@ def get_user_file_systems_by_user_id(
     return query.all()
 
 def get_file_system_by_id(
-    db: Session, 
+    db: Session,
     file_system_id: int
 ):
     query = db.query(models.file_system.FileSystem)
@@ -86,7 +89,7 @@ def get_file_system_by_id(
     return query.one_or_none()
 
 def get_user_file_system_by_id(
-    db: Session, 
+    db: Session,
     user_file_system_id: int
 ):
     query = db.query(models.file_system.UserFileSystem)
@@ -95,10 +98,10 @@ def get_user_file_system_by_id(
                          models.file_system.UserFileSystem.delete_at == None,
                          models.file_system.FileSystem.delete_at == None)
     return query.one_or_none()
-    
+
 def delete_user_file_system_by_user_id_and_user_file_system_id(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     user_file_system_id: int
 ):
     now = datetime.now(timezone.utc)

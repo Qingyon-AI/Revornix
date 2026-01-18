@@ -1,20 +1,23 @@
-import models
 from datetime import datetime, timezone
-from sqlalchemy.orm import Session
+
 from sqlalchemy import or_
+from sqlalchemy.orm import Session
+
+import models
+
 
 def create_rss_server(
-    db: Session, 
+    db: Session,
     user_id: int,
-    title: str, 
-    address: str, 
-    cover: str | None = None, 
+    title: str,
+    address: str,
+    cover: str | None = None,
     description: str | None = None
 ):
     now = datetime.now(timezone.utc)
-    db_rss_server = models.rss.RSSServer(title=title, 
+    db_rss_server = models.rss.RSSServer(title=title,
                                          user_id=user_id,
-                                         description=description, 
+                                         description=description,
                                          cover=cover,
                                          address=address,
                                          create_time=now)
@@ -23,26 +26,26 @@ def create_rss_server(
     return db_rss_server
 
 def create_rss_section(
-    db: Session, 
+    db: Session,
     rss_server_id: int,
     section_id: int
 ):
     now = datetime.now(timezone.utc)
-    db_rss_section = models.rss.RSSSection(rss_server_id=rss_server_id, 
-                                           section_id=section_id, 
+    db_rss_section = models.rss.RSSSection(rss_server_id=rss_server_id,
+                                           section_id=section_id,
                                            create_time=now)
     db.add(db_rss_section)
     db.flush()
     return db_rss_section
 
 def create_rss_document(
-    db: Session, 
-    rss_server_id: int, 
+    db: Session,
+    rss_server_id: int,
     document_id: int
 ):
     now = datetime.now(timezone.utc)
-    db_rss_document = models.rss.RSSDocument(rss_server_id=rss_server_id, 
-                                             document_id=document_id, 
+    db_rss_document = models.rss.RSSDocument(rss_server_id=rss_server_id,
+                                             document_id=document_id,
                                              create_time=now)
     db.add(db_rss_document)
     db.flush()
@@ -109,8 +112,8 @@ def search_next_document_for_rss(
     return query.first()
 
 def count_document_for_rss(
-    db: Session, 
-    rss_id: int, 
+    db: Session,
+    rss_id: int,
     keyword: str | None = None
 ):
     query = db.query(models.document.Document)
@@ -125,10 +128,10 @@ def count_document_for_rss(
     return query.count()
 
 def search_rss_servers_for_user(
-    db: Session, 
-    user_id: int, 
-    start: int | None = None, 
-    limit: int = 10, 
+    db: Session,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
     keyword: str | None = None
 ):
     query = db.query(models.rss.RSSServer)
@@ -144,9 +147,9 @@ def search_rss_servers_for_user(
     return query.all()
 
 def search_next_rss_server_for_user(
-    db: Session, 
-    user_id: int, 
-    rss_server: models.rss.RSSServer, 
+    db: Session,
+    user_id: int,
+    rss_server: models.rss.RSSServer,
     keyword: str | None = None
 ):
     query = db.query(models.rss.RSSServer)
@@ -157,11 +160,11 @@ def search_next_rss_server_for_user(
                                  models.rss.RSSServer.description.like(f"%{keyword}%")))
     query = query.order_by(models.rss.RSSServer.id.desc())
     query = query.filter(models.rss.RSSServer.id < rss_server.id)
-    return query.first()     
+    return query.first()
 
 def count_rss_servers_for_user(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     keyword: str | None = None
 ):
     query = db.query(models.rss.RSSServer)
@@ -173,7 +176,7 @@ def count_rss_servers_for_user(
     return query.count()
 
 def get_sections_by_rss_server_id(
-    db: Session, 
+    db: Session,
     rss_server_id: int
 ):
     query = db.query(models.section.Section)
@@ -186,7 +189,7 @@ def get_sections_by_rss_server_id(
     return query.all()
 
 def get_documents_by_rss_server_id(
-    db: Session, 
+    db: Session,
     rss_server_id: int
 ):
     query = db.query(models.document.Document)
@@ -199,7 +202,7 @@ def get_documents_by_rss_server_id(
     return query.all()
 
 def get_rss_server_by_id(
-    db: Session, 
+    db: Session,
     id: int
 ):
     query = db.query(models.rss.RSSServer)
@@ -208,9 +211,9 @@ def get_rss_server_by_id(
     return query.one_or_none()
 
 def delete_rss_servers(
-    db: Session, 
+    db: Session,
     user_id: int,
-    ids: list[int], 
+    ids: list[int],
 ):
     if not ids:
         return
@@ -223,15 +226,15 @@ def delete_rss_servers(
     db.flush()
 
 def delete_rss_sections(
-    db: Session, 
+    db: Session,
     user_id: int,
     ids: list[int]
 ):
     if not ids:
         return
-    
+
     now = datetime.now(timezone.utc)
-    
+
     db_rss_sections = db.query(models.rss.RSSSection) \
             .join(models.rss.RSSServer) \
             .filter(models.rss.RSSSection.id.in_(ids),
@@ -240,7 +243,7 @@ def delete_rss_sections(
             .all()
 
     db_rss_section_ids = [id[0] for id in db_rss_sections]
-    
+
     db.query(models.rss.RSSSection) \
         .filter(models.rss.RSSSection.id.in_(db_rss_section_ids)) \
         .update({models.rss.RSSSection.delete_at: now})

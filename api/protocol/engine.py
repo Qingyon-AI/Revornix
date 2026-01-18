@@ -1,18 +1,20 @@
-import crud
 import json
-from data.sql.base import SessionLocal
+from datetime import datetime, timedelta, timezone
 from typing import Protocol
-from enums.engine import Engine
+
+import crud
+from common.dependencies import check_deployed_by_official_in_fuc, get_user_token_usage, plan_ability_checked_in_func
+from common.jwt_utils import create_token
+from common.logger import exception_logger
+from data.sql.base import SessionLocal
 from enums.ability import Ability
+from enums.engine import Engine
 from official.engine.image import OFFICIAL_IMAGE_AI_BASE_URL, OFFICIAL_IMAGE_AI_KEY, OFFICIAL_IMAGE_AI_MODEL
 from official.engine.tts import OFFICIAL_VOLC_TTS_ACCESS_TOKEN, OFFICIAL_VOLC_TTS_AI_BASE_URL, OFFICIAL_VOLC_TTS_APP_ID
-from common.dependencies import plan_ability_checked_in_func, check_deployed_by_official_in_fuc, get_user_token_usage
-from common.jwt_utils import create_token
-from datetime import datetime, timedelta, timezone
-from common.logger import exception_logger
+
 
 class EngineProtocol(Protocol):
-    
+
     engine_uuid: str
     engine_name: str
     engine_name_zh: str
@@ -21,17 +23,17 @@ class EngineProtocol(Protocol):
     engine_description_zh: str | None
     engine_demo_config: str | None
     engine_config: str | None = None
-    
+
     user_id: int | None = None
-    
+
     def __init__(
-        self, 
+        self,
         engine_uuid: str,
         engine_name: str,
-        engine_name_zh: str, 
+        engine_name_zh: str,
         engine_category: int,
-        engine_description: str | None = None, 
-        engine_description_zh: str | None = None, 
+        engine_description: str | None = None,
+        engine_description_zh: str | None = None,
         engine_demo_config: str | None = None,
         engine_config: str | None = None
     ):
@@ -43,12 +45,12 @@ class EngineProtocol(Protocol):
         self.engine_description_zh = engine_description_zh
         self.engine_demo_config = engine_demo_config
         self.engine_config = engine_config
-    
+
     def get_engine_config(self) -> dict | None:
         if self.engine_config is None:
             return None
         return json.loads(self.engine_config)
-    
+
     async def init_engine_config_by_user_engine_id(
         self,
         user_engine_id: int
@@ -78,7 +80,7 @@ class EngineProtocol(Protocol):
 
             if engine.uuid != self.engine_uuid:
                 raise ValueError("engine uuid mismatch")
-            
+
             ability = None
             if engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
                 ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value
@@ -129,7 +131,7 @@ class EngineProtocol(Protocol):
                     raise PermissionError("plan ability denied")
 
             self.engine_config = user_engine.config_json
-            
+
             if self.engine_uuid == Engine.Official_Banana_Image.meta.uuid:
                 config = json.dumps({
                     "model_name": OFFICIAL_IMAGE_AI_MODEL,
@@ -144,7 +146,7 @@ class EngineProtocol(Protocol):
                     "access_token": OFFICIAL_VOLC_TTS_ACCESS_TOKEN
                 })
                 self.engine_config = config
-                
+
             self.user_id = user_engine.user_id
         except Exception as e:
             exception_logger.error(f"engine init error: {e}")

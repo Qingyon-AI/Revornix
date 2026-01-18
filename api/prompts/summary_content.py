@@ -1,5 +1,5 @@
 def summary_content_prompt(content: str):
-    prompt = f"""
+    return f"""
 You are a professional editor for a digital publishing platform.
 
 Your task is to read the full content below and generate a structured summary that can be used as a **featured content card** on a knowledge platform.
@@ -30,4 +30,3 @@ Below is the full document content:
 
 ---
     """
-    return prompt

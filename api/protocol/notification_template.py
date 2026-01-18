@@ -1,16 +1,18 @@
-import schemas
 from typing import Protocol
 
+import schemas
+
+
 class NotificationTemplate(Protocol):
-    
+
     uuid: str
     name: str
     name_zh: str
     description: str | None
     description_zh: str | None
-    
+
     def __init__(
-        self, 
+        self,
         uuid: str,
         name: str,
         name_zh: str,
@@ -22,7 +24,7 @@ class NotificationTemplate(Protocol):
         self.description = description
         self.name_zh = name_zh
         self.description_zh = description_zh
-        
+
     async def generate(
         self,
         params: dict | None

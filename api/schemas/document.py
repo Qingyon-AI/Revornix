@@ -1,8 +1,20 @@
+from datetime import date as date_type
+from datetime import datetime, timezone
+
 from pydantic import BaseModel, field_serializer
-from datetime import datetime, timezone, date as date_type
+
 from protocol.remote_file_service import RemoteFileServiceProtocol
+
+from .task import (
+    DocumentConvertTask,
+    DocumentEmbeddingTask,
+    DocumentGraphTask,
+    DocumentPodcastTask,
+    DocumentProcessTask,
+    DocumentSummarizeTask,
+)
 from .user import UserPublicInfo
-from .task import DocumentConvertTask, DocumentEmbeddingTask, DocumentGraphTask, DocumentProcessTask, DocumentPodcastTask, DocumentSummarizeTask
+
 
 class DocumentGraphGenerateRequest(BaseModel):
     document_id: int
@@ -20,10 +32,10 @@ class DocumentUpdateRequest(BaseModel):
 
 class LabelDeleteRequest(BaseModel):
     label_ids: list[int]
-    
+
 class DocumentEmbeddingRequest(BaseModel):
     document_id: int
-    
+
 class DocumentMarkdownConvertRequest(BaseModel):
     document_id: int
 
@@ -35,7 +47,7 @@ class BaseSectionInfo(BaseModel):
     title: str
     description: str | None
     class Config:
-        from_attributes = True 
+        from_attributes = True
 
 class SearchDocumentNoteRequest(BaseModel):
     document_id: int
@@ -46,14 +58,14 @@ class SearchDocumentNoteRequest(BaseModel):
 class DocumentNoteCreateRequest(BaseModel):
     document_id: int
     content: str
-    
+
 class DocumentNoteDeleteRequest(BaseModel):
     document_note_ids: list[int]
-    
+
 class DocumentNoteUpdateRequest(BaseModel):
     document_note_id: int
     content: str | None = None
-    
+
 class DocumentNoteInfo(BaseModel):
     id: int
     content: str
@@ -75,7 +87,7 @@ class DocumentNoteInfo(BaseModel):
         return v
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
 
 class SummaryItem(BaseModel):
     date: date_type
@@ -83,7 +95,7 @@ class SummaryItem(BaseModel):
     @field_serializer("date")
     def format_date(self, v: date_type) -> str:
         return v.strftime("%Y-%m-%d")
-    
+
 class DocumentMonthSummaryResponse(BaseModel):
     data: list[SummaryItem]
 
@@ -106,26 +118,26 @@ class DocumentCreateRequest(BaseDocumentCreateRequest):
 
 class ApiDocumentCreateRequest(BaseDocumentCreateRequest):
     pass
-    
+
 class DocumentCreateResponse(BaseModel):
     document_id: int
-        
+
 class Label(BaseModel):
     id: int
     name: str
     class Config:
         from_attributes = True
-    
+
 class CreateLabelResponse(BaseModel):
     id: int
     name: str
-    
+
 class LabelListResponse(BaseModel):
     data: list[Label]
-    
+
 class LabelAddRequest(BaseModel):
     name: str
-    
+
 class SearchUnreadListRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
@@ -139,14 +151,14 @@ class SearchRecentReadRequest(BaseModel):
     limit: int = 10
     label_ids: list[int] | None = None
     desc: bool = True
-    
+
 class SearchAllMyDocumentsRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
     limit: int = 10
     label_ids: list[int] | None = None
     desc: bool = True
-    
+
 class SearchMyStarDocumentsRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
@@ -173,13 +185,13 @@ class DocumentInfo(BaseModel):
     podcast_task: DocumentPodcastTask | None = None
     summarize_task: DocumentSummarizeTask | None = None
     process_task: DocumentProcessTask | None = None
-    
+
     @field_serializer("create_time")
     def serializer_create_timezone(self, v: datetime) -> datetime:
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    
+
     @field_serializer("update_time")
     def serializer_update_timezone(self, v: datetime | None):
         if v is None:
@@ -187,14 +199,14 @@ class DocumentInfo(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    
+
     class Config:
-        from_attributes = True 
-    
+        from_attributes = True
+
 class WebsiteDocumentInfo(BaseModel):
     creator_id: int
     url: str
-    
+
 class FileDocumentInfo(BaseModel):
     creator_id: int
     file_name: str
@@ -202,11 +214,11 @@ class FileDocumentInfo(BaseModel):
     def serializer_file_name(self, v: str) -> str:
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
         return f'{url_prefix}/{v}'
-    
+
 class QuickNoteDocumentInfo(BaseModel):
     creator_id: int
     content: str
-    
+
 class DocumentDetailResponse(BaseModel):
     id: int
     category: int
@@ -231,13 +243,13 @@ class DocumentDetailResponse(BaseModel):
     podcast_task: DocumentPodcastTask | None = None
     summarize_task: DocumentSummarizeTask | None = None
     process_task: DocumentProcessTask | None = None
-    
+
     @field_serializer("create_time")
     def serializer_create_timezone(self, v: datetime):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    
+
     @field_serializer("update_time")
     def serializer_update_timezone(self, v: datetime | None):
         if v is None:
@@ -245,17 +257,17 @@ class DocumentDetailResponse(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    
+
     class Config:
         from_attributes = True
-    
+
 class DocumentDeleteRequest(BaseModel):
     document_ids: list[int]
-    
+
 
 class DocumentDetailRequest(BaseModel):
     document_id: int
-    
+
 class ReadRequest(BaseModel):
     document_id: int
     status: bool
@@ -263,16 +275,16 @@ class ReadRequest(BaseModel):
 class StarRequest(BaseModel):
     document_id: int
     status: bool
-    
+
 class VectorSearchRequest(BaseModel):
     query: str
-    
+
 class VectorSearchResponse(BaseModel):
     documents: list[DocumentInfo]
-    
+
 class LabelSummaryItem(BaseModel):
     label_info: Label
     count: int
-    
+
 class LabelSummaryResponse(BaseModel):
     data: list[LabelSummaryItem]

@@ -1,8 +1,10 @@
 import json
+
 from protocol.notification_source import NotificationSourceProtocol
 
+
 class AppleNotificationSource(NotificationSourceProtocol):
-    
+
     def __init__(
         self
     ):

@@ -1,4 +1,5 @@
-from data.custom_types.all import *
+from data.custom_types.all import EntityInfo, RelationInfo
+
 
 def reducer_summary_prompt(
     current_summary: str | None,
@@ -48,7 +49,7 @@ Your tasks
 	4.	Avoid redundancy; remove overlaps.
 	5.	Produce a logically organized, concise, and coherent integrated summary.
 	6.	Important: Your final output MUST strictly follow the JSON structure below.
- 
+
 ---
 
 Final Output Format (strict)
@@ -68,5 +69,5 @@ Notes:
 -	The description MUST be ≥ 100 characters.
 - The summary MUST be 200–500 characters.
 -	No additional commentary, no markdown, no code block — only the JSON.
- 
+
 """

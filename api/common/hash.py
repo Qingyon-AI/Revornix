@@ -1,5 +1,6 @@
-import os
 import hashlib
+import os
+
 
 def hash_password(password: str) -> str:
     # 创建一个随机盐

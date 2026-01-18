@@ -1,21 +1,24 @@
-import boto3
-import crud
-import json
 import asyncio
+import json
+from io import BytesIO
 from typing import Any
-from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL
-from data.sql.base import SessionLocal
+
+import boto3
+from boto3.s3.transfer import TransferConfig
 from botocore.client import Config
 from botocore.exceptions import ClientError
-from protocol.remote_file_service import RemoteFileServiceProtocol
-from enums.file import RemoteFileService
-from common.logger import info_logger, exception_logger
+
+import crud
 from common.dependencies import check_deployed_by_official_in_fuc
-from io import BytesIO
-from boto3.s3.transfer import TransferConfig
+from common.logger import exception_logger, info_logger
+from config.file_system import FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_USER_NAME
+from data.sql.base import SessionLocal
+from enums.file import RemoteFileService
+from protocol.remote_file_service import RemoteFileServiceProtocol
+
 
 class BuiltInRemoteFileService(RemoteFileServiceProtocol):
-    
+
     s3_client: Any | None = None
     bucket: str | None = None
 
@@ -69,7 +72,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         except ClientError as e:
             exception_logger.error(f"Deleted Bucket Error: {e.response['Error']['Message']}",)
             raise
-    
+
     @staticmethod
     def ensure_bucket_exists(bucket_name: str):
         deployed_by_official = check_deployed_by_official_in_fuc()
@@ -99,12 +102,12 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                 }
                 s3.put_bucket_policy(Bucket=bucket_name, Policy=json.dumps(policy))
             elif code == '403':
-                raise Exception("Access denied. You may not have permission to create this bucket.")
+                raise Exception("Access denied. You may not have permission to create this bucket.") from e
             else:
                 raise
-        
+
     async def init_client_by_user_file_system_id(
-        self, 
+        self,
         user_file_system_id: int
     ):
         def _init():
@@ -159,7 +162,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         await asyncio.to_thread(_init)
 
     async def get_file_content_by_file_path(
-        self, 
+        self,
         file_path: str
     ):
         def _get():
@@ -179,9 +182,9 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         return await asyncio.to_thread(_get)
 
     async def upload_file_to_path(
-        self, 
-        file_path, 
-        file, 
+        self,
+        file_path,
+        file,
         content_type: str | None = None
     ):
         def _upload():
@@ -200,7 +203,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             return self.s3_client.upload_fileobj(**kwargs)
 
         return await asyncio.to_thread(_upload)
-    
+
     async def upload_raw_content_to_path(
         self,
         file_path: str,
@@ -239,7 +242,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             )
 
         return await asyncio.to_thread(_upload_raw)
-        
+
     async def delete_file(self, file_path):
         def _delete():
             if self.s3_client is None:
@@ -247,7 +250,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             return self.s3_client.delete_object(Bucket=self.bucket, Key=file_path)
 
         return await asyncio.to_thread(_delete)
-    
+
     async def list_files(self):
         def _list():
             if self.s3_client is None:

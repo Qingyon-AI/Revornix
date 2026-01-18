@@ -1,5 +1,7 @@
-from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone
+
+from pydantic import BaseModel, field_serializer
+
 
 class DocumentInfo(BaseModel):
     id: int
@@ -28,18 +30,18 @@ class ChunkInfo(BaseModel):
     doc_id: int
     summary: str | None = None
     embedding: list[float] | None = None
-    
+
 class RelationInfo(BaseModel):
     src_node: str
     tgt_node: str
     relation_type: str
-    
+
 class EntityInfo(BaseModel):
     id: str
     text: str
     chunks: list[str]
     entity_type: str
-    
+
 class CommunityInfo(BaseModel):
     id: str
     size: int

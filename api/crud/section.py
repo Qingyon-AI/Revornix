@@ -1,10 +1,13 @@
-import models
-from uuid import uuid4
-from datetime import datetime, timezone
-from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import or_, func
-from enums.section import UserSectionRole, SectionDocumentIntegration
 from datetime import date as date_type
+from datetime import datetime, timezone
+from uuid import uuid4
+
+from sqlalchemy import func, or_
+from sqlalchemy.orm import Session, selectinload
+
+import models
+from enums.section import SectionDocumentIntegration, UserSectionRole
+
 
 def create_publish_section(
     db: Session,
@@ -19,12 +22,12 @@ def create_publish_section(
     return db_publish_section
 
 def create_section_label(
-    db: Session, 
+    db: Session,
     user_id: int,
     name: str
 ):
     now = datetime.now(timezone.utc)
-    db_label = models.section.Label(name=name, 
+    db_label = models.section.Label(name=name,
                                     user_id=user_id,
                                     create_time=now)
     db.add(db_label)
@@ -32,9 +35,9 @@ def create_section_label(
     return db_label
 
 def create_section_comment(
-    db: Session, 
-    section_id: int, 
-    creator_id: int, 
+    db: Session,
+    section_id: int,
+    creator_id: int,
     content: str,
     parent_id: int | None = None
 ):
@@ -49,9 +52,9 @@ def create_section_comment(
     return db_section_comment
 
 def create_section_user(
-    db: Session, 
-    section_id: int, 
-    user_id: int, 
+    db: Session,
+    section_id: int,
+    user_id: int,
     role: int,
     authority: int,
     expire_time: datetime | None = None
@@ -68,9 +71,9 @@ def create_section_user(
     return db_section_user
 
 def create_section(
-    db: Session, 
+    db: Session,
     creator_id: int,
-    title: str, 
+    title: str,
     cover: str | None = None,
     description: str | None = None,
     md_file_name: str | None = None,
@@ -78,7 +81,7 @@ def create_section(
     auto_illustration: bool = False
 ):
     now = datetime.now(timezone.utc)
-    db_section = models.section.Section(title=title, 
+    db_section = models.section.Section(title=title,
                                         creator_id=creator_id,
                                         cover=cover,
                                         description=description,
@@ -91,12 +94,12 @@ def create_section(
     return db_section
 
 def create_section_labels(
-    db: Session, 
-    section_id: int, 
+    db: Session,
+    section_id: int,
     label_ids: list[int]
 ):
     now = datetime.now(timezone.utc)
-    db_document_labels = [models.section.SectionLabel(section_id=section_id, 
+    db_document_labels = [models.section.SectionLabel(section_id=section_id,
                                                       label_id=label_id,
                                                       create_time=now) for label_id in label_ids]
     db.add_all(db_document_labels)
@@ -126,7 +129,7 @@ def create_or_update_section_document(
 
 def create_date_section(
     db: Session,
-    section_id: int, 
+    section_id: int,
     date: date_type
 ):
     now = datetime.now(timezone.utc)
@@ -138,7 +141,7 @@ def create_date_section(
     return db_day_section
 
 def get_sections_by_user_id(
-    db: Session, 
+    db: Session,
     user_id: int
 ):
     query = db.query(models.section.Section)
@@ -149,7 +152,7 @@ def get_sections_by_user_id(
     return query.all()
 
 def get_user_labels_by_user_id(
-    db: Session, 
+    db: Session,
     user_id: int
 ):
     query = db.query(models.section.Label)
@@ -170,7 +173,7 @@ def get_sections_by_document_id(
     return query.all()
 
 def get_user_sections(
-    db: Session, 
+    db: Session,
     user_id: int,
     filter_roles: list[UserSectionRole] | None = None
 ):
@@ -185,7 +188,7 @@ def get_user_sections(
     return query.all()
 
 def get_publish_section_by_section_id(
-    db: Session, 
+    db: Session,
     section_id: int
 ):
     query = db.query(models.section.PublishSection)
@@ -203,10 +206,10 @@ def get_publish_sections_by_uuid(
     return query.one_or_none()
 
 def search_user_sections(
-    db: Session, 
-    user_id: int, 
-    start: int | None = None, 
-    limit: int = 10, 
+    db: Session,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     only_published: bool = False,
@@ -251,8 +254,8 @@ def search_user_sections(
     return query.all()
 
 def count_user_sections(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     only_published: bool = False
@@ -282,9 +285,9 @@ def count_user_sections(
     return query.count()
 
 def search_next_user_section(
-    db: Session, 
-    user_id: int, 
-    section: models.section.Section, 
+    db: Session,
+    user_id: int,
+    section: models.section.Section,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     only_published: bool = False,
@@ -322,10 +325,10 @@ def search_next_user_section(
     return query.first()
 
 def search_user_subscribed_sections(
-    db: Session, 
-    user_id: int, 
-    start: int | None = None, 
-    limit: int = 10, 
+    db: Session,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
     label_ids: list[int] | None = None,
     keyword: str | None = None,
     desc: bool = True
@@ -364,8 +367,8 @@ def search_user_subscribed_sections(
     return query.all()
 
 def count_user_subscribed_sections(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     label_ids: list[int] | None = None,
     keyword: str | None = None
 ):
@@ -393,9 +396,9 @@ def count_user_subscribed_sections(
     return query.count()
 
 def search_next_user_subscribed_section(
-    db: Session, 
-    user_id: int, 
-    section: models.section.Section, 
+    db: Session,
+    user_id: int,
+    section: models.section.Section,
     label_ids: list[int] | None = None,
     keyword: str | None = None,
     desc: bool = True
@@ -429,7 +432,7 @@ def search_next_user_subscribed_section(
     return query.first()
 
 def search_parent_degree_section_comments(
-    db: Session, 
+    db: Session,
     section_id: int,
     keyword: str | None = None,
     start: int | None = None,
@@ -463,7 +466,7 @@ def count_parent_degree_section_comments(
     return query.count()
 
 def search_next_parent_degree_section_comment(
-    db: Session, 
+    db: Session,
     section_id: int,
     section_comment: models.section.SectionComment,
     keyword: str | None = None
@@ -478,9 +481,9 @@ def search_next_parent_degree_section_comment(
     return query.first()
 
 def search_published_sections(
-    db: Session, 
-    start: int | None = None, 
-    limit: int = 10, 
+    db: Session,
+    start: int | None = None,
+    limit: int = 10,
     label_ids: list[int] | None = None,
     keyword: str | None = None,
     desc: bool = True
@@ -515,7 +518,7 @@ def search_published_sections(
     return query.all()
 
 def count_published_sections(
-    db: Session, 
+    db: Session,
     keyword: str | None = None,
     label_ids: list[int] | None = None
 ):
@@ -538,8 +541,8 @@ def count_published_sections(
     return query.count()
 
 def search_next_published_section(
-    db: Session, 
-    section: models.section.Section, 
+    db: Session,
+    section: models.section.Section,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     desc: bool = True
@@ -734,8 +737,8 @@ def count_users_for_section_by_section_ids(
     return {section_id: count for section_id, count in query.all()}
 
 def get_section_user_by_section_id_and_user_id(
-    db: Session, 
-    section_id: int, 
+    db: Session,
+    section_id: int,
     user_id: int,
     filter_roles: list[int] | None = None
 ):
@@ -744,7 +747,7 @@ def get_section_user_by_section_id_and_user_id(
     query = query.filter(models.section.SectionUser.section_id == section_id,
                          models.section.SectionUser.user_id == user_id,
                          models.section.SectionUser.delete_at == None)
-    query = query.filter(or_(models.section.SectionUser.expire_time > now, 
+    query = query.filter(or_(models.section.SectionUser.expire_time > now,
                              models.section.SectionUser.expire_time == None))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
@@ -777,13 +780,13 @@ def get_section_users_by_section_ids_and_user_id(
 
 def get_section_by_user_and_date(
     db: Session,
-    user_id: int, 
+    user_id: int,
     date: date_type
 ):
     query = db.query(models.section.Section)
     query = query.join(models.section.DaySection)
     query = query.join(models.section.SectionUser)
-    query = query.filter(models.section.DaySection.date == date, 
+    query = query.filter(models.section.DaySection.date == date,
                          models.section.DaySection.delete_at == None,
                          models.section.Section.delete_at == None,
                          models.section.SectionUser.delete_at == None,
@@ -791,11 +794,11 @@ def get_section_by_user_and_date(
     return query.one_or_none()
 
 def get_section_by_section_id(
-    db: Session, 
+    db: Session,
     section_id: int
 ):
     query = db.query(models.section.Section)
-    query = query.filter(models.section.Section.id == section_id, 
+    query = query.filter(models.section.Section.id == section_id,
                          models.section.Section.delete_at == None)
     return query.one_or_none()
 
@@ -848,7 +851,7 @@ def get_section_documents_by_section_id_and_document_ids(
     return query.all()
 
 def get_section_labels_by_section_id(
-    db: Session, 
+    db: Session,
     section_id: int
 ):
     query = db.query(models.section.SectionLabel)
@@ -890,7 +893,7 @@ def get_section_document_by_section_id_and_document_id(
     return query.one_or_none()
 
 def get_documents_for_section_by_section_id(
-    db: Session, 
+    db: Session,
     section_id: int
 ):
     query = db.query(models.document.Document)
@@ -917,7 +920,7 @@ def update_section_by_section_id(
         db_section.md_file_name = md_file_name
     db_section.update_time = now
     db.flush()
-    
+
 def update_section_document_by_section_id_and_document_id(
     db: Session,
     section_id: int,
@@ -935,9 +938,9 @@ def update_section_document_by_section_id_and_document_id(
     db_section_document.status = status
     db_section_document.update_time = now
     db.flush()
-    
+
 def delete_section_by_section_id(
-    db: Session, 
+    db: Session,
     section_id: int
 ):
     now = datetime.now(timezone.utc)
@@ -946,9 +949,9 @@ def delete_section_by_section_id(
         raise Exception("Section is not found")
     db_section.delete_at = now
     db.flush()
-    
+
 def delete_section_users_by_section_id(
-    db: Session, 
+    db: Session,
     section_id: int
 ):
     now = datetime.now(timezone.utc)
@@ -957,7 +960,7 @@ def delete_section_users_by_section_id(
                 models.section.SectionUser.delete_at == None)
     query.update({models.section.SectionUser.delete_at: now}, synchronize_session=False)
     db.flush()
-        
+
 def delete_section_documents_by_section_id(
     db: Session,
     section_id: int
@@ -993,7 +996,7 @@ def delete_section_comments_by_section_id(
                          models.section.SectionComment.delete_at == None)
     query.update({models.section.SectionComment.delete_at: now}, synchronize_session=False)
     db.flush()
-    
+
 def delete_section_comments_by_section_comment_ids(
     db: Session,
     user_id: int,
@@ -1019,7 +1022,7 @@ def delete_section_labels_by_section_id(
     db.flush()
 
 def delete_section_labels_by_label_ids(
-    db: Session, 
+    db: Session,
     label_ids: list[int]
 ):
     now = datetime.now(timezone.utc)
@@ -1030,7 +1033,7 @@ def delete_section_labels_by_label_ids(
     db.flush()
 
 def delete_labels_by_label_ids(
-    db: Session, 
+    db: Session,
     user_id: int,
     label_ids: list[int]):
     now = datetime.now(timezone.utc)
@@ -1053,7 +1056,7 @@ def delete_section_document_by_section_id_and_document_id(
                          models.section.SectionDocument.document_id == document_id)
     query.update({models.section.SectionDocument.delete_at: now})
     db.flush()
-    
+
 def delete_published_section_by_section_id(
     db: Session,
     section_id: int

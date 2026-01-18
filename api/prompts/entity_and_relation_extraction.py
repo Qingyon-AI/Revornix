@@ -1,5 +1,6 @@
 from data.custom_types.all import ChunkInfo
 
+
 def entity_and_relation_extraction_prompt(chunk: ChunkInfo):
     return f"""
 You are an expert in Knowledge Graph Construction and Information Extraction.  

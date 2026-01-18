@@ -1,21 +1,24 @@
-import models
-from uuid import uuid4
 from datetime import datetime, timezone
-from sqlalchemy.orm import Session, joinedload
-from common.encrypt import encrypt_api_key, decrypt_api_key
+from uuid import uuid4
+
 from sqlalchemy import and_, or_
+from sqlalchemy.orm import Session, joinedload
+
+import models
+from common.encrypt import encrypt_api_key
+
 
 def create_user_ai_model_provider(
-    db: Session, 
-    user_id: int, 
-    ai_model_provider_id: int, 
+    db: Session,
+    user_id: int,
+    ai_model_provider_id: int,
     role: int | None = None
 ):
     """
     Create a new user AI model provider.
     """
     now = datetime.now(timezone.utc)
-    
+
     db_user_provider = models.model.UserAIModelProvider(
         user_id=user_id,
         ai_model_provider_id=ai_model_provider_id,
@@ -27,8 +30,8 @@ def create_user_ai_model_provider(
     return db_user_provider
 
 def create_ai_model_provider(
-    db: Session, 
-    name: str, 
+    db: Session,
+    name: str,
     creator_id: int,
     description: str | None = None,
     uuid: str | None = None,
@@ -59,8 +62,8 @@ def create_ai_model_provider(
     return db_ai_provider
 
 def create_ai_model(
-    db: Session, 
-    name: str, 
+    db: Session,
+    name: str,
     provider_id: int,
     description: str | None = None,
     uuid: str | None = None
@@ -113,7 +116,7 @@ def get_ai_model_by_uuid(
     return query.one_or_none()
 
 def get_ai_model_by_id(
-    db: Session, 
+    db: Session,
     model_id: int
 ):
     """
@@ -140,7 +143,7 @@ def get_ai_model_provider_by_uuid(
     return query.one_or_none()
 
 def get_ai_model_provider_by_id(
-    db: Session, 
+    db: Session,
     provider_id: int
 ):
     """
@@ -170,7 +173,7 @@ def get_ai_models_for_ai_model_provider(
         models.model.AIModel.delete_at == None
     )
     return query.all()
-    
+
 def get_ai_model_providers_for_user(
     db: Session,
     user_id: int,
@@ -189,14 +192,14 @@ def get_ai_model_providers_for_user(
     if keyword:
         query = query.filter(models.model.AIModelProvider.name.ilike(f"%{keyword}%"))
     query = query.order_by(models.model.AIModelProvider.id.desc())
-    
+
     return query.all()
 
 def search_ai_model_providers_for_user(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     keyword: str | None = None,
-    start: int | None = None, 
+    start: int | None = None,
     limit: int | None = None
 ):
     query = db.query(models.model.AIModelProvider, models.model.UserAIModelProvider)
@@ -283,8 +286,8 @@ def count_all_ai_model_providers_for_user(
     return query.count()
 
 def delete_ai_model_providers(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     provider_ids: list[int]
 ):
     """
