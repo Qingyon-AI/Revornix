@@ -1,4 +1,6 @@
-import os, base64
+import base64
+import os
+
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 APIKEY_ENCRYPT_KEY = os.environ.get("APIKEY_ENCRYPT_KEY")

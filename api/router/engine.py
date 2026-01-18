@@ -1,18 +1,20 @@
-import schemas
-import crud
-import models
+from datetime import datetime, timezone
 from typing import cast
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from datetime import timezone, datetime
+
+import crud
+import models
+import schemas
 from common.dependencies import get_current_user, get_db
 
 engine_router = APIRouter()
 
 @engine_router.post("/mine", response_model=schemas.engine.MineEngineSearchResponse)
 def search_document_parse_engine(
-    engine_search_request: schemas.engine.EngineSearchRequest, 
-    db: Session = Depends(get_db), 
+    engine_search_request: schemas.engine.EngineSearchRequest,
+    db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
     res = []
@@ -23,7 +25,7 @@ def search_document_parse_engine(
         filter_category=engine_search_request.filter_category,
     )
     typed_user_engines = cast(
-        list[tuple[models.engine.UserEngine, models.engine.Engine]], 
+        list[tuple[models.engine.UserEngine, models.engine.Engine]],
         db_user_engines
     )
     for db_user_engine, db_engine in typed_user_engines:
@@ -44,12 +46,12 @@ def search_document_parse_engine(
 
 @engine_router.post("/provide", response_model=schemas.engine.ProvideEngineSearchResponse)
 def provide_document_parse_engine(
-    engine_search_request: schemas.engine.EngineSearchRequest, 
-    db: Session = Depends(get_db), 
+    engine_search_request: schemas.engine.EngineSearchRequest,
+    db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
     db_engines = crud.engine.get_all_engines(
-        db=db, 
+        db=db,
         keyword=engine_search_request.keyword,
         filter_category=engine_search_request.filter_category,
     )
@@ -60,8 +62,8 @@ def provide_document_parse_engine(
 
 @engine_router.post("/install", response_model=schemas.engine.EngineInstallResponse)
 def install_engine(
-    engine_install_request: schemas.engine.EngineInstallRequest, 
-    db: Session = Depends(get_db), 
+    engine_install_request: schemas.engine.EngineInstallRequest,
+    db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
     db_user_engine = crud.engine.create_user_engine(
@@ -77,7 +79,7 @@ def install_engine(
 
 @engine_router.post("/delete", response_model=schemas.common.NormalResponse)
 def delete_engine(
-    engine_delete_request: schemas.engine.EngineDeleteRequest, 
+    engine_delete_request: schemas.engine.EngineDeleteRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
@@ -91,7 +93,7 @@ def delete_engine(
 
 @engine_router.post("/update", response_model=schemas.common.NormalResponse)
 def update_engine(
-    engine_update_request: schemas.engine.EngineUpdateRequest, 
+    engine_update_request: schemas.engine.EngineUpdateRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
@@ -102,7 +104,7 @@ def update_engine(
     )
     if user_engine is None:
         raise schemas.error.CustomException(code=404, message="User Engine not found")
-    
+
     if engine_update_request.title is not None:
         user_engine.title = engine_update_request.title
     if engine_update_request.description is not None:

@@ -1,6 +1,7 @@
 from enum import Enum, IntEnum
 from typing import NamedTuple
 
+
 class UserModelProviderRole(IntEnum):
     CREATOR = 0
     FORKER = 1

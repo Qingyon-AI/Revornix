@@ -1,4 +1,5 @@
 import telegram
+
 from protocol.notification_tool import NotificationToolProtocol
 
 

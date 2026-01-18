@@ -1,8 +1,10 @@
 import json
+
 from protocol.notification_target import NotificationTargetProtocol
 
+
 class AppleSandBoxNotificationTarget(NotificationTargetProtocol):
-    
+
     def __init__(
         self
     ):

@@ -1,29 +1,31 @@
-import crud
+import asyncio
 import hashlib
 import json
-import asyncio
-import torch
-import models
+from collections.abc import AsyncGenerator
 from typing import cast
-from enums.document import DocumentMdConvertStatus
-from chonkie.types import Chunk
+
+import torch
 from chonkie.chunker.recursive import RecursiveChunker
-from enums.document import DocumentCategory
-from common.common import get_user_remote_file_system
-from data.sql.base import SessionLocal
-from data.custom_types.all import *
-from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
-from typing import AsyncGenerator
-from sqlalchemy.orm import Session
-from protocol.remote_file_service import RemoteFileServiceProtocol
+from chonkie.types import Chunk
 from langfuse import propagate_attributes
 from langfuse.openai import OpenAI
-from proxy.ai_model_proxy import AIModelProxy
+from sqlalchemy.orm import Session
+
+import crud
+import models
+from common.common import get_user_remote_file_system
 from common.logger import exception_logger
+from data.custom_types.all import *
+from data.sql.base import SessionLocal
+from enums.document import DocumentCategory, DocumentMdConvertStatus
+from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
+from protocol.remote_file_service import RemoteFileServiceProtocol
+from proxy.ai_model_proxy import AIModelProxy
+
 
 def make_chunk_id(
-    doc_id: int, 
-    idx: int, 
+    doc_id: int,
+    idx: int,
 text: str) -> str:
     h = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
     return f"DOC_{doc_id}_IDX_{idx}_H_{h}"
@@ -41,20 +43,20 @@ async def stream_chunk_document(
     try:
         # 1️⃣ 获取文档与用户
         db_document = crud.document.get_document_by_document_id(
-            db=db, 
+            db=db,
             document_id=doc_id
         )
         if db_document is None:
             raise ValueError("Document not found")
         db_user = crud.user.get_user_by_id(
-            db=db, 
+            db=db,
             user_id=db_document.creator_id
         )
         if db_user is None:
             raise ValueError("User not found")
         if db_user.default_user_file_system is None:
             raise ValueError("User default file system not found")
-        
+
         # 2️⃣ 初始化文件系统
         remote_file_service = await get_user_remote_file_system(
             user_id=db_user.id
@@ -65,8 +67,8 @@ async def stream_chunk_document(
 
         # 3️⃣ 获取 Markdown 内容
         markdown_content = await _load_markdown_content(
-            db, 
-            db_document, 
+            db,
+            db_document,
             remote_file_service
         )
         if not markdown_content.strip():
@@ -120,15 +122,15 @@ async def stream_chunk_document(
 # 工具函数：加载 Markdown 内容
 # -----------------------------
 async def _load_markdown_content(
-    db: Session, 
-    db_document: models.document.Document, 
+    db: Session,
+    db_document: models.document.Document,
     remote_file_service: RemoteFileServiceProtocol
 ) -> str:
     """根据文档类型加载内容"""
     cat = db_document.category
     if cat == DocumentCategory.WEBSITE or cat == DocumentCategory.FILE:
         convert_task = crud.task.get_document_convert_task_by_document_id(
-            db=db, 
+            db=db,
             document_id=db_document.id
         )
         if convert_task is None:
@@ -140,7 +142,7 @@ async def _load_markdown_content(
         ))
     elif cat == DocumentCategory.QUICK_NOTE:
         note = crud.document.get_quick_note_document_by_document_id(
-            db=db, 
+            db=db,
             document_id=db_document.id
         )
         if note is None:
@@ -155,7 +157,7 @@ async def _load_markdown_content(
 # ----------------------------
 def extract_entities_relations(
     user_id: int,
-    llm_client: OpenAI, 
+    llm_client: OpenAI,
     llm_model: str,
     chunk: ChunkInfo
 ) -> tuple[list[EntityInfo], list[RelationInfo]]:
@@ -163,7 +165,7 @@ def extract_entities_relations(
     调用 LLM 模型抽取实体与关系
     """
     prompt = entity_and_relation_extraction_prompt(chunk=chunk)
-    
+
     with propagate_attributes(user_id=str(user_id)):
         resp = llm_client.chat.completions.create(
             model=llm_model,
@@ -202,7 +204,7 @@ def extract_entities_relations(
 # 合并实体和关系
 # -----------------------------
 def merge_entitys_and_relations(
-    entities: list[EntityInfo], 
+    entities: list[EntityInfo],
     relations: list[RelationInfo]
 ) -> tuple[list[EntityInfo], list[RelationInfo]]:
     seen_entities: dict[tuple[str, str], EntityInfo] = {}
@@ -241,19 +243,19 @@ async def get_extract_llm_client(
 ) -> OpenAI:
     db = SessionLocal()
     db_user = crud.user.get_user_by_id(
-        db=db, 
+        db=db,
         user_id=user_id
     )
     if db_user is None:
         raise Exception("User not found")
     if db_user.default_document_reader_model_id is None:
         raise Exception("Default document reader model id not found")
-    
+
     model_configuration = (await AIModelProxy.create(
         user_id=user_id,
         model_id=db_user.default_document_reader_model_id
     )).get_configuration()
-    
+
     llm_client = OpenAI(
         api_key=model_configuration.api_key,
         base_url=model_configuration.base_url,

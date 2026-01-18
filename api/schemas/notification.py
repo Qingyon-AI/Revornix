@@ -1,5 +1,7 @@
-from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone
+
+from pydantic import BaseModel, field_serializer
+
 
 class NotificationTaskBaseInfo(BaseModel):
     id: int
@@ -72,7 +74,7 @@ class NotificationSource(BaseModel):
     id: int
     uuid: str
     name: str
-    name_zh: str 
+    name_zh: str
     description: str | None
     description_zh: str | None
     create_time: datetime
@@ -95,7 +97,7 @@ class NotificationTarget(BaseModel):
     id: int
     uuid: str
     name: str
-    name_zh: str 
+    name_zh: str
     description: str | None
     description_zh: str | None
     create_time: datetime
@@ -170,7 +172,7 @@ class UserNotificationSourceDetailRequest(BaseModel):
 
 class UserNotificationTargetsResponse(BaseModel):
     data: list[UserNotificationTarget]
-    
+
 class UserNotificationSourcesResponse(BaseModel):
     data: list[UserNotificationSource]
 
@@ -199,13 +201,13 @@ class UpdateNotificationTargetRequest(BaseModel):
     title: str | None = None
     description: str | None = None
     config_json: str | None = None
-    
+
 class DeleteUserNotificationTargetRequest(BaseModel):
     user_notification_target_ids: list[int]
 
 class DeleteUserNotificationSourceRequest(BaseModel):
     user_notification_source_ids: list[int]
-    
+
 class NotificationRecordDetailRequest(BaseModel):
     notification_record_id: int
 
@@ -213,7 +215,7 @@ class SearchNotificationRecordRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
     limit: int = 10
-    
+
 class ReadNotificationRecordRequest(BaseModel):
     notification_record_ids: list[int]
     status: bool
@@ -244,16 +246,16 @@ class NotificationRecord(BaseModel):
         return v
     class Config:
         from_attributes = True
-    
+
 class DeleteNotificationRecordRequest(BaseModel):
     notification_record_ids: list[int]
-    
+
 class NotificationTaskDetailRequest(BaseModel):
     notification_task_id: int
-    
+
 class NotificationTriggerEvent(BaseModel):
     trigger_event_id: int
-    
+
 class NotificationTriggerScheduler(BaseModel):
     cron_expr: str
 
@@ -289,7 +291,7 @@ class NotificationTask(BaseModel):
 
 class DeleteNotificationTaskRequest(BaseModel):
     notification_task_ids: list[int]
-    
+
 class UpdateNotificationTaskRequest(BaseModel):
     notification_task_id: int
     title: str | None = None
@@ -305,7 +307,7 @@ class UpdateNotificationTaskRequest(BaseModel):
     notification_cover: str | None = None
     user_notification_source_id: int | None = None
     user_notification_target_id: int | None = None
-    
+
 class AddNotificationTaskRequest(BaseModel):
     user_notification_source_id: int
     user_notification_target_id: int
@@ -320,7 +322,7 @@ class AddNotificationTaskRequest(BaseModel):
     trigger_type: int
     trigger_event_id: int | None = None
     trigger_scheduler_cron: str | None = None
-    
+
 class NotificationTemplate(BaseModel):
     id: int
     uuid: str
@@ -328,9 +330,9 @@ class NotificationTemplate(BaseModel):
     name_zh: str
     description: str | None = None
     description_zh: str | None = None
-    
+
     class Config:
         from_attributes = True
-    
+
 class NotificationTemplatesResponse(BaseModel):
     data: list[NotificationTemplate]

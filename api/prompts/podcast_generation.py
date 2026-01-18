@@ -1,7 +1,7 @@
 def podcast_generation_prompt(
     text: str
 ):
-    prompt = f"""
+    return f"""
 You are a professional podcast host and script writer.
 
 Please write a natural, spoken-style podcast script based on the topic below.
@@ -22,4 +22,3 @@ Requirements:
 Topic:
 {text}
 """
-    return prompt

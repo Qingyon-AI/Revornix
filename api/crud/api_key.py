@@ -1,16 +1,19 @@
-import models
 from datetime import datetime, timezone
+
 from sqlalchemy.orm import Session
 
+import models
+
+
 def create_api_key(
-    db: Session, 
-    user_id: int, 
-    api_key: str, 
+    db: Session,
+    user_id: int,
+    api_key: str,
     description: str
 ):
     now = datetime.now(timezone.utc)
-    db_api_key = models.api_key.ApiKey(user_id=user_id, 
-                                       api_key=api_key, 
+    db_api_key = models.api_key.ApiKey(user_id=user_id,
+                                       api_key=api_key,
                                        description=description,
                                        create_time=now)
     db.add(db_api_key)
@@ -18,7 +21,7 @@ def create_api_key(
     return db_api_key
 
 def get_api_key_by_api_key(
-    db: Session, 
+    db: Session,
     api_key: str
 ):
     query = db.query(models.api_key.ApiKey)
@@ -27,8 +30,8 @@ def get_api_key_by_api_key(
     return query.first()
 
 def count_user_api_key(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     keyword: str | None = None
 ):
     query = db.query(models.api_key.ApiKey)
@@ -39,14 +42,14 @@ def count_user_api_key(
     return query.count()
 
 def search_api_key(
-    db: Session, 
-    user_id: int, 
-    page_num: int, 
+    db: Session,
+    user_id: int,
+    page_num: int,
     page_size: int = 10,
     keyword: str | None = None
 ):
     query = db.query(models.api_key.ApiKey)
-    query = query.filter(models.api_key.ApiKey.user_id == user_id, 
+    query = query.filter(models.api_key.ApiKey.user_id == user_id,
                          models.api_key.ApiKey.delete_at == None)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.api_key.ApiKey.description.like(f"%{keyword}%"))
@@ -55,12 +58,12 @@ def search_api_key(
     query = query.limit(page_size)
     return query.all()
 
-def delete_api_keys_by_api_key_ids(db: Session, 
-                                   user_id: int, 
+def delete_api_keys_by_api_key_ids(db: Session,
+                                   user_id: int,
                                    api_key_ids: list[int]):
     now = datetime.now(timezone.utc)
     query = db.query(models.api_key.ApiKey)
-    query = query.filter(models.api_key.ApiKey.user_id == user_id, 
+    query = query.filter(models.api_key.ApiKey.user_id == user_id,
                          models.api_key.ApiKey.delete_at == None,
                          models.api_key.ApiKey.id.in_(api_key_ids))
     query.update({models.api_key.ApiKey.delete_at: now}, synchronize_session=False)

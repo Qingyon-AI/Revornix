@@ -1,8 +1,10 @@
 import json
+
 from protocol.notification_source import NotificationSourceProtocol
 
+
 class EmailNotificationSource(NotificationSourceProtocol):
-    
+
     def __init__(
         self
     ):

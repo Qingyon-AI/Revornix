@@ -1,22 +1,46 @@
+from datetime import datetime, timezone
+from typing import cast
+
+from celery import chain, group
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
 import crud
 import models
 import schemas
-from celery import chain, group
-from datetime import datetime, timezone
-from schemas.common import SuccessResponse
-from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends
-from common.dependencies import get_db
-from data.milvus.search import naive_search
-from data.milvus.delete import delete_documents_from_milvus
-from data.neo4j.delete import delete_documents_and_related_from_neo4j
-from typing import cast
-from common.dependencies import get_db, get_current_user, check_deployed_by_official, plan_ability_checked_in_func, get_authorization_header
+from common.celery.app import (
+    start_process_document,
+    start_process_document_embedding,
+    start_process_document_graph,
+    start_process_document_podcast,
+    start_process_document_summarize,
+    start_process_section,
+    update_document_process_status,
+)
 from common.common import get_user_remote_file_system
-from common.celery.app import start_process_document, start_process_document_podcast, update_document_process_status, start_process_section, start_process_document_summarize, start_process_document_graph, start_process_document_embedding
-from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentPodcastStatus, DocumentProcessStatus, UserDocumentAuthority, DocumentSummarizeStatus, DocumentGraphStatus, DocumentEmbeddingStatus
-from enums.section import UserSectionRole, UserSectionAuthority, SectionDocumentIntegration, SectionProcessTriggerType
+from common.dependencies import (
+    check_deployed_by_official,
+    get_authorization_header,
+    get_current_user,
+    get_db,
+    plan_ability_checked_in_func,
+)
+from data.milvus.delete import delete_documents_from_milvus
+from data.milvus.search import naive_search
+from data.neo4j.delete import delete_documents_and_related_from_neo4j
 from enums.ability import Ability
+from enums.document import (
+    DocumentCategory,
+    DocumentEmbeddingStatus,
+    DocumentGraphStatus,
+    DocumentMdConvertStatus,
+    DocumentPodcastStatus,
+    DocumentProcessStatus,
+    DocumentSummarizeStatus,
+    UserDocumentAuthority,
+)
+from enums.section import SectionDocumentIntegration, SectionProcessTriggerType, UserSectionAuthority, UserSectionRole
+from schemas.common import SuccessResponse
 
 document_router = APIRouter()
 
@@ -27,7 +51,7 @@ def get_label_summary(
 ):
     res = []
     db_labels_summary = crud.document.get_labels_summary(
-        db=db, 
+        db=db,
         user_id=user.id
     )
     for label, count in db_labels_summary:
@@ -44,11 +68,11 @@ def get_label_summary(
 @document_router.post('/label/delete', response_model=schemas.common.NormalResponse)
 def delete_label(
     label_delete_request: schemas.document.LabelDeleteRequest,
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     crud.document.delete_labels_by_label_ids(
-        db=db, 
+        db=db,
         label_ids=label_delete_request.label_ids,
         user_id=user.id
     )
@@ -57,11 +81,11 @@ def delete_label(
 
 @document_router.post("/label/list", response_model=schemas.document.LabelListResponse)
 def list_label(
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     db_labels = crud.document.get_user_labels_by_user_id(
-        db=db, 
+        db=db,
         user_id=user.id
     )
     labels = [
@@ -72,17 +96,17 @@ def list_label(
 @document_router.post('/label/create', response_model=schemas.document.CreateLabelResponse)
 def add_label(
     label_add_request: schemas.document.LabelAddRequest,
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     db_label = crud.document.create_document_label(
-        db=db, 
-        name=label_add_request.name, 
+        db=db,
+        name=label_add_request.name,
         user_id=user.id
     )
     db.commit()
     return schemas.document.CreateLabelResponse(id=db_label.id, name=db_label.name)
-    
+
 @document_router.post('/note/create', response_model=schemas.common.NormalResponse)
 def create_note(
     note_create_request: schemas.document.DocumentNoteCreateRequest,
@@ -132,7 +156,7 @@ def search_note(
         has_more = False
     if len(notes) == search_note_request.limit:
         next_note = crud.document.search_next_note_by_document_note(
-            db=db, 
+            db=db,
             document_note=notes[-1],
             keyword=search_note_request.keyword
         )
@@ -165,7 +189,7 @@ async def create_ai_summary(
     )
     if db_document is None:
         raise Exception('The document you want to summarize is not found')
-    
+
     db_exist_summarize_task = crud.task.get_document_summarize_task_by_document_id(
         db=db,
         document_id=ai_summary_request.document_id
@@ -186,19 +210,19 @@ async def create_ai_summary(
         raise Exception('The document you want to summarize is not processed')
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
-    
+
     workflow = chain(
         start_process_document_summarize.si(
-            document_id=db_document.id, 
+            document_id=db_document.id,
             user_id=user.id
         ),
         update_document_process_status.si(
-            document_id=db_document.id, 
+            document_id=db_document.id,
             status=DocumentProcessStatus.SUCCESS
         )
     )
     workflow()
-    
+
     return schemas.common.SuccessResponse()
 
 @document_router.post('/embedding', response_model=schemas.common.NormalResponse)
@@ -213,7 +237,7 @@ async def create_embedding(
     )
     if db_document is None:
         raise Exception('The document you want to summarize is not found')
-    
+
     db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
         db=db,
         document_id=embedding_request.document_id
@@ -225,7 +249,7 @@ async def create_embedding(
             raise Exception('The embedding task is already in the queue, please wait')
         if db_embedding_task.status == DocumentEmbeddingStatus.EMBEDDING:
             raise Exception('The embedding task is already processing, please wait')
-    
+
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
         document_id=embedding_request.document_id
@@ -234,21 +258,21 @@ async def create_embedding(
         raise Exception('The document you want to embedding is not processed')
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
-    
+
     workflow = chain(
         start_process_document_embedding.si(
-            document_id=db_document.id, 
+            document_id=db_document.id,
             user_id=user.id
         ),
         update_document_process_status.si(
-            document_id=db_document.id, 
+            document_id=db_document.id,
             status=DocumentProcessStatus.SUCCESS
         )
     )
     workflow()
-    
+
     return schemas.common.SuccessResponse()
-    
+
 
 @document_router.post('/graph/generate', response_model=schemas.common.NormalResponse)
 async def generate_graph(
@@ -262,7 +286,7 @@ async def generate_graph(
     )
     if db_document is None:
         raise Exception('The document you want to summarize is not found')
-    
+
     db_graph_generate_task = crud.task.get_document_graph_task_by_document_id(
         db=db,
         document_id=graph_generate_request.document_id
@@ -283,19 +307,19 @@ async def generate_graph(
         raise Exception('The document you want to generate the graph is not processed')
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
-    
+
     workflow = chain(
         start_process_document_graph.si(
-            document_id=db_document.id, 
+            document_id=db_document.id,
             user_id=user.id
         ),
         update_document_process_status.si(
-            document_id=db_document.id, 
+            document_id=db_document.id,
             status=DocumentProcessStatus.SUCCESS
         )
     )
     workflow()
-    
+
     return schemas.common.SuccessResponse()
 
 @document_router.post('/podcast/generate', response_model=schemas.common.NormalResponse)
@@ -310,7 +334,7 @@ async def generate_podcast(
     )
     if db_document is None:
         raise Exception('The document you want to generate the podcast is not found')
-    
+
     # podcast必须要存储系统，所以检查用户的存储系统配置
     if user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
@@ -321,7 +345,7 @@ async def generate_podcast(
         await remote_file_service.init_client_by_user_file_system_id(
             user_file_system_id=user.default_user_file_system
         )
-    
+
     db_exist_podcast_task = crud.task.get_document_podcast_task_by_document_id(
         db=db,
         document_id=generate_podcast_request.document_id
@@ -342,28 +366,28 @@ async def generate_podcast(
         raise Exception('The document you want to generate the podcast is not processed')
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
-    
+
     workflow = chain(
         start_process_document_podcast.si(
-            document_id=db_document.id, 
+            document_id=db_document.id,
             user_id=user.id
         ),
         update_document_process_status.si(
-            document_id=db_document.id, 
+            document_id=db_document.id,
             status=DocumentProcessStatus.SUCCESS
         )
     )
     workflow()
-    
+
     return schemas.common.SuccessResponse()
 
 @document_router.post('/month/summary', response_model=schemas.document.DocumentMonthSummaryResponse)
 def get_month_summary(
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     rows = crud.document.get_document_summary_by_user_id(
-        db=db, 
+        db=db,
         user_id=user.id
     )
     # 格式化数据
@@ -372,8 +396,8 @@ def get_month_summary(
 
 @document_router.post('/create', response_model=schemas.document.DocumentCreateResponse)
 async def create_document(
-    document_create_request: schemas.document.DocumentCreateRequest,  
-    db: Session = Depends(get_db), 
+    document_create_request: schemas.document.DocumentCreateRequest,
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user),
     deployed_by_official = Depends(check_deployed_by_official),
     authorization: str = Depends(get_authorization_header),
@@ -428,8 +452,8 @@ async def create_document(
             creator_id=user.id,
             category=document_create_request.category,
             from_plat=document_create_request.from_plat,
-            title=f'File document analysing...',
-            description=f'File document analysing...'
+            title='File document analysing...',
+            description='File document analysing...'
         )
         crud.document.create_file_document(
             db=db,
@@ -456,14 +480,14 @@ async def create_document(
         raise Exception('Invalid document category')
     if len(document_create_request.labels) > 0:
         crud.document.create_document_labels(
-            db=db, 
-            document_id=db_document.id, 
+            db=db,
+            document_id=db_document.id,
             label_ids=document_create_request.labels
         )
     crud.document.create_user_document(
-        db=db, 
-        user_id=user.id, 
-        document_id=db_document.id, 
+        db=db,
+        user_id=user.id,
+        document_id=db_document.id,
         authority=UserDocumentAuthority.OWNER
     )
     crud.task.create_document_process_task(
@@ -473,13 +497,13 @@ async def create_document(
     )
     # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
     db_today_section = crud.section.get_section_by_user_and_date(
-        db=db, 
+        db=db,
         user_id=user.id,
         date=now.date()
     )
     if db_today_section is None:
         db_today_section = crud.section.create_section(
-            db=db, 
+            db=db,
             creator_id=user.id,
             title=f'{now.date().isoformat()} Summary',
             description=f"This document is the summary of all documents on {now.date().isoformat()}."
@@ -547,14 +571,14 @@ async def create_document(
     )
     background_tasks = chain(
         start_process_document.si(
-            document_id=db_document.id, 
-            user_id=user.id, 
+            document_id=db_document.id,
+            user_id=user.id,
             auto_tag=document_create_request.auto_tag,
             auto_summary=document_create_request.auto_summary,
             auto_podcast=document_create_request.auto_podcast,
             override=schemas.task.DocumentOverrideProperty(
-                title=document_create_request.title, 
-                description=document_create_request.description, 
+                title=document_create_request.title,
+                description=document_create_request.description,
                 cover=document_create_request.cover
             ).model_dump(mode='json')
         ),
@@ -592,7 +616,7 @@ async def transform_markdown(
     if db_process_task is None:
         raise Exception('The document you want to transform is not processed')
     db_process_task.status = DocumentProcessStatus.PROCESSING
-    
+
     db_convert_task = crud.task.get_document_convert_task_by_document_id(
         db=db,
         document_id=transform_markdown_request.document_id
@@ -617,8 +641,8 @@ async def transform_markdown(
 
     # Background tasks
     start_process_document.delay(
-        document_id=db_document.id, 
-        user_id=user.id, 
+        document_id=db_document.id,
+        user_id=user.id,
         auto_summary=False,
         auto_podcast=True
     )
@@ -628,20 +652,20 @@ async def transform_markdown(
 @document_router.post('/update', response_model=schemas.common.NormalResponse)
 def update_document(
     document_update_request: schemas.document.DocumentUpdateRequest,
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     now = datetime.now(tz=timezone.utc)
     db_document = crud.document.get_document_by_document_id(
-        db=db, 
+        db=db,
         document_id=document_update_request.document_id
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
-    
+
     if db_document.creator_id != user.id:
         raise schemas.error.CustomException("You dont have permission to update this document", code=403)
-    
+
     section_process_tasks = None
     if document_update_request.title is not None:
         db_document.title = document_update_request.title
@@ -651,7 +675,7 @@ def update_document(
         db_document.cover = document_update_request.cover
     if document_update_request.labels is not None:
         exist_document_labels = crud.document.get_document_labels_by_document_id(
-            db=db, 
+            db=db,
             document_id=document_update_request.document_id
         )
         exist_document_label_ids = [
@@ -661,8 +685,8 @@ def update_document(
             label_id for label_id in document_update_request.labels if label_id not in exist_document_label_ids
         ]
         crud.document.create_document_labels(
-            db=db, 
-            document_id=document_update_request.document_id, 
+            db=db,
+            document_id=document_update_request.document_id,
             label_ids=new_document_label_ids
         )
         labels_to_delete = [
@@ -678,14 +702,14 @@ def update_document(
             document_update_request.sections
         ))
         exist_document_sections = crud.document.get_sections_by_document_id(
-            db=db, 
+            db=db,
             document_id=document_update_request.document_id
         )
         exist_document_section_ids = [section.id for section in exist_document_sections]
         new_section_label_ids = [section_id for section_id in document_update_request.sections if section_id not in exist_document_section_ids]
         for section_id in new_section_label_ids:
             crud.section.create_or_update_section_document(
-                db=db, 
+                db=db,
                 section_id=section_id,
                 document_id=document_update_request.document_id,
                 status=SectionDocumentIntegration.WAIT_TO
@@ -699,11 +723,11 @@ def update_document(
             )
         if sorted(exist_document_section_ids) != sorted(document_update_request.sections):
             db_section_documents_and_sections = crud.section.get_section_documents_and_sections_by_document_id(
-                db=db, 
+                db=db,
                 document_id=document_update_request.document_id
             )
             db_section_to_process = []
-            for db_section_document, db_section in db_section_documents_and_sections:
+            for _, db_section in db_section_documents_and_sections:
                 db_section_process_task = crud.task.get_section_process_task_by_section_id(
                     db=db,
                     section_id=db_section.id
@@ -728,7 +752,7 @@ def update_document(
 def get_document_info(
     db: Session,
     document: models.document.Document
-): 
+):
     convert_task = None
     embedding_task = None
     graph_task = None
@@ -871,7 +895,7 @@ def get_document_infos(
                 status=podcast_task.status,
                 podcast_file_name=podcast_task.podcast_file_name,
             )
-        
+
         summarize_task = summarize_task_by_document_id.get(document.id)
         if summarize_task is not None:
             info.summarize_task = schemas.task.DocumentSummarizeTask(
@@ -892,12 +916,12 @@ def get_document_infos(
 
 @document_router.post('/detail', response_model=schemas.document.DocumentDetailResponse)
 def get_document_detail(
-    document_detail_request: schemas.document.DocumentDetailRequest, 
-    db: Session = Depends(get_db), 
+    document_detail_request: schemas.document.DocumentDetailRequest,
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     document = crud.document.get_document_by_document_id(
-        db=db, 
+        db=db,
         document_id=document_detail_request.document_id
     )
     if document is None:
@@ -920,13 +944,13 @@ def get_document_detail(
                 raise Exception('You have no permission to access this document')
 
     is_star = crud.document.get_star_document_by_user_id_and_document_id(
-        db=db, 
-        user_id=user.id, 
+        db=db,
+        user_id=user.id,
         document_id=document_detail_request.document_id
     ) is not None
     is_read = crud.document.get_read_document_by_document_id_and_user_id(
-        db=db, 
-        user_id=user.id, 
+        db=db,
+        user_id=user.id,
         document_id=document_detail_request.document_id
     ) is not None
     db_sections = crud.document.get_sections_by_document_id(
@@ -952,7 +976,7 @@ def get_document_detail(
         ) for label in db_labels
     ]
     res = schemas.document.DocumentDetailResponse(
-        id=document.id, 
+        id=document.id,
         labels=labels,
         sections=sections,
         title=document.title,
@@ -961,14 +985,14 @@ def get_document_detail(
         creator=document.creator,
         cover=document.cover,
         from_plat=document.from_plat,
-        create_time=document.create_time, 
+        create_time=document.create_time,
         update_time=document.update_time,
         is_star=is_star,
         is_read=is_read
     )
     if document.category == DocumentCategory.WEBSITE:
         website_document = crud.document.get_website_document_by_document_id(
-            db=db, 
+            db=db,
             document_id=document_detail_request.document_id
         )
         if website_document is not None:
@@ -978,7 +1002,7 @@ def get_document_detail(
             )
     elif document.category == DocumentCategory.FILE:
         file_document = crud.document.get_file_document_by_document_id(
-            db=db, 
+            db=db,
             document_id=document_detail_request.document_id
         )
         if file_document is not None:
@@ -988,7 +1012,7 @@ def get_document_detail(
             )
     elif document.category == DocumentCategory.QUICK_NOTE:
         quick_note_document = crud.document.get_quick_note_document_by_document_id(
-            db=db, 
+            db=db,
             document_id=document_detail_request.document_id
         )
         if quick_note_document is not None:
@@ -1045,30 +1069,30 @@ def get_document_detail(
 
 @document_router.post('/unread/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 def search_user_unread_documents(
-    search_unread_list_request: schemas.document.SearchUnreadListRequest, 
-    db: Session = Depends(get_db), 
+    search_unread_list_request: schemas.document.SearchUnreadListRequest,
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     has_more = True
     next_start = None
     next_document = None
     db_documents = crud.document.search_user_unread_documents(
-        db=db, 
-        user_id=user.id, 
+        db=db,
+        user_id=user.id,
         start=search_unread_list_request.start,
         limit=search_unread_list_request.limit,
         keyword=search_unread_list_request.keyword,
         label_ids=search_unread_list_request.label_ids,
         desc=search_unread_list_request.desc
     )
-    
+
     documents = get_document_infos(db=db, documents=db_documents)
     if len(documents) < search_unread_list_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_unread_list_request.limit:
         next_document = crud.document.search_next_user_unread_document(
-            db=db, 
-            user_id=user.id, 
+            db=db,
+            user_id=user.id,
             document=db_documents[-1],
             keyword=search_unread_list_request.keyword,
             label_ids=search_unread_list_request.label_ids,
@@ -1090,19 +1114,19 @@ def search_user_unread_documents(
         has_more=has_more,
         next_start=next_start
     )
-    
+
 @document_router.post('/recent/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 def recent_read_document(
-    search_recent_read_request: schemas.document.SearchRecentReadRequest, 
-    db: Session = Depends(get_db), 
+    search_recent_read_request: schemas.document.SearchRecentReadRequest,
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     has_more = True
     next_start = None
     next_document = None
     db_documents = crud.document.search_user_recent_read_documents(
-        db=db, 
-        user_id=user.id, 
+        db=db,
+        user_id=user.id,
         start=search_recent_read_request.start,
         limit=search_recent_read_request.limit,
         keyword=search_recent_read_request.keyword,
@@ -1114,8 +1138,8 @@ def recent_read_document(
         has_more = False
     if len(documents) == search_recent_read_request.limit:
         next_document = crud.document.search_next_user_recent_read_document(
-            db=db, 
-            user_id=user.id, 
+            db=db,
+            user_id=user.id,
             document=db_documents[-1],
             keyword=search_recent_read_request.keyword,
             label_ids=search_recent_read_request.label_ids,
@@ -1140,16 +1164,16 @@ def recent_read_document(
 
 @document_router.post('/search/mine', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 def search_all_mine_documents(
-    search_all_my_document_request: schemas.document.SearchAllMyDocumentsRequest, 
-    db: Session = Depends(get_db), 
+    search_all_my_document_request: schemas.document.SearchAllMyDocumentsRequest,
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     has_more = True
     next_start = None
     next_document = None
     db_documents = crud.document.search_user_documents(
-        db=db, 
-        user_id=user.id, 
+        db=db,
+        user_id=user.id,
         start=search_all_my_document_request.start,
         limit=search_all_my_document_request.limit,
         keyword=search_all_my_document_request.keyword,
@@ -1161,8 +1185,8 @@ def search_all_mine_documents(
         has_more = False
     if len(documents) == search_all_my_document_request.limit:
         next_document = crud.document.search_next_user_document(
-            db=db, 
-            user_id=user.id, 
+            db=db,
+            user_id=user.id,
             document=db_documents[-1],
             keyword=search_all_my_document_request.keyword,
             label_ids=search_all_my_document_request.label_ids,
@@ -1187,16 +1211,16 @@ def search_all_mine_documents(
 
 @document_router.post('/star/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 def search_my_star_documents(
-    search_my_star_documents_request: schemas.document.SearchMyStarDocumentsRequest, 
-    db: Session = Depends(get_db), 
+    search_my_star_documents_request: schemas.document.SearchMyStarDocumentsRequest,
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     has_more = True
     next_start = None
     next_document = None
     db_documents = crud.document.search_user_stared_documents(
-        db=db, 
-        user_id=user.id, 
+        db=db,
+        user_id=user.id,
         start=search_my_star_documents_request.start,
         limit=search_my_star_documents_request.limit,
         keyword=search_my_star_documents_request.keyword,
@@ -1208,8 +1232,8 @@ def search_my_star_documents(
         has_more = False
     if len(documents) == search_my_star_documents_request.limit:
         next_document = crud.document.search_next_user_star_document(
-            db=db, 
-            user_id=user.id, 
+            db=db,
+            user_id=user.id,
             document=db_documents[-1],
             keyword=search_my_star_documents_request.keyword,
             label_ids=search_my_star_documents_request.label_ids,
@@ -1218,9 +1242,9 @@ def search_my_star_documents(
         has_more = next_document is not None
         next_start = next_document.id if next_document is not None else None
     total = crud.document.count_user_stared_documents(
-        db=db, 
-        user_id=user.id, 
-        keyword=search_my_star_documents_request.keyword, 
+        db=db,
+        user_id=user.id,
+        keyword=search_my_star_documents_request.keyword,
         label_ids=search_my_star_documents_request.label_ids
     )
     return schemas.pagination.InifiniteScrollPagnition(
@@ -1234,8 +1258,8 @@ def search_my_star_documents(
 
 @document_router.post('/vector/search', response_model=schemas.document.VectorSearchResponse)
 def search_knowledge_vector(
-    vector_search_request: schemas.document.VectorSearchRequest, 
-    db: Session = Depends(get_db), 
+    vector_search_request: schemas.document.VectorSearchRequest,
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     # TODO 待修复 如果文档被删除但是向量没删除的话 可能会出现向量搜索到了旧文档（因为旧文档匹配率高于新的文档） 但是对应的文档由于被删除后无法获取 所以明明我有新的文档但是搜索结果还是为空
@@ -1255,26 +1279,26 @@ def search_knowledge_vector(
 
 @document_router.post('/star', response_model=SuccessResponse)
 def star_document(
-    star_request: schemas.document.StarRequest, 
-    db: Session = Depends(get_db), 
+    star_request: schemas.document.StarRequest,
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     db_document = crud.document.get_document_by_document_id(
-        db=db, 
+        db=db,
         document_id=star_request.document_id
     )
     if db_document is None:
         raise Exception("The document is not found")
     if star_request.status is False:
         crud.document.unstar_document_by_document_id(
-            db=db, 
-            user_id=user.id, 
+            db=db,
+            user_id=user.id,
             document_id=star_request.document_id
         )
     elif star_request.status is True:
         crud.document.star_document_by_document_id(
-            db=db, 
-            user_id=user.id, 
+            db=db,
+            user_id=user.id,
             document_id=star_request.document_id
         )
     db.commit()
@@ -1282,26 +1306,26 @@ def star_document(
 
 @document_router.post('/read', response_model=SuccessResponse)
 def read_document(
-    read_request: schemas.document.ReadRequest, 
-    db: Session = Depends(get_db), 
+    read_request: schemas.document.ReadRequest,
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     db_document = crud.document.get_document_by_document_id(
-        db=db, 
+        db=db,
         document_id=read_request.document_id
     )
     if db_document is None:
         raise Exception("The document is not found")
     if read_request.status is False:
         crud.document.unread_document_by_document_id(
-            db=db, 
-            user_id=user.id, 
+            db=db,
+            user_id=user.id,
             document_id=read_request.document_id
         )
     elif read_request.status is True:
         crud.document.read_document_by_document_id(
-            db=db, 
-            user_id=user.id, 
+            db=db,
+            user_id=user.id,
             document_id=read_request.document_id
         )
     db.commit()
@@ -1309,13 +1333,13 @@ def read_document(
 
 @document_router.post('/delete', response_model=SuccessResponse)
 def delete_document(
-    documents_delete_request: schemas.document.DocumentDeleteRequest, 
-    db: Session = Depends(get_db), 
+    documents_delete_request: schemas.document.DocumentDeleteRequest,
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
     for document_id in documents_delete_request.document_ids:
         db_document = crud.document.get_document_by_document_id(
-            db=db, 
+            db=db,
             document_id=document_id
         )
         if db_document is None:
@@ -1323,12 +1347,12 @@ def delete_document(
         if db_document.creator_id != user.id:
             raise Exception("You are not the owner of the document")
     crud.document.delete_user_documents_by_document_ids(
-        db=db, 
-        document_ids=documents_delete_request.document_ids, 
+        db=db,
+        document_ids=documents_delete_request.document_ids,
         user_id=user.id
     )
     crud.document.delete_document_labels_by_document_ids(
-        db=db, 
+        db=db,
         document_ids=documents_delete_request.document_ids
     )
     crud.document.delete_document_notes_by_document_ids(

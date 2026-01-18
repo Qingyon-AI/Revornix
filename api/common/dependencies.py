@@ -1,28 +1,30 @@
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
+
+from collections import defaultdict
+from datetime import datetime, timedelta, timezone
+from typing import Any
+from urllib.parse import urlparse
+
+import httpx
+from fastapi import Depends, Header, HTTPException, Request, status
+from jose import jwt
+from redis import Redis
+from sqlalchemy.orm import Session
 
 import crud
 import models
 import schemas
-import httpx
-from jose import jwt
-from redis import Redis
-from collections import defaultdict
-from typing import Any
-from sqlalchemy.orm import Session
-from data.sql.base import SessionLocal
-from config.oauth2 import OAUTH_SECRET_KEY
-from config.base import OFFICIAL, DEPLOY_HOSTS, UNION_PAY_URL_PREFIX
-from urllib.parse import urlparse
-from datetime import datetime, timezone, timedelta
-from typing import Optional
-from fastapi import Request, HTTPException, status, Depends, Header
-from config.langfuse import LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
 from common.logger import exception_logger
+from config.base import DEPLOY_HOSTS, OFFICIAL, UNION_PAY_URL_PREFIX
+from config.langfuse import LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
+from config.oauth2 import OAUTH_SECRET_KEY
+from data.sql.base import SessionLocal
 
 if OAUTH_SECRET_KEY is None:
     raise Exception("OAUTH_SECRET_KEY is not set")
-    
+
 async def get_request_host(request: Request) -> str | None:
     origin = request.headers.get("origin")
     if origin:
@@ -69,7 +71,7 @@ def get_db():
         db.close()
 
 def decode_jwt_token(
-    token: str, 
+    token: str,
     secret_key: str = OAUTH_SECRET_KEY
 ):
     return jwt.decode(token, secret_key, algorithms=["HS256"])
@@ -78,13 +80,13 @@ def get_cache(request: Request) -> Redis:
     return request.app.state.redis
 
 def get_api_key(
-    api_key: str | None = Header(default=None), 
+    api_key: str | None = Header(default=None),
     db: Session = Depends(get_db)
 ):
     if api_key is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing API Key")
     db_api_key = crud.api_key.get_api_key_by_api_key(
-        db=db, 
+        db=db,
         api_key=api_key
     )
     if db_api_key is None:
@@ -95,14 +97,13 @@ def get_current_user_with_api_key(
     api_key: models.api_key.ApiKey = Depends(get_api_key),
     db: Session = Depends(get_db)
 ):
-     user = crud.user.get_user_by_id(
-         db=db, 
-         user_id=api_key.user_id
-        )
-     return user
+    return crud.user.get_user_by_id(
+        db=db,
+        user_id=api_key.user_id
+    )
 
 def get_real_ip(
-    request: Request, 
+    request: Request,
     x_forwarded_for: str | None = Header(default=None)
 ) -> str | None:
     if x_forwarded_for:
@@ -151,7 +152,7 @@ def get_current_user_without_throw(
     return user
 
 def get_current_user(
-    authorization: str | None = Header(default=None), 
+    authorization: str | None = Header(default=None),
     db: Session = Depends(get_db)
 ):
     authenticate_value = "Bearer"
@@ -169,7 +170,7 @@ def get_current_user(
             raise credentials_exception
     except Exception as e:
         exception_logger.error(f"Error occurred while decoding token: {e}")
-        raise credentials_exception
+        raise credentials_exception from e
     user = crud.user.get_user_by_uuid(db, user_uuid=uuid)
     if user is None:
         raise credentials_exception
@@ -200,7 +201,7 @@ async def plan_ability_checked_in_func(
         if not response.is_success:
             return False
     return True
-    
+
 
 def plan_ability_checked(
     ability: str
@@ -226,18 +227,18 @@ def plan_ability_checked(
                     "ability": ability
                 }
             )
-            if not response.is_success: 
+            if not response.is_success:
                 err = None
                 try:
                     errMsg = response.json().get("message")
                     err = schemas.error.CustomException(
-                        message=errMsg, 
+                        message=errMsg,
                         code=403
                     )
                 except Exception as e:
                     errMsg = f"Something is wrong with the ability check service: {e}"
                     err = schemas.error.CustomException(
-                        message=errMsg, 
+                        message=errMsg,
                         code=503
                     )
                 raise
@@ -248,8 +249,8 @@ def plan_ability_checked(
 async def list_traces(
     model_name: str,
     user_id: int,
-    start_time: Optional[datetime] = None,
-    end_time: Optional[datetime] = None,
+    start_time: datetime | None = None,
+    end_time: datetime | None = None,
     limit: int | None = None,
 ):
     """
@@ -278,7 +279,7 @@ async def list_traces(
         # 👇 如果你是用 tag 记录 model（推荐）
         "tags": f"model:{model_name}",
     }
-    
+
     if limit is not None:
         params.update(
             {
@@ -304,7 +305,7 @@ def is_leaf_generation(obs, all_obs):
         and child.get("type") == "GENERATION"
         for child in all_obs
     )
-    
+
 def sum_usage_details(items: list[dict[str, Any]]) -> dict[str, int]:
     total: dict[str, int] = defaultdict(int)
 
@@ -322,12 +323,12 @@ def sum_usage_details(items: list[dict[str, Any]]) -> dict[str, int]:
 async def calc_token_usage(
     trace_ids: list[str]
 ):
-    
+
     if LANGFUSE_PUBLIC_KEY is None or LANGFUSE_SECRET_KEY is None:
         raise RuntimeError("Missing LANGFUSE_PUBLIC_KEY or LANGFUSE_SECRET_KEY")
 
     to_be_sumed = []
-    
+
     async with httpx.AsyncClient(
         timeout=20
     ) as client:
@@ -347,16 +348,14 @@ async def calc_token_usage(
                 ):
                     to_be_sumed.append(obs)
 
-    total_usage = sum_usage_details(to_be_sumed)
+    return sum_usage_details(to_be_sumed)
 
-    return total_usage
-    
 async def get_user_token_usage(
     *,
     user_id: int,
     model_name: str,
-    start_time: Optional[datetime] = None,
-    end_time: Optional[datetime] = None,
+    start_time: datetime | None = None,
+    end_time: datetime | None = None,
     limit: int | None = None,
 ):
     traces = await list_traces(
@@ -378,9 +377,9 @@ async def get_user_token_usage(
     return usage
 
 if __name__=='__main__':
-    
+
     import asyncio
-    
+
     async def main():
         end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(days=7)

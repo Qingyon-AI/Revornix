@@ -1,5 +1,7 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import WebSocket
+
 from common.logger import info_logger
+
 
 class ConnectionManager:
     def __init__(self):
@@ -12,7 +14,7 @@ class ConnectionManager:
 
     def disconnect(self, id: str):
         self.connections.pop(id)
-        
+
     def get_connection(self, id: str):
         return self.connections.get(id)
 
@@ -24,7 +26,7 @@ class ConnectionManager:
     async def broadcast(self, message: str):
         for connection in self.connections.values():
             await connection.send_text(message)
-            
+
     async def count(self):
         return len(self.connections)
 

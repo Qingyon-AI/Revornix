@@ -1,6 +1,7 @@
-import sys
 import os
+import sys
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -9,8 +10,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
@@ -43,8 +43,9 @@ if config.config_file_name is not None:
 # from models.section import *
 # from models.task import *
 # from models.model import *
-from models.user import *
 from data.sql.base import Base
+from models.user import *
+
 target_metadata = Base.metadata # 设置创建模型的元类
 
 # other values from the config, defined by the needs of env.py,
@@ -98,7 +99,7 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, 
+            connection=connection,
             target_metadata=target_metadata,
             include_object=include_object,
         )

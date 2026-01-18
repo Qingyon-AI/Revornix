@@ -1,10 +1,12 @@
 # This file is only for testing
 
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
 import os
 import re
+
 from langfuse.openai import OpenAI
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
@@ -50,9 +52,9 @@ class OfficialImageAIClient:
             api_key=OFFICIAL_IMAGE_AI_KEY
         )
         self.client = llm_client
-        
+
     def generate(
-        self, 
+        self,
         text: str
     ):
         if OFFICIAL_IMAGE_AI_MODEL is None:
@@ -67,9 +69,9 @@ class OfficialImageAIClient:
                     "content": SYSTEM_PROMPT
                 },
                 {
-                    "role": "user", 
+                    "role": "user",
                     "content": text
-                },   
+                },
             ]
         )
         for chunk in response:

@@ -1,13 +1,14 @@
 from typing import Protocol
 
+
 class NotificationTriggerEventProtocol(Protocol):
-    
+
     uuid: str
     name: str
     name_zh: str
     description: str | None
     description_zh: str | None
-    
+
     def __init__(
         self,
         uuid: str,

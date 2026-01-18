@@ -1,15 +1,17 @@
+from fastmcp import Context, FastMCP
+from fastmcp.exceptions import ToolError
+from fastmcp.server.dependencies import get_http_headers
+from fastmcp.server.middleware import Middleware, MiddlewareContext
+
 import crud
 from data.neo4j.search import global_search
-from fastmcp import FastMCP, Context
-from fastmcp.server.middleware import Middleware, MiddlewareContext
-from fastmcp.server.dependencies import get_http_headers
-from fastmcp.exceptions import ToolError
 from data.sql.base import SessionLocal
+
 
 class UserAuthMiddleware(Middleware):
     async def on_call_tool(
-        self, 
-        context: MiddlewareContext, 
+        self,
+        context: MiddlewareContext,
         call_next
     ):
         headers = get_http_headers()
@@ -20,20 +22,20 @@ class UserAuthMiddleware(Middleware):
         user_id = await self.verify_api_key_and_get_user_id(api_key)
         if not user_id:
             raise ToolError("Access denied: invalid token")
-        
+
         if context.fastmcp_context:
             context.fastmcp_context.set_state("api_key", api_key)
             context.fastmcp_context.set_state("user_id", user_id)
-            
+
         return await call_next(context)
 
     async def verify_api_key_and_get_user_id(
-        self, 
+        self,
         api_key: str
     ):
         db = SessionLocal()
         db_api_key = crud.api_key.get_api_key_by_api_key(
-            db=db, 
+            db=db,
             api_key=api_key
         )
         if not db_api_key:

@@ -1,13 +1,14 @@
-import hashlib
 import base64
+import hashlib
 import hmac
-import httpx
+import textwrap
 import time
 import urllib.parse
-from typing import Optional
-from protocol.notification_tool import NotificationToolProtocol
+
+import httpx
+
 from common.logger import exception_logger
-import textwrap
+from protocol.notification_tool import NotificationToolProtocol
 
 
 class DingTalkNotificationTool(NotificationToolProtocol):
@@ -24,15 +25,14 @@ class DingTalkNotificationTool(NotificationToolProtocol):
         ).digest()
 
         # Base64 -> decode -> urlencode（官方标准流程）
-        sign = urllib.parse.quote_plus(base64.b64encode(hmac_code).decode("utf-8"))
-        return sign
+        return urllib.parse.quote_plus(base64.b64encode(hmac_code).decode("utf-8"))
 
     async def send_notification(
         self,
         title: str,
-        content: Optional[str] = None,
-        cover: Optional[str] = None,
-        link: Optional[str] = None,
+        content: str | None = None,
+        cover: str | None = None,
+        link: str | None = None,
     ):
         if self.source is None or self.target is None:
             raise ValueError("The source or target of the notification is not set")

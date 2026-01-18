@@ -1,8 +1,10 @@
 import json
+
 from protocol.notification_source import NotificationSourceProtocol
 
+
 class TelegramNotificationSource(NotificationSourceProtocol):
-    
+
     def __init__(
         self
     ):

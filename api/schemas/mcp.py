@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class MCPServerDetailRequest(BaseModel):
     id: int
 
@@ -11,7 +12,7 @@ class MCPServerCreateRequest(BaseModel):
     args: str | None = None
     env: str | None = None
     headers: str | None = None
-    
+
 class MCPServerUpdateRequest(BaseModel):
     id: int
     category: int | None = None
@@ -22,10 +23,10 @@ class MCPServerUpdateRequest(BaseModel):
     args: str | None = None
     headers: str | None = None
     env: str | None = None
-    
+
 class MCPServerDeleteRequest(BaseModel):
     id: int
-    
+
 class MCPServerInfo(BaseModel):
     id: int
     name: str
@@ -36,9 +37,9 @@ class MCPServerInfo(BaseModel):
     args: str | None = None
     env: str | None = None
     headers: str | None = None
-    
+
 class MCPServerSearchRequest(BaseModel):
     keyword: str | None = None
-    
+
 class MCPServerSearchResponse(BaseModel):
     data: list[MCPServerInfo]

@@ -1,4 +1,5 @@
-from enum import IntEnum, Enum
+from enum import Enum, IntEnum
+
 
 class NotificationTriggerEventUUID(Enum):
     REMOVED_FROM_SECTION = 'bf860113d5ee4486a23a6692888d27f3'

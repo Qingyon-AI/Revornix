@@ -1,7 +1,8 @@
 from protocol.notification_source import NotificationSourceProtocol
 
+
 class DingTalkNotificationSource(NotificationSourceProtocol):
-    
+
     def __init__(
         self
     ):

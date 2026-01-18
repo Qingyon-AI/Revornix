@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
 import os
+
 from langfuse.openai import OpenAI
 from openai.types.responses.response_completed_event import ResponseCompletedEvent
 
@@ -12,16 +14,16 @@ OFFICIAL_LLM_AI_MODEL = os.environ.get('OFFICIAL_LLM_AI_MODEL')
 class OfficialLLMAIClient:
 
     client: OpenAI
-    
+
     def __init__(self) -> None:
         llm_client = OpenAI(
             base_url=OFFICIAL_LLM_AI_BASE_URL,
             api_key=OFFICIAL_LLM_AI_KEY
         )
         self.client = llm_client
-        
+
     def generate(
-        self, 
+        self,
         text: str
     ):
         if OFFICIAL_LLM_AI_MODEL is None:
@@ -31,9 +33,9 @@ class OfficialLLMAIClient:
             stream=True,
             input=[
                 {
-                    "role": "user", 
+                    "role": "user",
                     "content": text
-                },   
+                },
             ]
         )
         for chunk in response:

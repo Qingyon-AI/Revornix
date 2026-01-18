@@ -2,12 +2,11 @@ import os
 
 import crud
 from common.logger import exception_logger, info_logger
-from enums.model import OfficialModelProvider, OfficialModel
 from data.sql.base import SessionLocal
-from engine.tts.volc.official_volc import OfficialVolcTTSEngine
 from engine.image.official_banana import OfficialBananaImageGenerateEngine
+from engine.tts.volc.official_volc import OfficialVolcTTSEngine
+from enums.model import OfficialModel, OfficialModelProvider
 from protocol.engine import EngineProtocol
-
 
 ENV = os.getenv("ENV", "development")
 ALLOW_DB_RESET = os.getenv("ALLOW_DB_RESET", "0") == "1"
@@ -53,7 +52,7 @@ def seed_database(db):
                 db=db,
                 uuid=OfficialModelProvider.Revornix.meta.id
             )
-            
+
             if provider is None:
                 raise RuntimeError(
                     "❌ Model provider not found: "

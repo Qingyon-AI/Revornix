@@ -1,20 +1,32 @@
-import uuid
-import time
 import json
-import websockets
+import time
+import uuid
+
 import httpx
-from protocol.tts_engine import TTSEngineProtocol
-from enums.engine import Engine, EngineCategory
-from pydantic import AnyUrl
-from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
-from common.langfuse import langfuse
+import websockets
 from langfuse import propagate_attributes
+from pydantic import AnyUrl
+
+from common.langfuse import langfuse
 from common.logger import exception_logger
+from engine.tts.volc.protocol import (
+    EventType,
+    MsgType,
+    finish_connection,
+    finish_session,
+    receive_message,
+    start_connection,
+    start_session,
+    wait_for_event,
+)
+from enums.engine import Engine, EngineCategory
+from protocol.tts_engine import TTSEngineProtocol
+
 
 class VolcTTSEngine(TTSEngineProtocol):
     """此引擎使用的是字节跳动的播客TTS引擎，具体文档参照https://www.volcengine.com/docs/6561/1668014
     """
-    
+
     def __init__(self):
         super().__init__(
             engine_uuid=Engine.Volc_TTS.meta.uuid,
@@ -25,9 +37,9 @@ class VolcTTSEngine(TTSEngineProtocol):
             engine_description_zh="豆包播客，基于字节跳动的豆包大模型的播客生成引擎。",
             engine_demo_config='{"appid":"","access_token":"","base_url":""}'
         )
-        
+
     async def synthesize(
-        self, 
+        self,
         text: str
     ):
         config = self.get_engine_config()
@@ -36,9 +48,9 @@ class VolcTTSEngine(TTSEngineProtocol):
         if config.get('appid') is None or config.get('access_token') is None or config.get('base_url') is None:
             raise Exception("The user's configuration of this engine is not complete.")
         final_audio_url: AnyUrl | None = None
-        
+
         websocket = None
-        
+
         headers = {
             "X-Api-App-Id": config.get('appid'),
             "X-Api-App-Key": "aGjiRDfUWi",
@@ -46,7 +58,7 @@ class VolcTTSEngine(TTSEngineProtocol):
             "X-Api-Resource-Id": 'volc.service_type.10050',
             "X-Api-Connect-Id": str(uuid.uuid4()),
         }
-        
+
         is_podcast_round_end = False  # 标志当前轮是否结束
         last_round_id = -1  # 上一轮的轮次ID
         task_id = ""  # 任务ID
@@ -60,7 +72,7 @@ class VolcTTSEngine(TTSEngineProtocol):
         with langfuse.start_as_current_observation(as_type="generation", name="tts-call", model="volc-podcast") as gen:
             with propagate_attributes(
                 user_id=str(self.user_id),
-                tags=[f'model:volc-podcast']
+                tags=['model:volc-podcast']
             ):
                 try:
                     gen.update(

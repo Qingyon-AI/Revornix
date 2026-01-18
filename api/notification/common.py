@@ -1,20 +1,20 @@
 import crud
 from common.logger import exception_logger
 from data.sql.base import SessionLocal
+from enums.notification import NotificationContentType, NotificationSourceUUID, NotificationTemplateUUID
+from notification.template.daily_summary import DailySummaryNotificationTemplate
+from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
+from notification.template.section_commented import SectionCommentedNotificationTemplate
+from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
+from notification.template.section_updated import SectionUpdatedNotificationTemplate
 from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
+from notification.tool.dingtalk import DingTalkNotificationTool
 from notification.tool.email import EmailNotificationTool
 from notification.tool.feishu import FeishuNotificationTool
-from notification.tool.dingtalk import DingTalkNotificationTool
 from notification.tool.telegram import TelegramNotificationTool
-from enums.notification import NotificationSourceUUID, NotificationContentType
-from notification.template.daily_summary import DailySummaryNotificationTemplate
-from notification.template.section_commented import SectionCommentedNotificationTemplate
-from notification.template.section_updated import SectionUpdatedNotificationTemplate
-from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
-from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
-from enums.notification import NotificationTemplateUUID
 from protocol.remote_file_service import RemoteFileServiceProtocol
+
 
 async def trigger_user_notification_event(
     user_id: int,
@@ -24,7 +24,7 @@ async def trigger_user_notification_event(
     db = SessionLocal()
     try:
         db_user = crud.user.get_user_by_id(
-            db=db, 
+            db=db,
             user_id=user_id
         )
         if db_user is None:
@@ -143,6 +143,6 @@ async def trigger_user_notification_event(
                 )
         db.commit()
     except Exception as e:
-        exception_logger.error(f'Error sending notification: {str(e)}')
+        exception_logger.error(f'Error sending notification: {e!s}')
     finally:
         db.close()

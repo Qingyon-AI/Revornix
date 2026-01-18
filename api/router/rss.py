@@ -1,9 +1,11 @@
-import crud
-import schemas
-import models
+from datetime import datetime
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from datetime import datetime
+
+import crud
+import models
+import schemas
 from common.dependencies import get_current_user, get_db, plan_ability_checked
 from enums.ability import Ability
 
@@ -22,18 +24,18 @@ def getRssServerDetail(
     if db_rss_server is None:
         return schemas.common.ErrorResponse(message='rss server not found', code=404)
     rss_server_info = schemas.rss.RssServerInfo.model_validate(db_rss_server)
-        
+
     rss_server_info.sections = []
     db_rss_sections = crud.rss.get_sections_by_rss_server_id(
-        db=db, 
+        db=db,
         rss_server_id=db_rss_server.id
     )
     for db_rss_section in db_rss_sections:
         rss_server_info.sections.append(schemas.rss.RssSectionInfo.model_validate(db_rss_section))
-        
+
     rss_server_info.documents = []
     db_rss_documents = crud.rss.get_documents_by_rss_server_id(
-        db=db, 
+        db=db,
         rss_server_id=db_rss_server.id
     )
     for db_rss_document in db_rss_documents:
@@ -52,14 +54,14 @@ def getRssServerDocument(
     next_start = None
     next_rss_document = None
     db_documents = crud.rss.search_document_for_rss(
-        db=db, 
+        db=db,
         rss_id=get_rss_server_document_request.rss_id,
         start=get_rss_server_document_request.start,
         limit=get_rss_server_document_request.limit,
         keyword=get_rss_server_document_request.keyword,
         desc=get_rss_server_document_request.desc
     )
-    def get_document_info(db_document: models.rss.RSSDocument): 
+    def get_document_info(db_document: models.rss.RSSDocument):
         db_labels = crud.document.get_labels_by_document_id(
             db=db,
             document_id=db_document.id
@@ -99,7 +101,7 @@ def getRssServerDocument(
         has_more = False
     if len(documents) == get_rss_server_document_request.limit:
         next_rss_document = crud.rss.search_next_document_for_rss(
-            db=db, 
+            db=db,
             rss_id=get_rss_server_document_request.rss_id,
             document=db_documents[-1],
             keyword=get_rss_server_document_request.keyword,
@@ -123,14 +125,14 @@ def getRssServerDocument(
 
 @rss_router.post('/add', response_model=schemas.rss.AddRssServerResponse)
 def addRssServer(
-    add_rss_request: schemas.rss.AddRssServerRequest, 
-    db: Session = Depends(get_db), 
+    add_rss_request: schemas.rss.AddRssServerRequest,
+    db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user),
     _ = Depends(plan_ability_checked(Ability.RSS_ADD.value))
 ):
     db_rss_server = crud.rss.create_rss_server(
-        db=db, 
-        title=add_rss_request.title, 
+        db=db,
+        title=add_rss_request.title,
         description=add_rss_request.description,
         cover=add_rss_request.cover,
         address=add_rss_request.address,
@@ -148,13 +150,13 @@ def addRssServer(
 
 @rss_router.post('/delete', response_model=schemas.common.NormalResponse)
 def deleteRssServer(
-    delete_rss_request: schemas.rss.DeleteRssServerRequest, 
-    db: Session = Depends(get_db), 
+    delete_rss_request: schemas.rss.DeleteRssServerRequest,
+    db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user),
     _ = Depends(plan_ability_checked(Ability.RSS_DELETE.value))
 ):
     crud.rss.delete_rss_servers(
-        db=db, 
+        db=db,
         ids=delete_rss_request.ids,
         user_id=current_user.id
     )
@@ -175,7 +177,7 @@ def updateRssServer(
 ):
     now = datetime.now()
     db_rss_server = crud.rss.get_rss_server_by_id(
-        db=db, 
+        db=db,
         id=update_rss_request.rss_id
     )
     if db_rss_server is None:
@@ -196,50 +198,50 @@ def updateRssServer(
 
 @rss_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.rss.RssServerInfo])
 def searchRssServer(
-    search_rss_request: schemas.rss.SearchRssServerRequest, 
-    db: Session = Depends(get_db), 
+    search_rss_request: schemas.rss.SearchRssServerRequest,
+    db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
     has_more = True
     next_start = None
     db_next_rss_server = None
     db_rss_servers = crud.rss.search_rss_servers_for_user(
-        db=db, 
+        db=db,
         user_id=current_user.id,
         start=search_rss_request.start,
         limit=search_rss_request.limit,
         keyword=search_rss_request.keyword
     )
-    
+
     def get_rss_server_info(db_rss_server: models.rss.RSSServer):
         rss_server_info = schemas.rss.RssServerInfo.model_validate(db_rss_server)
-        
+
         rss_server_info.sections = []
         db_rss_sections = crud.rss.get_sections_by_rss_server_id(
-            db=db, 
+            db=db,
             rss_server_id=db_rss_server.id
         )
         for db_rss_section in db_rss_sections:
             rss_server_info.sections.append(
                 schemas.rss.RssSectionInfo.model_validate(db_rss_section)
             )
-            
+
         rss_server_info.documents = []
         db_rss_documents = crud.rss.get_documents_by_rss_server_id(
-            db=db, 
+            db=db,
             rss_server_id=db_rss_server.id
         )
         for db_rss_document in db_rss_documents:
             rss_server_info.documents.append(
                 schemas.rss.RssDocumentInfo.model_validate(db_rss_document)
             )
-            
+
         return rss_server_info
-    
+
     rss_servers = [
         get_rss_server_info(rss_server) for rss_server in db_rss_servers
     ]
-    
+
     if len(rss_servers) < search_rss_request.limit or len(rss_servers) == 0:
         has_more = False
     if len(rss_servers) == search_rss_request.limit:

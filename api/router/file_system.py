@@ -1,23 +1,24 @@
-import schemas
-import crud
 import json
-import boto3
-import models
-import alibabacloud_oss_v2 as oss
+from datetime import datetime, timedelta, timezone
 from typing import cast
-from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, File, UploadFile, Form
-from sqlalchemy.orm import Session
-from botocore.config import Config
-from common.dependencies import get_current_user, get_db
+
+import alibabacloud_oss_v2 as oss
+import boto3
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
-from enums.file import RemoteFileService
-from config.file_system import FILE_SYSTEM_USER_NAME, FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL
-from protocol.remote_file_service import RemoteFileServiceProtocol
-from file.generic_s3_remote_file_service import GenericS3RemoteFileService
+from botocore.config import Config
+from fastapi import APIRouter, Depends, File, Form, UploadFile
+from sqlalchemy.orm import Session
+
+import crud
+import models
+import schemas
 from common.common import get_user_remote_file_system
-from common.dependencies import check_deployed_by_official_in_fuc
+from common.dependencies import check_deployed_by_official_in_fuc, get_current_user, get_db
+from config.file_system import FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_USER_NAME
+from enums.file import RemoteFileService
+from file.generic_s3_remote_file_service import GenericS3RemoteFileService
+from protocol.remote_file_service import RemoteFileServiceProtocol
 
 file_system_router = APIRouter()
 
@@ -28,10 +29,9 @@ def get_url_prefix(
     url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(
         user_id=file_url_prefix_request.user_id
     )
-    res = schemas.file_system.FileUrlPrefixResponse(
+    return schemas.file_system.FileUrlPrefixResponse(
         url_prefix=url_prefix
     )
-    return res
 
 @file_system_router.post("/built-in/presign-upload-url", response_model=schemas.file_system.S3PresignUploadURLResponse)
 def get_built_in_presigned_url(
@@ -46,7 +46,7 @@ def get_built_in_presigned_url(
         aws_access_key_id=FILE_SYSTEM_USER_NAME,
         aws_secret_access_key=FILE_SYSTEM_PASSWORD,
         config=Config(signature_version='s3v4'),
-        region_name="main" 
+        region_name="main"
     )
     resp = sts.assume_role(
         RoleArn='arn:aws:iam::minio:role/upload-policy',
@@ -101,20 +101,20 @@ def get_aws_s3_presigned_url(
     )
     if db_user_file_system is None:
         raise Exception("User file system not found")
-    
+
     config_str = db_user_file_system.config_json
-    
+
     if config_str is None:
         raise Exception("User file system config is empty")
-    
+
     config = json.loads(config_str)
-    
+
     role_arn = config.get('role_arn')
     user_access_key_id = config.get('user_access_key_id')
     user_access_key_secret = config.get('user_access_key_secret')
     region_name = config.get('region_name')
     bucket = config.get('bucket')
-    
+
     sts = boto3.client(
         'sts',
         aws_access_key_id=user_access_key_id,
@@ -171,21 +171,21 @@ def get_aliyun_oss_presigned_url(
                                                                       user_file_system_id=default_user_file_system)
     if db_user_file_system is None:
         raise Exception("User file system not found")
-    
+
     config_str = db_user_file_system.config_json
-    
+
     if config_str is None:
         raise Exception("User file system config is empty")
-    
+
     config = json.loads(config_str)
-    
+
     role_arn = config.get('role_arn')
     role_session_name = config.get('role_session_name')
     user_access_key_id = config.get('user_access_key_id')
     user_access_key_secret = config.get('user_access_key_secret')
     region_id = config.get('region_id')
     bucket = config.get('bucket')
-    
+
     client = AcsClient(user_access_key_id, user_access_key_secret, region_id)
     request = AssumeRoleRequest()
     request.set_accept_format('json')
@@ -195,7 +195,7 @@ def get_aliyun_oss_presigned_url(
     if response is None:
         raise Exception("Failed to get STS credentials")
     result = json.loads(response)
-    
+
     sts_role_access_key_id = result.get('Credentials').get('AccessKeyId')
     sts_role_access_key_secret = result.get('Credentials').get('AccessKeySecret')
     sts_role_session_token = result.get('Credentials').get('SecurityToken')
@@ -217,28 +217,28 @@ def get_aliyun_oss_presigned_url(
     # 使用配置好的信息创建OSS客户端
     client = oss.Client(cfg)
     # 发送请求以生成指定对象的预签名PUT请求
-    
+
     put_object_request = oss.PutObjectRequest(
         bucket=bucket,
         key=presign_upload_url_request.file_path
     )
-    
+
     if presign_upload_url_request.content_type is not None:
         put_object_request.content_type = presign_upload_url_request.content_type
-    
+
     expires_in = 3600
-    
+
     pre_result = client.presign(
         request=put_object_request,
         expires=timedelta(seconds=expires_in)
     )
-    
+
     if pre_result is None:
         raise Exception("Failed to get presigned URL")
-    
+
     if pre_result.url is None or pre_result.signed_headers is None or pre_result.expiration is None:
         raise Exception("Failed to get presigned URL")
-    
+
     return schemas.file_system.AliyunOSSPresignUploadURLResponse(
         file_path=presign_upload_url_request.file_path,
         upload_url=pre_result.url,
@@ -253,7 +253,7 @@ def get_file_system_info(
     current_user: models.user.User = Depends(get_current_user)
 ):
     db_file_system = crud.file_system.get_file_system_by_id(
-        db=db, 
+        db=db,
         file_system_id=file_system_info_request.file_system_id
     )
     if db_file_system is None:
@@ -267,13 +267,13 @@ def get_user_file_system_info(
     current_user: models.user.User = Depends(get_current_user)
 ):
     db_user_file_system = crud.file_system.get_user_file_system_by_id(
-        db=db, 
+        db=db,
         user_file_system_id=user_file_system_info_request.user_file_system_id
     )
     if db_user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User File System not found")
     db_file_system = crud.file_system.get_file_system_by_id(
-        db=db, 
+        db=db,
         file_system_id=db_user_file_system.file_system_id
     )
     if db_file_system is None:
@@ -294,8 +294,8 @@ def get_user_file_system_info(
 
 @file_system_router.post("/mine", response_model=schemas.file_system.MineFileSystemSearchResponse)
 def search_mine_file_system(
-    file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
-    db: Session = Depends(get_db), 
+    file_system_search_request: schemas.file_system.FileSystemSearchRequest,
+    db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
     res = []
@@ -323,11 +323,11 @@ def search_mine_file_system(
     return schemas.file_system.MineFileSystemSearchResponse(data=res)
 
 @file_system_router.post("/provide", response_model=schemas.file_system.ProvideFileSystemSearchResponse)
-def provide_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest, 
-                              db: Session = Depends(get_db), 
+def provide_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest,
+                              db: Session = Depends(get_db),
                               current_user: models.user.User = Depends(get_current_user)):
     db_file_systems = crud.file_system.get_all_file_systems(
-        db=db, 
+        db=db,
         keyword=file_system_search_request.keyword
     )
     file_systems = [
@@ -337,8 +337,8 @@ def provide_file_system(file_system_search_request: schemas.file_system.FileSyst
 
 @file_system_router.post("/install", response_model=schemas.file_system.FileSystemInstallResponse)
 def install_user_file_system(
-    file_system_install_request: schemas.file_system.FileSystemInstallRequest, 
-    db: Session = Depends(get_db), 
+    file_system_install_request: schemas.file_system.FileSystemInstallRequest,
+    db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
     db_user_file_system = crud.file_system.create_user_file_system(
@@ -368,7 +368,7 @@ def delete_user_file_system(
 
 @file_system_router.post("/update", response_model=schemas.common.NormalResponse)
 def update_file_system(
-    user_file_system_update_request: schemas.file_system.UserFileSystemUpdateRequest, 
+    user_file_system_update_request: schemas.file_system.UserFileSystemUpdateRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
@@ -401,7 +401,7 @@ async def upload_file_system(
     default_user_file_system = current_user.default_user_file_system
     if default_user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User File System not found")
-    
+
     content = await file.read()
     user_file_system = crud.file_system.get_user_file_system_by_id(
         db=db,

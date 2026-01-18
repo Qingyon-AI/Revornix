@@ -1,10 +1,11 @@
 from schemas.document import Label
 
+
 def document_auto_tag_prompt(
     document_content: str,
     tags: list[Label]
 ):
-    prompt = f"""
+    return f"""
 You are a professional document classification and tagging assistant.
 
 Your task is to select the most appropriate tags for the given document based ONLY on the provided candidate tag set.
@@ -66,4 +67,3 @@ No trailing commas.
   ]
 }}
 """
-    return prompt

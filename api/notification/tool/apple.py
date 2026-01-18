@@ -1,21 +1,23 @@
-import httpx
+import json
 import time
 import uuid
-import json
+
+import httpx
 import jwt
 from jwcrypto import jwk
-from protocol.notification_tool import NotificationToolProtocol
+
 from common.logger import exception_logger
+from protocol.notification_tool import NotificationToolProtocol
 
 APPLE_PUBLIC_KEYS_URL = "https://appleid.apple.com/auth/keys"
 
 class AppleNotificationTool(NotificationToolProtocol):
-    
+
     def _create_apns_headers(
-        self, 
-        team_id: str, 
-        key_id: str, 
-        private_key: str, 
+        self,
+        team_id: str,
+        key_id: str,
+        private_key: str,
         apns_topic: str
     ):
         """
@@ -39,7 +41,7 @@ class AppleNotificationTool(NotificationToolProtocol):
             "apns-topic": apns_topic,
             "apns-id": str(uuid.uuid4())
         }
-    
+
     def _fetch_apple_public_keys(
         self
     ):
@@ -52,11 +54,11 @@ class AppleNotificationTool(NotificationToolProtocol):
             return response.json()["keys"]
         except httpx.HTTPError as e:
             exception_logger.error(f"HTTP error occurred: {e}")
-            raise Exception(f"Failed to fetch Apple public keys: {e}")
+            raise Exception(f"Failed to fetch Apple public keys: {e}") from e
 
     def _get_public_key(
-        self, 
-        kid, 
+        self,
+        kid,
         keys
     ):
         """
@@ -68,7 +70,7 @@ class AppleNotificationTool(NotificationToolProtocol):
         return public_key_data
 
     def _convert_jwk_to_pem(
-        self, 
+        self,
         jwk_data
     ):
         """
@@ -79,28 +81,27 @@ class AppleNotificationTool(NotificationToolProtocol):
             return key.export_to_pem().decode('utf-8')
         except Exception as e:
             exception_logger.error(f"Failed to convert JWK to PEM: {e}")
-            raise Exception(f"Failed to convert JWK to PEM: {e}")
+            raise Exception(f"Failed to convert JWK to PEM: {e}") from e
 
     def _verify_jwt(
-        self, 
-        identity_token, 
-        public_key, 
+        self,
+        identity_token,
+        public_key,
         audience: str | None = None
     ):
         """
         验证 JWT 签名并解码。
         """
-        decoded = jwt.decode(
+        return jwt.decode(
             identity_token,
             public_key,
             algorithms=["RS256"],
             audience=audience,  # 替换为你的客户端ID
             issuer="https://appleid.apple.com"
         )
-        return decoded
 
     def _decode_identity_token(
-        self, 
+        self,
         identity_token: str
     ):
         """
@@ -115,7 +116,7 @@ class AppleNotificationTool(NotificationToolProtocol):
             kid = header["kid"]
         except Exception as e:
             exception_logger.error(f"Failed to decode JWT header: {e}")
-            raise Exception(f"Invalid ID token header: {e}")
+            raise Exception(f"Invalid ID token header: {e}") from e
 
         # Step 3: 根据 kid 获取对应的公钥
         public_key_data = self._get_public_key(kid, keys)
@@ -124,14 +125,13 @@ class AppleNotificationTool(NotificationToolProtocol):
         pem_key = self._convert_jwk_to_pem(public_key_data)
 
         # Step 5: 验证 JWT
-        res = self._verify_jwt(
-            identity_token=identity_token, 
+        return self._verify_jwt(
+            identity_token=identity_token,
             public_key=pem_key
         )
-        return res
 
     async def send_notification(
-        self, 
+        self,
         title: str,
         content: str | None = None,
         cover: str | None = None,

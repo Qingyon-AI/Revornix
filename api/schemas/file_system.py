@@ -1,5 +1,7 @@
-from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone
+
+from pydantic import BaseModel, field_serializer
+
 
 class GenericFileSystemUploadResponse(BaseModel):
     file_path: str
@@ -7,17 +9,17 @@ class GenericFileSystemUploadResponse(BaseModel):
 class AliyunOSSPresignUploadURLRequest(BaseModel):
     file_path: str
     content_type: str
-    
+
 class AliyunOSSPresignUploadURLResponse(BaseModel):
     upload_url: str
     file_path: str
     fields: dict
     expiration: datetime
-    
+
 class S3PresignUploadURLRequest(BaseModel):
     file_path: str
     content_type: str
-    
+
 class S3PresignUploadURLResponse(BaseModel):
     upload_url: str
     file_path: str
@@ -39,10 +41,10 @@ class FileSystemInfoRequest(BaseModel):
 
 class UserFileSystemInfoRequest(BaseModel):
     user_file_system_id: int
-    
+
 class UserFileSystemDeleteRequest(BaseModel):
     user_file_system_id: int
-    
+
 class UserFileSystemUpdateRequest(BaseModel):
     user_file_system_id: int
     config_json: str | None = None
@@ -58,7 +60,7 @@ class FileSystemInfo(BaseModel):
     demo_config: str | None = None
     class Config:
         from_attributes = True
-        
+
 class UserFileSystemInfo(BaseModel):
     id: int
     file_system_id: int
@@ -82,27 +84,26 @@ class UserFileSystemInfo(BaseModel):
         return v
     class Config:
         from_attributes = True
-        
+
 class FileSystemSearchRequest(BaseModel):
     keyword: str
-    
+
 class ProvideFileSystemSearchResponse(BaseModel):
     data: list[FileSystemInfo]
     class Config:
         from_attributes = True
-    
+
 class MineFileSystemSearchResponse(BaseModel):
     data: list[UserFileSystemInfo]
-    
+
 class FileSystemInstallRequest(BaseModel):
     file_system_id: int
     title: str | None = None
     description: str | None = None
     config_json: str | None = None
-    
+
 class FileSystemInstallResponse(BaseModel):
     user_file_system_id: int
-    
+
 class FileSystemUnInstallRequest(BaseModel):
     user_file_system_id: int
-    

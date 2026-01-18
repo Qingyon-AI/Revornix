@@ -1,68 +1,61 @@
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
 import os
 
-from sqlalchemy import text
-from alembic import command
 from alembic.config import Config
+from sqlalchemy import text
 
 import crud
-
-from data.sql.base import SessionLocal, Base, engine
+from alembic import command
+from common.logger import exception_logger, info_logger
 from config.base import BASE_DIR
-from common.logger import info_logger, exception_logger
+from data.sql.base import Base, SessionLocal, engine
+from engine.image.banana import BananaImageGenerateEngine
 
 # ---------------- Engines ----------------
 from engine.markdown.jina import JinaEngine
 from engine.markdown.markitdown import MarkitdownEngine
 from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
-from engine.tts.volc.tts import VolcTTSEngine
-from engine.image.banana import BananaImageGenerateEngine
 from engine.tts.openai import OpenAIAudioEngine
+from engine.tts.volc.tts import VolcTTSEngine
 
 # ---------------- File Systems ----------------
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
-from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.aws_s3_remote_file_service import AWSS3RemoteFileService
+from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 
 # ---------------- Notification ----------------
 from notification.source.apple_notification_source import AppleNotificationSource
 from notification.source.apple_sandbox_notification_source import AppleSandBoxNotificationSource
+from notification.source.dingtalk_notification_source import DingTalkNotificationSource
 from notification.source.email_notification_source import EmailNotificationSource
 from notification.source.feishu_notification_source import FeishuNotificationSource
-from notification.source.dingtalk_notification_source import DingTalkNotificationSource
 from notification.source.telegram_notification_source import TelegramNotificationSource
-
 from notification.target.apple_notification_target import AppleNotificationTarget
 from notification.target.apple_sandbox_notification_target import AppleSandBoxNotificationTarget
+from notification.target.dingtalk_notification_target import DingTalkNotificationTarget
 from notification.target.email_notification_target import EmailNotificationTarget
 from notification.target.feishu_notification_target import FeishuNotificationTarget
-from notification.target.dingtalk_notification_target import DingTalkNotificationTarget
 from notification.target.telegram_notification_target import TelegramNotificationTarget
-
-from notification.trigger_event.removed_from_section import RemovedFromSectionNotificationTriggerEvent
-from notification.trigger_event.section_updated import SectionUpdatedNotificationTriggerEvent
-from notification.trigger_event.section_commented import SectionCommentedNotificationTriggerEvent
-from notification.trigger_event.section_subscribed import SectionSubscribedNotificationTriggerEvent
-
 from notification.template.daily_summary import DailySummaryNotificationTemplate
-from notification.template.section_updated import SectionUpdatedNotificationTemplate
+from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
-from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
-
-from protocol.notification_template import NotificationTemplate
-from protocol.notification_trigger import NotificationTriggerEventProtocol
+from notification.template.section_updated import SectionUpdatedNotificationTemplate
+from notification.trigger_event.removed_from_section import RemovedFromSectionNotificationTriggerEvent
+from notification.trigger_event.section_commented import SectionCommentedNotificationTriggerEvent
+from notification.trigger_event.section_subscribed import SectionSubscribedNotificationTriggerEvent
+from notification.trigger_event.section_updated import SectionUpdatedNotificationTriggerEvent
+from protocol.engine import EngineProtocol
 from protocol.notification_source import NotificationSourceProtocol
 from protocol.notification_target import NotificationTargetProtocol
-from protocol.engine import EngineProtocol
+from protocol.notification_template import NotificationTemplate
+from protocol.notification_trigger import NotificationTriggerEventProtocol
 from protocol.remote_file_service import RemoteFileServiceProtocol
-
-from common.logger import exception_logger
-
 
 # =========================================================
 # 环境保护（防止误删生产）

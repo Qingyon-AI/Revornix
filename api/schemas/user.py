@@ -1,10 +1,13 @@
-from pydantic import BaseModel, field_serializer, field_validator
-from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
+
+from pydantic import BaseModel, field_serializer, field_validator
+
+from protocol.remote_file_service import RemoteFileServiceProtocol
+
 
 class BindEmailRequest(BaseModel):
     email: str
-    
+
 class BindEmailCodeVerifyRequest(BaseModel):
     email: str
     code: str
@@ -14,7 +17,6 @@ class SearchUserRequest(BaseModel):
     filter_value: str
     start: int | None = None
     limit: int = 10
-    
     @field_validator('filter_name')
     def validate_filter_name(cls, v: str):
         if v not in ['nickname', 'email', 'uuid']:
@@ -25,10 +27,10 @@ class WeChatInfo(BaseModel):
     wechat_open_id: str
     nickname: str | None
     platform: int
-    
+
 class WeChatWebUserBindRequest(BaseModel):
     code: str
-    
+
 class WeChatMiniUserCreateRequest(BaseModel):
     code: str
 
@@ -37,11 +39,11 @@ class WeChatWebUserCreateRequest(BaseModel):
 
 class SmsUserCodeCreateRequest(BaseModel):
     phone: str
-    
+
 class SmsUserCodeVerifyCreate(BaseModel):
     phone: str
     code: str
-    
+
 class BindPhoneCodeCreateRequest(BaseModel):
     phone: str
 
@@ -51,22 +53,22 @@ class BindPhoneCodeVerifyRequest(BaseModel):
 
 class PhoneInfo(BaseModel):
     phone: str
-    
+
 class GoogleUserCreate(BaseModel):
     code: str
-    
+
 class GoogleUserBind(BaseModel):
     code: str
 
 class GithubUserCreate(BaseModel):
     code: str
-    
+
 class GithubUserBind(BaseModel):
     code: str
-    
+
 class GoogleInfo(BaseModel):
     google_user_id: str
-    
+
 class GithubInfo(BaseModel):
     github_user_id: str
 
@@ -92,13 +94,13 @@ class DailyReportStatusChangeRequest(BaseModel):
 
 class BindEmailVerifyRequest(BaseModel):
     email: str
-    
+
 class SearchUserFansRequest(BaseModel):
     user_id: int
     start: int | None = None
     limit: int = 10
     keyword: str | None = None
-    
+
 class SearchUserFollowsRequest(BaseModel):
     user_id: int
     start: int | None = None
@@ -111,7 +113,7 @@ class FollowUserRequest(BaseModel):
 
 class EmailCreateRequest(BaseModel):
     email: str
-    
+
 class EmailUserCreateCodeVerifyRequest(BaseModel):
     email: str
     code: str
@@ -120,15 +122,15 @@ class EmailUserCreateCodeVerifyRequest(BaseModel):
 class EmailUserCreateVerifyRequest(BaseModel):
     email: str
     password: str
-    
+
 class TokenUpdateRequest(BaseModel):
     refresh_token: str
-    
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     expires_in: int
-    
+
 class PasswordUpdateRequest(BaseModel):
     origin_password: str
     new_password: str
@@ -137,11 +139,11 @@ class UserInfoUpdateRequest(BaseModel):
     nickname: str | None = None
     slogan: str | None = None
     avatar: str | None = None
-    
+
 class UserLoginRequest(BaseModel):
     email: str
     password: str
-    
+
 class InitialPasswordResponse(BaseModel):
     password: str
 
@@ -149,7 +151,7 @@ class EmailInfo(BaseModel):
     email: str
     is_initial_password: bool
     has_seen_initial_password: bool | None
-    
+
 class PrivateUserInfo(BaseModel):
     id: int
     uuid: str
@@ -171,18 +173,20 @@ class PrivateUserInfo(BaseModel):
     default_file_document_parse_user_engine_id: int | None = None
     default_podcast_user_engine_id: int | None = None
     default_image_generate_engine_id: int | None = None
-    
+
     @field_serializer("avatar")
     def serialize_avatar(self, v: str) -> str:
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(
+            user_id=self.id
+        )
         return f'{url_prefix}/{v}'
 
     class Config:
         from_attributes = True
-        
+
 class UserInfoRequest(BaseModel):
     user_id: int
-    
+
 class SectionUserPublicInfo(BaseModel):
     id: int
     nickname: str | None = None
@@ -206,11 +210,13 @@ class SectionUserPublicInfo(BaseModel):
         return v
     @field_serializer("avatar")
     def serialize_avatar(self, v: str) -> str:
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(
+            user_id=self.id
+        )
         return f'{url_prefix}/{v}'
     class Config:
         from_attributes = True
-        
+
 class UserPublicInfo(BaseModel):
     id: int
     nickname: str | None = None
@@ -219,12 +225,11 @@ class UserPublicInfo(BaseModel):
     is_followed: bool | None = None
     fans: int | None = None
     follows: int | None = None
-    
     @field_serializer("avatar")
     def serialize_avatar(self, v: str) -> str:
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(
+            user_id=self.id
+        )
         return f'{url_prefix}/{v}'
-        
     class Config:
-        from_attributes = True 
-        
+        from_attributes = True

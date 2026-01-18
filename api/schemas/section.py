@@ -1,10 +1,12 @@
-from pydantic import BaseModel, field_serializer, field_validator
-from protocol.remote_file_service import RemoteFileServiceProtocol
 from datetime import datetime, timezone
-from schemas.user import UserPublicInfo, SectionUserPublicInfo
-from schemas.task import SectionPodcastTask, SectionProcessTask
+
+from pydantic import BaseModel, Field, field_serializer, field_validator
+
 from enums.section import UserSectionRole
-from pydantic import BaseModel, Field
+from protocol.remote_file_service import RemoteFileServiceProtocol
+from schemas.task import SectionPodcastTask, SectionProcessTask
+from schemas.user import SectionUserPublicInfo, UserPublicInfo
+
 
 class ImagePlan(BaseModel):
     id: str = Field(..., description="Unique id used in markdown marker [image-id: <id>]")
@@ -21,7 +23,7 @@ class GeneratedImage(BaseModel):
 
 class MineSectionRoleAndAuthorityRequest(BaseModel):
     section_id: int
-    
+
 class SectionUserRoleAndAuthorityRequest(BaseModel):
     section_id: int
     user_id: int
@@ -41,7 +43,7 @@ class SectionDocumentRequest(BaseModel):
     limit: int = 10
     desc: bool = True
     keyword: str | None = None
-    
+
 class SectionSeoDetailRequest(BaseModel):
     uuid: str
 
@@ -51,7 +53,7 @@ class SectionPublishGetRequest(BaseModel):
 class SectionPublishGetResponse(BaseModel):
     status: bool
     uuid: str | None = None
-    create_time: datetime 
+    create_time: datetime
     update_time: datetime | None
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
@@ -81,7 +83,7 @@ class SectionUserRequest(BaseModel):
     limit: int = 10
     keyword: str | None = None
     filter_roles: list[int] | None = None
-    
+
 class SectionUserResponse(BaseModel):
     users: list[SectionUserPublicInfo]
 
@@ -93,7 +95,7 @@ class SectionUserAddRequest(BaseModel):
     section_id: int
     user_id: int
     authority: int
-    
+
 class SectionUserModifyRequest(BaseModel):
     section_id: int
     user_id: int
@@ -104,7 +106,7 @@ class SectionUserModifyRequest(BaseModel):
         if v == UserSectionRole.CREATOR:
             raise ValueError("You can't change the user's role to CREATOR because there is only one creator in a section")
         return v
-    
+
 class LabelDeleteRequest(BaseModel):
     label_ids: list[int]
 
@@ -170,7 +172,7 @@ class BaseSectionInfo(BaseModel):
     description: str | None
     authority: int | None = None
     class Config:
-        from_attributes = True 
+        from_attributes = True
 
 class AllMySectionsResponse(BaseModel):
     data: list[BaseSectionInfo]
@@ -188,7 +190,7 @@ class SearchPublicSectionsRequest(BaseModel):
     limit: int = 10
     desc: bool = True
     label_ids: list[int] | None = None
-    
+
 class Label(BaseModel):
     id: int
     name: str
@@ -198,13 +200,13 @@ class Label(BaseModel):
 class CreateLabelResponse(BaseModel):
     id: int
     name: str
-    
+
 class LabelListResponse(BaseModel):
     data: list[Label]
-    
+
 class LabelAddRequest(BaseModel):
     name: str
-    
+
 class SectionDocumentInfo(BaseModel):
     id: int
     title: str
@@ -231,16 +233,18 @@ class SectionDocumentInfo(BaseModel):
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
     class Config:
-        from_attributes = True 
-        
+        from_attributes = True
+
 class SectionPodcastInfo(BaseModel):
     creator_id: int
     podcast_file_name: str
     @field_serializer("podcast_file_name")
     def serializer_podcast_file_name(self, v: str) -> str:
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(
+            user_id=self.creator_id
+        )
         return f'{url_prefix}/{v}'
-    
+
 class SectionInfo(BaseModel):
     id: int
     title: str
@@ -261,7 +265,7 @@ class SectionInfo(BaseModel):
     process_task: SectionProcessTask | None = None
     process_task_trigger_type: int | None = None
     process_task_trigger_scheduler: str | None = None
-    
+
     def _url_prefix(self) -> str:
         return RemoteFileServiceProtocol.get_user_file_system_url_prefix(
             user_id=self.creator.id
@@ -281,20 +285,24 @@ class SectionInfo(BaseModel):
 
     @field_serializer("create_time")
     def serialize_create_time(self, v: datetime):
-        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+        return v if v.tzinfo else v.replace(
+            tzinfo=timezone.utc
+        )
 
     @field_serializer("update_time")
     def serialize_update_time(self, v: datetime | None):
         if v is None:
             return None
-        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+        return v if v.tzinfo else v.replace(
+            tzinfo=timezone.utc
+        )
 
     class Config:
         from_attributes = True
 
 class SectionDeleteRequest(BaseModel):
     section_id: int
-    
+
 class DaySectionRequest(BaseModel):
     date: str
 
@@ -308,7 +316,7 @@ class DaySectionResponse(BaseModel):
     update_time: datetime | None
     md_file_name: str | None
     documents: list[SectionDocumentInfo]
-    
+
     @field_serializer("md_file_name")
     def serialize_md_file_name(self, v: str | None):
         if v is None:
@@ -338,7 +346,7 @@ class SectionCreateRequest(BaseModel):
     auto_illustration: bool = False
     process_task_trigger_type: int
     process_task_trigger_scheduler: str | None = None
-    
+
 class SectionCreateResponse(BaseModel):
     id: int
 

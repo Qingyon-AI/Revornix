@@ -1,10 +1,13 @@
 import io
 import struct
-import websockets
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Callable, List
+
+import websockets
+
 from common.logger import exception_logger
+
 
 class MsgType(IntEnum):
     """Message type enumeration"""
@@ -243,7 +246,7 @@ class Message:
         serialization_compression = buffer.read(1)[0]
         self.serialization = SerializationBits(serialization_compression >> 4)
         self.compression = CompressionBits(serialization_compression & 0b00001111)
-        
+
         reserved = buffer.read(1)
         if len(reserved) < 1:
             raise ValueError("Missing reserved byte in header")
@@ -266,7 +269,7 @@ class Message:
         if remaining:
             raise ValueError(f"Unexpected data after message: {remaining}")
 
-    def _get_writers(self) -> List[Callable[[io.BytesIO], None]]:
+    def _get_writers(self) -> list[Callable[[io.BytesIO], None]]:
         """Get list of writer functions"""
         writers = []
 
@@ -290,7 +293,7 @@ class Message:
         writers.append(self._write_payload)
         return writers
 
-    def _get_readers(self) -> List[Callable[[io.BytesIO], None]]:
+    def _get_readers(self) -> list[Callable[[io.BytesIO], None]]:
         """Get list of reader functions"""
         readers = []
 
@@ -435,9 +438,8 @@ async def receive_message(websocket: websockets.ClientConnection) -> Message:
         if isinstance(data, str):
             raise ValueError(f"Unexpected text message: {data}")
         elif isinstance(data, bytes):
-            msg = Message.from_bytes(data)
             # logger.info(f"Received: {msg}")
-            return msg
+            return Message.from_bytes(data)
         else:
             raise ValueError(f"Unexpected message type: {type(data)}")
     except Exception as e:

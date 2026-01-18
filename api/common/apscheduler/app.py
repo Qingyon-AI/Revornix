@@ -1,24 +1,29 @@
-import crud
-import httpx
-import schemas
-import markdown
+from datetime import datetime, timezone
+
 import feedparser
-from common.logger import info_logger, exception_logger
+import httpx
+import markdown
+from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from apscheduler.triggers.cron import CronTrigger
-from notification.tool.email import EmailNotificationTool
+
+import crud
+import schemas
+from common.celery.app import start_process_document, start_process_section
+from common.logger import exception_logger, info_logger, warning_logger
+from data.sql.base import SessionLocal
+from enums.document import DocumentCategory, DocumentMdConvertStatus, UserDocumentAuthority
+from enums.notification import (
+    NotificationContentType,
+    NotificationSourceUUID,
+    NotificationTemplateUUID,
+    NotificationTriggerType,
+)
+from enums.section import SectionDocumentIntegration, UserSectionAuthority, UserSectionRole
+from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
-from datetime import datetime, timezone
-from data.sql.base import SessionLocal
-from notification.template.daily_summary import DailySummaryNotificationTemplate
-from common.celery.app import start_process_document
-from enums.document import DocumentMdConvertStatus, UserDocumentAuthority, DocumentCategory
-from enums.notification import NotificationContentType, NotificationSourceUUID, NotificationTemplateUUID, NotificationTriggerType
-from enums.section import SectionDocumentIntegration, UserSectionRole, UserSectionAuthority
-from common.celery.app import start_process_section
-from common.logger import info_logger, warning_logger
+from notification.tool.email import EmailNotificationTool
 
 scheduler = AsyncIOScheduler()
 
@@ -40,21 +45,21 @@ async def fetch_and_save(
     db = SessionLocal()
     try:
         for entry in parsed.entries:
-            
+
             description = entry.summary
-            
+
             if len(description) > 500:
-                warning_logger.warning(f"Warning: description is too long! Truncating to 500 characters.")
+                warning_logger.warning("Warning: description is too long! Truncating to 500 characters.")
                 description = description[:500]
-            
+
             # 获取文档的最近更新时间
             entry_published = datetime.strptime(entry.published, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=timezone.utc) if hasattr(entry, "published") else None
             entry_updated = datetime.strptime(entry.updated, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=timezone.utc) if hasattr(entry, "updated") else None
 
             # TODO: 即使同一个用户，按目前的架构设计，也可能存在多个文档使用了同一个url的情况，因此此处需要修改逻辑，后续考虑当url重复时，直接更新对应文档内容
             existing_doc = crud.document.get_website_document_by_user_id_and_url(
-                db=db, 
-                user_id=rss_server.user_id, 
+                db=db,
+                user_id=rss_server.user_id,
                 url=entry.link
             )
             rss_server.sections = list(dict.fromkeys(
@@ -75,38 +80,35 @@ async def fetch_and_save(
                             section_id=section.id,
                             status=SectionDocumentIntegration.WAIT_TO
                         )
-                if entry_updated and existing_doc.update_time and existing_doc.update_time >= entry_updated:
+                if (entry_updated and existing_doc.update_time and existing_doc.update_time >= entry_updated) or (entry_published and existing_doc.update_time and existing_doc.update_time >= entry_published):
                     continue
-                elif entry_published and existing_doc.update_time and existing_doc.update_time >= entry_published:
-                    continue
-                else:
-                    existing_doc.update_time = datetime.now()
-                    existing_doc.title = entry.title
-                    existing_doc.description = description
-                    db.commit()
-                    db_document_convert_task = crud.task.get_document_convert_task_by_document_id(
-                        db=db,
-                        document_id=existing_doc.id
-                    )
-                    if db_document_convert_task:
-                        crud.task.delete_document_convert_task_by_document_ids(
-                            db=db,
-                            user_id=rss_server.user_id,
-                            document_ids=[db_document_convert_task.document_id]
-                        )
-                    db_document_convert_task = crud.task.create_document_convert_task(
+                existing_doc.update_time = datetime.now()
+                existing_doc.title = entry.title
+                existing_doc.description = description
+                db.commit()
+                db_document_convert_task = crud.task.get_document_convert_task_by_document_id(
+                    db=db,
+                    document_id=existing_doc.id
+                )
+                if db_document_convert_task:
+                    crud.task.delete_document_convert_task_by_document_ids(
                         db=db,
                         user_id=rss_server.user_id,
-                        document_id=existing_doc.id,
-                        status=DocumentMdConvertStatus.WAIT_TO
+                        document_ids=[db_document_convert_task.document_id]
                     )
-                    db.commit()
-                    start_process_document.delay(
-                        document_id=existing_doc.id, 
-                        user_id=rss_server.user_id, 
-                        auto_summary=False, 
-                        auto_podcast=False
-                    )
+                db_document_convert_task = crud.task.create_document_convert_task(
+                    db=db,
+                    user_id=rss_server.user_id,
+                    document_id=existing_doc.id,
+                    status=DocumentMdConvertStatus.WAIT_TO
+                )
+                db.commit()
+                start_process_document.delay(
+                    document_id=existing_doc.id,
+                    user_id=rss_server.user_id,
+                    auto_summary=False,
+                    auto_podcast=False
+                )
             else:
                 db_base_document = crud.document.create_base_document(
                     db=db,
@@ -117,8 +119,8 @@ async def fetch_and_save(
                     from_plat='rss'
                 )
                 crud.document.create_website_document(
-                    db=db, 
-                    url=entry.link, 
+                    db=db,
+                    url=entry.link,
                     document_id=db_base_document.id
                 )
                 crud.rss.create_rss_document(
@@ -146,7 +148,7 @@ async def fetch_and_save(
                 )
                 db.commit()
                 start_process_document.delay(
-                    document_id=db_base_document.id, 
+                    document_id=db_base_document.id,
                     user_id=rss_server.user_id,
                     auto_summary=False,
                     auto_podcast=False
@@ -167,16 +169,16 @@ async def fetch_all_rss_sources_and_update():
     for rss_server in db_rss_servers:
         rss_server_info = schemas.rss.RssServerInfo.model_validate(rss_server)
         rss_server_info.sections = []
-        
+
         # get the section of the user on the current day
         db_user_day_section = crud.section.get_section_by_user_and_date(
-            db=db, 
+            db=db,
             user_id=rss_server.user_id,
             date=datetime.now().date()
         )
         if db_user_day_section is None:
             db_user_day_section = crud.section.create_section(
-                db=db, 
+                db=db,
                 creator_id=rss_server.user_id,
                 title=f'{now.date().isoformat()} Summary',
                 description=f"This document is the summary of all documents on {now.date().isoformat()}."
@@ -197,9 +199,9 @@ async def fetch_all_rss_sources_and_update():
         rss_server_info.sections.append(
             schemas.rss.RssSectionInfo.model_validate(db_user_day_section)
         )
-        
+
         db_rss_sections = crud.rss.get_sections_by_rss_server_id(
-            db=db, 
+            db=db,
             rss_server_id=rss_server.id
         )
         for db_rss_section in db_rss_sections:
@@ -313,7 +315,7 @@ async def send_notification_scheduler(
             content=content
         )
         db.commit()
-    db.close()  
+    db.close()
 
 scheduler.add_listener(job_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
@@ -344,7 +346,7 @@ for db_notification_task in db_notification_tasks:
         id=str(db_notification_task.id),
         next_run_time=datetime.now()
     )
-    
+
 scheduler.add_job(
     func=fetch_all_rss_sources_and_update,
     trigger=CronTrigger.from_crontab("0 * * * *"),
@@ -371,7 +373,7 @@ for db_section, db_section_process_task in db_section_trigger_schedulers:
             "auto_podcast": db_section.auto_podcast
         },
         trigger=CronTrigger.from_crontab(db_section_process_task_scheduler.cron_expr),
-        id=f"section-process-{str(db_section.id)}"
+        id=f"section-process-{db_section.id!s}"
     )
 
 info_logger.info("All apscheduler tasks restarted")

@@ -1,23 +1,24 @@
-import re
-import crud
-import json
-import pkgutil
+import asyncio
 import importlib
 import inspect
-import asyncio
-from typing import Type
+import json
+import pkgutil
+import re
 from pathlib import Path
+
+import crud
+from common.logger import exception_logger
 from data.sql.base import SessionLocal
 from enums.file import RemoteFileService
-from common.logger import exception_logger
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
-from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.aws_s3_remote_file_service import AWSS3RemoteFileService
+from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 
+
 def collect_classes(
-    package_name: str, 
-    base_class: Type
+    package_name: str,
+    base_class: type
 ):
     """获取指定包下的所有指定类型的类
 
@@ -128,7 +129,7 @@ def to_serializable(
         return str(obj)
 
 def safe_json_loads(
-    data, 
+    data,
     default
 ):
     if not data:

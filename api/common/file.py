@@ -1,16 +1,19 @@
-import re
-import uuid
-import httpx
-import zipfile
 import mimetypes
+import re
 import shutil
 import time
-from pydantic import BaseModel
-from urllib.parse import urlparse
-from config.base import BASE_DIR
-from common.logger import info_logger
-from tenacity import retry, stop_after_attempt, wait_fixed
+import uuid
+import zipfile
 from pathlib import Path
+from urllib.parse import urlparse
+
+import httpx
+from pydantic import BaseModel
+from tenacity import retry, stop_after_attempt, wait_fixed
+
+from common.logger import info_logger
+from config.base import BASE_DIR
+
 
 def resolve_filename_and_suffix(
     *,
@@ -102,30 +105,29 @@ async def download_file_to_temp(url: str):
     temp_dir.mkdir(parents=True, exist_ok=True)
     cleanup_temp_dir()
 
-    async with httpx.AsyncClient(proxy=None, trust_env=False) as client:
-        async with client.stream("GET", url) as response:
-            response.raise_for_status()
+    async with httpx.AsyncClient(proxy=None, trust_env=False) as client, client.stream("GET", url) as response:
+        response.raise_for_status()
 
-            file_name, _ = resolve_filename_and_suffix(
-                url=url,
-                response=response,
-                keep_origin_name=False,  # temp 文件强烈建议 False
-            )
+        file_name, _ = resolve_filename_and_suffix(
+            url=url,
+            response=response,
+            keep_origin_name=False,  # temp 文件强烈建议 False
+        )
 
-            file_path = temp_dir / file_name
+        file_path = temp_dir / file_name
 
-            info_logger.info(f"Downloading file from {url} to {file_path}")
+        info_logger.info(f"Downloading file from {url} to {file_path}")
 
-            with open(file_path, "wb") as f:
-                async for chunk in response.aiter_bytes():
-                    if chunk:
-                        f.write(chunk)
+        with open(file_path, "wb") as f:
+            async for chunk in response.aiter_bytes():
+                if chunk:
+                    f.write(chunk)
 
     return DownloadRes(
         file_path=str(file_path),
         file_name=file_name,
     )
-        
+
 def extract_files_to_temp_from_zip(file_path: str):
     temp_dir = BASE_DIR / "temp"
     temp_dir.mkdir(parents=True, exist_ok=True)

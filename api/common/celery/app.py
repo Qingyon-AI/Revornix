@@ -25,7 +25,7 @@ class TaskProxy:
 
     def apply_async(self, args=None, kwargs=None, **options):
         return celery_app.send_task(self.name, args=args or [], kwargs=kwargs or {}, **options)
-    
+
     def __call__(self, *args, **kwargs):
         # 让它像函数一样被 APScheduler 调用
         return self.delay(*args, **kwargs)
@@ -50,13 +50,13 @@ start_trigger_user_notification_event = _task("common.celery.app.start_trigger_u
 __all__ = [
     "celery_app",
     "start_process_document",
-    "start_process_section",
     "start_process_document_embedding",
     "start_process_document_graph",
-    "start_process_document_summarize",
     "start_process_document_podcast",
-    "update_document_process_status",
+    "start_process_document_summarize",
+    "start_process_section",
     "start_process_section_podcast",
-    "update_section_process_status",
     "start_trigger_user_notification_event",
+    "update_document_process_status",
+    "update_section_process_status",
 ]

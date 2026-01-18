@@ -1,21 +1,28 @@
 # 第三方接口
 
-# 当使用api key的时候，调用这边的接口组
+# 当使用api key的时候, 调用这边的接口组
 
-import schemas
+from datetime import datetime, timezone
+
+from celery import chain, group
+from fastapi import APIRouter, Depends, File, Form, UploadFile
+from sqlalchemy.orm import Session
+
 import crud
 import models
-from celery import chain, group
-from datetime import datetime, timezone
+import schemas
 from common.celery.app import start_process_document, start_process_section
-from common.dependencies import get_db, get_current_user_with_api_key, plan_ability_checked_in_func, check_deployed_by_official
 from common.common import get_user_remote_file_system
-from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, File, UploadFile, Form
-from enums.document import DocumentCategory, UserDocumentAuthority
-from enums.section import UserSectionAuthority, UserSectionRole, SectionDocumentIntegration
-from enums.ability import Ability
+from common.dependencies import (
+    check_deployed_by_official,
+    get_current_user_with_api_key,
+    get_db,
+    plan_ability_checked_in_func,
+)
 from common.jwt_utils import create_token
+from enums.ability import Ability
+from enums.document import DocumentCategory, UserDocumentAuthority
+from enums.section import SectionDocumentIntegration, UserSectionAuthority, UserSectionRole
 
 tp_router = APIRouter()
 
@@ -35,7 +42,7 @@ async def upload_file_system(
     )
     if user_file_system is None:
         raise schemas.error.CustomException(message="There are something wrong with the user file system")
-    
+
     remote_file_service = await get_user_remote_file_system(
         user.id
     )
@@ -57,18 +64,18 @@ def create_section(
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
 ):
     db_section = crud.section.create_section(
-        db=db, 
+        db=db,
         creator_id=user.id,
         cover=section_create_request.cover,
-        title=section_create_request.title, 
+        title=section_create_request.title,
         description=section_create_request.description,
         auto_illustration=section_create_request.auto_illustration,
         auto_podcast=section_create_request.auto_podcast
     )
     if section_create_request.labels:
         crud.section.create_section_labels(
-            db=db, 
-            section_id=db_section.id, 
+            db=db,
+            section_id=db_section.id,
             label_ids=section_create_request.labels
         )
     crud.section.create_section_user(
@@ -84,17 +91,17 @@ def create_section(
 @tp_router.post('/section/label/create', response_model=schemas.section.CreateLabelResponse)
 def add_label(
     label_add_request: schemas.section.LabelAddRequest,
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
 ):
     db_label = crud.section.create_section_label(
-        db=db, 
-        name=label_add_request.name, 
+        db=db,
+        name=label_add_request.name,
         user_id=user.id
     )
     db.commit()
     return schemas.section.CreateLabelResponse(
-        id=db_label.id, 
+        id=db_label.id,
         name=db_label.name
     )
 
@@ -104,7 +111,7 @@ def get_all_mine_sections(
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
 ):
     db_sections = crud.section.get_user_sections(
-        db=db, 
+        db=db,
         user_id=user.id,
         filter_roles=[UserSectionRole.CREATOR, UserSectionRole.MEMBER]
     )
@@ -116,11 +123,11 @@ def get_all_mine_sections(
 
 @tp_router.post("/document/label/list", response_model=schemas.document.LabelListResponse)
 def list_label(
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
 ):
     db_labels = crud.document.get_user_labels_by_user_id(
-        db=db, 
+        db=db,
         user_id=user.id
     )
     labels = [
@@ -136,20 +143,20 @@ def create_document_label(
     user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
 ):
     db_label = crud.document.create_document_label(
-        db=db, 
-        name=label_add_request.name, 
+        db=db,
+        name=label_add_request.name,
         user_id=user.id
     )
     db.commit()
     return schemas.document.CreateLabelResponse(
-        id=db_label.id, 
+        id=db_label.id,
         name=db_label.name
     )
-                       
+
 @tp_router.post("/document/create", response_model=schemas.document.DocumentCreateResponse)
 async def create_document(
-    document_create_request: schemas.document.DocumentCreateRequest, 
-    db: Session = Depends(get_db), 
+    document_create_request: schemas.document.DocumentCreateRequest,
+    db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
     deployed_by_official: bool = Depends(check_deployed_by_official),
 ):
@@ -181,7 +188,7 @@ async def create_document(
         )
     if not auth_status and deployed_by_official:
         raise Exception('The number of documents exceeds the limit for your plan')
-    
+
     if document_create_request.category == DocumentCategory.WEBSITE:
         db_website_documents_count = crud.document.count_user_documents(
             db=db,
@@ -195,7 +202,7 @@ async def create_document(
             )
             if not auth_status and deployed_by_official:
                 raise Exception('The number of website documents exceeds the limit for your plan')
-            
+
         if document_create_request.url is None:
             raise Exception('The url is required when the document category is website')
         db_document = crud.document.create_base_document(
@@ -207,8 +214,8 @@ async def create_document(
             from_plat='api'
         )
         crud.document.create_website_document(
-            db=db, 
-            url=document_create_request.url, 
+            db=db,
+            url=document_create_request.url,
             document_id=db_document.id
         )
     elif document_create_request.category == DocumentCategory.FILE:
@@ -224,7 +231,7 @@ async def create_document(
             )
             if not auth_status and deployed_by_official:
                 raise Exception('The number of file documents exceeds the limit for your plan')
-            
+
         if document_create_request.file_name is None:
             raise Exception('The file name is required when the document category is file')
         db_document = crud.document.create_base_document(
@@ -232,8 +239,8 @@ async def create_document(
             creator_id=user.id,
             category=document_create_request.category,
             from_plat='api',
-            title=f'File document analysing...',
-            description=f'File document analysing...'
+            title='File document analysing...',
+            description='File document analysing...'
         )
         crud.document.create_file_document(
             db=db,
@@ -260,14 +267,14 @@ async def create_document(
         raise Exception('Invalid document category')
     if len(document_create_request.labels) > 0:
         crud.document.create_document_labels(
-            db=db, 
-            document_id=db_document.id, 
+            db=db,
+            document_id=db_document.id,
             label_ids=document_create_request.labels
         )
     crud.document.create_user_document(
-        db=db, 
-        user_id=user.id, 
-        document_id=db_document.id, 
+        db=db,
+        user_id=user.id,
+        document_id=db_document.id,
         authority=UserDocumentAuthority.OWNER
     )
     crud.task.create_document_process_task(
@@ -277,13 +284,13 @@ async def create_document(
     )
     # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
     db_today_section = crud.section.get_section_by_user_and_date(
-        db=db, 
+        db=db,
         user_id=user.id,
         date=now.date()
     )
     if db_today_section is None:
         db_today_section = crud.section.create_section(
-            db=db, 
+            db=db,
             creator_id=user.id,
             title=f'{now.date().isoformat()} Summary',
             description=f"This document is the summary of all documents on {now.date().isoformat()}."
@@ -319,9 +326,9 @@ async def create_document(
             document_id=db_document.id
         )
     db.commit()
-    
+
     # 开始后台处理
-    # 获取所有关联的 section（此时已经写入 WAIT_TO 状态）
+    # 获取所有关联的 section (此时已经写入 WAIT_TO 状态)
     db_sections = crud.section.get_sections_by_document_id(
         db=db,
         document_id=db_document.id
@@ -335,22 +342,22 @@ async def create_document(
         )
         for sec in db_sections
     )
-    
+
     background_tasks = chain(
         start_process_document.si(
-            document_id=db_document.id, 
-            user_id=user.id, 
-            auto_summary=document_create_request.auto_summary, 
+            document_id=db_document.id,
+            user_id=user.id,
+            auto_summary=document_create_request.auto_summary,
             auto_podcast=document_create_request.auto_podcast,
             auto_tag=document_create_request.auto_tag,
             override=schemas.task.DocumentOverrideProperty(
-                title=document_create_request.title, 
-                description=document_create_request.description, 
+                title=document_create_request.title,
+                description=document_create_request.description,
                 cover=document_create_request.cover
             ).model_dump(mode='json')
         ),
         section_process_tasks
     )
     background_tasks.apply_async()
-    
+
     return schemas.document.DocumentCreateResponse(document_id=db_document.id)

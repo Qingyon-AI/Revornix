@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import Dict, Any
 from datetime import datetime
 from data.custom_types.all import *
 from data.neo4j.base import neo4j_driver
@@ -35,7 +35,7 @@ def local_search_by_entity(
     entity_name: str,
     hops: int = 1,
     limit: int = 50
-) -> List[Dict[str, Any]]:
+) -> list[Dict[str, Any]]:
     """
     局部实体子图搜索（带用户权限）：
     - Entity 名称模糊匹配

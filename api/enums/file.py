@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import NamedTuple
 
+
 class FileSystemMeta(NamedTuple):
     id: str
     title: str

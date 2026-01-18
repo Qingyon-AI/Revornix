@@ -1,19 +1,22 @@
-import models
-from datetime import datetime, timezone, timedelta
 from datetime import date as date_type
-from sqlalchemy import or_, func, cast, Date
+from datetime import datetime, timedelta, timezone
+
+from sqlalchemy import Date, cast, func, or_
 from sqlalchemy.orm import Session, selectinload
-from enums.document import UserDocumentAuthority, DocumentCategory
+
+import models
+from enums.document import DocumentCategory, UserDocumentAuthority
+
 
 def create_document_note(
-    db: Session, 
-    user_id: int, 
-    document_id: int, 
+    db: Session,
+    user_id: int,
+    document_id: int,
     content: str
 ):
     now = datetime.now(timezone.utc)
-    db_document_note = models.document.DocumentNote(user_id=user_id, 
-                                                    document_id=document_id, 
+    db_document_note = models.document.DocumentNote(user_id=user_id,
+                                                    document_id=document_id,
                                                     content=content,
                                                     create_time=now)
     db.add(db_document_note)
@@ -21,12 +24,12 @@ def create_document_note(
     return db_document_note
 
 def create_document_label(
-    db: Session, 
-    name: str, 
+    db: Session,
+    name: str,
     user_id: int
 ):
     now = datetime.now(timezone.utc)
-    db_label = models.document.Label(name=name, 
+    db_label = models.document.Label(name=name,
                                      user_id=user_id,
                                      create_time=now)
     db.add(db_label)
@@ -34,20 +37,20 @@ def create_document_label(
     return db_label
 
 def create_base_document(
-    db: Session, 
+    db: Session,
     creator_id: int,
-    title: str, 
-    category: int, 
+    title: str,
+    category: int,
     from_plat: str,
     cover: str | None = None,
-    description: str | None = None, 
+    description: str | None = None,
 ):
     now = datetime.now(timezone.utc)
-    db_document = models.document.Document(category=category, 
+    db_document = models.document.Document(category=category,
                                            creator_id=creator_id,
-                                           title=title, 
+                                           title=title,
                                            cover=cover,
-                                           description=description, 
+                                           description=description,
                                            from_plat=from_plat,
                                            create_time=now)
     db.add(db_document)
@@ -55,49 +58,49 @@ def create_base_document(
     return db_document
 
 def create_quick_note_document(
-    db: Session, 
-    document_id: int, 
+    db: Session,
+    document_id: int,
     content: str
 ):
-    db_quick_note_document = models.document.QuickNoteDocument(document_id=document_id, 
+    db_quick_note_document = models.document.QuickNoteDocument(document_id=document_id,
                                                                content=content)
     db.add(db_quick_note_document)
     db.flush()
     return db_quick_note_document
 
 def create_website_document(
-    db: Session, 
-    document_id: int, 
-    url: str, 
+    db: Session,
+    document_id: int,
+    url: str,
     keywords: str | None = None
 ):
-    db_website_document = models.document.WebsiteDocument(document_id=document_id, 
-                                                          url=url, 
+    db_website_document = models.document.WebsiteDocument(document_id=document_id,
+                                                          url=url,
                                                           keywords=keywords)
     db.add(db_website_document)
     db.flush()
     return db_website_document
 
 def create_file_document(
-    db: Session, 
-    document_id: int, 
+    db: Session,
+    document_id: int,
     file_name: str
 ):
-    db_file_document = models.document.FileDocument(document_id=document_id, 
+    db_file_document = models.document.FileDocument(document_id=document_id,
                                                     file_name=file_name)
     db.add(db_file_document)
     db.flush()
     return db_file_document
 
 def create_user_document(
-    db: Session, 
-    user_id: int, 
-    document_id: int, 
+    db: Session,
+    user_id: int,
+    document_id: int,
     authority: int
 ):
     now = datetime.now(timezone.utc)
-    db_user_document = models.document.UserDocument(user_id=user_id, 
-                                                    document_id=document_id, 
+    db_user_document = models.document.UserDocument(user_id=user_id,
+                                                    document_id=document_id,
                                                     authority=authority,
                                                     create_time=now)
     db.add(db_user_document)
@@ -105,12 +108,12 @@ def create_user_document(
     return db_user_document
 
 def create_document_labels(
-    db: Session, 
-    document_id: int, 
+    db: Session,
+    document_id: int,
     label_ids: list[int]
 ):
     now = datetime.now(timezone.utc)
-    db_document_labels = [models.document.DocumentLabel(document_id=document_id, 
+    db_document_labels = [models.document.DocumentLabel(document_id=document_id,
                                                         label_id=label_id,
                                                         create_time=now) for label_id in label_ids]
     db.add_all(db_document_labels)
@@ -138,13 +141,13 @@ def get_read_document_by_document_id_and_user_id(
     return query.one_or_none()
 
 def get_website_document_by_user_id_and_url(
-    db: Session, 
+    db: Session,
     user_id: int,
     url: str
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.WebsiteDocument)
-    query = query.filter(models.document.WebsiteDocument.url == url, 
+    query = query.filter(models.document.WebsiteDocument.url == url,
                          models.document.WebsiteDocument.delete_at == None,
                          models.document.UserDocument.user_id == user_id,
                          models.document.Document.delete_at == None)
@@ -168,7 +171,7 @@ def get_document_summary_by_user_id(
 ):
     # 获取最近30天的日期范围
     start_date = datetime.now(timezone.utc) - timedelta(days=duration)
-    
+
     # 查询每天的文档创建数量
     query = db.query(
             cast(models.document.Document.create_time, Date).label("date"),  # 转换为日期
@@ -186,8 +189,8 @@ def get_document_summary_by_user_id(
 def search_section_documents(
     db: Session,
     section_id: int,
-    start: int | None = None, 
-    limit: int = 10, 
+    start: int | None = None,
+    limit: int = 10,
     keyword: str | None = None,
     desc: bool = True
 ):
@@ -214,7 +217,7 @@ def search_section_documents(
 def search_next_section_document(
     db: Session,
     section_id: int,
-    document: models.document.Document, 
+    document: models.document.Document,
     keyword: str | None = None,
     desc: bool = True
 ):
@@ -248,9 +251,9 @@ def count_section_documents(
     return query.count()
 
 def search_next_user_document(
-    db: Session, 
-    user_id: int, 
-    document: models.document.Document, 
+    db: Session,
+    user_id: int,
+    document: models.document.Document,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     desc: bool = True
@@ -274,10 +277,10 @@ def search_next_user_document(
     return query.first()
 
 def search_user_documents(
-    db: Session, 
-    user_id: int, 
-    start: int | None = None, 
-    limit: int = 10, 
+    db: Session,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     desc: bool = True
@@ -307,9 +310,9 @@ def search_user_documents(
     return query.all()
 
 def count_user_documents(
-    db: Session, 
-    user_id: int, 
-    keyword: str | None = None, 
+    db: Session,
+    user_id: int,
+    keyword: str | None = None,
     label_ids: list[int] | None = None,
     filter_category: DocumentCategory | None = None,
     filter_platform: str | None = None,
@@ -357,7 +360,7 @@ def get_published_section_of_the_document_by_document_id(
             models.section.SectionDocument.delete_at == None,
         )
     )
-    
+
     # 此处是判断文档是否有归类于某些公开的专栏
     if user_id is None:
         query = query.join(
@@ -381,8 +384,8 @@ def get_published_section_of_the_document_by_document_id(
     return query.all()
 
 def get_star_document_by_user_id_and_document_id(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     document_id: int
 ):
     query = db.query(models.document.StarDocument)
@@ -394,7 +397,7 @@ def get_star_document_by_user_id_and_document_id(
     return query.one_or_none()
 
 def get_document_by_document_id(
-    db: Session, 
+    db: Session,
     document_id: int
 ):
     query = db.query(models.document.Document)
@@ -414,7 +417,7 @@ def get_documents_by_document_ids(
     return query.all()
 
 def get_file_document_by_document_id(
-    db: Session, 
+    db: Session,
     document_id: int
 ):
     query = db.query(models.document.FileDocument)
@@ -425,7 +428,7 @@ def get_file_document_by_document_id(
     return query.one_or_none()
 
 def get_website_document_by_document_id(
-    db: Session, 
+    db: Session,
     document_id: int
 ):
     query = db.query(models.document.WebsiteDocument)
@@ -436,7 +439,7 @@ def get_website_document_by_document_id(
     return query.one_or_none()
 
 def get_quick_note_document_by_document_id(
-    db: Session, 
+    db: Session,
     document_id: int
 ):
     query = db.query(models.document.QuickNoteDocument)
@@ -447,9 +450,9 @@ def get_quick_note_document_by_document_id(
     return query.one_or_none()
 
 def search_all_documents(
-    db: Session, 
-    start: int | None = None, 
-    limit: int = 10, 
+    db: Session,
+    start: int | None = None,
+    limit: int = 10,
     keyword: str | None = None,
     label_ids: list[int] | None = None
 ):
@@ -471,8 +474,8 @@ def search_all_documents(
     return query.all()
 
 def count_all_documents(
-    db: Session, 
-    keyword: str | None = None, 
+    db: Session,
+    keyword: str | None = None,
     label_ids: list[int] | None = None
 ):
     query = db.query(models.document.Document)
@@ -488,8 +491,8 @@ def count_all_documents(
     return query.count()
 
 def search_next_all_document(
-    db: Session, 
-    document: models.document.Document, 
+    db: Session,
+    document: models.document.Document,
     keyword: str | None = None,
     label_ids: list[int] | None = None
 ):
@@ -507,10 +510,10 @@ def search_next_all_document(
     return query.first()
 
 def search_all_document_notes_by_document_id(
-    db: Session, 
+    db: Session,
     document_id: int,
-    start: int | None = None, 
-    limit: int = 10, 
+    start: int | None = None,
+    limit: int = 10,
     keyword: str | None = None
 ):
     query = db.query(models.document.DocumentNote)
@@ -527,7 +530,7 @@ def search_all_document_notes_by_document_id(
     return query.all()
 
 def count_all_document_notes_by_document_id(
-    db: Session, 
+    db: Session,
     document_id: int,
     keyword: str | None = None
 ):
@@ -540,7 +543,7 @@ def count_all_document_notes_by_document_id(
     return query.count()
 
 def search_next_note_by_document_note(
-    db: Session, 
+    db: Session,
     document_note: models.document.DocumentNote,
     keyword: str | None = None
 ):
@@ -559,7 +562,7 @@ def get_labels_summary(
     query = db.query(models.document.Label, func.count(models.document.DocumentLabel.id).label('count'))
     query = query.join(models.document.DocumentLabel,
                        models.document.DocumentLabel.label_id == models.document.Label.id)
-    query = query.join(models.document.UserDocument, 
+    query = query.join(models.document.UserDocument,
                        models.document.UserDocument.document_id == models.document.DocumentLabel.document_id)
     query = query.join(models.document.Document,
                        models.document.Document.id == models.document.DocumentLabel.document_id)
@@ -573,7 +576,7 @@ def get_labels_summary(
     return query.all()
 
 def get_labels_by_document_id(
-    db: Session, 
+    db: Session,
     document_id: int
 ):
     query = db.query(models.document.Label)
@@ -606,7 +609,7 @@ def get_labels_by_document_ids(
     return res
 
 def get_document_labels_by_document_id(
-    db: Session, 
+    db: Session,
     document_id: int
 ):
     query = db.query(models.document.DocumentLabel)
@@ -615,7 +618,7 @@ def get_document_labels_by_document_id(
     return query.all()
 
 def get_user_labels_by_user_id(
-    db: Session, 
+    db: Session,
     user_id: int
 ):
     query = db.query(models.document.Label)
@@ -624,10 +627,10 @@ def get_user_labels_by_user_id(
     return query.all()
 
 def search_user_unread_documents(
-    db: Session, 
-    user_id: int, 
-    start: int | None = None, 
-    limit: int = 10, 
+    db: Session,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     desc: bool = True
@@ -637,7 +640,7 @@ def search_user_unread_documents(
     query = query.filter(models.document.UserDocument.user_id == user_id,
                          models.document.Document.delete_at == None)
     # 过滤没有对应的ReadDocument记录的文档
-    query = query.filter(or_(models.document.ReadDocument.delete_at != None, 
+    query = query.filter(or_(models.document.ReadDocument.delete_at != None,
                              models.document.ReadDocument.id == None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
@@ -664,9 +667,9 @@ def search_user_unread_documents(
     return query.all()
 
 def search_next_user_unread_document(
-    db: Session, 
-    user_id: int, 
-    document: models.document.Document, 
+    db: Session,
+    user_id: int,
+    document: models.document.Document,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     desc: bool = True
@@ -676,7 +679,7 @@ def search_next_user_unread_document(
     query = query.filter(models.document.UserDocument.user_id == user_id,
                          models.document.Document.delete_at == None)
     # 过滤没有对应的ReadDocument记录的文档
-    query = query.filter(or_(models.document.ReadDocument.delete_at != None, 
+    query = query.filter(or_(models.document.ReadDocument.delete_at != None,
                              models.document.ReadDocument.id == None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
@@ -697,9 +700,9 @@ def search_next_user_unread_document(
     return query.first()
 
 def count_user_unread_documents(
-    db: Session, 
-    user_id: int, 
-    keyword: str | None = None, 
+    db: Session,
+    user_id: int,
+    keyword: str | None = None,
     label_ids: list[int] | None = None
 ):
     query = db.query(models.document.Document)
@@ -707,7 +710,7 @@ def count_user_unread_documents(
     query = query.filter(models.document.UserDocument.user_id == user_id,
                          models.document.Document.delete_at == None)
     # 过滤没有对应的ReadDocument记录的文档
-    query = query.filter(or_(models.document.ReadDocument.delete_at != None, 
+    query = query.filter(or_(models.document.ReadDocument.delete_at != None,
                              models.document.ReadDocument.id == None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
@@ -723,10 +726,10 @@ def count_user_unread_documents(
     return query.count()
 
 def search_user_recent_read_documents(
-    db: Session, 
-    user_id: int, 
-    start: int | None = None, 
-    limit: int = 10, 
+    db: Session,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     desc: bool = True
@@ -761,9 +764,9 @@ def search_user_recent_read_documents(
     return query.all()
 
 def search_next_user_recent_read_document(
-    db: Session, 
-    user_id: int, 
-    document: models.document.Document, 
+    db: Session,
+    user_id: int,
+    document: models.document.Document,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     desc: bool = True
@@ -793,7 +796,7 @@ def search_next_user_recent_read_document(
 
 def count_user_recent_read_documents(
     db: Session,
-    user_id: int, 
+    user_id: int,
     keyword: str | None = None,
     label_ids: list[int] | None = None
 ):
@@ -816,10 +819,10 @@ def count_user_recent_read_documents(
     return query.count()
 
 def search_user_stared_documents(
-    db: Session, 
-    user_id: int, 
-    start: int | None = None, 
-    limit: int = 10, 
+    db: Session,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     desc: bool = True
@@ -854,9 +857,9 @@ def search_user_stared_documents(
     return query.all()
 
 def search_next_user_star_document(
-    db: Session, 
-    user_id: int, 
-    document: models.document.Document, 
+    db: Session,
+    user_id: int,
+    document: models.document.Document,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     desc: bool = True
@@ -885,8 +888,8 @@ def search_next_user_star_document(
     return query.first()
 
 def count_user_stared_documents(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     keyword: str | None = None,
     label_ids: list[int] | None = None
 ):
@@ -909,7 +912,7 @@ def count_user_stared_documents(
     return query.count()
 
 def star_document_by_document_id(
-    db: Session, 
+    db: Session,
     user_id: int,
     document_id: int
 ):
@@ -918,8 +921,8 @@ def star_document_by_document_id(
         .filter(models.document.StarDocument.document_id == document_id,
                 models.document.StarDocument.user_id == user_id)\
         .one_or_none()
-    if db_exist_star_document is None:    
-        db_star_document = models.document.StarDocument(document_id=document_id, 
+    if db_exist_star_document is None:
+        db_star_document = models.document.StarDocument(document_id=document_id,
                                                         user_id=user_id,
                                                         create_time=now)
         db.add(db_star_document)
@@ -931,8 +934,8 @@ def star_document_by_document_id(
         return db_exist_star_document
 
 def unstar_document_by_document_id(
-    db: Session, 
-    document_id: int, 
+    db: Session,
+    document_id: int,
     user_id: int
 ):
     now = datetime.now(timezone.utc)
@@ -944,9 +947,9 @@ def unstar_document_by_document_id(
         db_exist_star_document.delete_at = now
         db.flush()
         return db_exist_star_document
-    
+
 def read_document_by_document_id(
-    db: Session, 
+    db: Session,
     user_id: int,
     document_id: int
 ):
@@ -956,8 +959,8 @@ def read_document_by_document_id(
                 models.document.ReadDocument.user_id == user_id)\
         .one_or_none()
     if db_exist_read_document is None:
-        db_read_document = models.document.ReadDocument(document_id=document_id, 
-                                                        user_id=user_id, 
+        db_read_document = models.document.ReadDocument(document_id=document_id,
+                                                        user_id=user_id,
                                                         read_time=now,
                                                         create_time=now)
         db.add(db_read_document)
@@ -969,7 +972,7 @@ def read_document_by_document_id(
         return db_exist_read_document
 
 def unread_document_by_document_id(
-    db: Session, 
+    db: Session,
     user_id: int,
     document_id: int
 ):
@@ -984,7 +987,7 @@ def unread_document_by_document_id(
         return db_exist_read_document
 
 def delete_labels_by_label_ids(
-    db: Session, 
+    db: Session,
     user_id: int,
     label_ids: list[int]
 ):
@@ -995,7 +998,7 @@ def delete_labels_by_label_ids(
                          models.document.Label.delete_at == None)
     query = query.update({models.document.Label.delete_at: now}, synchronize_session=False)
     db.flush()
-    
+
 def delete_document_labels_by_document_ids(
     db: Session,
     document_ids: list[int]
@@ -1008,23 +1011,23 @@ def delete_document_labels_by_document_ids(
     db.flush()
 
 def delete_document_labels_by_label_ids(
-    db: Session, 
+    db: Session,
     label_ids: list[int]
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.document.DocumentLabel)
-    query = query.filter(models.document.DocumentLabel.label_id.in_(label_ids), 
+    query = query.filter(models.document.DocumentLabel.label_id.in_(label_ids),
                          models.document.DocumentLabel.delete_at == None)
     query = query.update({models.document.DocumentLabel.delete_at: now})
     db.flush()
 
 def delete_user_documents_by_document_ids(
-    db: Session, 
-    document_ids: list[int], 
+    db: Session,
+    document_ids: list[int],
     user_id: int
 ):
     now = datetime.now(timezone.utc)
-    
+
     # 需要按照用户过滤，非该用户id的不允许删除
     # 结果是元组数组[(15,)]
     db_document_ids = db.query(models.document.Document.id) \
@@ -1034,14 +1037,14 @@ def delete_user_documents_by_document_ids(
                 models.document.UserDocument.delete_at == None,
                 models.document.UserDocument.authority == UserDocumentAuthority.OWNER) \
         .all()
-        
+
     ids_to_update = [id[0] for id in db_document_ids]
 
     db.query(models.document.Document)\
         .filter(models.document.Document.id.in_(ids_to_update),
                 models.document.Document.delete_at == None)\
         .update({models.document.Document.delete_at: now}, synchronize_session=False)
-    
+
     db.query(models.document.WebsiteDocument)\
         .filter(models.document.WebsiteDocument.document_id.in_(ids_to_update),
                 models.document.WebsiteDocument.delete_at == None)\
@@ -1051,32 +1054,32 @@ def delete_user_documents_by_document_ids(
         .filter(models.document.FileDocument.document_id.in_(ids_to_update),
                 models.document.FileDocument.delete_at == None)\
         .update({models.document.FileDocument.delete_at: now}, synchronize_session=False)
-    
+
     db.query(models.document.QuickNoteDocument)\
         .filter(models.document.QuickNoteDocument.document_id.in_(ids_to_update),
                 models.document.QuickNoteDocument.delete_at == None)\
         .update({models.document.QuickNoteDocument.delete_at: now}, synchronize_session=False)
-    
+
     db.query(models.document.UserDocument)\
         .filter(models.document.UserDocument.document_id.in_(ids_to_update),
                 models.document.UserDocument.delete_at == None)\
         .update({models.document.UserDocument.delete_at: now}, synchronize_session=False)
-        
+
     db.query(models.document.DocumentLabel)\
         .filter(models.document.DocumentLabel.document_id.in_(ids_to_update),
                 models.document.DocumentLabel.delete_at == None)\
         .update({models.document.DocumentLabel.delete_at: now}, synchronize_session=False)
-        
+
     db.query(models.document.StarDocument)\
         .filter(models.document.StarDocument.document_id.in_(ids_to_update),
                 models.document.StarDocument.delete_at == None)\
         .update({models.document.StarDocument.delete_at: now}, synchronize_session=False)
-    
+
     db.query(models.document.ReadDocument)\
         .filter(models.document.ReadDocument.document_id.in_(ids_to_update),
                 models.document.ReadDocument.delete_at == None)\
         .update({models.document.ReadDocument.delete_at: now}, synchronize_session=False)
-        
+
     db.query(models.document.DocumentNote)\
         .filter(models.document.DocumentNote.document_id.in_(ids_to_update),
                 models.document.DocumentNote.delete_at == None)\
@@ -1088,53 +1091,53 @@ def delete_user_documents_by_document_ids(
         .update({models.section.SectionDocument.delete_at: now}, synchronize_session=False)
 
     db.flush()
-    
+
 def delete_document_notes_by_document_ids(
     db: Session,
     document_ids: list[int]
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.document.DocumentNote)
-    query = query.filter(models.document.DocumentNote.document_id.in_(document_ids), 
+    query = query.filter(models.document.DocumentNote.document_id.in_(document_ids),
                          models.document.DocumentNote.delete_at == None)
     query = query.update({models.document.DocumentNote.delete_at: now})
     db.flush()
-    
+
 def delete_document_notes_by_user_id_and_note_ids(
-    db: Session, 
-    user_id: int, 
+    db: Session,
+    user_id: int,
     note_ids: list[int]
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.document.DocumentNote)
-    query = query.filter(models.document.DocumentNote.note_id.in_(note_ids), 
+    query = query.filter(models.document.DocumentNote.note_id.in_(note_ids),
                          models.document.DocumentNote.user_id == user_id,
                          models.document.DocumentNote.delete_at == None)
     query = query.update({models.document.DocumentNote.delete_at: now})
     db.flush()
-    
+
 def delete_quick_note_documents_by_document_ids(
     db: Session,
     document_ids: list[int]
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.document.QuickNoteDocument)
-    query = query.filter(models.document.QuickNoteDocument.document_id.in_(document_ids), 
+    query = query.filter(models.document.QuickNoteDocument.document_id.in_(document_ids),
                          models.document.QuickNoteDocument.delete_at == None)
     query = query.update({models.document.QuickNoteDocument.delete_at: now})
     db.flush()
-    
+
 def delete_website_documents_by_document_ids(
     db: Session,
     document_ids: list[int]
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.document.WebsiteDocument)
-    query = query.filter(models.document.WebsiteDocument.document_id.in_(document_ids), 
+    query = query.filter(models.document.WebsiteDocument.document_id.in_(document_ids),
                          models.document.WebsiteDocument.delete_at == None)
     query = query.update({models.document.WebsiteDocument.delete_at: now})
     db.flush()
-    
+
 def delete_file_documents_by_document_ids(
     db: Session,
     document_ids: list[int]
@@ -1145,14 +1148,14 @@ def delete_file_documents_by_document_ids(
                          models.document.FileDocument.delete_at == None)
     query = query.update({models.document.FileDocument.delete_at: now})
     db.flush()
-    
+
 def delete_website_document_by_website_document_ids(
-    db: Session, 
+    db: Session,
     user_id: int,
     website_document_ids: list[int]
 ):
     now = datetime.now(timezone.utc)
-    
+
     # 安全起见，此处过滤掉非用户的文档
     db_website_documents = db.query(models.document.WebsiteDocument)\
         .join(models.document.UserDocument, models.document.WebsiteDocument.document_id == models.document.UserDocument.document_id)\
@@ -1161,9 +1164,9 @@ def delete_website_document_by_website_document_ids(
                 models.document.UserDocument.user_id == user_id,
                 models.document.UserDocument.authority == UserDocumentAuthority.OWNER)\
         .all()
-        
+
     db_website_document_ids = [website_document.id for website_document in db_website_documents]
-    
+
     db.query(models.document.WebsiteDocument)\
         .filter(models.document.WebsiteDocument.id.in_(db_website_document_ids),
                 models.document.WebsiteDocument.delete_at == None)\

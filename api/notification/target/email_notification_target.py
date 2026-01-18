@@ -1,8 +1,10 @@
 import json
+
 from protocol.notification_target import NotificationTargetProtocol
 
+
 class EmailNotificationTarget(NotificationTargetProtocol):
-    
+
     def __init__(
         self
     ):
@@ -14,5 +16,5 @@ class EmailNotificationTarget(NotificationTargetProtocol):
             description_zh='可以被邮件服务器发送邮件的消息目标',
             demo_config=json.dumps({
                 'email': 'your_email@example.com',
-            }) 
+            })
         )

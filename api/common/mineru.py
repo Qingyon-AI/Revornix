@@ -1,22 +1,21 @@
 import copy
+import hashlib
 import json
 import os
-import hashlib
-import httpx
 from pathlib import Path
 
-from common.logger import info_logger, exception_logger
-
+from mineru.backend.pipeline.model_json_to_middle_json import result_to_middle_json as pipeline_result_to_middle_json
+from mineru.backend.pipeline.pipeline_analyze import doc_analyze as pipeline_doc_analyze
+from mineru.backend.pipeline.pipeline_middle_json_mkcontent import union_make as pipeline_union_make
+from mineru.backend.vlm.vlm_analyze import doc_analyze as vlm_doc_analyze
+from mineru.backend.vlm.vlm_middle_json_mkcontent import union_make as vlm_union_make
 from mineru.cli.common import convert_pdf_bytes_to_bytes_by_pypdfium2, prepare_env, read_fn
 from mineru.data.data_reader_writer import FileBasedDataWriter
 from mineru.utils.draw_bbox import draw_layout_bbox, draw_span_bbox
 from mineru.utils.enum_class import MakeMode
-from mineru.backend.vlm.vlm_analyze import doc_analyze as vlm_doc_analyze
-from mineru.backend.pipeline.pipeline_analyze import doc_analyze as pipeline_doc_analyze
-from mineru.backend.pipeline.pipeline_middle_json_mkcontent import union_make as pipeline_union_make
-from mineru.backend.pipeline.model_json_to_middle_json import result_to_middle_json as pipeline_result_to_middle_json
-from mineru.backend.vlm.vlm_middle_json_mkcontent import union_make as vlm_union_make
 from mineru.utils.guess_suffix_or_lang import guess_suffix_by_path
+
+from common.logger import exception_logger, info_logger
 
 # API way for converting pdf to markdown
 
@@ -31,14 +30,14 @@ def generate_checksum(uid: str, seed: str, content: str) -> str:
     return sha256_hash.hexdigest()
 
 def verify_callback(uid: str, back_checksum: str, seed: str, content: any):
-    computed_checksum = generate_checksum(uid=uid, 
+    computed_checksum = generate_checksum(uid=uid,
                                           seed=seed,
                                           content=content)
     if back_checksum == computed_checksum:
         return True
     else:
         return False
-    
+
 def do_parse(
     output_dir,  # Output directory for storing parsing results
     pdf_file_names: list[str],  # List of PDF file names to be parsed

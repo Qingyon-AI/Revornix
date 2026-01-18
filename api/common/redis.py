@@ -1,9 +1,11 @@
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
-from redis.asyncio import Redis
 import redis.asyncio as redis
-from config.redis import REDIS_URL, REDIS_PORT
+from redis.asyncio import Redis
+
+from config.redis import REDIS_PORT, REDIS_URL
 
 if not REDIS_URL or not REDIS_PORT:
     raise Exception("REDIS_URL or REDIS_PORT is not set")

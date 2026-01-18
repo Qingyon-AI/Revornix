@@ -1,8 +1,10 @@
-import crud
-import schemas
 import json
 from typing import Protocol
+
+import crud
+import schemas
 from data.sql.base import SessionLocal
+
 
 class NotificationToolProtocol(Protocol):
 
@@ -10,7 +12,7 @@ class NotificationToolProtocol(Protocol):
     target: schemas.notification.UserNotificationTarget | None
 
     def set_source(
-        self, 
+        self,
         source_id: int
     ):
         db = SessionLocal()
@@ -49,7 +51,7 @@ class NotificationToolProtocol(Protocol):
         return config
 
     async def send_notification(
-        self, 
+        self,
         title: str,
         content: str | None = None,
         cover: str | None = None,

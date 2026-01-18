@@ -1,16 +1,19 @@
 import json
-from langfuse.openai import OpenAI
+
 from langfuse import propagate_attributes
-from prompts.summary_content import summary_content_prompt
-from prompts.reducer_summary import reducer_summary_prompt
+from langfuse.openai import OpenAI
 from pydantic import BaseModel
+
 from data.custom_types.all import *
-from proxy.ai_model_proxy import AIModelProxy
 from prompts.make_section_markdown import make_section_markdown_prompt
+from prompts.reducer_summary import reducer_summary_prompt
+from prompts.summary_content import summary_content_prompt
+from proxy.ai_model_proxy import AIModelProxy
+
 
 class SummaryResult(BaseModel):
     summary: str
-    
+
 class SummaryResultWithTitleAndDescription(BaseModel):
     title: str
     description: str
@@ -25,9 +28,9 @@ async def summary_content(
         user_id=user_id,
         model_id=model_id
     )).get_configuration()
-    
+
     system_prompt = summary_content_prompt(content=content)
-    
+
     with propagate_attributes(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
@@ -53,8 +56,8 @@ async def summary_content(
         description = res_summary.get('description')
         summary = res_summary.get('summary')
         return SummaryResultWithTitleAndDescription(
-            title=title, 
-            description=description, 
+            title=title,
+            description=description,
             summary=summary
         )
 
@@ -70,14 +73,14 @@ async def reducer_summary(
         user_id=user_id,
         model_id=model_id
     )).get_configuration()
-    
+
     system_prompt = reducer_summary_prompt(
         current_summary=current_summary,
         new_summary_to_append=new_summary_to_append,
         new_entities=new_entities,
         new_relations=new_relations
     )
-    
+
     with propagate_attributes(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
@@ -103,8 +106,8 @@ async def reducer_summary(
         description = res_summary.get('description')
         summary = res_summary.get('summary')
         return SummaryResultWithTitleAndDescription(
-            title=title, 
-            description=description, 
+            title=title,
+            description=description,
             summary=summary
         )
 
@@ -121,7 +124,7 @@ async def make_section_markdown(
         user_id=user_id,
         model_id=model_id
     )).get_configuration()
-    
+
     prompt = make_section_markdown_prompt(
         current_markdown_content=current_markdown_content,
         new_markdown_contents_to_append=new_markdown_contents_to_append,

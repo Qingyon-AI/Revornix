@@ -1,9 +1,10 @@
 import re
+
+from langfuse import propagate_attributes
+from langfuse.openai import OpenAI
+
 from enums.engine import Engine, EngineCategory
 from protocol.image_generate_engine import ImageGenerateEngineProtocol
-from langfuse.openai import OpenAI
-from langfuse import propagate_attributes
-from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
 SYSTEM_PROMPT = """You are a pure image generation function.
 
@@ -37,7 +38,7 @@ MARKDOWN_IMAGE_DATA_URL_PATTERN = re.compile(
 
 
 class OfficialBananaImageGenerateEngine(ImageGenerateEngineProtocol):
-    
+
     def __init__(self):
         super().__init__(
             engine_uuid=Engine.Official_Banana_Image.meta.uuid,
@@ -50,22 +51,22 @@ class OfficialBananaImageGenerateEngine(ImageGenerateEngineProtocol):
         )
 
     def generate_image(
-        self, 
+        self,
         text: str
     ) -> str | None:
         config = self.get_engine_config()
         if config is None:
             raise Exception("The engine havn't been initialized yet.")
-        
+
         model_name = config.get('model_name')
         base_url = config.get('base_url')
         api_key = config.get('api_key')
         if model_name is None or base_url is None or api_key is None:
             raise Exception("The user's configuration of this engine is not complete.")
-        
+
         if self.user_id is None:
             raise Exception("The user_id is None.")
-        
+
         with propagate_attributes(
             user_id=str(self.user_id),
             tags=[f'model:{model_name}']
@@ -83,9 +84,9 @@ class OfficialBananaImageGenerateEngine(ImageGenerateEngineProtocol):
                         "content": SYSTEM_PROMPT
                     },
                     {
-                        "role": "user", 
+                        "role": "user",
                         "content": text
-                    },   
+                    },
                 ]
             )
             if len(response.choices) > 0 and response.choices[0].message is not None and response.choices[0].message.content is not None:

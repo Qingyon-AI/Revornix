@@ -1,4 +1,5 @@
-from data.custom_types.all import *
+from data.custom_types.all import EntityInfo, RelationInfo
+
 
 def make_section_markdown_prompt(
     current_markdown_content: str | None,
@@ -27,8 +28,8 @@ def make_section_markdown_prompt(
 
     # ---- Existing Content ----
     current_md = current_markdown_content or "_No existing section content._"
-    
-    prompt = f"""
+
+    return f"""
 You are a **professional technical writer, information architect, and knowledge-graph analyst**.
 
 Your task is to produce a **high-quality, visually enriched, structured Markdown report** based on the following inputs.
@@ -92,5 +93,3 @@ graph LR
 
 ⬇️ Please output the final Markdown report now.
 """
-
-    return prompt

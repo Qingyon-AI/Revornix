@@ -1,9 +1,10 @@
-import schemas
-import models
-import crud
-from common.dependencies import get_current_user, get_db, get_current_user_without_throw
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
+import crud
+import models
+import schemas
+from common.dependencies import get_current_user, get_current_user_without_throw, get_db
 from data.neo4j.base import neo4j_driver
 from enums.section import UserSectionRole
 
@@ -15,25 +16,25 @@ def section_graph(
     user: models.user.User = Depends(get_current_user_without_throw),
     db: Session = Depends(get_db)
 ):
-    
+
     nodes, edges = [], []
-    
+
     section_id = section_graph_request.section_id
-    
+
     section = crud.section.get_section_by_section_id(
-        db=db, 
+        db=db,
         section_id=section_id
     )
-    
+
     if not section:
         raise Exception("Section not found")
-    
+
     documents = crud.section.get_documents_for_section_by_section_id(
-        db=db, 
+        db=db,
         section_id=section_id
     )
     document_ids = [document.id for document in documents]
-    
+
     # 如果专栏是公开的 直接返回所有节点
     db_section_publish = crud.section.get_publish_section_by_section_id(
         db=db,
@@ -76,15 +77,15 @@ def section_graph(
                 ))
     else:
         # 如果专栏不是公开的，需要检查用户是否是专栏的成员
-        
+
         if user is None:
             raise Exception("You are not authorized to view this section")
-        
+
         users = crud.section.get_users_for_section_by_section_id(
             db=db,
             section_id=section_id,
             filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR])
-        
+
         if user.id not in [user.id for user in users]:
             raise Exception("You are not authorized to view this section")
         else:
@@ -149,7 +150,7 @@ def document_graph(
         """
         entities_result = session.run(entity_query, doc_id=doc_id)
         relations_result = session.run(edge_query, doc_id=doc_id)
-        
+
         # 🧱 构造节点
         for record in entities_result:
             nodes.append(schemas.graph.Node(
@@ -165,7 +166,7 @@ def document_graph(
                 tgt_node=record.get('tgt_id')
             ))
 
-    return schemas.graph.GraphResponse(nodes=nodes, edges=edges) 
+    return schemas.graph.GraphResponse(nodes=nodes, edges=edges)
 
 @graph_router.post("/search", response_model=schemas.graph.GraphResponse)
 def graph(

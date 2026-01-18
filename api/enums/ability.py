@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Ability(Enum):
     COLLECT_FILE_LIMITED = "collect-file-limited"
     COLLECT_LINK_LIMITED = "collect-link-limited"

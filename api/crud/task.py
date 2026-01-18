@@ -1,8 +1,18 @@
-import models
-from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentEmbeddingStatus, DocumentProcessStatus, DocumentMdConvertStatus, DocumentSummarizeStatus
+
+from sqlalchemy.orm import Session
+
+import models
+from enums.document import (
+    DocumentEmbeddingStatus,
+    DocumentGraphStatus,
+    DocumentMdConvertStatus,
+    DocumentPodcastStatus,
+    DocumentProcessStatus,
+    DocumentSummarizeStatus,
+)
 from enums.section import SectionPodcastStatus, SectionProcessStatus, SectionProcessTriggerType
+
 
 def create_section_process_task_trigger_scheduler(
     db: Session,

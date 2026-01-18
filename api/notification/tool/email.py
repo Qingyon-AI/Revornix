@@ -1,15 +1,16 @@
+import asyncio
 import smtplib
 import ssl
-import asyncio
-from pathlib import Path
-from typing import Optional
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from email.header import Header
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from email.utils import formataddr
+from pathlib import Path
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from protocol.notification_tool import NotificationToolProtocol
+
 from common.logger import exception_logger
+from protocol.notification_tool import NotificationToolProtocol
 
 
 class EmailNotificationTool(NotificationToolProtocol):
@@ -31,9 +32,9 @@ class EmailNotificationTool(NotificationToolProtocol):
     async def send_notification(
         self,
         title: str,
-        content: Optional[str] = None,
-        cover: Optional[str] = None,
-        link: Optional[str] = None
+        content: str | None = None,
+        cover: str | None = None,
+        link: str | None = None
     ) -> bool:
         if self.source is None or self.target is None:
             raise ValueError("The source or target of the notification is not set")

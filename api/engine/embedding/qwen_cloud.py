@@ -1,14 +1,18 @@
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
 import os
+
 import numpy as np
-from openai import OpenAI
 from numpy.typing import NDArray
+from openai import OpenAI
+
 from protocol.embedding_engine import EmbeddingEngine
 
+
 class CloudQwen3EmbeddingEngine(EmbeddingEngine):
-    
+
     def __init__(
         self,
         model: str = "text-embedding-v4",
@@ -16,10 +20,10 @@ class CloudQwen3EmbeddingEngine(EmbeddingEngine):
     ):
         if not os.environ.get('ALI_DASHSCOPE_EMBEDDING_API_KEY'):
             raise Exception("Please set ALI_DASHSCOPE_EMBEDDING_API_KEY environment variable")
-        
+
         self.model = model
         self.dim = dim
-        
+
         self.client = OpenAI(
             # 若没有配置环境变量，请用阿里云百炼API Key将下行替换为：api_key="sk-xxx",
             # 新加坡和北京地域的API Key不同。获取API Key：https://help.aliyun.com/zh/model-studio/get-api-key
@@ -39,13 +43,11 @@ class CloudQwen3EmbeddingEngine(EmbeddingEngine):
             input=texts,
         )
 
-        embeddings = np.array(
+        return np.array(
             [item.embedding for item in resp.data],
             dtype=np.float32,
         )
 
-        return embeddings
-        
 if __name__ == "__main__":
     from rich import print
     engine = CloudQwen3EmbeddingEngine()
