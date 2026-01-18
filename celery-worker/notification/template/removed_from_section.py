@@ -47,14 +47,14 @@ class RemovedFromSectionNotificationTemplate(NotificationTemplate):
             cover = f'{RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=db_section.creator_id)}/{db_section.cover}'
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
-                title=f"You are removed from Section",
+                title="You are removed from Section",
                 content=f"您已经从专栏{db_section.title}被移出，后续将无法参与该专栏的协作和收到更新通知，如有异议，请联系专栏所有者",
                 link=f'/section/detail/{section_id}',
                 cover=cover
             )
         elif db_user_section.role == UserSectionRole.SUBSCRIBER:
             return schemas.notification.Message(
-                title=f"You are removed from Section",
+                title="You are removed from Section",
                 content=f"您已经从专栏{db_section.title}被移出，后续将无法收到该专栏的更新通知，如有异议，请联系专栏所有者",
                 link=f'/section/detail/{section_id}',
                 cover=cover

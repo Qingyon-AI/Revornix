@@ -146,7 +146,7 @@ def get_sections_by_user_id(
 ):
     query = db.query(models.section.Section)
     query = query.filter(
-        models.section.Section.delete_at == None,
+        models.section.Section.delete_at.is_(None),
         models.section.Section.creator_id == user_id
     )
     return query.all()
@@ -156,7 +156,7 @@ def get_user_labels_by_user_id(
     user_id: int
 ):
     query = db.query(models.section.Label)
-    query = query.filter(models.section.Label.delete_at == None,
+    query = query.filter(models.section.Label.delete_at.is_(None),
                          models.section.Label.user_id == user_id)
     return query.all()
 
@@ -167,8 +167,8 @@ def get_sections_by_document_id(
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.document_id == document_id,
-                         models.section.SectionDocument.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None))
+    query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.order_by(models.section.Section.update_time.desc())
     return query.all()
 
@@ -180,10 +180,10 @@ def get_user_sections(
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.user_id == user_id,
-                         models.section.SectionUser.delete_at == None)
+                         models.section.SectionUser.delete_at.is_(None))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
-    query = query.filter(models.section.Section.delete_at == None)
+    query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.order_by(models.section.Section.create_time.desc())
     return query.all()
 
@@ -193,7 +193,7 @@ def get_publish_section_by_section_id(
 ):
     query = db.query(models.section.PublishSection)
     query = query.filter(models.section.PublishSection.section_id == section_id,
-                         models.section.PublishSection.delete_at == None)
+                         models.section.PublishSection.delete_at.is_(None))
     return query.one_or_none()
 
 def get_publish_sections_by_uuid(
@@ -202,7 +202,7 @@ def get_publish_sections_by_uuid(
 ):
     query = db.query(models.section.PublishSection)
     query = query.filter(models.section.PublishSection.uuid == uuid,
-                         models.section.PublishSection.delete_at == None)
+                         models.section.PublishSection.delete_at.is_(None))
     return query.one_or_none()
 
 def search_user_sections(
@@ -216,10 +216,10 @@ def search_user_sections(
     desc: bool = True
 ):
     query = db.query(models.section.Section)
-    query = query.filter(models.section.Section.delete_at == None)
+    query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.join(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.user_id == user_id,
-                         models.section.SectionUser.delete_at == None,
+                         models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.role.in_([
                              UserSectionRole.CREATOR,
                              UserSectionRole.MEMBER
@@ -234,11 +234,11 @@ def search_user_sections(
         )
     if only_published:
         query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
-        query = query.filter(models.section.PublishSection.delete_at == None)
+        query = query.filter(models.section.PublishSection.delete_at.is_(None))
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
-                             models.section.SectionLabel.delete_at == None)
+                             models.section.SectionLabel.delete_at.is_(None))
     if desc:
         query = query.order_by(models.section.Section.id.desc())
     else:
@@ -264,7 +264,7 @@ def count_user_sections(
     query = query.join(models.section.SectionUser)
     query = query.filter(
         models.section.SectionUser.user_id == user_id,
-        models.section.SectionUser.delete_at == None,
+        models.section.SectionUser.delete_at.is_(None),
         models.section.SectionUser.role.in_([UserSectionRole.CREATOR, UserSectionRole.MEMBER]),
     )
     if keyword is not None and len(keyword) > 0:
@@ -276,11 +276,11 @@ def count_user_sections(
         )
     if only_published:
         query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
-        query = query.filter(models.section.PublishSection.delete_at == None)
+        query = query.filter(models.section.PublishSection.delete_at.is_(None))
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
-                             models.section.SectionLabel.delete_at == None)
+                             models.section.SectionLabel.delete_at.is_(None))
     query = query.distinct(models.section.Section.id)
     return query.count()
 
@@ -294,11 +294,11 @@ def search_next_user_section(
     desc: bool = True
 ):
     query = db.query(models.section.Section)
-    query = query.filter(models.section.Section.delete_at == None)
+    query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.join(models.section.SectionUser)
     query = query.filter(
         models.section.SectionUser.user_id == user_id,
-        models.section.SectionUser.delete_at == None,
+        models.section.SectionUser.delete_at.is_(None),
         models.section.SectionUser.role.in_([UserSectionRole.CREATOR, UserSectionRole.MEMBER]),
     )
     if keyword is not None and len(keyword) > 0:
@@ -310,11 +310,11 @@ def search_next_user_section(
         )
     if only_published:
         query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
-        query = query.filter(models.section.PublishSection.delete_at == None)
+        query = query.filter(models.section.PublishSection.delete_at.is_(None))
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
-                             models.section.SectionLabel.delete_at == None)
+                             models.section.SectionLabel.delete_at.is_(None))
     if desc:
         query = query.order_by(models.section.Section.id.desc())
         query = query.filter(models.section.Section.id < section.id)
@@ -346,13 +346,13 @@ def search_user_subscribed_sections(
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
-                             models.section.SectionLabel.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None,
+                             models.section.SectionLabel.delete_at.is_(None))
+    query = query.filter(models.section.Section.delete_at.is_(None),
                          models.section.SectionUser.user_id == user_id,
-                         models.section.SectionUser.delete_at == None,
+                         models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.role == UserSectionRole.SUBSCRIBER)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
-                             models.section.SectionUser.expire_time == None))
+                             models.section.SectionUser.expire_time.is_(None)))
     if desc:
         query = query.order_by(models.section.Section.id.desc())
     else:
@@ -385,13 +385,13 @@ def count_user_subscribed_sections(
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
-                             models.section.SectionLabel.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None,
+                             models.section.SectionLabel.delete_at.is_(None))
+    query = query.filter(models.section.Section.delete_at.is_(None),
                          models.section.SectionUser.user_id == user_id,
-                         models.section.SectionUser.delete_at == None,
+                         models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.role == UserSectionRole.SUBSCRIBER)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
-                             models.section.SectionUser.expire_time == None))
+                             models.section.SectionUser.expire_time.is_(None)))
     query = query.distinct(models.section.Section.id)
     return query.count()
 
@@ -406,12 +406,12 @@ def search_next_user_subscribed_section(
     now = datetime.now(timezone.utc)
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionUser)
-    query = query.filter(models.section.Section.delete_at == None,
+    query = query.filter(models.section.Section.delete_at.is_(None),
                          models.section.SectionUser.user_id == user_id,
-                         models.section.SectionUser.delete_at == None,
+                         models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.role == UserSectionRole.SUBSCRIBER)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
-                             models.section.SectionUser.expire_time == None))
+                             models.section.SectionUser.expire_time.is_(None)))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -422,7 +422,7 @@ def search_next_user_subscribed_section(
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
-                             models.section.SectionLabel.delete_at == None)
+                             models.section.SectionLabel.delete_at.is_(None))
     if desc:
         query = query.order_by(models.section.Section.id.desc())
         query = query.filter(models.section.Section.id < section.id)
@@ -439,9 +439,9 @@ def search_parent_degree_section_comments(
     limit: int = 10
 ):
     query = db.query(models.section.SectionComment)
-    query = query.filter(models.section.SectionComment.delete_at == None,
+    query = query.filter(models.section.SectionComment.delete_at.is_(None),
                          models.section.SectionComment.section_id == section_id,
-                         models.section.SectionComment.parent_id == None)
+                         models.section.SectionComment.parent_id.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.section.SectionComment.content.like(f"%{keyword}%"))
     query = query.order_by(models.section.SectionComment.id.desc())
@@ -457,9 +457,9 @@ def count_parent_degree_section_comments(
     keyword: str | None = None
 ):
     query = db.query(models.section.SectionComment)
-    query = query.filter(models.section.SectionComment.delete_at == None,
+    query = query.filter(models.section.SectionComment.delete_at.is_(None),
                          models.section.SectionComment.section_id == section_id,
-                         models.section.SectionComment.parent_id == None)
+                         models.section.SectionComment.parent_id.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.section.SectionComment.content.like(f"%{keyword}%"))
     query = query.distinct(models.section.SectionComment.id)
@@ -472,7 +472,7 @@ def search_next_parent_degree_section_comment(
     keyword: str | None = None
 ):
     query = db.query(models.section.SectionComment)
-    query = query.filter(models.section.SectionComment.delete_at == None,
+    query = query.filter(models.section.SectionComment.delete_at.is_(None),
                          models.section.SectionComment.section_id == section_id)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.section.SectionComment.content.like(f"%{keyword}%"))
@@ -499,10 +499,10 @@ def search_published_sections(
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
-                             models.section.SectionLabel.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None)
+                             models.section.SectionLabel.delete_at.is_(None))
+    query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
-    query = query.filter(models.section.PublishSection.delete_at == None)
+    query = query.filter(models.section.PublishSection.delete_at.is_(None))
     if desc:
         query = query.order_by(models.section.Section.id.desc())
     else:
@@ -533,10 +533,10 @@ def count_published_sections(
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
-                             models.section.SectionLabel.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None)
+                             models.section.SectionLabel.delete_at.is_(None))
+    query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
-    query = query.filter(models.section.PublishSection.delete_at == None)
+    query = query.filter(models.section.PublishSection.delete_at.is_(None))
     query = query.distinct(models.section.Section.id)
     return query.count()
 
@@ -548,9 +548,9 @@ def search_next_published_section(
     desc: bool = True
 ):
     query = db.query(models.section.Section)
-    query = query.filter(models.section.Section.delete_at == None)
+    query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
-    query = query.filter(models.section.PublishSection.delete_at == None)
+    query = query.filter(models.section.PublishSection.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -561,7 +561,7 @@ def search_next_published_section(
     if label_ids is not None:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
-                             models.section.SectionLabel.delete_at == None)
+                             models.section.SectionLabel.delete_at.is_(None))
     if desc:
         query = query.order_by(models.section.Section.id.desc())
         query = query.filter(models.section.Section.id < section.id)
@@ -576,9 +576,9 @@ def count_documents_for_section_by_section_id(
 ):
     query = db.query(models.document.Document)
     query = query.join(models.section.SectionDocument)
-    query = query.filter(models.document.Document.delete_at == None,
+    query = query.filter(models.document.Document.delete_at.is_(None),
                          models.section.SectionDocument.section_id == section_id,
-                         models.section.SectionDocument.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None))
     query = query.distinct(models.document.Document.id)
     return query.count()
 
@@ -598,8 +598,8 @@ def count_documents_for_section_by_section_ids(
     )
     query = query.filter(
         models.section.SectionDocument.section_id.in_(section_ids),
-        models.section.SectionDocument.delete_at == None,
-        models.document.Document.delete_at == None,
+        models.section.SectionDocument.delete_at.is_(None),
+        models.document.Document.delete_at.is_(None),
     )
     query = query.group_by(models.section.SectionDocument.section_id)
     return {section_id: count for section_id, count in query.all()}
@@ -614,12 +614,12 @@ def search_users_and_section_users_by_section_id(
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User, models.section.SectionUser)
-    query = query.filter(models.section.SectionUser.delete_at == None,
+    query = query.filter(models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.section_id == section_id)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
-                             models.section.SectionUser.expire_time == None))
+                             models.section.SectionUser.expire_time.is_(None)))
     query = query.join(models.user.User)
-    query = query.filter(models.user.User.delete_at == None)
+    query = query.filter(models.user.User.delete_at.is_(None))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     query = query.order_by(models.section.SectionUser.section_id.desc())
@@ -639,12 +639,12 @@ def search_next_user_and_section_user_by_section_id(
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User, models.section.SectionUser)
-    query = query.filter(models.section.SectionUser.delete_at == None,
+    query = query.filter(models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.section_id == section_id)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
-                             models.section.SectionUser.expire_time == None))
+                             models.section.SectionUser.expire_time.is_(None)))
     query = query.join(models.user.User)
-    query = query.filter(models.user.User.delete_at == None)
+    query = query.filter(models.user.User.delete_at.is_(None))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     query = query.order_by(models.section.SectionUser.section_id.desc())
@@ -661,12 +661,12 @@ def count_users_and_section_users_by_section_id(
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User, models.section.SectionUser)
-    query = query.filter(models.section.SectionUser.delete_at == None,
+    query = query.filter(models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.section_id == section_id)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
-                             models.section.SectionUser.expire_time == None))
+                             models.section.SectionUser.expire_time.is_(None)))
     query = query.join(models.user.User)
-    query = query.filter(models.user.User.delete_at == None)
+    query = query.filter(models.user.User.delete_at.is_(None))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     if keyword is not None and len(keyword) > 0:
@@ -681,11 +681,11 @@ def get_users_for_section_by_section_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User)
     query = query.join(models.section.SectionUser)
-    query = query.filter(models.user.User.delete_at == None,
-                         models.section.SectionUser.delete_at == None,
+    query = query.filter(models.user.User.delete_at.is_(None),
+                         models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.section_id == section_id)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
-                             models.section.SectionUser.expire_time == None))
+                             models.section.SectionUser.expire_time.is_(None)))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     return query.all()
@@ -698,11 +698,11 @@ def count_users_for_section_by_section_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User)
     query = query.join(models.section.SectionUser)
-    query = query.filter(models.user.User.delete_at == None,
-                         models.section.SectionUser.delete_at == None,
+    query = query.filter(models.user.User.delete_at.is_(None),
+                         models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.section_id == section_id)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
-                             models.section.SectionUser.expire_time == None))
+                             models.section.SectionUser.expire_time.is_(None)))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     return query.count()
@@ -722,13 +722,13 @@ def count_users_for_section_by_section_ids(
     query = query.join(models.user.User, models.user.User.id == models.section.SectionUser.user_id)
     query = query.filter(
         models.section.SectionUser.section_id.in_(section_ids),
-        models.section.SectionUser.delete_at == None,
-        models.user.User.delete_at == None,
+        models.section.SectionUser.delete_at.is_(None),
+        models.user.User.delete_at.is_(None),
     )
     query = query.filter(
         or_(
             models.section.SectionUser.expire_time > now,
-            models.section.SectionUser.expire_time == None,
+            models.section.SectionUser.expire_time.is_(None),
         )
     )
     if filter_roles is not None:
@@ -746,9 +746,9 @@ def get_section_user_by_section_id_and_user_id(
     query = db.query(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.section_id == section_id,
                          models.section.SectionUser.user_id == user_id,
-                         models.section.SectionUser.delete_at == None)
+                         models.section.SectionUser.delete_at.is_(None))
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
-                             models.section.SectionUser.expire_time == None))
+                             models.section.SectionUser.expire_time.is_(None)))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     return query.one_or_none()
@@ -766,12 +766,12 @@ def get_section_users_by_section_ids_and_user_id(
     query = query.filter(
         models.section.SectionUser.section_id.in_(section_ids),
         models.section.SectionUser.user_id == user_id,
-        models.section.SectionUser.delete_at == None,
+        models.section.SectionUser.delete_at.is_(None),
     )
     query = query.filter(
         or_(
             models.section.SectionUser.expire_time > now,
-            models.section.SectionUser.expire_time == None,
+            models.section.SectionUser.expire_time.is_(None),
         )
     )
     if filter_roles is not None:
@@ -787,9 +787,9 @@ def get_section_by_user_and_date(
     query = query.join(models.section.DaySection)
     query = query.join(models.section.SectionUser)
     query = query.filter(models.section.DaySection.date == date,
-                         models.section.DaySection.delete_at == None,
-                         models.section.Section.delete_at == None,
-                         models.section.SectionUser.delete_at == None,
+                         models.section.DaySection.delete_at.is_(None),
+                         models.section.Section.delete_at.is_(None),
+                         models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.user_id == user_id)
     return query.one_or_none()
 
@@ -799,7 +799,7 @@ def get_section_by_section_id(
 ):
     query = db.query(models.section.Section)
     query = query.filter(models.section.Section.id == section_id,
-                         models.section.Section.delete_at == None)
+                         models.section.Section.delete_at.is_(None))
     return query.one_or_none()
 
 def get_labels_by_section_id(
@@ -809,8 +809,8 @@ def get_labels_by_section_id(
     query = db.query(models.section.Label)
     query = query.join(models.section.SectionLabel)
     query = query.filter(models.section.SectionLabel.section_id == section_id,
-                         models.section.SectionLabel.delete_at == None,
-                         models.section.Label.delete_at == None)
+                         models.section.SectionLabel.delete_at.is_(None),
+                         models.section.Label.delete_at.is_(None))
     return query.all()
 
 def get_labels_by_section_ids(
@@ -826,8 +826,8 @@ def get_labels_by_section_ids(
     )
     query = query.filter(
         models.section.SectionLabel.section_id.in_(section_ids),
-        models.section.SectionLabel.delete_at == None,
-        models.section.Label.delete_at == None,
+        models.section.SectionLabel.delete_at.is_(None),
+        models.section.Label.delete_at.is_(None),
     )
     rows = query.all()
     res: dict[int, list[models.section.Label]] = {}
@@ -846,7 +846,7 @@ def get_section_documents_by_section_id_and_document_ids(
     query = query.filter(
         models.section.SectionDocument.section_id == section_id,
         models.section.SectionDocument.document_id.in_(document_ids),
-        models.section.SectionDocument.delete_at == None,
+        models.section.SectionDocument.delete_at.is_(None),
     )
     return query.all()
 
@@ -856,7 +856,7 @@ def get_section_labels_by_section_id(
 ):
     query = db.query(models.section.SectionLabel)
     query = query.filter(models.section.SectionLabel.section_id == section_id,
-                         models.section.SectionLabel.delete_at == None)
+                         models.section.SectionLabel.delete_at.is_(None))
     return query.all()
 
 def get_section_documents_and_sections_by_document_id(
@@ -865,8 +865,8 @@ def get_section_documents_and_sections_by_document_id(
 ):
     query = db.query(models.section.SectionDocument, models.section.Section)
     query = query.filter(models.section.SectionDocument.document_id == document_id,
-                         models.section.SectionDocument.delete_at == None,
-                         models.section.Section.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None),
+                         models.section.Section.delete_at.is_(None))
     return query.all()
 
 def get_section_documents_by_section_id(
@@ -876,7 +876,7 @@ def get_section_documents_by_section_id(
 ):
     query = db.query(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
-                         models.section.SectionDocument.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None))
     if filter_status is not None:
         query = query.filter(models.section.SectionDocument.status == filter_status)
     return query.all()
@@ -889,7 +889,7 @@ def get_section_document_by_section_id_and_document_id(
     query = db.query(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
                          models.section.SectionDocument.document_id == document_id,
-                         models.section.SectionDocument.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None))
     return query.one_or_none()
 
 def get_documents_for_section_by_section_id(
@@ -899,9 +899,9 @@ def get_documents_for_section_by_section_id(
     query = db.query(models.document.Document)
     query = query.join(models.section.SectionDocument).join(models.section.Section)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
-                         models.section.SectionDocument.delete_at == None,
-                         models.document.Document.delete_at == None,
-                         models.section.Section.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None),
+                         models.section.Section.delete_at.is_(None))
     return query.all()
 
 def update_section_by_section_id(
@@ -931,7 +931,7 @@ def update_section_document_by_section_id_and_document_id(
     db_section_document = db.query(models.section.SectionDocument)\
         .filter(models.section.SectionDocument.section_id == section_id,
                 models.section.SectionDocument.document_id == document_id,
-                models.section.SectionDocument.delete_at == None)\
+                models.section.SectionDocument.delete_at.is_(None))\
         .one_or_none()
     if db_section_document is None:
         raise Exception("Section document is not found")
@@ -957,7 +957,7 @@ def delete_section_users_by_section_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionUser)\
         .filter(models.section.SectionUser.section_id == section_id,
-                models.section.SectionUser.delete_at == None)
+                models.section.SectionUser.delete_at.is_(None))
     query.update({models.section.SectionUser.delete_at: now}, synchronize_session=False)
     db.flush()
 
@@ -968,7 +968,7 @@ def delete_section_documents_by_section_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
-                         models.section.SectionDocument.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None))
     query.update({models.section.SectionDocument.delete_at: now}, synchronize_session=False)
     db.flush()
 
@@ -980,7 +980,7 @@ def delete_section_user_by_section_id_and_user_id(
     now = datetime.now(timezone.utc)
     db_section_user = db.query(models.section.SectionUser).filter(models.section.SectionUser.section_id == section_id,
                                                                   models.section.SectionUser.user_id == user_id,
-                                                                  models.section.SectionUser.delete_at == None).one_or_none()
+                                                                  models.section.SectionUser.delete_at.is_(None)).one_or_none()
     if db_section_user is None:
         raise Exception("Section user is not found")
     db_section_user.delete_at = now
@@ -993,7 +993,7 @@ def delete_section_comments_by_section_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionComment)
     query = query.filter(models.section.SectionComment.section_id == section_id,
-                         models.section.SectionComment.delete_at == None)
+                         models.section.SectionComment.delete_at.is_(None))
     query.update({models.section.SectionComment.delete_at: now}, synchronize_session=False)
     db.flush()
 
@@ -1005,7 +1005,7 @@ def delete_section_comments_by_section_comment_ids(
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionComment)
     query = query.filter(models.section.SectionComment.id.in_(section_comment_ids),
-                         models.section.SectionComment.delete_at == None,
+                         models.section.SectionComment.delete_at.is_(None),
                          models.section.SectionComment.creator_id == user_id)
     query.update({models.section.SectionComment.delete_at: now}, synchronize_session=False)
     db.flush()
@@ -1017,7 +1017,7 @@ def delete_section_labels_by_section_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionLabel)
     query = query.filter(models.section.SectionLabel.section_id == section_id,
-                         models.section.SectionLabel.delete_at == None)
+                         models.section.SectionLabel.delete_at.is_(None))
     query = query.update({models.section.SectionLabel.delete_at: now}, synchronize_session=False)
     db.flush()
 
@@ -1028,7 +1028,7 @@ def delete_section_labels_by_label_ids(
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionLabel)
     query = query.filter(models.section.SectionLabel.id.in_(label_ids),
-                         models.section.SectionLabel.delete_at == None)
+                         models.section.SectionLabel.delete_at.is_(None))
     query = query.update({models.section.SectionLabel.delete_at: now}, synchronize_session=False)
     db.flush()
 
@@ -1039,9 +1039,9 @@ def delete_labels_by_label_ids(
     now = datetime.now(timezone.utc)
     query = db.query(models.section.Label)
     query = query.filter(models.section.Label.id.in_(label_ids),
-                         models.section.Label.delete_at == None,
+                         models.section.Label.delete_at.is_(None),
                          models.section.Label.user_id == user_id,
-                         models.section.Label.delete_at == None)
+                         models.section.Label.delete_at.is_(None))
     query = query.update({models.section.Label.delete_at: now}, synchronize_session=False)
     db.flush()
 

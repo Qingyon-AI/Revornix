@@ -50,7 +50,7 @@ def get_all_file_systems(
     keyword: str | None = None
 ):
     query = db.query(models.file_system.FileSystem)
-    query = query.filter(models.file_system.FileSystem.delete_at == None)
+    query = query.filter(models.file_system.FileSystem.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.file_system.FileSystem.name.like(f'%{keyword}%'))
     return query.all()
@@ -61,7 +61,7 @@ def get_file_system_by_uuid(
 ):
     query = db.query(models.file_system.FileSystem)
     query = query.filter(models.file_system.FileSystem.uuid == uuid,
-                         models.file_system.FileSystem.delete_at == None)
+                         models.file_system.FileSystem.delete_at.is_(None))
     return query.one_or_none()
 
 def get_user_file_systems_by_user_id(
@@ -72,8 +72,8 @@ def get_user_file_systems_by_user_id(
     query = db.query(models.file_system.UserFileSystem, models.file_system.FileSystem)
     query = query.join(models.file_system.FileSystem)
     query = query.filter(models.file_system.UserFileSystem.user_id == user_id,
-                         models.file_system.UserFileSystem.delete_at == None,
-                         models.file_system.FileSystem.delete_at == None)
+                         models.file_system.UserFileSystem.delete_at.is_(None),
+                         models.file_system.FileSystem.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.file_system.FileSystem.name.like(f'%{keyword}%'))
     query = query.order_by(models.file_system.UserFileSystem.create_time)
@@ -85,7 +85,7 @@ def get_file_system_by_id(
 ):
     query = db.query(models.file_system.FileSystem)
     query = query.filter(models.file_system.FileSystem.id == file_system_id,
-                         models.file_system.FileSystem.delete_at == None)
+                         models.file_system.FileSystem.delete_at.is_(None))
     return query.one_or_none()
 
 def get_user_file_system_by_id(
@@ -95,8 +95,8 @@ def get_user_file_system_by_id(
     query = db.query(models.file_system.UserFileSystem)
     query = query.join(models.file_system.FileSystem)
     query = query.filter(models.file_system.UserFileSystem.id == user_file_system_id,
-                         models.file_system.UserFileSystem.delete_at == None,
-                         models.file_system.FileSystem.delete_at == None)
+                         models.file_system.UserFileSystem.delete_at.is_(None),
+                         models.file_system.FileSystem.delete_at.is_(None))
     return query.one_or_none()
 
 def delete_user_file_system_by_user_id_and_user_file_system_id(
@@ -107,7 +107,7 @@ def delete_user_file_system_by_user_id_and_user_file_system_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.file_system.UserFileSystem)
     query = query.filter(models.file_system.UserFileSystem.id == user_file_system_id,
-                         models.file_system.UserFileSystem.delete_at == None,
+                         models.file_system.UserFileSystem.delete_at.is_(None),
                          models.file_system.UserFileSystem.user_id == user_id)
     query.update({models.file_system.UserFileSystem.delete_at: now})
     db.flush()

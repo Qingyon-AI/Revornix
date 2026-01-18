@@ -6,7 +6,6 @@ from enums.engine import Engine, EngineCategory
 from protocol.image_generate_engine import ImageGenerateEngineProtocol
 from langfuse.openai import OpenAI
 from langfuse import propagate_attributes
-from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
 SYSTEM_PROMPT = """You are a pure image generation function.
 

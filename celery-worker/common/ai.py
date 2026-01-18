@@ -5,7 +5,7 @@ from prompts.summary_content import summary_content_prompt
 from prompts.reducer_summary import reducer_summary_prompt
 from prompts.make_section_markdown import make_section_markdown_prompt
 from pydantic import BaseModel
-from data.custom_types.all import *
+from data.custom_types.all import RelationInfo, EntityInfo
 from proxy.ai_model_proxy import AIModelProxy
 
 class SummaryResult(BaseModel):

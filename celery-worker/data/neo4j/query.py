@@ -2,7 +2,7 @@ import crud
 from langfuse.openai import OpenAI
 from langfuse import propagate_attributes
 from data.sql.base import SessionLocal
-from data.neo4j.search import *
+from data.neo4j.search import global_search, naive_search
 from prompts.query import query_context_summary
 from proxy.ai_model_proxy import AIModelProxy
 

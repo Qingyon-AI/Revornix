@@ -41,7 +41,7 @@ def get_if_down_prompt(query: str, tool_response: str, context: list[str]) -> st
         "\nIMPORTANT: Always respond in VALID JSON using double quotes for keys and string values. DO NOT use single quotes."
     )
 
-def get_prompt_to_process_tool_response(query: str, tool_response: str, context: List[str]) -> str:
+def get_prompt_to_process_tool_response(query: str, tool_response: str, context: list[str]) -> str:
     return (
         "You are a helpful assistant."
         " Your job is to decide whether to respond directly to the user or continue processing using additional tools, based on:"

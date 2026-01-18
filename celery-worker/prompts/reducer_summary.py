@@ -1,4 +1,4 @@
-from data.custom_types.all import *
+from data.custom_types.all import EntityInfo, RelationInfo
 
 def reducer_summary_prompt(
     current_summary: str | None,

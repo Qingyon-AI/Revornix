@@ -136,7 +136,7 @@ def get_document_graph_task_by_document_id(
 ):
     query = db.query(models.task.DocumentGraphTask)
     query = query.filter(models.task.DocumentGraphTask.document_id == document_id,
-                         models.task.DocumentGraphTask.delete_at == None)
+                         models.task.DocumentGraphTask.delete_at.is_(None))
     return query.one_or_none()
 
 def get_section_podcast_task_by_section_id(
@@ -145,7 +145,7 @@ def get_section_podcast_task_by_section_id(
 ):
     query = db.query(models.task.SectionPodcastTask)
     query = query.filter(models.task.SectionPodcastTask.section_id == section_id,
-                         models.task.SectionPodcastTask.delete_at == None)
+                         models.task.SectionPodcastTask.delete_at.is_(None))
     return query.one_or_none()
 
 def get_document_podcast_task_by_document_id(
@@ -154,7 +154,7 @@ def get_document_podcast_task_by_document_id(
 ):
     query = db.query(models.task.DocumentPodcastTask)
     query = query.filter(models.task.DocumentPodcastTask.document_id == document_id,
-                         models.task.DocumentPodcastTask.delete_at == None)
+                         models.task.DocumentPodcastTask.delete_at.is_(None))
     return query.one_or_none()
 
 def get_document_embedding_task_by_document_id(
@@ -163,7 +163,7 @@ def get_document_embedding_task_by_document_id(
 ):
     query = db.query(models.task.DocumentEmbeddingTask)
     query = query.filter(models.task.DocumentEmbeddingTask.document_id == document_id,
-                         models.task.DocumentEmbeddingTask.delete_at == None)
+                         models.task.DocumentEmbeddingTask.delete_at.is_(None))
     return query.one_or_none()
 
 def get_section_process_task_by_section_id(
@@ -172,7 +172,7 @@ def get_section_process_task_by_section_id(
 ):
     query = db.query(models.task.SectionProcessTask)
     query = query.filter(models.task.SectionProcessTask.section_id == section_id,
-                         models.task.SectionProcessTask.delete_at == None)
+                         models.task.SectionProcessTask.delete_at.is_(None))
     return query.one_or_none()
 
 def get_document_summarize_task_by_document_id(
@@ -181,7 +181,7 @@ def get_document_summarize_task_by_document_id(
 ):
     query = db.query(models.task.DocumentSummarizeTask)
     query = query.filter(models.task.DocumentSummarizeTask.document_id == document_id,
-                         models.task.DocumentSummarizeTask.delete_at == None)
+                         models.task.DocumentSummarizeTask.delete_at.is_(None))
     return query.one_or_none()
 
 def get_document_process_task_by_document_id(
@@ -190,7 +190,7 @@ def get_document_process_task_by_document_id(
 ):
     query = db.query(models.task.DocumentProcessTask)
     query = query.filter(models.task.DocumentProcessTask.document_id == document_id,
-                         models.task.DocumentProcessTask.delete_at == None)
+                         models.task.DocumentProcessTask.delete_at.is_(None))
     return query.one_or_none()
 
 def get_document_convert_task_by_document_id(
@@ -199,5 +199,5 @@ def get_document_convert_task_by_document_id(
 ):
     query = db.query(models.task.DocumentConvertToMdTask)
     query = query.filter(models.task.DocumentConvertToMdTask.document_id == document_id,
-                         models.task.DocumentConvertToMdTask.delete_at == None)
+                         models.task.DocumentConvertToMdTask.delete_at.is_(None))
     return query.one_or_none()

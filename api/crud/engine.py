@@ -54,7 +54,7 @@ def get_engine_by_id(
 ):
     query = db.query(models.engine.Engine)
     query = query.filter(models.engine.Engine.id == id,
-                         models.engine.Engine.delete_at == None)
+                         models.engine.Engine.delete_at.is_(None))
     return query.one_or_none()
 
 def get_engine_by_uuid(
@@ -63,7 +63,7 @@ def get_engine_by_uuid(
 ):
     query = db.query(models.engine.Engine)
     query = query.filter(models.engine.Engine.uuid == uuid,
-                         models.engine.Engine.delete_at == None)
+                         models.engine.Engine.delete_at.is_(None))
     return query.one_or_none()
 
 def get_user_engine_by_user_engine_id(
@@ -72,7 +72,7 @@ def get_user_engine_by_user_engine_id(
 ):
     query = db.query(models.engine.UserEngine)
     query = query.filter(models.engine.UserEngine.id == user_engine_id,
-                         models.engine.UserEngine.delete_at == None)
+                         models.engine.UserEngine.delete_at.is_(None))
     return query.one_or_none()
 
 def get_all_engines(
@@ -81,7 +81,7 @@ def get_all_engines(
     filter_category: int | None = None
 ):
     query = db.query(models.engine.Engine)
-    query = query.filter(models.engine.Engine.delete_at == None)
+    query = query.filter(models.engine.Engine.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.engine.Engine.name.like(f'%{keyword}%'))
     if filter_category is not None:
@@ -97,8 +97,8 @@ def get_engine_by_user_id(
     query = db.query(models.engine.Engine)
     query = query.join(models.engine.UserEngine)
     query = query.filter(models.engine.UserEngine.user_id == user_id,
-                         models.engine.UserEngine.delete_at == None,
-                         models.engine.Engine.delete_at == None)
+                         models.engine.UserEngine.delete_at.is_(None),
+                         models.engine.Engine.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.engine.Engine.name.like(f'%{keyword}%'))
     if filter_category is not None:
@@ -114,8 +114,8 @@ def get_user_engine_by_user_id(
     query = db.query(models.engine.UserEngine, models.engine.Engine)
     query = query.join(models.engine.Engine)
     query = query.filter(models.engine.UserEngine.user_id == user_id,
-                         models.engine.UserEngine.delete_at == None,
-                         models.engine.Engine.delete_at == None)
+                         models.engine.UserEngine.delete_at.is_(None),
+                         models.engine.Engine.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.engine.Engine.name.like(f'%{keyword}%'))
     if filter_category is not None:
@@ -130,7 +130,7 @@ def delete_user_engine_by_user_id_and_user_engine_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.engine.UserEngine)
     query = query.filter(models.engine.UserEngine.id == user_engine_id,
-                         models.engine.UserEngine.delete_at == None,
+                         models.engine.UserEngine.delete_at.is_(None),
                          models.engine.UserEngine.user_id == user_id)
     query.update({models.engine.UserEngine.delete_at: now})
     db.flush()

@@ -1,5 +1,4 @@
 import io
-import logging
 import struct
 import websockets
 from dataclasses import dataclass

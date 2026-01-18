@@ -7,7 +7,7 @@ def get_user_by_uuid(
 ):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.uuid == user_uuid, 
-                         models.user.User.delete_at == None)
+                         models.user.User.delete_at.is_(None))
     return query.one_or_none()
 
 def get_user_by_id(
@@ -16,5 +16,5 @@ def get_user_by_id(
 ):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.id == user_id,
-                         models.user.User.delete_at == None)
+                         models.user.User.delete_at.is_(None))
     return query.one_or_none()

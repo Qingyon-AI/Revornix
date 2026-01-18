@@ -240,7 +240,7 @@ def plan_ability_checked(
                         message=errMsg, 
                         code=503
                     )
-                raiserr
+                raise err
         return True
     return dependency
 

@@ -47,14 +47,14 @@ class SectionCommentedNotificationTemplate(NotificationTemplate):
             cover = f'{RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=db_section.creator_id)}/{db_section.cover}'
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
-                title=f"Section Commented",
+                title="Section Commented",
                 content=f"有人评价了你参与的专栏{db_section.title}，快去查看吧",
                 link=f'/section/detail/{section_id}',
                 cover=cover
             )
         elif db_user_section.role == UserSectionRole.CREATOR:
             return schemas.notification.Message(
-                title=f"Section Commented",
+                title="Section Commented",
                 content=f"有人评价了你创建的专栏{db_section.title}，快去查看吧",
                 link=f'/section/detail/{section_id}',
                 cover=cover
