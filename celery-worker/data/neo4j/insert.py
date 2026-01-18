@@ -76,7 +76,7 @@ def upsert_chunks_neo4j(
         } for c in chunks_info
     ]
     with neo4j_driver.session() as session:
-        result = session.run(cypher, rows=rows)
+        session.run(cypher, rows=rows)
         
 # -----------------------------
 # 7) 批量 upsert Entity 节点
@@ -162,7 +162,7 @@ def create_communities_from_chunks():
                 { RELATED_TO: {orientation: 'UNDIRECTED'} }
             )
         """)
-        result = session.run("""
+        session.run("""
             CALL gds.louvain.write(
                 'communityGraph',
                 { writeProperty: 'community' }
@@ -203,7 +203,7 @@ def create_community_nodes_and_relationships_with_size():
             SET com.size = member_count
         """)
 
-        communities = session.run("MATCH (com:Community) RETURN com.id, com.size")
+        session.run("MATCH (com:Community) RETURN com.id, com.size")
 
 # -----------------------------
 # 11) 所有节点 degree 标注

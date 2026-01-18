@@ -66,7 +66,7 @@ def search_mcp_servers(
 ):
     query = db.query(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.user_id == user_id,
-                         models.mcp.MCPServer.delete_at == None)
+                         models.mcp.MCPServer.delete_at.is_(None))
     query = query.order_by(models.mcp.MCPServer.id.desc())
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.mcp.MCPServer.name.like(f'%{keyword}%'))
@@ -78,7 +78,7 @@ def get_base_mcp_server_by_id(
 ):
     query = db.query(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.id == id,
-                         models.mcp.MCPServer.delete_at == None)
+                         models.mcp.MCPServer.delete_at.is_(None))
     return query.one_or_none()
 
 def get_std_mcp_server_by_base_server_id(
@@ -88,8 +88,8 @@ def get_std_mcp_server_by_base_server_id(
     query = db.query(models.mcp.StdMCP)
     query = query.join(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.id == base_server_id,
-                         models.mcp.StdMCP.delete_at == None,
-                         models.mcp.MCPServer.delete_at == None)
+                         models.mcp.StdMCP.delete_at.is_(None),
+                         models.mcp.MCPServer.delete_at.is_(None))
     return query.one_or_none()
 
 def get_http_mcp_server_by_base_server_id(
@@ -99,8 +99,8 @@ def get_http_mcp_server_by_base_server_id(
     query = db.query(models.mcp.HttpMCP)
     query = query.join(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.id == base_server_id,
-                         models.mcp.HttpMCP.delete_at == None,
-                         models.mcp.MCPServer.delete_at == None)
+                         models.mcp.HttpMCP.delete_at.is_(None),
+                         models.mcp.MCPServer.delete_at.is_(None))
     return query.one_or_none()
 
 def delete_base_mcp_server_by_base_server_id(
@@ -109,7 +109,7 @@ def delete_base_mcp_server_by_base_server_id(
 ):
     query = db.query(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.id == base_server_id,
-                         models.mcp.MCPServer.delete_at == None)
+                         models.mcp.MCPServer.delete_at.is_(None))
     query.update({models.mcp.MCPServer.delete_at: datetime.now(timezone.utc)})
     db.flush()
 
@@ -121,8 +121,8 @@ def delete_http_mcp_server_by_base_server_id(
     query = db.query(models.mcp.HttpMCP)
     query = query.join(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.id == base_server_id,
-                         models.mcp.HttpMCP.delete_at == None,
-                         models.mcp.MCPServer.delete_at == None)
+                         models.mcp.HttpMCP.delete_at.is_(None),
+                         models.mcp.MCPServer.delete_at.is_(None))
     http_mcp_server = query.one_or_none()
     if http_mcp_server is not None:
         http_mcp_server.delete_at = now
@@ -136,8 +136,8 @@ def delete_std_mcp_server_by_base_server_id(
     query = db.query(models.mcp.StdMCP)
     query = query.join(models.mcp.MCPServer)
     query = query.filter(models.mcp.MCPServer.id == base_server_id,
-                         models.mcp.StdMCP.delete_at == None,
-                         models.mcp.MCPServer.delete_at == None)
+                         models.mcp.StdMCP.delete_at.is_(None),
+                         models.mcp.MCPServer.delete_at.is_(None))
     std_mcp_server = query.one_or_none()
     if std_mcp_server is not None:
         std_mcp_server.delete_at = now

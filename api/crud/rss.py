@@ -55,7 +55,7 @@ def get_all_rss_servers(
     db: Session
 ):
     query = db.query(models.rss.RSSServer)
-    query = query.filter(models.rss.RSSServer.delete_at == None)
+    query = query.filter(models.rss.RSSServer.delete_at.is_(None))
     return query.all()
 
 def search_document_for_rss(
@@ -69,8 +69,8 @@ def search_document_for_rss(
     query = db.query(models.document.Document)
     query = query.join(models.rss.RSSDocument, models.rss.RSSDocument.document_id == models.document.Document.id)
     query = query.filter(models.rss.RSSDocument.rss_server_id == rss_id,
-                         models.rss.RSSDocument.delete_at == None,
-                         models.document.Document.delete_at == None)
+                         models.rss.RSSDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) != 0:
         query = query.filter(or_(models.document.Document.title.like(f'%{keyword}%'),
                                  models.document.Document.description.like(f'%{keyword}%')))
@@ -97,8 +97,8 @@ def search_next_document_for_rss(
     query = db.query(models.document.Document)
     query = query.join(models.rss.RSSDocument, models.rss.RSSDocument.document_id == models.document.Document.id)
     query = query.filter(models.rss.RSSDocument.rss_server_id == rss_id,
-                         models.rss.RSSDocument.delete_at == None,
-                         models.document.Document.delete_at == None)
+                         models.rss.RSSDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(or_(models.document.Document.title.like(f"%{keyword}%"),
                                  models.document.Document.description.like(f"%{keyword}%")))
@@ -119,8 +119,8 @@ def count_document_for_rss(
     query = db.query(models.document.Document)
     query = query.join(models.rss.RSSDocument, models.rss.RSSDocument.document_id == models.document.Document.id)
     query = query.filter(models.rss.RSSDocument.rss_server_id == rss_id,
-                         models.rss.RSSDocument.delete_at == None,
-                         models.document.Document.delete_at == None)
+                         models.rss.RSSDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(or_(models.document.Document.title.like(f"%{keyword}%"),
                                  models.document.Document.description.like(f"%{keyword}%")))
@@ -136,7 +136,7 @@ def search_rss_servers_for_user(
 ):
     query = db.query(models.rss.RSSServer)
     query = query.filter(models.rss.RSSServer.user_id == user_id,
-                         models.rss.RSSServer.delete_at == None)
+                         models.rss.RSSServer.delete_at.is_(None))
     if keyword is not None and len(keyword) != 0:
         query = query.filter(or_(models.rss.RSSServer.title.like(f'%{keyword}%'),
                                  models.rss.RSSServer.description.like(f'%{keyword}%')))
@@ -154,7 +154,7 @@ def search_next_rss_server_for_user(
 ):
     query = db.query(models.rss.RSSServer)
     query = query.filter(models.rss.RSSServer.user_id == user_id,
-                         models.rss.RSSServer.delete_at == None)
+                         models.rss.RSSServer.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(or_(models.rss.RSSServer.title.like(f"%{keyword}%"),
                                  models.rss.RSSServer.description.like(f"%{keyword}%")))
@@ -169,7 +169,7 @@ def count_rss_servers_for_user(
 ):
     query = db.query(models.rss.RSSServer)
     query = query.filter(models.rss.RSSServer.user_id == user_id,
-                         models.rss.RSSServer.delete_at == None)
+                         models.rss.RSSServer.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(or_(models.rss.RSSServer.title.like(f'%{keyword}%'),
                                  models.rss.RSSServer.content.like(f'%{keyword}%')))
@@ -183,9 +183,9 @@ def get_sections_by_rss_server_id(
     query = query.join(models.rss.RSSSection)
     query = query.join(models.rss.RSSServer)
     query = query.filter(models.rss.RSSSection.rss_server_id == rss_server_id,
-                         models.rss.RSSSection.delete_at == None,
-                         models.rss.RSSServer.delete_at == None,
-                         models.section.Section.delete_at == None)
+                         models.rss.RSSSection.delete_at.is_(None),
+                         models.rss.RSSServer.delete_at.is_(None),
+                         models.section.Section.delete_at.is_(None))
     return query.all()
 
 def get_documents_by_rss_server_id(
@@ -196,9 +196,9 @@ def get_documents_by_rss_server_id(
     query = query.join(models.rss.RSSDocument)
     query = query.join(models.rss.RSSServer)
     query = query.filter(models.rss.RSSDocument.rss_server_id == rss_server_id,
-                         models.rss.RSSDocument.delete_at == None,
-                         models.rss.RSSServer.delete_at == None,
-                         models.document.Document.delete_at == None)
+                         models.rss.RSSDocument.delete_at.is_(None),
+                         models.rss.RSSServer.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     return query.all()
 
 def get_rss_server_by_id(
@@ -207,7 +207,7 @@ def get_rss_server_by_id(
 ):
     query = db.query(models.rss.RSSServer)
     query = query.filter(models.rss.RSSServer.id == id,
-                         models.rss.RSSServer.delete_at == None)
+                         models.rss.RSSServer.delete_at.is_(None))
     return query.one_or_none()
 
 def delete_rss_servers(
@@ -220,7 +220,7 @@ def delete_rss_servers(
     now = datetime.now(timezone.utc)
     query = db.query(models.rss.RSSServer)
     query = query.filter(models.rss.RSSServer.id.in_(ids),
-                         models.rss.RSSServer.delete_at == None,
+                         models.rss.RSSServer.delete_at.is_(None),
                          models.rss.RSSServer.user_id == user_id)
     query.update({models.rss.RSSServer.delete_at: now})
     db.flush()
@@ -238,7 +238,7 @@ def delete_rss_sections(
     db_rss_sections = db.query(models.rss.RSSSection) \
             .join(models.rss.RSSServer) \
             .filter(models.rss.RSSSection.id.in_(ids),
-                    models.rss.RSSSection.delete_at == None,
+                    models.rss.RSSSection.delete_at.is_(None),
                     models.rss.RSSServer.user_id == user_id) \
             .all()
 

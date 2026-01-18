@@ -2,7 +2,7 @@ import models
 from uuid import uuid4
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session, joinedload
-from common.encrypt import encrypt_api_key, decrypt_api_key
+from common.encrypt import encrypt_api_key
 from sqlalchemy import and_, or_
 
 def create_user_ai_model_provider(
@@ -93,7 +93,7 @@ def get_user_ai_model_provider_by_user_and_model_provider_id(
     query = db.query(models.model.UserAIModelProvider).filter(
         models.model.UserAIModelProvider.user_id == user_id,
         models.model.UserAIModelProvider.ai_model_provider_id == ai_model_provider_id,
-        models.model.UserAIModelProvider.delete_at == None
+        models.model.UserAIModelProvider.delete_at.is_(None)
     )
     if filter_role is not None:
         query = query.filter(models.model.UserAIModelProvider.role == filter_role)
@@ -109,7 +109,7 @@ def get_ai_model_by_uuid(
     """
     query = db.query(models.model.AIModel)
     query = query.filter(models.model.AIModel.uuid == uuid,
-                         models.model.AIModel.delete_at == None)
+                         models.model.AIModel.delete_at.is_(None))
     return query.one_or_none()
 
 def get_ai_model_by_id(
@@ -124,7 +124,7 @@ def get_ai_model_by_id(
         joinedload(models.model.AIModel.provider)
     )
     query = query.filter(models.model.AIModel.id == model_id,
-                         models.model.AIModel.delete_at == None)
+                         models.model.AIModel.delete_at.is_(None))
     return query.one_or_none()
 
 def get_ai_model_provider_by_uuid(
@@ -136,7 +136,7 @@ def get_ai_model_provider_by_uuid(
     """
     query = db.query(models.model.AIModelProvider)
     query = query.filter(models.model.AIModelProvider.uuid == uuid,
-                         models.model.AIModelProvider.delete_at == None)
+                         models.model.AIModelProvider.delete_at.is_(None))
     return query.one_or_none()
 
 def get_ai_model_provider_by_id(
@@ -151,7 +151,7 @@ def get_ai_model_provider_by_id(
         joinedload(models.model.AIModelProvider.creator)
     )
     query = query.filter(models.model.AIModelProvider.id == provider_id,
-                         models.model.AIModelProvider.delete_at == None)
+                         models.model.AIModelProvider.delete_at.is_(None))
     return query.one_or_none()
 
 def get_ai_models_for_ai_model_provider(
@@ -167,7 +167,7 @@ def get_ai_models_for_ai_model_provider(
     )
     query = query.filter(
         models.model.AIModel.provider_id == provider_id,
-        models.model.AIModel.delete_at == None
+        models.model.AIModel.delete_at.is_(None)
     )
     return query.all()
     
@@ -183,8 +183,8 @@ def get_ai_model_providers_for_user(
     query = query.join(models.model.UserAIModelProvider)
     query = query.filter(
         models.model.UserAIModelProvider.user_id == user_id,
-        models.model.UserAIModelProvider.delete_at == None,
-        models.model.AIModelProvider.delete_at == None
+        models.model.UserAIModelProvider.delete_at.is_(None),
+        models.model.AIModelProvider.delete_at.is_(None)
     )
     if keyword:
         query = query.filter(models.model.AIModelProvider.name.ilike(f"%{keyword}%"))
@@ -301,8 +301,8 @@ def delete_ai_model_providers(
         .join(models.model.UserAIModelProvider)\
         .filter(models.model.AIModelProvider.id.in_(provider_ids),
                 models.model.UserAIModelProvider.user_id == user_id,
-                models.model.AIModelProvider.delete_at == None,
-                models.model.UserAIModelProvider.delete_at == None)\
+                models.model.AIModelProvider.delete_at.is_(None),
+                models.model.UserAIModelProvider.delete_at.is_(None))\
         .all()
 
     provider_ids_to_delete = [row.id for row in provider_ids_to_delete]

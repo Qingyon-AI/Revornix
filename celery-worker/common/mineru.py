@@ -2,7 +2,6 @@ import copy
 import json
 import os
 import hashlib
-import httpx
 from pathlib import Path
 
 from common.logger import info_logger, exception_logger

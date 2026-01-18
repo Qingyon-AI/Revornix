@@ -47,14 +47,14 @@ class SectionSubscribedNotificationTemplate(NotificationTemplate):
             cover = f'{RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=db_section.creator_id)}/{db_section.cover}'
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
-                title=f"Section Subscribed",
+                title="Section Subscribed",
                 content=f"有人订阅了你参与的专栏{db_section.title}，点击前往查看",
                 link=f'/section/detail/{section_id}',
                 cover=cover
             )
         elif db_user_section.role == UserSectionRole.CREATOR:
             return schemas.notification.Message(
-                title=f"Section Subscribed",
+                title="Section Subscribed",
                 content=f"有人订阅了创建的专栏{db_section.title}，点击前往查看",
                 link=f'/section/detail/{section_id}',
                 cover=cover

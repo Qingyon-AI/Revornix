@@ -73,7 +73,7 @@ class MarkdownEngineProtocol(EngineProtocol):
                 try:
                     head = await client.head(src)
                     size = int(head.headers.get("Content-Length", 0))
-                except:
+                except Exception:
                     exception_logger.error(f"Failed to get image size: {src}")
                     continue
 

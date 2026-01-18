@@ -55,7 +55,7 @@ def get_user_labels_by_user_id(
     user_id: int
 ):
     query = db.query(models.document.Label)
-    query = query.filter(models.document.Label.delete_at == None,
+    query = query.filter(models.document.Label.delete_at.is_(None),
                          models.document.Label.user_id == user_id)
     return query.all()
 
@@ -65,7 +65,7 @@ def get_document_by_document_id(
 ):
     query = db.query(models.document.Document)
     query = query.filter(models.document.Document.id == document_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     query = query.options(selectinload(models.document.Document.creator))
     return query.one_or_none()
 
@@ -76,8 +76,8 @@ def get_quick_note_document_by_document_id(
     query = db.query(models.document.QuickNoteDocument)
     query = query.join(models.document.Document)
     query = query.filter(models.document.QuickNoteDocument.document_id == document_id,
-                         models.document.QuickNoteDocument.delete_at == None,
-                         models.document.Document.delete_at == None)
+                         models.document.QuickNoteDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     return query.one_or_none()
 
 def get_file_document_by_document_id(
@@ -86,9 +86,9 @@ def get_file_document_by_document_id(
 ):
     query = db.query(models.document.FileDocument)
     query = query.join(models.document.Document)
-    query = query.filter(models.document.Document.delete_at == None,
+    query = query.filter(models.document.Document.delete_at.is_(None),
                          models.document.FileDocument.document_id == document_id,
-                         models.document.FileDocument.delete_at == None)
+                         models.document.FileDocument.delete_at.is_(None))
     return query.one_or_none()
 
 def get_website_document_by_document_id(
@@ -98,6 +98,6 @@ def get_website_document_by_document_id(
     query = db.query(models.document.WebsiteDocument)
     query = query.join(models.document.Document)
     query = query.filter(models.document.WebsiteDocument.document_id == document_id,
-                         models.document.WebsiteDocument.delete_at == None,
-                         models.document.Document.delete_at == None)
+                         models.document.WebsiteDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     return query.one_or_none()

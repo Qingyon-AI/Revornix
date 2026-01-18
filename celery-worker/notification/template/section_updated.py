@@ -47,14 +47,14 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
             cover = f'{RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=db_section.creator_id)}/{db_section.cover}'
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
-                title=f"Section Updated",
+                title="Section Updated",
                 content=f"你参与的专栏{db_section.title}有了新的更新，点击前往查看",
                 link=f'/section/detail/{section_id}',
                 cover=cover
             )
         elif db_user_section.role == UserSectionRole.SUBSCRIBER:
             return schemas.notification.Message(
-                title=f"Section Updated",
+                title="Section Updated",
                 content=f"你订阅的专栏{db_section.title}有了新的更新，点击前往查看",
                 link=f'/section/detail/{section_id}',
                 cover=cover

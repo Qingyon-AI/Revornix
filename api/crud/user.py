@@ -37,7 +37,7 @@ def create_wechat_user(
 ):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.id == user_id,
-                         models.user.User.delete_at == None)
+                         models.user.User.delete_at.is_(None))
     db_user = query.one_or_none()
     if db_user is None:
         raise Exception("The base info of the wechat user you want to create is not exist")
@@ -57,7 +57,7 @@ def create_phone_user(
 ):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.id == user_id,
-                         models.user.User.delete_at == None)
+                         models.user.User.delete_at.is_(None))
     db_user = query.one_or_none()
     if db_user is None:
         raise Exception("The base info of the phone user you want to create is not exist")
@@ -88,7 +88,7 @@ def create_github_user(
 ):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.id == user_id,
-                         models.user.User.delete_at == None)
+                         models.user.User.delete_at.is_(None))
     db_user = query.one_or_none()
     if db_user is None:
         raise Exception("The base info of the github user you want to create is not exist")
@@ -108,7 +108,7 @@ def create_google_user(
 ):
     query_get_base_user = db.query(models.user.User)
     query_get_base_user = query_get_base_user.filter(models.user.User.id == user_id,
-                                                     models.user.User.delete_at == None)
+                                                     models.user.User.delete_at.is_(None))
     db_user = query_get_base_user.one_or_none()
     if db_user is None:
         raise Exception("The base info of the google user you want to create is not exist")
@@ -129,7 +129,7 @@ def create_email_user(
 ):
     query_get_base_user = db.query(models.user.User)
     query_get_base_user = query_get_base_user.filter(models.user.User.id == user_id,
-                                                     models.user.User.delete_at == None)
+                                                     models.user.User.delete_at.is_(None))
     db_user = query_get_base_user.one_or_none()
     if db_user is None:
         raise Exception("The base info of the email user you want to create is not exist")
@@ -172,8 +172,8 @@ def search_user_by_email(
 ):
     query = db.query(models.user.User)
     query = query.join(models.user.EmailUser, models.user.User.id == models.user.EmailUser.user_id)
-    query = query.filter(models.user.EmailUser.delete_at == None,
-                         models.user.User.delete_at == None)
+    query = query.filter(models.user.EmailUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
@@ -190,8 +190,8 @@ def search_next_user_by_email(
 ):
     query = db.query(models.user.User)
     query = query.join(models.user.EmailUser, models.user.User.id == models.user.EmailUser.user_id)
-    query = query.filter(models.user.EmailUser.delete_at == None,
-                         models.user.User.delete_at == None)
+    query = query.filter(models.user.EmailUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
@@ -204,8 +204,8 @@ def count_user_by_email(
 ):
     query = db.query(models.user.User)
     query = query.join(models.user.EmailUser, models.user.User.id == models.user.EmailUser.user_id)
-    query = query.filter(models.user.EmailUser.delete_at == None,
-                         models.user.User.delete_at == None)
+    query = query.filter(models.user.EmailUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
     return query.count()
@@ -217,7 +217,7 @@ def search_user_by_nickname(
     limit: int = 10
 ):
     query = db.query(models.user.User)
-    query = query.filter(models.user.User.delete_at == None)
+    query = query.filter(models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
@@ -233,7 +233,7 @@ def search_next_user_by_nickname(
     keyword: str | None = None
 ):
     query = db.query(models.user.User)
-    query = query.filter(models.user.User.delete_at == None)
+    query = query.filter(models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
@@ -245,7 +245,7 @@ def count_user_by_nickname(
     keyword: str | None = None
 ):
     query = db.query(models.user.User)
-    query = query.filter(models.user.User.delete_at == None)
+    query = query.filter(models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     return query.count()
@@ -257,7 +257,7 @@ def search_user_by_uuid(
     limit: int = 10
 ):
     query = db.query(models.user.User)
-    query = query.filter(models.user.User.delete_at == None)
+    query = query.filter(models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
     query = query.order_by(models.user.User.id.desc())
@@ -273,7 +273,7 @@ def search_next_user_by_uuid(
     keyword: str | None = None
 ):
     query = db.query(models.user.User)
-    query = query.filter(models.user.User.delete_at == None)
+    query = query.filter(models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
     query = query.order_by(models.user.User.id.desc())
@@ -285,7 +285,7 @@ def count_user_by_uuid(
     keyword: str | None = None
 ):
     query = db.query(models.user.User)
-    query = query.filter(models.user.User.delete_at == None)
+    query = query.filter(models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.uuid.like(f"%{keyword}%"))
     return query.count()
@@ -300,8 +300,8 @@ def search_user_fans(
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.from_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.to_user_id == user_id,
-                         models.user.FollowUser.delete_at == None,
-                         models.user.User.delete_at == None)
+                         models.user.FollowUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
@@ -318,8 +318,8 @@ def count_user_fans(
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.from_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.to_user_id == user_id,
-                         models.user.FollowUser.delete_at == None,
-                         models.user.User.delete_at == None)
+                         models.user.FollowUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     return query.count()
@@ -334,8 +334,8 @@ def count_user_fans_by_user_ids(
     query = query.join(models.user.User, models.user.User.id == models.user.FollowUser.from_user_id)
     query = query.filter(
         models.user.FollowUser.to_user_id.in_(user_ids),
-        models.user.FollowUser.delete_at == None,
-        models.user.User.delete_at == None,
+        models.user.FollowUser.delete_at.is_(None),
+        models.user.User.delete_at.is_(None),
     )
     query = query.group_by(models.user.FollowUser.to_user_id)
     return {user_id: count for user_id, count in query.all()}
@@ -348,8 +348,8 @@ def search_next_user_fan(
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.from_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.to_user_id == user,
-                         models.user.FollowUser.delete_at == None,
-                         models.user.User.delete_at == None)
+                         models.user.FollowUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
@@ -366,8 +366,8 @@ def search_user_follows(
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.to_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.from_user_id == user_id,
-                         models.user.FollowUser.delete_at == None,
-                         models.user.User.delete_at == None)
+                         models.user.FollowUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
@@ -384,8 +384,8 @@ def count_user_follows(
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.to_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.from_user_id == user_id,
-                         models.user.FollowUser.delete_at == None,
-                         models.user.User.delete_at == None)
+                         models.user.FollowUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     return query.count()
@@ -400,8 +400,8 @@ def count_user_follows_by_user_ids(
     query = query.join(models.user.User, models.user.User.id == models.user.FollowUser.to_user_id)
     query = query.filter(
         models.user.FollowUser.from_user_id.in_(user_ids),
-        models.user.FollowUser.delete_at == None,
-        models.user.User.delete_at == None,
+        models.user.FollowUser.delete_at.is_(None),
+        models.user.User.delete_at.is_(None),
     )
     query = query.group_by(models.user.FollowUser.from_user_id)
     return {user_id: count for user_id, count in query.all()}
@@ -417,7 +417,7 @@ def get_user_follows_by_from_user_id_and_to_user_ids(
     query = query.filter(
         models.user.FollowUser.from_user_id == from_user_id,
         models.user.FollowUser.to_user_id.in_(to_user_ids),
-        models.user.FollowUser.delete_at == None,
+        models.user.FollowUser.delete_at.is_(None),
     )
     return query.all()
 
@@ -429,8 +429,8 @@ def search_next_user_follow(
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.to_user_id == models.user.User.id)
     query = query.filter(models.user.FollowUser.from_user_id == user,
-                         models.user.FollowUser.delete_at == None,
-                         models.user.User.delete_at == None)
+                         models.user.FollowUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
@@ -446,8 +446,8 @@ def get_wechat_user_by_user_id(
     query = db.query(models.user.WechatUser)
     query = query.join(models.user.User)
     query = query.filter(models.user.WechatUser.user_id == user_id,
-                         models.user.WechatUser.delete_at == None,
-                         models.user.User.delete_at == None)
+                         models.user.WechatUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     if filter_wechat_platform is not None:
         query = query.filter(models.user.WechatUser.wechat_platform == filter_wechat_platform)
     return query.all()
@@ -458,7 +458,7 @@ def get_wechat_user_by_wechat_open_id(
 ):
     query = db.query(models.user.WechatUser)
     query = query.filter(models.user.WechatUser.wechat_user_open_id == wechat_user_open_id,
-                         models.user.WechatUser.delete_at == None)
+                         models.user.WechatUser.delete_at.is_(None))
     return query.one_or_none()
 
 # 同一用户可能在不同平台登录过 比如Revornix小程序登录 比如Revornix Web端微信方式登录 所以会有多个微信openid 但是union_id肯定是一致的
@@ -468,7 +468,7 @@ def get_wechat_user_by_wechat_union_id(
 ):
     query = db.query(models.user.WechatUser)
     query = query.filter(models.user.WechatUser.wechat_user_union_id == wechat_user_union_id,
-                         models.user.WechatUser.delete_at == None)
+                         models.user.WechatUser.delete_at.is_(None))
     return query.all()
 
 def get_phone_user_by_phone(
@@ -477,7 +477,7 @@ def get_phone_user_by_phone(
 ):
     query = db.query(models.user.PhoneUser)
     query = query.filter(models.user.PhoneUser.phone == phone,
-                         models.user.PhoneUser.delete_at == None)
+                         models.user.PhoneUser.delete_at.is_(None))
     return query.one_or_none()
 
 def get_phone_user_by_user_id(
@@ -487,8 +487,8 @@ def get_phone_user_by_user_id(
     query = db.query(models.user.PhoneUser)
     query = query.join(models.user.User)
     query = query.filter(models.user.PhoneUser.user_id == user_id,
-                         models.user.PhoneUser.delete_at == None,
-                         models.user.User.delete_at == None)
+                         models.user.PhoneUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     return query.one_or_none()
 
 def get_github_user_by_user_id(
@@ -498,8 +498,8 @@ def get_github_user_by_user_id(
     query = db.query(models.user.GithubUser)
     query = query.join(models.user.User)
     query = query.filter(models.user.GithubUser.user_id == user_id,
-                         models.user.GithubUser.delete_at == None,
-                         models.user.User.delete_at == None)
+                         models.user.GithubUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     return query.one_or_none()
 
 def get_github_user_by_github_user_id(
@@ -508,7 +508,7 @@ def get_github_user_by_github_user_id(
 ):
     query = db.query(models.user.GithubUser)
     query = query.filter(models.user.GithubUser.github_user_id == github_user_id,
-                         models.user.GithubUser.delete_at == None)
+                         models.user.GithubUser.delete_at.is_(None))
     return query.one_or_none()
 
 def get_google_user_by_user_id(
@@ -518,8 +518,8 @@ def get_google_user_by_user_id(
     query = db.query(models.user.GoogleUser)
     query = query.join(models.user.User)
     query = query.filter(models.user.GoogleUser.user_id == user_id,
-                         models.user.GoogleUser.delete_at == None,
-                         models.user.User.delete_at == None)
+                         models.user.GoogleUser.delete_at.is_(None),
+                         models.user.User.delete_at.is_(None))
     return query.one_or_none()
 
 def get_google_user_by_google_id(
@@ -528,7 +528,7 @@ def get_google_user_by_google_id(
 ):
     query = db.query(models.user.GoogleUser)
     query = query.filter(models.user.GoogleUser.google_user_id == google_user_id,
-                         models.user.GoogleUser.delete_at == None)
+                         models.user.GoogleUser.delete_at.is_(None))
     return query.one_or_none()
 
 def get_user_follow_by_to_user_id_and_from_user_id(
@@ -539,7 +539,7 @@ def get_user_follow_by_to_user_id_and_from_user_id(
     query = db.query(models.user.FollowUser)
     query = query.filter(models.user.FollowUser.to_user_id == to_user_id,
                          models.user.FollowUser.from_user_id == from_user_id,
-                         models.user.FollowUser.delete_at == None)
+                         models.user.FollowUser.delete_at.is_(None))
     return query.one_or_none()
 
 def get_user_by_id(
@@ -548,7 +548,7 @@ def get_user_by_id(
 ):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.id == user_id,
-                         models.user.User.delete_at == None)
+                         models.user.User.delete_at.is_(None))
     return query.one_or_none()
 
 def get_email_user_by_user_id(
@@ -558,8 +558,8 @@ def get_email_user_by_user_id(
     query = db.query(models.user.EmailUser)
     query = query.join(models.user.User)
     query = query.filter(models.user.EmailUser.user_id == user_id,
-                        models.user.EmailUser.delete_at == None,
-                        models.user.User.delete_at == None)
+                        models.user.EmailUser.delete_at.is_(None),
+                        models.user.User.delete_at.is_(None))
     return query.one_or_none()
 
 def get_email_user_by_email(
@@ -568,7 +568,7 @@ def get_email_user_by_email(
 ):
     query = db.query(models.user.EmailUser)
     query = query.filter(models.user.EmailUser.email == email,
-                         models.user.EmailUser.delete_at == None)
+                         models.user.EmailUser.delete_at.is_(None))
     return query.one_or_none()
 
 def get_user_by_email(
@@ -577,8 +577,8 @@ def get_user_by_email(
 ):
     query = db.query(models.user.User)
     query = query.join(models.user.EmailUser)
-    query = query.filter(models.user.User.delete_at == None,
-                         models.user.EmailUser.delete_at == None,
+    query = query.filter(models.user.User.delete_at.is_(None),
+                         models.user.EmailUser.delete_at.is_(None),
                          models.user.EmailUser.email == email)
     return query.one_or_none()
 
@@ -588,7 +588,7 @@ def get_user_by_uuid(
 ):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.uuid == user_uuid,
-                         models.user.User.delete_at == None)
+                         models.user.User.delete_at.is_(None))
     return query.one_or_none()
 
 def update_user_password(
@@ -599,8 +599,8 @@ def update_user_password(
     db_email_user_query = db.query(models.user.EmailUser)
     db_email_user_query = db_email_user_query.join(models.user.User)
     db_email_user_query = db_email_user_query.filter(models.user.EmailUser.user_id == user_id,
-                                                     models.user.EmailUser.delete_at == None,
-                                                     models.user.User.delete_at == None)
+                                                     models.user.EmailUser.delete_at.is_(None),
+                                                     models.user.User.delete_at.is_(None))
     db_email_user = db_email_user_query.one_or_none()
     if db_email_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
@@ -619,7 +619,7 @@ def update_user_follow_by_to_user_id_and_from_user_id(
     query = db.query(models.user.FollowUser)
     query = query.filter(models.user.FollowUser.from_user_id == from_user_id,
                          models.user.FollowUser.to_user_id == to_user_id,
-                         models.user.FollowUser.delete_at == None)
+                         models.user.FollowUser.delete_at.is_(None))
     db_user_follow = query.one_or_none()
     if db_user_follow is None:
         raise Exception("Can't find the user follow info based on the from_user_id and to_user_id you provided.")
@@ -642,7 +642,7 @@ def update_user_default_engine(
     now = datetime.now(timezone.utc)
     db_user_query = db.query(models.user.User)
     db_user_query = db_user_query.filter(models.user.User.id == user_id,
-                                         models.user.User.delete_at == None)
+                                         models.user.User.delete_at.is_(None))
     db_user = db_user_query.one_or_none()
     if db_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
@@ -668,7 +668,7 @@ def update_user_default_model(
     now = datetime.now(timezone.utc)
     db_user_query = db.query(models.user.User)
     db_user_query = db_user_query.filter(models.user.User.id == user_id,
-                                         models.user.User.delete_at == None)
+                                         models.user.User.delete_at.is_(None))
     db_user = db_user_query.one_or_none()
     if db_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
@@ -688,7 +688,7 @@ def update_user_default_mark_read_reason(
     now = datetime.now(timezone.utc)
     db_user_query = db.query(models.user.User)
     db_user_query = db_user_query.filter(models.user.User.id == user_id,
-                                         models.user.User.delete_at == None)
+                                         models.user.User.delete_at.is_(None))
     db_user = db_user_query.one_or_none()
     if db_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
@@ -709,7 +709,7 @@ def update_user_info(
 ):
     db_user_query = db.query(models.user.User)
     db_user_query = db_user_query.filter(models.user.User.id == user_id,
-                                         models.user.User.delete_at == None)
+                                         models.user.User.delete_at.is_(None))
     db_user = db_user_query.one_or_none()
     if db_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")
@@ -733,7 +733,7 @@ def delete_email_user_by_user_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.user.EmailUser)
     query = query.filter(models.user.EmailUser.user_id == user_id,
-                         models.user.EmailUser.delete_at == None)
+                         models.user.EmailUser.delete_at.is_(None))
     query = query.update({models.user.EmailUser.delete_at: now})
     db.flush()
 
@@ -744,7 +744,7 @@ def delete_google_user_by_user_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.user.GoogleUser)
     query = query.filter(models.user.GoogleUser.user_id == user_id,
-                         models.user.GoogleUser.delete_at == None)
+                         models.user.GoogleUser.delete_at.is_(None))
     query = query.update({models.user.GoogleUser.delete_at: now})
     db.flush()
 
@@ -755,7 +755,7 @@ def delete_github_user_by_user_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.user.GithubUser)
     query = query.filter(models.user.GithubUser.user_id == user_id,
-                         models.user.GithubUser.delete_at == None)
+                         models.user.GithubUser.delete_at.is_(None))
     query = query.update({models.user.GithubUser.delete_at: now})
     db.flush()
 
@@ -766,7 +766,7 @@ def delete_phone_user_by_user_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.user.PhoneUser)
     query = query.filter(models.user.PhoneUser.user_id == user_id,
-                         models.user.PhoneUser.delete_at == None)
+                         models.user.PhoneUser.delete_at.is_(None))
     query = query.update({models.user.PhoneUser.delete_at: now})
     db.flush()
 
@@ -777,7 +777,7 @@ def delete_wechat_user_by_user_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.user.WechatUser)
     query = query.filter(models.user.WechatUser.user_id == user_id,
-                         models.user.WechatUser.delete_at == None)
+                         models.user.WechatUser.delete_at.is_(None))
     query = query.update({models.user.WechatUser.delete_at: now})
     db.flush()
 
@@ -789,7 +789,7 @@ def delete_user_by_user_id(
 
     db_user = db.query(models.user.User)\
         .filter(models.user.User.id == user_id,
-                models.user.User.delete_at == None)\
+                models.user.User.delete_at.is_(None))\
         .one_or_none()
     if db_user is None:
         raise Exception("Can't find the user info based on the user_id you provided.")

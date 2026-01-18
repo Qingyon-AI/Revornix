@@ -1,4 +1,4 @@
-from data.custom_types.all import *
+from data.custom_types.all import EntityInfo, RelationInfo
 
 def make_section_markdown_prompt(
     current_markdown_content: str | None,

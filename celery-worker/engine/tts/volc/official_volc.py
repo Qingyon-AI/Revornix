@@ -61,7 +61,7 @@ class OfficialVolcTTSEngine(TTSEngineProtocol):
         with langfuse.start_as_current_observation(as_type="generation", name="tts-call", model="volc-podcast") as gen:
             with propagate_attributes(
                     user_id=str(self.user_id),
-                    tags=[f'model:volc-podcast']
+                    tags=['model:volc-podcast']
                 ):
                 try:
                     gen.update(

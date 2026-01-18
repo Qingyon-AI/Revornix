@@ -125,7 +125,7 @@ def get_documents_by_user_id(
     user_id: int
 ):
     query = db.query(models.document.Document)
-    query = query.filter(models.document.Document.delete_at == None,
+    query = query.filter(models.document.Document.delete_at.is_(None),
                          models.document.Document.creator_id == user_id)
     return query.all()
 
@@ -137,7 +137,7 @@ def get_read_document_by_document_id_and_user_id(
     query = db.query(models.document.ReadDocument)
     query = query.filter(models.document.ReadDocument.document_id == document_id,
                          models.document.ReadDocument.user_id == user_id,
-                         models.document.ReadDocument.delete_at == None)
+                         models.document.ReadDocument.delete_at.is_(None))
     return query.one_or_none()
 
 def get_website_document_by_user_id_and_url(
@@ -148,9 +148,9 @@ def get_website_document_by_user_id_and_url(
     query = db.query(models.document.Document)
     query = query.join(models.document.WebsiteDocument)
     query = query.filter(models.document.WebsiteDocument.url == url,
-                         models.document.WebsiteDocument.delete_at == None,
+                         models.document.WebsiteDocument.delete_at.is_(None),
                          models.document.UserDocument.user_id == user_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     return query.one_or_none()
 
 def get_sections_by_document_id(
@@ -160,8 +160,8 @@ def get_sections_by_document_id(
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.document_id == document_id,
-                         models.section.SectionDocument.delete_at == None,
-                         models.section.Section.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None),
+                         models.section.Section.delete_at.is_(None))
     return query.all()
 
 def get_document_summary_by_user_id(
@@ -180,8 +180,8 @@ def get_document_summary_by_user_id(
     query = query.join(models.document.UserDocument)  # 连接用户文档表
     query = query.filter(models.document.Document.create_time >= start_date)  # 仅查询最近duration天
     query = query.filter(models.document.UserDocument.user_id == user_id)  # 仅查询指定用户的文档
-    query = query.filter(models.document.UserDocument.delete_at == None)
-    query = query.filter(models.document.Document.delete_at == None)
+    query = query.filter(models.document.UserDocument.delete_at.is_(None))
+    query = query.filter(models.document.Document.delete_at.is_(None))
     query = query.group_by(cast(models.document.Document.create_time, Date))  # 按天分组
     query = query.order_by(cast(models.document.Document.create_time, Date))  # 按日期升序
     return query.all()
@@ -197,8 +197,8 @@ def search_section_documents(
     query = db.query(models.document.Document)
     query = query.join(models.section.SectionDocument, models.document.Document.id == models.section.SectionDocument.document_id)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
-                         models.section.SectionDocument.delete_at == None,
-                         models.document.Document.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
     if desc:
@@ -224,8 +224,8 @@ def search_next_section_document(
     query = db.query(models.document.Document)
     query = query.join(models.section.SectionDocument, models.document.Document.id == models.section.SectionDocument.document_id)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
-                         models.section.SectionDocument.delete_at == None)
-    query = query.filter(models.document.Document.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None))
+    query = query.filter(models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
     if desc:
@@ -244,8 +244,8 @@ def count_section_documents(
     query = db.query(func.count(models.document.Document.id))
     query = query.join(models.section.SectionDocument, models.document.Document.id == models.section.SectionDocument.document_id)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
-                         models.section.SectionDocument.delete_at == None)
-    query = query.filter(models.document.Document.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None))
+    query = query.filter(models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
     return query.count()
@@ -261,12 +261,12 @@ def search_next_user_document(
     query = db.query(models.document.Document)
     query = query.join(models.document.UserDocument).outerjoin(models.document.DocumentLabel)
     query = query.filter(models.document.UserDocument.user_id == user_id,
-                         models.document.UserDocument.delete_at == None)
-    query = query.filter(models.document.Document.delete_at == None)
+                         models.document.UserDocument.delete_at.is_(None))
+    query = query.filter(models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     if desc:
         query = query.order_by(models.document.Document.id.desc())
@@ -288,12 +288,12 @@ def search_user_documents(
     query = db.query(models.document.Document)
     query = query.join(models.document.UserDocument).outerjoin(models.document.DocumentLabel)
     query = query.filter(models.document.UserDocument.user_id == user_id,
-                         models.document.UserDocument.delete_at == None)
-    query = query.filter(models.document.Document.delete_at == None)
+                         models.document.UserDocument.delete_at.is_(None))
+    query = query.filter(models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     if desc:
         query = query.order_by(models.document.Document.id.desc())
@@ -321,12 +321,12 @@ def count_user_documents(
     query = db.query(models.document.Document)
     query = query.join(models.document.UserDocument).outerjoin(models.document.DocumentLabel)
     query = query.filter(models.document.UserDocument.user_id == user_id,
-                         models.document.UserDocument.delete_at == None)
-    query = query.filter(models.document.Document.delete_at == None)
+                         models.document.UserDocument.delete_at.is_(None))
+    query = query.filter(models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     if filter_category is not None:
         query = query.filter(models.document.Document.category == filter_category)
@@ -356,8 +356,8 @@ def get_published_section_of_the_document_by_document_id(
         )
         .filter(
             models.section.SectionDocument.document_id == document_id,
-            models.section.Section.delete_at == None,
-            models.section.SectionDocument.delete_at == None,
+            models.section.Section.delete_at.is_(None),
+            models.section.SectionDocument.delete_at.is_(None),
         )
     )
 
@@ -368,7 +368,7 @@ def get_published_section_of_the_document_by_document_id(
             models.section.PublishSection.section_id == models.section.Section.id,
         )
         query.filter(
-            models.section.PublishSection.delete_at == None,
+            models.section.PublishSection.delete_at.is_(None),
         )
     # 如果没有就看当前用户是否有参与文档相关的某些公开的专栏
     else:
@@ -378,7 +378,7 @@ def get_published_section_of_the_document_by_document_id(
             models.section.SectionUser.section_id == models.section.Section.id,
         ).filter(
             models.section.SectionUser.user_id == user_id,
-            models.section.SectionUser.delete_at == None,
+            models.section.SectionUser.delete_at.is_(None),
         )
 
     return query.all()
@@ -390,10 +390,10 @@ def get_star_document_by_user_id_and_document_id(
 ):
     query = db.query(models.document.StarDocument)
     query = query.join(models.document.Document, models.document.StarDocument.document_id == models.document.Document.id)
-    query = query.filter(models.document.Document.delete_at == None,
+    query = query.filter(models.document.Document.delete_at.is_(None),
                          models.document.StarDocument.user_id == user_id,
                          models.document.StarDocument.document_id == document_id,
-                         models.document.StarDocument.delete_at == None)
+                         models.document.StarDocument.delete_at.is_(None))
     return query.one_or_none()
 
 def get_document_by_document_id(
@@ -402,7 +402,7 @@ def get_document_by_document_id(
 ):
     query = db.query(models.document.Document)
     query = query.filter(models.document.Document.id == document_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     query = query.options(selectinload(models.document.Document.creator))
     return query.one_or_none()
 
@@ -412,7 +412,7 @@ def get_documents_by_document_ids(
 ):
     query = db.query(models.document.Document)
     query = query.filter(models.document.Document.id.in_(document_ids),
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     query = query.options(selectinload(models.document.Document.creator))
     return query.all()
 
@@ -422,9 +422,9 @@ def get_file_document_by_document_id(
 ):
     query = db.query(models.document.FileDocument)
     query = query.join(models.document.Document)
-    query = query.filter(models.document.Document.delete_at == None,
+    query = query.filter(models.document.Document.delete_at.is_(None),
                          models.document.FileDocument.document_id == document_id,
-                         models.document.FileDocument.delete_at == None)
+                         models.document.FileDocument.delete_at.is_(None))
     return query.one_or_none()
 
 def get_website_document_by_document_id(
@@ -434,8 +434,8 @@ def get_website_document_by_document_id(
     query = db.query(models.document.WebsiteDocument)
     query = query.join(models.document.Document)
     query = query.filter(models.document.WebsiteDocument.document_id == document_id,
-                         models.document.WebsiteDocument.delete_at == None,
-                         models.document.Document.delete_at == None)
+                         models.document.WebsiteDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     return query.one_or_none()
 
 def get_quick_note_document_by_document_id(
@@ -445,8 +445,8 @@ def get_quick_note_document_by_document_id(
     query = db.query(models.document.QuickNoteDocument)
     query = query.join(models.document.Document)
     query = query.filter(models.document.QuickNoteDocument.document_id == document_id,
-                         models.document.QuickNoteDocument.delete_at == None,
-                         models.document.Document.delete_at == None)
+                         models.document.QuickNoteDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     return query.one_or_none()
 
 def search_all_documents(
@@ -458,12 +458,12 @@ def search_all_documents(
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.UserDocument).outerjoin(models.document.DocumentLabel)
-    query = query.filter(models.document.UserDocument.delete_at == None,
-                         models.document.Document.delete_at == None)
+    query = query.filter(models.document.UserDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     query = query.order_by(models.document.Document.id.desc())
     if start is not None:
@@ -480,12 +480,12 @@ def count_all_documents(
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.UserDocument).outerjoin(models.document.DocumentLabel)
-    query = query.filter(models.document.UserDocument.delete_at == None)
-    query = query.filter(models.document.Document.delete_at == None)
+    query = query.filter(models.document.UserDocument.delete_at.is_(None))
+    query = query.filter(models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     query = query.distinct(models.document.Document.id)
     return query.count()
@@ -498,12 +498,12 @@ def search_next_all_document(
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.UserDocument).outerjoin(models.document.DocumentLabel)
-    query = query.filter(models.document.UserDocument.delete_at == None,
-                         models.document.Document.delete_at == None)
+    query = query.filter(models.document.UserDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     query = query.order_by(models.document.Document.id.desc())
     query = query.filter(models.document.Document.id < document.id)
@@ -518,7 +518,7 @@ def search_all_document_notes_by_document_id(
 ):
     query = db.query(models.document.DocumentNote)
     query = query.filter(models.document.DocumentNote.document_id == document_id,
-                         models.document.DocumentNote.delete_at == None)
+                         models.document.DocumentNote.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.DocumentNote.content.like(f'%{keyword}%'))
     query = query.order_by(models.document.DocumentNote.id.desc())
@@ -536,7 +536,7 @@ def count_all_document_notes_by_document_id(
 ):
     query = db.query(models.document.DocumentNote)
     query = query.filter(models.document.DocumentNote.document_id == document_id,
-                         models.document.DocumentNote.delete_at == None)
+                         models.document.DocumentNote.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.DocumentNote.content.like(f'%{keyword}%'))
     query = query.distinct(models.document.DocumentNote.id)
@@ -548,7 +548,7 @@ def search_next_note_by_document_note(
     keyword: str | None = None
 ):
     query = db.query(models.document.DocumentNote)
-    query = query.filter(models.document.DocumentNote.delete_at == None)
+    query = query.filter(models.document.DocumentNote.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.DocumentNote.content.like(f"%{keyword}%"))
     query = query.order_by(models.document.DocumentNote.id.desc())
@@ -566,11 +566,11 @@ def get_labels_summary(
                        models.document.UserDocument.document_id == models.document.DocumentLabel.document_id)
     query = query.join(models.document.Document,
                        models.document.Document.id == models.document.DocumentLabel.document_id)
-    query = query.filter(models.document.UserDocument.delete_at == None,
+    query = query.filter(models.document.UserDocument.delete_at.is_(None),
                          models.document.UserDocument.user_id == user_id,
-                         models.document.DocumentLabel.delete_at == None,
-                         models.document.Label.delete_at == None,
-                         models.document.Document.delete_at == None)
+                         models.document.DocumentLabel.delete_at.is_(None),
+                         models.document.Label.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None))
     query = query.group_by(models.document.Label.id)
     query = query.order_by(func.count(models.document.DocumentLabel.document_id).desc())
     return query.all()
@@ -582,8 +582,8 @@ def get_labels_by_document_id(
     query = db.query(models.document.Label)
     query = query.join(models.document.DocumentLabel)
     query = query.filter(models.document.DocumentLabel.document_id == document_id,
-                         models.document.DocumentLabel.delete_at == None,
-                         models.document.Label.delete_at == None)
+                         models.document.DocumentLabel.delete_at.is_(None),
+                         models.document.Label.delete_at.is_(None))
     return query.all()
 
 def get_labels_by_document_ids(
@@ -599,8 +599,8 @@ def get_labels_by_document_ids(
     )
     query = query.filter(
         models.document.DocumentLabel.document_id.in_(document_ids),
-        models.document.DocumentLabel.delete_at == None,
-        models.document.Label.delete_at == None,
+        models.document.DocumentLabel.delete_at.is_(None),
+        models.document.Label.delete_at.is_(None),
     )
     rows = query.all()
     res: dict[int, list[models.document.Label]] = {}
@@ -614,7 +614,7 @@ def get_document_labels_by_document_id(
 ):
     query = db.query(models.document.DocumentLabel)
     query = query.filter(models.document.DocumentLabel.document_id == document_id,
-                         models.document.DocumentLabel.delete_at == None)
+                         models.document.DocumentLabel.delete_at.is_(None))
     return query.all()
 
 def get_user_labels_by_user_id(
@@ -622,7 +622,7 @@ def get_user_labels_by_user_id(
     user_id: int
 ):
     query = db.query(models.document.Label)
-    query = query.filter(models.document.Label.delete_at == None,
+    query = query.filter(models.document.Label.delete_at.is_(None),
                          models.document.Label.user_id == user_id)
     return query.all()
 
@@ -638,10 +638,10 @@ def search_user_unread_documents(
     query = db.query(models.document.Document)
     query = query.join(models.document.UserDocument).outerjoin(models.document.ReadDocument).outerjoin(models.document.DocumentLabel)
     query = query.filter(models.document.UserDocument.user_id == user_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     # 过滤没有对应的ReadDocument记录的文档
     query = query.filter(or_(models.document.ReadDocument.delete_at != None,
-                             models.document.ReadDocument.id == None))
+                             models.document.ReadDocument.id.is_(None)))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -650,7 +650,7 @@ def search_user_unread_documents(
             )
         )
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     if desc:
         query = query.order_by(models.document.Document.id.desc())
@@ -677,10 +677,10 @@ def search_next_user_unread_document(
     query = db.query(models.document.Document)
     query = query.join(models.document.UserDocument).outerjoin(models.document.ReadDocument).outerjoin(models.document.DocumentLabel)
     query = query.filter(models.document.UserDocument.user_id == user_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     # 过滤没有对应的ReadDocument记录的文档
     query = query.filter(or_(models.document.ReadDocument.delete_at != None,
-                             models.document.ReadDocument.id == None))
+                             models.document.ReadDocument.id.is_(None)))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -689,7 +689,7 @@ def search_next_user_unread_document(
             )
         )
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     if desc:
         query = query.order_by(models.document.Document.id.desc())
@@ -708,10 +708,10 @@ def count_user_unread_documents(
     query = db.query(models.document.Document)
     query = query.join(models.document.UserDocument).outerjoin(models.document.ReadDocument).outerjoin(models.document.DocumentLabel)
     query = query.filter(models.document.UserDocument.user_id == user_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     # 过滤没有对应的ReadDocument记录的文档
     query = query.filter(or_(models.document.ReadDocument.delete_at != None,
-                             models.document.ReadDocument.id == None))
+                             models.document.ReadDocument.id.is_(None)))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -720,7 +720,7 @@ def count_user_unread_documents(
             )
         )
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     query = query.distinct(models.document.Document.id)
     return query.count()
@@ -736,9 +736,9 @@ def search_user_recent_read_documents(
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.ReadDocument).outerjoin(models.document.DocumentLabel)
-    query = query.filter(models.document.ReadDocument.delete_at == None,
+    query = query.filter(models.document.ReadDocument.delete_at.is_(None),
                          models.document.ReadDocument.user_id == user_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -747,7 +747,7 @@ def search_user_recent_read_documents(
             )
         )
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     if desc:
         query = query.order_by(models.document.Document.id.desc())
@@ -773,9 +773,9 @@ def search_next_user_recent_read_document(
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.ReadDocument).outerjoin(models.document.DocumentLabel)
-    query = query.filter(models.document.ReadDocument.delete_at == None,
+    query = query.filter(models.document.ReadDocument.delete_at.is_(None),
                          models.document.ReadDocument.user_id == user_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -784,7 +784,7 @@ def search_next_user_recent_read_document(
             )
         )
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     if desc:
         query = query.order_by(models.document.Document.id.desc())
@@ -802,9 +802,9 @@ def count_user_recent_read_documents(
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.ReadDocument).outerjoin(models.document.DocumentLabel)
-    query = query.filter(models.document.ReadDocument.delete_at == None,
+    query = query.filter(models.document.ReadDocument.delete_at.is_(None),
                          models.document.ReadDocument.user_id == user_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -813,7 +813,7 @@ def count_user_recent_read_documents(
             )
         )
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     query = query.distinct(models.document.Document.id)
     return query.count()
@@ -829,9 +829,9 @@ def search_user_stared_documents(
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.StarDocument).outerjoin(models.document.DocumentLabel)
-    query = query.filter(models.document.StarDocument.delete_at == None,
+    query = query.filter(models.document.StarDocument.delete_at.is_(None),
                          models.document.StarDocument.user_id == user_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -840,7 +840,7 @@ def search_user_stared_documents(
             )
         )
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     if desc:
         query = query.order_by(models.document.Document.id.desc())
@@ -866,9 +866,9 @@ def search_next_user_star_document(
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.StarDocument).outerjoin(models.document.DocumentLabel)
-    query = query.filter(models.document.StarDocument.delete_at == None,
+    query = query.filter(models.document.StarDocument.delete_at.is_(None),
                          models.document.StarDocument.user_id == user_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -877,7 +877,7 @@ def search_next_user_star_document(
             )
         )
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     if desc:
         query = query.order_by(models.document.Document.id.desc())
@@ -895,11 +895,11 @@ def count_user_stared_documents(
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.StarDocument).outerjoin(models.document.DocumentLabel)
-    query = query.filter(models.document.StarDocument.delete_at == None,
+    query = query.filter(models.document.StarDocument.delete_at.is_(None),
                          models.document.StarDocument.user_id == user_id,
-                         models.document.Document.delete_at == None)
+                         models.document.Document.delete_at.is_(None))
     if label_ids is not None:
-        query = query.filter(models.document.DocumentLabel.delete_at == None,
+        query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
@@ -995,7 +995,7 @@ def delete_labels_by_label_ids(
     query = db.query(models.document.Label)
     query = query.filter(models.document.Label.id.in_(label_ids),
                          models.document.Label.user_id == user_id,
-                         models.document.Label.delete_at == None)
+                         models.document.Label.delete_at.is_(None))
     query = query.update({models.document.Label.delete_at: now}, synchronize_session=False)
     db.flush()
 
@@ -1006,7 +1006,7 @@ def delete_document_labels_by_document_ids(
     now = datetime.now(timezone.utc)
     query = db.query(models.document.DocumentLabel)
     query = query.filter(models.document.DocumentLabel.document_id.in_(document_ids),
-                         models.document.DocumentLabel.delete_at == None)
+                         models.document.DocumentLabel.delete_at.is_(None))
     query = query.update({models.document.DocumentLabel.delete_at: now}, synchronize_session=False)
     db.flush()
 
@@ -1017,7 +1017,7 @@ def delete_document_labels_by_label_ids(
     now = datetime.now(timezone.utc)
     query = db.query(models.document.DocumentLabel)
     query = query.filter(models.document.DocumentLabel.label_id.in_(label_ids),
-                         models.document.DocumentLabel.delete_at == None)
+                         models.document.DocumentLabel.delete_at.is_(None))
     query = query.update({models.document.DocumentLabel.delete_at: now})
     db.flush()
 
@@ -1034,7 +1034,7 @@ def delete_user_documents_by_document_ids(
         .join(models.document.UserDocument) \
         .filter(models.document.Document.id.in_(document_ids),
                 models.document.UserDocument.user_id == user_id,
-                models.document.UserDocument.delete_at == None,
+                models.document.UserDocument.delete_at.is_(None),
                 models.document.UserDocument.authority == UserDocumentAuthority.OWNER) \
         .all()
 
@@ -1042,52 +1042,52 @@ def delete_user_documents_by_document_ids(
 
     db.query(models.document.Document)\
         .filter(models.document.Document.id.in_(ids_to_update),
-                models.document.Document.delete_at == None)\
+                models.document.Document.delete_at.is_(None))\
         .update({models.document.Document.delete_at: now}, synchronize_session=False)
 
     db.query(models.document.WebsiteDocument)\
         .filter(models.document.WebsiteDocument.document_id.in_(ids_to_update),
-                models.document.WebsiteDocument.delete_at == None)\
+                models.document.WebsiteDocument.delete_at.is_(None))\
         .update({models.document.WebsiteDocument.delete_at: now}, synchronize_session=False)
 
     db.query(models.document.FileDocument)\
         .filter(models.document.FileDocument.document_id.in_(ids_to_update),
-                models.document.FileDocument.delete_at == None)\
+                models.document.FileDocument.delete_at.is_(None))\
         .update({models.document.FileDocument.delete_at: now}, synchronize_session=False)
 
     db.query(models.document.QuickNoteDocument)\
         .filter(models.document.QuickNoteDocument.document_id.in_(ids_to_update),
-                models.document.QuickNoteDocument.delete_at == None)\
+                models.document.QuickNoteDocument.delete_at.is_(None))\
         .update({models.document.QuickNoteDocument.delete_at: now}, synchronize_session=False)
 
     db.query(models.document.UserDocument)\
         .filter(models.document.UserDocument.document_id.in_(ids_to_update),
-                models.document.UserDocument.delete_at == None)\
+                models.document.UserDocument.delete_at.is_(None))\
         .update({models.document.UserDocument.delete_at: now}, synchronize_session=False)
 
     db.query(models.document.DocumentLabel)\
         .filter(models.document.DocumentLabel.document_id.in_(ids_to_update),
-                models.document.DocumentLabel.delete_at == None)\
+                models.document.DocumentLabel.delete_at.is_(None))\
         .update({models.document.DocumentLabel.delete_at: now}, synchronize_session=False)
 
     db.query(models.document.StarDocument)\
         .filter(models.document.StarDocument.document_id.in_(ids_to_update),
-                models.document.StarDocument.delete_at == None)\
+                models.document.StarDocument.delete_at.is_(None))\
         .update({models.document.StarDocument.delete_at: now}, synchronize_session=False)
 
     db.query(models.document.ReadDocument)\
         .filter(models.document.ReadDocument.document_id.in_(ids_to_update),
-                models.document.ReadDocument.delete_at == None)\
+                models.document.ReadDocument.delete_at.is_(None))\
         .update({models.document.ReadDocument.delete_at: now}, synchronize_session=False)
 
     db.query(models.document.DocumentNote)\
         .filter(models.document.DocumentNote.document_id.in_(ids_to_update),
-                models.document.DocumentNote.delete_at == None)\
+                models.document.DocumentNote.delete_at.is_(None))\
         .update({models.document.DocumentNote.delete_at: now}, synchronize_session=False)
 
     db.query(models.section.SectionDocument)\
         .filter(models.section.SectionDocument.document_id.in_(ids_to_update),
-                models.section.SectionDocument.delete_at == None)\
+                models.section.SectionDocument.delete_at.is_(None))\
         .update({models.section.SectionDocument.delete_at: now}, synchronize_session=False)
 
     db.flush()
@@ -1099,7 +1099,7 @@ def delete_document_notes_by_document_ids(
     now = datetime.now(timezone.utc)
     query = db.query(models.document.DocumentNote)
     query = query.filter(models.document.DocumentNote.document_id.in_(document_ids),
-                         models.document.DocumentNote.delete_at == None)
+                         models.document.DocumentNote.delete_at.is_(None))
     query = query.update({models.document.DocumentNote.delete_at: now})
     db.flush()
 
@@ -1112,7 +1112,7 @@ def delete_document_notes_by_user_id_and_note_ids(
     query = db.query(models.document.DocumentNote)
     query = query.filter(models.document.DocumentNote.note_id.in_(note_ids),
                          models.document.DocumentNote.user_id == user_id,
-                         models.document.DocumentNote.delete_at == None)
+                         models.document.DocumentNote.delete_at.is_(None))
     query = query.update({models.document.DocumentNote.delete_at: now})
     db.flush()
 
@@ -1123,7 +1123,7 @@ def delete_quick_note_documents_by_document_ids(
     now = datetime.now(timezone.utc)
     query = db.query(models.document.QuickNoteDocument)
     query = query.filter(models.document.QuickNoteDocument.document_id.in_(document_ids),
-                         models.document.QuickNoteDocument.delete_at == None)
+                         models.document.QuickNoteDocument.delete_at.is_(None))
     query = query.update({models.document.QuickNoteDocument.delete_at: now})
     db.flush()
 
@@ -1134,7 +1134,7 @@ def delete_website_documents_by_document_ids(
     now = datetime.now(timezone.utc)
     query = db.query(models.document.WebsiteDocument)
     query = query.filter(models.document.WebsiteDocument.document_id.in_(document_ids),
-                         models.document.WebsiteDocument.delete_at == None)
+                         models.document.WebsiteDocument.delete_at.is_(None))
     query = query.update({models.document.WebsiteDocument.delete_at: now})
     db.flush()
 
@@ -1145,7 +1145,7 @@ def delete_file_documents_by_document_ids(
     now = datetime.now(timezone.utc)
     query = db.query(models.document.FileDocument)
     query = query.filter(models.document.FileDocument.document_id.in_(document_ids),
-                         models.document.FileDocument.delete_at == None)
+                         models.document.FileDocument.delete_at.is_(None))
     query = query.update({models.document.FileDocument.delete_at: now})
     db.flush()
 
@@ -1160,7 +1160,7 @@ def delete_website_document_by_website_document_ids(
     db_website_documents = db.query(models.document.WebsiteDocument)\
         .join(models.document.UserDocument, models.document.WebsiteDocument.document_id == models.document.UserDocument.document_id)\
         .filter(models.document.WebsiteDocument.id.in_(website_document_ids),
-                models.document.WebsiteDocument.delete_at == None,
+                models.document.WebsiteDocument.delete_at.is_(None),
                 models.document.UserDocument.user_id == user_id,
                 models.document.UserDocument.authority == UserDocumentAuthority.OWNER)\
         .all()
@@ -1169,7 +1169,7 @@ def delete_website_document_by_website_document_ids(
 
     db.query(models.document.WebsiteDocument)\
         .filter(models.document.WebsiteDocument.id.in_(db_website_document_ids),
-                models.document.WebsiteDocument.delete_at == None)\
+                models.document.WebsiteDocument.delete_at.is_(None))\
         .update({models.document.WebsiteDocument.delete_at: now}, synchronize_session=False)
 
     db.flush()

@@ -33,7 +33,7 @@ def get_section_documents_by_section_id(
 ):
     query = db.query(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
-                         models.section.SectionDocument.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None))
     if filter_status is not None:
         query = query.filter(models.section.SectionDocument.status == filter_status)
     return query.all()
@@ -45,9 +45,9 @@ def get_documents_for_section_by_section_id(
     query = db.query(models.document.Document)
     query = query.join(models.section.SectionDocument).join(models.section.Section)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
-                         models.section.SectionDocument.delete_at == None,
-                         models.document.Document.delete_at == None,
-                         models.section.Section.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None),
+                         models.document.Document.delete_at.is_(None),
+                         models.section.Section.delete_at.is_(None))
     return query.all()
 
 def get_section_document_by_section_id_and_document_id(
@@ -58,7 +58,7 @@ def get_section_document_by_section_id_and_document_id(
     query = db.query(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
                          models.section.SectionDocument.document_id == document_id,
-                         models.section.SectionDocument.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None))
     return query.one_or_none()
 
 def get_sections_by_document_id(
@@ -68,8 +68,8 @@ def get_sections_by_document_id(
     query = db.query(models.section.Section)
     query = query.join(models.section.SectionDocument)
     query = query.filter(models.section.SectionDocument.document_id == document_id,
-                         models.section.SectionDocument.delete_at == None)
-    query = query.filter(models.section.Section.delete_at == None)
+                         models.section.SectionDocument.delete_at.is_(None))
+    query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.order_by(models.section.Section.update_time.desc())
     return query.all()
 
@@ -82,9 +82,9 @@ def get_section_by_user_and_date(
     query = query.join(models.section.DaySection)
     query = query.join(models.section.SectionUser)
     query = query.filter(models.section.DaySection.date == date, 
-                         models.section.DaySection.delete_at == None,
-                         models.section.Section.delete_at == None,
-                         models.section.SectionUser.delete_at == None,
+                         models.section.DaySection.delete_at.is_(None),
+                         models.section.Section.delete_at.is_(None),
+                         models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.user_id == user_id)
     return query.one_or_none()
 
@@ -98,9 +98,9 @@ def get_section_user_by_section_id_and_user_id(
     query = db.query(models.section.SectionUser)
     query = query.filter(models.section.SectionUser.section_id == section_id,
                          models.section.SectionUser.user_id == user_id,
-                         models.section.SectionUser.delete_at == None)
+                         models.section.SectionUser.delete_at.is_(None))
     query = query.filter(or_(models.section.SectionUser.expire_time > now, 
-                             models.section.SectionUser.expire_time == None))
+                             models.section.SectionUser.expire_time.is_(None)))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     return query.one_or_none()
@@ -113,11 +113,11 @@ def get_users_for_section_by_section_id(
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User)
     query = query.join(models.section.SectionUser)
-    query = query.filter(models.user.User.delete_at == None,
-                         models.section.SectionUser.delete_at == None,
+    query = query.filter(models.user.User.delete_at.is_(None),
+                         models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.section_id == section_id)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
-                             models.section.SectionUser.expire_time == None))
+                             models.section.SectionUser.expire_time.is_(None)))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     return query.all()
@@ -128,7 +128,7 @@ def get_section_by_section_id(
 ):
     query = db.query(models.section.Section)
     query = query.filter(models.section.Section.id == section_id, 
-                         models.section.Section.delete_at == None)
+                         models.section.Section.delete_at.is_(None))
     return query.one_or_none()
 
 def update_section_document_by_section_id_and_document_id(
@@ -141,7 +141,7 @@ def update_section_document_by_section_id_and_document_id(
     db_section_document = db.query(models.section.SectionDocument)\
         .filter(models.section.SectionDocument.section_id == section_id,
                 models.section.SectionDocument.document_id == document_id,
-                models.section.SectionDocument.delete_at == None)\
+                models.section.SectionDocument.delete_at.is_(None))\
         .one_or_none()
     if db_section_document is None:
         raise Exception("Section document is not found")
