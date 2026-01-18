@@ -80,10 +80,12 @@ def create_ai_model(
     db.flush()
     return new_model
 
+
 def get_user_ai_model_provider_by_user_and_model_provider_id(
     db: Session,
     user_id: int,
-    ai_model_provider_id: int
+    ai_model_provider_id: int,
+    filter_role: int
 ):
     """
     Get a user AI model provider by user and model provider ID.
@@ -93,25 +95,10 @@ def get_user_ai_model_provider_by_user_and_model_provider_id(
         models.model.UserAIModelProvider.ai_model_provider_id == ai_model_provider_id,
         models.model.UserAIModelProvider.delete_at == None
     )
+    if filter_role is not None:
+        query = query.filter(models.model.UserAIModelProvider.role == filter_role)
     return query.one_or_none()
 
-def get_user_ai_model_provider_by_id_decrypted(
-    db: Session, 
-    user_id: int, 
-    ai_model_provider_id: int
-):
-    """
-    获取用户 AI 模型 Provider，并解密 API Key
-    """
-    record = db.query(models.model.UserAIModelProvider).filter(
-        models.model.UserAIModelProvider.user_id == user_id,
-        models.model.UserAIModelProvider.ai_model_provider_id == ai_model_provider_id,
-        models.model.UserAIModelProvider.delete_at == None
-    ).one_or_none()
-
-    if record and record.api_key:
-        record.api_key = decrypt_api_key(record.api_key)
-    return record
 
 def get_ai_model_by_uuid(
     db: Session,

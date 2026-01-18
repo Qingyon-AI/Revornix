@@ -295,6 +295,7 @@ async def handle_process_document(
             raise Exception("The user which you want to process document has not set default user file system")
         if db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to process document has not set default document reader model")
+        
         model_configuration = (await AIModelProxy.create(
             user_id=user_id,
             model_id=db_user.default_document_reader_model_id

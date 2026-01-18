@@ -63,7 +63,6 @@ class MarkitdownEngine(MarkdownEngineProtocol):
         if not db_user.default_document_reader_model_id:
             raise Exception("The user does not have a default document reader model.")
         
-        # TODO: 获取用户的默认文档解析引擎
         model_configuration = (await AIModelProxy.create(
             user_id=self.user_id,
             model_id=db_user.default_document_reader_model_id

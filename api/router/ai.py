@@ -73,19 +73,14 @@ def get_ai_model(
     )
     if ai_model_provider is None:
         raise schemas.error.CustomException("The model provider of the model is not exist", code=404)
-    
-    db_user_provider = crud.model.get_user_ai_model_provider_by_id_decrypted(
-        db=db,
-        user_id=user.id,
-        ai_model_provider_id=ai_model.provider_id
-    )
-    if db_user_provider is None:
-        if not ai_model_provider.is_public:
-            raise schemas.error.CustomException("The model provider of the model is not belong to you", code=403)
-        else:
-            return schemas.ai.Model.model_validate(ai_model)
-    else:
+
+    if ai_model_provider.creator_id == user.id:
         return schemas.ai.Model.model_validate(ai_model)
+    else:
+        if ai_model_provider.is_public:
+            return schemas.ai.Model.model_validate(ai_model)
+        else:
+            raise schemas.error.CustomException("The model provider of the model is not belong to you", code=403)
 
 @ai_router.post("/model-provider/create", response_model=schemas.ai.ModelProviderCreateResponse)
 def create_model_provider(
