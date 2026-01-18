@@ -3,8 +3,9 @@ from .user import UserPublicInfo
 from datetime import datetime, timezone
 from pydantic import field_serializer
 
-class ModelProviderIncludeRequest(BaseModel):
+class ModelProviderForkRequest(BaseModel):
     provider_id: int
+    status: bool
 
 class ModelCreateRequest(BaseModel):
     name: str
@@ -18,6 +19,7 @@ class ModelProviderDetail(BaseModel):
     id: int
     uuid: str
     name: str
+    is_public: bool
     description: str | None
     api_key: str | None = None
     base_url: str | None = None
@@ -45,6 +47,8 @@ class ModelProvider(BaseModel):
     id: int
     uuid: str
     name: str
+    is_forked: bool | None = None
+    is_public: bool
     description: str | None
     create_time: datetime
     update_time: datetime | None
@@ -95,8 +99,9 @@ class Model(BaseModel):
 class ModelProviderCreateRequest(BaseModel):
     name: str
     description: str | None = None
-    api_key: str
+    api_key: str | None = None
     base_url: str
+    is_public: bool
 
 class ModelProviderCreateResponse(BaseModel):
     id: int
@@ -138,6 +143,7 @@ class ModelProviderUpdateRequest(BaseModel):
     description: str | None = None
     api_key: str | None = None
     base_url: str | None = None
+    is_public: bool | None = None
 
 class ChatItem(BaseModel):
     chat_id: str

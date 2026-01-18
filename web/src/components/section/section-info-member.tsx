@@ -105,7 +105,7 @@ const SectionInfoMember = ({ section_id }: { section_id: number }) => {
 									<AvatarImage
 										src={user.avatar}
 										alt='user avatar'
-										className='size-6'
+										className='size-6 object-cover'
 									/>
 									<AvatarFallback className='size-6'>
 										{user.nickname}

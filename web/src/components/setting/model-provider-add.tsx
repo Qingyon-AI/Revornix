@@ -16,7 +16,6 @@ import {
 	FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -24,10 +23,11 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
+	DialogTrigger,
 } from '@/components/ui/dialog';
-import { Loader2, PlusIcon } from 'lucide-react';
+import { Loader2, PlusCircleIcon } from 'lucide-react';
 
-const ModelProviderAddCard = () => {
+const ModelProviderAddButton = () => {
 	const t = useTranslations();
 	const formSchema = z.object({
 		name: z.string().min(1, 'Name is required'),
@@ -94,6 +94,12 @@ const ModelProviderAddCard = () => {
 			<Dialog
 				open={showModelProviderConfigDialog}
 				onOpenChange={setShowModelProviderConfigDialog}>
+				<DialogTrigger asChild>
+					<Button>
+						{t('setting_model_provider_add')}
+						<PlusCircleIcon />
+					</Button>
+				</DialogTrigger>
 				<DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
 					<DialogHeader>
 						<DialogTitle>{t('setting_model_provider_add')}</DialogTitle>
@@ -190,20 +196,8 @@ const ModelProviderAddCard = () => {
 					</div>
 				</DialogContent>
 			</Dialog>
-			<Card>
-				<CardContent
-					className='flex-1 flex flex-col justify-center items-center text-sm rounded cursor-pointer'
-					onClick={() => {
-						setShowModelProviderConfigDialog(true);
-					}}>
-					<div className='mb-3 p-3 bg-muted rounded-full'>
-						<PlusIcon className='h-12 w-12' />
-					</div>
-					<p>{t('setting_model_provider_add')}</p>
-				</CardContent>
-			</Card>
 		</>
 	);
 };
 
-export default ModelProviderAddCard;
+export default ModelProviderAddButton;

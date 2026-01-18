@@ -11,6 +11,7 @@ Name | Type
 `description` | string
 `api_key` | string
 `base_url` | string
+`is_public` | boolean
 
 ## Example
 
@@ -24,6 +25,7 @@ const example = {
   "description": null,
   "api_key": null,
   "base_url": null,
+  "is_public": null,
 } satisfies ModelProviderUpdateRequest
 
 console.log(example)

@@ -1,26 +1,15 @@
 'use client';
-import { useEffect, useState, useTransition } from 'react';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
 	deleteAiModelProvider,
+	forkAiModelProvider,
 	searchAiModel,
-	updateAiModelProvider,
 } from '@/service/ai';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { utils } from '@kinda/utils';
+import { format } from 'date-fns';
 import { getQueryClient } from '@/lib/get-query-client';
-import {
-	Form,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import {
 	Card,
 	CardContent,
@@ -40,13 +29,16 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog';
-import { Loader2, PlusCircle } from 'lucide-react';
+import { Loader2, PlusCircle, XCircleIcon } from 'lucide-react';
 import { ModelProvider } from '@/generated';
 import { Separator } from '../ui/separator';
 import ModelCard from './model-card';
 import ModelAddCard from './model-add-card';
-import { Badge } from '../ui/badge';
 import { useUserContext } from '@/provider/user-provider';
+import ModelConfig from './model-config';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useRouter } from 'nextjs-toploader/app';
+import { Badge } from '../ui/badge';
 
 interface ModelCardProps {
 	modelProvider: ModelProvider;
@@ -54,31 +46,18 @@ interface ModelCardProps {
 
 const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
+	const router = useRouter();
 	const { refreshMainUserInfo } = useUserContext();
-	const formSchema = z.object({
-		name: z.string().min(1, 'Name is required'),
-		description: z.string().optional().nullable(),
-		api_key: z.string().min(1, 'API Key is required'),
-		base_url: z.string().optional(),
-	});
+
 	const queryClient = getQueryClient();
 
-	const form = useForm({
-		resolver: zodResolver(formSchema),
-		defaultValues: {
-			api_key: '',
-			base_url: '',
-		},
-	});
 	const [showDeleteModelProviderDialog, setShowDeleteModelProviderDialog] =
 		useState(false);
 	const [showModelConfigDialog, setShowModelConfigDialog] = useState(false);
 	const [showAddModel, setShowAddModel] = useState(false);
 	const [showModelProviderConfigDialog, setShowModelProviderConfigDialog] =
 		useState(false);
-	const [submitUpdating, startSubmitUpdating] = useTransition();
-	const [deleteModelProviderLoading, startDeleteModelProvider] =
-		useTransition();
 
 	const { data: models } = useQuery({
 		queryKey: ['getModels', modelProvider.id],
@@ -90,79 +69,49 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 		},
 	});
 
-	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-		if (event) {
-			if (typeof event.preventDefault === 'function') {
-				event.preventDefault();
-			}
-			if (typeof event.stopPropagation === 'function') {
-				event.stopPropagation();
-			}
-		}
-		return form.handleSubmit(onFormValidateSuccess, onFormValidateError)(event);
-	};
-
-	const handleDeleteModelProvider = async () => {
-		startDeleteModelProvider(async () => {
-			const [res, err] = await utils.to(
-				deleteAiModelProvider({
-					provider_id: modelProvider.id,
-				})
-			);
-			if (err) {
-				toast.error(err.message);
-				return;
-			}
-			toast.success(t('setting_model_provider_delete_successful'));
-			setShowDeleteModelProviderDialog(false);
+	const mutateDeleteModelProvider = useMutation({
+		mutationFn: deleteAiModelProvider,
+		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['getModelProviders'],
-			});
-			queryClient.invalidateQueries({
-				queryKey: ['getModels'],
+				predicate(query) {
+					return (
+						query.queryKey.includes('getModels') ||
+						query.queryKey.includes('getModelProviders')
+					);
+				},
 			});
 			refreshMainUserInfo();
-		});
-	};
+			toast.success(t('setting_model_provider_delete_successful'));
+			setShowDeleteModelProviderDialog(false);
+		},
+		onError(error, variables, onMutateResult, context) {
+			console.error(error);
+			toast.error(error.message);
+		},
+	});
 
-	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		startSubmitUpdating(async () => {
-			const [res, err] = await utils.to(
-				updateAiModelProvider({
-					id: modelProvider.id,
-					...values,
-				})
-			);
-			if (err) {
-				toast.error(err.message);
-				return;
-			}
-			toast.success(t('setting_model_provider_update_successful'));
-			setShowModelProviderConfigDialog(false);
+	const mutateForkModelProvider = useMutation({
+		mutationFn: forkAiModelProvider,
+		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['getModelProviders'],
+				predicate(query) {
+					return (
+						query.queryKey.includes('getModels') ||
+						query.queryKey.includes('getModelProviders')
+					);
+				},
 			});
-			queryClient.invalidateQueries({
-				queryKey: ['getModels'],
-			});
-		});
-	};
+			refreshMainUserInfo();
+		},
+		onError(error, variables, onMutateResult, context) {
+			console.error(error);
+			toast.error(error.message);
+		},
+	});
 
-	const onFormValidateError = (errors: any) => {
-		console.error(errors);
-		toast.error(t('form_validate_failed'));
-	};
-
-	useEffect(() => {
-		if (modelProvider) {
-			form.reset({
-				name: modelProvider.name,
-				description: modelProvider.description,
-				api_key: modelProvider.api_key || '',
-				base_url: modelProvider.base_url || '',
-			});
-		}
-	}, [modelProvider]);
+	const isMineModelProvider = useMemo(() => {
+		return mainUserInfo && mainUserInfo.id === modelProvider?.creator.id;
+	}, [modelProvider?.creator.id, mainUserInfo]);
 
 	return (
 		<>
@@ -176,102 +125,70 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 							{modelProvider?.description}
 						</DialogDescription>
 					</DialogHeader>
-					<div>
-						<Form {...form}>
-							<form className='flex flex-col gap-5' onSubmit={handleSubmit}>
-								<FormField
-									control={form.control}
-									name='name'
-									render={({ field }) => (
-										<FormItem>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>
-													{t('setting_model_provider_name')}
-												</FormLabel>
-												<Input
-													className='col-span-9'
-													placeholder='Name'
-													{...field}
-												/>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name='description'
-									render={({ field }) => (
-										<FormItem>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>
-													{t('setting_model_provider_description')}
-												</FormLabel>
-												<Input
-													className='col-span-9'
-													placeholder='Description'
-													{...field}
-													value={field.value ? field.value : ''}
-												/>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name='api_key'
-									render={({ field }) => (
-										<FormItem>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>API Key</FormLabel>
-												<Input
-													type='password'
-													className='col-span-9'
-													placeholder='API Key'
-													{...field}
-												/>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name='base_url'
-									render={({ field }) => (
-										<FormItem>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>API Base</FormLabel>
-												<Input
-													className='col-span-9'
-													placeholder='API Base'
-													{...field}
-												/>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<Button type='submit' disabled={submitUpdating}>
-									{t('save')}
-									{submitUpdating && (
-										<Loader2 className='h-4 w-4 animate-spin' />
-									)}
-								</Button>
-							</form>
-						</Form>
-					</div>
+					<ModelConfig
+						modelProviderId={modelProvider.id}
+						onUpdateSuccessfully={() => {
+							setShowModelProviderConfigDialog(false);
+						}}
+					/>
 				</DialogContent>
 			</Dialog>
 			<Card className='flex flex-col'>
 				<CardHeader className='flex flex-col flex-1'>
-					<CardTitle>{modelProvider.name}</CardTitle>
+					<CardTitle className='flex flex-row items-center w-full'>
+						<div className='flex flex-row items-center gap-2'>
+							{modelProvider.name}
+							{modelProvider.is_public && (
+								<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
+									<div className='h-1.5 w-1.5 rounded-full bg-amber-500 mr-1' />{' '}
+									Public
+								</Badge>
+							)}
+						</div>
+						<Dialog>
+							<DialogTrigger asChild>
+								<Button
+									size={'icon'}
+									type='button'
+									variant={'ghost'}
+									className='ml-auto'>
+									<XCircleIcon className='size-4' />
+								</Button>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>{t('warning')}</DialogTitle>
+									<DialogDescription>
+										{t('setting_model_provider_delete_warning_description')}
+									</DialogDescription>
+								</DialogHeader>
+								<DialogFooter>
+									<Button
+										variant='destructive'
+										type='button'
+										disabled={mutateDeleteModelProvider.isPending}
+										onClick={() => {
+											mutateDeleteModelProvider.mutate({
+												provider_id: modelProvider.id,
+											});
+										}}>
+										{t('confirm')}
+										{mutateDeleteModelProvider.isPending && (
+											<Loader2 className='h-4 w-4 animate-spin' />
+										)}
+									</Button>
+									<DialogClose asChild>
+										<Button variant='default'>{t('cancel')}</Button>
+									</DialogClose>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+					</CardTitle>
 					<CardDescription className='break-all flex-1'>
 						{modelProvider.description}
 					</CardDescription>
 				</CardHeader>
-				<CardFooter className='flex flex-row items-center'>
+				<CardContent className='w-full flex flex-row'>
 					<div className='flex flex-row gap-2 items-center ml-auto'>
 						<Dialog
 							open={showModelConfigDialog}
@@ -330,43 +247,82 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 							</DialogContent>
 						</Dialog>
 						<Button
-							className='text-xs shadow-none'
+							className='shadow-none'
 							variant={'outline'}
 							onClick={() => {
 								setShowModelProviderConfigDialog(true);
 							}}>
 							{t('setting_model_provider_configure')}
 						</Button>
-						<Dialog>
-							<DialogTrigger asChild>
-								<Button type='button' variant={'secondary'}>
-									{t('delete')}
-								</Button>
-							</DialogTrigger>
-							<DialogContent>
-								<DialogHeader>
-									<DialogTitle>{t('warning')}</DialogTitle>
-									<DialogDescription>
-										{t('setting_model_provider_delete_warning_description')}
-									</DialogDescription>
-								</DialogHeader>
-								<DialogFooter>
+						{!isMineModelProvider && (
+							<>
+								{!modelProvider.is_forked && (
 									<Button
-										variant='destructive'
-										type='button'
-										onClick={handleDeleteModelProvider}>
-										{t('confirm')}
-										{deleteModelProviderLoading && (
+										className='shadow-none'
+										variant={'outline'}
+										disabled={mutateForkModelProvider.isPending}
+										onClick={() => {
+											mutateForkModelProvider.mutate({
+												provider_id: modelProvider.id,
+												status: true,
+											});
+										}}>
+										{t('setting_model_provider_fork')}
+										{mutateForkModelProvider.isPending && (
 											<Loader2 className='h-4 w-4 animate-spin' />
 										)}
 									</Button>
-									<DialogClose asChild>
-										<Button variant='default'>{t('cancel')}</Button>
-									</DialogClose>
-								</DialogFooter>
-							</DialogContent>
-						</Dialog>
+								)}
+								{modelProvider.is_forked && (
+									<Button
+										className='shadow-none'
+										variant={'destructive'}
+										disabled={mutateForkModelProvider.isPending}
+										onClick={() => {
+											mutateForkModelProvider.mutate({
+												provider_id: modelProvider.id,
+												status: false,
+											});
+										}}>
+										{t('setting_model_provider_unfork')}
+										{mutateForkModelProvider.isPending && (
+											<Loader2 className='h-4 w-4 animate-spin' />
+										)}
+									</Button>
+								)}
+							</>
+						)}
 					</div>
+				</CardContent>
+				<CardFooter className='flex flex-row items-center'>
+					<Avatar
+						className='size-5'
+						title={
+							modelProvider.creator.nickname
+								? modelProvider.creator.nickname
+								: 'Unknown User'
+						}
+						onClick={(e) => {
+							router.push(`/user/detail/${modelProvider.creator.id}`);
+							e.preventDefault();
+							e.stopPropagation();
+						}}>
+						<AvatarImage
+							src={modelProvider.creator.avatar}
+							alt='user avatar'
+							className='size-5 object-cover'
+						/>
+						<AvatarFallback className='size-5'>
+							{modelProvider.creator.nickname}
+						</AvatarFallback>
+					</Avatar>
+					<span className='text-xs text-muted-foreground ml-2'>
+						{modelProvider.creator.nickname}
+					</span>
+					<span className='ml-auto text-xs text-muted-foreground'>
+						{modelProvider.create_time &&
+							format(new Date(modelProvider.create_time), 'yyyy-MM-dd HH:mm')}
+					</span>
 				</CardFooter>
 			</Card>
 		</>

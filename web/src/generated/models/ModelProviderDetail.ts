@@ -24,69 +24,75 @@ import {
 /**
  * 
  * @export
- * @interface ModelProvider
+ * @interface ModelProviderDetail
  */
-export interface ModelProvider {
+export interface ModelProviderDetail {
     /**
      * 
      * @type {number}
-     * @memberof ModelProvider
+     * @memberof ModelProviderDetail
      */
     id: number;
     /**
      * 
      * @type {string}
-     * @memberof ModelProvider
+     * @memberof ModelProviderDetail
      */
     uuid: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelProvider
+     * @memberof ModelProviderDetail
      */
     name: string;
     /**
      * 
      * @type {boolean}
-     * @memberof ModelProvider
-     */
-    is_forked?: boolean | null;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof ModelProvider
+     * @memberof ModelProviderDetail
      */
     is_public: boolean;
     /**
      * 
      * @type {string}
-     * @memberof ModelProvider
+     * @memberof ModelProviderDetail
      */
     description: string | null;
     /**
      * 
+     * @type {string}
+     * @memberof ModelProviderDetail
+     */
+    api_key?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelProviderDetail
+     */
+    base_url?: string | null;
+    /**
+     * 
      * @type {Date}
-     * @memberof ModelProvider
+     * @memberof ModelProviderDetail
      */
     create_time: Date;
     /**
      * 
      * @type {Date}
-     * @memberof ModelProvider
+     * @memberof ModelProviderDetail
      */
     update_time: Date | null;
     /**
      * 
      * @type {UserPublicInfo}
-     * @memberof ModelProvider
+     * @memberof ModelProviderDetail
      */
     creator: UserPublicInfo;
 }
 
 /**
- * Check if a given object implements the ModelProvider interface.
+ * Check if a given object implements the ModelProviderDetail interface.
  */
-export function instanceOfModelProvider(value: object): value is ModelProvider {
+export function instanceOfModelProviderDetail(value: object): value is ModelProviderDetail {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
@@ -98,11 +104,11 @@ export function instanceOfModelProvider(value: object): value is ModelProvider {
     return true;
 }
 
-export function ModelProviderFromJSON(json: any): ModelProvider {
-    return ModelProviderFromJSONTyped(json, false);
+export function ModelProviderDetailFromJSON(json: any): ModelProviderDetail {
+    return ModelProviderDetailFromJSONTyped(json, false);
 }
 
-export function ModelProviderFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelProvider {
+export function ModelProviderDetailFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelProviderDetail {
     if (json == null) {
         return json;
     }
@@ -111,20 +117,21 @@ export function ModelProviderFromJSONTyped(json: any, ignoreDiscriminator: boole
         'id': json['id'],
         'uuid': json['uuid'],
         'name': json['name'],
-        'is_forked': json['is_forked'] == null ? undefined : json['is_forked'],
         'is_public': json['is_public'],
         'description': json['description'],
+        'api_key': json['api_key'] == null ? undefined : json['api_key'],
+        'base_url': json['base_url'] == null ? undefined : json['base_url'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
         'creator': UserPublicInfoFromJSON(json['creator']),
     };
 }
 
-export function ModelProviderToJSON(json: any): ModelProvider {
-    return ModelProviderToJSONTyped(json, false);
+export function ModelProviderDetailToJSON(json: any): ModelProviderDetail {
+    return ModelProviderDetailToJSONTyped(json, false);
 }
 
-export function ModelProviderToJSONTyped(value?: ModelProvider | null, ignoreDiscriminator: boolean = false): any {
+export function ModelProviderDetailToJSONTyped(value?: ModelProviderDetail | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -134,9 +141,10 @@ export function ModelProviderToJSONTyped(value?: ModelProvider | null, ignoreDis
         'id': value['id'],
         'uuid': value['uuid'],
         'name': value['name'],
-        'is_forked': value['is_forked'],
         'is_public': value['is_public'],
         'description': value['description'],
+        'api_key': value['api_key'],
+        'base_url': value['base_url'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'creator': UserPublicInfoToJSON(value['creator']),

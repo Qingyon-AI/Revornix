@@ -1,30 +1,40 @@
 
-# ModelProviderCreateRequest
+# ModelProviderDetail
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
+`id` | number
+`uuid` | string
 `name` | string
+`is_public` | boolean
 `description` | string
 `api_key` | string
 `base_url` | string
-`is_public` | boolean
+`create_time` | Date
+`update_time` | Date
+`creator` | [UserPublicInfo](UserPublicInfo.md)
 
 ## Example
 
 ```typescript
-import type { ModelProviderCreateRequest } from ''
+import type { ModelProviderDetail } from ''
 
 // TODO: Update the object below with actual values
 const example = {
+  "id": null,
+  "uuid": null,
   "name": null,
+  "is_public": null,
   "description": null,
   "api_key": null,
   "base_url": null,
-  "is_public": null,
-} satisfies ModelProviderCreateRequest
+  "create_time": null,
+  "update_time": null,
+  "creator": null,
+} satisfies ModelProviderDetail
 
 console.log(example)
 
@@ -33,7 +43,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as ModelProviderCreateRequest
+const exampleParsed = JSON.parse(exampleJSON) as ModelProviderDetail
 console.log(exampleParsed)
 ```
 

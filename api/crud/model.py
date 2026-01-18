@@ -9,21 +9,16 @@ def create_user_ai_model_provider(
     db: Session, 
     user_id: int, 
     ai_model_provider_id: int, 
-    api_key: str | None = None, 
-    base_url: str | None = None,
     role: int | None = None
 ):
     """
     Create a new user AI model provider.
     """
     now = datetime.now(timezone.utc)
-    if api_key is not None:
-        api_key = encrypt_api_key(api_key)
+    
     db_user_provider = models.model.UserAIModelProvider(
         user_id=user_id,
         ai_model_provider_id=ai_model_provider_id,
-        api_key=api_key,
-        base_url=base_url,
         role=role,
         create_time=now
     )
@@ -37,6 +32,9 @@ def create_ai_model_provider(
     creator_id: int,
     description: str | None = None,
     uuid: str | None = None,
+    api_key: str | None = None,
+    base_url: str | None = None,
+    is_public: bool = False
 ):
     """
     Create a new AI model provider.
@@ -44,12 +42,17 @@ def create_ai_model_provider(
     now = datetime.now(timezone.utc)
     if uuid is None:
         uuid = uuid4().hex
+    if api_key is not None:
+        api_key = encrypt_api_key(api_key)
     db_ai_provider = models.model.AIModelProvider(
         name=name,
         description=description,
         uuid=uuid,
         creator_id=creator_id,
-        create_time=now
+        create_time=now,
+        api_key=api_key,
+        base_url=base_url,
+        is_public=is_public
     )
     db.add(db_ai_provider)
     db.flush()
@@ -82,7 +85,8 @@ def create_ai_model(
 def get_user_ai_model_provider_by_user_and_model_provider_id(
     db: Session,
     user_id: int,
-    ai_model_provider_id: int
+    ai_model_provider_id: int,
+    filter_role: int | None = None
 ):
     """
     Get a user AI model provider by user and model provider ID.
@@ -92,6 +96,8 @@ def get_user_ai_model_provider_by_user_and_model_provider_id(
         models.model.UserAIModelProvider.ai_model_provider_id == ai_model_provider_id,
         models.model.UserAIModelProvider.delete_at == None
     )
+    if filter_role is not None:
+        query = query.filter(models.model.UserAIModelProvider.role == filter_role)
     return query.one_or_none()
 
 def get_user_ai_model_provider_by_id_decrypted(
@@ -239,7 +245,6 @@ def search_ai_model_providers_for_user(
         query = query.limit(limit)
     # 返回 [(provider, user_provider_config_or_none), ...]
     return query.all()
-
 
 def search_next_ai_model_providers_for_user(
     db: Session,

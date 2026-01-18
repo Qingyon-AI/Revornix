@@ -36,13 +36,19 @@ export interface ModelProviderCreateRequest {
      * @type {string}
      * @memberof ModelProviderCreateRequest
      */
-    api_key: string;
+    api_key?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ModelProviderCreateRequest
      */
     base_url: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelProviderCreateRequest
+     */
+    is_public: boolean;
 }
 
 /**
@@ -50,8 +56,8 @@ export interface ModelProviderCreateRequest {
  */
 export function instanceOfModelProviderCreateRequest(value: object): value is ModelProviderCreateRequest {
     if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('api_key' in value) || value['api_key'] === undefined) return false;
     if (!('base_url' in value) || value['base_url'] === undefined) return false;
+    if (!('is_public' in value) || value['is_public'] === undefined) return false;
     return true;
 }
 
@@ -67,8 +73,9 @@ export function ModelProviderCreateRequestFromJSONTyped(json: any, ignoreDiscrim
         
         'name': json['name'],
         'description': json['description'] == null ? undefined : json['description'],
-        'api_key': json['api_key'],
+        'api_key': json['api_key'] == null ? undefined : json['api_key'],
         'base_url': json['base_url'],
+        'is_public': json['is_public'],
     };
 }
 
@@ -87,6 +94,7 @@ export function ModelProviderCreateRequestToJSONTyped(value?: ModelProviderCreat
         'description': value['description'],
         'api_key': value['api_key'],
         'base_url': value['base_url'],
+        'is_public': value['is_public'],
     };
 }
 
