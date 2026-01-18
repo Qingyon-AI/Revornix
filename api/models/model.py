@@ -30,12 +30,10 @@ class UserAIModelProvider(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     ai_model_provider_id: Mapped[int] = mapped_column(ForeignKey("ai_model_provider.id"), index=True, nullable=False)
+    role: Mapped[int] = mapped_column(Integer, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    # 注意有一些模型供应商提供的模型接入口是不需要的api_key和base_url的
-    api_key: Mapped[Optional[str]] = mapped_column(String(255))
-    base_url: Mapped[Optional[str]] = mapped_column(String(255))
 
 
 class AIModelProvider(Base):
@@ -50,5 +48,7 @@ class AIModelProvider(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    base_url: Mapped[str] = mapped_column(String(255), nullable=False)
+    api_key: Mapped[Optional[str]] = mapped_column(String(255))
     
     creator: Mapped["User"] = relationship("User", backref="model_providers")
