@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { UserPublicInfo } from './UserPublicInfo';
+import {
+    UserPublicInfoFromJSON,
+    UserPublicInfoFromJSONTyped,
+    UserPublicInfoToJSON,
+    UserPublicInfoToJSONTyped,
+} from './UserPublicInfo';
+
 /**
  * 
  * @export
@@ -48,13 +56,31 @@ export interface ModelProvider {
      * @type {string}
      * @memberof ModelProvider
      */
-    api_key: string | null;
+    api_key?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ModelProvider
      */
-    base_url: string | null;
+    base_url?: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ModelProvider
+     */
+    create_time: Date;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ModelProvider
+     */
+    update_time: Date | null;
+    /**
+     * 
+     * @type {UserPublicInfo}
+     * @memberof ModelProvider
+     */
+    creator: UserPublicInfo;
 }
 
 /**
@@ -65,8 +91,9 @@ export function instanceOfModelProvider(value: object): value is ModelProvider {
     if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('api_key' in value) || value['api_key'] === undefined) return false;
-    if (!('base_url' in value) || value['base_url'] === undefined) return false;
+    if (!('create_time' in value) || value['create_time'] === undefined) return false;
+    if (!('update_time' in value) || value['update_time'] === undefined) return false;
+    if (!('creator' in value) || value['creator'] === undefined) return false;
     return true;
 }
 
@@ -84,8 +111,11 @@ export function ModelProviderFromJSONTyped(json: any, ignoreDiscriminator: boole
         'uuid': json['uuid'],
         'name': json['name'],
         'description': json['description'],
-        'api_key': json['api_key'],
-        'base_url': json['base_url'],
+        'api_key': json['api_key'] == null ? undefined : json['api_key'],
+        'base_url': json['base_url'] == null ? undefined : json['base_url'],
+        'create_time': (new Date(json['create_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
+        'creator': UserPublicInfoFromJSON(json['creator']),
     };
 }
 
@@ -106,6 +136,9 @@ export function ModelProviderToJSONTyped(value?: ModelProvider | null, ignoreDis
         'description': value['description'],
         'api_key': value['api_key'],
         'base_url': value['base_url'],
+        'create_time': value['create_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
+        'creator': UserPublicInfoToJSON(value['creator']),
     };
 }
 

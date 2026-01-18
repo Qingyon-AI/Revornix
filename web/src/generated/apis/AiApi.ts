@@ -19,15 +19,16 @@ import type {
   DeleteModelProviderRequest,
   DeleteModelRequest,
   HTTPValidationError,
+  InifiniteScrollPagnitionModelProvider,
   Model,
   ModelCreateRequest,
   ModelCreateResponse,
   ModelProvider,
   ModelProviderCreateRequest,
   ModelProviderCreateResponse,
+  ModelProviderIncludeRequest,
   ModelProviderRequest,
   ModelProviderSearchRequest,
-  ModelProviderSearchResponse,
   ModelProviderUpdateRequest,
   ModelRequest,
   ModelSearchRequest,
@@ -44,6 +45,8 @@ import {
     DeleteModelRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    InifiniteScrollPagnitionModelProviderFromJSON,
+    InifiniteScrollPagnitionModelProviderToJSON,
     ModelFromJSON,
     ModelToJSON,
     ModelCreateRequestFromJSON,
@@ -56,12 +59,12 @@ import {
     ModelProviderCreateRequestToJSON,
     ModelProviderCreateResponseFromJSON,
     ModelProviderCreateResponseToJSON,
+    ModelProviderIncludeRequestFromJSON,
+    ModelProviderIncludeRequestToJSON,
     ModelProviderRequestFromJSON,
     ModelProviderRequestToJSON,
     ModelProviderSearchRequestFromJSON,
     ModelProviderSearchRequestToJSON,
-    ModelProviderSearchResponseFromJSON,
-    ModelProviderSearchResponseToJSON,
     ModelProviderUpdateRequestFromJSON,
     ModelProviderUpdateRequestToJSON,
     ModelRequestFromJSON,
@@ -111,12 +114,17 @@ export interface GetAiModelProviderAiModelProviderDetailPostRequest {
     authorization?: string | null;
 }
 
+export interface IncludeAiModelProviderAiModelProviderIncludePostRequest {
+    modelProviderIncludeRequest: ModelProviderIncludeRequest;
+    authorization?: string | null;
+}
+
 export interface ListAiModelAiModelSearchPostRequest {
     modelSearchRequest: ModelSearchRequest;
     authorization?: string | null;
 }
 
-export interface ListAiModelProviderAiModelProviderSearchPostRequest {
+export interface ListAiModelProviderAiModelProviderProvidedPostRequest {
     modelProviderSearchRequest: ModelProviderSearchRequest;
     authorization?: string | null;
 }
@@ -442,6 +450,49 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Include Ai Model Provider
+     */
+    async includeAiModelProviderAiModelProviderIncludePostRaw(requestParameters: IncludeAiModelProviderAiModelProviderIncludePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['modelProviderIncludeRequest'] == null) {
+            throw new runtime.RequiredError(
+                'modelProviderIncludeRequest',
+                'Required parameter "modelProviderIncludeRequest" was null or undefined when calling includeAiModelProviderAiModelProviderIncludePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/ai/model-provider/include`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelProviderIncludeRequestToJSON(requestParameters['modelProviderIncludeRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Include Ai Model Provider
+     */
+    async includeAiModelProviderAiModelProviderIncludePost(requestParameters: IncludeAiModelProviderAiModelProviderIncludePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.includeAiModelProviderAiModelProviderIncludePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * List Ai Model
      */
     async listAiModelAiModelSearchPostRaw(requestParameters: ListAiModelAiModelSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelSearchResponse>> {
@@ -487,11 +538,11 @@ export class AiApi extends runtime.BaseAPI {
     /**
      * List Ai Model Provider
      */
-    async listAiModelProviderAiModelProviderSearchPostRaw(requestParameters: ListAiModelProviderAiModelProviderSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelProviderSearchResponse>> {
+    async listAiModelProviderAiModelProviderProvidedPostRaw(requestParameters: ListAiModelProviderAiModelProviderProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionModelProvider>> {
         if (requestParameters['modelProviderSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelProviderSearchRequest',
-                'Required parameter "modelProviderSearchRequest" was null or undefined when calling listAiModelProviderAiModelProviderSearchPost().'
+                'Required parameter "modelProviderSearchRequest" was null or undefined when calling listAiModelProviderAiModelProviderProvidedPost().'
             );
         }
 
@@ -506,7 +557,7 @@ export class AiApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/ai/model-provider/search`;
+        let urlPath = `/ai/model-provider/provided`;
 
         const response = await this.request({
             path: urlPath,
@@ -516,14 +567,14 @@ export class AiApi extends runtime.BaseAPI {
             body: ModelProviderSearchRequestToJSON(requestParameters['modelProviderSearchRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelProviderSearchResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionModelProviderFromJSON(jsonValue));
     }
 
     /**
      * List Ai Model Provider
      */
-    async listAiModelProviderAiModelProviderSearchPost(requestParameters: ListAiModelProviderAiModelProviderSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelProviderSearchResponse> {
-        const response = await this.listAiModelProviderAiModelProviderSearchPostRaw(requestParameters, initOverrides);
+    async listAiModelProviderAiModelProviderProvidedPost(requestParameters: ListAiModelProviderAiModelProviderProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionModelProvider> {
+        const response = await this.listAiModelProviderAiModelProviderProvidedPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

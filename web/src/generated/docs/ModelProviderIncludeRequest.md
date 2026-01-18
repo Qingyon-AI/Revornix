@@ -1,5 +1,5 @@
 
-# DeleteModelProviderRequest
+# ModelProviderIncludeRequest
 
 
 ## Properties
@@ -11,12 +11,12 @@ Name | Type
 ## Example
 
 ```typescript
-import type { DeleteModelProviderRequest } from ''
+import type { ModelProviderIncludeRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
   "provider_id": null,
-} satisfies DeleteModelProviderRequest
+} satisfies ModelProviderIncludeRequest
 
 console.log(example)
 
@@ -25,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as DeleteModelProviderRequest
+const exampleParsed = JSON.parse(exampleJSON) as ModelProviderIncludeRequest
 console.log(exampleParsed)
 ```
 

@@ -7,7 +7,8 @@
 Name | Type
 ------------ | -------------
 `keyword` | string
-`provider_id` | number
+`start` | number
+`limit` | number
 
 ## Example
 
@@ -17,7 +18,8 @@ import type { ModelProviderSearchRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "keyword": null,
-  "provider_id": null,
+  "start": null,
+  "limit": null,
 } satisfies ModelProviderSearchRequest
 
 console.log(example)

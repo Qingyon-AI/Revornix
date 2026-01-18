@@ -47,7 +47,6 @@ import ModelCard from './model-card';
 import ModelAddCard from './model-add-card';
 import { Badge } from '../ui/badge';
 import { useUserContext } from '@/provider/user-provider';
-import { OfficialModelProvider } from '@/enums/model';
 
 interface ModelCardProps {
 	modelProvider: ModelProvider;
@@ -107,7 +106,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 		startDeleteModelProvider(async () => {
 			const [res, err] = await utils.to(
 				deleteAiModelProvider({
-					provider_ids: [modelProvider.id],
+					provider_id: modelProvider.id,
 				})
 			);
 			if (err) {
@@ -168,61 +167,14 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 	return (
 		<>
 			<Dialog
-				open={showModelConfigDialog}
-				onOpenChange={setShowModelConfigDialog}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>{t('setting_model_models_configure')}</DialogTitle>
-						<DialogDescription>
-							{t('setting_model_models_configure_description')}
-						</DialogDescription>
-					</DialogHeader>
-					<div className='max-h-[80vh] flex flex-col gap-2'>
-						{models?.data?.length === 0 && (
-							<div className='rounded p-3 text-xs bg-muted text-center text-muted-foreground'>
-								{t('setting_model_empty')}
-							</div>
-						)}
-						<div className='flex-1 overflow-auto flex flex-col gap-2'>
-							{models &&
-								models.data?.map((model, index) => {
-									return <ModelCard key={index} model={model} />;
-								})}
-							{showAddModel && (
-								<ModelAddCard
-									modelProvider={modelProvider}
-									onCancel={() => setShowAddModel(false)}
-									onSuccess={() => {
-										queryClient.invalidateQueries({
-											queryKey: ['getModels', modelProvider.id],
-										});
-										queryClient.invalidateQueries({
-											queryKey: ['getModels'],
-										});
-										setShowAddModel(false);
-									}}
-								/>
-							)}
-						</div>
-						<Separator className='my-5' />
-						<div
-							className='rounded flex flex-row bg-muted p-3 text-xs text-muted-foreground justify-center cursor-pointer'
-							onClick={() => {
-								setShowAddModel(true);
-							}}>
-							{t('setting_model_add')}
-							<PlusCircle className='h-4 w-4 ml-1' />
-						</div>
-					</div>
-				</DialogContent>
-			</Dialog>
-			<Dialog
 				open={showModelProviderConfigDialog}
 				onOpenChange={setShowModelProviderConfigDialog}>
 				<DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
 					<DialogHeader>
 						<DialogTitle>{modelProvider?.name}</DialogTitle>
-						<DialogDescription className='break-all'>{modelProvider?.description}</DialogDescription>
+						<DialogDescription className='break-all'>
+							{modelProvider?.description}
+						</DialogDescription>
 					</DialogHeader>
 					<div>
 						<Form {...form}>
@@ -312,76 +264,110 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 					</div>
 				</DialogContent>
 			</Dialog>
-			<Card>
-				<CardHeader>
+			<Card className='flex flex-col'>
+				<CardHeader className='flex flex-col flex-1'>
 					<CardTitle>{modelProvider.name}</CardTitle>
-					<CardDescription className='break-all'>
+					<CardDescription className='break-all flex-1'>
 						{modelProvider.description}
 					</CardDescription>
 				</CardHeader>
-				<CardContent className='flex-1'>
-					<div
-						className='text-xs bg-muted rounded p-3 text-center cursor-pointer'
-						onClick={() => {
-							setShowModelConfigDialog(true);
-						}}>
-						{t('setting_model_models_configure')}
-					</div>
-				</CardContent>
-				{!(modelProvider.uuid === OfficialModelProvider.Revornix) && (
-					<CardFooter className='flex flex-row items-center justify-between'>
-						<div className='flex flex-row gap-2'>
-							{modelProvider.api_key ? (
-								<Badge variant={'outline'}>KEY</Badge>
-							) : (
-								<Badge variant={'destructive'}>KEY</Badge>
-							)}
-							{modelProvider.base_url ? (
-								<Badge variant={'outline'}>URL</Badge>
-							) : (
-								<Badge variant={'destructive'}>URL</Badge>
-							)}
-						</div>
-						<div className='flex flex-row gap-2 items-center'>
-							<Button
-								className='text-xs shadow-none'
-								onClick={() => {
-									setShowModelProviderConfigDialog(true);
-								}}>
-								{t('setting_model_provider_configure')}
-							</Button>
-							<Dialog>
-								<DialogTrigger asChild>
-									<Button type='button' variant={'secondary'}>
-										{t('delete')}
+				<CardFooter className='flex flex-row items-center'>
+					<div className='flex flex-row gap-2 items-center ml-auto'>
+						<Dialog
+							open={showModelConfigDialog}
+							onOpenChange={setShowModelConfigDialog}>
+							<DialogTrigger asChild>
+								<Button type='button'>
+									{t('setting_model_models_configure')}
+								</Button>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>
+										{t('setting_model_models_configure')}
+									</DialogTitle>
+									<DialogDescription>
+										{t('setting_model_models_configure_description')}
+									</DialogDescription>
+								</DialogHeader>
+								<div className='max-h-[80vh] flex flex-col gap-2'>
+									{models?.data?.length === 0 && (
+										<div className='rounded p-3 text-xs bg-muted text-center text-muted-foreground'>
+											{t('setting_model_empty')}
+										</div>
+									)}
+									<div className='flex-1 overflow-auto flex flex-col gap-2'>
+										{models &&
+											models.data?.map((model, index) => {
+												return <ModelCard key={index} model={model} />;
+											})}
+										{showAddModel && (
+											<ModelAddCard
+												modelProvider={modelProvider}
+												onCancel={() => setShowAddModel(false)}
+												onSuccess={() => {
+													queryClient.invalidateQueries({
+														queryKey: ['getModels', modelProvider.id],
+													});
+													queryClient.invalidateQueries({
+														queryKey: ['getModels'],
+													});
+													setShowAddModel(false);
+												}}
+											/>
+										)}
+									</div>
+									<Separator className='my-5' />
+									<div
+										className='rounded flex flex-row bg-muted p-3 text-xs text-muted-foreground justify-center cursor-pointer'
+										onClick={() => {
+											setShowAddModel(true);
+										}}>
+										{t('setting_model_add')}
+										<PlusCircle className='h-4 w-4 ml-1' />
+									</div>
+								</div>
+							</DialogContent>
+						</Dialog>
+						<Button
+							className='text-xs shadow-none'
+							variant={'outline'}
+							onClick={() => {
+								setShowModelProviderConfigDialog(true);
+							}}>
+							{t('setting_model_provider_configure')}
+						</Button>
+						<Dialog>
+							<DialogTrigger asChild>
+								<Button type='button' variant={'secondary'}>
+									{t('delete')}
+								</Button>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>{t('warning')}</DialogTitle>
+									<DialogDescription>
+										{t('setting_model_provider_delete_warning_description')}
+									</DialogDescription>
+								</DialogHeader>
+								<DialogFooter>
+									<Button
+										variant='destructive'
+										type='button'
+										onClick={handleDeleteModelProvider}>
+										{t('confirm')}
+										{deleteModelProviderLoading && (
+											<Loader2 className='h-4 w-4 animate-spin' />
+										)}
 									</Button>
-								</DialogTrigger>
-								<DialogContent>
-									<DialogHeader>
-										<DialogTitle>{t('warning')}</DialogTitle>
-										<DialogDescription>
-											{t('setting_model_provider_delete_warning_description')}
-										</DialogDescription>
-									</DialogHeader>
-									<DialogFooter>
-										<Button
-											variant='destructive'
-											type='button'
-											onClick={handleDeleteModelProvider}>
-											{t('confirm')}
-											{deleteModelProviderLoading && (
-												<Loader2 className='h-4 w-4 animate-spin' />
-											)}
-										</Button>
-										<DialogClose asChild>
-											<Button variant='default'>{t('cancel')}</Button>
-										</DialogClose>
-									</DialogFooter>
-								</DialogContent>
-							</Dialog>
-						</div>
-					</CardFooter>
-				)}
+									<DialogClose asChild>
+										<Button variant='default'>{t('cancel')}</Button>
+									</DialogClose>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+					</div>
+				</CardFooter>
 			</Card>
 		</>
 	);

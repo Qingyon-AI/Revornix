@@ -30,7 +30,13 @@ export interface ModelProviderSearchRequest {
      * @type {number}
      * @memberof ModelProviderSearchRequest
      */
-    provider_id?: number | null;
+    start?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelProviderSearchRequest
+     */
+    limit?: number;
 }
 
 /**
@@ -51,7 +57,8 @@ export function ModelProviderSearchRequestFromJSONTyped(json: any, ignoreDiscrim
     return {
         
         'keyword': json['keyword'] == null ? undefined : json['keyword'],
-        'provider_id': json['provider_id'] == null ? undefined : json['provider_id'],
+        'start': json['start'] == null ? undefined : json['start'],
+        'limit': json['limit'] == null ? undefined : json['limit'],
     };
 }
 
@@ -67,7 +74,8 @@ export function ModelProviderSearchRequestToJSONTyped(value?: ModelProviderSearc
     return {
         
         'keyword': value['keyword'],
-        'provider_id': value['provider_id'],
+        'start': value['start'],
+        'limit': value['limit'],
     };
 }
 

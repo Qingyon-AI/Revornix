@@ -12,6 +12,9 @@ Name | Type
 `description` | string
 `api_key` | string
 `base_url` | string
+`create_time` | Date
+`update_time` | Date
+`creator` | [UserPublicInfo](UserPublicInfo.md)
 
 ## Example
 
@@ -26,6 +29,9 @@ const example = {
   "description": null,
   "api_key": null,
   "base_url": null,
+  "create_time": null,
+  "update_time": null,
+  "creator": null,
 } satisfies ModelProvider
 
 console.log(example)

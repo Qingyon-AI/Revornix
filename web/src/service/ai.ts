@@ -1,6 +1,12 @@
 import aiApi from '@/api/ai'
-import { ChatMessages, DeleteModelProviderRequest, DeleteModelRequest, Model, ModelCreateRequest, ModelCreateResponse, ModelProvider, ModelProviderCreateRequest, ModelProviderCreateResponse, ModelProviderRequest, ModelProviderSearchRequest, ModelProviderSearchResponse, ModelProviderUpdateRequest, ModelRequest, ModelSearchRequest, ModelSearchResponse, ModelUpdateRequest, NormalResponse } from '@/generated'
+import { ChatMessages, DeleteModelProviderRequest, DeleteModelRequest, InifiniteScrollPagnitionModelProvider, Model, ModelCreateRequest, ModelCreateResponse, ModelProvider, ModelProviderCreateRequest, ModelProviderCreateResponse, ModelProviderIncludeRequest, ModelProviderRequest, ModelProviderSearchRequest, ModelProviderSearchResponse, ModelProviderUpdateRequest, ModelRequest, ModelSearchRequest, ModelSearchResponse, ModelUpdateRequest, NormalResponse } from '@/generated'
 import { request } from '@/lib/request'
+
+export const includeAiModelProvider = async (data: ModelProviderIncludeRequest) => {
+    return await request(aiApi.includeAiModelProvider, {
+        data: data
+    })
+}
 
 export const askAi = async (data: ChatMessages) => {
     return await request(aiApi.askAi, {
@@ -26,7 +32,7 @@ export const searchAiModel = async (data: ModelSearchRequest): Promise<ModelSear
     })
 }
 
-export const searchAiModelProvider = async (data: ModelProviderSearchRequest): Promise<ModelProviderSearchResponse> => {
+export const searchAiModelProvider = async (data: ModelProviderSearchRequest): Promise<InifiniteScrollPagnitionModelProvider> => {
     return await request(aiApi.searchAiModelProvider, {
         data: data
     })

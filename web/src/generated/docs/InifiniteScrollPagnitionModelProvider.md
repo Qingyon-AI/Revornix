@@ -1,22 +1,32 @@
 
-# DeleteModelProviderRequest
+# InifiniteScrollPagnitionModelProvider
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`provider_id` | number
+`total` | number
+`start` | number
+`limit` | number
+`has_more` | boolean
+`elements` | [Array&lt;ModelProvider&gt;](ModelProvider.md)
+`next_start` | number
 
 ## Example
 
 ```typescript
-import type { DeleteModelProviderRequest } from ''
+import type { InifiniteScrollPagnitionModelProvider } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "provider_id": null,
-} satisfies DeleteModelProviderRequest
+  "total": null,
+  "start": null,
+  "limit": null,
+  "has_more": null,
+  "elements": null,
+  "next_start": null,
+} satisfies InifiniteScrollPagnitionModelProvider
 
 console.log(example)
 
@@ -25,7 +35,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as DeleteModelProviderRequest
+const exampleParsed = JSON.parse(exampleJSON) as InifiniteScrollPagnitionModelProvider
 console.log(exampleParsed)
 ```
 

@@ -112,6 +112,7 @@ docs/GraphResponse.md
 docs/HTTPValidationError.md
 docs/InifiniteScrollPagnitionDocumentInfo.md
 docs/InifiniteScrollPagnitionDocumentNoteInfo.md
+docs/InifiniteScrollPagnitionModelProvider.md
 docs/InifiniteScrollPagnitionNotificationRecord.md
 docs/InifiniteScrollPagnitionRssServerInfo.md
 docs/InifiniteScrollPagnitionSectionCommentInfo.md
@@ -140,9 +141,9 @@ docs/ModelCreateResponse.md
 docs/ModelProvider.md
 docs/ModelProviderCreateRequest.md
 docs/ModelProviderCreateResponse.md
+docs/ModelProviderIncludeRequest.md
 docs/ModelProviderRequest.md
 docs/ModelProviderSearchRequest.md
-docs/ModelProviderSearchResponse.md
 docs/ModelProviderUpdateRequest.md
 docs/ModelRequest.md
 docs/ModelSearchRequest.md
@@ -183,10 +184,10 @@ docs/S3PresignUploadURLRequest.md
 docs/S3PresignUploadURLResponse.md
 docs/SchemasDocumentBaseSectionInfo.md
 docs/SchemasDocumentCreateLabelResponse.md
-docs/SchemasDocumentLabel.md
 docs/SchemasDocumentLabelAddRequest.md
 docs/SchemasDocumentLabelListResponse.md
 docs/SchemasSectionBaseSectionInfo.md
+docs/SchemasSectionLabel.md
 docs/SchemasSectionLabelDeleteRequest.md
 docs/SearchAllMyDocumentsRequest.md
 docs/SearchApiKeysRequest.md
@@ -365,6 +366,7 @@ models/GraphResponse.ts
 models/HTTPValidationError.ts
 models/InifiniteScrollPagnitionDocumentInfo.ts
 models/InifiniteScrollPagnitionDocumentNoteInfo.ts
+models/InifiniteScrollPagnitionModelProvider.ts
 models/InifiniteScrollPagnitionNotificationRecord.ts
 models/InifiniteScrollPagnitionRssServerInfo.ts
 models/InifiniteScrollPagnitionSectionCommentInfo.ts
@@ -392,9 +394,9 @@ models/ModelCreateResponse.ts
 models/ModelProvider.ts
 models/ModelProviderCreateRequest.ts
 models/ModelProviderCreateResponse.ts
+models/ModelProviderIncludeRequest.ts
 models/ModelProviderRequest.ts
 models/ModelProviderSearchRequest.ts
-models/ModelProviderSearchResponse.ts
 models/ModelProviderUpdateRequest.ts
 models/ModelRequest.ts
 models/ModelSearchRequest.ts
@@ -433,10 +435,10 @@ models/S3PresignUploadURLRequest.ts
 models/S3PresignUploadURLResponse.ts
 models/SchemasDocumentBaseSectionInfo.ts
 models/SchemasDocumentCreateLabelResponse.ts
-models/SchemasDocumentLabel.ts
 models/SchemasDocumentLabelAddRequest.ts
 models/SchemasDocumentLabelListResponse.ts
 models/SchemasSectionBaseSectionInfo.ts
+models/SchemasSectionLabel.ts
 models/SchemasSectionLabelDeleteRequest.ts
 models/SearchAllMyDocumentsRequest.ts
 models/SearchApiKeysRequest.ts

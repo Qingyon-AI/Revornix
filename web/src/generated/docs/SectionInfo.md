@@ -19,7 +19,7 @@ Name | Type
 `authority` | number
 `is_subscribed` | boolean
 `md_file_name` | string
-`labels` | [Array&lt;SchemasDocumentLabel&gt;](SchemasDocumentLabel.md)
+`labels` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
 `cover` | string
 `podcast_task` | [SectionPodcastTask](SectionPodcastTask.md)
 `process_task` | [SectionProcessTask](SectionProcessTask.md)
