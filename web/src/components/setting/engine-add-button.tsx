@@ -84,7 +84,10 @@ const EngineAddButton = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				predicate(query) {
-					return query.queryKey.includes('searchCommunityEngines');
+					return (
+						query.queryKey.includes('searchCommunityEngines') ||
+						query.queryKey.includes('searchMyEngine')
+					);
 				},
 			});
 			refreshMainUserInfo();
