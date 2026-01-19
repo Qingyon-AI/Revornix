@@ -1,21 +1,39 @@
 import engineApi from '@/api/engine'
-import { EngineDeleteRequest, EngineInstallRequest, EngineInstallResponse, EngineSearchRequest, EngineUpdateRequest, MineEngineSearchResponse, NormalResponse, ProvideEngineSearchResponse } from '@/generated'
+import { CommunityEngineSearchRequest, EngineCreateRequest, EngineDeleteRequest, EngineDetail, EngineDetailRequest, EngineForkRequest, EngineProvidedSearchRequest, EngineProvidedSearchResponse, EngineUpdateRequest, InifiniteScrollPagnitionEngineInfo, NormalResponse, UsableEngineSearchRequest, UsableEnginesResponse } from '@/generated'
 import { request } from '@/lib/request'
 
-export const getMineEngines = async (data: EngineSearchRequest): Promise<MineEngineSearchResponse> => {
-    return await request(engineApi.getMineEngines, {
+export const getEngineDetail = async (data: EngineDetailRequest): Promise<EngineDetail> => {
+    return await request(engineApi.getEngineDetail, {
         data
     })
 }
 
-export const getProvideEngines = async (data: EngineSearchRequest): Promise<ProvideEngineSearchResponse> => {
-    return await request(engineApi.getProvideEngines, {
+export const getProvidedEngines = async (data: EngineProvidedSearchRequest): Promise<EngineProvidedSearchResponse> => {
+    return await request(engineApi.getProvidedEngines, {
         data
     })
 }
 
-export const installEngine = async (data: EngineInstallRequest): Promise<EngineInstallResponse> => {
-    return await request(engineApi.installEngine, {
+export const searchUableEngines = async (data: UsableEngineSearchRequest): Promise<UsableEnginesResponse> => {
+    return await request(engineApi.searchUsableEngines, {
+        data
+    })
+}
+
+export const searchCommunityEngines = async (data: CommunityEngineSearchRequest): Promise<InifiniteScrollPagnitionEngineInfo> => {
+    return await request(engineApi.searchCommunityEngines, {
+        data
+    })
+}
+
+export const forkEngine = async (data: EngineForkRequest): Promise<NormalResponse> => {
+    return await request(engineApi.forkEngine, {
+        data
+    })
+}
+
+export const createEngine = async (data: EngineCreateRequest): Promise<NormalResponse> => {
+    return await request(engineApi.createEngine, {
         data
     })
 }

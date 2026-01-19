@@ -33,6 +33,7 @@ docs/BindPhoneCodeCreateRequest.md
 docs/BindPhoneCodeVerifyRequest.md
 docs/ChatItem.md
 docs/ChatMessages.md
+docs/CommunityEngineSearchRequest.md
 docs/DaySectionRequest.md
 docs/DaySectionResponse.md
 docs/DefaultApi.md
@@ -76,11 +77,15 @@ docs/EmailInfo.md
 docs/EmailUserCreateCodeVerifyRequest.md
 docs/EmailUserCreateVerifyRequest.md
 docs/EngineApi.md
+docs/EngineCreateRequest.md
 docs/EngineDeleteRequest.md
+docs/EngineDetail.md
+docs/EngineDetailRequest.md
+docs/EngineForkRequest.md
 docs/EngineInfo.md
-docs/EngineInstallRequest.md
-docs/EngineInstallResponse.md
-docs/EngineSearchRequest.md
+docs/EngineProvidedInfo.md
+docs/EngineProvidedSearchRequest.md
+docs/EngineProvidedSearchResponse.md
 docs/EngineUpdateRequest.md
 docs/FileDocumentInfo.md
 docs/FileSystemApi.md
@@ -112,6 +117,7 @@ docs/GraphResponse.md
 docs/HTTPValidationError.md
 docs/InifiniteScrollPagnitionDocumentInfo.md
 docs/InifiniteScrollPagnitionDocumentNoteInfo.md
+docs/InifiniteScrollPagnitionEngineInfo.md
 docs/InifiniteScrollPagnitionModelProvider.md
 docs/InifiniteScrollPagnitionNotificationRecord.md
 docs/InifiniteScrollPagnitionRssServerInfo.md
@@ -132,7 +138,6 @@ docs/MCPServerSearchResponse.md
 docs/MCPServerUpdateRequest.md
 docs/McpApi.md
 docs/Message.md
-docs/MineEngineSearchResponse.md
 docs/MineFileSystemSearchResponse.md
 docs/MineSectionRoleAndAuthorityRequest.md
 docs/Model.md
@@ -172,7 +177,6 @@ docs/PaginationNotificationTask.md
 docs/PasswordUpdateRequest.md
 docs/PhoneInfo.md
 docs/PrivateUserInfo.md
-docs/ProvideEngineSearchResponse.md
 docs/ProvideFileSystemSearchResponse.md
 docs/QuickNoteDocumentInfo.md
 docs/ReadNotificationRecordRequest.md
@@ -248,8 +252,9 @@ docs/UpdateNotificationSourceRequest.md
 docs/UpdateNotificationTargetRequest.md
 docs/UpdateNotificationTaskRequest.md
 docs/UpdateRssServerRequest.md
+docs/UsableEngineSearchRequest.md
+docs/UsableEnginesResponse.md
 docs/UserApi.md
-docs/UserEngineInfo.md
 docs/UserFileSystemDeleteRequest.md
 docs/UserFileSystemInfo.md
 docs/UserFileSystemInfoRequest.md
@@ -293,6 +298,7 @@ models/BindPhoneCodeCreateRequest.ts
 models/BindPhoneCodeVerifyRequest.ts
 models/ChatItem.ts
 models/ChatMessages.ts
+models/CommunityEngineSearchRequest.ts
 models/DaySectionRequest.ts
 models/DaySectionResponse.ts
 models/DefaultEngineUpdateRequest.ts
@@ -333,11 +339,15 @@ models/EmailCreateRequest.ts
 models/EmailInfo.ts
 models/EmailUserCreateCodeVerifyRequest.ts
 models/EmailUserCreateVerifyRequest.ts
+models/EngineCreateRequest.ts
 models/EngineDeleteRequest.ts
+models/EngineDetail.ts
+models/EngineDetailRequest.ts
+models/EngineForkRequest.ts
 models/EngineInfo.ts
-models/EngineInstallRequest.ts
-models/EngineInstallResponse.ts
-models/EngineSearchRequest.ts
+models/EngineProvidedInfo.ts
+models/EngineProvidedSearchRequest.ts
+models/EngineProvidedSearchResponse.ts
 models/EngineUpdateRequest.ts
 models/FileDocumentInfo.ts
 models/FileSystemInfo.ts
@@ -367,6 +377,7 @@ models/GraphResponse.ts
 models/HTTPValidationError.ts
 models/InifiniteScrollPagnitionDocumentInfo.ts
 models/InifiniteScrollPagnitionDocumentNoteInfo.ts
+models/InifiniteScrollPagnitionEngineInfo.ts
 models/InifiniteScrollPagnitionModelProvider.ts
 models/InifiniteScrollPagnitionNotificationRecord.ts
 models/InifiniteScrollPagnitionRssServerInfo.ts
@@ -386,7 +397,6 @@ models/MCPServerSearchRequest.ts
 models/MCPServerSearchResponse.ts
 models/MCPServerUpdateRequest.ts
 models/Message.ts
-models/MineEngineSearchResponse.ts
 models/MineFileSystemSearchResponse.ts
 models/MineSectionRoleAndAuthorityRequest.ts
 models/Model.ts
@@ -425,7 +435,6 @@ models/PaginationNotificationTask.ts
 models/PasswordUpdateRequest.ts
 models/PhoneInfo.ts
 models/PrivateUserInfo.ts
-models/ProvideEngineSearchResponse.ts
 models/ProvideFileSystemSearchResponse.ts
 models/QuickNoteDocumentInfo.ts
 models/ReadNotificationRecordRequest.ts
@@ -498,7 +507,8 @@ models/UpdateNotificationSourceRequest.ts
 models/UpdateNotificationTargetRequest.ts
 models/UpdateNotificationTaskRequest.ts
 models/UpdateRssServerRequest.ts
-models/UserEngineInfo.ts
+models/UsableEngineSearchRequest.ts
+models/UsableEnginesResponse.ts
 models/UserFileSystemDeleteRequest.ts
 models/UserFileSystemInfo.ts
 models/UserFileSystemInfoRequest.ts

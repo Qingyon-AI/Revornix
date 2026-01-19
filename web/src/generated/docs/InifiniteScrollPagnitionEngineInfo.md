@@ -1,30 +1,32 @@
 
-# EngineUpdateRequest
+# InifiniteScrollPagnitionEngineInfo
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`engine_id` | number
-`config_json` | string
-`name` | string
-`description` | string
-`is_public` | boolean
+`total` | number
+`start` | number
+`limit` | number
+`has_more` | boolean
+`elements` | [Array&lt;EngineInfo&gt;](EngineInfo.md)
+`next_start` | number
 
 ## Example
 
 ```typescript
-import type { EngineUpdateRequest } from ''
+import type { InifiniteScrollPagnitionEngineInfo } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "engine_id": null,
-  "config_json": null,
-  "name": null,
-  "description": null,
-  "is_public": null,
-} satisfies EngineUpdateRequest
+  "total": null,
+  "start": null,
+  "limit": null,
+  "has_more": null,
+  "elements": null,
+  "next_start": null,
+} satisfies InifiniteScrollPagnitionEngineInfo
 
 console.log(example)
 
@@ -33,7 +35,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as EngineUpdateRequest
+const exampleParsed = JSON.parse(exampleJSON) as InifiniteScrollPagnitionEngineInfo
 console.log(exampleParsed)
 ```
 

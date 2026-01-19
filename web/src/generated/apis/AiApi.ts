@@ -124,7 +124,7 @@ export interface ListAiModelAiModelSearchPostRequest {
     authorization?: string | null;
 }
 
-export interface ListAiModelProviderAiModelProviderProvidedPostRequest {
+export interface ListAiModelProviderAiModelProviderCommunityPostRequest {
     modelProviderSearchRequest: ModelProviderSearchRequest;
     authorization?: string | null;
 }
@@ -536,13 +536,14 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
+     * 搜索当前所有我可以使用的模型供应商 包含我创建的和公开的
      * List Ai Model Provider
      */
-    async listAiModelProviderAiModelProviderProvidedPostRaw(requestParameters: ListAiModelProviderAiModelProviderProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionModelProvider>> {
+    async listAiModelProviderAiModelProviderCommunityPostRaw(requestParameters: ListAiModelProviderAiModelProviderCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionModelProvider>> {
         if (requestParameters['modelProviderSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelProviderSearchRequest',
-                'Required parameter "modelProviderSearchRequest" was null or undefined when calling listAiModelProviderAiModelProviderProvidedPost().'
+                'Required parameter "modelProviderSearchRequest" was null or undefined when calling listAiModelProviderAiModelProviderCommunityPost().'
             );
         }
 
@@ -557,7 +558,7 @@ export class AiApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/ai/model-provider/provided`;
+        let urlPath = `/ai/model-provider/community`;
 
         const response = await this.request({
             path: urlPath,
@@ -571,10 +572,11 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
+     * 搜索当前所有我可以使用的模型供应商 包含我创建的和公开的
      * List Ai Model Provider
      */
-    async listAiModelProviderAiModelProviderProvidedPost(requestParameters: ListAiModelProviderAiModelProviderProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionModelProvider> {
-        const response = await this.listAiModelProviderAiModelProviderProvidedPostRaw(requestParameters, initOverrides);
+    async listAiModelProviderAiModelProviderCommunityPost(requestParameters: ListAiModelProviderAiModelProviderCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionModelProvider> {
+        const response = await this.listAiModelProviderAiModelProviderCommunityPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

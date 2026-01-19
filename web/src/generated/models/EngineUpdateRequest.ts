@@ -24,7 +24,7 @@ export interface EngineUpdateRequest {
      * @type {number}
      * @memberof EngineUpdateRequest
      */
-    user_engine_id: number;
+    engine_id: number;
     /**
      * 
      * @type {string}
@@ -36,20 +36,26 @@ export interface EngineUpdateRequest {
      * @type {string}
      * @memberof EngineUpdateRequest
      */
-    title?: string | null;
+    name?: string | null;
     /**
      * 
      * @type {string}
      * @memberof EngineUpdateRequest
      */
     description?: string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof EngineUpdateRequest
+     */
+    is_public?: boolean | null;
 }
 
 /**
  * Check if a given object implements the EngineUpdateRequest interface.
  */
 export function instanceOfEngineUpdateRequest(value: object): value is EngineUpdateRequest {
-    if (!('user_engine_id' in value) || value['user_engine_id'] === undefined) return false;
+    if (!('engine_id' in value) || value['engine_id'] === undefined) return false;
     return true;
 }
 
@@ -63,10 +69,11 @@ export function EngineUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'user_engine_id': json['user_engine_id'],
+        'engine_id': json['engine_id'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
-        'title': json['title'] == null ? undefined : json['title'],
+        'name': json['name'] == null ? undefined : json['name'],
         'description': json['description'] == null ? undefined : json['description'],
+        'is_public': json['is_public'] == null ? undefined : json['is_public'],
     };
 }
 
@@ -81,10 +88,11 @@ export function EngineUpdateRequestToJSONTyped(value?: EngineUpdateRequest | nul
 
     return {
         
-        'user_engine_id': value['user_engine_id'],
+        'engine_id': value['engine_id'],
         'config_json': value['config_json'],
-        'title': value['title'],
+        'name': value['name'],
         'description': value['description'],
+        'is_public': value['is_public'],
     };
 }
 

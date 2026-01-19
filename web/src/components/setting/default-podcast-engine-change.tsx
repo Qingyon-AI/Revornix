@@ -9,7 +9,7 @@ import {
 } from '../ui/select';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
-import { getMineEngines } from '@/service/engine';
+import { searchUableEngines } from '@/service/engine';
 import { utils } from '@kinda/utils';
 import { updateUserDefaultEngine } from '@/service/user';
 import { toast } from 'sonner';
@@ -21,7 +21,7 @@ const DefaultPodcastEngineChange = () => {
 	const { data } = useQuery({
 		queryKey: ['mine-engine', EngineCategory.TTS],
 		queryFn: async () => {
-			const res = await getMineEngines({
+			const res = await searchUableEngines({
 				keyword: '',
 				filter_category: EngineCategory.TTS,
 			});
@@ -62,12 +62,9 @@ const DefaultPodcastEngineChange = () => {
 				<SelectGroup>
 					{data?.data &&
 						data.data
-							.filter((engine) => {
-								return engine.enable;
-							})
 							.map((engine, index) => (
 								<SelectItem key={engine.id} value={String(engine.id)}>
-									{engine.title}
+									{engine.name}
 								</SelectItem>
 							))}
 				</SelectGroup>

@@ -16,30 +16,30 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface EngineDeleteRequest
+ * @interface EngineDetailRequest
  */
-export interface EngineDeleteRequest {
+export interface EngineDetailRequest {
     /**
      * 
      * @type {number}
-     * @memberof EngineDeleteRequest
+     * @memberof EngineDetailRequest
      */
     engine_id: number;
 }
 
 /**
- * Check if a given object implements the EngineDeleteRequest interface.
+ * Check if a given object implements the EngineDetailRequest interface.
  */
-export function instanceOfEngineDeleteRequest(value: object): value is EngineDeleteRequest {
+export function instanceOfEngineDetailRequest(value: object): value is EngineDetailRequest {
     if (!('engine_id' in value) || value['engine_id'] === undefined) return false;
     return true;
 }
 
-export function EngineDeleteRequestFromJSON(json: any): EngineDeleteRequest {
-    return EngineDeleteRequestFromJSONTyped(json, false);
+export function EngineDetailRequestFromJSON(json: any): EngineDetailRequest {
+    return EngineDetailRequestFromJSONTyped(json, false);
 }
 
-export function EngineDeleteRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): EngineDeleteRequest {
+export function EngineDetailRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): EngineDetailRequest {
     if (json == null) {
         return json;
     }
@@ -49,11 +49,11 @@ export function EngineDeleteRequestFromJSONTyped(json: any, ignoreDiscriminator:
     };
 }
 
-export function EngineDeleteRequestToJSON(json: any): EngineDeleteRequest {
-    return EngineDeleteRequestToJSONTyped(json, false);
+export function EngineDetailRequestToJSON(json: any): EngineDetailRequest {
+    return EngineDetailRequestToJSONTyped(json, false);
 }
 
-export function EngineDeleteRequestToJSONTyped(value?: EngineDeleteRequest | null, ignoreDiscriminator: boolean = false): any {
+export function EngineDetailRequestToJSONTyped(value?: EngineDetailRequest | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
