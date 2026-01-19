@@ -19,7 +19,7 @@ const DefaultPodcastEngineChange = () => {
 	const t = useTranslations();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const { data } = useQuery({
-		queryKey: ['mine-engine', EngineCategory.TTS],
+		queryKey: ['searchMyEngine', EngineCategory.TTS],
 		queryFn: async () => {
 			const res = await searchUableEngines({
 				keyword: '',
