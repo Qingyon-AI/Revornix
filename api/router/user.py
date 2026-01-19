@@ -438,15 +438,6 @@ async def create_user_by_email_verify(
     )
     if db_mineru_engine is None:
         raise CustomException('The MinerU Engine is Not Found', 404)
-    db_user_engine = crud.engine.create_user_engine(
-        db=db,
-        user_id=db_user.id,
-        engine_id=db_mineru_engine.id,
-        title="Default MinerU Engine",
-        description="The default mineru engine for the user"
-    )
-    db_user.default_website_document_parse_user_engine_id = db_user_engine.id
-    db_user.default_file_document_parse_user_engine_id = db_user_engine.id
     db.commit()
     if deployed_by_official:
         await on_user_created(
@@ -512,15 +503,6 @@ def create_user_by_email(
     )
     if db_mineru_engine is None:
         raise CustomException('The MinerU Engine is Not Found', 404)
-    db_user_engine = crud.engine.create_user_engine(
-        db=db,
-        user_id=db_user.id,
-        engine_id=db_mineru_engine.id,
-        title="Default MinerU Engine",
-        description="The default mineru engine for the user"
-    )
-    db_user.default_website_document_parse_user_engine_id = db_user_engine.id
-    db_user.default_file_document_parse_user_engine_id = db_user_engine.id
     db.commit()
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
@@ -1002,15 +984,6 @@ async def create_user_by_google(
     )
     if db_mineru_engine is None:
         raise CustomException('The MinerU Engine is Not Found', 404)
-    db_user_engine = crud.engine.create_user_engine(
-        db=db,
-        user_id=db_user.id,
-        engine_id=db_mineru_engine.id,
-        title="Default MinerU Engine",
-        description="The default mineru engine for the user"
-    )
-    db_user.default_website_document_parse_user_engine_id = db_user_engine.id
-    db_user.default_file_document_parse_user_engine_id = db_user_engine.id
     db.commit()
     if deployed_by_official:
         await on_user_created(
@@ -1151,22 +1124,6 @@ async def create_user_by_github(
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
     await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
-    # init the default engine for the user
-    db_mineru_engine = crud.engine.get_engine_by_uuid(
-        db=db,
-        uuid=Engine.MinerU.meta.uuid
-    )
-    if db_mineru_engine is None:
-        raise CustomException('The MinerU Engine is Not Found', 404)
-    db_user_engine = crud.engine.create_user_engine(
-        db=db,
-        user_id=db_user.id,
-        engine_id=db_mineru_engine.id,
-        title="Default MinerU Engine",
-        description="The default mineru engine for the user"
-    )
-    db_user.default_website_document_parse_user_engine_id = db_user_engine.id
-    db_user.default_file_document_parse_user_engine_id = db_user_engine.id
     db.commit()
     if deployed_by_official:
         await on_user_created(
@@ -1176,9 +1133,11 @@ async def create_user_by_github(
     return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
 
 @user_router.post("/bind/github", response_model=schemas.common.NormalResponse)
-def bind_github(bind_github: schemas.user.GithubUserBind,
-                      user = Depends(get_current_user),
-                      db: Session = Depends(get_db)):
+def bind_github(
+    bind_github: schemas.user.GithubUserBind,
+    user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
     GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')
     if GITHUB_CLIENT_ID is None or GITHUB_CLIENT_SECRET is None:
@@ -1318,15 +1277,6 @@ async def create_user_by_sms_verify(
         )
         if db_mineru_engine is None:
             raise CustomException('The MinerU Engine is Not Found', 404)
-        db_user_engine = crud.engine.create_user_engine(
-            db=db,
-            user_id=db_user.id,
-            engine_id=db_mineru_engine.id,
-            title="Default MinerU Engine",
-            description="The default mineru engine for the user"
-        )
-        db_user.default_website_document_parse_user_engine_id = db_user_engine.id
-        db_user.default_file_document_parse_user_engine_id = db_user_engine.id
         db.commit()
         if deployed_by_official:
             await on_user_created(
@@ -1483,15 +1433,6 @@ async def create_user_by_wechat_mini(
         )
         if db_mineru_engine is None:
             raise CustomException('The MinerU Engine is Not Found', 404)
-        db_user_engine = crud.engine.create_user_engine(
-            db=db,
-            user_id=db_user.id,
-            engine_id=db_mineru_engine.id,
-            title="Default MinerU Engine",
-            description="The default mineru engine for the user"
-        )
-        db_user.default_website_document_parse_user_engine_id = db_user_engine.id
-        db_user.default_file_document_parse_user_engine_id = db_user_engine.id
     else:
         # TODO 优化一下微信用户的机制 现在的处理总感觉有些问题
         # 如果union_id已经存在 说明该用户已通过别的微信渠道注册过, 不需要新建文件系统等机制 仅仅再创建一个微信用户身份即可
@@ -1606,15 +1547,6 @@ async def create_user_by_wechat_web(
         )
         if db_mineru_engine is None:
             raise CustomException('The MinerU Engine is Not Found', 404)
-        db_user_engine = crud.engine.create_user_engine(
-            db=db,
-            user_id=db_user.id,
-            engine_id=db_mineru_engine.id,
-            title="Default MinerU Engine",
-            description="The default mineru engine for the user"
-        )
-        db_user.default_website_document_parse_user_engine_id = db_user_engine.id
-        db_user.default_file_document_parse_user_engine_id = db_user_engine.id
     else:
         db_user = crud.user.get_user_by_id(
             db=db,

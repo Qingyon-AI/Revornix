@@ -110,9 +110,9 @@ async def handle_convert_document_md(
             )
         if md_extractor is None:
             raise Exception("There are something wrong with the user's markdown convert engine")
-        db_engine = crud.engine.get_engine_by_id(
+        db_engine = crud.engine.get_engine_by_engine_id(
             db=db,
-            id=md_extractor.engine_id
+            engine_id=md_extractor.engine_id
         )
         if db_engine is None:
             raise Exception("There are something wrong with the user's markdown convert engine")

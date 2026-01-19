@@ -62,9 +62,9 @@ async def handle_update_document_ai_podcast(
         )
         if db_podcast_generator is None:
             raise Exception("There is something wrong with the user's default podcast generate engine")
-        db_engine = crud.engine.get_engine_by_id(
+        db_engine = crud.engine.get_engine_by_engine_id(
             db=db,
-            id=db_podcast_generator.engine_id
+            engine_id=db_podcast_generator.engine_id
         )
         if db_engine is None:
             raise Exception("There is something wrong with the user's default podcast generate engine")

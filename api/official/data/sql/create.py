@@ -77,7 +77,7 @@ def seed_database(db):
 
     for engine in engines:
         if crud.engine.get_engine_by_uuid(db, engine.engine_uuid) is None:
-            crud.engine.create_engine(
+            crud.engine.create_engine_provided(
                 db=db,
                 uuid=engine.engine_uuid,
                 category=engine.engine_category,

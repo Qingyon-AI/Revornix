@@ -69,9 +69,9 @@ class EngineProtocol(Protocol):
             if not user:
                 raise ValueError("user not found")
 
-            engine = crud.engine.get_engine_by_id(
+            engine = crud.engine.get_engine_by_engine_id(
                 db=db,
-                id=user_engine.engine_id
+                engine_id=user_engine.engine_id
             )
             if not engine:
                 raise ValueError("engine not found")

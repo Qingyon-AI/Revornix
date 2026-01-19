@@ -189,9 +189,9 @@ async def handle_process_section(
         )
         if db_image_generator is None:
             raise Exception("There is something wrong with the user's default image generate engine")
-        db_engine = crud.engine.get_engine_by_id(
+        db_engine = crud.engine.get_engine_by_engine_id(
             db=db,
-            id=db_image_generator.engine_id
+            engine_id=db_image_generator.engine_id
         )
         if db_engine is None:
             raise Exception("There is something wrong with the user's default image generate engine")
