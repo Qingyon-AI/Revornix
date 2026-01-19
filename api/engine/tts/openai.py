@@ -61,15 +61,3 @@ class OpenAIAudioEngine(TTSEngineProtocol):
                 raise Exception("The audio is None.")
             # Langfuse会将audio.data包装成LangfuseMedia，从中获取音频bytes需要通过_content_bytes
             return audio.data._content_bytes
-
-if __name__ == '__main__':
-    async def main():
-        engine = OpenAIAudioEngine()
-        await engine.init_engine_config_by_user_engine_id(
-            user_engine_id=3
-        )
-        res = await engine.synthesize('今天是个好天气。')
-        with open('res.mp3', 'wb') as f:
-            f.write(res)
-    import asyncio
-    asyncio.run(main())

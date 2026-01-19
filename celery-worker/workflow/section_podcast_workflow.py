@@ -13,6 +13,7 @@ from engine.tts.volc.tts import VolcTTSEngine
 from enums.engine import Engine
 from enums.section import SectionPodcastStatus
 from workflow.markdown_helpers import get_markdown_content_by_section_id
+from proxy.engine_proxy import EngineProxy
 
 
 class SectionPodcastState(TypedDict, total=False):
@@ -51,6 +52,7 @@ async def handle_update_section_ai_podcast(
             raise Exception("The user who want to process section has not set default user file system")
         if db_user.default_podcast_user_engine_id is None:
             raise Exception("The user who want to process section has not set default podcast user engine")
+
         podcast_generator = crud.engine.get_user_engine_by_user_engine_id(
             db=db,
             user_engine_id=db_user.default_podcast_user_engine_id
@@ -85,9 +87,12 @@ async def handle_update_section_ai_podcast(
         else:
             raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
 
-        await engine.init_engine_config_by_user_engine_id(
-            user_engine_id=db_user.default_podcast_user_engine_id
-        )
+        engine_config = (await EngineProxy.create(
+            user_id=user_id,
+            engine_id=db_user.default_podcast_user_engine_id
+        )).get_configuration()
+        if engine_config:
+            engine.set_engine_config(engine_config=engine_config)
 
         audio_bytes = await engine.synthesize(
             text=markdown_content
