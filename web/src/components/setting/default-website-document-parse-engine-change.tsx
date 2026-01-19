@@ -19,7 +19,7 @@ const DefaultWebsiteDocumentParseEngineChange = () => {
 	const t = useTranslations();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const { data } = useQuery({
-		queryKey: ['mine-engine', EngineCategory.Markdown],
+		queryKey: ['searchMyEngine', EngineCategory.Markdown],
 		queryFn: async () => {
 			const res = await searchUableEngines({
 				keyword: '',

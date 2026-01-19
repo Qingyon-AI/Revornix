@@ -19,7 +19,7 @@ const DocumentImageGenerateEngineChange = () => {
 	const t = useTranslations();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const { data } = useQuery({
-		queryKey: ['mine-engine', EngineCategory.IMAGE],
+		queryKey: ['searchMyEngine', EngineCategory.IMAGE],
 		queryFn: async () => {
 			const res = await searchUableEngines({
 				keyword: '',
