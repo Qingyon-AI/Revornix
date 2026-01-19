@@ -13,6 +13,7 @@ from engine.tts.volc.tts import VolcTTSEngine
 from enums.document import DocumentPodcastStatus
 from enums.engine import Engine
 from workflow.markdown_helpers import get_markdown_content_by_document_id
+from proxy.engine_proxy import EngineProxy
 
 
 class DocumentPodcastState(TypedDict, total=False):
@@ -90,9 +91,12 @@ async def handle_update_document_ai_podcast(
         else:
             raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
 
-        await engine.init_engine_config_by_user_engine_id(
-            user_engine_id=db_user.default_podcast_user_engine_id
-        )
+        engine_config = (await EngineProxy.create(
+            user_id=user_id,
+            engine_id=db_engine.id
+        )).get_configuration()
+        if engine_config:
+            engine.set_engine_config(engine_config=engine_config)
 
         audio_bytes = await engine.synthesize(
             text=markdown_content

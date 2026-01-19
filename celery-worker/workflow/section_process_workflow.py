@@ -20,6 +20,7 @@ from schemas.section import GeneratedImage
 from schemas.task import SectionOverrideProperty
 from workflow.markdown_helpers import get_markdown_content_by_document_id
 from workflow.section_podcast_workflow import handle_update_section_ai_podcast
+from proxy.engine_proxy import EngineProxy
 
 
 class SectionProcessState(TypedDict, total=False):
@@ -202,9 +203,12 @@ async def handle_process_section(
         else:
             raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
 
-        await engine.init_engine_config_by_user_engine_id(
-            user_engine_id=db_user.default_image_generate_engine_id
-        )
+        engine_config = (await EngineProxy.create(
+            user_id=user_id,
+            engine_id=db_user.default_image_generate_engine_id
+        )).get_configuration()
+        if engine_config:
+            engine.set_engine_config(engine_config=engine_config)
 
         images_plan = await ImageGenerateEngineProtocol.plan_images_with_llm(
             user_id=user_id,

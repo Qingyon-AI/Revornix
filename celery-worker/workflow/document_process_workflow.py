@@ -43,6 +43,7 @@ from enums.document import (
 from enums.engine import Engine
 from proxy.ai_model_proxy import AIModelProxy
 from schemas.task import DocumentOverrideProperty
+from proxy.engine_proxy import EngineProxy
 
 
 class DocumentProcessState(TypedDict, total=False):
@@ -135,18 +136,23 @@ async def handle_convert_document_md(
         else:
             raise Exception("The convert engine is not supported")
 
+        engine_config = None
         if db_document.category == DocumentCategory.FILE:
             if db_user.default_file_document_parse_user_engine_id is None:
                 raise Exception("The user who want to process document has not set default file document parse user engine")
-            await engine.init_engine_config_by_user_engine_id(
-                user_engine_id=db_user.default_file_document_parse_user_engine_id
-            )
+            engine_config = (await EngineProxy.create(
+                user_id=user_id,
+                engine_id=db_user.default_file_document_parse_user_engine_id
+            )).get_configuration()
         elif db_document.category == DocumentCategory.WEBSITE:
             if db_user.default_website_document_parse_user_engine_id is None:
                 raise Exception("The user who want to process document has not set default website document parse user engine")
-            await engine.init_engine_config_by_user_engine_id(
-                user_engine_id=db_user.default_website_document_parse_user_engine_id
-            )
+            engine_config = (await EngineProxy.create(
+                user_id=user_id,
+                engine_id=db_user.default_website_document_parse_user_engine_id
+            )).get_configuration()
+        if engine_config:
+            engine.set_engine_config(engine_config=engine_config)
 
         md_file_name = None
 

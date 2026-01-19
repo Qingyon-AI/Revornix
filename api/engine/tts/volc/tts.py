@@ -193,16 +193,3 @@ class VolcTTSEngine(TTSEngineProtocol):
                 if final_audio_url is not None:
                     return httpx.get(str(final_audio_url)).content
                 return None
-
-if __name__ == '__main__':
-    async def main():
-        engine = VolcTTSEngine()
-        await engine.init_engine_config_by_user_engine_id(
-            user_engine_id=2
-        )
-        res = await engine.synthesize('用非常简短的内容介绍你是谁啊?')
-        with open('res.mp3', 'wb') as f:
-            if res:
-                f.write(res)
-    import asyncio
-    asyncio.run(main())
