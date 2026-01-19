@@ -15,54 +15,84 @@
 
 import * as runtime from '../runtime';
 import type {
+  CommunityEngineSearchRequest,
+  EngineCreateRequest,
   EngineDeleteRequest,
-  EngineInstallRequest,
-  EngineInstallResponse,
-  EngineSearchRequest,
+  EngineDetail,
+  EngineDetailRequest,
+  EngineForkRequest,
+  EngineProvidedSearchRequest,
+  EngineProvidedSearchResponse,
   EngineUpdateRequest,
   HTTPValidationError,
-  MineEngineSearchResponse,
+  InifiniteScrollPagnitionEngineInfo,
   NormalResponse,
-  ProvideEngineSearchResponse,
+  UsableEngineSearchRequest,
+  UsableEnginesResponse,
 } from '../models/index';
 import {
+    CommunityEngineSearchRequestFromJSON,
+    CommunityEngineSearchRequestToJSON,
+    EngineCreateRequestFromJSON,
+    EngineCreateRequestToJSON,
     EngineDeleteRequestFromJSON,
     EngineDeleteRequestToJSON,
-    EngineInstallRequestFromJSON,
-    EngineInstallRequestToJSON,
-    EngineInstallResponseFromJSON,
-    EngineInstallResponseToJSON,
-    EngineSearchRequestFromJSON,
-    EngineSearchRequestToJSON,
+    EngineDetailFromJSON,
+    EngineDetailToJSON,
+    EngineDetailRequestFromJSON,
+    EngineDetailRequestToJSON,
+    EngineForkRequestFromJSON,
+    EngineForkRequestToJSON,
+    EngineProvidedSearchRequestFromJSON,
+    EngineProvidedSearchRequestToJSON,
+    EngineProvidedSearchResponseFromJSON,
+    EngineProvidedSearchResponseToJSON,
     EngineUpdateRequestFromJSON,
     EngineUpdateRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
-    MineEngineSearchResponseFromJSON,
-    MineEngineSearchResponseToJSON,
+    InifiniteScrollPagnitionEngineInfoFromJSON,
+    InifiniteScrollPagnitionEngineInfoToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
-    ProvideEngineSearchResponseFromJSON,
-    ProvideEngineSearchResponseToJSON,
+    UsableEngineSearchRequestFromJSON,
+    UsableEngineSearchRequestToJSON,
+    UsableEnginesResponseFromJSON,
+    UsableEnginesResponseToJSON,
 } from '../models/index';
+
+export interface CreateEngineEngineCreatePostRequest {
+    engineCreateRequest: EngineCreateRequest;
+    authorization?: string | null;
+}
 
 export interface DeleteEngineEngineDeletePostRequest {
     engineDeleteRequest: EngineDeleteRequest;
     authorization?: string | null;
 }
 
-export interface InstallEngineEngineInstallPostRequest {
-    engineInstallRequest: EngineInstallRequest;
+export interface GetEngineDetailEngineDetailPostRequest {
+    engineDetailRequest: EngineDetailRequest;
     authorization?: string | null;
 }
 
-export interface ProvideDocumentParseEngineEngineProvidePostRequest {
-    engineSearchRequest: EngineSearchRequest;
+export interface InstallEngineEngineForkPostRequest {
+    engineForkRequest: EngineForkRequest;
     authorization?: string | null;
 }
 
-export interface SearchDocumentParseEngineEngineMinePostRequest {
-    engineSearchRequest: EngineSearchRequest;
+export interface ProvideDocumentParseEngineEngineProvidedPostRequest {
+    engineProvidedSearchRequest: EngineProvidedSearchRequest;
+    authorization?: string | null;
+}
+
+export interface SearchDocumentParseEngineEngineCommunityPostRequest {
+    communityEngineSearchRequest: CommunityEngineSearchRequest;
+    authorization?: string | null;
+}
+
+export interface SearchUsableEngineEngineUsablePostRequest {
+    usableEngineSearchRequest: UsableEngineSearchRequest;
     authorization?: string | null;
 }
 
@@ -75,6 +105,51 @@ export interface UpdateEngineEngineUpdatePostRequest {
  * 
  */
 export class EngineApi extends runtime.BaseAPI {
+
+    /**
+     * 创建引擎
+     * Create Engine
+     */
+    async createEngineEngineCreatePostRaw(requestParameters: CreateEngineEngineCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['engineCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'engineCreateRequest',
+                'Required parameter "engineCreateRequest" was null or undefined when calling createEngineEngineCreatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/engine/create`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: EngineCreateRequestToJSON(requestParameters['engineCreateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 创建引擎
+     * Create Engine
+     */
+    async createEngineEngineCreatePost(requestParameters: CreateEngineEngineCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.createEngineEngineCreatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Delete Engine
@@ -120,13 +195,13 @@ export class EngineApi extends runtime.BaseAPI {
     }
 
     /**
-     * Install Engine
+     * Get Engine Detail
      */
-    async installEngineEngineInstallPostRaw(requestParameters: InstallEngineEngineInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineInstallResponse>> {
-        if (requestParameters['engineInstallRequest'] == null) {
+    async getEngineDetailEngineDetailPostRaw(requestParameters: GetEngineDetailEngineDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineDetail>> {
+        if (requestParameters['engineDetailRequest'] == null) {
             throw new runtime.RequiredError(
-                'engineInstallRequest',
-                'Required parameter "engineInstallRequest" was null or undefined when calling installEngineEngineInstallPost().'
+                'engineDetailRequest',
+                'Required parameter "engineDetailRequest" was null or undefined when calling getEngineDetailEngineDetailPost().'
             );
         }
 
@@ -141,35 +216,78 @@ export class EngineApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/engine/install`;
+        let urlPath = `/engine/detail`;
 
         const response = await this.request({
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: EngineInstallRequestToJSON(requestParameters['engineInstallRequest']),
+            body: EngineDetailRequestToJSON(requestParameters['engineDetailRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => EngineInstallResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => EngineDetailFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Engine Detail
+     */
+    async getEngineDetailEngineDetailPost(requestParameters: GetEngineDetailEngineDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EngineDetail> {
+        const response = await this.getEngineDetailEngineDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
      * Install Engine
      */
-    async installEngineEngineInstallPost(requestParameters: InstallEngineEngineInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EngineInstallResponse> {
-        const response = await this.installEngineEngineInstallPostRaw(requestParameters, initOverrides);
+    async installEngineEngineForkPostRaw(requestParameters: InstallEngineEngineForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['engineForkRequest'] == null) {
+            throw new runtime.RequiredError(
+                'engineForkRequest',
+                'Required parameter "engineForkRequest" was null or undefined when calling installEngineEngineForkPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/engine/fork`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: EngineForkRequestToJSON(requestParameters['engineForkRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Install Engine
+     */
+    async installEngineEngineForkPost(requestParameters: InstallEngineEngineForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.installEngineEngineForkPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
      * Provide Document Parse Engine
      */
-    async provideDocumentParseEngineEngineProvidePostRaw(requestParameters: ProvideDocumentParseEngineEngineProvidePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProvideEngineSearchResponse>> {
-        if (requestParameters['engineSearchRequest'] == null) {
+    async provideDocumentParseEngineEngineProvidedPostRaw(requestParameters: ProvideDocumentParseEngineEngineProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineProvidedSearchResponse>> {
+        if (requestParameters['engineProvidedSearchRequest'] == null) {
             throw new runtime.RequiredError(
-                'engineSearchRequest',
-                'Required parameter "engineSearchRequest" was null or undefined when calling provideDocumentParseEngineEngineProvidePost().'
+                'engineProvidedSearchRequest',
+                'Required parameter "engineProvidedSearchRequest" was null or undefined when calling provideDocumentParseEngineEngineProvidedPost().'
             );
         }
 
@@ -184,35 +302,36 @@ export class EngineApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/engine/provide`;
+        let urlPath = `/engine/provided`;
 
         const response = await this.request({
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: EngineSearchRequestToJSON(requestParameters['engineSearchRequest']),
+            body: EngineProvidedSearchRequestToJSON(requestParameters['engineProvidedSearchRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ProvideEngineSearchResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => EngineProvidedSearchResponseFromJSON(jsonValue));
     }
 
     /**
      * Provide Document Parse Engine
      */
-    async provideDocumentParseEngineEngineProvidePost(requestParameters: ProvideDocumentParseEngineEngineProvidePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProvideEngineSearchResponse> {
-        const response = await this.provideDocumentParseEngineEngineProvidePostRaw(requestParameters, initOverrides);
+    async provideDocumentParseEngineEngineProvidedPost(requestParameters: ProvideDocumentParseEngineEngineProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EngineProvidedSearchResponse> {
+        const response = await this.provideDocumentParseEngineEngineProvidedPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
+     * 搜索当前所有我可以使用的引擎 包含我创建的和公开的
      * Search Document Parse Engine
      */
-    async searchDocumentParseEngineEngineMinePostRaw(requestParameters: SearchDocumentParseEngineEngineMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MineEngineSearchResponse>> {
-        if (requestParameters['engineSearchRequest'] == null) {
+    async searchDocumentParseEngineEngineCommunityPostRaw(requestParameters: SearchDocumentParseEngineEngineCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionEngineInfo>> {
+        if (requestParameters['communityEngineSearchRequest'] == null) {
             throw new runtime.RequiredError(
-                'engineSearchRequest',
-                'Required parameter "engineSearchRequest" was null or undefined when calling searchDocumentParseEngineEngineMinePost().'
+                'communityEngineSearchRequest',
+                'Required parameter "communityEngineSearchRequest" was null or undefined when calling searchDocumentParseEngineEngineCommunityPost().'
             );
         }
 
@@ -227,24 +346,70 @@ export class EngineApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/engine/mine`;
+        let urlPath = `/engine/community`;
 
         const response = await this.request({
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: EngineSearchRequestToJSON(requestParameters['engineSearchRequest']),
+            body: CommunityEngineSearchRequestToJSON(requestParameters['communityEngineSearchRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => MineEngineSearchResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionEngineInfoFromJSON(jsonValue));
     }
 
     /**
+     * 搜索当前所有我可以使用的引擎 包含我创建的和公开的
      * Search Document Parse Engine
      */
-    async searchDocumentParseEngineEngineMinePost(requestParameters: SearchDocumentParseEngineEngineMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MineEngineSearchResponse> {
-        const response = await this.searchDocumentParseEngineEngineMinePostRaw(requestParameters, initOverrides);
+    async searchDocumentParseEngineEngineCommunityPost(requestParameters: SearchDocumentParseEngineEngineCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionEngineInfo> {
+        const response = await this.searchDocumentParseEngineEngineCommunityPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * 搜索当前所有我配置好的引擎 我自己的和我fork的
+     * Search Usable Engine
+     */
+    async searchUsableEngineEngineUsablePostRaw(requestParameters: SearchUsableEngineEngineUsablePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsableEnginesResponse>> {
+        if (requestParameters['usableEngineSearchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'usableEngineSearchRequest',
+                'Required parameter "usableEngineSearchRequest" was null or undefined when calling searchUsableEngineEngineUsablePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/engine/usable`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UsableEngineSearchRequestToJSON(requestParameters['usableEngineSearchRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UsableEnginesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 搜索当前所有我配置好的引擎 我自己的和我fork的
+     * Search Usable Engine
+     */
+    async searchUsableEngineEngineUsablePost(requestParameters: SearchUsableEngineEngineUsablePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UsableEnginesResponse> {
+        const response = await this.searchUsableEngineEngineUsablePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

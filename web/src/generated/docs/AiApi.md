@@ -13,7 +13,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**getAiModelAiModelDetailPost**](AiApi.md#getaimodelaimodeldetailpost) | **POST** /ai/model/detail | Get Ai Model |
 | [**getAiModelProviderAiModelProviderDetailPost**](AiApi.md#getaimodelprovideraimodelproviderdetailpost) | **POST** /ai/model-provider/detail | Get Ai Model Provider |
 | [**listAiModelAiModelSearchPost**](AiApi.md#listaimodelaimodelsearchpost) | **POST** /ai/model/search | List Ai Model |
-| [**listAiModelProviderAiModelProviderProvidedPost**](AiApi.md#listaimodelprovideraimodelproviderprovidedpost) | **POST** /ai/model-provider/provided | List Ai Model Provider |
+| [**listAiModelProviderAiModelProviderCommunityPost**](AiApi.md#listaimodelprovideraimodelprovidercommunitypost) | **POST** /ai/model-provider/community | List Ai Model Provider |
 | [**updateAiModelAiModelUpdatePost**](AiApi.md#updateaimodelaimodelupdatepost) | **POST** /ai/model/update | Update Ai Model |
 | [**updateAiModelProviderAiModelProviderUpdatePost**](AiApi.md#updateaimodelprovideraimodelproviderupdatepost) | **POST** /ai/model-provider/update | Update Ai Model Provider |
 
@@ -640,11 +640,13 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## listAiModelProviderAiModelProviderProvidedPost
+## listAiModelProviderAiModelProviderCommunityPost
 
-> InifiniteScrollPagnitionModelProvider listAiModelProviderAiModelProviderProvidedPost(modelProviderSearchRequest, authorization)
+> InifiniteScrollPagnitionModelProvider listAiModelProviderAiModelProviderCommunityPost(modelProviderSearchRequest, authorization)
 
 List Ai Model Provider
+
+搜索当前所有我可以使用的模型供应商 包含我创建的和公开的
 
 ### Example
 
@@ -653,7 +655,7 @@ import {
   Configuration,
   AiApi,
 } from '';
-import type { ListAiModelProviderAiModelProviderProvidedPostRequest } from '';
+import type { ListAiModelProviderAiModelProviderCommunityPostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -664,10 +666,10 @@ async function example() {
     modelProviderSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-  } satisfies ListAiModelProviderAiModelProviderProvidedPostRequest;
+  } satisfies ListAiModelProviderAiModelProviderCommunityPostRequest;
 
   try {
-    const data = await api.listAiModelProviderAiModelProviderProvidedPost(body);
+    const data = await api.listAiModelProviderAiModelProviderCommunityPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);

@@ -1,5 +1,6 @@
 import {
 	Card,
+	CardContent,
 	CardDescription,
 	CardFooter,
 	CardHeader,
@@ -8,31 +9,17 @@ import {
 import { Button } from '../ui/button';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
-import {
-	deleteEngine,
-	getProvideEngines,
-	updateEngine,
-} from '@/service/engine';
+import { deleteEngine, forkEngine, getEngineDetail } from '@/service/engine';
 import { toast } from 'sonner';
-import { AudioLinesIcon, ImageIcon, Loader2, TextIcon } from 'lucide-react';
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '../ui/dialog';
-import { Textarea } from '../ui/textarea';
-import { UserEngineInfo } from '@/generated';
-import { Separator } from '../ui/separator';
+	AudioLinesIcon,
+	ImageIcon,
+	Loader2,
+	TextIcon,
+	XCircleIcon,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
+
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -43,64 +30,34 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '../ui/alert-dialog';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useUserContext } from '@/provider/user-provider';
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '../ui/select';
-import { Input } from '../ui/input';
-import {
-	EngineCategory,
-	EngineCategoryList,
-	getEngineCategoryLabel,
-} from '@/enums/engine';
-import { Badge } from '../ui/badge';
-import { Field, FieldLabel } from '@/components/ui/field';
 
-const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
+import { EngineCategory, getEngineCategoryLabel } from '@/enums/engine';
+import { Badge } from '../ui/badge';
+import EngineUpdate from './engine-update';
+import { EngineInfo } from '@/generated';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useRouter } from 'nextjs-toploader/app';
+import { format } from 'date-fns';
+
+const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 	const locale = useLocale();
 	const t = useTranslations();
-	const { refreshMainUserInfo } = useUserContext();
-	const [configDialogOpen, setConfigDialogOpen] = useState(false);
+	const router = useRouter();
+	const { refreshMainUserInfo, mainUserInfo } = useUserContext();
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-	const [engineCategory, setEngineCategory] = useState(user_engine.category);
-
-	const formSchema = z.object({
-		title: z.string().optional().nullable(),
-		description: z.string().optional().nullable(),
-		config_json: z.string().optional().nullable(),
-	});
-	const form = useForm({
-		resolver: zodResolver(formSchema),
-		defaultValues: {
-			title: '',
-			description: '',
-			config_json: '',
-		},
-	});
 	const queryClient = getQueryClient();
-	const {
-		data: provideEngines,
-		isFetching: isFetchingProvideEngines,
-		isRefetching: isRefetchingProvideEngines,
-	} = useQuery({
-		queryKey: ['provide-engine'],
-		queryFn: async () => {
-			return await getProvideEngines({ keyword: '' });
-		},
-	});
+
 	const mutateDeleteEngine = useMutation({
 		mutationFn: deleteEngine,
 		onSuccess: () => {
 			toast.success(t('setting_engine_page_mine_engine_delete_success'));
 			queryClient.invalidateQueries({
-				queryKey: ['mine-engine'],
+				predicate(query) {
+					return query.queryKey.includes('searchCommunityEngines');
+				},
 			});
 			refreshMainUserInfo();
 		},
@@ -108,313 +65,171 @@ const MineEngineCard = ({ user_engine }: { user_engine: UserEngineInfo }) => {
 			toast.error(error.message);
 		},
 	});
-	const mutateUpdateEngine = useMutation({
-		mutationFn: updateEngine,
+
+	const mutateForkEngine = useMutation({
+		mutationFn: forkEngine,
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['mine-engine'],
+				predicate(query) {
+					return query.queryKey.includes('searchCommunityEngines');
+				},
 			});
-			toast.success(t('setting_engine_page_mine_engine_update_success'));
-			setConfigDialogOpen(false);
+			refreshMainUserInfo();
 		},
-		onError: (error) => {
+		onError(error, variables, onMutateResult, context) {
+			console.error(error);
 			toast.error(error.message);
 		},
 	});
 
-	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-		if (event) {
-			if (typeof event.preventDefault === 'function') {
-				event.preventDefault();
-			}
-			if (typeof event.stopPropagation === 'function') {
-				event.stopPropagation();
-			}
-		}
-		return form.handleSubmit(onFormValidateSuccess, onFormValidateError)(event);
-	};
-
-	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		await mutateUpdateEngine.mutateAsync({
-			user_engine_id: user_engine.id,
-			config_json: values.config_json,
-			title: values.title,
-			description: values.description,
-		});
-	};
-
-	const onFormValidateError = (errors: any) => {
-		console.error(errors);
-		toast.error(t('form_validate_failed'));
-	};
-
-	useEffect(() => {
-		if (!user_engine) return;
-		form.setValue('title', user_engine.title);
-		form.setValue('description', user_engine.description);
-		form.setValue('config_json', user_engine.config_json);
-	}, [user_engine]);
+	const isMineEngine = useMemo(() => {
+		return mainUserInfo && mainUserInfo.id === engine_info?.creator.id;
+	}, [engine_info?.creator.id, mainUserInfo]);
 
 	return (
 		<>
 			<Card className='bg-muted/50'>
 				<CardHeader className='flex-1'>
-					<CardTitle>{user_engine.title}</CardTitle>
-					<CardDescription>{user_engine.description}</CardDescription>
+					<CardTitle className='flex flex-row items-center w-full'>
+						<div className='flex flex-row items-center gap-2'>
+							{engine_info.name}
+							{engine_info.is_public && (
+								<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
+									<div className='h-1.5 w-1.5 rounded-full bg-amber-500 mr-1' />{' '}
+									Public
+								</Badge>
+							)}
+						</div>
+						<AlertDialog
+							open={deleteDialogOpen}
+							onOpenChange={setDeleteDialogOpen}>
+							<AlertDialogTrigger asChild>
+								<Button
+									size={'icon'}
+									type='button'
+									variant={'ghost'}
+									className='ml-auto'>
+									<XCircleIcon className='size-4' />
+								</Button>
+							</AlertDialogTrigger>
+							<AlertDialogContent>
+								<AlertDialogHeader>
+									<AlertDialogTitle>{t('tip')}</AlertDialogTitle>
+									<AlertDialogDescription>
+										{t('setting_engine_page_mine_engine_delete_alert')}
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+								<AlertDialogFooter>
+									<Button
+										variant={'destructive'}
+										onClick={async () => {
+											const res = await mutateDeleteEngine.mutateAsync({
+												engine_id: engine_info.id,
+											});
+											if (res.success) {
+												setDeleteDialogOpen(false);
+											}
+										}}
+										disabled={mutateDeleteEngine.isPending}>
+										{t('confirm')}
+										{mutateDeleteEngine.isPending && (
+											<Loader2 className='animate-spin' />
+										)}
+									</Button>
+									<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+								</AlertDialogFooter>
+							</AlertDialogContent>
+						</AlertDialog>
+					</CardTitle>
+					<CardDescription>{engine_info.description}</CardDescription>
 				</CardHeader>
-				<CardFooter className='relative gap-2'>
+				<CardContent className='relative gap-2 flex flex-row items-center'>
 					<Badge className='rounded-full mr-auto pl-[2px]' variant={'outline'}>
 						<div className='rounded-full bg-indigo-600 p-1'>
-							{user_engine.category === EngineCategory.IMAGE && (
+							{engine_info.category === EngineCategory.IMAGE && (
 								<ImageIcon className='size-4' color='white' />
 							)}
-							{user_engine.category === EngineCategory.TTS && (
+							{engine_info.category === EngineCategory.TTS && (
 								<AudioLinesIcon className='size-4' color='white' />
 							)}
-							{user_engine.category === EngineCategory.Markdown && (
+							{engine_info.category === EngineCategory.Markdown && (
 								<TextIcon className='size-4' color='white' />
 							)}
 						</div>
 						{getEngineCategoryLabel(
-							user_engine.category,
-							locale as 'en' | 'zh'
+							engine_info.category,
+							locale as 'en' | 'zh',
 						)}
 					</Badge>
-					<Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
-						<DialogTrigger asChild>
-							<Button className='text-xs shadow-none'>{t('config')}</Button>
-						</DialogTrigger>
-						<DialogContent className='max-h-[80vh] flex flex-col'>
-							<DialogHeader>
-								<DialogTitle>{t('config')}</DialogTitle>
-								<DialogDescription>
-									{t('setting_engine_page_mine_engine_config_description', {
-										engine: user_engine.title,
-									})}
-								</DialogDescription>
-							</DialogHeader>
-							<Form {...form}>
-								<form
-									onSubmit={handleSubmit}
-									id='update_form'
-									className='space-y-5 flex-1 overflow-auto'>
-									<Field className='grid grid-cols-12 gap-2'>
-										<FieldLabel className='col-span-3'>
-											{t('setting_engine_page_engine_form_engine_category')}
-										</FieldLabel>
-										<div className='col-span-9'>
-											<Select
-												disabled
-												onValueChange={(e) => {
-													setEngineCategory(Number(e));
-												}}
-												value={engineCategory.toString()}>
-												<SelectTrigger className='w-full'>
-													<SelectValue
-														placeholder={t(
-															'setting_engine_page_engine_form_engine_category_placeholder'
-														)}
-													/>
-												</SelectTrigger>
-												<SelectContent>
-													<SelectGroup>
-														{EngineCategoryList?.map((item) => {
-															return (
-																<SelectItem
-																	key={item.id}
-																	value={String(item.id)}
-																	className='w-full'>
-																	{locale === 'zh' ? item.zh : item.en}
-																</SelectItem>
-															);
-														})}
-													</SelectGroup>
-												</SelectContent>
-											</Select>
-										</div>
-									</Field>
-									<FormItem>
-										<div className='grid grid-cols-12 gap-2'>
-											<FormLabel className='col-span-3'>
-												{t('setting_engine_page_engine_form_engine_id')}
-											</FormLabel>
-											<div className='col-span-9'>
-												<Select
-													disabled
-													value={user_engine.engine_id.toString()}>
-													<SelectTrigger className='w-full'>
-														<SelectValue
-															placeholder={t(
-																'setting_engine_page_engine_form_engine_id_placeholder'
-															)}
-														/>
-													</SelectTrigger>
-													<SelectContent>
-														<SelectGroup>
-															{provideEngines?.data.map((item) => {
-																return (
-																	<SelectItem
-																		key={item.id}
-																		value={String(item.id)}
-																		className='w-full'>
-																		{item.name}
-																	</SelectItem>
-																);
-															})}
-														</SelectGroup>
-													</SelectContent>
-												</Select>
-											</div>
-										</div>
-										<FormMessage />
-									</FormItem>
-									<FormField
-										name='title'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<div className='grid grid-cols-12 gap-2'>
-														<FormLabel className='col-span-3'>
-															{t('setting_engine_page_engine_form_title')}
-														</FormLabel>
-														<div className='col-span-9'>
-															<Input
-																{...field}
-																placeholder={t(
-																	'setting_engine_page_engine_form_title_placeholder'
-																)}
-																value={field.value || ''}
-															/>
-														</div>
-													</div>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-									<FormField
-										name='description'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<div className='grid grid-cols-12 gap-2'>
-														<FormLabel className='col-span-3'>
-															{t('setting_engine_page_engine_form_description')}
-														</FormLabel>
-														<div className='col-span-9'>
-															<Textarea
-																{...field}
-																placeholder={t(
-																	'setting_engine_page_engine_form_description_placeholder'
-																)}
-																value={field.value || ''}
-															/>
-														</div>
-													</div>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-									{user_engine.demo_config && (
-										<>
-											<FormField
-												name='config_json'
-												control={form.control}
-												render={({ field }) => {
-													return (
-														<FormItem>
-															<div className='grid grid-cols-12 gap-2'>
-																<FormLabel className='col-span-3'>
-																	{t(
-																		'setting_engine_page_engine_form_config_json'
-																	)}
-																</FormLabel>
-																<div className='col-span-9'>
-																	<Textarea
-																		placeholder={t(
-																			'setting_engine_page_engine_form_config_json_placeholder'
-																		)}
-																		className='font-mono break-all'
-																		{...field}
-																		value={field.value ?? ''}
-																	/>
-																</div>
-															</div>
-															<FormMessage />
-														</FormItem>
-													);
-												}}
-											/>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>
-													{t('setting_engine_page_mine_engine_config_demo')}
-												</FormLabel>
-												<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
-													{user_engine.demo_config}
-												</div>
-											</div>
-										</>
-									)}
-								</form>
-							</Form>
-							<Separator />
-							<DialogFooter>
-								<DialogClose asChild>
-									<Button type='button' variant={'secondary'}>
-										{t('cancel')}
-									</Button>
-								</DialogClose>
+					<EngineUpdate engineId={engine_info.id} />
+					{!isMineEngine && (
+						<>
+							{!engine_info.is_forked && (
 								<Button
-									type='submit'
-									form='update_form'
-									disabled={mutateUpdateEngine.isPending}>
-									{t('confirm')}
-									{mutateUpdateEngine.isPending && (
-										<Loader2 className='animate-spin' />
-									)}
-								</Button>
-							</DialogFooter>
-						</DialogContent>
-					</Dialog>
-					<AlertDialog
-						open={deleteDialogOpen}
-						onOpenChange={setDeleteDialogOpen}>
-						<AlertDialogTrigger asChild>
-							<Button variant={'secondary'} className='text-xs shadow-none'>
-								{t('delete')}
-							</Button>
-						</AlertDialogTrigger>
-						<AlertDialogContent>
-							<AlertDialogHeader>
-								<AlertDialogTitle>{t('tip')}</AlertDialogTitle>
-								<AlertDialogDescription>
-									{t('setting_engine_page_mine_engine_delete_alert')}
-								</AlertDialogDescription>
-							</AlertDialogHeader>
-							<AlertDialogFooter>
-								<Button
-									variant={'destructive'}
-									onClick={async () => {
-										const res = await mutateDeleteEngine.mutateAsync({
-											user_engine_id: user_engine.id,
+									className='shadow-none'
+									variant={'outline'}
+									disabled={mutateForkEngine.isPending}
+									onClick={() => {
+										mutateForkEngine.mutate({
+											engine_id: engine_info.id,
+											status: true,
 										});
-										if (res.success) {
-											setDeleteDialogOpen(false);
-										}
-									}}
-									disabled={mutateDeleteEngine.isPending}>
-									{t('confirm')}
-									{mutateDeleteEngine.isPending && (
-										<Loader2 className='animate-spin' />
+									}}>
+									{t('setting_engine_fork')}
+									{mutateForkEngine.isPending && (
+										<Loader2 className='h-4 w-4 animate-spin' />
 									)}
 								</Button>
-								<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-							</AlertDialogFooter>
-						</AlertDialogContent>
-					</AlertDialog>
+							)}
+							{engine_info.is_forked && (
+								<Button
+									className='shadow-none'
+									variant={'destructive'}
+									disabled={mutateForkEngine.isPending}
+									onClick={() => {
+										mutateForkEngine.mutate({
+											engine_id: engine_info.id,
+											status: false,
+										});
+									}}>
+									{t('setting_model_provider_unfork')}
+									{mutateForkEngine.isPending && (
+										<Loader2 className='h-4 w-4 animate-spin' />
+									)}
+								</Button>
+							)}
+						</>
+					)}
+				</CardContent>
+				<CardFooter className='flex flex-row items-center'>
+					<Avatar
+						className='size-5'
+						title={
+							engine_info.creator.nickname
+								? engine_info.creator.nickname
+								: 'Unknown User'
+						}
+						onClick={(e) => {
+							router.push(`/user/detail/${engine_info.creator.id}`);
+							e.preventDefault();
+							e.stopPropagation();
+						}}>
+						<AvatarImage
+							src={engine_info.creator.avatar}
+							alt='user avatar'
+							className='size-5 object-cover'
+						/>
+						<AvatarFallback className='size-5'>
+							{engine_info.creator.nickname}
+						</AvatarFallback>
+					</Avatar>
+					<span className='text-xs text-muted-foreground ml-2'>
+						{engine_info.creator.nickname}
+					</span>
+					<span className='ml-auto text-xs text-muted-foreground'>
+						{engine_info.create_time &&
+							format(new Date(engine_info.create_time), 'yyyy-MM-dd HH:mm')}
+					</span>
 				</CardFooter>
 			</Card>
 		</>

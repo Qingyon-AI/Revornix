@@ -12,7 +12,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { Info, TrashIcon } from 'lucide-react';
+import { Info, TrashIcon, XCircleIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useTranslations } from 'next-intl';
@@ -27,6 +27,8 @@ const ModelSettingPage = () => {
 		data,
 		isFetchingNextPage,
 		isFetching,
+		isError,
+		error,
 		isSuccess,
 		fetchNextPage,
 		hasNextPage,
@@ -90,6 +92,16 @@ const ModelSettingPage = () => {
 							<ModelProviderCard key={index} modelProvider={modelProvider} />
 						);
 					})}
+				{isError && (
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<XCircleIcon />
+							</EmptyMedia>
+							<EmptyDescription>{error.message}</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
+				)}
 				{isFetching && !data && (
 					<>
 						{[...Array(12)].map((number, index) => {

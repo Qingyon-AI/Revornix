@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`user_engine_id` | number
+`engine_id` | number
 
 ## Example
 
@@ -15,7 +15,7 @@ import type { EngineDeleteRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "user_engine_id": null,
+  "engine_id": null,
 } satisfies EngineDeleteRequest
 
 console.log(example)

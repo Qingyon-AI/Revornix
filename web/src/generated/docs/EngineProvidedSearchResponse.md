@@ -1,30 +1,22 @@
 
-# EngineUpdateRequest
+# EngineProvidedSearchResponse
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`engine_id` | number
-`config_json` | string
-`name` | string
-`description` | string
-`is_public` | boolean
+`data` | [Array&lt;EngineProvidedInfo&gt;](EngineProvidedInfo.md)
 
 ## Example
 
 ```typescript
-import type { EngineUpdateRequest } from ''
+import type { EngineProvidedSearchResponse } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "engine_id": null,
-  "config_json": null,
-  "name": null,
-  "description": null,
-  "is_public": null,
-} satisfies EngineUpdateRequest
+  "data": null,
+} satisfies EngineProvidedSearchResponse
 
 console.log(example)
 
@@ -33,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as EngineUpdateRequest
+const exampleParsed = JSON.parse(exampleJSON) as EngineProvidedSearchResponse
 console.log(exampleParsed)
 ```
 

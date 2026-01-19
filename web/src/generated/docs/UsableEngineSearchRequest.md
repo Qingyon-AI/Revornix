@@ -1,30 +1,24 @@
 
-# EngineUpdateRequest
+# UsableEngineSearchRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`engine_id` | number
-`config_json` | string
-`name` | string
-`description` | string
-`is_public` | boolean
+`keyword` | string
+`filter_category` | number
 
 ## Example
 
 ```typescript
-import type { EngineUpdateRequest } from ''
+import type { UsableEngineSearchRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "engine_id": null,
-  "config_json": null,
-  "name": null,
-  "description": null,
-  "is_public": null,
-} satisfies EngineUpdateRequest
+  "keyword": null,
+  "filter_category": null,
+} satisfies UsableEngineSearchRequest
 
 console.log(example)
 
@@ -33,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as EngineUpdateRequest
+const exampleParsed = JSON.parse(exampleJSON) as UsableEngineSearchRequest
 console.log(exampleParsed)
 ```
 

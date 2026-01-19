@@ -31,81 +31,81 @@ import {
 /**
  * 
  * @export
- * @interface EngineInfo
+ * @interface EngineDetail
  */
-export interface EngineInfo {
+export interface EngineDetail {
     /**
      * 
      * @type {number}
-     * @memberof EngineInfo
+     * @memberof EngineDetail
      */
     id: number;
     /**
      * 
      * @type {string}
-     * @memberof EngineInfo
+     * @memberof EngineDetail
      */
     uuid: string;
     /**
      * 
      * @type {number}
-     * @memberof EngineInfo
+     * @memberof EngineDetail
      */
     category: number;
     /**
      * 
      * @type {string}
-     * @memberof EngineInfo
+     * @memberof EngineDetail
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof EngineInfo
+     * @memberof EngineDetail
      */
     description?: string | null;
     /**
      * 
      * @type {boolean}
-     * @memberof EngineInfo
+     * @memberof EngineDetail
      */
     is_public: boolean;
     /**
      * 
      * @type {Date}
-     * @memberof EngineInfo
+     * @memberof EngineDetail
      */
     create_time: Date;
     /**
      * 
      * @type {Date}
-     * @memberof EngineInfo
+     * @memberof EngineDetail
      */
     update_time?: Date | null;
     /**
      * 
-     * @type {boolean}
-     * @memberof EngineInfo
+     * @type {string}
+     * @memberof EngineDetail
      */
-    is_forked?: boolean | null;
+    config_json?: string | null;
     /**
      * 
      * @type {UserPublicInfo}
-     * @memberof EngineInfo
+     * @memberof EngineDetail
      */
     creator: UserPublicInfo;
     /**
      * 
      * @type {EngineProvidedInfo}
-     * @memberof EngineInfo
+     * @memberof EngineDetail
      */
     engine_provided: EngineProvidedInfo;
 }
 
 /**
- * Check if a given object implements the EngineInfo interface.
+ * Check if a given object implements the EngineDetail interface.
  */
-export function instanceOfEngineInfo(value: object): value is EngineInfo {
+export function instanceOfEngineDetail(value: object): value is EngineDetail {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('category' in value) || value['category'] === undefined) return false;
@@ -117,11 +117,11 @@ export function instanceOfEngineInfo(value: object): value is EngineInfo {
     return true;
 }
 
-export function EngineInfoFromJSON(json: any): EngineInfo {
-    return EngineInfoFromJSONTyped(json, false);
+export function EngineDetailFromJSON(json: any): EngineDetail {
+    return EngineDetailFromJSONTyped(json, false);
 }
 
-export function EngineInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): EngineInfo {
+export function EngineDetailFromJSONTyped(json: any, ignoreDiscriminator: boolean): EngineDetail {
     if (json == null) {
         return json;
     }
@@ -135,17 +135,17 @@ export function EngineInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'is_public': json['is_public'],
         'create_time': (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
-        'is_forked': json['is_forked'] == null ? undefined : json['is_forked'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
         'creator': UserPublicInfoFromJSON(json['creator']),
         'engine_provided': EngineProvidedInfoFromJSON(json['engine_provided']),
     };
 }
 
-export function EngineInfoToJSON(json: any): EngineInfo {
-    return EngineInfoToJSONTyped(json, false);
+export function EngineDetailToJSON(json: any): EngineDetail {
+    return EngineDetailToJSONTyped(json, false);
 }
 
-export function EngineInfoToJSONTyped(value?: EngineInfo | null, ignoreDiscriminator: boolean = false): any {
+export function EngineDetailToJSONTyped(value?: EngineDetail | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -160,7 +160,7 @@ export function EngineInfoToJSONTyped(value?: EngineInfo | null, ignoreDiscrimin
         'is_public': value['is_public'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
-        'is_forked': value['is_forked'],
+        'config_json': value['config_json'],
         'creator': UserPublicInfoToJSON(value['creator']),
         'engine_provided': EngineProvidedInfoToJSON(value['engine_provided']),
     };

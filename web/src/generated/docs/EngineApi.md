@@ -4,12 +4,86 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
+| [**createEngineEngineCreatePost**](EngineApi.md#createengineenginecreatepost) | **POST** /engine/create | Create Engine |
 | [**deleteEngineEngineDeletePost**](EngineApi.md#deleteengineenginedeletepost) | **POST** /engine/delete | Delete Engine |
-| [**installEngineEngineInstallPost**](EngineApi.md#installengineengineinstallpost) | **POST** /engine/install | Install Engine |
-| [**provideDocumentParseEngineEngineProvidePost**](EngineApi.md#providedocumentparseengineengineprovidepost) | **POST** /engine/provide | Provide Document Parse Engine |
-| [**searchDocumentParseEngineEngineMinePost**](EngineApi.md#searchdocumentparseengineengineminepost) | **POST** /engine/mine | Search Document Parse Engine |
+| [**getEngineDetailEngineDetailPost**](EngineApi.md#getenginedetailenginedetailpost) | **POST** /engine/detail | Get Engine Detail |
+| [**installEngineEngineForkPost**](EngineApi.md#installengineengineforkpost) | **POST** /engine/fork | Install Engine |
+| [**provideDocumentParseEngineEngineProvidedPost**](EngineApi.md#providedocumentparseengineengineprovidedpost) | **POST** /engine/provided | Provide Document Parse Engine |
+| [**searchDocumentParseEngineEngineCommunityPost**](EngineApi.md#searchdocumentparseengineenginecommunitypost) | **POST** /engine/community | Search Document Parse Engine |
+| [**searchUsableEngineEngineUsablePost**](EngineApi.md#searchusableengineengineusablepost) | **POST** /engine/usable | Search Usable Engine |
 | [**updateEngineEngineUpdatePost**](EngineApi.md#updateengineengineupdatepost) | **POST** /engine/update | Update Engine |
 
+
+
+## createEngineEngineCreatePost
+
+> NormalResponse createEngineEngineCreatePost(engineCreateRequest, authorization)
+
+Create Engine
+
+创建引擎
+
+### Example
+
+```ts
+import {
+  Configuration,
+  EngineApi,
+} from '';
+import type { CreateEngineEngineCreatePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new EngineApi();
+
+  const body = {
+    // EngineCreateRequest
+    engineCreateRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies CreateEngineEngineCreatePostRequest;
+
+  try {
+    const data = await api.createEngineEngineCreatePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **engineCreateRequest** | [EngineCreateRequest](EngineCreateRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
 ## deleteEngineEngineDeletePost
@@ -81,9 +155,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## installEngineEngineInstallPost
+## getEngineDetailEngineDetailPost
 
-> EngineInstallResponse installEngineEngineInstallPost(engineInstallRequest, authorization)
+> EngineDetail getEngineDetailEngineDetailPost(engineDetailRequest, authorization)
+
+Get Engine Detail
+
+### Example
+
+```ts
+import {
+  Configuration,
+  EngineApi,
+} from '';
+import type { GetEngineDetailEngineDetailPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new EngineApi();
+
+  const body = {
+    // EngineDetailRequest
+    engineDetailRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies GetEngineDetailEngineDetailPostRequest;
+
+  try {
+    const data = await api.getEngineDetailEngineDetailPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **engineDetailRequest** | [EngineDetailRequest](EngineDetailRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**EngineDetail**](EngineDetail.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## installEngineEngineForkPost
+
+> NormalResponse installEngineEngineForkPost(engineForkRequest, authorization)
 
 Install Engine
 
@@ -94,21 +237,21 @@ import {
   Configuration,
   EngineApi,
 } from '';
-import type { InstallEngineEngineInstallPostRequest } from '';
+import type { InstallEngineEngineForkPostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const api = new EngineApi();
 
   const body = {
-    // EngineInstallRequest
-    engineInstallRequest: ...,
+    // EngineForkRequest
+    engineForkRequest: ...,
     // string (optional)
     authorization: authorization_example,
-  } satisfies InstallEngineEngineInstallPostRequest;
+  } satisfies InstallEngineEngineForkPostRequest;
 
   try {
-    const data = await api.installEngineEngineInstallPost(body);
+    const data = await api.installEngineEngineForkPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -124,12 +267,12 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **engineInstallRequest** | [EngineInstallRequest](EngineInstallRequest.md) |  | |
+| **engineForkRequest** | [EngineForkRequest](EngineForkRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-[**EngineInstallResponse**](EngineInstallResponse.md)
+[**NormalResponse**](NormalResponse.md)
 
 ### Authorization
 
@@ -150,9 +293,9 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## provideDocumentParseEngineEngineProvidePost
+## provideDocumentParseEngineEngineProvidedPost
 
-> ProvideEngineSearchResponse provideDocumentParseEngineEngineProvidePost(engineSearchRequest, authorization)
+> EngineProvidedSearchResponse provideDocumentParseEngineEngineProvidedPost(engineProvidedSearchRequest, authorization)
 
 Provide Document Parse Engine
 
@@ -163,21 +306,21 @@ import {
   Configuration,
   EngineApi,
 } from '';
-import type { ProvideDocumentParseEngineEngineProvidePostRequest } from '';
+import type { ProvideDocumentParseEngineEngineProvidedPostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const api = new EngineApi();
 
   const body = {
-    // EngineSearchRequest
-    engineSearchRequest: ...,
+    // EngineProvidedSearchRequest
+    engineProvidedSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-  } satisfies ProvideDocumentParseEngineEngineProvidePostRequest;
+  } satisfies ProvideDocumentParseEngineEngineProvidedPostRequest;
 
   try {
-    const data = await api.provideDocumentParseEngineEngineProvidePost(body);
+    const data = await api.provideDocumentParseEngineEngineProvidedPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -193,12 +336,12 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **engineSearchRequest** | [EngineSearchRequest](EngineSearchRequest.md) |  | |
+| **engineProvidedSearchRequest** | [EngineProvidedSearchRequest](EngineProvidedSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-[**ProvideEngineSearchResponse**](ProvideEngineSearchResponse.md)
+[**EngineProvidedSearchResponse**](EngineProvidedSearchResponse.md)
 
 ### Authorization
 
@@ -219,11 +362,13 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## searchDocumentParseEngineEngineMinePost
+## searchDocumentParseEngineEngineCommunityPost
 
-> MineEngineSearchResponse searchDocumentParseEngineEngineMinePost(engineSearchRequest, authorization)
+> InifiniteScrollPagnitionEngineInfo searchDocumentParseEngineEngineCommunityPost(communityEngineSearchRequest, authorization)
 
 Search Document Parse Engine
+
+搜索当前所有我可以使用的引擎 包含我创建的和公开的
 
 ### Example
 
@@ -232,21 +377,21 @@ import {
   Configuration,
   EngineApi,
 } from '';
-import type { SearchDocumentParseEngineEngineMinePostRequest } from '';
+import type { SearchDocumentParseEngineEngineCommunityPostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const api = new EngineApi();
 
   const body = {
-    // EngineSearchRequest
-    engineSearchRequest: ...,
+    // CommunityEngineSearchRequest
+    communityEngineSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
-  } satisfies SearchDocumentParseEngineEngineMinePostRequest;
+  } satisfies SearchDocumentParseEngineEngineCommunityPostRequest;
 
   try {
-    const data = await api.searchDocumentParseEngineEngineMinePost(body);
+    const data = await api.searchDocumentParseEngineEngineCommunityPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -262,12 +407,83 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **engineSearchRequest** | [EngineSearchRequest](EngineSearchRequest.md) |  | |
+| **communityEngineSearchRequest** | [CommunityEngineSearchRequest](CommunityEngineSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-[**MineEngineSearchResponse**](MineEngineSearchResponse.md)
+[**InifiniteScrollPagnitionEngineInfo**](InifiniteScrollPagnitionEngineInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## searchUsableEngineEngineUsablePost
+
+> UsableEnginesResponse searchUsableEngineEngineUsablePost(usableEngineSearchRequest, authorization)
+
+Search Usable Engine
+
+搜索当前所有我配置好的引擎 我自己的和我fork的
+
+### Example
+
+```ts
+import {
+  Configuration,
+  EngineApi,
+} from '';
+import type { SearchUsableEngineEngineUsablePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new EngineApi();
+
+  const body = {
+    // UsableEngineSearchRequest
+    usableEngineSearchRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies SearchUsableEngineEngineUsablePostRequest;
+
+  try {
+    const data = await api.searchUsableEngineEngineUsablePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **usableEngineSearchRequest** | [UsableEngineSearchRequest](UsableEngineSearchRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**UsableEnginesResponse**](UsableEnginesResponse.md)
 
 ### Authorization
 

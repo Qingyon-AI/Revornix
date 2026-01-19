@@ -1,42 +1,30 @@
 
-# EngineInfo
+# EngineCreateRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`id` | number
-`uuid` | string
-`category` | number
 `name` | string
 `description` | string
 `is_public` | boolean
-`create_time` | Date
-`update_time` | Date
-`is_forked` | boolean
-`creator` | [UserPublicInfo](UserPublicInfo.md)
-`engine_provided` | [EngineProvidedInfo](EngineProvidedInfo.md)
+`engine_provided_id` | number
+`config_json` | string
 
 ## Example
 
 ```typescript
-import type { EngineInfo } from ''
+import type { EngineCreateRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": null,
-  "uuid": null,
-  "category": null,
   "name": null,
   "description": null,
   "is_public": null,
-  "create_time": null,
-  "update_time": null,
-  "is_forked": null,
-  "creator": null,
-  "engine_provided": null,
-} satisfies EngineInfo
+  "engine_provided_id": null,
+  "config_json": null,
+} satisfies EngineCreateRequest
 
 console.log(example)
 
@@ -45,7 +33,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as EngineInfo
+const exampleParsed = JSON.parse(exampleJSON) as EngineCreateRequest
 console.log(exampleParsed)
 ```
 
