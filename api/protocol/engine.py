@@ -9,8 +9,6 @@ from common.logger import exception_logger
 from data.sql.base import SessionLocal
 from enums.ability import Ability
 from enums.engine import Engine
-from official.engine.image import OFFICIAL_IMAGE_AI_BASE_URL, OFFICIAL_IMAGE_AI_KEY, OFFICIAL_IMAGE_AI_MODEL
-from official.engine.tts import OFFICIAL_VOLC_TTS_ACCESS_TOKEN, OFFICIAL_VOLC_TTS_AI_BASE_URL, OFFICIAL_VOLC_TTS_APP_ID
 
 
 class EngineProtocol(Protocol):
@@ -101,14 +99,12 @@ class EngineProtocol(Protocol):
                             ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_NONE.value
 
             elif engine.uuid == Engine.Official_Banana_Image.meta.uuid:
-                if OFFICIAL_IMAGE_AI_MODEL is None or OFFICIAL_IMAGE_AI_BASE_URL is None or OFFICIAL_IMAGE_AI_KEY is None:
-                    raise ValueError("official image ai model not found")
                 ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value
                 end_time = datetime.now(timezone.utc)
                 start_time = end_time - timedelta(days=30)
                 token_usage = await get_user_token_usage(
                     user_id=user.id,
-                    model_name=OFFICIAL_IMAGE_AI_MODEL,
+                    model_name='gemini-3-pro-image-preview',
                     start_time=start_time,
                     end_time=end_time,
                 )
@@ -131,21 +127,6 @@ class EngineProtocol(Protocol):
                     raise PermissionError("plan ability denied")
 
             self.engine_config = user_engine.config_json
-
-            if self.engine_uuid == Engine.Official_Banana_Image.meta.uuid:
-                config = json.dumps({
-                    "model_name": OFFICIAL_IMAGE_AI_MODEL,
-                    "base_url": OFFICIAL_IMAGE_AI_BASE_URL,
-                    "api_key": OFFICIAL_IMAGE_AI_KEY
-                })
-                self.engine_config = config
-            elif self.engine_uuid == Engine.Official_Volc_TTS.meta.uuid:
-                config = json.dumps({
-                    "base_url": OFFICIAL_VOLC_TTS_AI_BASE_URL,
-                    "appid": OFFICIAL_VOLC_TTS_APP_ID,
-                    "access_token": OFFICIAL_VOLC_TTS_ACCESS_TOKEN
-                })
-                self.engine_config = config
 
             self.user_id = user_engine.user_id
         except Exception as e:
