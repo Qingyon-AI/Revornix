@@ -161,6 +161,7 @@ def get_all_engines(
     filter_category: int | None = None
 ):
     query = db.query(models.engine.Engine)
+    query = query.join(models.engine.EngineProvided)
     query = query.options(
         joinedload(models.engine.Engine.engine_provided)
     )
@@ -168,7 +169,7 @@ def get_all_engines(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.engine.Engine.name.like(f'%{keyword}%'))
     if filter_category is not None:
-        query = query.filter(models.engine.Engine.category == filter_category)
+        query = query.filter(models.engine.EngineProvided.category == filter_category)
     return query.all()
 
 def get_engines_for_user(
@@ -178,6 +179,7 @@ def get_engines_for_user(
     filter_category: int | None = None
 ):
     query = db.query(models.engine.Engine)
+    query = query.join(models.engine.EngineProvided)
     query = query.options(
         joinedload(models.engine.Engine.engine_provided)
     )
@@ -189,8 +191,8 @@ def get_engines_for_user(
     )
     if keyword:
         query = query.filter(models.engine.Engine.name.ilike(f"%{keyword}%"))
-    if filter_category:
-        query = query.filter(models.engine.Engine.category == filter_category)
+    if filter_category is not None: 
+        query = query.filter(models.engine.EngineProvided.category == filter_category)
     query = query.order_by(models.engine.Engine.id.desc())
 
     return query.all()
