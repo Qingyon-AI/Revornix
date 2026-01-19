@@ -2,6 +2,10 @@ from enum import Enum, IntEnum
 from typing import NamedTuple
 
 
+class UserEngineRole(IntEnum):
+    CREATOR = 0
+    FORKER = 1
+
 class EngineCategory(IntEnum):
     Markdown = 0
     TTS = 1

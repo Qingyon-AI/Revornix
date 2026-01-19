@@ -215,13 +215,14 @@ def delete_ai_model_provider(
     db.commit()
     return schemas.common.SuccessResponse()
 
-# 搜索当前所有我可以使用的模型供应商
-@ai_router.post("/model-provider/provided", response_model=schemas.pagination.InifiniteScrollPagnition[schemas.ai.ModelProvider])
+@ai_router.post("/model-provider/community", response_model=schemas.pagination.InifiniteScrollPagnition[schemas.ai.ModelProvider])
 def list_ai_model_provider(
     model_provider_search_request: schemas.ai.ModelProviderSearchRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
+    """搜索当前所有我可以使用的模型供应商 包含我创建的和公开的
+    """
     has_more = True
     next_start = None
     next_model_provider = None
