@@ -45,7 +45,12 @@ import { useUserContext } from '@/provider/user-provider';
 import { Alert, AlertTitle } from '../ui/alert';
 import { diffValues } from '@/lib/utils';
 import { Spinner } from '../ui/spinner';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia } from '../ui/empty';
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+} from '@/components/ui/empty';
 
 const EngineUpdate = ({ engineId }: { engineId: number }) => {
 	const t = useTranslations();
