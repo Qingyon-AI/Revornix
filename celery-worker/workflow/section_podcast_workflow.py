@@ -57,9 +57,9 @@ async def handle_update_section_ai_podcast(
         )
         if podcast_generator is None:
             raise Exception("There is something wrong with the user's podcast generator engine")
-        db_engine = crud.engine.get_engine_by_id(
+        db_engine = crud.engine.get_engine_by_engine_id(
             db=db,
-            id=podcast_generator.engine_id
+            engine_id=podcast_generator.engine_id
         )
         if db_engine is None:
             raise Exception("There is something wrong with the user's podcast generator engine")
