@@ -35,7 +35,7 @@ import { Separator } from '../ui/separator';
 import ModelCard from './model-card';
 import ModelAddCard from './model-add-card';
 import { useUserContext } from '@/provider/user-provider';
-import ModelConfig from './model-config';
+import ModelProviderUpdate from './model-provider-update';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
 import { Badge } from '../ui/badge';
@@ -56,8 +56,6 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 		useState(false);
 	const [showModelConfigDialog, setShowModelConfigDialog] = useState(false);
 	const [showAddModel, setShowAddModel] = useState(false);
-	const [showModelProviderConfigDialog, setShowModelProviderConfigDialog] =
-		useState(false);
 
 	const { data: models } = useQuery({
 		queryKey: ['getModels', modelProvider.id],
@@ -115,24 +113,6 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 
 	return (
 		<>
-			<Dialog
-				open={showModelProviderConfigDialog}
-				onOpenChange={setShowModelProviderConfigDialog}>
-				<DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
-					<DialogHeader>
-						<DialogTitle>{modelProvider?.name}</DialogTitle>
-						<DialogDescription className='break-all'>
-							{modelProvider?.description}
-						</DialogDescription>
-					</DialogHeader>
-					<ModelConfig
-						modelProviderId={modelProvider.id}
-						onUpdateSuccessfully={() => {
-							setShowModelProviderConfigDialog(false);
-						}}
-					/>
-				</DialogContent>
-			</Dialog>
 			<Card className='flex flex-col'>
 				<CardHeader className='flex flex-col flex-1'>
 					<CardTitle className='flex flex-row items-center w-full'>
@@ -248,14 +228,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 								</div>
 							</DialogContent>
 						</Dialog>
-						<Button
-							className='shadow-none'
-							variant={'outline'}
-							onClick={() => {
-								setShowModelProviderConfigDialog(true);
-							}}>
-							{t('setting_model_provider_configure')}
-						</Button>
+						<ModelProviderUpdate modelProviderId={modelProvider.id} />
 						{!isMineModelProvider && (
 							<>
 								{!modelProvider.is_forked && (
