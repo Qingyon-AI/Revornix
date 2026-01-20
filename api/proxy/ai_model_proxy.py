@@ -77,7 +77,7 @@ class AIModelProxy:
                 raise Exception("The Model provider of the model is not found, please contact the administrator")
             
             # ---------- Official model provider check ----------
-            if db_user.role != UserRole.ADMIN and db_model_provider.uuid == OfficialModelProvider.Revornix.meta.id:
+            if db_user.role != UserRole.ADMIN and db_user.role != UserRole.ROOT and db_model_provider.uuid == OfficialModelProvider.Revornix.meta.id:
                 # 生成用户 token
                 access_token, _ = create_token(user=db_user)
 

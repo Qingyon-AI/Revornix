@@ -64,7 +64,7 @@ class EngineProxy:
                 raise Exception("The user is not the forker of the public engine, please fork it first")
 
             # ---------- Official engine provider check ----------
-            if db_user.role != UserRole.ADMIN:
+            if db_user.role != UserRole.ADMIN and db_user.role != UserRole.ROOT:
                 ability = None
                 if db_engine.engine_provided.uuid == Engine.Official_Volc_TTS.meta.uuid:
                     ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value
