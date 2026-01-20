@@ -11,11 +11,8 @@ from common.logger import exception_logger
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.neo4j.base import neo4j_driver
 from data.sql.base import SessionLocal
-from engine.image.banana import BananaImageGenerateEngine
-from engine.image.official_banana import OfficialBananaImageGenerateEngine
-from enums.engine import Engine
 from enums.section import SectionDocumentIntegration, SectionProcessStatus
-from protocol.image_generate_engine import ImageGenerateEngineProtocol
+from base_implement.image_generate_engine_base import ImageGenerateEngineBase
 from schemas.section import GeneratedImage
 from schemas.task import SectionOverrideProperty
 from workflow.markdown_helpers import get_markdown_content_by_document_id
@@ -191,21 +188,12 @@ async def handle_process_section(
         if db_engine is None:
             raise Exception("There is something wrong with the user's default image generate engine")
         
-        if db_engine.engine_provided.uuid == Engine.Banana_Image.meta.uuid:
-            engine = BananaImageGenerateEngine()
-        elif db_engine.engine_provided.uuid == Engine.Official_Banana_Image.meta.uuid:
-            engine = OfficialBananaImageGenerateEngine()
-        else:
-            raise Exception(f"Unsupport engine, engine uuid: {db_engine.uuid}, engine_provided uuid: {db_engine.engine_provided.uuid}")
-        engine.set_user_id(user_id=user_id)
-        engine_config = (await EngineProxy.create(
+        engine = await EngineProxy.create(
             user_id=user_id,
             engine_id=db_user.default_image_generate_engine_id
-        )).get_configuration()
-        if engine_config:
-            engine.set_engine_config(engine_config=engine_config)
+        )
 
-        images_plan = await ImageGenerateEngineProtocol.plan_images_with_llm(
+        images_plan = await ImageGenerateEngineBase.plan_images_with_llm(
             user_id=user_id,
             markdown=content,
             entities=entities,
