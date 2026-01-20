@@ -743,6 +743,7 @@
     "document_graph_generate_task_submitted": "Graph generation task submitted, please wait",
     "document_podcast_unset": "This document has not been configured to generate audio yet. Please configure it first.",
     "document_podcast_generate": "Click to Generate",
+    "document_podcast_regenerate": "Click to ReGenerate",
     "document_podcast_generate_task_submitted": "Podcast generation task submitted, please wait",
     "document_podcast_generate_task_submitted_failed": "Podcast generation task submission failed",
     "document_podcast_processing": "The document's podcast is being processed",

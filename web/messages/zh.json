@@ -744,6 +744,7 @@
     "document_graph_generate_task_submitted": "生成任务已提交，请稍后",
     "document_podcast_unset": "该文档暂未配置生成音频",
     "document_podcast_generate": "点击生成",
+    "document_podcast_regenerate": "点击重新生成",
     "document_podcast_generate_task_submitted": "生成任务已提交，请稍后",
     "document_podcast_generate_task_submitted_failed": "生成任务提交失败",
     "document_podcast_processing": "文档播客音频正在处理中",

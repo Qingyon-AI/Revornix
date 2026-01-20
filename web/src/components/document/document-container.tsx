@@ -31,6 +31,7 @@ import { useTranslations } from 'next-intl';
 import AudioPlayer from '../ui/audio-player';
 import { Alert, AlertDescription } from '../ui/alert';
 import { toast } from 'sonner';
+import { Spinner } from '../ui/spinner';
 
 const DocumentContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -74,14 +75,14 @@ const DocumentContainer = ({ id }: { id: number }) => {
 				queryKey: ['getDocumentDetail', id],
 			});
 			const previousDocument = queryClient.getQueryData<DocumentDetailResponse>(
-				['getDocumentDetail', id]
+				['getDocumentDetail', id],
 			);
 			queryClient.setQueryData(
 				['getDocumentDetail', id],
 				(old: DocumentDetailResponse) => ({
 					...old,
 					is_read: true,
-				})
+				}),
 			);
 			return { previousDocument };
 		},
@@ -89,7 +90,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			context &&
 				queryClient.setQueryData(
 					['getDocumentDetail', id],
-					context.previousDocument
+					context.previousDocument,
 				);
 		},
 		onSettled: () => {
@@ -202,32 +203,55 @@ const DocumentContainer = ({ id }: { id: number }) => {
 				)}
 
 				{document?.podcast_task && (
-					<Card className='p-5 relative flex flex-col gap-5'>
+					<>
 						{document?.podcast_task?.status ===
 							DocumentPodcastStatus.GENERATING && (
-							<div className='text-center text-muted-foreground text-xs p-3'>
-								{t('document_podcast_processing')}
-							</div>
+							<Card className='p-5 relative'>
+								<div className='flex flex-row justify-center items-center gap-1 text-muted-foreground text-xs'>
+									<span>{t('document_podcast_processing')}</span>
+									<Spinner />
+								</div>
+							</Card>
 						)}
 						{document?.podcast_task?.status === DocumentPodcastStatus.SUCCESS &&
 							document?.podcast_task?.podcast_file_name && (
-								<AudioPlayer
-									src={document?.podcast_task?.podcast_file_name}
-									cover={
-										document.cover ??
-										'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
-									}
-									title={document.title ?? 'Unkown Title'}
-									artist={'AI Generated'}
-								/>
+								<Card className='p-5 relative'>
+									<AudioPlayer
+										src={document?.podcast_task?.podcast_file_name}
+										cover={
+											document.cover ??
+											'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
+										}
+										title={document.title ?? 'Unkown Title'}
+										artist={'AI Generated'}
+									/>
+								</Card>
 							)}
 						{document?.podcast_task?.status ===
 							DocumentPodcastStatus.FAILED && (
-							<div className='text-center text-muted-foreground text-xs p-3'>
-								{t('document_podcast_failed')}
-							</div>
+							<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+								<AlertDescription>
+									<span className='inline-flex'>
+										{t('document_podcast_failed')}
+									</span>
+									<Button
+										variant={'link'}
+										size='sm'
+										className='text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
+										onClick={() => mutateGeneratePodcast.mutate()}
+										disabled={
+											mutateGeneratePodcast.isPending ||
+											!mainUserInfo?.default_podcast_user_engine_id
+										}>
+										{t('document_podcast_regenerate')}
+										{mutateGeneratePodcast.isPending && (
+											<Loader2 className='animate-spin' />
+										)}
+									</Button>
+								</AlertDescription>
+							</Alert>
 						)}
-					</Card>
+					</>
 				)}
 			</div>
 		</div>
