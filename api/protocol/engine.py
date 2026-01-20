@@ -41,3 +41,6 @@ class EngineProtocol(Protocol):
 
     def set_engine_config(self, engine_config: dict):
         self.engine_config = json.dumps(engine_config)
+
+    def set_user_id(self, user_id: int):
+        self.user_id = user_id
