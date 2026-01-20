@@ -141,7 +141,10 @@ def get_current_user_without_throw(
     except Exception as e:
         exception_logger.error(f"Error occurred while decoding token: {e}")
         return None
-    user = crud.user.get_user_by_uuid(db, user_uuid=uuid)
+    user = crud.user.get_user_by_uuid(
+        db=db, 
+        uuid=uuid
+    )
     if user is None:
         return None
     if user.is_forbidden:
@@ -171,7 +174,10 @@ def get_current_user(
     except Exception as e:
         exception_logger.error(f"Error occurred while decoding token: {e}")
         raise credentials_exception from e
-    user = crud.user.get_user_by_uuid(db, user_uuid=uuid)
+    user = crud.user.get_user_by_uuid(
+        db=db, 
+        uuid=uuid
+    )
     if user is None:
         raise credentials_exception
     if user.is_forbidden:

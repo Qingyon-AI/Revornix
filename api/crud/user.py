@@ -1,6 +1,6 @@
 import random
 import string
-import uuid
+from uuid import uuid4
 from datetime import datetime, timezone
 
 from sqlalchemy import func
@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 import models
 from common.hash import hash_password
-from enums.user import MarkDocumentReadReason
+from enums.user import MarkDocumentReadReason, UserRole
 
 
 def create_base_user(
@@ -16,13 +16,17 @@ def create_base_user(
     nickname: str,
     avatar: str | None = None,
     default_read_mark_reason: MarkDocumentReadReason = MarkDocumentReadReason.REQUEST_ONCE,
+    role: UserRole = UserRole.USER,
 ):
     now = datetime.now(timezone.utc)
-    db_user = models.user.User(uuid=str(uuid.uuid4()),
-                               nickname=nickname,
-                               avatar=avatar,
-                               default_read_mark_reason=default_read_mark_reason,
-                               create_time=now)
+    db_user = models.user.User(
+        uuid=str(uuid4()),
+        role=role,
+        nickname=nickname,
+        avatar=avatar,
+        default_read_mark_reason=default_read_mark_reason,
+        create_time=now
+    )
     db.add(db_user)
     db.flush()
     return db_user
@@ -252,13 +256,15 @@ def count_user_by_nickname(
 
 def search_user_by_uuid(
     db: Session,
-    keyword: str | None = None,
+    uuid: str | None = None,
     start: int | None = None,
     limit: int = 10
 ):
     query = db.query(models.user.User)
-    query = query.filter(models.user.User.delete_at.is_(None))
-    if keyword is not None and len(keyword) > 0:
+    query = query.filter(
+        models.user.User.delete_at.is_(None),
+    )
+    if uuid is not None and len(uuid) > 0:
         query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
     query = query.order_by(models.user.User.id.desc())
     if start is not None:
@@ -270,11 +276,11 @@ def search_user_by_uuid(
 def search_next_user_by_uuid(
     db: Session,
     user: models.user.User,
-    keyword: str | None = None
+    uuid: str | None = None
 ):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at.is_(None))
-    if keyword is not None and len(keyword) > 0:
+    if uuid is not None and len(uuid) > 0:
         query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
     query = query.order_by(models.user.User.id.desc())
     query = query.filter(models.user.User.id < user.id)
@@ -282,12 +288,12 @@ def search_next_user_by_uuid(
 
 def count_user_by_uuid(
     db: Session,
-    keyword: str | None = None
+    uuid: str | None = None
 ):
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at.is_(None))
-    if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.uuid.like(f"%{keyword}%"))
+    if uuid is not None and len(uuid) > 0:
+        query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
     return query.count()
 
 def search_user_fans(
@@ -584,10 +590,10 @@ def get_user_by_email(
 
 def get_user_by_uuid(
     db: Session,
-    user_uuid: str
+    uuid: str
 ):
     query = db.query(models.user.User)
-    query = query.filter(models.user.User.uuid == user_uuid,
+    query = query.filter(models.user.User.uuid == uuid,
                          models.user.User.delete_at.is_(None))
     return query.one_or_none()
 

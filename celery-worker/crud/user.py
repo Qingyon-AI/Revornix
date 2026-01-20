@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 
 def get_user_by_uuid(
     db: Session,
-    user_uuid: str
+    uuid: str
 ):
     query = db.query(models.user.User)
-    query = query.filter(models.user.User.uuid == user_uuid, 
+    query = query.filter(models.user.User.uuid == uuid, 
                          models.user.User.delete_at.is_(None))
     return query.one_or_none()
 
