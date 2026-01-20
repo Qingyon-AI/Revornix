@@ -211,7 +211,11 @@ class FileDocumentInfo(BaseModel):
     creator_id: int
     file_name: str
     @field_serializer("file_name")
-    def serializer_file_name(self, v: str) -> str:
+    def serializer_file_name(self, v: str):
+        if v is None:
+            return None
+        if v.startswith(("http://", "https://")):
+            return v
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
         return f'{url_prefix}/{v}'
 

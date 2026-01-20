@@ -78,6 +78,9 @@ def search_document_parse_engine(
         if db_engine_provided is None:
             return None
         res = schemas.engine.EngineBaseInfo.model_validate(db_engine)
+        from fastapi.encoders import jsonable_encoder
+        from rich import print
+        print(jsonable_encoder(res))
         return schemas.engine.EngineInfo.model_validate(
             {
                 **res.model_dump(),
