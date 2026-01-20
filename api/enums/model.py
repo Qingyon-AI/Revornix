@@ -24,13 +24,3 @@ class OfficialModelProvider(Enum):
     @property
     def meta(self) -> ModelMeta:
         return self.value
-
-class OfficialModel(Enum):
-    llm = ModelMeta(
-        id="7dc12cdb183b49e199d2651f997db272",
-        title="gpt-5.2",
-        description="gpt-5.2"
-    )
-    @property
-    def meta(self) -> ModelMeta:
-        return self.value

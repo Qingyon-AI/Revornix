@@ -2,9 +2,14 @@
 from pydantic import BaseModel
 
 import crud
+from datetime import datetime, timezone, timedelta
 from data.sql.base import SessionLocal
-from enums.model import UserModelProviderRole
+from enums.model import UserModelProviderRole, OfficialModelProvider
+from enums.ability import Ability
+from enums.user import UserRole
 from common.encrypt import decrypt_api_key
+from common.jwt_utils import create_token
+from common.dependencies import check_deployed_by_official_in_fuc, get_user_token_usage, plan_ability_checked_in_func
 
 # =========================
 # DTO
@@ -70,6 +75,43 @@ class AIModelProxy:
             )
             if db_model_provider is None:
                 raise Exception("The Model provider of the model is not found, please contact the administrator")
+            
+            # ---------- Official model provider check ----------
+            if db_user.role != UserRole.ADMIN and db_model_provider.uuid == OfficialModelProvider.Revornix.meta.id:
+                # 生成用户 token
+                access_token, _ = create_token(user=db_user)
+
+                deployed_by_official = check_deployed_by_official_in_fuc()
+                
+                ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED.value
+
+                end_time = datetime.now(timezone.utc)
+                start_time = end_time - timedelta(days=30)
+                token_usage = await get_user_token_usage(
+                    user_id=user_id,
+                    model_name=db_model.name,
+                    start_time=start_time,
+                    end_time=end_time,
+                )
+                if token_usage is not None:
+                    token_total = token_usage.get('total')
+                    if token_total is not None:
+                        if token_total > 1_000_000:
+                            ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_MORE.value
+                        if token_total > 10_000_000:
+                            ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_NONE.value
+                
+                # 权限校验（async）
+                auth_status = await plan_ability_checked_in_func(
+                    ability=ability,
+                    authorization=f"Bearer {access_token}",
+                )
+
+                if deployed_by_official and not auth_status:
+                    raise PermissionError(
+                        "User does not have permission to use official LLM model"
+                    )
+            
             if db_model_provider.creator_id == user_id:
                 # 如果用户本人就是创建者 那么直接返回即可
                 return cls(
