@@ -10,3 +10,7 @@ class MarkDocumentReadReason(IntEnum):
     REQUEST_ONCE = 0
     SCROLL_TO_BOTTOM = 1
     MANUAL_MARK = 2
+
+class UserRole(IntEnum):
+    ADMIN = 1
+    USER = 2

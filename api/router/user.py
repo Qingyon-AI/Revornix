@@ -99,13 +99,13 @@ def search_user(
     if search_user_request.filter_name == 'uuid':
         db_users = crud.user.search_user_by_uuid(
             db=db,
-            keyword=search_user_request.filter_value,
+            uuid=search_user_request.filter_value,
             start=search_user_request.start,
             limit=search_user_request.limit
         )
         total = crud.user.count_user_by_uuid(
             db=db,
-            keyword=search_user_request.filter_value
+            uuid=search_user_request.filter_value
         )
         if len(db_users) < search_user_request.limit or len(db_users) == 0:
             has_more = False
@@ -113,7 +113,7 @@ def search_user(
             db_next_user = crud.user.search_next_user_by_uuid(
                 db=db,
                 user=db_users[-1],
-                keyword=search_user_request.filter_value
+                uuid=search_user_request.filter_value
             )
     user_ids = [item.id for item in db_users]
     fans_by_user_id = crud.user.count_user_fans_by_user_ids(db=db, user_ids=user_ids)
@@ -762,7 +762,7 @@ def update_token(
         raise Exception("Refresh token is invalid")
     user = crud.user.get_user_by_uuid(
         db=db,
-        user_uuid=user_uuid
+        uuid=user_uuid
     )
     if user is None:
         raise Exception("The user for this refresh_token is not exist")

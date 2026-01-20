@@ -37,7 +37,7 @@ async def websocket_ask(
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from e
     user = crud.user.get_user_by_uuid(
         db=db,
-        user_uuid=uuid
+        uuid=uuid
     )
     if user is None:
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
