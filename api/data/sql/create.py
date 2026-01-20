@@ -5,13 +5,12 @@ load_dotenv(override=True)
 import os
 
 from alembic.config import Config
-from sqlalchemy import text
 
 import crud
 from alembic import command
 from common.logger import exception_logger, info_logger
 from config.base import BASE_DIR, ROOT_USER_NAME, ROOT_USER_PASSWORD
-from data.sql.base import Base, SessionLocal, engine
+from data.sql.base import Base, SessionLocal, sqlalchemy_engine
 from engine.image.banana import BananaImageGenerateEngine
 
 # ---------------- Engines ----------------
@@ -87,20 +86,6 @@ if ENV != "development" and not ALLOW_DB_RESET:
 # =========================================================
 
 alembic_cfg = Config(str(BASE_DIR / "alembic.ini"))
-
-
-# =========================================================
-# PostgreSQL：安全清库
-# =========================================================
-
-def drop_schema_postgres():
-    info_logger.warning("⚠️ Dropping ALL tables via DROP SCHEMA public CASCADE...")
-    with engine.connect() as conn:
-        conn.execute(text("DROP SCHEMA IF EXISTS public CASCADE;"))
-        conn.execute(text("CREATE SCHEMA public;"))
-        conn.execute(text("GRANT ALL ON SCHEMA public TO public;"))
-        conn.commit()
-    info_logger.warning("✅ Schema public recreated.")
 
 
 # =========================================================
@@ -312,7 +297,7 @@ def seed_database(db):
                     description=engine.meta.description,
                     is_public=True,
                     creator_id=db_root_user.id,
-                    engine_provided_id=db_engine_provider
+                    engine_provided_id=db_engine_provider.id
                 )
 
 
@@ -323,17 +308,16 @@ def seed_database(db):
 if __name__ == "__main__":
     try:
         # 1️⃣ 清库
-        drop_schema_postgres()
 
-        # 2️⃣ 用 SQLAlchemy 建表（关键！）
+        # 1️⃣ 用 SQLAlchemy 建表（关键！）
         info_logger.warning("⚠️ Creating tables via SQLAlchemy Base.metadata.create_all()")
-        Base.metadata.create_all(bind=engine)
+        Base.metadata.create_all(bind=sqlalchemy_engine)
         info_logger.warning("✅ Tables created.")
 
-        # 3️⃣ 同步 Alembic 版本（不跑 migration）
+        # 2️⃣ 同步 Alembic 版本（不跑 migration）
         command.stamp(alembic_cfg, "head")
 
-        # 4️⃣ Seed
+        # 3️⃣ Seed
         db = SessionLocal()
         try:
             seed_database(db)

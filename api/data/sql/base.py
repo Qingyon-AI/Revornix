@@ -10,7 +10,7 @@ from config.sql import POSTGRES_DB, POSTGRES_DB_URL, POSTGRES_PASSWORD, POSTGRES
 
 SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_DB_URL}/{POSTGRES_DB}"
 
-engine = create_sqlalchemy_engine(
+sqlalchemy_engine = create_sqlalchemy_engine(
     SQLALCHEMY_DATABASE_URL,
     max_overflow=20, # 超过连接池大小之后，允许最大扩展连接数；
     pool_size=10,    # 连接池的大小
@@ -19,6 +19,6 @@ engine = create_sqlalchemy_engine(
     echo=False
 )
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sqlalchemy_engine)
 
 Base = declarative_base()
