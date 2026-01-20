@@ -15,7 +15,7 @@ const DashboardPage = () => {
 	const t = useTranslations();
 	return (
 		<div className='flex flex-col px-5 gap-5 pb-5 w-full'>
-			<InitSettingDialog />
+			{/* <InitSettingDialog /> */}
 			<div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
 				<TodaySummary />
 				<TodayNews />
