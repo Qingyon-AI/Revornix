@@ -1,4 +1,4 @@
-from api.base_implement.engine_base import EngineBase
+from base_implement.engine_base import EngineBase
 
 
 class TTSEngineBase(EngineBase):

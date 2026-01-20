@@ -9,7 +9,7 @@ from common.logger import exception_logger
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.sql.base import SessionLocal
 from prompts.section_image import IMAGE_PLANNER_SYSTEM, build_image_planner_user_prompt
-from api.base_implement.engine_base import EngineBase
+from base_implement.engine_base import EngineBase
 from proxy.ai_model_proxy import AIModelProxy
 from schemas.section import ImagePlan, ImagePlanResult
 
