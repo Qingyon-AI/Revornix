@@ -90,7 +90,7 @@ async def generate_podcast(
 def section_document_request(
     section_document_request: schemas.section.SectionDocumentRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)
+    user: models.user.User = Depends(get_current_user_without_throw)
 ):
     db_section = crud.section.get_section_by_section_id(
         db=db,
@@ -174,7 +174,7 @@ def section_document_request(
 def section_seo_detail_request(
     section_seo_detail_request: schemas.section.SectionSeoDetailRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)
+    user: models.user.User = Depends(get_current_user_without_throw)
 ):
     db_section_publish = crud.section.get_publish_sections_by_uuid(
         db=db,
@@ -784,7 +784,7 @@ def update_section(
 def public_sections(
     search_public_sections_request: schemas.section.SearchPublicSectionsRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)
+    user: models.user.User = Depends(get_current_user_without_throw)
 ):
     has_more = True
     next_start = None
@@ -1033,7 +1033,7 @@ def search_mine_sections(
 @section_router.post('/detail', response_model=schemas.section.SectionInfo)
 def get_section_detail(
     section_detail_request: schemas.section.SectionDetailRequest,
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw),
+    user: models.user.User = Depends(get_current_user_without_throw),
     db: Session = Depends(get_db)
 ):
     db_section = crud.section.get_section_by_section_id(
@@ -1451,7 +1451,7 @@ def create_section_comment(
 def search_section_comment(
     section_comment_search_request: schemas.section.SectionCommentSearchRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_without_throw)
+    user: models.user.User = Depends(get_current_user_without_throw)
 ):
     has_more = True
     next_start = None

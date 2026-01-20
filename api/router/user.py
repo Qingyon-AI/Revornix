@@ -659,8 +659,10 @@ def my_info(
 ):
     res = schemas.user.PrivateUserInfo.model_validate(user)
 
-    email_user = crud.user.get_email_user_by_user_id(db=db,
-                                                     user_id=user.id)
+    email_user = crud.user.get_email_user_by_user_id(
+        db=db,
+        user_id=user.id
+    )
     if email_user is not None:
         res.email_info = schemas.user.EmailInfo(
             email=email_user.email,

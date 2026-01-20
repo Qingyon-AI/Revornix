@@ -29,7 +29,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     uuid: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    role: Mapped[str] = mapped_column(String(50), nullable=False, comment='1: admin, 2: user')
+    role: Mapped[int] = mapped_column(Integer, nullable=False, comment='1: admin, 2: user')
     avatar: Mapped[str] = mapped_column(String(500), nullable=False)
     nickname: Mapped[str] = mapped_column(String(50), index=True, nullable=False)
     last_login_ip: Mapped[Optional[str]] = mapped_column(String(50))

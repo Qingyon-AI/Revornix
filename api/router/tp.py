@@ -32,7 +32,7 @@ async def upload_file_system(
     file_path: str = Form(...),
     content_type: str = Form(...),
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
+    user: models.user.User = Depends(get_current_user_with_api_key)
 ):
     if user.default_user_file_system is None:
         raise schemas.error.CustomException(message="The user have no default file system")
@@ -61,7 +61,7 @@ async def upload_file_system(
 def create_section(
     section_create_request: schemas.section.SectionCreateRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
+    user: models.user.User = Depends(get_current_user_with_api_key)
 ):
     db_section = crud.section.create_section(
         db=db,
@@ -92,7 +92,7 @@ def create_section(
 def add_label(
     label_add_request: schemas.section.LabelAddRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
+    user: models.user.User = Depends(get_current_user_with_api_key)
 ):
     db_label = crud.section.create_section_label(
         db=db,
@@ -108,7 +108,7 @@ def add_label(
 @tp_router.post('/section/mine/all', response_model=schemas.section.AllMySectionsResponse)
 def get_all_mine_sections(
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
+    user: models.user.User = Depends(get_current_user_with_api_key)
 ):
     db_sections = crud.section.get_user_sections(
         db=db,
@@ -124,7 +124,7 @@ def get_all_mine_sections(
 @tp_router.post("/document/label/list", response_model=schemas.document.LabelListResponse)
 def list_label(
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
+    user: models.user.User = Depends(get_current_user_with_api_key)
 ):
     db_labels = crud.document.get_user_labels_by_user_id(
         db=db,
@@ -140,7 +140,7 @@ def list_label(
 def create_document_label(
     label_add_request: schemas.document.LabelAddRequest,
     db: Session = Depends(get_db),
-    user: schemas.user.PrivateUserInfo = Depends(get_current_user_with_api_key)
+    user: models.user.User = Depends(get_current_user_with_api_key)
 ):
     db_label = crud.document.create_document_label(
         db=db,
