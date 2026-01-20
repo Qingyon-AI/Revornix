@@ -19,7 +19,7 @@ from engine.markdown.jina import JinaEngine
 from engine.markdown.markitdown import MarkitdownEngine
 from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
-from engine.tts.openai import OpenAIAudioEngine
+from api.engine.tts.openai_audio import OpenAIAudioEngine
 from engine.tts.volc.tts import VolcTTSEngine
 
 # ---------------- File Systems ----------------
