@@ -239,10 +239,10 @@ class SectionPodcastInfo(BaseModel):
     creator_id: int
     podcast_file_name: str
     @field_serializer("podcast_file_name")
-    def serializer_podcast_file_name(self, v: str) -> str:
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(
-            user_id=self.creator_id
-        )
+    def serializer_podcast_file_name(self, v: str):
+        if v.startswith(("http://", "https://")):
+            return v
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
         return f'{url_prefix}/{v}'
 
 class SectionInfo(BaseModel):
