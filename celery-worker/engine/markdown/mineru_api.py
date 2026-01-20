@@ -17,7 +17,7 @@ from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileIn
 from enums.engine import Engine, EngineCategory
 from playwright.async_api import async_playwright
 from data.sql.base import SessionLocal
-from common.logger import exception_logger
+from common.logger import info_logger, exception_logger
 
 
 class MineruApiEngine(MarkdownEngineProtocol):
@@ -188,7 +188,7 @@ class MineruApiEngine(MarkdownEngineProtocol):
                     snapshot = str(states)
                     if snapshot != last_state_snapshot:
                         last_state_snapshot = snapshot
-                        exception_logger.info(f"[MinerU] batch_id={batch_id} states={states}")
+                        info_logger.info(f"[MinerU] batch_id={batch_id} states={states}")
 
                     # Wait until every item is terminal
                     all_terminal = all((it.get("state") in self.TERMINAL_STATES) for it in extract_list) and len(extract_list) > 0

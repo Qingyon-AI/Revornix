@@ -63,7 +63,7 @@ class EngineProxy:
                 raise Exception("The user is not the forker of the public engine, please fork it first")
 
             ability = None
-            if db_engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
+            if db_engine.engine_provided.uuid == Engine.Official_Volc_TTS.meta.uuid:
                 ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value
                 end_time = datetime.now(timezone.utc)
                 start_time = end_time - timedelta(days=30)
@@ -81,7 +81,7 @@ class EngineProxy:
                         if token_total > 10_000_000:
                             ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_NONE.value
 
-            elif db_engine.uuid == Engine.Official_Banana_Image.meta.uuid:
+            elif db_engine.engine_provided.uuid == Engine.Official_Banana_Image.meta.uuid:
                 ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value
                 end_time = datetime.now(timezone.utc)
                 start_time = end_time - timedelta(days=30)

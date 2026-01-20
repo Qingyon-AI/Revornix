@@ -184,25 +184,20 @@ async def handle_process_section(
     )
 
     if db_section.auto_illustration and db_user.default_image_generate_engine_id is not None:
-        db_image_generator = crud.engine.get_user_engine_by_user_engine_id(
-            db=db,
-            user_engine_id=db_user.default_image_generate_engine_id
-        )
-        if db_image_generator is None:
-            raise Exception("There is something wrong with the user's default image generate engine")
         db_engine = crud.engine.get_engine_by_engine_id(
             db=db,
-            engine_id=db_image_generator.engine_id
+            engine_id=db_user.default_image_generate_engine_id
         )
         if db_engine is None:
             raise Exception("There is something wrong with the user's default image generate engine")
-        if db_engine.uuid == Engine.Banana_Image.meta.uuid:
+        
+        if db_engine.engine_provided.uuid == Engine.Banana_Image.meta.uuid:
             engine = BananaImageGenerateEngine()
-        elif db_engine.uuid == Engine.Official_Banana_Image.meta.uuid:
+        elif db_engine.engine_provided.uuid == Engine.Official_Banana_Image.meta.uuid:
             engine = OfficialBananaImageGenerateEngine()
         else:
-            raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
-
+            raise Exception(f"Unsupport engine, engine uuid: {db_engine.uuid}, engine_provided uuid: {db_engine.engine_provided.uuid}")
+        engine.set_user_id(user_id=user_id)
         engine_config = (await EngineProxy.create(
             user_id=user_id,
             engine_id=db_user.default_image_generate_engine_id

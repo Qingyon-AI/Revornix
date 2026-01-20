@@ -53,19 +53,6 @@ async def handle_update_section_ai_podcast(
         if db_user.default_podcast_user_engine_id is None:
             raise Exception("The user who want to process section has not set default podcast user engine")
 
-        podcast_generator = crud.engine.get_user_engine_by_user_engine_id(
-            db=db,
-            user_engine_id=db_user.default_podcast_user_engine_id
-        )
-        if podcast_generator is None:
-            raise Exception("There is something wrong with the user's podcast generator engine")
-        db_engine = crud.engine.get_engine_by_engine_id(
-            db=db,
-            engine_id=podcast_generator.engine_id
-        )
-        if db_engine is None:
-            raise Exception("There is something wrong with the user's podcast generator engine")
-
         remote_file_service = await get_user_remote_file_system(
             user_id=user_id
         )
@@ -77,16 +64,24 @@ async def handle_update_section_ai_podcast(
             section_id=section_id,
             user_id=user_id
         )
+        
+        db_engine = crud.engine.get_engine_by_engine_id(
+            db=db,
+            engine_id=db_user.default_podcast_user_engine_id
+        )
+        if db_engine is None:
+            raise Exception("There is something wrong with the user's podcast generator engine")
 
-        if db_engine.uuid == Engine.Volc_TTS.meta.uuid:
+        engine = None
+        if db_engine.engine_provided.uuid == Engine.Volc_TTS.meta.uuid:
             engine = VolcTTSEngine()
-        elif db_engine.uuid == Engine.OpenAI_TTS.meta.uuid:
+        elif db_engine.engine_provided.uuid == Engine.OpenAI_TTS.meta.uuid:
             engine = OpenAIAudioEngine()
-        elif db_engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
+        elif db_engine.engine_provided.uuid == Engine.Official_Volc_TTS.meta.uuid:
             engine = OfficialVolcTTSEngine()
         else:
-            raise Exception("Unsupport engine, uuid: " + db_engine.uuid)
-
+            raise Exception(f"Unsupport engine, engine uuid: {db_engine.uuid}, engine_provided uuid: {db_engine.engine_provided.uuid}")
+        engine.set_user_id(user_id=user_id)
         engine_config = (await EngineProxy.create(
             user_id=user_id,
             engine_id=db_user.default_podcast_user_engine_id

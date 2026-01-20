@@ -27,7 +27,7 @@ def create_engine(
         creator_id=user.id,
         engine_provided_id=engine_create_request.engine_provided_id
     )
-    db_user_engine = crud.engine.create_user_engine(
+    crud.engine.create_user_engine(
         db=db,
         user_id=user.id,
         engine_id=db_engine.id,

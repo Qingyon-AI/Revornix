@@ -95,29 +95,7 @@ async def handle_convert_document_md(
             db_convert_task.status = DocumentMdConvertStatus.SUCCESS
             db.commit()
             return
-        if db_document.category == DocumentCategory.FILE:
-            if db_user.default_file_document_parse_user_engine_id is None:
-                raise Exception("The user which you want to process document has not set default file document parse user engine")
-            md_extractor = crud.engine.get_user_engine_by_user_engine_id(
-                db=db,
-                user_engine_id=db_user.default_file_document_parse_user_engine_id
-            )
-        elif db_document.category == DocumentCategory.WEBSITE:
-            if db_user.default_website_document_parse_user_engine_id is None:
-                raise Exception("The user which you want to process document has not set default website document parse user engine")
-            md_extractor = crud.engine.get_user_engine_by_user_engine_id(
-                db=db,
-                user_engine_id=db_user.default_website_document_parse_user_engine_id
-            )
-        if md_extractor is None:
-            raise Exception("There are something wrong with the user's markdown convert engine")
-        db_engine = crud.engine.get_engine_by_engine_id(
-            db=db,
-            engine_id=md_extractor.engine_id
-        )
-        if db_engine is None:
-            raise Exception("There are something wrong with the user's markdown convert engine")
-
+        
         remote_file_service = await get_user_remote_file_system(
             user_id=user_id
         )
@@ -125,17 +103,35 @@ async def handle_convert_document_md(
             user_file_system_id=db_user.default_user_file_system
         )
 
-        if db_engine.uuid == Engine.MinerU_API.meta.uuid:
+        db_engine = None
+        if db_document.category == DocumentCategory.FILE:
+            if db_user.default_file_document_parse_user_engine_id is None:
+                raise Exception("The user which you want to process document has not set default file document parse user engine")
+            db_engine = crud.engine.get_engine_by_engine_id(
+                db=db,
+                engine_id=db_user.default_file_document_parse_user_engine_id
+            )
+        elif db_document.category == DocumentCategory.WEBSITE:
+            if db_user.default_website_document_parse_user_engine_id is None:
+                raise Exception("The user which you want to process document has not set default website document parse user engine")
+            db_engine = crud.engine.get_engine_by_engine_id(
+                db=db,
+                engine_id=db_user.default_website_document_parse_user_engine_id
+            )
+        if db_engine is None:
+            raise Exception("There are something wrong with the user's markdown convert engine")
+
+        if db_engine.engine_provided.uuid == Engine.MinerU_API.meta.uuid:
             engine = MineruApiEngine()
-        elif db_engine.uuid == Engine.MarkitDown.meta.uuid:
+        elif db_engine.engine_provided.uuid == Engine.MarkitDown.meta.uuid:
             engine = MarkitdownEngine()
-        elif db_engine.uuid == Engine.Jina.meta.uuid:
+        elif db_engine.engine_provided.uuid == Engine.Jina.meta.uuid:
             engine = JinaEngine()
-        elif db_engine.uuid == Engine.MinerU.meta.uuid:
+        elif db_engine.engine_provided.uuid == Engine.MinerU.meta.uuid:
             engine = MineruEngine()
         else:
             raise Exception("The convert engine is not supported")
-
+        engine.set_user_id(user_id=user_id)
         engine_config = None
         if db_document.category == DocumentCategory.FILE:
             if db_user.default_file_document_parse_user_engine_id is None:

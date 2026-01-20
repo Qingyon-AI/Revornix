@@ -431,13 +431,6 @@ async def create_user_by_email_verify(
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
     await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
-    # init the default engine for the user
-    db_mineru_engine = crud.engine.get_engine_by_uuid(
-        db=db,
-        uuid=Engine.MinerU.meta.uuid
-    )
-    if db_mineru_engine is None:
-        raise CustomException('The MinerU Engine is Not Found', 404)
     db.commit()
     if deployed_by_official:
         await on_user_created(
@@ -496,13 +489,6 @@ def create_user_by_email(
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
     BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
-    # init the default engine for the user
-    db_mineru_engine = crud.engine.get_engine_by_uuid(
-        db=db,
-        uuid=Engine.MinerU.meta.uuid
-    )
-    if db_mineru_engine is None:
-        raise CustomException('The MinerU Engine is Not Found', 404)
     db.commit()
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
@@ -977,13 +963,6 @@ async def create_user_by_google(
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
     await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
-    # init the default engine for the user
-    db_mineru_engine = crud.engine.get_engine_by_uuid(
-        db=db,
-        uuid=Engine.MinerU.meta.uuid
-    )
-    if db_mineru_engine is None:
-        raise CustomException('The MinerU Engine is Not Found', 404)
     db.commit()
     if deployed_by_official:
         await on_user_created(
@@ -1270,13 +1249,6 @@ async def create_user_by_sms_verify(
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
         await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
-        # init the default engine for the user
-        db_mineru_engine = crud.engine.get_engine_by_uuid(
-            db=db,
-            uuid=Engine.MinerU.meta.uuid
-        )
-        if db_mineru_engine is None:
-            raise CustomException('The MinerU Engine is Not Found', 404)
         db.commit()
         if deployed_by_official:
             await on_user_created(
@@ -1426,13 +1398,6 @@ async def create_user_by_wechat_mini(
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
         await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
-        # init the default engine for the user
-        db_mineru_engine = crud.engine.get_engine_by_uuid(
-            db=db,
-            uuid=Engine.MinerU.meta.uuid
-        )
-        if db_mineru_engine is None:
-            raise CustomException('The MinerU Engine is Not Found', 404)
     else:
         # TODO 优化一下微信用户的机制 现在的处理总感觉有些问题
         # 如果union_id已经存在 说明该用户已通过别的微信渠道注册过, 不需要新建文件系统等机制 仅仅再创建一个微信用户身份即可
@@ -1540,13 +1505,6 @@ async def create_user_by_wechat_web(
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
         await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
-        # init the default engine for the user
-        db_mineru_engine = crud.engine.get_engine_by_uuid(
-            db=db,
-            uuid=Engine.MinerU.meta.uuid
-        )
-        if db_mineru_engine is None:
-            raise CustomException('The MinerU Engine is Not Found', 404)
     else:
         db_user = crud.user.get_user_by_id(
             db=db,
