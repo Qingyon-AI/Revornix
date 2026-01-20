@@ -1,4 +1,3 @@
-import json
 import crud
 from data.sql.base import SessionLocal
 from enums.model import UserModelProviderRole
@@ -6,18 +5,10 @@ from datetime import datetime, timedelta, timezone
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func, get_user_token_usage
 from common.jwt_utils import create_token
 from enums.ability import Ability
-from enums.engine import Engine
+from enums.engine_enums import Engine, EngineProvided
 from enums.user import UserRole
-from common.logger import exception_logger
-from typing import Any
 
 class EngineProxy:
-    def __init__(
-        self,
-        *,
-        config_json: str | None,
-    ) -> None:
-        self.config_json = config_json
 
     # =========================
     # Factory（唯一推荐入口）
@@ -112,23 +103,8 @@ class EngineProxy:
                     if not authorized:
                         raise PermissionError("plan ability denied")
 
-            return cls(
-                config_json=db_engine.config_json,
-            )
-
-    # =========================
-    # Public API
-    # =========================
-    def get_configuration(self) -> dict[str, Any] | None:
-        if not self.config_json:
-            return None
-
-        try:
-            return json.loads(self.config_json)
-        except json.JSONDecodeError as e:
-            exception_logger.warning(
-                "Invalid config_json, return None. value=%r error=%s",
-                self.config_json,
-                e,
-            )
-            return None
+        engine = None
+        engine = EngineProvided.from_uuid(
+            uuid=db_engine.engine_provided.uuid
+        ).meta.engine_provided_cls()
+        return engine

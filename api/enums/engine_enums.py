@@ -9,7 +9,7 @@ from engine import (
     OpenAIAudioEngine,
     VolcTTSEngine,
 )
-from api.protocol.engine import EngineProtocol
+from protocol.engine import EngineProtocol
 
 class UserEngineRole(IntEnum):
     CREATOR = 0
