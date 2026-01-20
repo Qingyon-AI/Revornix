@@ -3,7 +3,7 @@ import torch
 from numpy.typing import NDArray
 from sentence_transformers import SentenceTransformer
 
-from protocol.embedding_engine import EmbeddingEngine
+from base_implement.embedding_engine_base import EmbeddingEngineBase
 
 _model = None
 
@@ -24,7 +24,7 @@ def get_embedding_model() -> SentenceTransformer:
         )
     return _model
 
-class LocalQwen3EmbeddingEngine(EmbeddingEngine):
+class LocalQwen3EmbeddingEngine(EmbeddingEngineBase):
     def __init__(self, dim: int = 1024):
         self.model = get_embedding_model()
         self.dim = dim

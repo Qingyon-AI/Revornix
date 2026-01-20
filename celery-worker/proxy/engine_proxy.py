@@ -7,6 +7,15 @@ from common.jwt_utils import create_token
 from enums.ability import Ability
 from enums.engine_enums import Engine, EngineProvided
 from enums.user import UserRole
+from engine import (
+    BananaImageGenerateEngine,
+    JinaEngine,
+    MineruEngine,
+    MineruApiEngine,
+    MarkitdownEngine,
+    OpenAIAudioEngine,
+    VolcTTSEngine,
+)
 
 class EngineProxy:
 
@@ -102,9 +111,23 @@ class EngineProxy:
                     )
                     if not authorized:
                         raise PermissionError("plan ability denied")
-
+        
         engine = None
-        engine = EngineProvided.from_uuid(
-            uuid=db_engine.engine_provided.uuid
-        ).meta.engine_provided_cls()
+        if db_engine.engine_provided.uuid == EngineProvided.Volc_TTS.meta.uuid:
+            engine = VolcTTSEngine()
+        elif db_engine.engine_provided.uuid == EngineProvided.Banana_Image.meta.uuid:
+            engine = BananaImageGenerateEngine()
+        elif db_engine.engine_provided.uuid == EngineProvided.Jina.meta.uuid:
+            engine = JinaEngine()
+        elif db_engine.engine_provided.uuid == EngineProvided.MarkitDown.meta.uuid:
+            engine = MarkitdownEngine()
+        elif db_engine.engine_provided.uuid == EngineProvided.MinerU.meta.uuid:
+            engine = MineruEngine()
+        elif db_engine.engine_provided.uuid == EngineProvided.MinerU_API.meta.uuid:
+            engine = MineruApiEngine()
+        elif db_engine.engine_provided.uuid == EngineProvided.OpenAI_TTS.meta.uuid:
+            engine = OpenAIAudioEngine()
+        else:
+            raise Exception("Unknown engine provided")
+
         return engine

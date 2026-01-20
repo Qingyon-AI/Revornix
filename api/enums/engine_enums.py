@@ -1,15 +1,5 @@
 from enum import Enum, IntEnum
-from typing import NamedTuple, Type
-from engine import (
-    BananaImageGenerateEngine,
-    JinaEngine,
-    MineruEngine,
-    MineruApiEngine,
-    MarkitdownEngine,
-    OpenAIAudioEngine,
-    VolcTTSEngine,
-)
-from protocol.engine import EngineProtocol
+from typing import NamedTuple
 
 class UserEngineRole(IntEnum):
     CREATOR = 0
@@ -24,7 +14,6 @@ class EngineProvidedMeta(NamedTuple):
     uuid: str
     name: str
     category: EngineCategory
-    engine_provided_cls: Type[EngineProtocol]
 
 class EngineProvided(Enum):
     """Revornix提供的可选择的引擎的种类
@@ -32,56 +21,42 @@ class EngineProvided(Enum):
     MinerU = EngineProvidedMeta(
         uuid='c59151aa86784d9ab52f74c12c830b1f',
         name='MinerU',
-        category=EngineCategory.Markdown,
-        engine_provided_cls=MineruEngine
+        category=EngineCategory.Markdown
     )
     MinerU_API = EngineProvidedMeta(
         uuid='d90eabd6ce9e42da98ba6168cb189b70',
         name='MinerU_API',
-        category=EngineCategory.Markdown,
-        engine_provided_cls=MineruApiEngine
+        category=EngineCategory.Markdown
     )
     MarkitDown = EngineProvidedMeta(
         uuid='9188ddca93ff4c2bb97fa252723c6c13',
         name='MarkitDown',
-        category=EngineCategory.Markdown,
-        engine_provided_cls=MarkitdownEngine
+        category=EngineCategory.Markdown
     )
     Jina = EngineProvidedMeta(
         uuid='e31849ffa7f84a2cb4e2fa2ea00f25d2',
         name='Jina',
-        category=EngineCategory.Markdown,
-        engine_provided_cls=JinaEngine
+        category=EngineCategory.Markdown
     )
     OpenAI_TTS = EngineProvidedMeta(
         uuid='142d5cc7db8c42d0bc1ad1f24d4b6cd4',
         name='OpenAI_TTS',
-        category=EngineCategory.TTS,
-        engine_provided_cls=OpenAIAudioEngine
+        category=EngineCategory.TTS
     )
     Volc_TTS = EngineProvidedMeta(
         uuid='f2286c251b0b4650b60b6b9b48ea3cce',
         name='Volc_TTS',
-        category=EngineCategory.TTS,
-        engine_provided_cls=VolcTTSEngine
+        category=EngineCategory.TTS
     )
     Banana_Image = EngineProvidedMeta(
         uuid='9f1fb0005a99483da191a38af6dc7a23',
         name='Banana_Image',
-        category=EngineCategory.IMAGE,
-        engine_provided_cls=BananaImageGenerateEngine
+        category=EngineCategory.IMAGE
     )
 
     @property
     def meta(self) -> EngineProvidedMeta:
         return self.value
-
-    @classmethod
-    def from_uuid(cls, uuid: str) -> "EngineProvided":
-        for item in cls:
-            if item.meta.uuid == uuid:
-                return item
-        raise ValueError(f"Unknown EngineProvided uuid: {uuid}")
 
 class EngineMeta(NamedTuple):
     uuid: str

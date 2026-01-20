@@ -8,10 +8,10 @@ import numpy as np
 from numpy.typing import NDArray
 from openai import OpenAI
 
-from protocol.embedding_engine import EmbeddingEngine
+from base_implement.embedding_engine_base import EmbeddingEngineBase
 
 
-class CloudQwen3EmbeddingEngine(EmbeddingEngine):
+class CloudQwen3EmbeddingEngine(EmbeddingEngineBase):
 
     def __init__(
         self,
