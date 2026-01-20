@@ -26,10 +26,6 @@ from data.neo4j.insert import (
 )
 from data.sql.base import SessionLocal
 from engine.embedding.factory import get_embedding_engine
-from engine.markdown.jina import JinaEngine
-from engine.markdown.markitdown import MarkitdownEngine
-from engine.markdown.mineru import MineruEngine
-from engine.markdown.mineru_api import MineruApiEngine
 from engine.tag.llm_document import LLMDocumentTagEngine
 from enums.ability import Ability
 from enums.document import (
@@ -40,7 +36,6 @@ from enums.document import (
     DocumentProcessStatus,
     DocumentSummarizeStatus,
 )
-from enums.engine import Engine
 from proxy.ai_model_proxy import AIModelProxy
 from schemas.task import DocumentOverrideProperty
 from proxy.engine_proxy import EngineProxy
@@ -121,34 +116,21 @@ async def handle_convert_document_md(
         if db_engine is None:
             raise Exception("There are something wrong with the user's markdown convert engine")
 
-        if db_engine.engine_provided.uuid == Engine.MinerU_API.meta.uuid:
-            engine = MineruApiEngine()
-        elif db_engine.engine_provided.uuid == Engine.MarkitDown.meta.uuid:
-            engine = MarkitdownEngine()
-        elif db_engine.engine_provided.uuid == Engine.Jina.meta.uuid:
-            engine = JinaEngine()
-        elif db_engine.engine_provided.uuid == Engine.MinerU.meta.uuid:
-            engine = MineruEngine()
-        else:
-            raise Exception("The convert engine is not supported")
-        engine.set_user_id(user_id=user_id)
-        engine_config = None
+        engine = None
         if db_document.category == DocumentCategory.FILE:
             if db_user.default_file_document_parse_user_engine_id is None:
                 raise Exception("The user who want to process document has not set default file document parse user engine")
-            engine_config = (await EngineProxy.create(
+            engine = await EngineProxy.create(
                 user_id=user_id,
                 engine_id=db_user.default_file_document_parse_user_engine_id
-            )).get_configuration()
+            )
         elif db_document.category == DocumentCategory.WEBSITE:
             if db_user.default_website_document_parse_user_engine_id is None:
                 raise Exception("The user who want to process document has not set default website document parse user engine")
-            engine_config = (await EngineProxy.create(
+            engine = await EngineProxy.create(
                 user_id=user_id,
                 engine_id=db_user.default_website_document_parse_user_engine_id
-            )).get_configuration()
-        if engine_config:
-            engine.set_engine_config(engine_config=engine_config)
+            )
 
         md_file_name = None
 

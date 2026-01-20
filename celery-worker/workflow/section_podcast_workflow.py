@@ -7,10 +7,6 @@ from langgraph.graph import StateGraph, END
 from common.common import get_user_remote_file_system
 from common.logger import exception_logger
 from data.sql.base import SessionLocal
-from engine.tts.openai import OpenAIAudioEngine
-from engine.tts.volc.official_volc import OfficialVolcTTSEngine
-from engine.tts.volc.tts import VolcTTSEngine
-from enums.engine import Engine
 from enums.section import SectionPodcastStatus
 from workflow.markdown_helpers import get_markdown_content_by_section_id
 from proxy.engine_proxy import EngineProxy
@@ -72,22 +68,10 @@ async def handle_update_section_ai_podcast(
         if db_engine is None:
             raise Exception("There is something wrong with the user's podcast generator engine")
 
-        engine = None
-        if db_engine.engine_provided.uuid == Engine.Volc_TTS.meta.uuid:
-            engine = VolcTTSEngine()
-        elif db_engine.engine_provided.uuid == Engine.OpenAI_TTS.meta.uuid:
-            engine = OpenAIAudioEngine()
-        elif db_engine.engine_provided.uuid == Engine.Official_Volc_TTS.meta.uuid:
-            engine = OfficialVolcTTSEngine()
-        else:
-            raise Exception(f"Unsupport engine, engine uuid: {db_engine.uuid}, engine_provided uuid: {db_engine.engine_provided.uuid}")
-        engine.set_user_id(user_id=user_id)
-        engine_config = (await EngineProxy.create(
+        engine = await EngineProxy.create(
             user_id=user_id,
             engine_id=db_user.default_podcast_user_engine_id
-        )).get_configuration()
-        if engine_config:
-            engine.set_engine_config(engine_config=engine_config)
+        )
 
         audio_bytes = await engine.synthesize(
             text=markdown_content
