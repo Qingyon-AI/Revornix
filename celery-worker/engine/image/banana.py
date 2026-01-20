@@ -60,7 +60,7 @@ class BananaImageGenerateEngine(ImageGenerateEngineProtocol):
         base_url = config.get('base_url')
         api_key = config.get('api_key')
         if model_name is None or base_url is None or api_key is None:
-            raise Exception("The user's configuration of this engine is not complete.")
+            raise Exception("The configuration of this engine is not complete.")
         
         if not self.user_id:
             raise Exception("The user_id is not set.")
