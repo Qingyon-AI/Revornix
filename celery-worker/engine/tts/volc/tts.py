@@ -3,21 +3,21 @@ import time
 import json
 import websockets
 import httpx
-from protocol.tts_engine import TTSEngineProtocol
-from enums.engine import Engine, EngineCategory
+from enums.engine_enums import EngineProvided, EngineCategory
 from pydantic import AnyUrl
 from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
 from common.langfuse import langfuse
 from langfuse import propagate_attributes
 from common.logger import exception_logger
+from base_implement.tts_engine_base import TTSEngineBase
 
-class VolcTTSEngine(TTSEngineProtocol):
+class VolcTTSEngine(TTSEngineBase):
     """此引擎使用的是字节跳动的播客TTS引擎，具体文档参照https://www.volcengine.com/docs/6561/1668014
     """
     
     def __init__(self):
         super().__init__(
-            engine_uuid=Engine.Volc_TTS.meta.uuid,
+            engine_uuid=EngineProvided.Volc_TTS.meta.uuid,
             engine_name="Volc Podcast Engine",
             engine_name_zh="豆包播客引擎",
             engine_category=EngineCategory.TTS,

@@ -13,14 +13,14 @@ from typing import Tuple, Any
 from common.file import download_file_to_temp, extract_files_to_temp_from_zip
 from config.base import BASE_DIR
 from common.common import get_user_remote_file_system, extract_title_and_summary
-from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
-from enums.engine import Engine, EngineCategory
+from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo, FileInfo
+from enums.engine_enums import EngineProvided, EngineCategory
 from playwright.async_api import async_playwright
 from data.sql.base import SessionLocal
 from common.logger import info_logger, exception_logger
 
 
-class MineruApiEngine(MarkdownEngineProtocol):
+class MineruApiEngine(MarkdownEngineBase):
 
     MINERU_BASE = "https://mineru.net"
     TERMINAL_STATES = {"done", "failed"}
@@ -28,7 +28,7 @@ class MineruApiEngine(MarkdownEngineProtocol):
 
     def __init__(self):
         super().__init__(
-            engine_uuid=Engine.MinerU_API.meta.uuid,
+            engine_uuid=EngineProvided.MinerU_API.meta.uuid,
             engine_category=EngineCategory.Markdown,
             engine_name="MinerU API",
             engine_name_zh="MinerU API",

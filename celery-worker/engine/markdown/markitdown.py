@@ -1,8 +1,8 @@
 import io
 import asyncio
 import crud
-from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
-from enums.engine import Engine, EngineCategory
+from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo, FileInfo
+from enums.engine_enums import EngineProvided, EngineCategory
 from common.common import extract_title_and_summary
 from bs4 import BeautifulSoup
 from markitdown import MarkItDown
@@ -12,11 +12,11 @@ from langfuse.openai import OpenAI
 from langfuse import propagate_attributes
 from playwright.async_api import async_playwright
 
-class MarkitdownEngine(MarkdownEngineProtocol):
+class MarkitdownEngine(MarkdownEngineBase):
     
     def __init__(self):
         super().__init__(
-            engine_uuid=Engine.MarkitDown.meta.uuid,
+            engine_uuid=EngineProvided.MarkitDown.meta.uuid,
             engine_name="Markitdown",
             engine_name_zh="Markitdown",
             engine_category=EngineCategory.Markdown,

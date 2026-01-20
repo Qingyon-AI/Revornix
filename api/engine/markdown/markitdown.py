@@ -10,16 +10,16 @@ from playwright.async_api import async_playwright
 import crud
 from common.common import extract_title_and_summary
 from data.sql.base import SessionLocal
-from enums.engine import Engine, EngineCategory
-from protocol.markdown_engine import FileInfo, MarkdownEngineProtocol, WebsiteInfo
+from enums.engine_enums import EngineProvided, EngineCategory
+from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
 from proxy.ai_model_proxy import AIModelProxy
 
 
-class MarkitdownEngine(MarkdownEngineProtocol):
+class MarkitdownEngine(MarkdownEngineBase):
 
     def __init__(self):
         super().__init__(
-            engine_uuid=Engine.MarkitDown.meta.uuid,
+            engine_uuid=EngineProvided.MarkitDown.meta.uuid,
             engine_name="Markitdown",
             engine_name_zh="Markitdown",
             engine_category=EngineCategory.Markdown,

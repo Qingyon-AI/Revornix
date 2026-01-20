@@ -3,8 +3,8 @@ import re
 from langfuse import propagate_attributes
 from langfuse.openai import OpenAI
 
-from enums.engine import Engine, EngineCategory
-from protocol.image_generate_engine import ImageGenerateEngineProtocol
+from enums.engine_enums import EngineProvided, EngineCategory
+from base_implement.image_generate_engine_base import ImageGenerateEngineBase
 
 SYSTEM_PROMPT = """You are a pure image generation function.
 
@@ -37,11 +37,11 @@ MARKDOWN_IMAGE_DATA_URL_PATTERN = re.compile(
 )
 
 
-class BananaImageGenerateEngine(ImageGenerateEngineProtocol):
+class BananaImageGenerateEngine(ImageGenerateEngineBase):
 
     def __init__(self):
         super().__init__(
-            engine_uuid=Engine.Banana_Image.meta.uuid,
+            engine_uuid=EngineProvided.Banana_Image.meta.uuid,
             engine_name='Banana Image',
             engine_name_zh='Banage 图像生成',
             engine_category=EngineCategory.IMAGE,

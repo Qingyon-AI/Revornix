@@ -14,15 +14,15 @@ from common.logger import exception_logger
 from common.mineru import parse_doc
 from config.base import BASE_DIR
 from data.sql.base import SessionLocal
-from enums.engine import Engine, EngineCategory
-from protocol.markdown_engine import FileInfo, MarkdownEngineProtocol, WebsiteInfo
+from enums.engine_enums import EngineProvided, EngineCategory
+from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
 
 
-class MineruEngine(MarkdownEngineProtocol):
+class MineruEngine(MarkdownEngineBase):
 
     def __init__(self):
         super().__init__(
-            engine_uuid=Engine.MinerU.meta.uuid,
+            engine_uuid=EngineProvided.MinerU.meta.uuid,
             engine_name='MinerU',
             engine_name_zh='MinerU',
             engine_category=EngineCategory.Markdown,

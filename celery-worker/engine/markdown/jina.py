@@ -1,12 +1,12 @@
 import httpx
-from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo
-from enums.engine import Engine, EngineCategory
+from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo
+from enums.engine_enums import EngineProvided, EngineCategory
 
-class JinaEngine(MarkdownEngineProtocol):
+class JinaEngine(MarkdownEngineBase):
     
     def __init__(self):
         super().__init__(
-            engine_uuid=Engine.Jina.meta.uuid,
+            engine_uuid=EngineProvided.Jina.meta.uuid,
             engine_category=EngineCategory.Markdown,
             engine_name='Jina',
             engine_name_zh='Jina',
