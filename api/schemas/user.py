@@ -155,6 +155,7 @@ class EmailInfo(BaseModel):
 class PrivateUserInfo(BaseModel):
     id: int
     uuid: str
+    role: int
     fans: int | None = None
     follows: int | None = None
     avatar: str | None = None
@@ -223,6 +224,7 @@ class SectionUserPublicInfo(BaseModel):
 
 class UserPublicInfo(BaseModel):
     id: int
+    role: int
     nickname: str | None = None
     avatar: str | None = None
     slogan: str | None = None
