@@ -21,7 +21,7 @@ import {
 	searchAiModel,
 } from '@/service/ai';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { CircleCheck } from 'lucide-react';
+import { CircleCheck, Loader2 } from 'lucide-react';
 import { Separator } from '../ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -178,13 +178,6 @@ const InitMineModel = () => {
 			{models?.data && models?.data?.length === 0 && (
 				<Form {...form}>
 					<form className='flex flex-col gap-2' onSubmit={handleSubmit}>
-						<div className='relative flex items-center justify-center overflow-hidden'>
-							<Separator />
-							<div className='py-1 px-2 border rounded-full text-center bg-muted text-xs mx-1'>
-								Provider
-							</div>
-							<Separator />
-						</div>
 						<Tabs
 							value={providerChooseYepOrNo}
 							onValueChange={setProviderChooseYepOrNo}
@@ -207,7 +200,7 @@ const InitMineModel = () => {
 											<FormItem>
 												<div className='grid grid-cols-12 gap-2'>
 													<FormLabel className='col-span-3'>
-														{t('init_mine_model_form_model_provider_name')}
+														{t('init_mine_model_form_model_name')}
 													</FormLabel>
 													<Select
 														onValueChange={(value) =>
@@ -220,7 +213,7 @@ const InitMineModel = () => {
 															<SelectTrigger className='w-full'>
 																<SelectValue
 																	placeholder={t(
-																		'init_mine_model_form_model_provider_name_choose_placeholder',
+																		'init_mine_model_form_model_name_placeholder',
 																	)}
 																/>
 															</SelectTrigger>
@@ -260,7 +253,9 @@ const InitMineModel = () => {
 												<Input
 													type='text'
 													className='col-span-9'
-													placeholder='Name'
+													placeholder={t(
+														'setting_model_provider_name_placeholder',
+													)}
 													{...field}
 												/>
 											</div>
@@ -280,7 +275,9 @@ const InitMineModel = () => {
 												<Input
 													type='text'
 													className='col-span-9'
-													placeholder='Description'
+													placeholder={t(
+														'setting_model_provider_description_placeholder',
+													)}
 													{...field}
 												/>
 											</div>
@@ -323,13 +320,6 @@ const InitMineModel = () => {
 										</FormItem>
 									)}
 								/>
-								<div className='relative flex items-center justify-center overflow-hidden'>
-									<Separator />
-									<div className='py-1 px-2 border rounded-full text-center bg-muted text-xs mx-1'>
-										Model
-									</div>
-									<Separator />
-								</div>
 								<FormField
 									control={form.control}
 									name='model_name'
@@ -351,7 +341,12 @@ const InitMineModel = () => {
 								/>
 							</TabsContent>
 						</Tabs>
-						<Button type='submit'>{t('save')}</Button>
+						<Button type='submit' disabled={mutateAddAiModelProvider.isPending}>
+							{t('save')}
+							{mutateAddAiModelProvider.isPending && (
+								<Loader2 className='animate-spin size-4' />
+							)}
+						</Button>
 					</form>
 				</Form>
 			)}

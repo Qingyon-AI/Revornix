@@ -18,6 +18,7 @@ import InitMineModel from './init-mine-model';
 import InitDefaultChoose from './init-default-choose';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import InitMineEngine from './init-mine-engine';
 
 const InitSettingDialog = () => {
 	const t = useTranslations();
@@ -40,6 +41,7 @@ const InitSettingDialog = () => {
 	const steps = [
 		{ title: 'Step 1', description: t('init_setting_quick_set_step_1') },
 		{ title: 'Step 2', description: t('init_setting_quick_set_step_2') },
+		{ title: 'Step 3', description: t('init_setting_quick_set_step_3') },
 	];
 
 	const [currentStep, setCurrentStep] = useState(0);
@@ -183,7 +185,12 @@ const InitSettingDialog = () => {
 								<InitMineModel />
 							</div>
 						)}
-						{currentStep === 1 && <InitDefaultChoose />}
+						{currentStep === 1 && (
+							<div>
+								<InitMineEngine />
+							</div>
+						)}
+						{currentStep === 2 && <InitDefaultChoose />}
 					</div>
 				</DrawerContent>
 			</Drawer>
