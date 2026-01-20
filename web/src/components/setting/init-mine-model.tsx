@@ -19,10 +19,8 @@ import {
 	createAiModel,
 	createAiModelProvider,
 	searchAiModel,
-	searchAiModelProvider,
 } from '@/service/ai';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useUserContext } from '@/provider/user-provider';
 import { CircleCheck } from 'lucide-react';
 import { Separator } from '../ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -102,14 +100,6 @@ const InitMineModel = () => {
 			}),
 	});
 
-	const { data: modelProviders } = useQuery({
-		queryKey: ['getModelProviders'],
-		queryFn: () =>
-			searchAiModelProvider({
-				keyword: '',
-			}),
-	});
-
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		if (event) {
 			if (typeof event.preventDefault === 'function') {
@@ -168,6 +158,7 @@ const InitMineModel = () => {
 				description: values.model_provider_description,
 				api_key: values.model_provider_api_key!,
 				base_url: values.model_provider_base_url!,
+				is_public: false,
 			});
 			const res2 = await mutateAddModel.mutateAsync({
 				name: values.model_name,
@@ -206,6 +197,7 @@ const InitMineModel = () => {
 									{t('init_mine_model_model_provider_choose_no')}
 								</TabsTrigger>
 							</TabsList>
+							{/* 已有供应商 */}
 							<TabsContent value='yep'>
 								<FormField
 									name='model_provider_id'
@@ -228,13 +220,13 @@ const InitMineModel = () => {
 															<SelectTrigger className='w-full'>
 																<SelectValue
 																	placeholder={t(
-																		'init_mine_model_form_model_provider_name_choose_placeholder'
+																		'init_mine_model_form_model_provider_name_choose_placeholder',
 																	)}
 																/>
 															</SelectTrigger>
 															<SelectContent className='w-full'>
 																<SelectGroup>
-																	{modelProviders?.data?.map((item, index) => {
+																	{models?.data?.map((item, index) => {
 																		return (
 																			<SelectItem
 																				key={index}
@@ -254,6 +246,7 @@ const InitMineModel = () => {
 									}}
 								/>
 							</TabsContent>
+							{/* 新建供应商 */}
 							<TabsContent value='no' className='space-y-2'>
 								<FormField
 									control={form.control}
@@ -319,10 +312,36 @@ const InitMineModel = () => {
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>API Base</FormLabel>
+												<FormLabel className='col-span-3'>Base Url</FormLabel>
 												<Input
 													className='col-span-9'
-													placeholder='API Base'
+													placeholder='Base Url'
+													{...field}
+												/>
+											</div>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<div className='relative flex items-center justify-center overflow-hidden'>
+									<Separator />
+									<div className='py-1 px-2 border rounded-full text-center bg-muted text-xs mx-1'>
+										Model
+									</div>
+									<Separator />
+								</div>
+								<FormField
+									control={form.control}
+									name='model_name'
+									render={({ field }) => (
+										<FormItem>
+											<div className='grid grid-cols-12 gap-2'>
+												<FormLabel className='col-span-3'>
+													{t('setting_model_name')}
+												</FormLabel>
+												<Input
+													className='col-span-9'
+													placeholder={t('setting_model_name_placeholder')}
 													{...field}
 												/>
 											</div>
@@ -332,45 +351,16 @@ const InitMineModel = () => {
 								/>
 							</TabsContent>
 						</Tabs>
-						<div className='relative flex items-center justify-center overflow-hidden'>
-							<Separator />
-							<div className='py-1 px-2 border rounded-full text-center bg-muted text-xs mx-1'>
-								Model
-							</div>
-							<Separator />
-						</div>
-						<FormField
-							control={form.control}
-							name='model_name'
-							render={({ field }) => (
-								<FormItem>
-									<div className='grid grid-cols-12 gap-2'>
-										<FormLabel className='col-span-3'>
-											{t('setting_model_name')}
-										</FormLabel>
-										<Input
-											className='col-span-9'
-											placeholder={t('setting_model_name_placeholder')}
-											{...field}
-										/>
-									</div>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
 						<Button type='submit'>{t('save')}</Button>
 					</form>
 				</Form>
 			)}
-			{models?.data &&
-				models?.data?.length > 0 &&
-				modelProviders?.data &&
-				modelProviders?.data?.length > 0 && (
-					<div className='bg-muted rounded p-5 py-12 flex flex-col justify-center items-center gap-5'>
-						<CircleCheck className='size-28 text-muted-foreground' />
-						<p className='text-muted-foreground text-sm'>{t('done')}</p>
-					</div>
-				)}
+			{models?.data && models?.data?.length > 0 && (
+				<div className='bg-muted rounded p-5 py-12 flex flex-col justify-center items-center gap-5'>
+					<CircleCheck className='size-28 text-muted-foreground' />
+					<p className='text-muted-foreground text-sm'>{t('done')}</p>
+				</div>
+			)}
 		</>
 	);
 };
