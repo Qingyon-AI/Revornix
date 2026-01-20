@@ -88,6 +88,18 @@ def get_engine_provided_by_engine_id(
     )
     return query.one_or_none()
 
+def get_engine_provided_by_engine_uuid(
+    db: Session,
+    engine_uuid: str
+):
+    query = db.query(models.engine.EngineProvided)
+    query = query.join(models.engine.Engine)
+    query = query.filter(
+        models.engine.Engine.uuid == engine_uuid,
+        models.engine.EngineProvided.delete_at.is_(None)
+    )
+    return query.one_or_none()
+
 def get_engine_by_engine_id(
     db: Session,
     engine_id: int

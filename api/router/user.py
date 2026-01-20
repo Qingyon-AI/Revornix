@@ -41,7 +41,6 @@ from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole
 from enums.user import WeChatUserSource
 from file.built_in_remote_file_service import BuiltInRemoteFileService
-from official.hooks.user import on_user_created
 from schemas.error import CustomException
 
 user_router = APIRouter()
@@ -431,10 +430,6 @@ async def create_user_by_email_verify(
     # create the minio file bucket for the user because it's the default file system
     await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
     db.commit()
-    if deployed_by_official:
-        await on_user_created(
-            user_id=db_user.id
-        )
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
         raise CustomException(message='The token is not created.')
@@ -965,10 +960,6 @@ async def create_user_by_google(
     # create the minio file bucket for the user because it's the default file system
     await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
     db.commit()
-    if deployed_by_official:
-        await on_user_created(
-            user_id=db_user.id
-        )
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
         access_token=access_token,
@@ -1105,10 +1096,6 @@ async def create_user_by_github(
     # create the minio file bucket for the user because it's the default file system
     await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
     db.commit()
-    if deployed_by_official:
-        await on_user_created(
-            user_id=db_user.id
-        )
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
 
@@ -1251,10 +1238,6 @@ async def create_user_by_sms_verify(
         # create the minio file bucket for the user because it's the default file system
         await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
         db.commit()
-        if deployed_by_official:
-            await on_user_created(
-                user_id=db_user.id
-            )
         access_token, refresh_token = create_token(db_user)
         return schemas.user.TokenResponse(
             access_token=access_token,
@@ -1417,10 +1400,6 @@ async def create_user_by_wechat_mini(
             wechat_user_name=db_user.nickname
         )
     db.commit()
-    if deployed_by_official:
-        await on_user_created(
-            user_id=db_user.id
-        )
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
         access_token=access_token,
@@ -1522,10 +1501,6 @@ async def create_user_by_wechat_web(
             wechat_user_name=db_user.nickname
         )
     db.commit()
-    if deployed_by_official:
-        await on_user_created(
-            user_id=db_user.id
-        )
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
         access_token=access_token,

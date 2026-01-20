@@ -10,7 +10,7 @@ from sqlalchemy import text
 import crud
 from alembic import command
 from common.logger import exception_logger, info_logger
-from config.base import BASE_DIR
+from config.base import BASE_DIR, ROOT_USER_NAME, ROOT_USER_PASSWORD
 from data.sql.base import Base, SessionLocal, engine
 from engine.image.banana import BananaImageGenerateEngine
 
@@ -57,6 +57,17 @@ from protocol.notification_template import NotificationTemplate
 from protocol.notification_trigger import NotificationTriggerEventProtocol
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
+from enums.model import OfficialModelProvider
+from enums.engine_enums import Engine
+from enums.user import UserRole
+
+from common.dependencies import check_deployed_by_official_in_fuc
+
+deployed_by_official = check_deployed_by_official_in_fuc()
+
+if not ROOT_USER_NAME or not ROOT_USER_PASSWORD:
+    raise RuntimeError("❌ ROOT_USER_NAME or ROOT_USER_PASSWORD is not set.")
+
 # =========================================================
 # 环境保护（防止误删生产）
 # =========================================================
@@ -97,6 +108,30 @@ def drop_schema_postgres():
 # =========================================================
 
 def seed_database(db):
+    db_root_user = crud.user.get_root_user(
+        db=db
+    )
+    # 创建Root用户
+    if db_root_user is None:
+        db_root_user = crud.user.create_base_user(
+            db=db,
+            nickname="root",
+            role=UserRole.ROOT
+        )
+
+        db_email_info_for_root_user = crud.user.get_email_user_by_user_id(
+            db=db,
+            user_id=db_root_user.id
+        )
+        if db_email_info_for_root_user is None:
+            db_email_info_for_root_user = crud.user.create_email_user(
+                db=db,
+                user_id=db_root_user.id,
+                email=ROOT_USER_NAME,
+                password=ROOT_USER_PASSWORD
+            )
+        db.commit()
+
     # -------- Notification Templates --------
     templates: list[NotificationTemplate] = [
         SectionCommentedNotificationTemplate(),
@@ -180,8 +215,8 @@ def seed_database(db):
                 demo_config=target.demo_config,
             )
 
-    # -------- Engines --------
-    engines: list[EngineProtocol] = [
+    # -------- EngineProvideds --------
+    engine_provideds: list[EngineProtocol] = [
         MineruEngine(),
         JinaEngine(),
         MarkitdownEngine(),
@@ -191,17 +226,17 @@ def seed_database(db):
         OpenAIAudioEngine(),
     ]
 
-    for eng in engines:
-        if crud.engine.get_engine_by_uuid(db, eng.engine_uuid) is None:
+    for engine_provided in engine_provideds:
+        if crud.engine.get_engine_by_uuid(db, engine_provided.engine_uuid) is None:
             crud.engine.create_engine_provided(
                 db=db,
-                category=eng.engine_category,
-                uuid=eng.engine_uuid,
-                name=eng.engine_name,
-                name_zh=eng.engine_name_zh,
-                description=eng.engine_description,
-                description_zh=eng.engine_description_zh,
-                demo_config=eng.engine_demo_config,
+                category=engine_provided.engine_category,
+                uuid=engine_provided.engine_uuid,
+                name=engine_provided.engine_name,
+                name_zh=engine_provided.engine_name_zh,
+                description=engine_provided.engine_description,
+                description_zh=engine_provided.engine_description_zh,
+                demo_config=engine_provided.engine_demo_config,
             )
 
     # -------- File Systems --------
@@ -223,6 +258,62 @@ def seed_database(db):
                 description_zh=fs.file_service_description_zh,
                 demo_config=fs.file_service_demo_config,
             )
+
+    if deployed_by_official:
+        # ================================
+        # Model Providers
+        # ================================
+        model_providers: list[OfficialModelProvider] = [
+            OfficialModelProvider.Revornix
+        ]
+
+        for provider in model_providers:
+            meta = provider.meta
+
+            if crud.model.get_ai_model_provider_by_uuid(db, meta.id) is None:
+                db_ai_model_provider = crud.model.create_ai_model_provider(
+                    db=db,
+                    uuid=meta.id,
+                    name=meta.title,
+                    description=meta.description,
+                    creator_id=db_root_user.id,
+                    api_key=os.environ.get('OFFICIAL_MODEL_PROVIDER_API_KEY'),
+                    base_url=os.environ.get('OFFICIAL_MODEL_PROVIDER_BASE_URL'),
+                    is_public=True
+                )
+                crud.model.create_user_ai_model_provider(
+                    db=db,
+                    user_id=db_root_user.id,
+                    ai_model_provider_id=db_ai_model_provider.id
+                )
+    
+        # ================================
+        # Engines
+        # ================================
+        engines: list[Engine] = [
+            Engine.Official_Banana_Image,
+            Engine.Official_Volc_TTS,
+        ]
+
+        for engine in engines:
+            if crud.engine.get_engine_by_uuid(db=db, uuid=engine.meta.uuid) is None:
+                db_engine_provider = crud.engine.get_engine_provided_by_engine_uuid(
+                    db=db,
+                    engine_uuid=engine.meta.engine_provided.meta.uuid
+                )
+                if db_engine_provider is None:
+                    raise RuntimeError(
+                        f"❌ Engine provider {engine.meta.engine_provided.meta} not found"
+                    )
+                crud.engine.create_engine(
+                    db=db,
+                    uuid=engine.meta.uuid,
+                    name=engine.meta.name,
+                    description=engine.meta.description,
+                    is_public=True,
+                    creator_id=db_root_user.id,
+                    engine_provided_id=db_engine_provider
+                )
 
 
 # =========================================================
