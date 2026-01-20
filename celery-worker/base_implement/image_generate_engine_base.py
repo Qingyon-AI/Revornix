@@ -1,24 +1,27 @@
-import crud
-import json
 import asyncio
-from proxy.ai_model_proxy import AIModelProxy
-from protocol.engine import EngineProtocol
-from langfuse.openai import OpenAI
-from langfuse import propagate_attributes
-from prompts.section_image import build_image_planner_user_prompt, IMAGE_PLANNER_SYSTEM
-from data.sql.base import SessionLocal
-from data.custom_types.all import EntityInfo, RelationInfo
-from schemas.section import ImagePlan, ImagePlanResult
-from common.logger import exception_logger
+import json
 
-class ImageGenerateEngineProtocol(EngineProtocol):
-    
+from langfuse import propagate_attributes
+from langfuse.openai import OpenAI
+
+import crud
+from common.logger import exception_logger
+from data.custom_types.all import EntityInfo, RelationInfo
+from data.sql.base import SessionLocal
+from prompts.section_image import IMAGE_PLANNER_SYSTEM, build_image_planner_user_prompt
+from api.base_implement.engine_base import EngineBase
+from proxy.ai_model_proxy import AIModelProxy
+from schemas.section import ImagePlan, ImagePlanResult
+
+
+class ImageGenerateEngineBase(EngineBase):
+
     def generate_image(
-        self, 
+        self,
         prompt: str
     ) -> str:
         raise NotImplementedError("Method not implemented")
-    
+
     @staticmethod
     async def plan_images_with_llm(
         user_id: int,
@@ -63,7 +66,6 @@ class ImageGenerateEngineProtocol(EngineProtocol):
                     api_key=model_conf.api_key,
                     base_url=model_conf.base_url,
                 )
-
                 completion = await asyncio.to_thread(
                     client.chat.completions.create,
                     model=model_conf.model_name,

@@ -4,7 +4,7 @@ from playwright.async_api import async_playwright
 from pydantic import BaseModel
 
 from common.logger import exception_logger
-from protocol.engine import EngineProtocol
+from api.base_implement.engine_base import EngineBase
 
 
 class WebsiteInfo(BaseModel):
@@ -22,7 +22,7 @@ class FileInfo(BaseModel):
     content: str | None = None
     cover: str | None = None
 
-class MarkdownEngineProtocol(EngineProtocol):
+class MarkdownEngineBase(EngineBase):
     @staticmethod
     async def get_website_cover_by_playwright(
         url: str
