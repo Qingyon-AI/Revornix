@@ -168,6 +168,16 @@ def create_email_user(
     db.flush()
     return db_email_user
 
+def get_root_user(
+    db: Session
+):
+    query = db.query(models.user.User)
+    query = query.filter(
+        models.user.User.role == UserRole.ROOT,
+        models.user.User.delete_at.is_(None)
+    )
+    return query.one_or_none()
+
 def search_user_by_email(
     db: Session,
     keyword: str | None = None,

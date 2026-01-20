@@ -12,5 +12,6 @@ class MarkDocumentReadReason(IntEnum):
     MANUAL_MARK = 2
 
 class UserRole(IntEnum):
-    ADMIN = 1
-    USER = 2
+    ROOT = 1
+    ADMIN = 2
+    USER = 3
