@@ -17,11 +17,11 @@ from common.file import download_file_to_temp, extract_files_to_temp_from_zip
 from common.logger import info_logger, exception_logger
 from config.base import BASE_DIR
 from data.sql.base import SessionLocal
-from enums.engine import Engine, EngineCategory
-from protocol.markdown_engine import FileInfo, MarkdownEngineProtocol, WebsiteInfo
+from enums.engine_enums import EngineProvided, EngineCategory
+from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
 
 
-class MineruApiEngine(MarkdownEngineProtocol):
+class MineruApiEngine(MarkdownEngineBase):
 
     MINERU_BASE = "https://mineru.net"
     TERMINAL_STATES = {"done", "failed"}
@@ -29,7 +29,7 @@ class MineruApiEngine(MarkdownEngineProtocol):
 
     def __init__(self):
         super().__init__(
-            engine_uuid=Engine.MinerU_API.meta.uuid,
+            engine_uuid=EngineProvided.MinerU_API.meta.uuid,
             engine_category=EngineCategory.Markdown,
             engine_name="MinerU API",
             engine_name_zh="MinerU API",

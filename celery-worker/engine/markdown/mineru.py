@@ -7,8 +7,8 @@ import io
 from bs4 import BeautifulSoup
 from pathlib import Path
 from config.base import BASE_DIR
-from protocol.markdown_engine import MarkdownEngineProtocol, WebsiteInfo, FileInfo
-from enums.engine import Engine, EngineCategory
+from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo, FileInfo
+from enums.engine_enums import EngineProvided, EngineCategory
 from playwright.async_api import async_playwright
 from common.common import get_user_remote_file_system, is_dir_empty, extract_title_and_summary
 from common.mineru import parse_doc
@@ -16,11 +16,11 @@ from data.sql.base import SessionLocal
 from common.logger import exception_logger
 
 
-class MineruEngine(MarkdownEngineProtocol):
+class MineruEngine(MarkdownEngineBase):
 
     def __init__(self):
         super().__init__(
-            engine_uuid=Engine.MinerU.meta.uuid,
+            engine_uuid=EngineProvided.MinerU.meta.uuid,
             engine_category=EngineCategory.Markdown,
             engine_name='MinerU',
             engine_name_zh='MinerU',
