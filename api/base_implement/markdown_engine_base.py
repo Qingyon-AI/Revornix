@@ -1,9 +1,11 @@
 import httpx
-from protocol.engine import EngineProtocol
 from bs4 import BeautifulSoup
-from pydantic import BaseModel
 from playwright.async_api import async_playwright
+from pydantic import BaseModel
+
 from common.logger import exception_logger
+from api.base_implement.engine_base import EngineBase
+
 
 class WebsiteInfo(BaseModel):
     url: str
@@ -20,7 +22,7 @@ class FileInfo(BaseModel):
     content: str | None = None
     cover: str | None = None
 
-class MarkdownEngineProtocol(EngineProtocol):
+class MarkdownEngineBase(EngineBase):
     @staticmethod
     async def get_website_cover_by_playwright(
         url: str
@@ -52,7 +54,7 @@ class MarkdownEngineProtocol(EngineProtocol):
         from urllib.parse import urljoin
 
         def normalize_src(base: str, src: str) -> str:
-            if src.startswith("http://") or src.startswith("https://"):
+            if src.startswith(("http://", "https://")):
                 return src
             if src.startswith("//"):
                 return "https:" + src
@@ -73,8 +75,8 @@ class MarkdownEngineProtocol(EngineProtocol):
                 try:
                     head = await client.head(src)
                     size = int(head.headers.get("Content-Length", 0))
-                except Exception:
-                    exception_logger.error(f"Failed to get image size: {src}")
+                except Exception as e:
+                    exception_logger.error(f"Failed to get image size: {src}, error: {e}")
                     continue
 
                 if size > biggest_size:
@@ -82,15 +84,15 @@ class MarkdownEngineProtocol(EngineProtocol):
                     biggest_url = src
 
         return biggest_url
-    
+
     async def analyse_website(
-        self, 
+        self,
         url: str
     ) -> WebsiteInfo:
         raise NotImplementedError("Method not implemented")
-    
+
     async def analyse_file(
-        self, 
+        self,
         file_path: str
     ) -> FileInfo:
         raise NotImplementedError("Method not implemented")

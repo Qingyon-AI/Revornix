@@ -36,7 +36,6 @@ from common.tp_auth.wechat_utils import get_mini_wechat_tokens, get_web_user_inf
 from data.milvus.delete import delete_documents_from_milvus
 from data.neo4j.delete import delete_documents_and_related_from_neo4j
 from enums.document import DocumentCategory
-from enums.engine import Engine
 from enums.file import RemoteFileService
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole

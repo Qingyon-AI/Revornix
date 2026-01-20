@@ -1,7 +1,7 @@
-from protocol.engine import EngineProtocol
+from api.base_implement.engine_base import EngineBase
 
 
-class TTSEngineProtocol(EngineProtocol):
+class TTSEngineBase(EngineBase):
 
     async def synthesize(
         self,
