@@ -1,4 +1,5 @@
 import crud
+import json
 from data.sql.base import SessionLocal
 from enums.model import UserModelProviderRole
 from datetime import datetime, timedelta, timezone
@@ -129,5 +130,10 @@ class EngineProxy:
             engine = OpenAIAudioEngine()
         else:
             raise Exception("Unknown engine provided")
+
+        if db_engine.config_json:
+            config_json = json.loads(db_engine.config_json)
+            engine.set_engine_config(config_json)
+        engine.set_user_id(user_id=user_id)
 
         return engine
