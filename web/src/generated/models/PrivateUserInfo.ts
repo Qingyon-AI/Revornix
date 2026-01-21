@@ -75,6 +75,18 @@ export interface PrivateUserInfo {
     role: number;
     /**
      * 
+     * @type {string}
+     * @memberof PrivateUserInfo
+     */
+    avatar: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PrivateUserInfo
+     */
+    nickname: string;
+    /**
+     * 
      * @type {number}
      * @memberof PrivateUserInfo
      */
@@ -85,18 +97,6 @@ export interface PrivateUserInfo {
      * @memberof PrivateUserInfo
      */
     follows?: number | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof PrivateUserInfo
-     */
-    avatar?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof PrivateUserInfo
-     */
-    nickname?: string | null;
     /**
      * 
      * @type {string}
@@ -190,6 +190,8 @@ export function instanceOfPrivateUserInfo(value: object): value is PrivateUserIn
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('role' in value) || value['role'] === undefined) return false;
+    if (!('avatar' in value) || value['avatar'] === undefined) return false;
+    if (!('nickname' in value) || value['nickname'] === undefined) return false;
     return true;
 }
 
@@ -206,10 +208,10 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'id': json['id'],
         'uuid': json['uuid'],
         'role': json['role'],
+        'avatar': json['avatar'],
+        'nickname': json['nickname'],
         'fans': json['fans'] == null ? undefined : json['fans'],
         'follows': json['follows'] == null ? undefined : json['follows'],
-        'avatar': json['avatar'] == null ? undefined : json['avatar'],
-        'nickname': json['nickname'] == null ? undefined : json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'phone_info': json['phone_info'] == null ? undefined : PhoneInfoFromJSON(json['phone_info']),
         'email_info': json['email_info'] == null ? undefined : EmailInfoFromJSON(json['email_info']),
@@ -241,10 +243,10 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'id': value['id'],
         'uuid': value['uuid'],
         'role': value['role'],
-        'fans': value['fans'],
-        'follows': value['follows'],
         'avatar': value['avatar'],
         'nickname': value['nickname'],
+        'fans': value['fans'],
+        'follows': value['follows'],
         'slogan': value['slogan'],
         'phone_info': PhoneInfoToJSON(value['phone_info']),
         'email_info': EmailInfoToJSON(value['email_info']),

@@ -156,10 +156,10 @@ class PrivateUserInfo(BaseModel):
     id: int
     uuid: str
     role: int
+    avatar: str
+    nickname: str
     fans: int | None = None
     follows: int | None = None
-    avatar: str | None = None
-    nickname: str | None = None
     slogan: str | None = None
     phone_info: PhoneInfo | None = None
     email_info: EmailInfo | None = None
@@ -177,8 +177,6 @@ class PrivateUserInfo(BaseModel):
 
     @field_serializer("avatar")
     def serialize_avatar(self, v: str):
-        if v is None:
-            return None
         if v.startswith(("http://", "https://")):
             return v
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
@@ -192,8 +190,8 @@ class UserInfoRequest(BaseModel):
 
 class SectionUserPublicInfo(BaseModel):
     id: int
-    nickname: str | None = None
-    avatar: str | None = None
+    avatar: str
+    nickname: str
     slogan: str | None = None
     authority: int | None = None
     role: int | None = None
@@ -212,9 +210,7 @@ class SectionUserPublicInfo(BaseModel):
             return v.replace(tzinfo=timezone.utc)
         return v
     @field_serializer("avatar")
-    def serialize_avatar(self, v: str | None):
-        if v is None:
-            return None
+    def serialize_avatar(self, v: str):
         if v.startswith(("http://", "https://")):
             return v
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
@@ -225,16 +221,14 @@ class SectionUserPublicInfo(BaseModel):
 class UserPublicInfo(BaseModel):
     id: int
     role: int
-    nickname: str | None = None
-    avatar: str | None = None
+    avatar: str
+    nickname: str
     slogan: str | None = None
     is_followed: bool | None = None
     fans: int | None = None
     follows: int | None = None
     @field_serializer("avatar")
-    def serialize_avatar(self, v: str | None):
-        if v is None:
-            return None
+    def serialize_avatar(self, v: str):
         if v.startswith(("http://", "https://")):
             return v
         url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
