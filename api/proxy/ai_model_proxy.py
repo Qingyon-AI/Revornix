@@ -131,8 +131,8 @@ class AIModelProxy:
                 else:
                     # 如果该模型供应商是公开的 且用户是forker 那么直接返回即可
                     return cls(
-                        api_key=db_user_model_provider.api_key,
-                        base_url=db_user_model_provider.base_url,
+                        api_key=db_model_provider.api_key,
+                        base_url=db_model_provider.base_url,
                         model_name=db_model.name,
                     )
             else:
