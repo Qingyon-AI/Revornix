@@ -30,13 +30,13 @@ export interface SectionUserPublicInfo {
      * @type {string}
      * @memberof SectionUserPublicInfo
      */
-    nickname?: string | null;
+    avatar: string;
     /**
      * 
      * @type {string}
      * @memberof SectionUserPublicInfo
      */
-    avatar?: string | null;
+    nickname: string;
     /**
      * 
      * @type {string}
@@ -74,6 +74,8 @@ export interface SectionUserPublicInfo {
  */
 export function instanceOfSectionUserPublicInfo(value: object): value is SectionUserPublicInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('avatar' in value) || value['avatar'] === undefined) return false;
+    if (!('nickname' in value) || value['nickname'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
@@ -90,8 +92,8 @@ export function SectionUserPublicInfoFromJSONTyped(json: any, ignoreDiscriminato
     return {
         
         'id': json['id'],
-        'nickname': json['nickname'] == null ? undefined : json['nickname'],
-        'avatar': json['avatar'] == null ? undefined : json['avatar'],
+        'avatar': json['avatar'],
+        'nickname': json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'authority': json['authority'] == null ? undefined : json['authority'],
         'role': json['role'] == null ? undefined : json['role'],
@@ -112,8 +114,8 @@ export function SectionUserPublicInfoToJSONTyped(value?: SectionUserPublicInfo |
     return {
         
         'id': value['id'],
-        'nickname': value['nickname'],
         'avatar': value['avatar'],
+        'nickname': value['nickname'],
         'slogan': value['slogan'],
         'authority': value['authority'],
         'role': value['role'],

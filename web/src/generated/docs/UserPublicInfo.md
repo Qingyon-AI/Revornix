@@ -8,8 +8,8 @@ Name | Type
 ------------ | -------------
 `id` | number
 `role` | number
-`nickname` | string
 `avatar` | string
+`nickname` | string
 `slogan` | string
 `is_followed` | boolean
 `fans` | number
@@ -24,8 +24,8 @@ import type { UserPublicInfo } from ''
 const example = {
   "id": null,
   "role": null,
-  "nickname": null,
   "avatar": null,
+  "nickname": null,
   "slogan": null,
   "is_followed": null,
   "fans": null,

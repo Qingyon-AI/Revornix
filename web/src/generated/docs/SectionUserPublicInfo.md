@@ -7,8 +7,8 @@
 Name | Type
 ------------ | -------------
 `id` | number
-`nickname` | string
 `avatar` | string
+`nickname` | string
 `slogan` | string
 `authority` | number
 `role` | number
@@ -23,8 +23,8 @@ import type { SectionUserPublicInfo } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
-  "nickname": null,
   "avatar": null,
+  "nickname": null,
   "slogan": null,
   "authority": null,
   "role": null,

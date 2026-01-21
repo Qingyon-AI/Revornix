@@ -36,13 +36,13 @@ export interface UserPublicInfo {
      * @type {string}
      * @memberof UserPublicInfo
      */
-    nickname?: string | null;
+    avatar: string;
     /**
      * 
      * @type {string}
      * @memberof UserPublicInfo
      */
-    avatar?: string | null;
+    nickname: string;
     /**
      * 
      * @type {string}
@@ -75,6 +75,8 @@ export interface UserPublicInfo {
 export function instanceOfUserPublicInfo(value: object): value is UserPublicInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('role' in value) || value['role'] === undefined) return false;
+    if (!('avatar' in value) || value['avatar'] === undefined) return false;
+    if (!('nickname' in value) || value['nickname'] === undefined) return false;
     return true;
 }
 
@@ -90,8 +92,8 @@ export function UserPublicInfoFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'id': json['id'],
         'role': json['role'],
-        'nickname': json['nickname'] == null ? undefined : json['nickname'],
-        'avatar': json['avatar'] == null ? undefined : json['avatar'],
+        'avatar': json['avatar'],
+        'nickname': json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'is_followed': json['is_followed'] == null ? undefined : json['is_followed'],
         'fans': json['fans'] == null ? undefined : json['fans'],
@@ -112,8 +114,8 @@ export function UserPublicInfoToJSONTyped(value?: UserPublicInfo | null, ignoreD
         
         'id': value['id'],
         'role': value['role'],
-        'nickname': value['nickname'],
         'avatar': value['avatar'],
+        'nickname': value['nickname'],
         'slogan': value['slogan'],
         'is_followed': value['is_followed'],
         'fans': value['fans'],

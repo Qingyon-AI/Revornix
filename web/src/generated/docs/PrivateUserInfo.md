@@ -9,10 +9,10 @@ Name | Type
 `id` | number
 `uuid` | string
 `role` | number
-`fans` | number
-`follows` | number
 `avatar` | string
 `nickname` | string
+`fans` | number
+`follows` | number
 `slogan` | string
 `phone_info` | [PhoneInfo](PhoneInfo.md)
 `email_info` | [EmailInfo](EmailInfo.md)
@@ -38,10 +38,10 @@ const example = {
   "id": null,
   "uuid": null,
   "role": null,
-  "fans": null,
-  "follows": null,
   "avatar": null,
   "nickname": null,
+  "fans": null,
+  "follows": null,
   "slogan": null,
   "phone_info": null,
   "email_info": null,
