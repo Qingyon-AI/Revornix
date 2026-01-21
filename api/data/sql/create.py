@@ -303,7 +303,12 @@ def seed_database(db: Session):
                 )
 
         # Engines（注意：这里要从 engine_provided 表取 id，别查 engine 表）
-        engines: list[Engine] = [Engine.Official_Banana_Image, Engine.Official_Volc_TTS]
+        engines: list[Engine] = [
+            Engine.Official_Banana_Image, 
+            Engine.Official_Volc_TTS,
+            Engine.Official_MinerU,
+            Engine.Official_MinerU_API
+        ]
         for e in engines:
             if crud.engine.get_engine_by_uuid(db=db, engine_uuid=e.meta.uuid) is None:
                 db_engine_provider = crud.engine.get_engine_provided_by_engine_uuid(
