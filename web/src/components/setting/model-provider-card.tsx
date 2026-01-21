@@ -250,7 +250,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 								)}
 								{modelProvider.is_forked && (
 									<Button
-										className='shadow-none'
+										className='shadow-none text-xs'
 										variant={'destructive'}
 										disabled={mutateForkModelProvider.isPending}
 										onClick={() => {

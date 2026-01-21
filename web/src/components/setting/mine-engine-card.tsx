@@ -7,9 +7,9 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { Button } from '../ui/button';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
-import { deleteEngine, forkEngine, getEngineDetail } from '@/service/engine';
+import { deleteEngine, forkEngine } from '@/service/engine';
 import { toast } from 'sonner';
 import {
 	AudioLinesIcon,
@@ -186,7 +186,7 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 							)}
 							{engine_info.is_forked && (
 								<Button
-									className='shadow-none'
+									className='shadow-none text-xs'
 									variant={'destructive'}
 									disabled={mutateForkEngine.isPending}
 									onClick={() => {
@@ -218,7 +218,7 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 							e.stopPropagation();
 						}}>
 						<AvatarImage
-							src={engine_info.creator.avatar}
+							src={engine_info.creator.avatar ?? ''}
 							alt='user avatar'
 							className='size-5 object-cover'
 						/>
