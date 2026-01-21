@@ -4,12 +4,13 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session, joinedload
 from common.encrypt import encrypt_api_key
 from sqlalchemy import and_, or_
+from enums.model import UserModelProviderRole
 
 def create_user_ai_model_provider(
     db: Session, 
     user_id: int, 
     ai_model_provider_id: int, 
-    role: int | None = None
+    role: UserModelProviderRole
 ):
     """
     Create a new user AI model provider.

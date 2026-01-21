@@ -45,8 +45,8 @@ class BananaImageGenerateEngine(ImageGenerateEngineBase):
             engine_name='Banana Image',
             engine_name_zh='Banage 图像生成',
             engine_category=EngineCategory.IMAGE,
-            engine_description='',
-            engine_description_zh='',
+            engine_description='Based on Google Gemini Image Generation Engine',
+            engine_description_zh='基于Google Gemini的图像生成引擎',
             engine_demo_config='{"api_key": "", "base_url": "", "model_name": ""}'
         )
 

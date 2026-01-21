@@ -70,13 +70,13 @@ class Engine(Enum):
     Official_Volc_TTS = EngineMeta(
         uuid='4ece6490f8ef4132bf30a7ca72250d56',
         name='Official_Volc_TTS',
-        description='Revornix官方提供的火山引擎的播客配置项，仅供订阅用户使用（有限额）',
+        description='Official Volc Engine Podcast Configuration Item, only available for subscribed users (limited amount)',
         engine_provided=EngineProvided.Volc_TTS
     )
     Official_Banana_Image = EngineMeta(
         uuid='3867d20a8e24484da42f8a1f04bece87',
         name='Official_Banana_Image',
-        description='Revornix官方提供的Nana Banana Pro的图片生成配置项，仅供订阅用户使用（有限额）',
+        description='Official Nana Banana Pro image generation configuration item, only available for subscribed users (limited amount)',
         engine_provided=EngineProvided.Banana_Image
     )
     @property
