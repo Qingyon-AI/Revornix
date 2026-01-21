@@ -40,6 +40,7 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import { Separator } from '../ui/separator';
+import { Textarea } from '../ui/textarea';
 
 const ModelProviderUpdate = ({
 	modelProviderId,
@@ -225,7 +226,9 @@ const ModelProviderUpdate = ({
 											</FormLabel>
 											<Input
 												className='col-span-9'
-												placeholder='Name'
+												placeholder={t(
+													'setting_engine_page_engine_form_title_placeholder',
+												)}
 												{...field}
 												value={field.value ?? ''}
 												disabled={!authorized}
@@ -244,9 +247,11 @@ const ModelProviderUpdate = ({
 											<FormLabel className='col-span-3'>
 												{t('setting_model_provider_description')}
 											</FormLabel>
-											<Input
+											<Textarea
 												className='col-span-9'
-												placeholder='Description'
+												placeholder={t(
+													'setting_engine_page_engine_form_description_placeholder',
+												)}
 												{...field}
 												value={field.value ?? ''}
 												disabled={!authorized}

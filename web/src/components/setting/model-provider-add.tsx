@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/dialog';
 import { Loader2, PlusCircleIcon } from 'lucide-react';
 import { Switch } from '../ui/switch';
+import { Textarea } from '../ui/textarea';
 
 const ModelProviderAddButton = () => {
 	const t = useTranslations();
@@ -71,7 +72,7 @@ const ModelProviderAddButton = () => {
 			const [res, err] = await utils.to(
 				createAiModelProvider({
 					...values,
-				})
+				}),
 			);
 			if (err) {
 				toast.error(err.message);
@@ -127,7 +128,9 @@ const ModelProviderAddButton = () => {
 												<Input
 													type='text'
 													className='col-span-9'
-													placeholder='Name'
+													placeholder={t(
+														'setting_engine_page_engine_form_title_placeholder',
+													)}
 													{...field}
 												/>
 											</div>
@@ -144,10 +147,11 @@ const ModelProviderAddButton = () => {
 												<FormLabel className='col-span-3'>
 													{t('setting_model_provider_description')}
 												</FormLabel>
-												<Input
-													type='text'
+												<Textarea
 													className='col-span-9'
-													placeholder='Description'
+													placeholder={t(
+														'setting_engine_page_engine_form_description_placeholder',
+													)}
 													{...field}
 												/>
 											</div>
@@ -179,10 +183,10 @@ const ModelProviderAddButton = () => {
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>API Base</FormLabel>
+												<FormLabel className='col-span-3'>Base Url</FormLabel>
 												<Input
 													className='col-span-9'
-													placeholder='API Base'
+													placeholder='Base Url'
 													{...field}
 												/>
 											</div>
