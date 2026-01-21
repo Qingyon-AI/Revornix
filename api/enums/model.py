@@ -18,7 +18,8 @@ class OfficialModelProvider(Enum):
         description=(
             'Revornix-operated LLM gateway. '
             'Models are provided via Revornix-managed routing, '
-            'including official and licensed upstream providers.'
+            'including official and licensed upstream providers, '
+            'only available for subscribed users (limited amount).'
         )
     )
     @property
