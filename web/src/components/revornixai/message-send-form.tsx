@@ -60,7 +60,7 @@ const MessageSendForm = () => {
 				store.advanceChatMessageWorkflow(
 					event.chat_id,
 					event.payload.phase,
-					event.payload.detail
+					event.payload.detail,
 				);
 				break;
 
@@ -78,7 +78,7 @@ const MessageSendForm = () => {
 				store.updateChatMessage(
 					event.chat_id,
 					'assistant',
-					event.payload.content
+					event.payload.content,
 				);
 				break;
 
@@ -101,7 +101,7 @@ const MessageSendForm = () => {
 	});
 
 	const onSubmitMessageForm = async (
-		event: React.FormEvent<HTMLFormElement>
+		event: React.FormEvent<HTMLFormElement>,
 	) => {
 		if (event) {
 			if (typeof event.preventDefault === 'function') {
@@ -165,7 +165,7 @@ const MessageSendForm = () => {
 
 	const consumeSSE = async (
 		response: Response,
-		onEvent: (evt: any) => void
+		onEvent: (evt: any) => void,
 	) => {
 		const reader = response.body!.getReader();
 		const decoder = new TextDecoder();
@@ -218,6 +218,15 @@ const MessageSendForm = () => {
 				enable_mcp,
 			}),
 		});
+		if (response.status !== 200) {
+			let errorMessage;
+			try {
+				errorMessage = (await response.json()).message;
+			} catch (e) {
+				errorMessage = 'Unknown error';
+			}
+			throw new Error(`Failed to send message, ${errorMessage}`);
+		}
 		await consumeSSE(response, handleAIResponseEvent);
 	};
 
@@ -225,7 +234,7 @@ const MessageSendForm = () => {
 		mutationKey: ['sendAIMessage'],
 		mutationFn: fetchStream,
 		onError(error) {
-			toast.error(t('revornix_ai_message_send_failed'));
+			toast.error(error.message || t('revornix_ai_message_send_failed'));
 			console.error(error);
 		},
 	});
@@ -248,7 +257,7 @@ const MessageSendForm = () => {
 											e.preventDefault(); // 阻止换行
 											form.handleSubmit(
 												onFormValidateSuccess,
-												onFormValidateError
+												onFormValidateError,
 											)();
 										}
 									}}
