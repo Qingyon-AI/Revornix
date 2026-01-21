@@ -79,6 +79,18 @@ class Engine(Enum):
         description='Official Nana Banana Pro image generation configuration item, only available for subscribed users (limited amount)',
         engine_provided=EngineProvided.Banana_Image
     )
+    Official_MinerU = EngineMeta(
+        uuid='6cdcc277ce3f47e78b8f29a951773213',
+        name='Official_MinerU',
+        description='Official MinerU Markdown Engine Configuration Item',
+        engine_provided=EngineProvided.MinerU
+    )
+    Official_MinerU_API = EngineMeta(
+        uuid='ced93e31c89944e79fece83dcc95f4df',
+        name='Official_MinerU_API',
+        description='Official MinerU API Markdown Engine Configuration Item',
+        engine_provided=EngineProvided.MinerU_API
+    )
     @property
     def meta(self) -> EngineMeta:
         return self.value
