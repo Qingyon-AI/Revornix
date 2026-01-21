@@ -293,7 +293,7 @@ const NotificationTaskManagePage = () => {
 									<TableCell
 										colSpan={columns.length}
 										className='h-24 text-center'>
-										{t('account_api_key_empty')}
+										{t('setting_notification_task_empty')}
 									</TableCell>
 								</TableRow>
 							)}
@@ -303,7 +303,7 @@ const NotificationTaskManagePage = () => {
 			</div>
 			<div className='flex flex-row items-center justify-between mt-4'>
 				<div className='text-xs text-muted-foreground'>
-					{t('account_api_key_summary', {
+					{t('setting_notification_task_summary', {
 						total: data?.total_elements || 0,
 						pageNum: pageNum,
 					})}
