@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `id` | number
 `uuid` | string
+`role` | number
 `fans` | number
 `follows` | number
 `avatar` | string
@@ -36,6 +37,7 @@ import type { PrivateUserInfo } from ''
 const example = {
   "id": null,
   "uuid": null,
+  "role": null,
   "fans": null,
   "follows": null,
   "avatar": null,
