@@ -14,7 +14,7 @@ from enums.user import MarkDocumentReadReason, UserRole
 def create_base_user(
     db: Session,
     nickname: str,
-    avatar: str | None = None,
+    avatar: str,
     default_read_mark_reason: MarkDocumentReadReason = MarkDocumentReadReason.REQUEST_ONCE,
     role: UserRole = UserRole.USER,
 ):

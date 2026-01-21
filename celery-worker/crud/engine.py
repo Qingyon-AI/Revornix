@@ -104,14 +104,14 @@ def get_engine_by_engine_id(
 
 def get_engine_by_uuid(
     db: Session,
-    uuid: str
+    engine_uuid: str
 ):
     query = db.query(models.engine.Engine)
     query = query.options(
         joinedload(models.engine.Engine.engine_provided)
     )
     query = query.filter(
-        models.engine.Engine.uuid == uuid,
+        models.engine.Engine.uuid == engine_uuid,
         models.engine.Engine.delete_at.is_(None)
     )
     return query.one_or_none()

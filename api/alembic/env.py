@@ -30,20 +30,21 @@ config.set_main_option('sqlalchemy.url', db_url)
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-# from models.api_key import *
-# from models.document import *
-# from models.notification import *
-# from models.section import *
-# from models.task import *
-# from models.model import *
 from data.sql.base import Base
+
+from models.api_key import *
+from models.document import *
+from models.notification import *
+from models.section import *
+from models.task import *
+from models.model import *
 from models.user import *
 
 target_metadata = Base.metadata # 设置创建模型的元类
