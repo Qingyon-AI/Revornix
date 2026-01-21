@@ -27,6 +27,12 @@ export interface UserPublicInfo {
     id: number;
     /**
      * 
+     * @type {number}
+     * @memberof UserPublicInfo
+     */
+    role: number;
+    /**
+     * 
      * @type {string}
      * @memberof UserPublicInfo
      */
@@ -36,7 +42,7 @@ export interface UserPublicInfo {
      * @type {string}
      * @memberof UserPublicInfo
      */
-    avatar?: string;
+    avatar?: string | null;
     /**
      * 
      * @type {string}
@@ -68,6 +74,7 @@ export interface UserPublicInfo {
  */
 export function instanceOfUserPublicInfo(value: object): value is UserPublicInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('role' in value) || value['role'] === undefined) return false;
     return true;
 }
 
@@ -82,6 +89,7 @@ export function UserPublicInfoFromJSONTyped(json: any, ignoreDiscriminator: bool
     return {
         
         'id': json['id'],
+        'role': json['role'],
         'nickname': json['nickname'] == null ? undefined : json['nickname'],
         'avatar': json['avatar'] == null ? undefined : json['avatar'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
@@ -103,6 +111,7 @@ export function UserPublicInfoToJSONTyped(value?: UserPublicInfo | null, ignoreD
     return {
         
         'id': value['id'],
+        'role': value['role'],
         'nickname': value['nickname'],
         'avatar': value['avatar'],
         'slogan': value['slogan'],

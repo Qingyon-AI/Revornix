@@ -36,7 +36,7 @@ export interface SectionUserPublicInfo {
      * @type {string}
      * @memberof SectionUserPublicInfo
      */
-    avatar?: string;
+    avatar?: string | null;
     /**
      * 
      * @type {string}

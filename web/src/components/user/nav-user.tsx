@@ -35,7 +35,8 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import CustomImage from '../ui/custom-image';
 import { Badge } from '../ui/badge';
-import { isAllowedDeployHost } from '@/lib/utils';
+import { cn, isAllowedDeployHost } from '@/lib/utils';
+import { UserRole } from '@/enums/user';
 
 export function NavUser() {
 	const t = useTranslations();
@@ -178,13 +179,6 @@ export function NavUser() {
 							</div>
 
 							<ChevronsUpDown className='ml-auto size-4' />
-
-							{paySystemUserInfo?.userPlan?.plan?.product && (
-								<Badge className='flex items-center gap-1 rounded-full border-none bg-linear-to-r from-sky-500 to-indigo-600 text-white'>
-									<Sparkles className='size-3' />
-									<span>{paySystemUserInfo.userPlan.plan.product.name}</span>
-								</Badge>
-							)}
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
 
@@ -264,6 +258,34 @@ export function NavUser() {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
+				<div
+					className={cn('w-full grid items-center gap-1', {
+						'grid-cols-2':
+							(mainUserInfo.role === UserRole.ROOT ||
+								mainUserInfo.role === UserRole.ADMIN) &&
+							paySystemUserInfo?.userPlan?.plan?.product,
+					})}>
+					{paySystemUserInfo?.userPlan?.plan?.product && (
+						<Badge className='w-full flex items-center gap-1 rounded-full border-none bg-linear-to-r from-sky-500 to-indigo-600 text-white'>
+							<Sparkles className='size-3' />
+							<span>{paySystemUserInfo.userPlan.plan.product.name}</span>
+						</Badge>
+					)}
+					{mainUserInfo.role === UserRole.ROOT && (
+						<div className='bg-linear-to-r from-sky-400 to-indigo-600 rounded-full p-0.5 flex items-center justify-center'>
+							<Badge className='bg-background text-foreground rounded-full border-none w-full'>
+								{t('root_user')}
+							</Badge>
+						</div>
+					)}
+					{mainUserInfo.role === UserRole.ADMIN && (
+						<div className='bg-linear-to-r from-sky-400 to-indigo-600 rounded-full p-0.5 flex items-center justify-center'>
+							<Badge className='bg-background text-foreground rounded-full border-none w-full'>
+								{t('admin_user')}
+							</Badge>
+						</div>
+					)}
+				</div>
 			</SidebarMenuItem>
 		</SidebarMenu>
 	);

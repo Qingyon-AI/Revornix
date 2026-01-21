@@ -72,6 +72,12 @@ export interface PrivateUserInfo {
      * @type {number}
      * @memberof PrivateUserInfo
      */
+    role: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof PrivateUserInfo
+     */
     fans?: number | null;
     /**
      * 
@@ -84,7 +90,7 @@ export interface PrivateUserInfo {
      * @type {string}
      * @memberof PrivateUserInfo
      */
-    avatar?: string;
+    avatar?: string | null;
     /**
      * 
      * @type {string}
@@ -183,6 +189,7 @@ export interface PrivateUserInfo {
 export function instanceOfPrivateUserInfo(value: object): value is PrivateUserInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('uuid' in value) || value['uuid'] === undefined) return false;
+    if (!('role' in value) || value['role'] === undefined) return false;
     return true;
 }
 
@@ -198,6 +205,7 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         
         'id': json['id'],
         'uuid': json['uuid'],
+        'role': json['role'],
         'fans': json['fans'] == null ? undefined : json['fans'],
         'follows': json['follows'] == null ? undefined : json['follows'],
         'avatar': json['avatar'] == null ? undefined : json['avatar'],
@@ -232,6 +240,7 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         
         'id': value['id'],
         'uuid': value['uuid'],
+        'role': value['role'],
         'fans': value['fans'],
         'follows': value['follows'],
         'avatar': value['avatar'],

@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`role` | number
 `nickname` | string
 `avatar` | string
 `slogan` | string
@@ -22,6 +23,7 @@ import type { UserPublicInfo } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "role": null,
   "nickname": null,
   "avatar": null,
   "slogan": null,
