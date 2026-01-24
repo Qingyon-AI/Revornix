@@ -174,6 +174,7 @@ class PrivateUserInfo(BaseModel):
     default_website_document_parse_user_engine_id: int | None = None
     default_file_document_parse_user_engine_id: int | None = None
     default_podcast_user_engine_id: int | None = None
+    default_audio_transcribe_engine_id: int | None = None
     default_image_generate_engine_id: int | None = None
 
     @field_serializer("avatar")

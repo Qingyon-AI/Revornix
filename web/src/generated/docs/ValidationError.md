@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`loc` | [Array&lt;ValidationErrorLocInner&gt;](ValidationErrorLocInner.md)
+`loc` | [Array&lt;LocationInner&gt;](LocationInner.md)
 `msg` | string
 `type` | string
 

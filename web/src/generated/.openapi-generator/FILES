@@ -129,6 +129,7 @@ docs/InifiniteScrollPagnitionUserPublicInfo.md
 docs/InitialPasswordResponse.md
 docs/LabelSummaryItem.md
 docs/LabelSummaryResponse.md
+docs/LocationInner.md
 docs/MCPServerCreateRequest.md
 docs/MCPServerDeleteRequest.md
 docs/MCPServerDetailRequest.md
@@ -189,10 +190,10 @@ docs/S3PresignUploadURLRequest.md
 docs/S3PresignUploadURLResponse.md
 docs/SchemasDocumentBaseSectionInfo.md
 docs/SchemasDocumentCreateLabelResponse.md
+docs/SchemasDocumentLabel.md
 docs/SchemasDocumentLabelAddRequest.md
 docs/SchemasDocumentLabelListResponse.md
 docs/SchemasSectionBaseSectionInfo.md
-docs/SchemasSectionLabel.md
 docs/SchemasSectionLabelDeleteRequest.md
 docs/SearchAllMyDocumentsRequest.md
 docs/SearchApiKeysRequest.md
@@ -270,7 +271,6 @@ docs/UserNotificationTargetDetailRequest.md
 docs/UserNotificationTargetsResponse.md
 docs/UserPublicInfo.md
 docs/ValidationError.md
-docs/ValidationErrorLocInner.md
 docs/VectorSearchRequest.md
 docs/VectorSearchResponse.md
 docs/WeChatInfo.md
@@ -389,6 +389,7 @@ models/InifiniteScrollPagnitionUserPublicInfo.ts
 models/InitialPasswordResponse.ts
 models/LabelSummaryItem.ts
 models/LabelSummaryResponse.ts
+models/LocationInner.ts
 models/MCPServerCreateRequest.ts
 models/MCPServerDeleteRequest.ts
 models/MCPServerDetailRequest.ts
@@ -446,10 +447,10 @@ models/S3PresignUploadURLRequest.ts
 models/S3PresignUploadURLResponse.ts
 models/SchemasDocumentBaseSectionInfo.ts
 models/SchemasDocumentCreateLabelResponse.ts
+models/SchemasDocumentLabel.ts
 models/SchemasDocumentLabelAddRequest.ts
 models/SchemasDocumentLabelListResponse.ts
 models/SchemasSectionBaseSectionInfo.ts
-models/SchemasSectionLabel.ts
 models/SchemasSectionLabelDeleteRequest.ts
 models/SearchAllMyDocumentsRequest.ts
 models/SearchApiKeysRequest.ts
@@ -524,7 +525,6 @@ models/UserNotificationTargetDetailRequest.ts
 models/UserNotificationTargetsResponse.ts
 models/UserPublicInfo.ts
 models/ValidationError.ts
-models/ValidationErrorLocInner.ts
 models/VectorSearchRequest.ts
 models/VectorSearchResponse.ts
 models/WeChatInfo.ts

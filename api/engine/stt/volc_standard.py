@@ -18,7 +18,7 @@ class VolcSTTStandardEngine(STTEngineBase):
 
     def __init__(self):
         super().__init__(
-            engine_uuid=EngineProvided.Volc_STT.meta.uuid,
+            engine_uuid=EngineProvided.Volc_STT_Standard.meta.uuid,
             engine_category=EngineCategory.STT,
             engine_name="Volc Standard STT",
             engine_name_zh="Volc 标准版语音转文字",
