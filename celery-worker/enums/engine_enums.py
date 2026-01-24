@@ -85,7 +85,7 @@ class Engine(Enum):
         engine_provided=EngineProvided.Volc_TTS
     )
     Official_Volc_Standard_STT = EngineMeta(
-        uuid='6e759dbad2df4e2ba2c660e2988f4c92',
+        uuid='f36e799529684e5d883ac7ca257989cc',
         name='Official_Volc_Standard_STT',
         description='Official Standard Volc Engine STT Configuration Item, only available for subscribed users (limited amount), It supports audio files up to two hours long.',
         engine_provided=EngineProvided.Volc_STT_Standard

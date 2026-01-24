@@ -286,6 +286,7 @@
     "setting_engine_page_current_user_file_engine": "当前我的默认文件解析引擎",
     "setting_engine_page_current_user_file_engine_select": "请选择默认的文件解析引擎",
     "setting_engine_page_current_user_podcast_engine": "当前我的默认播客生成引擎",
+    "setting_engine_page_current_user_transcribe_engine": "当前我的音频转文字引擎",
     "setting_engine_page_current_user_podcast_select": "请选择默认的播客生成引擎",
     "setting_engine_page_engine_form_engine_category": "引擎类型",
     "setting_engine_page_engine_form_engine_category_placeholder": "请选择引擎类型",

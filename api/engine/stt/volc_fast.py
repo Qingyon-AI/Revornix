@@ -16,7 +16,7 @@ class VolcSTTFastEngine(STTEngineBase):
 
     def __init__(self):
         super().__init__(
-            engine_uuid=EngineProvided.Volc_STT.meta.uuid,
+            engine_uuid=EngineProvided.Volc_STT_Fast.meta.uuid,
             engine_category=EngineCategory.STT,
             engine_name="Volc Fast STT",
             engine_name_zh="Volc 极速版语音转文字",

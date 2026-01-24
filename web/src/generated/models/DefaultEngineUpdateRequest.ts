@@ -43,6 +43,12 @@ export interface DefaultEngineUpdateRequest {
      * @memberof DefaultEngineUpdateRequest
      */
     default_image_generate_engine_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultEngineUpdateRequest
+     */
+    default_audio_transcribe_engine_id?: number | null;
 }
 
 /**
@@ -66,6 +72,7 @@ export function DefaultEngineUpdateRequestFromJSONTyped(json: any, ignoreDiscrim
         'default_file_document_parse_user_engine_id': json['default_file_document_parse_user_engine_id'] == null ? undefined : json['default_file_document_parse_user_engine_id'],
         'default_podcast_user_engine_id': json['default_podcast_user_engine_id'] == null ? undefined : json['default_podcast_user_engine_id'],
         'default_image_generate_engine_id': json['default_image_generate_engine_id'] == null ? undefined : json['default_image_generate_engine_id'],
+        'default_audio_transcribe_engine_id': json['default_audio_transcribe_engine_id'] == null ? undefined : json['default_audio_transcribe_engine_id'],
     };
 }
 
@@ -84,6 +91,7 @@ export function DefaultEngineUpdateRequestToJSONTyped(value?: DefaultEngineUpdat
         'default_file_document_parse_user_engine_id': value['default_file_document_parse_user_engine_id'],
         'default_podcast_user_engine_id': value['default_podcast_user_engine_id'],
         'default_image_generate_engine_id': value['default_image_generate_engine_id'],
+        'default_audio_transcribe_engine_id': value['default_audio_transcribe_engine_id'],
     };
 }
 

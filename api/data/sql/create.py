@@ -25,6 +25,8 @@ from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.openai_audio import OpenAIAudioEngine
 from engine.tts.volc.tts import VolcTTSEngine
+from engine.stt.volc_fast import VolcSTTFastEngine
+from engine.stt.volc_standard import VolcSTTStandardEngine
 
 # ---------------- File Systems ----------------
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
@@ -259,6 +261,8 @@ def seed_database(db: Session):
         VolcTTSEngine(),
         BananaImageGenerateEngine(),
         OpenAIAudioEngine(),
+        VolcSTTFastEngine(),
+        VolcSTTStandardEngine()
     ]
     for ep in engine_provideds:
         if crud.engine.get_engine_provided_by_engine_uuid(db=db, engine_provided_uuid=ep.engine_uuid) is None:
@@ -307,7 +311,9 @@ def seed_database(db: Session):
             Engine.Official_Banana_Image, 
             Engine.Official_Volc_TTS,
             Engine.Official_MinerU,
-            Engine.Official_MinerU_API
+            Engine.Official_MinerU_API,
+            Engine.Official_Volc_Fast_STT,
+            Engine.Official_Volc_Standard_STT
         ]
         for e in engines:
             if crud.engine.get_engine_by_uuid(db=db, engine_uuid=e.meta.uuid) is None:

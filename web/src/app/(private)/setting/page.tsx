@@ -21,6 +21,7 @@ import DefaultWebsiteDocumentParseEngineChange from '@/components/setting/defaul
 import DefaultFileDocumentParseEngineChange from '@/components/setting/default-file-document-parse-engine-change';
 import DefaultPodcastEngineChange from '@/components/setting/default-podcast-engine-change';
 import DocumentImageGenerateEngineChange from '@/components/setting/document-image-generate-engine-change';
+import DefaultTranscribeEngineChange from '@/components/setting/default-transcribe-engine-change';
 
 const SettingPage = () => {
 	const t = useTranslations();
@@ -188,12 +189,23 @@ const SettingPage = () => {
 					<Separator />
 					<div
 						className='flex justify-between items-center'
-						id='default_file_markdown_parse_user_engine_choose'>
+						id='default_user_podcast_engine_choose'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_engine_page_current_user_podcast_engine')}
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<DefaultPodcastEngineChange />
+						</div>
+					</div>
+					<Separator />
+					<div
+						className='flex justify-between items-center'
+						id='default_transcribe_user_engine_choose'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_engine_page_current_user_transcribe_engine')}
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<DefaultTranscribeEngineChange />
 						</div>
 					</div>
 					<Separator />

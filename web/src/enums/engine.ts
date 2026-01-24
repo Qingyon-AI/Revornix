@@ -12,6 +12,8 @@ export enum EngineCategory {
     TTS = 1,
     // 图片
     IMAGE = 2,
+    // 音频解析 speech-to-text
+    STT = 3
 }
 
 export const EngineCategoryLabel: Record<
@@ -29,6 +31,10 @@ export const EngineCategoryLabel: Record<
     [EngineCategory.IMAGE]: {
         zh: '图片生成',
         en: 'Image Generation',
+    },
+    [EngineCategory.STT]: {
+        zh: '音频转文字',
+        en: 'Speech To Text',
     },
 };
 

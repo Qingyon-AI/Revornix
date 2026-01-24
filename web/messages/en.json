@@ -286,6 +286,7 @@
     "setting_engine_page_current_user_file_engine": "My current default file parsing engine",
     "setting_engine_page_current_user_file_engine_select": "Please select the default file parsing engine",
     "setting_engine_page_current_user_podcast_engine": "My current default podcast generation engine",
+    "setting_engine_page_current_user_transcribe_engine": "My current default speech-to-text engine",
     "setting_engine_page_current_user_podcast_select": "Please select the default podcast generation engine",
     "setting_engine_page_engine_form_engine_category": "Engine Category",
     "setting_engine_page_engine_form_engine_category_placeholder": "Please select the engine type",
