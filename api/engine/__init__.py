@@ -7,6 +7,8 @@ from .markdown.markitdown import MarkitdownEngine
 from .markdown.jina import JinaEngine
 from .tts.openai_audio import OpenAIAudioEngine
 from .tts.volc.tts import VolcTTSEngine
+from .stt.volc_standard import VolcSTTStandardEngine
+from .stt.volc_fast import VolcSTTFastEngine
 
 __all__ = [
     "BananaImageGenerateEngine",
@@ -18,4 +20,6 @@ __all__ = [
     "MarkitdownEngine",
     "OpenAIAudioEngine",
     "VolcTTSEngine",
+    "VolcSTTFastEngine",
+    "VolcSTTStandardEngine",
 ]

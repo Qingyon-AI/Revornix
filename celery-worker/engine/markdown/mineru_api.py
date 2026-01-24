@@ -24,7 +24,6 @@ class MineruApiEngine(MarkdownEngineBase):
 
     MINERU_BASE = "https://mineru.net"
     TERMINAL_STATES = {"done", "failed"}
-    NON_TERMINAL_STATES = {"waiting-file", "pending", "running", "converting"}
 
     def __init__(self):
         super().__init__(

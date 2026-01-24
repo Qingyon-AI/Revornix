@@ -16,6 +16,8 @@ from engine import (
     MarkitdownEngine,
     OpenAIAudioEngine,
     VolcTTSEngine,
+    VolcSTTStandardEngine,
+    VolcSTTFastEngine
 )
 
 class EngineProxy:
@@ -128,6 +130,10 @@ class EngineProxy:
             engine = MineruApiEngine()
         elif db_engine.engine_provided.uuid == EngineProvided.OpenAI_TTS.meta.uuid:
             engine = OpenAIAudioEngine()
+        elif db_engine.engine_provided.uuid == EngineProvided.Volc_STT_Standard.meta.uuid:
+            engine = VolcSTTStandardEngine()
+        elif db_engine.engine_provided.uuid == EngineProvided.Volc_STT_Fast.meta.uuid:
+            engine = VolcSTTFastEngine()
         else:
             raise Exception("Unknown engine provided")
 

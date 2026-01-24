@@ -9,6 +9,7 @@ class EngineCategory(IntEnum):
     Markdown = 0
     TTS = 1
     IMAGE = 2
+    STT = 3
 
 class EngineProvidedMeta(NamedTuple):
     uuid: str
@@ -48,6 +49,16 @@ class EngineProvided(Enum):
         name='Volc_TTS',
         category=EngineCategory.TTS
     )
+    Volc_STT_Standard = EngineProvidedMeta(
+        uuid='9d6cc831e9924d4995d6f490b47a59f3',
+        name='Volc_STT_Standard',
+        category=EngineCategory.STT
+    )
+    Volc_STT_Fast = EngineProvidedMeta(
+        uuid='86a7083d4e994b86819a960bd51e9a1c',
+        name='Volc_STT_Fast',
+        category=EngineCategory.STT
+    )
     Banana_Image = EngineProvidedMeta(
         uuid='9f1fb0005a99483da191a38af6dc7a23',
         name='Banana_Image',
@@ -72,6 +83,18 @@ class Engine(Enum):
         name='Official_Volc_TTS',
         description='Official Volc Engine Podcast Configuration Item, only available for subscribed users (limited amount)',
         engine_provided=EngineProvided.Volc_TTS
+    )
+    Official_Volc_Standard_STT = EngineMeta(
+        uuid='6e759dbad2df4e2ba2c660e2988f4c92',
+        name='Official_Volc_Standard_STT',
+        description='Official Standard Volc Engine STT Configuration Item, only available for subscribed users (limited amount), It supports audio files up to two hours long.',
+        engine_provided=EngineProvided.Volc_STT_Standard
+    )
+    Official_Volc_Fast_STT = EngineMeta(
+        uuid='6e759dbad2df4e2ba2c660e2988f4c92',
+        name='Official_Volc_Fast_STT',
+        description='Official Volc Engine STT Configuration Item, only available for subscribed users (limited amount). It only supports audio files that are less than two hours long.',
+        engine_provided=EngineProvided.Volc_STT_Fast
     )
     Official_Banana_Image = EngineMeta(
         uuid='3867d20a8e24484da42f8a1f04bece87',
