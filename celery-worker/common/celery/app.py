@@ -171,7 +171,6 @@ if __name__ == "__main__":
         run_section_process_workflow(
             section_id=1,
             user_id=1,
-            auto_podcast=True,
-            override=None,
+            auto_podcast=True
         )
     )

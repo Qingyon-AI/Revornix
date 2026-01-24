@@ -94,6 +94,7 @@ class User(Base):
     default_file_document_parse_user_engine_id: Mapped[int | None] = mapped_column(Integer)
     default_website_document_parse_user_engine_id: Mapped[int | None] = mapped_column(Integer)
     default_podcast_user_engine_id: Mapped[int | None] = mapped_column(Integer)
+    default_audio_transcribe_engine_id: Mapped[int | None] = mapped_column(Integer)
     default_image_generate_engine_id: Mapped[int | None] = mapped_column(Integer)
     default_read_mark_reason: Mapped[int | None] = mapped_column(Integer, comment='0: Request once, 1: Scroll to the bottom of the document, 2: Manually Mark')
     default_user_file_system: Mapped[int | None] = mapped_column(Integer)

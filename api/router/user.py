@@ -167,7 +167,8 @@ def update_default_engine(
         default_file_document_parse_user_engine_id=default_engine_update_request.default_file_document_parse_user_engine_id,
         default_website_document_parse_user_engine_id=default_engine_update_request.default_website_document_parse_user_engine_id,
         default_podcast_user_engine_id=default_engine_update_request.default_podcast_user_engine_id,
-        default_image_generate_engine_id=default_engine_update_request.default_image_generate_engine_id
+        default_image_generate_engine_id=default_engine_update_request.default_image_generate_engine_id,
+        default_audio_transcribe_engine_id=default_engine_update_request.default_audio_transcribe_engine_id
     )
     db.commit()
     return schemas.common.SuccessResponse(message="The default engine is updated successfully.")
