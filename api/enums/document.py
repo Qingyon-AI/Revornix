@@ -34,6 +34,12 @@ class DocumentPodcastStatus(IntEnum):
     SUCCESS = 2
     FAILED = 3
 
+class DocumentTranscribeStatus(IntEnum):
+    WAIT_TO = 0
+    TRANSCRIBING = 1
+    SUCCESS = 2
+    FAILED = 3
+
 class DocumentSummarizeStatus(IntEnum):
     WAIT_TO = 0
     SUMMARIZING = 1

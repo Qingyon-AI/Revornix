@@ -10,6 +10,7 @@ from enums.document import (
     DocumentPodcastStatus,
     DocumentProcessStatus,
     DocumentSummarizeStatus,
+    DocumentTranscribeStatus
 )
 from enums.section import SectionPodcastStatus, SectionProcessStatus, SectionProcessTriggerType
 
@@ -102,6 +103,23 @@ def create_document_graph_task(
                                          status=status,
                                          document_id=document_id,
                                          create_time=now)
+    db.add(task)
+    db.flush()
+    return task
+
+def create_document_audio_transcribe_task(
+    db: Session,
+    user_id: int,
+    document_id: int,
+    status: DocumentTranscribeStatus = DocumentTranscribeStatus.WAIT_TO
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentAudioTranscribeTask(
+        user_id=user_id,
+        status=status,
+        document_id=document_id,
+        create_time=now
+    )
     db.add(task)
     db.flush()
     return task
@@ -252,6 +270,15 @@ def get_document_convert_task_by_document_id(
     query = db.query(models.task.DocumentConvertToMdTask)
     query = query.filter(models.task.DocumentConvertToMdTask.document_id == document_id,
                          models.task.DocumentConvertToMdTask.delete_at.is_(None))
+    return query.one_or_none()
+
+def get_document_audio_transcribe_task_by_document_id(
+    db: Session,
+    document_id: int
+):
+    query = db.query(models.task.DocumentAudioTranscribeTask)
+    query = query.filter(models.task.DocumentAudioTranscribeTask.document_id == document_id,
+                         models.task.DocumentAudioTranscribeTask.delete_at.is_(None))
     return query.one_or_none()
 
 def get_document_convert_tasks_by_document_ids(

@@ -9,6 +9,19 @@ from sqlalchemy.orm import Mapped, mapped_column
 from data.sql.base import Base
 
 
+class DocumentAudioTranscribeTask(Base):
+    __tablename__ = "document_audio_transcribe_task"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
+    status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to transcribe, 1: transcribing, 2: transcribed successfully, 3: transcribe failed')
+    transcribed_text: Mapped[Optional[str]] = mapped_column(String(20000), comment='The transcribed text of the speech')
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
 class DocumentConvertToMdTask(Base):
     __tablename__ = "document_convert_to_md_task"
 
