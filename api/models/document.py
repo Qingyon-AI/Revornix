@@ -75,7 +75,7 @@ class Document(Base):
     title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(String(1000))
     cover: Mapped[str | None] = mapped_column(String(500))
-    category: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: file, 1: website, 2: quick-note')
+    category: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: file, 1: website, 2: quick-note, 3: audio')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -99,6 +99,15 @@ class WebsiteDocument(Base):
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     url: Mapped[str] = mapped_column(String(500), nullable=False)
     keywords: Mapped[str | None] = mapped_column(String(500))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class AudioDocument(Base):
+    __tablename__ = "audio_document"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
+    audio_file_name: Mapped[str] = mapped_column(String(500), nullable=False)
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 

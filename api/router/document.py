@@ -476,6 +476,22 @@ async def create_document(
             document_id=db_document.id,
             content=document_create_request.content
         )
+    elif document_create_request.category == DocumentCategory.AUDIO:
+        if document_create_request.file_name is None:
+            raise Exception('The audio file is required when the document category is audio')
+        db_document = crud.document.create_base_document(
+            db=db,
+            creator_id=user.id,
+            category=document_create_request.category,
+            from_plat=document_create_request.from_plat,
+            title=f'Audio saved at {now}',
+            description=f'Audio saved at {now}'
+        )
+        crud.document.create_audio_document(
+            db=db,
+            document_id=db_document.id,
+            audio_file_name=document_create_request.file_name
+        )
     else:
         raise Exception('Invalid document category')
     if len(document_create_request.labels) > 0:

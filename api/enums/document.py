@@ -8,6 +8,7 @@ class DocumentCategory(IntEnum):
     FILE = 0
     WEBSITE = 1
     QUICK_NOTE = 2
+    AUDIO = 3
 
 class DocumentMdConvertStatus(IntEnum):
     WAIT_TO = 0

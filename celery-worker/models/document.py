@@ -62,6 +62,15 @@ class DocumentLabel(Base):
     delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
 
+class AudioDocument(Base):
+    __tablename__ = "audio_document"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
+    audio_file_name: Mapped[str] = mapped_column(String(500), nullable=False)
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
 class QuickNoteDocument(Base):
     __tablename__ = "quick_note_document"
 

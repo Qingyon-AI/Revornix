@@ -68,6 +68,19 @@ def create_quick_note_document(
     db.flush()
     return db_quick_note_document
 
+def create_audio_document(
+    db: Session,
+    document_id: int,
+    audio_file_name: str
+):
+    db_audio_document = models.document.AudioDocument(
+        document_id=document_id,
+        audio_file_name=audio_file_name
+    )
+    db.add(db_audio_document)
+    db.flush()
+    return db_audio_document
+
 def create_website_document(
     db: Session,
     document_id: int,
@@ -425,6 +438,17 @@ def get_file_document_by_document_id(
     query = query.filter(models.document.Document.delete_at.is_(None),
                          models.document.FileDocument.document_id == document_id,
                          models.document.FileDocument.delete_at.is_(None))
+    return query.one_or_none()
+
+def get_audio_document_by_document_id(
+    db: Session,
+    document_id: int
+):
+    query = db.query(models.document.AudioDocument)
+    query = query.join(models.document.Document)
+    query = query.filter(models.document.Document.delete_at.is_(None),
+                         models.document.AudioDocument.document_id == document_id,
+                         models.document.AudioDocument.delete_at.is_(None))
     return query.one_or_none()
 
 def get_website_document_by_document_id(
@@ -1136,6 +1160,17 @@ def delete_website_documents_by_document_ids(
     query = query.filter(models.document.WebsiteDocument.document_id.in_(document_ids),
                          models.document.WebsiteDocument.delete_at.is_(None))
     query = query.update({models.document.WebsiteDocument.delete_at: now})
+    db.flush()
+
+def delete_audio_documents_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.document.AudioDocument)
+    query = query.filter(models.document.AudioDocument.document_id.in_(document_ids),
+                         models.document.AudioDocument.delete_at.is_(None))
+    query = query.update({models.document.AudioDocument.delete_at: now})
     db.flush()
 
 def delete_file_documents_by_document_ids(
