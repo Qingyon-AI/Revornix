@@ -14,12 +14,13 @@ import { Separator } from '../ui/separator';
 import CustomImage from '../ui/custom-image';
 import {
 	DocumentCategory,
-	DocumentEmbeddingConvertStatus,
+	DocumentEmbeddingStatus,
 	DocumentGraphStatus,
 	DocumentMdConvertStatus,
 	DocumentPodcastStatus,
 	DocumentProcessStatus,
 	DocumentSummarizeStatus,
+	DocumentTranscribeStatus,
 } from '@/enums/document';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -122,10 +123,12 @@ const DocumentInfo = ({ id }: { id: number }) => {
 								{data.category === DocumentCategory.WEBSITE
 									? t('document_category_link')
 									: data.category === DocumentCategory.FILE
-									? t('document_category_file')
-									: data.category === DocumentCategory.QUICK_NOTE
-									? t('document_category_quick_note')
-									: t('document_category_others')}
+										? t('document_category_file')
+										: data.category === DocumentCategory.QUICK_NOTE
+											? t('document_category_quick_note')
+											: data.category === DocumentCategory.AUDIO
+												? t('document_category_audio')
+												: t('document_category_others')}
 							</div>
 						</div>
 						<div className='text-muted-foreground mb-3 px-5 flex flex-row gap-3 items-center text-xs'>
@@ -163,19 +166,19 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										{t('document_embedding_status') + ': '}
 										{!data.embedding_task && t('document_md_status_undo')}
 										{data.embedding_task?.status ===
-											DocumentEmbeddingConvertStatus.WAIT_TO &&
+											DocumentEmbeddingStatus.WAIT_TO &&
 											t('document_embedding_status_todo')}
 										{data.embedding_task?.status ===
-											DocumentEmbeddingConvertStatus.Embedding &&
+											DocumentEmbeddingStatus.Embedding &&
 											t('document_embedding_status_doing')}
 										{data.embedding_task?.status ===
-											DocumentEmbeddingConvertStatus.SUCCESS &&
+											DocumentEmbeddingStatus.SUCCESS &&
 											t('document_embedding_status_success')}
 										{data.embedding_task?.status ===
-											DocumentEmbeddingConvertStatus.FAILED &&
+											DocumentEmbeddingStatus.FAILED &&
 											t('document_embedding_status_failed')}
 										{data.embedding_task?.status ===
-											DocumentEmbeddingConvertStatus.FAILED && (
+											DocumentEmbeddingStatus.FAILED && (
 											<>
 												<span className='mx-1.5 text-muted-foreground'>|</span>
 												<Button
@@ -216,6 +219,23 @@ const DocumentInfo = ({ id }: { id: number }) => {
 									</div>
 								</div>
 							)}
+							{data.transcribe_task && (
+								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
+									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
+										{t('document_transcribe_status') + ': '}
+										{data.transcribe_task?.status ===
+										DocumentTranscribeStatus.WAIT_TO
+											? t('document_transcribe_status_todo')
+											: data.transcribe_task?.status ===
+												  DocumentTranscribeStatus.TRANSCRIBING
+												? t('document_transcribe_status_doing')
+												: data.transcribe_task?.status ===
+													  DocumentTranscribeStatus.SUCCESS
+													? t('document_transcribe_status_success')
+													: t('document_transcribe_status_failed')}
+									</div>
+								</div>
+							)}
 							{data.graph_task && (
 								<div className='text-muted-foreground flex flex-row gap-1 items-center text-xs mt-auto'>
 									<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
@@ -223,10 +243,11 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										{data.graph_task?.status === DocumentGraphStatus.WAIT_TO
 											? t('document_graph_status_todo')
 											: data.graph_task?.status === DocumentGraphStatus.BUILDING
-											? t('document_graph_status_doing')
-											: data.graph_task?.status === DocumentGraphStatus.SUCCESS
-											? t('document_graph_status_success')
-											: t('document_graph_status_failed')}
+												? t('document_graph_status_doing')
+												: data.graph_task?.status ===
+													  DocumentGraphStatus.SUCCESS
+													? t('document_graph_status_success')
+													: t('document_graph_status_failed')}
 									</div>
 								</div>
 							)}
@@ -238,12 +259,12 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										DocumentSummarizeStatus.WAIT_TO
 											? t('document_summarize_status_todo')
 											: data.summarize_task?.status ===
-											  DocumentSummarizeStatus.SUMMARIZING
-											? t('document_summarize_status_doing')
-											: data.summarize_task?.status ===
-											  DocumentSummarizeStatus.SUCCESS
-											? t('document_summarize_status_success')
-											: t('document_summarize_status_failed')}
+												  DocumentSummarizeStatus.SUMMARIZING
+												? t('document_summarize_status_doing')
+												: data.summarize_task?.status ===
+													  DocumentSummarizeStatus.SUCCESS
+													? t('document_summarize_status_success')
+													: t('document_summarize_status_failed')}
 									</div>
 								</div>
 							)}
@@ -255,12 +276,12 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										DocumentMdConvertStatus.WAIT_TO
 											? t('document_md_status_todo')
 											: data.convert_task?.status ===
-											  DocumentMdConvertStatus.CONVERTING
-											? t('document_md_status_doing')
-											: data.convert_task?.status ===
-											  DocumentMdConvertStatus.SUCCESS
-											? t('document_md_status_success')
-											: t('document_md_status_failed')}
+												  DocumentMdConvertStatus.CONVERTING
+												? t('document_md_status_doing')
+												: data.convert_task?.status ===
+													  DocumentMdConvertStatus.SUCCESS
+													? t('document_md_status_success')
+													: t('document_md_status_failed')}
 									</div>
 								</div>
 							)}
@@ -271,12 +292,12 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										{data.podcast_task?.status === DocumentPodcastStatus.WAIT_TO
 											? t('document_podcast_status_todo')
 											: data.podcast_task?.status ===
-											  DocumentPodcastStatus.GENERATING
-											? t('document_podcast_status_doing')
-											: data.podcast_task?.status ===
-											  DocumentPodcastStatus.SUCCESS
-											? t('document_podcast_status_success')
-											: t('document_podcast_status_failed')}
+												  DocumentPodcastStatus.GENERATING
+												? t('document_podcast_status_doing')
+												: data.podcast_task?.status ===
+													  DocumentPodcastStatus.SUCCESS
+													? t('document_podcast_status_success')
+													: t('document_podcast_status_failed')}
 									</div>
 								</div>
 							)}
@@ -287,12 +308,12 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										{data.process_task?.status === DocumentProcessStatus.WAIT_TO
 											? t('document_process_status_todo')
 											: data.process_task?.status ===
-											  DocumentProcessStatus.PROCESSING
-											? t('document_process_status_doing')
-											: data.process_task?.status ===
-											  DocumentProcessStatus.SUCCESS
-											? t('document_process_status_success')
-											: t('document_process_status_failed')}
+												  DocumentProcessStatus.PROCESSING
+												? t('document_process_status_doing')
+												: data.process_task?.status ===
+													  DocumentProcessStatus.SUCCESS
+													? t('document_process_status_success')
+													: t('document_process_status_failed')}
 									</div>
 								</div>
 							)}

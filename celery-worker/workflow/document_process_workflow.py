@@ -34,7 +34,7 @@ async def handle_process_document(
     override: DocumentOverrideProperty | None = None
 ):
     db = SessionLocal()
-
+    
     try:
         db_document = crud.document.get_document_by_document_id(
             db=db,

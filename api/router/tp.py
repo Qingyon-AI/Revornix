@@ -319,12 +319,6 @@ async def create_document(
             section_id=section_id,
             status=SectionDocumentIntegration.WAIT_TO
         )
-    if db_document.category != DocumentCategory.QUICK_NOTE:
-        crud.task.create_document_convert_task(
-            db=db,
-            user_id=user.id,
-            document_id=db_document.id
-        )
     db.commit()
 
     # 开始后台处理

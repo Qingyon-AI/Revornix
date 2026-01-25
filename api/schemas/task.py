@@ -2,6 +2,12 @@ from pydantic import BaseModel, field_serializer
 
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
+class DocumentTranscribeTask(BaseModel):
+    creator_id: int
+    status: int
+    transcribed_text: str | None
+    class Config:
+        from_attributes = True
 
 class DocumentConvertTask(BaseModel):
     creator_id: int

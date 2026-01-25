@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { DocumentTranscribeTask } from './DocumentTranscribeTask';
+import {
+    DocumentTranscribeTaskFromJSON,
+    DocumentTranscribeTaskFromJSONTyped,
+    DocumentTranscribeTaskToJSON,
+    DocumentTranscribeTaskToJSONTyped,
+} from './DocumentTranscribeTask';
 import type { DocumentPodcastTask } from './DocumentPodcastTask';
 import {
     DocumentPodcastTaskFromJSON,
@@ -187,6 +194,12 @@ export interface DocumentInfo {
     summarize_task?: DocumentSummarizeTask | null;
     /**
      * 
+     * @type {DocumentTranscribeTask}
+     * @memberof DocumentInfo
+     */
+    transcribe_task?: DocumentTranscribeTask | null;
+    /**
+     * 
      * @type {DocumentProcessTask}
      * @memberof DocumentInfo
      */
@@ -234,6 +247,7 @@ export function DocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'graph_task': json['graph_task'] == null ? undefined : DocumentGraphTaskFromJSON(json['graph_task']),
         'podcast_task': json['podcast_task'] == null ? undefined : DocumentPodcastTaskFromJSON(json['podcast_task']),
         'summarize_task': json['summarize_task'] == null ? undefined : DocumentSummarizeTaskFromJSON(json['summarize_task']),
+        'transcribe_task': json['transcribe_task'] == null ? undefined : DocumentTranscribeTaskFromJSON(json['transcribe_task']),
         'process_task': json['process_task'] == null ? undefined : DocumentProcessTaskFromJSON(json['process_task']),
     };
 }
@@ -266,6 +280,7 @@ export function DocumentInfoToJSONTyped(value?: DocumentInfo | null, ignoreDiscr
         'graph_task': DocumentGraphTaskToJSON(value['graph_task']),
         'podcast_task': DocumentPodcastTaskToJSON(value['podcast_task']),
         'summarize_task': DocumentSummarizeTaskToJSON(value['summarize_task']),
+        'transcribe_task': DocumentTranscribeTaskToJSON(value['transcribe_task']),
         'process_task': DocumentProcessTaskToJSON(value['process_task']),
     };
 }

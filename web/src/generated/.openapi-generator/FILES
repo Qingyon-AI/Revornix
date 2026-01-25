@@ -26,6 +26,7 @@ docs/ApiKeyCreateRequest.md
 docs/ApiKeyCreateResponse.md
 docs/ApiKeyInfo.md
 docs/ApiKeysDeleteRequest.md
+docs/AudioDocumentInfo.md
 docs/BindEmailCodeVerifyRequest.md
 docs/BindEmailRequest.md
 docs/BindEmailVerifyRequest.md
@@ -70,6 +71,7 @@ docs/DocumentNoteInfo.md
 docs/DocumentPodcastTask.md
 docs/DocumentProcessTask.md
 docs/DocumentSummarizeTask.md
+docs/DocumentTranscribeTask.md
 docs/DocumentUpdateRequest.md
 docs/Edge.md
 docs/EmailCreateRequest.md
@@ -291,6 +293,7 @@ models/ApiKeyCreateRequest.ts
 models/ApiKeyCreateResponse.ts
 models/ApiKeyInfo.ts
 models/ApiKeysDeleteRequest.ts
+models/AudioDocumentInfo.ts
 models/BindEmailCodeVerifyRequest.ts
 models/BindEmailRequest.ts
 models/BindEmailVerifyRequest.ts
@@ -333,6 +336,7 @@ models/DocumentNoteInfo.ts
 models/DocumentPodcastTask.ts
 models/DocumentProcessTask.ts
 models/DocumentSummarizeTask.ts
+models/DocumentTranscribeTask.ts
 models/DocumentUpdateRequest.ts
 models/Edge.ts
 models/EmailCreateRequest.ts

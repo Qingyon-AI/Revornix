@@ -4,21 +4,17 @@ import WebsiteDocumentDetail from '@/components/document/website-document-detail
 import DocumentInfo from './document-info';
 import { Card } from '@/components/ui/card';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-	generateDocumentPodcast,
-	getDocumentDetail,
-	readDocument,
-} from '@/service/document';
+import { getDocumentDetail, readDocument } from '@/service/document';
 import FileDocumentDetail from './file-document-detail';
 import QuickDocumentDetail from './quick-note-document-detail';
 import { useUserContext } from '@/provider/user-provider';
 import { getQueryClient } from '@/lib/get-query-client';
 import { DocumentDetailResponse } from '@/generated';
 import { useEffect } from 'react';
-import { DocumentCategory, DocumentPodcastStatus } from '@/enums/document';
+import { DocumentCategory } from '@/enums/document';
 import DocumentGraph from './document-graph';
 import { Button } from '../ui/button';
-import { Expand, Loader2, OctagonAlert } from 'lucide-react';
+import { Expand } from 'lucide-react';
 import {
 	Dialog,
 	DialogContent,
@@ -28,10 +24,10 @@ import {
 	DialogTrigger,
 } from '../ui/dialog';
 import { useTranslations } from 'next-intl';
-import AudioPlayer from '../ui/audio-player';
-import { Alert, AlertDescription } from '../ui/alert';
-import { toast } from 'sonner';
-import { Spinner } from '../ui/spinner';
+
+import AudioDocumentDetail from './audio-document-detail';
+import DocumentPodcast from './document-podcast';
+import DocumentAudio from './document-audio';
 
 const DocumentContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -45,23 +41,6 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	} = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
-	});
-
-	const mutateGeneratePodcast = useMutation({
-		mutationFn: () =>
-			generateDocumentPodcast({
-				document_id: id,
-			}),
-		onSuccess(data, variables, onMutateResult, context) {
-			toast.success(t('document_podcast_generate_task_submitted'));
-			queryClient.invalidateQueries({
-				queryKey: ['getDocumentDetail', id],
-			});
-		},
-		onError(error, variables, onMutateResult, context) {
-			toast.error(t('document_podcast_generate_task_submitted_failed'));
-			console.error(error);
-		},
 	});
 
 	const mutateRead = useMutation({
@@ -137,6 +116,9 @@ const DocumentContainer = ({ id }: { id: number }) => {
 				{document?.category === DocumentCategory.QUICK_NOTE && (
 					<QuickDocumentDetail onFinishRead={handleFinishRead} id={id} />
 				)}
+				{document?.category === DocumentCategory.AUDIO && (
+					<AudioDocumentDetail onFinishRead={handleFinishRead} id={id} />
+				)}
 			</div>
 			<div className='md:col-span-4 md:py-0 md:h-full flex flex-col gap-5 min-h-0 relative'>
 				<Card className='py-0 md:flex-2 overflow-auto relative'>
@@ -168,90 +150,11 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					<DocumentGraph document_id={id} />
 				</Card>
 
-				{!document?.podcast_task && (
-					<>
-						<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-							<AlertDescription>
-								<span className='inline-flex'>
-									{t('document_podcast_unset')}
-								</span>
-								<Button
-									variant={'link'}
-									size='sm'
-									className='text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
-									onClick={() => mutateGeneratePodcast.mutate()}
-									disabled={
-										mutateGeneratePodcast.isPending ||
-										!mainUserInfo?.default_podcast_user_engine_id
-									}>
-									{t('document_podcast_generate')}
-									{mutateGeneratePodcast.isPending && (
-										<Loader2 className='animate-spin' />
-									)}
-								</Button>
-							</AlertDescription>
-						</Alert>
-						{!mainUserInfo?.default_podcast_user_engine_id && (
-							<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-								<OctagonAlert className='h-4 w-4 text-destructive!' />
-								<AlertDescription>
-									{t('document_create_auto_podcast_engine_unset')}
-								</AlertDescription>
-							</Alert>
-						)}
-					</>
+				{document && document?.category !== DocumentCategory.AUDIO && (
+					<DocumentPodcast document_id={id} />
 				)}
-
-				{document?.podcast_task && (
-					<>
-						{document?.podcast_task?.status ===
-							DocumentPodcastStatus.GENERATING && (
-							<Card className='p-5 relative'>
-								<div className='flex flex-row justify-center items-center gap-1 text-muted-foreground text-xs'>
-									<span>{t('document_podcast_processing')}</span>
-									<Spinner />
-								</div>
-							</Card>
-						)}
-						{document?.podcast_task?.status === DocumentPodcastStatus.SUCCESS &&
-							document?.podcast_task?.podcast_file_name && (
-								<Card className='p-5 relative'>
-									<AudioPlayer
-										src={document?.podcast_task?.podcast_file_name}
-										cover={
-											document.cover ??
-											'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
-										}
-										title={document.title ?? 'Unkown Title'}
-										artist={'AI Generated'}
-									/>
-								</Card>
-							)}
-						{document?.podcast_task?.status ===
-							DocumentPodcastStatus.FAILED && (
-							<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-								<AlertDescription>
-									<span className='inline-flex'>
-										{t('document_podcast_failed')}
-									</span>
-									<Button
-										variant={'link'}
-										size='sm'
-										className='text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
-										onClick={() => mutateGeneratePodcast.mutate()}
-										disabled={
-											mutateGeneratePodcast.isPending ||
-											!mainUserInfo?.default_podcast_user_engine_id
-										}>
-										{t('document_podcast_regenerate')}
-										{mutateGeneratePodcast.isPending && (
-											<Loader2 className='animate-spin' />
-										)}
-									</Button>
-								</AlertDescription>
-							</Alert>
-						)}
-					</>
+				{document && document?.category === DocumentCategory.AUDIO && (
+					<DocumentAudio document_id={id} />
 				)}
 			</div>
 		</div>

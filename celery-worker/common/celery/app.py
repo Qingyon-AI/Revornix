@@ -30,6 +30,7 @@ def start_process_document(
     user_id: int,
     auto_summary: bool = False,
     auto_podcast: bool = False,
+    auto_transcribe: bool = False,
     auto_tag: bool = False,
     override: dict | None = None,
 ):
@@ -39,6 +40,7 @@ def start_process_document(
             user_id=user_id,
             auto_summary=auto_summary,
             auto_podcast=auto_podcast,
+            auto_transcribe=auto_transcribe,
             auto_tag=auto_tag,
             override=override,
         )

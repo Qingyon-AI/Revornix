@@ -65,7 +65,7 @@ from protocol.notification_trigger import NotificationTriggerEventProtocol
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
 from enums.model import OfficialModelProvider, UserModelProviderRole
-from enums.engine_enums import Engine
+from enums.engine_enums import Engine, UserEngineRole
 from enums.user import UserRole
 from enums.file import RemoteFileService
 
@@ -332,6 +332,12 @@ def seed_database(db: Session):
                     is_public=True,
                     creator_id=db_root_user.id,
                     engine_provided_id=db_engine_provider.id
+                )
+                crud.engine.create_user_engine(
+                    db=db,
+                    user_id=db_root_user.id,
+                    engine_id=db_engine_provider.id,
+                    role=UserEngineRole.CREATOR
                 )
 
 
