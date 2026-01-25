@@ -1,4 +1,4 @@
-from typing import TypedDict, cast
+from typing import TypedDict
 
 import crud
 from langgraph.graph import StateGraph, END
@@ -25,8 +25,6 @@ async def handle_update_document_embedding(
     user_id: int
 ) -> None:
     db = SessionLocal()
-    db_embedding_task = None
-
     try:
         # 1) 校验 document
         db_document = crud.document.get_document_by_document_id(
@@ -40,10 +38,8 @@ async def handle_update_document_embedding(
         db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
         if db_user is None:
             raise Exception("The user which you want to summarize document is not found")
-
         if db_user.default_user_file_system is None:
             raise Exception("The user which you want to summarize document has not set default user file system")
-
         if db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to summarize document has not set default document reader model")
 
@@ -58,7 +54,6 @@ async def handle_update_document_embedding(
                 user_id=user_id,
                 document_id=document_id,
             )
-
         if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
             db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
         db.commit()
@@ -107,6 +102,10 @@ async def handle_update_document_embedding(
 
     except Exception as e:
         exception_logger.error(f"Something is error while embedding document info: {e}", exc_info=True)
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+            db=db,
+            document_id=document_id
+        )
         if db_embedding_task is not None:
             db_embedding_task.status = DocumentEmbeddingStatus.FAILED
             db.commit()
@@ -121,8 +120,6 @@ async def _embed_document(state: DocumentEmbeddingState) -> DocumentEmbeddingSta
     user_id = state.get("user_id")
     if document_id is None or user_id is None:
         raise Exception("Document embedding workflow missing document_id or user_id")
-    document_id = cast(int, document_id)
-    user_id = cast(int, user_id)
 
     await handle_update_document_embedding(
         document_id=document_id,

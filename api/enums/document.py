@@ -34,7 +34,7 @@ class DocumentPodcastStatus(IntEnum):
     SUCCESS = 2
     FAILED = 3
 
-class DocumentTranscribeStatus(IntEnum):
+class DocumentAudioTranscribeStatus(IntEnum):
     WAIT_TO = 0
     TRANSCRIBING = 1
     SUCCESS = 2

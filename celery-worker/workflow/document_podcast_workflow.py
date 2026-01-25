@@ -1,5 +1,5 @@
 import uuid
-from typing import TypedDict, cast
+from typing import TypedDict
 
 import crud
 from langgraph.graph import StateGraph, END
@@ -7,8 +7,8 @@ from langgraph.graph import StateGraph, END
 from common.common import get_user_remote_file_system
 from common.logger import exception_logger
 from data.sql.base import SessionLocal
-from enums.document import DocumentPodcastStatus
-from workflow.markdown_helpers import get_markdown_content_by_document_id
+from enums.document import DocumentPodcastStatus, DocumentCategory
+from common.markdown_helpers import get_markdown_content_by_document_id
 from proxy.engine_proxy import EngineProxy
 
 
@@ -22,27 +22,18 @@ async def handle_update_document_ai_podcast(
     user_id: int
 ):
     db = SessionLocal()
-    db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
-        db=db,
-        document_id=document_id
-    )
-    if db_podcast_task is None:
-        db_podcast_task = crud.task.create_document_podcast_task(
-            db=db,
-            user_id=user_id,
-            document_id=document_id,
-        )
-    if db_podcast_task.status != DocumentPodcastStatus.GENERATING:
-        db_podcast_task.status = DocumentPodcastStatus.GENERATING
-    db.commit()
     try:
+        # 1) 校验 document
         db_document = crud.document.get_document_by_document_id(
             db=db,
             document_id=document_id
         )
         if db_document is None:
             raise Exception("The document which you want to create the podcast is not found")
+        if db_document.category == DocumentCategory.AUDIO:
+            return  # 音频文档不需要生成播客，直接使用用户上传的音频
 
+        # 2) 校验 user
         db_user = crud.user.get_user_by_id(
             db=db,
             user_id=user_id
@@ -53,6 +44,21 @@ async def handle_update_document_ai_podcast(
             raise Exception("The document's creator has not set the default file system")
         if db_user.default_podcast_user_engine_id is None:
             raise Exception("The document's creator has not set the default podcast generate engine")
+
+        # 3) 获取/创建task 标记为进行时
+        db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_podcast_task is None:
+            db_podcast_task = crud.task.create_document_podcast_task(
+                db=db,
+                user_id=user_id,
+                document_id=document_id,
+            )
+        if db_podcast_task.status != DocumentPodcastStatus.GENERATING:
+            db_podcast_task.status = DocumentPodcastStatus.GENERATING
+        db.commit()
 
         remote_file_service = await get_user_remote_file_system(
             user_id=user_id
@@ -97,8 +103,13 @@ async def handle_update_document_ai_podcast(
         db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai podcast: {e}")
-        db_podcast_task.status = DocumentPodcastStatus.FAILED
-        db.commit()
+        db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_podcast_task is not None:
+            db_podcast_task.status = DocumentPodcastStatus.FAILED
+            db.commit()
         raise
     finally:
         db.close()
@@ -109,8 +120,6 @@ async def _generate_document_podcast(state: DocumentPodcastState) -> DocumentPod
     user_id = state.get("user_id")
     if document_id is None or user_id is None:
         raise Exception("Document podcast workflow missing document_id or user_id")
-    document_id = cast(int, document_id)
-    user_id = cast(int, user_id)
 
     await handle_update_document_ai_podcast(
         document_id=document_id,
