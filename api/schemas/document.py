@@ -37,6 +37,9 @@ class LabelDeleteRequest(BaseModel):
 class DocumentEmbeddingRequest(BaseModel):
     document_id: int
 
+class DocumentTranscribeRequest(BaseModel):
+    document_id: int
+
 class DocumentMarkdownConvertRequest(BaseModel):
     document_id: int
 
