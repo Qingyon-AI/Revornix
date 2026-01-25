@@ -140,11 +140,11 @@ const AddQuickNote = () => {
 							name='content'
 							render={({ field }) => {
 								return (
-									<FormItem className='w-full flex flex-col'>
+									<FormItem className='w-full flex flex-col flex-1'>
 										<Textarea
 											{...field}
 											placeholder={t('document_create_note_placeholded')}
-											className='min-h-52'
+											className='h-full'
 										/>
 										<FormMessage />
 									</FormItem>
