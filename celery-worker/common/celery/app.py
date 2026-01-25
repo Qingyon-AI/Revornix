@@ -16,6 +16,7 @@ from workflow.notification_event_workflow import run_notification_event_workflow
 from workflow.section_podcast_workflow import run_section_podcast_workflow
 from workflow.section_process_status_workflow import run_section_process_status_workflow
 from workflow.section_process_workflow import run_section_process_workflow
+from workflow.document_transcribe_workflow import run_document_transcribe_workflow
 
 celery_app = Celery(
     "worker",
@@ -100,6 +101,17 @@ def start_process_document_summarize(
         )
     )
 
+@celery_app.task
+def start_process_document_transcribe(
+    document_id: int,
+    user_id: int,
+):
+    asyncio.run(
+        run_document_transcribe_workflow(
+            document_id=document_id,
+            user_id=user_id,
+        )
+    )
 
 @celery_app.task
 def start_process_document_podcast(

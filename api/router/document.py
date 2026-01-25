@@ -14,6 +14,7 @@ from common.celery.app import (
     start_process_document_graph,
     start_process_document_podcast,
     start_process_document_summarize,
+    start_process_document_transcribe,
     start_process_section,
     update_document_process_status,
 )
@@ -37,6 +38,7 @@ from enums.document import (
     DocumentPodcastStatus,
     DocumentProcessStatus,
     DocumentSummarizeStatus,
+    DocumentAudioTranscribeStatus,
     UserDocumentAuthority,
 )
 from enums.section import SectionDocumentIntegration, SectionProcessTriggerType, UserSectionAuthority, UserSectionRole
@@ -261,6 +263,54 @@ async def create_embedding(
 
     workflow = chain(
         start_process_document_embedding.si(
+            document_id=db_document.id,
+            user_id=user.id
+        ),
+        update_document_process_status.si(
+            document_id=db_document.id,
+            status=DocumentProcessStatus.SUCCESS
+        )
+    )
+    workflow()
+
+    return schemas.common.SuccessResponse()
+
+@document_router.post('/transcribe', response_model=schemas.common.NormalResponse)
+async def transcribe_audio_document(
+    transcribe_request: schemas.document.DocumentTranscribeRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_document = crud.document.get_document_by_document_id(
+        db=db,
+        document_id=transcribe_request.document_id
+    )
+    if db_document is None:
+        raise Exception('The document you want to transcribe is not found')
+
+    db_transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+        db=db,
+        document_id=transcribe_request.document_id
+    )
+    if db_transcribe_task is not None:
+        if db_transcribe_task.status == DocumentAudioTranscribeStatus.SUCCESS:
+            raise Exception('The transcribe task is already finished, please refresh the page')
+        if db_transcribe_task.status == DocumentAudioTranscribeStatus.WAIT_TO:
+            raise Exception('The transcribe task is already in the queue, please wait')
+        if db_transcribe_task.status == DocumentAudioTranscribeStatus.TRANSCRIBING:
+            raise Exception('The transcribe task is already processing, please wait')
+
+    db_process_task = crud.task.get_document_process_task_by_document_id(
+        db=db,
+        document_id=transcribe_request.document_id
+    )
+    if db_process_task is None:
+        raise Exception('The document you want to transcribe is not processed')
+    db_process_task.status = DocumentProcessStatus.PROCESSING
+    db.commit()
+
+    workflow = chain(
+        start_process_document_transcribe.si(
             document_id=db_document.id,
             user_id=user.id
         ),

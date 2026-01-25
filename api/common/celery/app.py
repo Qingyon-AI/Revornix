@@ -40,6 +40,7 @@ start_process_section = _task("common.celery.app.start_process_section")
 start_process_document_embedding = _task("common.celery.app.start_process_document_embedding")
 start_process_document_graph = _task("common.celery.app.start_process_document_graph")
 start_process_document_summarize = _task("common.celery.app.start_process_document_summarize")
+start_process_document_transcribe = _task("common.celery.app.start_process_document_transcribe")
 start_process_document_podcast = _task("common.celery.app.start_process_document_podcast")
 update_document_process_status = _task("common.celery.app.update_document_process_status")
 start_process_section_podcast = _task("common.celery.app.start_process_section_podcast")
@@ -51,6 +52,7 @@ __all__ = [
     "celery_app",
     "start_process_document",
     "start_process_document_embedding",
+    "start_process_document_transcribe",
     "start_process_document_graph",
     "start_process_document_podcast",
     "start_process_document_summarize",
