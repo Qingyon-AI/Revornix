@@ -79,6 +79,7 @@ async def handle_transcribe_document_audio(
         )
 
         db_transcribe_task.transcribed_text = text
+        db_transcribe_task.status = DocumentAudioTranscribeStatus.SUCCESS
         db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while converting the document to markdown: {e}")

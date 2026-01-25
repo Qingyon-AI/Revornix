@@ -554,12 +554,6 @@ async def create_document(
             section_id=section_id,
             status=SectionDocumentIntegration.WAIT_TO
         )
-    if db_document.category != DocumentCategory.QUICK_NOTE:
-        crud.task.create_document_convert_task(
-            db=db,
-            user_id=user.id,
-            document_id=db_document.id
-        )
     db.commit()
     # 开始后台处理
     # 获取所有关联的 section（此时已经写入 WAIT_TO 状态）
@@ -592,6 +586,7 @@ async def create_document(
             auto_tag=document_create_request.auto_tag,
             auto_summary=document_create_request.auto_summary,
             auto_podcast=document_create_request.auto_podcast,
+            auto_transcribe=document_create_request.auto_transcribe,
             override=schemas.task.DocumentOverrideProperty(
                 title=document_create_request.title,
                 description=document_create_request.description,
@@ -646,13 +641,6 @@ async def transform_markdown(
         elif db_convert_task.status == DocumentMdConvertStatus.CONVERTING:
             raise Exception('The transform task is already processing, please wait')
         db_convert_task.status = DocumentMdConvertStatus.WAIT_TO
-    # 如果该文档的转化任务不存在
-    else:
-        db_convert_task = crud.task.create_document_convert_task(
-            db=db,
-            user_id=user.id,
-            document_id=transform_markdown_request.document_id
-        )
     db.commit()
 
     # Background tasks
@@ -864,6 +852,7 @@ def get_document_infos(
     graph_tasks = crud.task.get_document_graph_tasks_by_document_ids(db=db, document_ids=document_ids)
     podcast_tasks = crud.task.get_document_podcast_tasks_by_document_ids(db=db, document_ids=document_ids)
     summarize_tasks = crud.task.get_document_summarize_tasks_by_document_ids(db=db, document_ids=document_ids)
+    transcribe_tasks = crud.task.get_document_transcribe_tasks_by_document_ids(db=db, document_ids=document_ids)
     process_tasks = crud.task.get_document_process_tasks_by_document_ids(db=db, document_ids=document_ids)
     labels_by_document_id = crud.document.get_labels_by_document_ids(db=db, document_ids=document_ids)
 
@@ -872,6 +861,7 @@ def get_document_infos(
     graph_task_by_document_id = {task.document_id: task for task in graph_tasks}
     podcast_task_by_document_id = {task.document_id: task for task in podcast_tasks}
     summarize_task_by_document_id = {task.document_id: task for task in summarize_tasks}
+    transcribe_task_by_document_id = {task.document_id: task for task in transcribe_tasks}
     process_task_by_document_id = {task.document_id: task for task in process_tasks}
 
     res = []
@@ -918,6 +908,14 @@ def get_document_infos(
                 creator_id=document.creator_id,
                 status=summarize_task.status,
                 summary=summarize_task.summary,
+            )
+            
+        transcribe_task = transcribe_task_by_document_id.get(document.id)
+        if transcribe_task is not None:
+            info.transcribe_task = schemas.task.DocumentTranscribeTask(
+                creator_id=document.creator_id,
+                status=transcribe_task.status,
+                transcribed_text=transcribe_task.transcribed_text,
             )
 
         process_task = process_task_by_document_id.get(document.id)
@@ -1036,6 +1034,16 @@ def get_document_detail(
                 creator_id=document.creator_id,
                 content=quick_note_document.content
             )
+    elif document.category == DocumentCategory.AUDIO:
+        audio_document = crud.document.get_audio_document_by_document_id(
+            db=db,
+            document_id=document_detail_request.document_id
+        )
+        if audio_document is not None:
+            res.audio_info = schemas.document.AudioDocumentInfo(
+                creator_id=document.creator_id,
+                audio_file_name=audio_document.audio_file_name
+            )
     convert_task = crud.task.get_document_convert_task_by_document_id(
         db=db,
         document_id=document_detail_request.document_id
@@ -1076,6 +1084,11 @@ def get_document_detail(
         document_id=document_detail_request.document_id
     )
     res.graph_task = graph_task
+    transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+        db=db,
+        document_id=document_detail_request.document_id
+    )
+    res.transcribe_task = transcribe_task
     process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
         document_id=document_detail_request.document_id

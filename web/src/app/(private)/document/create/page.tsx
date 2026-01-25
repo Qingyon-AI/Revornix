@@ -19,7 +19,7 @@ const CreatePage = async (props: { searchParams: SearchParams }) => {
 	const t = await getTranslations();
 	return (
 		<div className='pb-5 px-5 w-full flex-1'>
-			<Tabs defaultValue={'audio'} className='h-full flex flex-col w-full'>
+			<Tabs defaultValue={'quick-note'} className='h-full flex flex-col w-full'>
 				<TabsList className='grid w-full grid-cols-4'>
 					<TabsTrigger value='quick-note'>
 						{t('document_create_quick_note')}

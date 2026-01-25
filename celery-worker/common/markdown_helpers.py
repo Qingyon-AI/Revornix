@@ -3,7 +3,7 @@ import crud
 from common.common import get_user_remote_file_system
 from common.logger import exception_logger
 from data.sql.base import SessionLocal
-from enums.document import DocumentCategory, DocumentMdConvertStatus
+from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentAudioTranscribeStatus
 
 
 async def get_markdown_content_by_section_id(
@@ -96,6 +96,16 @@ async def get_markdown_content_by_document_id(
             if quick_note_document is None:
                 raise Exception("The quick note info of the document is not found")
             markdown_content = quick_note_document.content
+        elif db_document.category == DocumentCategory.AUDIO:
+            db_transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_transcribe_task is None or db_transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or db_transcribe_task.transcribed_text is None:
+                raise Exception("The document transcribe task of the document you want to summary havn't been finished")
+            markdown_content = await remote_file_service.get_file_content_by_file_path(
+                file_path=db_transcribe_task.md_file_name
+            )
         else:
             raise Exception("Document category not supported")
     except Exception as e:

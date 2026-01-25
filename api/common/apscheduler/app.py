@@ -96,12 +96,6 @@ async def fetch_and_save(
                         user_id=rss_server.user_id,
                         document_ids=[db_document_convert_task.document_id]
                     )
-                db_document_convert_task = crud.task.create_document_convert_task(
-                    db=db,
-                    user_id=rss_server.user_id,
-                    document_id=existing_doc.id,
-                    status=DocumentMdConvertStatus.WAIT_TO
-                )
                 db.commit()
                 start_process_document.delay(
                     document_id=existing_doc.id,
@@ -141,11 +135,6 @@ async def fetch_and_save(
                         section_id=section.id,
                         status=SectionDocumentIntegration.WAIT_TO
                     )
-                crud.task.create_document_convert_task(
-                    db=db,
-                    user_id=rss_server.user_id,
-                    document_id=db_base_document.id
-                )
                 db.commit()
                 start_process_document.delay(
                     document_id=db_base_document.id,

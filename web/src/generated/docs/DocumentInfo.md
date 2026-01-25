@@ -23,6 +23,7 @@ Name | Type
 `graph_task` | [DocumentGraphTask](DocumentGraphTask.md)
 `podcast_task` | [DocumentPodcastTask](DocumentPodcastTask.md)
 `summarize_task` | [DocumentSummarizeTask](DocumentSummarizeTask.md)
+`transcribe_task` | [DocumentTranscribeTask](DocumentTranscribeTask.md)
 `process_task` | [DocumentProcessTask](DocumentProcessTask.md)
 
 ## Example
@@ -49,6 +50,7 @@ const example = {
   "graph_task": null,
   "podcast_task": null,
   "summarize_task": null,
+  "transcribe_task": null,
   "process_task": null,
 } satisfies DocumentInfo
 

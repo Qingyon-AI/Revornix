@@ -346,6 +346,19 @@ def get_document_podcast_tasks_by_document_ids(
     )
     return query.all()
 
+def get_document_transcribe_tasks_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    if not document_ids:
+        return []
+    query = db.query(models.task.DocumentAudioTranscribeTask)
+    query = query.filter(
+        models.task.DocumentAudioTranscribeTask.document_id.in_(document_ids),
+        models.task.DocumentAudioTranscribeTask.delete_at.is_(None),
+    )
+    return query.all()
+
 def get_document_process_tasks_by_document_ids(
     db: Session,
     document_ids: list[int]

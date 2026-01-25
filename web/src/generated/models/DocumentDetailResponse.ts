@@ -13,13 +13,20 @@
  */
 
 import { mapValues } from '../runtime';
-import type { DocumentPodcastTask } from './DocumentPodcastTask';
+import type { AudioDocumentInfo } from './AudioDocumentInfo';
 import {
-    DocumentPodcastTaskFromJSON,
-    DocumentPodcastTaskFromJSONTyped,
-    DocumentPodcastTaskToJSON,
-    DocumentPodcastTaskToJSONTyped,
-} from './DocumentPodcastTask';
+    AudioDocumentInfoFromJSON,
+    AudioDocumentInfoFromJSONTyped,
+    AudioDocumentInfoToJSON,
+    AudioDocumentInfoToJSONTyped,
+} from './AudioDocumentInfo';
+import type { DocumentTranscribeTask } from './DocumentTranscribeTask';
+import {
+    DocumentTranscribeTaskFromJSON,
+    DocumentTranscribeTaskFromJSONTyped,
+    DocumentTranscribeTaskToJSON,
+    DocumentTranscribeTaskToJSONTyped,
+} from './DocumentTranscribeTask';
 import type { DocumentGraphTask } from './DocumentGraphTask';
 import {
     DocumentGraphTaskFromJSON,
@@ -27,20 +34,6 @@ import {
     DocumentGraphTaskToJSON,
     DocumentGraphTaskToJSONTyped,
 } from './DocumentGraphTask';
-import type { DocumentSummarizeTask } from './DocumentSummarizeTask';
-import {
-    DocumentSummarizeTaskFromJSON,
-    DocumentSummarizeTaskFromJSONTyped,
-    DocumentSummarizeTaskToJSON,
-    DocumentSummarizeTaskToJSONTyped,
-} from './DocumentSummarizeTask';
-import type { SchemasDocumentLabel } from './SchemasDocumentLabel';
-import {
-    SchemasDocumentLabelFromJSON,
-    SchemasDocumentLabelFromJSONTyped,
-    SchemasDocumentLabelToJSON,
-    SchemasDocumentLabelToJSONTyped,
-} from './SchemasDocumentLabel';
 import type { DocumentEmbeddingTask } from './DocumentEmbeddingTask';
 import {
     DocumentEmbeddingTaskFromJSON,
@@ -48,13 +41,6 @@ import {
     DocumentEmbeddingTaskToJSON,
     DocumentEmbeddingTaskToJSONTyped,
 } from './DocumentEmbeddingTask';
-import type { DocumentConvertTask } from './DocumentConvertTask';
-import {
-    DocumentConvertTaskFromJSON,
-    DocumentConvertTaskFromJSONTyped,
-    DocumentConvertTaskToJSON,
-    DocumentConvertTaskToJSONTyped,
-} from './DocumentConvertTask';
 import type { DocumentProcessTask } from './DocumentProcessTask';
 import {
     DocumentProcessTaskFromJSON,
@@ -62,13 +48,6 @@ import {
     DocumentProcessTaskToJSON,
     DocumentProcessTaskToJSONTyped,
 } from './DocumentProcessTask';
-import type { UserPublicInfo } from './UserPublicInfo';
-import {
-    UserPublicInfoFromJSON,
-    UserPublicInfoFromJSONTyped,
-    UserPublicInfoToJSON,
-    UserPublicInfoToJSONTyped,
-} from './UserPublicInfo';
 import type { QuickNoteDocumentInfo } from './QuickNoteDocumentInfo';
 import {
     QuickNoteDocumentInfoFromJSON,
@@ -90,6 +69,41 @@ import {
     SchemasDocumentBaseSectionInfoToJSON,
     SchemasDocumentBaseSectionInfoToJSONTyped,
 } from './SchemasDocumentBaseSectionInfo';
+import type { DocumentPodcastTask } from './DocumentPodcastTask';
+import {
+    DocumentPodcastTaskFromJSON,
+    DocumentPodcastTaskFromJSONTyped,
+    DocumentPodcastTaskToJSON,
+    DocumentPodcastTaskToJSONTyped,
+} from './DocumentPodcastTask';
+import type { DocumentSummarizeTask } from './DocumentSummarizeTask';
+import {
+    DocumentSummarizeTaskFromJSON,
+    DocumentSummarizeTaskFromJSONTyped,
+    DocumentSummarizeTaskToJSON,
+    DocumentSummarizeTaskToJSONTyped,
+} from './DocumentSummarizeTask';
+import type { SchemasDocumentLabel } from './SchemasDocumentLabel';
+import {
+    SchemasDocumentLabelFromJSON,
+    SchemasDocumentLabelFromJSONTyped,
+    SchemasDocumentLabelToJSON,
+    SchemasDocumentLabelToJSONTyped,
+} from './SchemasDocumentLabel';
+import type { DocumentConvertTask } from './DocumentConvertTask';
+import {
+    DocumentConvertTaskFromJSON,
+    DocumentConvertTaskFromJSONTyped,
+    DocumentConvertTaskToJSON,
+    DocumentConvertTaskToJSONTyped,
+} from './DocumentConvertTask';
+import type { UserPublicInfo } from './UserPublicInfo';
+import {
+    UserPublicInfoFromJSON,
+    UserPublicInfoFromJSONTyped,
+    UserPublicInfoToJSON,
+    UserPublicInfoToJSONTyped,
+} from './UserPublicInfo';
 import type { FileDocumentInfo } from './FileDocumentInfo';
 import {
     FileDocumentInfoFromJSON,
@@ -208,6 +222,12 @@ export interface DocumentDetailResponse {
     quick_note_info?: QuickNoteDocumentInfo | null;
     /**
      * 
+     * @type {AudioDocumentInfo}
+     * @memberof DocumentDetailResponse
+     */
+    audio_info?: AudioDocumentInfo | null;
+    /**
+     * 
      * @type {DocumentConvertTask}
      * @memberof DocumentDetailResponse
      */
@@ -236,6 +256,12 @@ export interface DocumentDetailResponse {
      * @memberof DocumentDetailResponse
      */
     summarize_task?: DocumentSummarizeTask | null;
+    /**
+     * 
+     * @type {DocumentTranscribeTask}
+     * @memberof DocumentDetailResponse
+     */
+    transcribe_task?: DocumentTranscribeTask | null;
     /**
      * 
      * @type {DocumentProcessTask}
@@ -285,11 +311,13 @@ export function DocumentDetailResponseFromJSONTyped(json: any, ignoreDiscriminat
         'website_info': json['website_info'] == null ? undefined : WebsiteDocumentInfoFromJSON(json['website_info']),
         'file_info': json['file_info'] == null ? undefined : FileDocumentInfoFromJSON(json['file_info']),
         'quick_note_info': json['quick_note_info'] == null ? undefined : QuickNoteDocumentInfoFromJSON(json['quick_note_info']),
+        'audio_info': json['audio_info'] == null ? undefined : AudioDocumentInfoFromJSON(json['audio_info']),
         'convert_task': json['convert_task'] == null ? undefined : DocumentConvertTaskFromJSON(json['convert_task']),
         'embedding_task': json['embedding_task'] == null ? undefined : DocumentEmbeddingTaskFromJSON(json['embedding_task']),
         'graph_task': json['graph_task'] == null ? undefined : DocumentGraphTaskFromJSON(json['graph_task']),
         'podcast_task': json['podcast_task'] == null ? undefined : DocumentPodcastTaskFromJSON(json['podcast_task']),
         'summarize_task': json['summarize_task'] == null ? undefined : DocumentSummarizeTaskFromJSON(json['summarize_task']),
+        'transcribe_task': json['transcribe_task'] == null ? undefined : DocumentTranscribeTaskFromJSON(json['transcribe_task']),
         'process_task': json['process_task'] == null ? undefined : DocumentProcessTaskFromJSON(json['process_task']),
     };
 }
@@ -322,11 +350,13 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'website_info': WebsiteDocumentInfoToJSON(value['website_info']),
         'file_info': FileDocumentInfoToJSON(value['file_info']),
         'quick_note_info': QuickNoteDocumentInfoToJSON(value['quick_note_info']),
+        'audio_info': AudioDocumentInfoToJSON(value['audio_info']),
         'convert_task': DocumentConvertTaskToJSON(value['convert_task']),
         'embedding_task': DocumentEmbeddingTaskToJSON(value['embedding_task']),
         'graph_task': DocumentGraphTaskToJSON(value['graph_task']),
         'podcast_task': DocumentPodcastTaskToJSON(value['podcast_task']),
         'summarize_task': DocumentSummarizeTaskToJSON(value['summarize_task']),
+        'transcribe_task': DocumentTranscribeTaskToJSON(value['transcribe_task']),
         'process_task': DocumentProcessTaskToJSON(value['process_task']),
     };
 }

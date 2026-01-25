@@ -12,6 +12,7 @@ from .task import (
     DocumentPodcastTask,
     DocumentProcessTask,
     DocumentSummarizeTask,
+    DocumentTranscribeTask
 )
 from .user import UserPublicInfo
 
@@ -111,6 +112,7 @@ class BaseDocumentCreateRequest(BaseModel):
     file_name: str | None = None
     auto_summary: bool = False
     auto_podcast: bool = False
+    auto_transcribe: bool = False
     auto_tag: bool = False
 
 class DocumentCreateRequest(BaseDocumentCreateRequest):
@@ -184,6 +186,7 @@ class DocumentInfo(BaseModel):
     graph_task: DocumentGraphTask | None = None
     podcast_task: DocumentPodcastTask | None = None
     summarize_task: DocumentSummarizeTask | None = None
+    transcribe_task: DocumentTranscribeTask | None = None
     process_task: DocumentProcessTask | None = None
 
     @field_serializer("create_time")
@@ -223,6 +226,18 @@ class QuickNoteDocumentInfo(BaseModel):
     creator_id: int
     content: str
 
+class AudioDocumentInfo(BaseModel):
+    creator_id: int
+    audio_file_name: str
+    @field_serializer("audio_file_name")
+    def serializer_audio_file_name(self, v: str):
+        if v is None:
+            return None
+        if v.startswith(("http://", "https://")):
+            return v
+        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
+        return f'{url_prefix}/{v}'
+
 class DocumentDetailResponse(BaseModel):
     id: int
     category: int
@@ -241,11 +256,13 @@ class DocumentDetailResponse(BaseModel):
     website_info: WebsiteDocumentInfo | None = None
     file_info: FileDocumentInfo | None = None
     quick_note_info: QuickNoteDocumentInfo | None = None
+    audio_info: AudioDocumentInfo | None = None
     convert_task: DocumentConvertTask | None = None
     embedding_task: DocumentEmbeddingTask | None = None
     graph_task: DocumentGraphTask | None = None
     podcast_task: DocumentPodcastTask | None = None
     summarize_task: DocumentSummarizeTask | None = None
+    transcribe_task: DocumentTranscribeTask | None = None
     process_task: DocumentProcessTask | None = None
 
     @field_serializer("create_time")

@@ -2,6 +2,7 @@ export enum DocumentCategory {
     FILE = 0,
     WEBSITE = 1,
     QUICK_NOTE = 2,
+    AUDIO = 3
 }
 
 export enum DocumentMdConvertStatus {
@@ -11,9 +12,16 @@ export enum DocumentMdConvertStatus {
     FAILED = 3,
 }
 
-export enum DocumentEmbeddingConvertStatus {
+export enum DocumentEmbeddingStatus {
     WAIT_TO = 0,
     Embedding = 1,
+    SUCCESS = 2,
+    FAILED = 3,
+}
+
+export enum DocumentTranscribeStatus {
+    WAIT_TO = 0,
+    TRANSCRIBING = 1,
     SUCCESS = 2,
     FAILED = 3,
 }

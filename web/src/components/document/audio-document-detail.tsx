@@ -1,4 +1,4 @@
-import { cn, replaceImagePaths } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
@@ -15,15 +15,11 @@ import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
 import DocumentOperate from './document-operate';
 import { useInView } from 'react-intersection-observer';
-import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
-import {
-	getUserFileSystemDetail,
-	getUserFileUrlPrefix,
-} from '@/service/file-system';
 import {
 	DocumentProcessStatus,
 	DocumentMdConvertStatus,
+	DocumentTranscribeStatus,
 } from '@/enums/document';
 import CustomMarkdown from '../ui/custom-markdown';
 
@@ -47,25 +43,6 @@ const FileDocumentDetail = ({
 	} = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
-	});
-
-	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
-		queryFn: () =>
-			getUserFileSystemDetail({
-				user_file_system_id: mainUserInfo!.default_user_file_system!,
-			}),
-		enabled:
-			mainUserInfo?.id !== undefined &&
-			mainUserInfo?.default_user_file_system !== undefined,
-	});
-
-	const { data: userRemoteFileUrlPrefix } = useQuery({
-		queryKey: ['getUserRemoteFileUrlPrefix', document?.creator?.id],
-		queryFn: () => {
-			return getUserFileUrlPrefix({ user_id: document!.creator!.id });
-		},
-		enabled: !!document?.creator?.id,
 	});
 
 	const [delay, setDelay] = useState<number>();
@@ -111,48 +88,25 @@ const FileDocumentDetail = ({
 	const onGetMarkdown = async () => {
 		if (
 			!document ||
-			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
+			document.transcribe_task?.status !== DocumentTranscribeStatus.SUCCESS ||
+			!document.transcribe_task.transcribed_text ||
 			!mainUserInfo
 		)
 			return;
-		if (!mainUserInfo?.default_user_file_system) {
-			toast.error('No user default file system found');
-			return;
-		}
-		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
-		try {
-			if (!document.convert_task?.md_file_name) {
-				throw new Error('No md file name found');
-			}
-			let [res, err] = await utils.to(
-				fileService.getFileContent(document.convert_task?.md_file_name),
-			);
-			if (!res || err) {
-				throw new Error(err.message);
-			}
-			if (typeof res === 'string') {
-				if (userRemoteFileUrlPrefix?.url_prefix) {
-					res = replaceImagePaths(res, userRemoteFileUrlPrefix.url_prefix);
-				}
-				setMarkdown(res);
-				setMarkdownRendered(true);
-			}
-		} catch (e: any) {
-			setMarkdownGetError(e.message);
-		}
+
+		setMarkdown(document.transcribe_task.transcribed_text);
+		setMarkdownRendered(true);
 	};
 
 	useEffect(() => {
 		if (
 			!document ||
-			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
-			!mainUserInfo ||
-			!userFileSystemDetail ||
-			!userRemoteFileUrlPrefix
+			document.transcribe_task?.status !== DocumentTranscribeStatus.SUCCESS ||
+			!mainUserInfo
 		)
 			return;
 		onGetMarkdown();
-	}, [document, mainUserInfo, userRemoteFileUrlPrefix, userFileSystemDetail]);
+	}, [document, mainUserInfo]);
 
 	const { ref: bottomRef, inView } = useInView();
 
@@ -198,7 +152,8 @@ const FileDocumentDetail = ({
 					</div>
 				)}
 			{document &&
-				document.convert_task?.status === DocumentMdConvertStatus.WAIT_TO && (
+				document.transcribe_task?.status ===
+					DocumentTranscribeStatus.WAIT_TO && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
 							<span className='mr-1'>
@@ -230,7 +185,8 @@ const FileDocumentDetail = ({
 					</div>
 				)}
 			{document &&
-				document.convert_task?.status === DocumentMdConvertStatus.FAILED && (
+				document.transcribe_task?.status ===
+					DocumentTranscribeStatus.FAILED && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
 						<p>{t('document_transform_to_markdown_failed')}</p>
 						<Button
@@ -253,7 +209,8 @@ const FileDocumentDetail = ({
 				!markdown &&
 				!isError &&
 				!markdownGetError &&
-				document.convert_task?.status === DocumentMdConvertStatus.SUCCESS && (
+				document.transcribe_task?.status ===
+					DocumentTranscribeStatus.SUCCESS && (
 					<Skeleton className='h-full w-full' />
 				)}
 			{markdown && !isError && !markdownGetError && (

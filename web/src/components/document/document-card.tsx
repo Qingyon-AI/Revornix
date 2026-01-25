@@ -7,7 +7,7 @@ import { useRouter } from 'nextjs-toploader/app';
 import {
 	DocumentCategory,
 	DocumentMdConvertStatus,
-	DocumentEmbeddingConvertStatus,
+	DocumentEmbeddingStatus,
 } from '@/enums/document';
 
 const DocumentCard = ({ document }: { document: DocumentInfo }) => {
@@ -73,10 +73,12 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 						{document.category === DocumentCategory.WEBSITE
 							? t('document_category_link')
 							: document.category === DocumentCategory.FILE
-							? t('document_category_file')
-							: document.category === DocumentCategory.QUICK_NOTE
-							? t('document_category_quick_note')
-							: t('document_category_others')}
+								? t('document_category_file')
+								: document.category === DocumentCategory.QUICK_NOTE
+									? t('document_category_quick_note')
+									: document.category === DocumentCategory.AUDIO
+										? t('document_category_audio')
+										: t('document_category_others')}
 					</div>
 				</div>
 				{document.embedding_task && (
@@ -84,15 +86,15 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 						<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 							{t('document_embedding_status') + ': '}
 							{document.embedding_task?.status ===
-							DocumentEmbeddingConvertStatus.WAIT_TO
+							DocumentEmbeddingStatus.WAIT_TO
 								? t('document_embedding_status_todo')
 								: document.embedding_task?.status ===
-								  DocumentEmbeddingConvertStatus.Embedding
-								? t('document_embedding_status_doing')
-								: document.embedding_task?.status ===
-								  DocumentEmbeddingConvertStatus.SUCCESS
-								? t('document_embedding_status_success')
-								: t('document_embedding_status_failed')}
+									  DocumentEmbeddingStatus.Embedding
+									? t('document_embedding_status_doing')
+									: document.embedding_task?.status ===
+										  DocumentEmbeddingStatus.SUCCESS
+										? t('document_embedding_status_success')
+										: t('document_embedding_status_failed')}
 						</div>
 					</div>
 				)}
@@ -103,12 +105,12 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 							{document.convert_task?.status === DocumentMdConvertStatus.WAIT_TO
 								? t('document_md_status_todo')
 								: document.convert_task?.status ===
-								  DocumentMdConvertStatus.CONVERTING
-								? t('document_md_status_doing')
-								: document.convert_task?.status ===
-								  DocumentMdConvertStatus.SUCCESS
-								? t('document_md_status_success')
-								: t('document_md_status_failed')}
+									  DocumentMdConvertStatus.CONVERTING
+									? t('document_md_status_doing')
+									: document.convert_task?.status ===
+										  DocumentMdConvertStatus.SUCCESS
+										? t('document_md_status_success')
+										: t('document_md_status_failed')}
 						</div>
 					</div>
 				)}
