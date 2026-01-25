@@ -1,5 +1,5 @@
 import uuid
-from typing import TypedDict, cast
+from typing import TypedDict
 
 import crud
 from langgraph.graph import StateGraph, END
@@ -8,7 +8,7 @@ from common.common import get_user_remote_file_system
 from common.logger import exception_logger
 from data.sql.base import SessionLocal
 from enums.section import SectionPodcastStatus
-from workflow.markdown_helpers import get_markdown_content_by_section_id
+from common.markdown_helpers import get_markdown_content_by_section_id
 from proxy.engine_proxy import EngineProxy
 
 
@@ -22,22 +22,14 @@ async def handle_update_section_ai_podcast(
     user_id: int
 ):
     db = SessionLocal()
-    db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
-        db=db,
-        section_id=section_id
-    )
-    if db_podcast_task is None:
-        db_podcast_task = crud.task.create_section_podcast_task(
-            db=db,
-            user_id=user_id,
-            section_id=section_id,
-            status=SectionPodcastStatus.GENERATING
-        )
-    else:
-        if db_podcast_task.status != SectionPodcastStatus.GENERATING:
-            db_podcast_task.status = SectionPodcastStatus.GENERATING
-    db.commit()
     try:
+        db_section = crud.section.get_section_by_section_id(
+            db=db,
+            section_id=section_id
+        )
+        if db_section is None:
+            raise Exception("The section which want to process podcast is not found")
+
         db_user = crud.user.get_user_by_id(
             db=db,
             user_id=user_id
@@ -49,6 +41,22 @@ async def handle_update_section_ai_podcast(
         if db_user.default_podcast_user_engine_id is None:
             raise Exception("The user who want to process section has not set default podcast user engine")
 
+        db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
+            db=db,
+            section_id=section_id
+        )
+        if db_podcast_task is None:
+            db_podcast_task = crud.task.create_section_podcast_task(
+                db=db,
+                user_id=user_id,
+                section_id=section_id,
+                status=SectionPodcastStatus.GENERATING
+            )
+        else:
+            if db_podcast_task.status != SectionPodcastStatus.GENERATING:
+                db_podcast_task.status = SectionPodcastStatus.GENERATING
+        db.commit()
+        
         remote_file_service = await get_user_remote_file_system(
             user_id=user_id
         )
@@ -94,8 +102,13 @@ async def handle_update_section_ai_podcast(
 
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai podcast: {e}")
-        db_podcast_task.status = SectionPodcastStatus.FAILED
-        db.commit()
+        db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
+            db=db,
+            section_id=section_id
+        )
+        if db_podcast_task is not None:
+            db_podcast_task.status = SectionPodcastStatus.FAILED
+            db.commit()
         raise
     finally:
         db.close()
@@ -106,8 +119,6 @@ async def _generate_section_podcast(state: SectionPodcastState) -> SectionPodcas
     user_id = state.get("user_id")
     if section_id is None or user_id is None:
         raise Exception("Section podcast workflow missing section_id or user_id")
-    section_id = cast(int, section_id)
-    user_id = cast(int, user_id)
 
     await handle_update_section_ai_podcast(
         section_id=section_id,

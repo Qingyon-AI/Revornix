@@ -1,4 +1,4 @@
-from typing import TypedDict, cast
+from typing import TypedDict
 
 import crud
 from langgraph.graph import StateGraph, END
@@ -21,39 +21,39 @@ async def handle_update_document_ai_summarize(
     user_id: int
 ):
     db = SessionLocal()
-    db_document = crud.document.get_document_by_document_id(
-        db=db,
-        document_id=document_id
-    )
-    if db_document is None:
-        raise Exception("The document which you want to summarize is not found")
-
-    db_user = crud.user.get_user_by_id(
-        db=db,
-        user_id=user_id
-    )
-    if db_user is None:
-        raise Exception("The user which you want to summarize document is not found")
-    if db_user.default_user_file_system is None:
-        raise Exception("The user which you want to summarize document has not set default user file system")
-    if db_user.default_document_reader_model_id is None:
-        raise Exception("The user which you want to summarize document has not set default document reader model")
-
-    db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
-        db=db,
-        document_id=document_id
-    )
-    if db_summarize_task is None:
-        db_summarize_task = crud.task.create_document_summarize_task(
-            db=db,
-            user_id=user_id,
-            document_id=document_id,
-        )
-    if db_summarize_task.status != DocumentSummarizeStatus.SUMMARIZING:
-        db_summarize_task.status = DocumentSummarizeStatus.SUMMARIZING
-    db.commit()
-
     try:
+        db_document = crud.document.get_document_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_document is None:
+            raise Exception("The document which you want to summarize is not found")
+
+        db_user = crud.user.get_user_by_id(
+            db=db,
+            user_id=user_id
+        )
+        if db_user is None:
+            raise Exception("The user which you want to summarize document is not found")
+        if db_user.default_user_file_system is None:
+            raise Exception("The user which you want to summarize document has not set default user file system")
+        if db_user.default_document_reader_model_id is None:
+            raise Exception("The user which you want to summarize document has not set default document reader model")
+
+        db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_summarize_task is None:
+            db_summarize_task = crud.task.create_document_summarize_task(
+                db=db,
+                user_id=user_id,
+                document_id=document_id,
+            )
+        if db_summarize_task.status != DocumentSummarizeStatus.SUMMARIZING:
+            db_summarize_task.status = DocumentSummarizeStatus.SUMMARIZING
+        db.commit()
+
         model_configuration = (await AIModelProxy.create(
             user_id=user_id,
             model_id=db_user.default_document_reader_model_id
@@ -89,8 +89,13 @@ async def handle_update_document_ai_summarize(
         db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai summary: {e}")
-        db_summarize_task.status = DocumentSummarizeStatus.FAILED
-        db.commit()
+        db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_summarize_task is not None:
+            db_summarize_task.status = DocumentSummarizeStatus.FAILED
+            db.commit()
         raise
     finally:
         db.close()
@@ -101,8 +106,6 @@ async def _summarize_document(state: DocumentSummarizeState) -> DocumentSummariz
     user_id = state.get("user_id")
     if document_id is None or user_id is None:
         raise Exception("Document summarize workflow missing document_id or user_id")
-    document_id = cast(int, document_id)
-    user_id = cast(int, user_id)
 
     await handle_update_document_ai_summarize(
         document_id=document_id,

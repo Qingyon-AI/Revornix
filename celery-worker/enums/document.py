@@ -14,6 +14,12 @@ class DocumentMdConvertStatus(IntEnum):
     CONVERTING = 1
     SUCCESS = 2
     FAILED = 3
+
+class DocumentAudioTranscribeStatus(IntEnum):
+    WAIT_TO = 0
+    TRANSCRIBING = 1
+    SUCCESS = 2
+    FAILED = 3
     
 class DocumentEmbeddingStatus(IntEnum):
     WAIT_TO = 0
@@ -30,12 +36,6 @@ class DocumentGraphStatus(IntEnum):
 class DocumentPodcastStatus(IntEnum):
     WAIT_TO = 0
     GENERATING = 1
-    SUCCESS = 2
-    FAILED = 3
-
-class DocumentTranscribeStatus(IntEnum):
-    WAIT_TO = 0
-    TRANSCRIBING = 1
     SUCCESS = 2
     FAILED = 3
 

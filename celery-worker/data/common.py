@@ -8,7 +8,7 @@ from typing import cast
 from langfuse.openai import OpenAI
 from common.logger import exception_logger
 from langfuse import propagate_attributes
-from enums.document import DocumentMdConvertStatus
+from enums.document import DocumentMdConvertStatus, DocumentAudioTranscribeStatus
 from chonkie.types import Chunk
 from chonkie.chunker.recursive import RecursiveChunker
 from enums.document import DocumentCategory
@@ -73,6 +73,7 @@ async def stream_chunk_document(
         if not markdown_content.strip():
             raise ValueError("Document content is empty")
 
+        # TODO 优化chunk 应该根据文档实际类型有区分，不能一刀切用markdown
         chunker = RecursiveChunker.from_recipe("markdown")
 
 
@@ -147,6 +148,16 @@ async def _load_markdown_content(
         if note is None:
             raise ValueError("Quick note document not found")
         return note.content or ""
+    elif cat == DocumentCategory.AUDIO:
+        transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+            db=db, 
+            document_id=db_document.id
+        )
+        if transcribe_task is None:
+            raise ValueError("The transcribe task of the document is not found")
+        if transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or transcribe_task.transcribed_text is None:
+            raise ValueError("The transcribe task of the document is not finished")
+        return transcribe_task.transcribed_text
     else:
         raise ValueError(f"Unsupported document category: {cat}")
 

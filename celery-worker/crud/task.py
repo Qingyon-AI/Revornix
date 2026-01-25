@@ -1,7 +1,7 @@
 import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentEmbeddingStatus, DocumentMdConvertStatus, DocumentSummarizeStatus, DocumentTranscribeStatus
+from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentEmbeddingStatus, DocumentMdConvertStatus, DocumentSummarizeStatus, DocumentAudioTranscribeStatus
 from enums.section import SectionPodcastStatus, SectionProcessStatus, SectionProcessTriggerType
 
 def create_document_convert_task(
@@ -104,7 +104,7 @@ def create_document_audio_transcribe_task(
     db: Session,
     user_id: int,
     document_id: int,
-    status: DocumentTranscribeStatus = DocumentTranscribeStatus.WAIT_TO
+    status: DocumentAudioTranscribeStatus = DocumentAudioTranscribeStatus.WAIT_TO
 ):
     now = datetime.now(timezone.utc)
     task = models.task.DocumentAudioTranscribeTask(

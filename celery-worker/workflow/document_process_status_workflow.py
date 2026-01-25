@@ -1,9 +1,10 @@
-from typing import TypedDict, cast
+from typing import TypedDict
 
 from langgraph.graph import StateGraph, END
 
 import crud
 from data.sql.base import SessionLocal
+from common.logger import exception_logger
 
 
 class DocumentProcessStatusState(TypedDict, total=False):
@@ -18,8 +19,6 @@ async def _update_document_status(
     status = state.get("status")
     if document_id is None or status is None:
         raise Exception("Document status workflow missing document_id or status")
-    document_id = cast(int, document_id)
-    status = cast(int, status)
 
     db = SessionLocal()
     try:
@@ -30,6 +29,9 @@ async def _update_document_status(
         if db_document_process_task is not None:
             db_document_process_task.status = status
             db.commit()
+    except Exception as e:
+        exception_logger.error(f"Something is error while updating the document status: {e}")
+        raise e
     finally:
         db.close()
 

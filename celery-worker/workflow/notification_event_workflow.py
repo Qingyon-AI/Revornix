@@ -1,4 +1,4 @@
-from typing import TypedDict, cast
+from typing import TypedDict
 
 from langgraph.graph import StateGraph, END
 
@@ -18,8 +18,6 @@ async def _trigger_notification_event(
     trigger_event_uuid = state.get("trigger_event_uuid")
     if user_id is None or trigger_event_uuid is None:
         raise Exception("Notification workflow missing user_id or trigger_event_uuid")
-    user_id = cast(int, user_id)
-    trigger_event_uuid = cast(str, trigger_event_uuid)
     params = state.get("params")
 
     await trigger_user_notification_event(

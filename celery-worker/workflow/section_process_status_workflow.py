@@ -1,4 +1,4 @@
-from typing import TypedDict, cast
+from typing import TypedDict
 
 from langgraph.graph import StateGraph, END
 
@@ -18,8 +18,6 @@ async def _update_section_status(
     status = state.get("status")
     if section_id is None or status is None:
         raise Exception("Section status workflow missing section_id or status")
-    section_id = cast(int, section_id)
-    status = cast(int, status)
 
     db = SessionLocal()
     try:
