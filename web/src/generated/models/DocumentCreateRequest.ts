@@ -90,6 +90,12 @@ export interface DocumentCreateRequest {
      * @type {boolean}
      * @memberof DocumentCreateRequest
      */
+    auto_transcribe?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DocumentCreateRequest
+     */
     auto_tag?: boolean;
     /**
      * 
@@ -129,6 +135,7 @@ export function DocumentCreateRequestFromJSONTyped(json: any, ignoreDiscriminato
         'file_name': json['file_name'] == null ? undefined : json['file_name'],
         'auto_summary': json['auto_summary'] == null ? undefined : json['auto_summary'],
         'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
+        'auto_transcribe': json['auto_transcribe'] == null ? undefined : json['auto_transcribe'],
         'auto_tag': json['auto_tag'] == null ? undefined : json['auto_tag'],
         'from_plat': json['from_plat'],
     };
@@ -156,6 +163,7 @@ export function DocumentCreateRequestToJSONTyped(value?: DocumentCreateRequest |
         'file_name': value['file_name'],
         'auto_summary': value['auto_summary'],
         'auto_podcast': value['auto_podcast'],
+        'auto_transcribe': value['auto_transcribe'],
         'auto_tag': value['auto_tag'],
         'from_plat': value['from_plat'],
     };

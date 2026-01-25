@@ -26,6 +26,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**searchNoteDocumentNoteSearchPost**](DocumentApi.md#searchnotedocumentnotesearchpost) | **POST** /document/note/search | Search Note |
 | [**searchUserUnreadDocumentsDocumentUnreadSearchPost**](DocumentApi.md#searchuserunreaddocumentsdocumentunreadsearchpost) | **POST** /document/unread/search | Search User Unread Documents |
 | [**starDocumentDocumentStarPost**](DocumentApi.md#stardocumentdocumentstarpost) | **POST** /document/star | Star Document |
+| [**transcribeAudioDocumentDocumentTranscribePost**](DocumentApi.md#transcribeaudiodocumentdocumenttranscribepost) | **POST** /document/transcribe | Transcribe Audio Document |
 | [**transformMarkdownDocumentMarkdownTransformPost**](DocumentApi.md#transformmarkdowndocumentmarkdowntransformpost) | **POST** /document/markdown/transform | Transform Markdown |
 | [**updateDocumentDocumentUpdatePost**](DocumentApi.md#updatedocumentdocumentupdatepost) | **POST** /document/update | Update Document |
 
@@ -1520,6 +1521,75 @@ example().catch(console.error);
 ### Return type
 
 [**SuccessResponse**](SuccessResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## transcribeAudioDocumentDocumentTranscribePost
+
+> NormalResponse transcribeAudioDocumentDocumentTranscribePost(documentTranscribeRequest, authorization)
+
+Transcribe Audio Document
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { TranscribeAudioDocumentDocumentTranscribePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentTranscribeRequest
+    documentTranscribeRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies TranscribeAudioDocumentDocumentTranscribePostRequest;
+
+  try {
+    const data = await api.transcribeAudioDocumentDocumentTranscribePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentTranscribeRequest** | [DocumentTranscribeRequest](DocumentTranscribeRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
 
 ### Authorization
 

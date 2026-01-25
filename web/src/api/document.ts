@@ -24,4 +24,5 @@ export default {
     getDocumentLabelSummary: API_PREFIX + '/document/label/summary',
     generateDocumentGraph: API_PREFIX + '/document/graph/generate',
     embeddingDocument: API_PREFIX + '/document/embedding',
+    transcribeDocument: API_PREFIX + '/document/transcribe',
 } 

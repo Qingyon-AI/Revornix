@@ -27,6 +27,7 @@ import type {
   DocumentMonthSummaryResponse,
   DocumentNoteCreateRequest,
   DocumentNoteDeleteRequest,
+  DocumentTranscribeRequest,
   DocumentUpdateRequest,
   GenerateDocumentPodcastRequest,
   HTTPValidationError,
@@ -74,6 +75,8 @@ import {
     DocumentNoteCreateRequestToJSON,
     DocumentNoteDeleteRequestFromJSON,
     DocumentNoteDeleteRequestToJSON,
+    DocumentTranscribeRequestFromJSON,
+    DocumentTranscribeRequestToJSON,
     DocumentUpdateRequestFromJSON,
     DocumentUpdateRequestToJSON,
     GenerateDocumentPodcastRequestFromJSON,
@@ -222,6 +225,11 @@ export interface SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest {
 
 export interface StarDocumentDocumentStarPostRequest {
     starRequest: StarRequest;
+    authorization?: string | null;
+}
+
+export interface TranscribeAudioDocumentDocumentTranscribePostRequest {
+    documentTranscribeRequest: DocumentTranscribeRequest;
     authorization?: string | null;
 }
 
@@ -1153,6 +1161,49 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async starDocumentDocumentStarPost(requestParameters: StarDocumentDocumentStarPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessResponse> {
         const response = await this.starDocumentDocumentStarPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Transcribe Audio Document
+     */
+    async transcribeAudioDocumentDocumentTranscribePostRaw(requestParameters: TranscribeAudioDocumentDocumentTranscribePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['documentTranscribeRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentTranscribeRequest',
+                'Required parameter "documentTranscribeRequest" was null or undefined when calling transcribeAudioDocumentDocumentTranscribePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/document/transcribe`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentTranscribeRequestToJSON(requestParameters['documentTranscribeRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Transcribe Audio Document
+     */
+    async transcribeAudioDocumentDocumentTranscribePost(requestParameters: TranscribeAudioDocumentDocumentTranscribePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.transcribeAudioDocumentDocumentTranscribePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
