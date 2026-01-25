@@ -324,7 +324,7 @@ def seed_database(db: Session):
                 if db_engine_provider is None:
                     raise RuntimeError(f"❌ EngineProvided {e.meta.engine_provided.meta.uuid} not found")
 
-                crud.engine.create_engine(
+                db_engine = crud.engine.create_engine(
                     db=db,
                     uuid=e.meta.uuid,
                     name=e.meta.name,
@@ -336,7 +336,7 @@ def seed_database(db: Session):
                 crud.engine.create_user_engine(
                     db=db,
                     user_id=db_root_user.id,
-                    engine_id=db_engine_provider.id,
+                    engine_id=db_engine.id,
                     role=UserEngineRole.CREATOR
                 )
 
