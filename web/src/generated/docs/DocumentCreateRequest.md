@@ -17,6 +17,7 @@ Name | Type
 `file_name` | string
 `auto_summary` | boolean
 `auto_podcast` | boolean
+`auto_transcribe` | boolean
 `auto_tag` | boolean
 `from_plat` | string
 
@@ -38,6 +39,7 @@ const example = {
   "file_name": null,
   "auto_summary": null,
   "auto_podcast": null,
+  "auto_transcribe": null,
   "auto_tag": null,
   "from_plat": null,
 } satisfies DocumentCreateRequest

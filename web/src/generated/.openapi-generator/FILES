@@ -71,6 +71,7 @@ docs/DocumentNoteInfo.md
 docs/DocumentPodcastTask.md
 docs/DocumentProcessTask.md
 docs/DocumentSummarizeTask.md
+docs/DocumentTranscribeRequest.md
 docs/DocumentTranscribeTask.md
 docs/DocumentUpdateRequest.md
 docs/Edge.md
@@ -336,6 +337,7 @@ models/DocumentNoteInfo.ts
 models/DocumentPodcastTask.ts
 models/DocumentProcessTask.ts
 models/DocumentSummarizeTask.ts
+models/DocumentTranscribeRequest.ts
 models/DocumentTranscribeTask.ts
 models/DocumentUpdateRequest.ts
 models/Edge.ts

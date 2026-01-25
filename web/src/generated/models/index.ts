@@ -55,6 +55,7 @@ export * from './DocumentNoteInfo';
 export * from './DocumentPodcastTask';
 export * from './DocumentProcessTask';
 export * from './DocumentSummarizeTask';
+export * from './DocumentTranscribeRequest';
 export * from './DocumentTranscribeTask';
 export * from './DocumentUpdateRequest';
 export * from './Edge';

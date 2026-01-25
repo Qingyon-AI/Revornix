@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
-import { getDocumentDetail, transformToMarkdown } from '@/service/document';
+import { getDocumentDetail, transcribeDocument } from '@/service/document';
 import 'katex/dist/katex.min.css';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { Info, Loader2 } from 'lucide-react';
@@ -18,12 +18,11 @@ import { useInView } from 'react-intersection-observer';
 import { useUserContext } from '@/provider/user-provider';
 import {
 	DocumentProcessStatus,
-	DocumentMdConvertStatus,
 	DocumentTranscribeStatus,
 } from '@/enums/document';
 import CustomMarkdown from '../ui/custom-markdown';
 
-const FileDocumentDetail = ({
+const AudioDocumentDetail = ({
 	id,
 	className,
 	onFinishRead,
@@ -65,13 +64,12 @@ const FileDocumentDetail = ({
 	}, [document?.process_task?.status]);
 
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
-	const [markdownGetError, setMarkdownGetError] = useState<string>();
 	const [markdown, setMarkdown] = useState<string>();
 
-	const handleTransformToMarkdown = async () => {
+	const handleReTranscribeDocument = async () => {
 		setMarkdowningTransform(true);
 		const [res, err] = await utils.to(
-			transformToMarkdown({
+			transcribeDocument({
 				document_id: id,
 			}),
 		);
@@ -115,33 +113,21 @@ const FileDocumentDetail = ({
 		onFinishRead && onFinishRead();
 	}, [inView]);
 
-	// TODO 处理边际情况
 	return (
 		<div className={cn('h-full w-full relative', className)}>
-			{((isError && error) || markdownGetError) && (
-				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
-					{error?.message ?? (
-						<div className='flex flex-col text-center gap-2'>
-							<p>{markdownGetError}</p>
-							<Separator />
-							<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
-						</div>
-					)}
-				</div>
-			)}
 			{document &&
-				document.convert_task?.status ===
-					DocumentMdConvertStatus.CONVERTING && (
+				document.transcribe_task?.status ===
+					DocumentTranscribeStatus.TRANSCRIBING && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
-							{t('document_transform_to_markdown_doing')}
+							{t('document_transcribe_doing')}
 						</p>
 						<Button
 							variant={'link'}
 							className='h-fit p-0 text-xs'
 							disabled={markdownTransforming}
 							onClick={() => {
-								handleTransformToMarkdown();
+								handleReTranscribeDocument();
 							}}>
 							{t('retry')}
 							{markdownTransforming && (
@@ -158,14 +144,14 @@ const FileDocumentDetail = ({
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
 							<span className='mr-1'>
-								{t('document_transform_to_markdown_todo')}
+								{t('document_transcribe_todo')}
 							</span>
 							<Tooltip>
 								<TooltipTrigger>
 									<Info size={15} />
 								</TooltipTrigger>
 								<TooltipContent>
-									{t('document_transform_to_markdown_todo_tips')}
+									{t('document_transcribe_todo_tips')}
 								</TooltipContent>
 							</Tooltip>
 						</p>
@@ -174,7 +160,7 @@ const FileDocumentDetail = ({
 							className='h-fit p-0 text-xs'
 							disabled={markdownTransforming}
 							onClick={() => {
-								handleTransformToMarkdown();
+								handleReTranscribeDocument();
 							}}>
 							{t('retry')}
 							{markdownTransforming && (
@@ -189,13 +175,13 @@ const FileDocumentDetail = ({
 				document.transcribe_task?.status ===
 					DocumentTranscribeStatus.FAILED && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
-						<p>{t('document_transform_to_markdown_failed')}</p>
+						<p>{t('document_transcribe_failed')}</p>
 						<Button
 							variant={'link'}
 							className='h-fit p-0 text-xs'
 							disabled={markdownTransforming}
 							onClick={() => {
-								handleTransformToMarkdown();
+								handleReTranscribeDocument();
 							}}>
 							{t('retry')}
 							{markdownTransforming && (
@@ -209,12 +195,11 @@ const FileDocumentDetail = ({
 			{document &&
 				!markdown &&
 				!isError &&
-				!markdownGetError &&
 				document.transcribe_task?.status ===
 					DocumentTranscribeStatus.SUCCESS && (
 					<Skeleton className='h-full w-full' />
 				)}
-			{markdown && !isError && !markdownGetError && (
+			{markdown && !isError && (
 				<div className='w-full h-full flex flex-col'>
 					<div className='flex-1 overflow-auto relative'>
 						<div className='prose dark:prose-invert mx-auto pb-5'>
@@ -233,4 +218,4 @@ const FileDocumentDetail = ({
 	);
 };
 
-export default FileDocumentDetail;
+export default AudioDocumentDetail;
