@@ -1,3 +1,4 @@
+import AddAudio from '@/components/document/add-audio';
 import AddFile from '@/components/document/add-file';
 import AddLink from '@/components/document/add-link';
 import AddQuickNote from '@/components/document/add-quick-note';
@@ -9,19 +10,23 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
-const CreatePage = () => {
-	const t = useTranslations();
+type SearchParams = Promise<{ [key: string]: string }>;
+
+const CreatePage = async (props: { searchParams: SearchParams }) => {
+	const searchParams = await props.searchParams;
+	const t = await getTranslations();
 	return (
 		<div className='pb-5 px-5 w-full flex-1'>
-			<Tabs defaultValue='quick-note' className='h-full flex flex-col w-full'>
-				<TabsList className='grid w-full grid-cols-3'>
+			<Tabs defaultValue={'audio'} className='h-full flex flex-col w-full'>
+				<TabsList className='grid w-full grid-cols-4'>
 					<TabsTrigger value='quick-note'>
 						{t('document_create_quick_note')}
 					</TabsTrigger>
 					<TabsTrigger value='link'>{t('document_create_link')}</TabsTrigger>
 					<TabsTrigger value='file'>{t('document_create_file')}</TabsTrigger>
+					<TabsTrigger value='audio'>{t('document_create_audio')}</TabsTrigger>
 				</TabsList>
 				<TabsContent value='quick-note' className='flex-1'>
 					<Card className='h-full flex flex-col'>
@@ -59,6 +64,19 @@ const CreatePage = () => {
 						</CardHeader>
 						<CardContent className='flex-1'>
 							<AddFile />
+						</CardContent>
+					</Card>
+				</TabsContent>
+				<TabsContent value='audio' className='flex-1'>
+					<Card className='h-full flex flex-col'>
+						<CardHeader>
+							<CardTitle>{t('document_create_audio')}</CardTitle>
+							<CardDescription>
+								{t('document_create_audio_description')}
+							</CardDescription>
+						</CardHeader>
+						<CardContent className='flex-1'>
+							<AddAudio />
 						</CardContent>
 					</Card>
 				</TabsContent>
