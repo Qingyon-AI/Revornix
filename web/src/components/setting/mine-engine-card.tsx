@@ -15,6 +15,7 @@ import {
 	AudioLinesIcon,
 	ImageIcon,
 	Loader2,
+	MicIcon,
 	TextIcon,
 	XCircleIcon,
 } from 'lucide-react';
@@ -92,16 +93,10 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 	return (
 		<>
 			<Card className='bg-muted/50'>
-				<CardHeader className='flex-1'>
-					<CardTitle className='flex flex-row items-center w-full'>
-						<div className='flex flex-row items-center gap-2'>
-							{engine_info.name}
-							{engine_info.is_public && (
-								<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
-									<div className='h-1.5 w-1.5 rounded-full bg-amber-500 mr-1' />{' '}
-									Public
-								</Badge>
-							)}
+				<CardHeader className='flex-1 flex flex-col'>
+					<CardTitle className='flex flex-row items-center w-full min-w-0'>
+						<div className='flex flex-row items-center gap-2 flex-1 min-w-0 flex-wrap break-all'>
+							<span className='line-clamp-2'>{engine_info.name}</span>
 						</div>
 						<AlertDialog
 							open={deleteDialogOpen}
@@ -144,7 +139,15 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 							</AlertDialogContent>
 						</AlertDialog>
 					</CardTitle>
-					<CardDescription>{engine_info.description}</CardDescription>
+					<CardDescription className='flex flex-col flex-1'>
+						<span className='mb-2'>{engine_info.description}</span>
+						{engine_info.is_public && (
+							<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
+								<div className='h-1.5 w-1.5 rounded-full bg-amber-500 mr-1' />{' '}
+								Public
+							</Badge>
+						)}
+					</CardDescription>
 				</CardHeader>
 				<CardContent className='relative gap-2 flex flex-row items-center'>
 					<Badge className='rounded-full mr-auto pl-[2px]' variant={'outline'}>
@@ -157,6 +160,9 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 							)}
 							{engine_info.category === EngineCategory.Markdown && (
 								<TextIcon className='size-4' color='white' />
+							)}
+							{engine_info.category === EngineCategory.STT && (
+								<MicIcon className='size-4' color='white' />
 							)}
 						</div>
 						{getEngineCategoryLabel(
