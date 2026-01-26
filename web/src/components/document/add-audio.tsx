@@ -79,6 +79,7 @@ const AddAudio = () => {
 		},
 	});
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
+	const [submitting, setSubmitting] = useState(false);
 
 	const [audioResult, setAudioResult] = useState<AudioRecordResult>();
 	const lastUploadedRef = useRef<{
@@ -101,17 +102,20 @@ const AddAudio = () => {
 		mutationFn: createDocument,
 		onSuccess: (data) => {
 			toast.success(t('document_create_success'));
+			setSubmitting(false);
 			router.push(`/document/detail/${data.document_id}`);
 		},
 		onError: (error) => {
 			toast.error(t('document_create_failed'));
 			console.error(error);
+			setSubmitting(false);
 		},
 	});
 
 	const onSubmitMessageForm = async (
 		event: React.FormEvent<HTMLFormElement>,
 	) => {
+		setSubmitting(true);
 		if (event) {
 			if (typeof event.preventDefault === 'function') {
 				event.preventDefault();
@@ -134,6 +138,7 @@ const AddAudio = () => {
 	const onFormValidateError = (errors: any) => {
 		toast.error(t('form_validate_failed'));
 		console.error(errors);
+		setSubmitting(false);
 	};
 
 	const mutateCreateDocumentLabel = useMutation({
@@ -178,7 +183,7 @@ const AddAudio = () => {
 	const handleUploadAudioFile = async () => {
 		if (!audioResult) {
 			toast.error('No audio result found');
-			return;
+			throw new Error('No audio result found');
 		}
 
 		const cachedFilePath = lastUploadedRef.current?.filePath;
@@ -197,7 +202,7 @@ const AddAudio = () => {
 
 		if (!mainUserInfo?.default_user_file_system) {
 			toast.error('No user default file system found');
-			return;
+			throw new Error('No user default file system found');
 		}
 
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
@@ -457,14 +462,12 @@ const AddAudio = () => {
 						type='submit'
 						className='w-full'
 						disabled={
-							mutateCreateDocument.isPending ||
+							submitting ||
 							!mainUserInfo?.default_file_document_parse_user_engine_id ||
 							!audioResult
 						}>
 						{t('document_create_submit')}
-						{mutateCreateDocument.isPending && (
-							<Loader2 className='size-4 animate-spin' />
-						)}
+						{submitting && <Loader2 className='size-4 animate-spin' />}
 					</Button>
 				</form>
 			</Form>
