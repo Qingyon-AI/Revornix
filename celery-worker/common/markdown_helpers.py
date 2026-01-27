@@ -103,9 +103,7 @@ async def get_markdown_content_by_document_id(
             )
             if db_transcribe_task is None or db_transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or db_transcribe_task.transcribed_text is None:
                 raise Exception("The document transcribe task of the document you want to summary havn't been finished")
-            markdown_content = await remote_file_service.get_file_content_by_file_path(
-                file_path=db_transcribe_task.md_file_name
-            )
+            markdown_content = db_transcribe_task.transcribed_text
         else:
             raise Exception("Document category not supported")
     except Exception as e:
