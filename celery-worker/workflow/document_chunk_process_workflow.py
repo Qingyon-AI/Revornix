@@ -115,7 +115,7 @@ async def handle_process_document_chunks(
         entities: list[EntityInfo] = []
         relations: list[RelationInfo] = []
 
-        final_summary = None
+        final_summary_info = None
         # 4) 任务进行
         try:
             async for chunk_info in stream_chunk_document(doc_id=document_id):
@@ -136,14 +136,14 @@ async def handle_process_document_chunks(
                     content=chunk_info.text
                 )).summary
                 if auto_summary:
-                    final_summary = (await reducer_summary(
+                    final_summary_info = await reducer_summary(
                         user_id=user_id,
                         model_id=db_user.default_document_reader_model_id,
-                        current_summary=final_summary,
+                        current_summary=final_summary_info.summary if final_summary_info is not None else None,
                         new_summary_to_append=chunk_info.summary,
                         new_entities=sub_entities,
                         new_relations=sub_relations
-                    )).summary
+                    )
                 upsert_milvus(
                     user_id=user_id,
                     chunks_info=[chunk_info]
@@ -152,9 +152,11 @@ async def handle_process_document_chunks(
                     chunks_info=[chunk_info]
                 )
             db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
-            if auto_summary and db_summarize_task is not None:
-                db_summarize_task.summary = final_summary
+            if auto_summary and db_summarize_task is not None and final_summary_info is not None:
+                db_summarize_task.summary = final_summary_info.summary
                 db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+                db_document.title = final_summary_info.title
+                db_document.description = final_summary_info.description
         except Exception as e:
             exception_logger.error(f"Something is error while embedding document info: {e}")
             db_embedding_task.status = DocumentEmbeddingStatus.FAILED

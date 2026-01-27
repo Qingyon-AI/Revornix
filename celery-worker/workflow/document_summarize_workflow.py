@@ -62,7 +62,7 @@ async def handle_update_document_ai_summarize(
         llm_client = await get_extract_llm_client(
             user_id=user_id
         )
-        final_summary = None
+        final_summary_info = None
 
         async for chunk_info in stream_chunk_document(doc_id=document_id):
             sub_entities, sub_relations = extract_entities_relations(
@@ -76,16 +76,19 @@ async def handle_update_document_ai_summarize(
                 model_id=db_user.default_document_reader_model_id,
                 content=chunk_info.text
             )).summary
-            final_summary = (await reducer_summary(
+            final_summary_info = await reducer_summary(
                 user_id=user_id,
                 model_id=db_user.default_document_reader_model_id,
-                current_summary=final_summary,
+                current_summary=final_summary_info.summary if final_summary_info is not None else None,
                 new_summary_to_append=chunk_info.summary,
                 new_entities=sub_entities,
                 new_relations=sub_relations
-            )).summary
-            db_summarize_task.summary = final_summary
+            )
+        if final_summary_info:
+            db_summarize_task.summary = final_summary_info.summary
             db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+            db_document.title = final_summary_info.title
+            db_document.description = final_summary_info.description
         db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai summary: {e}")
