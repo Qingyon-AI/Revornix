@@ -8,6 +8,7 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 from data.sql.base import SessionLocal
 from enums.engine_enums import EngineProvided, EngineCategory
 from base_implement.stt_engine_base import STTEngineBase
+from common.file import get_remote_file_signed_url
 
 
 class VolcSTTStandardEngine(STTEngineBase):
@@ -54,9 +55,10 @@ class VolcSTTStandardEngine(STTEngineBase):
         if db_user.default_user_file_system is None:
             raise Exception("The owner of the engine has not set a default file system yet.")
         
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=user_id)
-        
-        final_audio_file_url = f'{url_prefix}/{audio_file_name}'
+        final_audio_file_url = await get_remote_file_signed_url(
+            user_id=user_id,
+            file_name=audio_file_name,
+        )
         
         request_url = f"{self.VOLC_BASE}/api/v3/auc/bigmodel/submit"
         headers = {

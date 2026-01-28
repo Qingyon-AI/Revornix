@@ -11,8 +11,73 @@ import httpx
 from pydantic import BaseModel
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from common.logger import info_logger
+import crud
+from data.sql.base import SessionLocal
+from common.logger import info_logger, exception_logger
 from config.base import BASE_DIR
+from enums.file import RemoteFileService
+from file.built_in_remote_file_service import BuiltInRemoteFileService
+from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
+from file.aws_s3_remote_file_service import AWSS3RemoteFileService
+from file.generic_s3_remote_file_service import GenericS3RemoteFileService
+
+async def get_remote_file_signed_url(
+    user_id: int,
+    file_name: str
+):
+    """获取远程文件系统中的文件的公网访问URL
+    """
+
+    db = SessionLocal()
+    try:
+        db_user = crud.user.get_user_by_id(
+            db=db,
+            user_id=user_id
+        )
+        if db_user is None:
+            raise Exception("The user who you want to get his/her file system url prefix is None")
+        if db_user.default_user_file_system is None:
+            raise Exception("The user who you want to get his/her file system url prefix havn't set default file system")
+        
+        db_user_file_system = crud.file_system.get_user_file_system_by_id(
+            db=db,
+            user_file_system_id=db_user.default_user_file_system
+        )
+        if db_user_file_system is None:
+            raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")
+        
+        db_file_system = crud.file_system.get_file_system_by_id(
+            db=db,
+            file_system_id=db_user_file_system.file_system_id
+        )
+        if db_file_system is None:
+            raise Exception("There is something wrong with the file system for the user who you want to get his/her file system url prefix")
+
+        file_service = None
+        if db_file_system.uuid == RemoteFileService.Built_In.meta.id:
+            file_service = BuiltInRemoteFileService()
+        elif db_file_system.uuid == RemoteFileService.AliyunOSS.meta.id:
+            file_service = AliyunOSSRemoteFileService()
+        elif db_file_system.uuid == RemoteFileService.AWS_S3.meta.id:
+            file_service = AWSS3RemoteFileService()
+        elif db_file_system.uuid == RemoteFileService.Generic_S3.meta.id:
+            file_service = GenericS3RemoteFileService()
+        else:
+            raise Exception("Unsuported file system")
+
+        if file_service is None:
+            raise Exception("Failed to get the file_service")
+        
+        await file_service.init_client_by_user_file_system_id(
+            user_file_system_id=db_user_file_system.id
+        )
+        url = file_service.presign_get_url(file_name)
+        return url
+    except Exception as e:
+        exception_logger.error(f"There is something wrong while getting the remote file signed url: {e}")
+        raise
+    finally:
+        db.close()
 
 
 def resolve_filename_and_suffix(

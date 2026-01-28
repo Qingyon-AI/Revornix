@@ -14,7 +14,7 @@ from notification.template.section_updated import SectionUpdatedNotificationTemp
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 from enums.notification import NotificationTemplateUUID
-from protocol.remote_file_service import RemoteFileServiceProtocol
+from common.file import get_remote_file_signed_url
 
 async def trigger_user_notification_event(
     user_id: int,
@@ -51,7 +51,10 @@ async def trigger_user_notification_event(
                     content = db_notification_custom.content
                     cover = db_notification_custom.cover
                     if db_notification_custom.cover is not None:
-                        cover = f'{RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=db_notification_task.user_id)}/{db_notification_custom.cover}'
+                        cover = await get_remote_file_signed_url(
+                            user_id=db_notification_task.creator_id,
+                            file_name=db_notification_custom.cover
+                        )
                     link = db_notification_custom.link
                 elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
                     db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
