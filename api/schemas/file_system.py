@@ -6,10 +6,6 @@ from pydantic import BaseModel, field_serializer
 class GenericFileSystemUploadResponse(BaseModel):
     file_path: str
 
-class AliyunOSSPresignUploadURLRequest(BaseModel):
-    file_path: str
-    content_type: str
-
 class AliyunOSSPresignUploadURLResponse(BaseModel):
     upload_url: str
     file_path: str

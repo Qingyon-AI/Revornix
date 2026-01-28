@@ -46,7 +46,8 @@ def get_built_in_presigned_url(
         aws_access_key_id=FILE_SYSTEM_USER_NAME,
         aws_secret_access_key=FILE_SYSTEM_PASSWORD,
         config=Config(signature_version='s3v4'),
-        region_name="main"
+        region_name="main",
+        verify=deployed_by_official
     )
     resp = sts.assume_role(
         RoleArn='arn:aws:iam::minio:role/upload-policy',
@@ -160,7 +161,7 @@ def get_aws_s3_presigned_url(
 
 @file_system_router.post('/aliyun-oss/presign-upload-url', response_model=schemas.file_system.AliyunOSSPresignUploadURLResponse)
 def get_aliyun_oss_presigned_url(
-    presign_upload_url_request: schemas.file_system.AliyunOSSPresignUploadURLRequest,
+    presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
@@ -323,9 +324,11 @@ def search_mine_file_system(
     return schemas.file_system.MineFileSystemSearchResponse(data=res)
 
 @file_system_router.post("/provide", response_model=schemas.file_system.ProvideFileSystemSearchResponse)
-def provide_file_system(file_system_search_request: schemas.file_system.FileSystemSearchRequest,
-                              db: Session = Depends(get_db),
-                              current_user: models.user.User = Depends(get_current_user)):
+def provide_file_system(
+    file_system_search_request: schemas.file_system.FileSystemSearchRequest,
+    db: Session = Depends(get_db),
+    current_user: models.user.User = Depends(get_current_user)
+):
     db_file_systems = crud.file_system.get_all_file_systems(
         db=db,
         keyword=file_system_search_request.keyword
