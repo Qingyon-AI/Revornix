@@ -5,7 +5,7 @@ import schemas
 from data.sql.base import SessionLocal
 from enums.section import UserSectionRole
 from protocol.notification_template import NotificationTemplate
-from protocol.remote_file_service import RemoteFileServiceProtocol
+from common.file import get_remote_file_signed_url
 
 
 class SectionSubscribedNotificationTemplate(NotificationTemplate):
@@ -46,7 +46,10 @@ class SectionSubscribedNotificationTemplate(NotificationTemplate):
         db.close()
         cover = None
         if db_section.cover is not None:
-            cover = f'{RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=db_section.creator_id)}/{db_section.cover}'
+            cover = await get_remote_file_signed_url(
+                user_id=db_section.creator_id,
+                file_name=db_section.cover
+            )
         if db_user_section.role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
                 title="Section Subscribed",
