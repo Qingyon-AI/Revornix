@@ -2,8 +2,6 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, field_serializer
 
-from protocol.remote_file_service import RemoteFileServiceProtocol
-
 
 class GetRssServerDocumentRequest(BaseModel):
     rss_id: int
@@ -87,14 +85,6 @@ class RssServerInfo(BaseModel):
     sections: list[RssSectionInfo] = []
     class Config:
         from_attributes = True
-    @field_serializer('cover')
-    def cover_serializer(self, v: str | None):
-        if v is None:
-            return None
-        if v.startswith(("http://", "https://")):
-            return v
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.user_id)
-        return f'{url_prefix}/{v}'
 
 
 class DeleteRssServerRequest(BaseModel):

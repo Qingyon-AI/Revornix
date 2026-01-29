@@ -43,6 +43,7 @@ from enums.document import (
 )
 from enums.section import SectionDocumentIntegration, SectionProcessTriggerType, UserSectionAuthority, UserSectionRole
 from schemas.common import SuccessResponse
+from common.file import get_remote_file_signed_url
 
 document_router = APIRouter()
 
@@ -803,93 +804,7 @@ def update_document(
         section_process_tasks.apply_async()
     return schemas.common.NormalResponse()
 
-def get_document_info(
-    db: Session,
-    document: models.document.Document
-):
-    convert_task = None
-    embedding_task = None
-    graph_task = None
-    process_task = None
-    podcast_task = None
-    db_convert_task = crud.task.get_document_convert_task_by_document_id(
-        db=db,
-        document_id=document.id
-    )
-    if db_convert_task is not None:
-        convert_task = schemas.task.DocumentConvertTask(
-            creator_id=document.creator_id,
-            status=db_convert_task.status,
-            md_file_name=db_convert_task.md_file_name,
-        )
-    db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
-        db=db,
-        document_id=document.id
-    )
-    if db_embedding_task is not None:
-        embedding_task = schemas.task.DocumentEmbeddingTask(
-            creator_id=document.creator_id,
-            status=db_embedding_task.status
-        )
-    db_graph_task = crud.task.get_document_graph_task_by_document_id(
-        db=db,
-        document_id=document.id
-    )
-    if db_graph_task is not None:
-        graph_task = schemas.task.DocumentGraphTask(
-            creator_id=document.creator_id,
-            status=db_graph_task.status
-        )
-    db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
-        db=db,
-        document_id=document.id
-    )
-    if db_podcast_task is not None:
-        podcast_task = schemas.task.DocumentPodcastTask(
-            creator_id=document.creator_id,
-            status=db_podcast_task.status,
-            podcast_file_name=db_podcast_task.podcast_file_name
-        )
-    db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
-        db=db,
-        document_id=document.id
-    )
-    if db_summarize_task is not None:
-        summarize_task = schemas.task.DocumentSummarizeTask(
-            creator_id=document.creator_id,
-            status=db_summarize_task.status,
-            summary=db_summarize_task.summary
-        )
-    db_process_task = crud.task.get_document_process_task_by_document_id(
-        db=db,
-        document_id=document.id
-    )
-    if db_process_task is not None:
-        process_task = schemas.task.DocumentProcessTask(
-            creator_id=document.creator_id,
-            status=db_process_task.status
-        )
-    db_labels = crud.document.get_labels_by_document_id(
-        db=db,
-        document_id=document.id
-    )
-    labels = [
-        schemas.document.Label(
-            id=label.id,
-            name=label.name
-        ) for label in db_labels
-    ]
-    res = schemas.document.DocumentInfo.model_validate(document)
-    res.labels = labels
-    res.convert_task=convert_task
-    res.embedding_task=embedding_task
-    res.graph_task=graph_task
-    res.process_task=process_task
-    res.podcast_task = podcast_task
-    res.summarize_task = summarize_task
-    return res
-
-def get_document_infos(
+async def get_document_infos(
     db: Session,
     documents: list[models.document.Document]
 ):
@@ -929,6 +844,11 @@ def get_document_infos(
                 status=convert_task.status,
                 md_file_name=convert_task.md_file_name,
             )
+            if info.convert_task.md_file_name is not None:
+                info.convert_task.md_file_name = await get_remote_file_signed_url(
+                    user_id=document.creator_id,
+                    file_name=info.convert_task.md_file_name
+                )
 
         embedding_task = embedding_task_by_document_id.get(document.id)
         if embedding_task is not None:
@@ -951,6 +871,11 @@ def get_document_infos(
                 status=podcast_task.status,
                 podcast_file_name=podcast_task.podcast_file_name,
             )
+            if podcast_task.podcast_file_name is not None:
+                info.podcast_task.podcast_file_name = await get_remote_file_signed_url(
+                    user_id=document.creator_id,
+                    file_name=podcast_task.podcast_file_name
+                )
 
         summarize_task = summarize_task_by_document_id.get(document.id)
         if summarize_task is not None:
@@ -979,7 +904,7 @@ def get_document_infos(
     return res
 
 @document_router.post('/detail', response_model=schemas.document.DocumentDetailResponse)
-def get_document_detail(
+async def get_document_detail(
     document_detail_request: schemas.document.DocumentDetailRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -1074,6 +999,11 @@ def get_document_detail(
                 creator_id=document.creator_id,
                 file_name=file_document.file_name
             )
+            if res.file_info.file_name is not None:
+                res.file_info.file_name = await get_remote_file_signed_url(
+                    user_id=document.creator_id,
+                    file_name=res.file_info.file_name
+                )
     elif document.category == DocumentCategory.QUICK_NOTE:
         quick_note_document = crud.document.get_quick_note_document_by_document_id(
             db=db,
@@ -1094,6 +1024,11 @@ def get_document_detail(
                 creator_id=document.creator_id,
                 audio_file_name=audio_document.audio_file_name
             )
+            if res.audio_info.audio_file_name is not None:
+                res.audio_info.audio_file_name = await get_remote_file_signed_url(
+                    user_id=document.creator_id,
+                    file_name=res.audio_info.audio_file_name
+                )
     convert_task = crud.task.get_document_convert_task_by_document_id(
         db=db,
         document_id=document_detail_request.document_id
@@ -1104,6 +1039,11 @@ def get_document_detail(
             status=convert_task.status,
             md_file_name=convert_task.md_file_name
         )
+        if res.convert_task.md_file_name is not None:
+            res.convert_task.md_file_name = await get_remote_file_signed_url(
+                user_id=document.creator_id,
+                file_name=res.convert_task.md_file_name
+            )
     podcast_task = crud.task.get_document_podcast_task_by_document_id(
         db=db,
         document_id=document_detail_request.document_id
@@ -1114,6 +1054,11 @@ def get_document_detail(
             status=podcast_task.status,
             podcast_file_name=podcast_task.podcast_file_name
         )
+        if podcast_task.podcast_file_name is not None:
+            res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
+                user_id=document.creator_id,
+                file_name=podcast_task.podcast_file_name
+            )
     summarize_task = crud.task.get_document_summarize_task_by_document_id(
         db=db,
         document_id=document_detail_request.document_id
@@ -1147,7 +1092,7 @@ def get_document_detail(
     return res
 
 @document_router.post('/unread/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
-def search_user_unread_documents(
+async def search_user_unread_documents(
     search_unread_list_request: schemas.document.SearchUnreadListRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -1165,7 +1110,7 @@ def search_user_unread_documents(
         desc=search_unread_list_request.desc
     )
 
-    documents = get_document_infos(db=db, documents=db_documents)
+    documents = await get_document_infos(db=db, documents=db_documents)
     if len(documents) < search_unread_list_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_unread_list_request.limit:
@@ -1195,7 +1140,7 @@ def search_user_unread_documents(
     )
 
 @document_router.post('/recent/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
-def recent_read_document(
+async def recent_read_document(
     search_recent_read_request: schemas.document.SearchRecentReadRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -1212,7 +1157,7 @@ def recent_read_document(
         label_ids=search_recent_read_request.label_ids,
         desc=search_recent_read_request.desc
     )
-    documents = get_document_infos(db=db, documents=db_documents)
+    documents = await get_document_infos(db=db, documents=db_documents)
     if len(documents) < search_recent_read_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_recent_read_request.limit:
@@ -1242,7 +1187,7 @@ def recent_read_document(
     )
 
 @document_router.post('/search/mine', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
-def search_all_mine_documents(
+async def search_all_mine_documents(
     search_all_my_document_request: schemas.document.SearchAllMyDocumentsRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -1259,7 +1204,7 @@ def search_all_mine_documents(
         label_ids=search_all_my_document_request.label_ids,
         desc=search_all_my_document_request.desc
     )
-    documents = get_document_infos(db=db, documents=db_documents)
+    documents = await get_document_infos(db=db, documents=db_documents)
     if len(documents) < search_all_my_document_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_all_my_document_request.limit:
@@ -1289,7 +1234,7 @@ def search_all_mine_documents(
     )
 
 @document_router.post('/star/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
-def search_my_star_documents(
+async def search_my_star_documents(
     search_my_star_documents_request: schemas.document.SearchMyStarDocumentsRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -1306,7 +1251,7 @@ def search_my_star_documents(
         label_ids=search_my_star_documents_request.label_ids,
         desc=search_my_star_documents_request.desc
     )
-    documents = get_document_infos(db=db, documents=db_documents)
+    documents = await get_document_infos(db=db, documents=db_documents)
     if len(documents) < search_my_star_documents_request.limit or len(documents) == 0:
         has_more = False
     if len(documents) == search_my_star_documents_request.limit:

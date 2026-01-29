@@ -42,11 +42,12 @@ from enums.section import UserSectionRole
 from enums.user import WeChatUserSource
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from schemas.error import CustomException
+from common.file import get_remote_file_signed_url
 
 user_router = APIRouter()
 
 @user_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
-def search_user(
+async def search_user(
     search_user_request: schemas.user.SearchUserRequest,
     current_user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -127,6 +128,11 @@ def search_user(
 
     for db_user in db_users:
         user_item = schemas.user.UserPublicInfo.model_validate(db_user)
+        if user_item.avatar is not None:
+            user_item.avatar = await get_remote_file_signed_url(
+                user_id=user_item.id,
+                file_name=user_item.avatar,
+            )
         user_item.fans = fans_by_user_id.get(db_user.id, 0)
         user_item.follows = follows_by_user_id.get(db_user.id, 0)
         if db_user.id in followed_user_ids:
@@ -189,7 +195,7 @@ def update_default_model(
     return schemas.common.SuccessResponse(message="The default model is updated successfully.")
 
 @user_router.post('/fans', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
-def search_user_fans(
+async def search_user_fans(
     search_user_fans_request: schemas.user.SearchUserFansRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -225,6 +231,10 @@ def search_user_fans(
     follows_by_user_id = crud.user.count_user_follows_by_user_ids(db=db, user_ids=user_ids)
     for item in users:
         element = schemas.user.UserPublicInfo.model_validate(item)
+        element.avatar = await get_remote_file_signed_url(
+            user_id=element.id,
+            file_name=element.avatar,
+        )
         element.fans = fans_by_user_id.get(item.id, 0)
         element.follows = follows_by_user_id.get(item.id, 0)
         elements.append(element)
@@ -238,7 +248,7 @@ def search_user_fans(
     )
 
 @user_router.post('/follows', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
-def search_user_follows(
+async def search_user_follows(
     search_user_follows_request: schemas.user.SearchUserFollowsRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -274,6 +284,11 @@ def search_user_follows(
     follows_by_user_id = crud.user.count_user_follows_by_user_ids(db=db, user_ids=user_ids)
     for item in users:
         element = schemas.user.UserPublicInfo.model_validate(item)
+        if element.avatar is not None:
+            element.avatar = await get_remote_file_signed_url(
+                user_id=element.id,
+                file_name=element.avatar,
+            )
         element.fans = fans_by_user_id.get(item.id, 0)
         element.follows = follows_by_user_id.get(item.id, 0)
         elements.append(element)
@@ -323,7 +338,7 @@ def follow_user(
     return schemas.common.SuccessResponse()
 
 @user_router.post('/info', response_model=schemas.user.UserPublicInfo)
-def user_info(
+async def user_info(
     user_info_request: schemas.user.UserInfoRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -350,6 +365,11 @@ def user_info(
         user_id=user_info_request.user_id
     )
     res = schemas.user.UserPublicInfo.model_validate(db_user)
+    if res.avatar is not None:
+        res.avatar = await get_remote_file_signed_url(
+            user_id=res.id,
+            file_name=res.avatar,
+        )
     res.fans = fans
     res.follows = follows
     return res
@@ -429,7 +449,8 @@ async def create_user_by_email_verify(
     )
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
-    await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
+    file_service = BuiltInRemoteFileService()
+    await file_service.init_client_by_user_file_system_id(db_user_file_system.id)
     db.commit()
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
@@ -441,7 +462,7 @@ async def create_user_by_email_verify(
     )
 
 @user_router.post('/create/email', response_model=schemas.user.TokenResponse, description='his api is only available for local use, and is disabled in the official deployment version')
-def create_user_by_email(
+async def create_user_by_email(
     email_user_create_verify_request: schemas.user.EmailUserCreateVerifyRequest,
     db: Session = Depends(get_db),
     _ = Depends(reject_if_official),
@@ -483,7 +504,8 @@ def create_user_by_email(
     )
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
-    BuiltInRemoteFileService.ensure_bucket_exists(db_user.uuid)
+    file_service = BuiltInRemoteFileService()
+    await file_service.init_client_by_user_file_system_id(db_user_file_system.id)
     db.commit()
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
@@ -648,12 +670,17 @@ def initial_see_password(
     return schemas.user.InitialPasswordResponse(password=email_user.initial_password)
 
 @user_router.post('/mine/info', response_model=schemas.user.PrivateUserInfo)
-def my_info(
+async def my_info(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     res = schemas.user.PrivateUserInfo.model_validate(user)
-
+    if res.avatar is not None:
+        res.avatar = await get_remote_file_signed_url(
+            user_id=user.id,
+            file_name=res.avatar
+        )
+        
     email_user = crud.user.get_email_user_by_user_id(
         db=db,
         user_id=user.id
@@ -959,7 +986,8 @@ async def create_user_by_google(
     )
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
-    await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
+    file_service = BuiltInRemoteFileService()
+    await file_service.init_client_by_user_file_system_id(db_user_file_system.id)
     db.commit()
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
@@ -1095,7 +1123,8 @@ async def create_user_by_github(
     )
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
-    await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
+    file_service = BuiltInRemoteFileService()
+    await file_service.init_client_by_user_file_system_id(db_user_file_system.id)
     db.commit()
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
@@ -1237,7 +1266,8 @@ async def create_user_by_sms_verify(
         )
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
-        await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
+        file_service = BuiltInRemoteFileService()
+        await file_service.init_client_by_user_file_system_id(db_user_file_system.id)
         db.commit()
         access_token, refresh_token = create_token(db_user)
         return schemas.user.TokenResponse(
@@ -1382,7 +1412,8 @@ async def create_user_by_wechat_mini(
         )
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
-        await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
+        file_service = BuiltInRemoteFileService()
+        await file_service.init_client_by_user_file_system_id(db_user_file_system.id)
     else:
         # TODO 优化一下微信用户的机制 现在的处理总感觉有些问题
         # 如果union_id已经存在 说明该用户已通过别的微信渠道注册过, 不需要新建文件系统等机制 仅仅再创建一个微信用户身份即可
@@ -1485,7 +1516,8 @@ async def create_user_by_wechat_web(
         )
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
-        await asyncio.to_thread(BuiltInRemoteFileService.ensure_bucket_exists, db_user.uuid)
+        file_service = BuiltInRemoteFileService()
+        await file_service.init_client_by_user_file_system_id(db_user_file_system.id)
     else:
         db_user = crud.user.get_user_by_id(
             db=db,

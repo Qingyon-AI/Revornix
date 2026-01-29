@@ -81,14 +81,6 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                 raise Exception("Access denied. You may not have permission to create this bucket.") from e
             else:
                 raise
-
-        # ✅ Built-in 文件系统：强制 bucket policy 为空（禁止公开访问）
-        try:
-            self.s3_client.delete_bucket_policy(Bucket=self.bucket)
-        except ClientError as e:
-            code = e.response.get("Error", {}).get("Code")
-            if code not in ("NoSuchBucketPolicy", "NoSuchBucket", "404"):
-                raise
     
     def presign_get_url(
         self, 

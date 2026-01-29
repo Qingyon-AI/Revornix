@@ -28,6 +28,7 @@ from enums.section import (
     UserSectionAuthority,
     UserSectionRole,
 )
+from common.file import get_remote_file_signed_url
 
 section_router = APIRouter()
 
@@ -171,7 +172,7 @@ def section_document_request(
     )
 
 @section_router.post('/detail/seo', response_model=schemas.section.SectionInfo)
-def section_seo_detail_request(
+async def section_seo_detail_request(
     section_seo_detail_request: schemas.section.SectionSeoDetailRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user_without_throw)
@@ -219,6 +220,12 @@ def section_seo_detail_request(
         subscribers_count=subscribers_count,
         creator=db_section.creator,
     )
+    
+    if res.md_file_name is not None:
+        res.md_file_name = await get_remote_file_signed_url(
+            user_id=res.creator.id,
+            file_name=res.md_file_name
+        )
 
     db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(
         db=db,
@@ -230,6 +237,11 @@ def section_seo_detail_request(
             status=db_section_podcast_task.status,
             podcast_file_name=db_section_podcast_task.podcast_file_name
         )
+        if db_section_podcast_task.podcast_file_name is not None:
+            res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
+                user_id=db_section_podcast_task.user_id,
+                file_name=db_section_podcast_task.podcast_file_name
+            )
 
     db_section_process_task = crud.task.get_section_process_task_by_section_id(
         db=db,
@@ -381,7 +393,7 @@ def get_section_user_role_and_authority(
     )
 
 @section_router.post('/user', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionUserPublicInfo])
-def section_user_request(
+async def section_user_request(
     section_user_request: schemas.section.SectionUserRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -444,6 +456,11 @@ def section_user_request(
         user_item = schemas.section.SectionUserPublicInfo.model_validate(db_user)
         user_item.authority = db_user_section.authority
         user_item.role = db_user_section.role
+        if user_item.avatar is not None:
+            user_item.avatar = await get_remote_file_signed_url(
+                user_id=user_item.id,
+                file_name=user_item.avatar
+            )
         users.append(
             user_item
         )
@@ -610,7 +627,7 @@ def delete_label(
     return schemas.common.SuccessResponse()
 
 @section_router.post("/subscribed", response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
-def get_my_subscribed_sections(
+async def get_my_subscribed_sections(
     search_subscribed_section_request: schemas.section.SearchSubscribedSectionRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -627,7 +644,12 @@ def get_my_subscribed_sections(
         label_ids=search_subscribed_section_request.label_ids,
         desc=search_subscribed_section_request.desc
     )
-    def get_section_info(section):
+    async def get_section_info(section: models.section.Section):
+        if section.md_file_name is not None:
+            section.md_file_name = await get_remote_file_signed_url(
+                user_id=user.id,
+                file_name=section.md_file_name
+            )
         documents_count = crud.section.count_documents_for_section_by_section_id(
             db=db,
             section_id=section.id
@@ -657,7 +679,7 @@ def get_my_subscribed_sections(
             documents_count=documents_count,
             subscribers_count=subscribers_count
         )
-    sections = [get_section_info(section) for section in db_sections]
+    sections = [await get_section_info(section) for section in db_sections]
     if len(db_sections) < search_subscribed_section_request.limit or len(db_sections) == 0:
         has_more = False
     if len(db_sections) == search_subscribed_section_request.limit:
@@ -781,7 +803,7 @@ def update_section(
     return schemas.common.SuccessResponse()
 
 @section_router.post('/public/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
-def public_sections(
+async def public_sections(
     search_public_sections_request: schemas.section.SearchPublicSectionsRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user_without_throw)
@@ -822,6 +844,11 @@ def public_sections(
             for label in labels_by_section_id.get(section.id, [])
         ]
         res = schemas.section.SectionInfo.model_validate(section)
+        if res.md_file_name is not None:
+            res.md_file_name = await get_remote_file_signed_url(
+                user_id=res.creator.id,
+                file_name=res.md_file_name
+            )
         res.creator = section.creator
         res.labels = labels
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
@@ -881,7 +908,7 @@ def get_all_mine_sections(
     return schemas.section.AllMySectionsResponse(data=sections)
 
 @section_router.post('/user/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
-def search_user_sections(
+async def search_user_sections(
     search_user_sections_request: schemas.section.SearchUserSectionsRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -919,6 +946,11 @@ def search_user_sections(
     sections = []
     for section in db_sections:
         res = schemas.section.SectionInfo.model_validate(section)
+        if section.md_file_name is not None:
+            res.md_file_name = await get_remote_file_signed_url(
+                user_id=res.creator.id,
+                file_name=section.md_file_name
+            )
         res.creator = section.creator
         res.authority = authority_by_section_id.get(section.id)
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
@@ -958,7 +990,7 @@ def search_user_sections(
     )
 
 @section_router.post('/mine/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
-def search_mine_sections(
+async def search_mine_sections(
     search_mine_sections_request: schemas.section.SearchMineSectionsRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -993,6 +1025,11 @@ def search_mine_sections(
     sections = []
     for section in db_sections:
         res = schemas.section.SectionInfo.model_validate(section)
+        if res.md_file_name is not None:
+            res.md_file_name = await get_remote_file_signed_url(
+                user_id=res.creator.id,
+                file_name=res.md_file_name
+            )
         res.creator = section.creator
         res.authority = authority_by_section_id.get(section.id)
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
@@ -1031,7 +1068,7 @@ def search_mine_sections(
     )
 
 @section_router.post('/detail', response_model=schemas.section.SectionInfo)
-def get_section_detail(
+async def get_section_detail(
     section_detail_request: schemas.section.SectionDetailRequest,
     user: models.user.User = Depends(get_current_user_without_throw),
     db: Session = Depends(get_db)
@@ -1081,6 +1118,12 @@ def get_section_detail(
             subscribers_count=subscribers_count,
             creator=db_section.creator,
         )
+        
+        if res.md_file_name is not None:
+            res.md_file_name = await get_remote_file_signed_url(
+                user_id=res.creator.id,
+                file_name=res.md_file_name
+            )
 
         db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(
             db=db,
@@ -1092,6 +1135,11 @@ def get_section_detail(
                 status=db_section_podcast_task.status,
                 podcast_file_name=db_section_podcast_task.podcast_file_name
             )
+            if db_section_podcast_task.podcast_file_name is not None:
+                res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
+                    user_id=db_section_podcast_task.user_id,
+                    file_name=db_section_podcast_task.podcast_file_name
+                )
 
         db_section_process_task = crud.task.get_section_process_task_by_section_id(
             db=db,
@@ -1142,6 +1190,12 @@ def get_section_detail(
                 subscribers_count=subscribers_count,
                 creator=db_section.creator,
             )
+            
+            if res.md_file_name is not None:
+                res.md_file_name = await get_remote_file_signed_url(
+                    user_id=res.creator.id,
+                    file_name=res.md_file_name
+                )
 
             db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(
                 db=db,
@@ -1153,6 +1207,11 @@ def get_section_detail(
                     status=db_section_podcast_task.status,
                     podcast_file_name=db_section_podcast_task.podcast_file_name
                 )
+                if db_section_podcast_task.podcast_file_name is not None:
+                    res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
+                        user_id=db_section_podcast_task.user_id,
+                        file_name=db_section_podcast_task.podcast_file_name
+                    )
 
             db_section_process_task = crud.task.get_section_process_task_by_section_id(
                 db=db,
@@ -1188,7 +1247,7 @@ def get_section_detail(
     return res
 
 @section_router.post('/date', response_model=schemas.section.DaySectionResponse)
-def get_date_section_info(
+async def get_date_section_info(
     day_section_request: schemas.section.DaySectionRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -1221,8 +1280,8 @@ def get_date_section_info(
         })
         for document in db_documents
     ]
-
-    return schemas.section.DaySectionResponse(
+    
+    res = schemas.section.DaySectionResponse(
         section_id=db_section.id,
         creator=db_section.creator,
         create_time=db_section.create_time,
@@ -1233,6 +1292,12 @@ def get_date_section_info(
         md_file_name=db_section.md_file_name,
         documents=documents
     )
+    if res.md_file_name is not None:
+        res.md_file_name = await get_remote_file_signed_url(
+            user_id=user.id,
+            file_name=res.md_file_name
+        )
+    return res
 
 @section_router.post('/create', response_model=schemas.section.SectionCreateResponse)
 def create_section(

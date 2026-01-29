@@ -3,8 +3,6 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, field_serializer
 
-from protocol.remote_file_service import RemoteFileServiceProtocol
-
 from .task import (
     DocumentConvertTask,
     DocumentEmbeddingTask,
@@ -216,14 +214,6 @@ class WebsiteDocumentInfo(BaseModel):
 class FileDocumentInfo(BaseModel):
     creator_id: int
     file_name: str
-    @field_serializer("file_name")
-    def serializer_file_name(self, v: str):
-        if v is None:
-            return None
-        if v.startswith(("http://", "https://")):
-            return v
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
-        return f'{url_prefix}/{v}'
 
 class QuickNoteDocumentInfo(BaseModel):
     creator_id: int
@@ -232,14 +222,6 @@ class QuickNoteDocumentInfo(BaseModel):
 class AudioDocumentInfo(BaseModel):
     creator_id: int
     audio_file_name: str
-    @field_serializer("audio_file_name")
-    def serializer_audio_file_name(self, v: str):
-        if v is None:
-            return None
-        if v.startswith(("http://", "https://")):
-            return v
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
-        return f'{url_prefix}/{v}'
 
 class DocumentDetailResponse(BaseModel):
     id: int

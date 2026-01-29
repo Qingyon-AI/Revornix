@@ -13,14 +13,6 @@ class DocumentConvertTask(BaseModel):
     creator_id: int
     status: int
     md_file_name: str | None
-    @field_serializer("md_file_name")
-    def serializer_md_file_name(self, v: str | None):
-        if v is None:
-            return None
-        if v.startswith(("http://", "https://")):
-            return v
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
-        return f'{url_prefix}/{v}'
     class Config:
         from_attributes = True
 
@@ -53,14 +45,6 @@ class DocumentPodcastTask(BaseModel):
     creator_id: int
     status: int
     podcast_file_name: str | None
-    @field_serializer("podcast_file_name")
-    def serializer_podcast_file_name(self, v: str | None):
-        if v is None:
-            return None
-        if v.startswith(("http://", "https://")):
-            return v
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
-        return f'{url_prefix}/{v}'
     class Config:
         from_attributes = True
 
@@ -78,14 +62,6 @@ class SectionPodcastTask(BaseModel):
     creator_id: int
     status: int
     podcast_file_name: str | None
-    @field_serializer("podcast_file_name")
-    def serializer_podcast_file_name(self, v: str | None):
-        if v is None:
-            return None
-        if v.startswith(("http://", "https://")):
-            return v
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
-        return f'{url_prefix}/{v}'
     class Config:
         from_attributes = True
 
