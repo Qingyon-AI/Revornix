@@ -8,11 +8,12 @@ import models
 import schemas
 from common.dependencies import get_current_user, get_db, plan_ability_checked
 from enums.ability import Ability
+from common.file import get_remote_file_signed_url
 
 rss_router = APIRouter()
 
 @rss_router.post('/detail', response_model=schemas.rss.RssServerInfo)
-def getRssServerDetail(
+async def getRssServerDetail(
     get_rss_server_detail_request: schemas.rss.GetRssServerDetailRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
@@ -24,6 +25,11 @@ def getRssServerDetail(
     if db_rss_server is None:
         return schemas.common.ErrorResponse(message='rss server not found', code=404)
     rss_server_info = schemas.rss.RssServerInfo.model_validate(db_rss_server)
+    if rss_server_info.cover is not None:
+        rss_server_info.cover = await get_remote_file_signed_url(
+            user_id=current_user.id,
+            file_name=rss_server_info.cover
+        )
 
     rss_server_info.sections = []
     db_rss_sections = crud.rss.get_sections_by_rss_server_id(

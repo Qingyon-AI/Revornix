@@ -177,13 +177,6 @@ class PrivateUserInfo(BaseModel):
     default_audio_transcribe_engine_id: int | None = None
     default_image_generate_engine_id: int | None = None
 
-    @field_serializer("avatar")
-    def serialize_avatar(self, v: str):
-        if v.startswith(("http://", "https://")):
-            return v
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
-        return f'{url_prefix}/{v}'
-
     class Config:
         from_attributes = True
 
@@ -211,12 +204,6 @@ class SectionUserPublicInfo(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    @field_serializer("avatar")
-    def serialize_avatar(self, v: str):
-        if v.startswith(("http://", "https://")):
-            return v
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
-        return f'{url_prefix}/{v}'
     class Config:
         from_attributes = True
 
@@ -229,11 +216,5 @@ class UserPublicInfo(BaseModel):
     is_followed: bool | None = None
     fans: int | None = None
     follows: int | None = None
-    @field_serializer("avatar")
-    def serialize_avatar(self, v: str):
-        if v.startswith(("http://", "https://")):
-            return v
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.id)
-        return f'{url_prefix}/{v}'
     class Config:
         from_attributes = True

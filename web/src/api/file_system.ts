@@ -10,7 +10,6 @@ export default {
     getAliyunOSSPresignUploadURL: API_PREFIX + "/file-system/aliyun-oss/presign-upload-url",
     getAWSS3PresignUploadURL: API_PREFIX + "/file-system/aws-s3/presign-upload-url",
     getBuiltInPresignUploadURL: API_PREFIX + "/file-system/built-in/presign-upload-url",
-    getUserFileUrlPrefix: API_PREFIX + "/file-system/url-prefix",
     deleteUserFileSystem: API_PREFIX + "/file-system/user-file-system/delete",
     uploadFileToGenericFileSystem: API_PREFIX + "/file-system/generic-s3/upload",
 }

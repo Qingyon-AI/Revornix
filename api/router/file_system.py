@@ -18,20 +18,9 @@ from common.dependencies import check_deployed_by_official_in_fuc, get_current_u
 from config.file_system import FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_USER_NAME
 from enums.file import RemoteFileService
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
-from protocol.remote_file_service import RemoteFileServiceProtocol
 
 file_system_router = APIRouter()
 
-@file_system_router.post('/url-prefix', response_model=schemas.file_system.FileUrlPrefixResponse)
-def get_url_prefix(
-    file_url_prefix_request: schemas.file_system.FileUrlPrefixRequest
-):
-    url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(
-        user_id=file_url_prefix_request.user_id
-    )
-    return schemas.file_system.FileUrlPrefixResponse(
-        url_prefix=url_prefix
-    )
 
 @file_system_router.post("/built-in/presign-upload-url", response_model=schemas.file_system.S3PresignUploadURLResponse)
 def get_built_in_presigned_url(

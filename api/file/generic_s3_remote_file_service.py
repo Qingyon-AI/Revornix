@@ -87,6 +87,8 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
                     region_name=region_name
                 )
                 self.s3_client = s3
+                
+                self.ensure_bucket_exists()
             except Exception as e:
                 exception_logger.error(f"Failed to initialize the user's file system, {e}")
                 raise
@@ -139,14 +141,6 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
             elif status == 403 or code in ("403", "AccessDenied"):
                 raise Exception("Access denied. You may not have permission to create this bucket.") from e
             else:
-                raise
-
-        # ✅ 强制 bucket policy 为空（禁止公开访问）
-        try:
-            self.s3_client.delete_bucket_policy(Bucket=self.bucket)
-        except ClientError as e:
-            code = e.response.get("Error", {}).get("Code")
-            if code not in ("NoSuchBucketPolicy", "NoSuchBucket", "404"):
                 raise
 
     async def get_file_content_by_file_path(

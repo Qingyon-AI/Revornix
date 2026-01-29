@@ -113,7 +113,7 @@ def release_init_lock(db: Session) -> None:
 # Seed 数据（要求：尽量幂等）
 # 注意：这里仍保留你原逻辑，但强烈建议把 crud.create_* 改成 upsert/on_conflict
 # =========================================================
-def seed_database(db: Session):
+async def seed_database(db: Session):
     # -------- File Systems --------
     file_systems: list[RemoteFileServiceProtocol] = [
         BuiltInRemoteFileService(),
@@ -169,7 +169,8 @@ def seed_database(db: Session):
         )
         db_root_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
-        BuiltInRemoteFileService.ensure_bucket_exists(db_root_user.uuid)
+        file_service = BuiltInRemoteFileService()
+        await file_service.init_client_by_user_file_system_id(user_file_system_id=db_user_file_system.id)
         # 这里不要 commit，统一由外层 commit（更安全）
         db.flush()
 
@@ -344,7 +345,7 @@ def seed_database(db: Session):
 # =========================================================
 # 主入口
 # =========================================================
-def main():
+async def main():
     # 让 alembic 与 SessionLocal 使用同一个库
     alembic_cfg.set_main_option("sqlalchemy.url", str(sqlalchemy_engine.url))
 
@@ -367,7 +368,7 @@ def main():
     db = SessionLocal()
     try:
         info_logger.info("🌱 Seeding database...")
-        seed_database(db=db)
+        await seed_database(db=db)
         db.commit()
         info_logger.info("✅ Database initialized successfully")
     except Exception as e:
@@ -379,4 +380,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main())

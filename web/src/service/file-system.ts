@@ -61,9 +61,3 @@ export const getBuiltInPresignUploadURL = async (data: S3PresignUploadURLRequest
         data
     })
 }
-
-export const getUserFileUrlPrefix = async (data: FileUrlPrefixRequest): Promise<FileUrlPrefixResponse> => {
-    return await request(fileSystemApi.getUserFileUrlPrefix, {
-        data
-    })
-}

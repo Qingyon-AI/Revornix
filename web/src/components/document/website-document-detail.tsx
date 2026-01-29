@@ -16,10 +16,7 @@ import { Separator } from '../ui/separator';
 import { useInView } from 'react-intersection-observer';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
-import {
-	getUserFileSystemDetail,
-	getUserFileUrlPrefix,
-} from '@/service/file-system';
+import { getUserFileSystemDetail } from '@/service/file-system';
 import {
 	DocumentProcessStatus,
 	DocumentMdConvertStatus,
@@ -61,14 +58,6 @@ const WebsiteDocumentDetail = ({
 			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
-	const { data: userRemoteFileUrlPrefix } = useQuery({
-		queryKey: ['getUserRemoteFileUrlPrefix', document?.creator?.id],
-		queryFn: () => {
-			return getUserFileUrlPrefix({ user_id: document!.creator!.id });
-		},
-		enabled: !!document?.creator?.id,
-	});
-
 	const [delay, setDelay] = useState<number | undefined>();
 	useInterval(() => {
 		queryClient.invalidateQueries({
@@ -106,15 +95,12 @@ const WebsiteDocumentDetail = ({
 				throw new Error('No md file name found');
 			}
 			let [res, err] = await utils.to(
-				fileService.getFileContent(document.convert_task?.md_file_name)
+				fileService.getFileContent(document.convert_task?.md_file_name),
 			);
 			if (!res || err) {
 				throw new Error(err.message);
 			}
 			if (typeof res === 'string') {
-				if (userRemoteFileUrlPrefix?.url_prefix) {
-					res = replaceImagePaths(res, userRemoteFileUrlPrefix.url_prefix);
-				}
 				setMarkdown(res);
 				setMarkdownRendered(true);
 			}
@@ -128,7 +114,7 @@ const WebsiteDocumentDetail = ({
 		const [res, err] = await utils.to(
 			transformToMarkdown({
 				document_id: id,
-			})
+			}),
 		);
 		if (err) {
 			toast.error(err.message);
@@ -145,12 +131,11 @@ const WebsiteDocumentDetail = ({
 			!document ||
 			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
 			!mainUserInfo ||
-			!userFileSystemDetail ||
-			!userRemoteFileUrlPrefix
+			!userFileSystemDetail
 		)
 			return;
 		onGetMarkdown();
-	}, [document, mainUserInfo, userRemoteFileUrlPrefix, userFileSystemDetail]);
+	}, [document, mainUserInfo, userFileSystemDetail]);
 
 	const { ref: bottomRef, inView } = useInView();
 

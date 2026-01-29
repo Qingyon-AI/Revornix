@@ -235,16 +235,6 @@ class SectionDocumentInfo(BaseModel):
     class Config:
         from_attributes = True
 
-class SectionPodcastInfo(BaseModel):
-    creator_id: int
-    podcast_file_name: str
-    @field_serializer("podcast_file_name")
-    def serializer_podcast_file_name(self, v: str):
-        if v.startswith(("http://", "https://")):
-            return v
-        url_prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(user_id=self.creator_id)
-        return f'{url_prefix}/{v}'
-
 class SectionInfo(BaseModel):
     id: int
     title: str
@@ -265,23 +255,6 @@ class SectionInfo(BaseModel):
     process_task: SectionProcessTask | None = None
     process_task_trigger_type: int | None = None
     process_task_trigger_scheduler: str | None = None
-
-    def _url_prefix(self) -> str:
-        return RemoteFileServiceProtocol.get_user_file_system_url_prefix(
-            user_id=self.creator.id
-        )
-
-    @field_serializer("cover")
-    def serialize_cover(self, v: str | None):
-        if v is None:
-            return None
-        return f"{self._url_prefix()}/{v}"
-
-    @field_serializer("md_file_name")
-    def serialize_md_file_name(self, v: str | None):
-        if v is None:
-            return None
-        return f"{self._url_prefix()}/{v}"
 
     @field_serializer("create_time")
     def serialize_create_time(self, v: datetime):
@@ -316,15 +289,6 @@ class DaySectionResponse(BaseModel):
     update_time: datetime | None
     md_file_name: str | None
     documents: list[SectionDocumentInfo]
-
-    @field_serializer("md_file_name")
-    def serialize_md_file_name(self, v: str | None):
-        if v is None:
-            return None
-        prefix = RemoteFileServiceProtocol.get_user_file_system_url_prefix(
-            self.creator.id
-        )
-        return f"{prefix}/{v}"
 
     @field_serializer("create_time")
     def serialize_create_time(self, v):
