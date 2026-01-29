@@ -8,6 +8,7 @@ import models
 import schemas
 from common.dependencies import get_current_user, get_db
 from enums.engine_enums import UserEngineRole
+from common.encrypt import decrypt_engine_config, encrypt_engine_config
 
 engine_router = APIRouter()
 
@@ -175,13 +176,15 @@ def get_engine_detail(
             )
     else:
         base = schemas.engine.EngineBaseInfo.model_validate(db_engine)
-        return schemas.engine.EngineDetail.model_validate(
+        res = schemas.engine.EngineDetail.model_validate(
             {
                 **base.model_dump(),
                 "category": db_engine_provided.category,
-                "config_json": db_engine.config_json,
             }
         )
+        if db_engine.config_json is not None:
+            res.config_json = decrypt_engine_config(db_engine.config_json)
+        return res
 
 @engine_router.post("/provided", response_model=schemas.engine.EngineProvidedSearchResponse)
 def provide_document_parse_engine(
@@ -281,7 +284,7 @@ def update_engine(
     if engine_update_request.description is not None:
         db_engine.description = engine_update_request.description
     if engine_update_request.config_json is not None:
-        db_engine.config_json = engine_update_request.config_json
+        db_engine.config_json = encrypt_engine_config(engine_update_request.config_json)
     if engine_update_request.is_public is not None:
         db_engine.is_public = engine_update_request.is_public
 

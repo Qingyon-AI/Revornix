@@ -19,6 +19,7 @@ from engine import (
     VolcSTTStandardEngine,
     VolcSTTFastEngine
 )
+from common.encrypt import decrypt_engine_config
 
 class EngineProxy:
 
@@ -138,7 +139,8 @@ class EngineProxy:
             raise Exception("Unknown engine provided")
 
         if db_engine.config_json:
-            config_json = json.loads(db_engine.config_json)
+            engine_config = decrypt_engine_config(db_engine.config_json)
+            config_json = json.loads(engine_config)
             engine.set_engine_config(config_json)
         engine.set_user_id(user_id=user_id)
 

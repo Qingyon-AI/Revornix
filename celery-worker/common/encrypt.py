@@ -1,21 +1,40 @@
-from dotenv import load_dotenv
-load_dotenv(override=True)
+import base64
+import os
 
-import os, base64
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 APIKEY_ENCRYPT_KEY = os.environ.get("APIKEY_ENCRYPT_KEY")
+ENGINE_CONFIG_ENCRYPT_KEY = os.environ.get("ENGINE_CONFIG_ENCRYPT_KEY")
 
 if not APIKEY_ENCRYPT_KEY:
     raise Exception("APIKEY_ENCRYPT_KEY not set")
+if not ENGINE_CONFIG_ENCRYPT_KEY:
+    raise Exception("ENGINE_CONFIG_ENCRYPT_KEY not set")
 
 # 系统环境变量里的主密钥
-MASTER_KEY = base64.b64decode(APIKEY_ENCRYPT_KEY)
+APIKEY_MASTER_KEY = base64.b64decode(APIKEY_ENCRYPT_KEY)
+ENGINE_CONFIG_MASTER_KEY = base64.b64decode(ENGINE_CONFIG_ENCRYPT_KEY)
+
+def encrypt_engine_config(
+    config_json_str: str
+):
+    aesgcm = AESGCM(ENGINE_CONFIG_MASTER_KEY)
+    nonce = os.urandom(12)
+    ciphertext = aesgcm.encrypt(nonce, config_json_str.encode(), None)
+    return base64.b64encode(nonce + ciphertext).decode()
+
+def decrypt_engine_config(
+    encoded: str
+):
+    raw = base64.b64decode(encoded)
+    nonce, ciphertext = raw[:12], raw[12:]
+    aesgcm = AESGCM(ENGINE_CONFIG_MASTER_KEY)
+    return aesgcm.decrypt(nonce, ciphertext, None).decode()
 
 def encrypt_api_key(
     api_key: str
 ):
-    aesgcm = AESGCM(MASTER_KEY)
+    aesgcm = AESGCM(APIKEY_MASTER_KEY)
     nonce = os.urandom(12)
     ciphertext = aesgcm.encrypt(nonce, api_key.encode(), None)
     return base64.b64encode(nonce + ciphertext).decode()
@@ -25,7 +44,7 @@ def decrypt_api_key(
 ):
     raw = base64.b64decode(encoded)
     nonce, ciphertext = raw[:12], raw[12:]
-    aesgcm = AESGCM(MASTER_KEY)
+    aesgcm = AESGCM(APIKEY_MASTER_KEY)
     return aesgcm.decrypt(nonce, ciphertext, None).decode()
 
 if __name__ == "__main__":

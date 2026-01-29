@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session, joinedload
+from common.encrypt import encrypt_engine_config
 
 import models
 
@@ -45,6 +46,8 @@ def create_engine(
     now = datetime.now(timezone.utc)
     if uuid is None:
         uuid = uuid4().hex
+    if config_json is not None:
+        config_json = encrypt_engine_config(config_json)
     db_engine = models.engine.Engine(
         uuid=uuid,
         name=name,
