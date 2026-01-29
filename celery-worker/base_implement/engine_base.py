@@ -2,8 +2,6 @@ import json
 from typing import Any
 
 class EngineBase:
-    engine_config: str | None = None
-    user_id: int | None = None
 
     def __init__(
         self,
@@ -24,6 +22,7 @@ class EngineBase:
         self.engine_description_zh = engine_description_zh
         self.engine_demo_config = engine_demo_config
         self.engine_config = engine_config
+        self.user_id: int | None = None
 
     def get_engine_config(self) -> dict[str, Any] | None:
         if self.engine_config is None:
