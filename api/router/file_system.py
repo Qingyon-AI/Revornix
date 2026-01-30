@@ -1,23 +1,20 @@
-import json
 from datetime import datetime, timedelta, timezone
 from typing import cast
 
-import alibabacloud_oss_v2 as oss
-import boto3
-from aliyunsdkcore.client import AcsClient
-from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
-from botocore.config import Config
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from sqlalchemy.orm import Session
 
 import crud
 import models
 import schemas
-from common.common import get_user_remote_file_system
-from common.dependencies import check_deployed_by_official_in_fuc, get_current_user, get_db
-from config.file_system import FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_USER_NAME
+from common.dependencies import get_current_user, get_db
 from enums.file import RemoteFileService
+from proxy.file_system_proxy import FileSystemProxy
+from common.encrypt import encrypt_file_system_config, decrypt_file_system_config
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
+from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
+from file.aws_s3_remote_file_service import AWSS3RemoteFileService
+from file.built_in_remote_file_service import BuiltInRemoteFileService
 
 file_system_router = APIRouter()
 
@@ -28,49 +25,18 @@ def get_built_in_presigned_url(
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
-    deployed_by_official = check_deployed_by_official_in_fuc()
-    sts = boto3.client(
-        'sts',
-        endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
-        aws_access_key_id=FILE_SYSTEM_USER_NAME,
-        aws_secret_access_key=FILE_SYSTEM_PASSWORD,
-        config=Config(signature_version='s3v4'),
-        region_name="main",
-        verify=deployed_by_official
-    )
-    resp = sts.assume_role(
-        RoleArn='arn:aws:iam::minio:role/upload-policy',
-        RoleSessionName='upload-session',
-        DurationSeconds=3600
-    )
-    creds = resp['Credentials']
-    s3 = boto3.client(
-        's3',
-        endpoint_url=FILE_SYSTEM_SERVER_PUBLIC_URL,
-        aws_access_key_id=creds['AccessKeyId'],
-        aws_secret_access_key=creds['SecretAccessKey'],
-        aws_session_token=creds['SessionToken'],
-        config=Config(signature_version='s3v4'),
-        verify=deployed_by_official
-    )
     expires_in = 3600
     now = datetime.now(timezone.utc)
+    
+    file_service = BuiltInRemoteFileService()
     expiration = now + timedelta(seconds=expires_in)
-    response = s3.generate_presigned_post(
-        Bucket=current_user.uuid,
-        Key=s3_presign_upload_url_request.file_path,
-        Fields={
-            "Content-Type": s3_presign_upload_url_request.content_type
-        },
-        Conditions=[
-            {"Content-Type": s3_presign_upload_url_request.content_type},
-            {"bucket": current_user.uuid},
-            ["eq", "$key", s3_presign_upload_url_request.file_path]
-        ],
-        ExpiresIn=expires_in,
+    response = file_service.presign_put_url(
+        file_path=s3_presign_upload_url_request.file_path,
+        content_type=s3_presign_upload_url_request.content_type,
+        expires_in=3600
     )
     return schemas.file_system.S3PresignUploadURLResponse(
-        upload_url=response.get('url').replace(FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_SERVER_PUBLIC_URL),
+        upload_url=response.get('url'),
         file_path=s3_presign_upload_url_request.file_path,
         fields=response.get('fields'),
         expiration=expiration
@@ -79,67 +45,17 @@ def get_built_in_presigned_url(
 @file_system_router.post("/aws-s3/presign-upload-url", response_model=schemas.file_system.S3PresignUploadURLResponse)
 def get_aws_s3_presigned_url(
     s3_presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
-    db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
-    default_user_file_system = current_user.default_user_file_system
-    if default_user_file_system is None:
-        raise Exception("Please set default user file system first")
-    db_user_file_system = crud.file_system.get_user_file_system_by_id(
-        db=db,
-        user_file_system_id=default_user_file_system
-    )
-    if db_user_file_system is None:
-        raise Exception("User file system not found")
-
-    config_str = db_user_file_system.config_json
-
-    if config_str is None:
-        raise Exception("User file system config is empty")
-
-    config = json.loads(config_str)
-
-    role_arn = config.get('role_arn')
-    user_access_key_id = config.get('user_access_key_id')
-    user_access_key_secret = config.get('user_access_key_secret')
-    region_name = config.get('region_name')
-    bucket = config.get('bucket')
-
-    sts = boto3.client(
-        'sts',
-        aws_access_key_id=user_access_key_id,
-        aws_secret_access_key=user_access_key_secret,
-        config=Config(signature_version='s3v4'),
-        region_name=region_name
-    )
-    resp = sts.assume_role(
-        RoleArn=role_arn,
-        RoleSessionName='s3-session',
-        DurationSeconds=3600
-    )
-    creds = resp['Credentials']
-    s3 = boto3.client(
-        's3',
-        aws_access_key_id=creds['AccessKeyId'],
-        aws_secret_access_key=creds['SecretAccessKey'],
-        aws_session_token=creds['SessionToken'],
-        config=Config(signature_version='s3v4')
-    )
     expires_in = 3600
     now = datetime.now(timezone.utc)
+    
+    file_service = AWSS3RemoteFileService()
     expiration = now + timedelta(seconds=expires_in)
-    response = s3.generate_presigned_post(
-        Bucket=bucket,
-        Key=s3_presign_upload_url_request.file_path,
-        Fields={
-            "Content-Type": s3_presign_upload_url_request.content_type
-        },
-        Conditions=[
-            {"Content-Type": s3_presign_upload_url_request.content_type},
-            {"bucket": bucket},
-            ["eq", "$key", s3_presign_upload_url_request.file_path]
-        ],
-        ExpiresIn=expires_in,
+    response = file_service.presign_put_url(
+        file_path=s3_presign_upload_url_request.file_path,
+        content_type=s3_presign_upload_url_request.content_type,
+        expires_in=expires_in
     )
     return schemas.file_system.S3PresignUploadURLResponse(
         upload_url=response.get('url'),
@@ -151,89 +67,22 @@ def get_aws_s3_presigned_url(
 @file_system_router.post('/aliyun-oss/presign-upload-url', response_model=schemas.file_system.AliyunOSSPresignUploadURLResponse)
 def get_aliyun_oss_presigned_url(
     presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
-    db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
-    default_user_file_system = current_user.default_user_file_system
-    if default_user_file_system is None:
-        raise Exception("Please set default user file system first")
-    db_user_file_system = crud.file_system.get_user_file_system_by_id(db=db,
-                                                                      user_file_system_id=default_user_file_system)
-    if db_user_file_system is None:
-        raise Exception("User file system not found")
-
-    config_str = db_user_file_system.config_json
-
-    if config_str is None:
-        raise Exception("User file system config is empty")
-
-    config = json.loads(config_str)
-
-    role_arn = config.get('role_arn')
-    role_session_name = config.get('role_session_name')
-    user_access_key_id = config.get('user_access_key_id')
-    user_access_key_secret = config.get('user_access_key_secret')
-    region_id = config.get('region_id')
-    bucket = config.get('bucket')
-
-    client = AcsClient(user_access_key_id, user_access_key_secret, region_id)
-    request = AssumeRoleRequest()
-    request.set_accept_format('json')
-    request.set_RoleArn(role_arn)
-    request.set_RoleSessionName(role_session_name)
-    response = client.do_action_with_exception(request)
-    if response is None:
-        raise Exception("Failed to get STS credentials")
-    result = json.loads(response)
-
-    sts_role_access_key_id = result.get('Credentials').get('AccessKeyId')
-    sts_role_access_key_secret = result.get('Credentials').get('AccessKeySecret')
-    sts_role_session_token = result.get('Credentials').get('SecurityToken')
-
-    # 创建静态凭证提供者，显式设置临时访问密钥AccessKey ID和AccessKey Secret，以及STS安全令牌
-    credentials_provider = oss.credentials.StaticCredentialsProvider(
-        access_key_id=sts_role_access_key_id,
-        access_key_secret=sts_role_access_key_secret,
-        security_token=sts_role_session_token,
+    file_service = AliyunOSSRemoteFileService()
+    pre_result = file_service.presign_put_url(
+        file_path=presign_upload_url_request.file_path,
+        content_type=presign_upload_url_request.content_type,
+        expires_in=3600
     )
-
-    # 加载SDK的默认配置，并设置凭证提供者
-    cfg = oss.config.load_default()
-    cfg.credentials_provider = credentials_provider
-
-    # 填写Bucket所在地域。以华东1（杭州）为例，Region填写为cn-hangzhou
-    cfg.region = region_id
-
-    # 使用配置好的信息创建OSS客户端
-    client = oss.Client(cfg)
-    # 发送请求以生成指定对象的预签名PUT请求
-
-    put_object_request = oss.PutObjectRequest(
-        bucket=bucket,
-        key=presign_upload_url_request.file_path
-    )
-
-    if presign_upload_url_request.content_type is not None:
-        put_object_request.content_type = presign_upload_url_request.content_type
-
-    expires_in = 3600
-
-    pre_result = client.presign(
-        request=put_object_request,
-        expires=timedelta(seconds=expires_in)
-    )
-
-    if pre_result is None:
-        raise Exception("Failed to get presigned URL")
-
+    
     if pre_result.url is None or pre_result.signed_headers is None or pre_result.expiration is None:
         raise Exception("Failed to get presigned URL")
-
+    
     return schemas.file_system.AliyunOSSPresignUploadURLResponse(
         file_path=presign_upload_url_request.file_path,
         upload_url=pre_result.url,
-        expiration=pre_result.expiration,
-        fields=dict(pre_result.signed_headers)
+        expiration=pre_result.expiration
     )
 
 @file_system_router.post('/detail', response_model=schemas.file_system.FileSystemInfo)
@@ -250,7 +99,7 @@ def get_file_system_info(
         raise schemas.error.CustomException(code=404, message="File System not found")
     return schemas.file_system.FileSystemInfo.model_validate(db_file_system)
 
-@file_system_router.post('/user-file-system/detail', response_model=schemas.file_system.UserFileSystemInfo)
+@file_system_router.post('/user-file-system/detail', response_model=schemas.file_system.UserFileSystemDetail)
 def get_user_file_system_info(
     user_file_system_info_request: schemas.file_system.UserFileSystemInfoRequest,
     db: Session = Depends(get_db),
@@ -268,7 +117,7 @@ def get_user_file_system_info(
     )
     if db_file_system is None:
         raise schemas.error.CustomException(code=404, message="File System not found")
-    res = schemas.file_system.UserFileSystemInfo(
+    res = schemas.file_system.UserFileSystemDetail(
         id=db_user_file_system.id,
         file_system_id=db_user_file_system.file_system_id,
         title=db_user_file_system.title,
@@ -277,9 +126,9 @@ def get_user_file_system_info(
         create_time=db_user_file_system.create_time,
         update_time=db_user_file_system.update_time
     )
-    if db_user_file_system.user_id == current_user.id:
+    if db_user_file_system.user_id == current_user.id and db_user_file_system.config_json is not None:
         # only if the user is the owner of the user file system, the config_json will be returned
-        res.config_json=db_user_file_system.config_json
+        res.config_json=decrypt_file_system_config(db_user_file_system.config_json)
     return res
 
 @file_system_router.post("/mine", response_model=schemas.file_system.MineFileSystemSearchResponse)
@@ -304,7 +153,6 @@ def search_mine_file_system(
             file_system_id=db_user_file_system.file_system_id,
             title=db_user_file_system.title,
             description=db_user_file_system.description,
-            config_json=db_user_file_system.config_json,
             create_time=db_user_file_system.create_time,
             update_time=db_user_file_system.update_time,
             demo_config=db_file_system.demo_config
@@ -377,7 +225,7 @@ def update_file_system(
         if user_file_system_update_request.description is not None:
             user_file_system.description = user_file_system_update_request.description
         if user_file_system_update_request.config_json is not None:
-            user_file_system.config_json = user_file_system_update_request.config_json
+            user_file_system.config_json = encrypt_file_system_config(user_file_system_update_request.config_json)
         user_file_system.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()
@@ -401,7 +249,7 @@ async def upload_file_system(
     )
     if user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User File System not found")
-    remote_file_service = await get_user_remote_file_system(
+    remote_file_service = await FileSystemProxy.create(
         user_id=current_user.id
     )
     if remote_file_service is None:
@@ -409,9 +257,6 @@ async def upload_file_system(
     if remote_file_service.file_service_uuid != RemoteFileService.Generic_S3.meta.id:
         raise schemas.error.CustomException(code=404, message="The default user file system is not Generic S3")
     generic_s3_remote_file_service = GenericS3RemoteFileService()
-    await generic_s3_remote_file_service.init_client_by_user_file_system_id(
-        user_file_system_id=default_user_file_system
-    )
     await generic_s3_remote_file_service.upload_raw_content_to_path(
         file_path=file_path,
         content=content,

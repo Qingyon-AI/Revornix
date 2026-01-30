@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 import models
+from common.encrypt import encrypt_file_system_config
 
 
 def create_file_system(
@@ -35,12 +36,16 @@ def create_user_file_system(
     config_json: str | None = None
 ):
     now = datetime.now(timezone.utc)
-    db_file_system_user = models.file_system.UserFileSystem(file_system_id=file_system_id,
-                                                            user_id=user_id,
-                                                            title=title,
-                                                            description=description,
-                                                            config_json=config_json,
-                                                            create_time=now)
+    if config_json is not None:
+        config_json = encrypt_file_system_config(config_json)
+    db_file_system_user = models.file_system.UserFileSystem(
+        file_system_id=file_system_id,
+        user_id=user_id,
+        title=title,
+        description=description,
+        config_json=config_json,
+        create_time=now
+    )
     db.add(db_file_system_user)
     db.flush()
     return db_file_system_user

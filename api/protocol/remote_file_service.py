@@ -1,15 +1,7 @@
-from typing import Protocol
-from io import BytesIO
+import json
+from typing import Any, IO
 
-class RemoteFileServiceProtocol(Protocol):
-
-    file_service_uuid: str
-    file_service_name: str
-    file_service_name_zh: str
-    file_service_description: str | None
-    file_service_description_zh: str | None
-    file_service_demo_config: str | None
-    file_service_config: dict | None
+class RemoteFileServiceProtocol():
 
     def __init__(
         self,
@@ -19,7 +11,8 @@ class RemoteFileServiceProtocol(Protocol):
         file_service_description: str | None = None,
         file_service_description_zh: str | None = None,
         file_service_demo_config: str | None = None,
-        file_service_config: dict | None = None
+        file_service_config: str | None = None,
+        user_id: int | None = None
     ):
         self.file_service_uuid = file_service_uuid
         self.file_service_name = file_service_name
@@ -28,10 +21,18 @@ class RemoteFileServiceProtocol(Protocol):
         self.file_service_description_zh = file_service_description_zh
         self.file_service_demo_config = file_service_demo_config
         self.file_service_config = file_service_config
+        self.user_id = user_id
+    
+    def set_config(self, config: dict[str, Any]) -> None:
+        self.file_service_config = json.dumps(config)
+    
+    def get_config(self) -> dict[str, Any] | None:
+        if self.file_service_config is None:
+            return None
+        return json.loads(self.file_service_config)
 
-    async def init_client_by_user_file_system_id(
-        self,
-        user_file_system_id: int
+    async def init_client(
+        self
     ) -> None:
         raise NotImplementedError("Method not implemented")
 
@@ -44,7 +45,7 @@ class RemoteFileServiceProtocol(Protocol):
     async def upload_file_to_path(
         self,
         file_path: str,
-        file: BytesIO,
+        file: IO[bytes],
         content_type: str | None = None
     ) -> dict:
         raise NotImplementedError("Method not implemented")

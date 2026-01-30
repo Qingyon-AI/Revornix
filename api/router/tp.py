@@ -12,7 +12,6 @@ import crud
 import models
 import schemas
 from common.celery.app import start_process_document, start_process_section
-from common.common import get_user_remote_file_system
 from common.dependencies import (
     check_deployed_by_official,
     get_current_user_with_api_key,
@@ -23,6 +22,7 @@ from common.jwt_utils import create_token
 from enums.ability import Ability
 from enums.document import DocumentCategory, UserDocumentAuthority
 from enums.section import SectionDocumentIntegration, UserSectionAuthority, UserSectionRole
+from proxy.file_system_proxy import FileSystemProxy
 
 tp_router = APIRouter()
 
@@ -43,11 +43,8 @@ async def upload_file_system(
     if user_file_system is None:
         raise schemas.error.CustomException(message="There are something wrong with the user file system")
 
-    remote_file_service = await get_user_remote_file_system(
-        user.id
-    )
-    await remote_file_service.init_client_by_user_file_system_id(
-        user_file_system_id=user.default_user_file_system
+    remote_file_service = await FileSystemProxy.create(
+        user_id=user.id
     )
     await file.seek(0)
     await remote_file_service.upload_file_to_path(

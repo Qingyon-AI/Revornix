@@ -12,12 +12,13 @@ from typing import Tuple, Any
 
 from common.file import download_file_to_temp, extract_files_to_temp_from_zip
 from config.base import BASE_DIR
-from common.common import get_user_remote_file_system, extract_title_and_summary
+from common.common import extract_title_and_summary
 from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo, FileInfo
 from enums.engine_enums import EngineProvided, EngineCategory
 from playwright.async_api import async_playwright
 from data.sql.base import SessionLocal
 from common.logger import info_logger, exception_logger
+from proxy.file_system_proxy import FileSystemProxy
 
 
 class MineruApiEngine(MarkdownEngineBase):
@@ -248,9 +249,8 @@ class MineruApiEngine(MarkdownEngineBase):
                 # Upload image assets (optional)
                 images_dir = extracted_dir / "images"
                 if images_dir.exists() and images_dir.is_dir():
-                    remote_file_service = await get_user_remote_file_system(user_id=user_id)
-                    await remote_file_service.init_client_by_user_file_system_id(
-                        user_file_system_id=db_user.default_user_file_system
+                    remote_file_service = await FileSystemProxy.create(
+                        user_id=user_id
                     )
 
                     async def upload_img(p: Path) -> None:

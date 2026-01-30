@@ -12,7 +12,6 @@ from enums.document import DocumentMdConvertStatus, DocumentAudioTranscribeStatu
 from chonkie.types import Chunk
 from chonkie.chunker.recursive import RecursiveChunker
 from enums.document import DocumentCategory
-from common.common import get_user_remote_file_system
 from data.sql.base import SessionLocal
 from data.custom_types.all import RelationInfo, EntityInfo, ChunkInfo
 from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
@@ -20,6 +19,7 @@ from typing import AsyncGenerator
 from sqlalchemy.orm import Session
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.ai_model_proxy import AIModelProxy
+from proxy.file_system_proxy import FileSystemProxy
 
 def make_chunk_id(
     doc_id: int, 
@@ -56,11 +56,8 @@ async def stream_chunk_document(
             raise ValueError("User default file system not found")
         
         # 2️⃣ 初始化文件系统
-        remote_file_service = await get_user_remote_file_system(
+        remote_file_service = await FileSystemProxy.create(
             user_id=db_user.id
-        )
-        await remote_file_service.init_client_by_user_file_system_id(
-            db_user.default_user_file_system
         )
 
         # 3️⃣ 获取 Markdown 内容
@@ -75,7 +72,6 @@ async def stream_chunk_document(
 
         # TODO 优化chunk 应该根据文档实际类型有区分，不能一刀切用markdown
         chunker = RecursiveChunker.from_recipe("markdown")
-
 
         # 5️⃣ 按段切大文本，分步生成 chunk
         segment_size = 100_000  # 每次处理约 10 万字符

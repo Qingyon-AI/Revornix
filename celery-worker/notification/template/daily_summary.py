@@ -3,8 +3,8 @@ import schemas
 from data.sql.base import SessionLocal
 from datetime import date as date_type
 from typing import cast
-from common.common import get_user_remote_file_system
 from protocol.notification_template import NotificationTemplate
+from proxy.file_system_proxy import FileSystemProxy
 
 class DailySummaryNotificationTemplate(NotificationTemplate):
     
@@ -46,11 +46,8 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
                 content="No Summary Today For Now"
             )
         
-        remote_file_service = await get_user_remote_file_system(
+        remote_file_service = await FileSystemProxy.create(
             user_id=user_id
-        )
-        await remote_file_service.init_client_by_user_file_system_id(
-            user_file_system_id=db_user.default_user_file_system
         )
         markdown_content = await remote_file_service.get_file_content_by_file_path(
             file_path=db_section.md_file_name
