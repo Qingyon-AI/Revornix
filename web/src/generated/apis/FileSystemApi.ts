@@ -15,15 +15,12 @@
 
 import * as runtime from '../runtime';
 import type {
-  AliyunOSSPresignUploadURLRequest,
   AliyunOSSPresignUploadURLResponse,
   FileSystemInfo,
   FileSystemInfoRequest,
   FileSystemInstallRequest,
   FileSystemInstallResponse,
   FileSystemSearchRequest,
-  FileUrlPrefixRequest,
-  FileUrlPrefixResponse,
   GenericFileSystemUploadResponse,
   HTTPValidationError,
   MineFileSystemSearchResponse,
@@ -32,13 +29,11 @@ import type {
   S3PresignUploadURLRequest,
   S3PresignUploadURLResponse,
   UserFileSystemDeleteRequest,
-  UserFileSystemInfo,
+  UserFileSystemDetail,
   UserFileSystemInfoRequest,
   UserFileSystemUpdateRequest,
 } from '../models/index';
 import {
-    AliyunOSSPresignUploadURLRequestFromJSON,
-    AliyunOSSPresignUploadURLRequestToJSON,
     AliyunOSSPresignUploadURLResponseFromJSON,
     AliyunOSSPresignUploadURLResponseToJSON,
     FileSystemInfoFromJSON,
@@ -51,10 +46,6 @@ import {
     FileSystemInstallResponseToJSON,
     FileSystemSearchRequestFromJSON,
     FileSystemSearchRequestToJSON,
-    FileUrlPrefixRequestFromJSON,
-    FileUrlPrefixRequestToJSON,
-    FileUrlPrefixResponseFromJSON,
-    FileUrlPrefixResponseToJSON,
     GenericFileSystemUploadResponseFromJSON,
     GenericFileSystemUploadResponseToJSON,
     HTTPValidationErrorFromJSON,
@@ -71,8 +62,8 @@ import {
     S3PresignUploadURLResponseToJSON,
     UserFileSystemDeleteRequestFromJSON,
     UserFileSystemDeleteRequestToJSON,
-    UserFileSystemInfoFromJSON,
-    UserFileSystemInfoToJSON,
+    UserFileSystemDetailFromJSON,
+    UserFileSystemDetailToJSON,
     UserFileSystemInfoRequestFromJSON,
     UserFileSystemInfoRequestToJSON,
     UserFileSystemUpdateRequestFromJSON,
@@ -85,7 +76,7 @@ export interface DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest {
 }
 
 export interface GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest {
-    aliyunOSSPresignUploadURLRequest: AliyunOSSPresignUploadURLRequest;
+    s3PresignUploadURLRequest: S3PresignUploadURLRequest;
     authorization?: string | null;
 }
 
@@ -102,10 +93,6 @@ export interface GetBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPostRequ
 export interface GetFileSystemInfoFileSystemDetailPostRequest {
     fileSystemInfoRequest: FileSystemInfoRequest;
     authorization?: string | null;
-}
-
-export interface GetUrlPrefixFileSystemUrlPrefixPostRequest {
-    fileUrlPrefixRequest: FileUrlPrefixRequest;
 }
 
 export interface GetUserFileSystemInfoFileSystemUserFileSystemDetailPostRequest {
@@ -192,10 +179,10 @@ export class FileSystemApi extends runtime.BaseAPI {
      * Get Aliyun Oss Presigned Url
      */
     async getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRaw(requestParameters: GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AliyunOSSPresignUploadURLResponse>> {
-        if (requestParameters['aliyunOSSPresignUploadURLRequest'] == null) {
+        if (requestParameters['s3PresignUploadURLRequest'] == null) {
             throw new runtime.RequiredError(
-                'aliyunOSSPresignUploadURLRequest',
-                'Required parameter "aliyunOSSPresignUploadURLRequest" was null or undefined when calling getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost().'
+                's3PresignUploadURLRequest',
+                'Required parameter "s3PresignUploadURLRequest" was null or undefined when calling getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost().'
             );
         }
 
@@ -217,7 +204,7 @@ export class FileSystemApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: AliyunOSSPresignUploadURLRequestToJSON(requestParameters['aliyunOSSPresignUploadURLRequest']),
+            body: S3PresignUploadURLRequestToJSON(requestParameters['s3PresignUploadURLRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => AliyunOSSPresignUploadURLResponseFromJSON(jsonValue));
@@ -361,48 +348,9 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Url Prefix
-     */
-    async getUrlPrefixFileSystemUrlPrefixPostRaw(requestParameters: GetUrlPrefixFileSystemUrlPrefixPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FileUrlPrefixResponse>> {
-        if (requestParameters['fileUrlPrefixRequest'] == null) {
-            throw new runtime.RequiredError(
-                'fileUrlPrefixRequest',
-                'Required parameter "fileUrlPrefixRequest" was null or undefined when calling getUrlPrefixFileSystemUrlPrefixPost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/file-system/url-prefix`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: FileUrlPrefixRequestToJSON(requestParameters['fileUrlPrefixRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => FileUrlPrefixResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Get Url Prefix
-     */
-    async getUrlPrefixFileSystemUrlPrefixPost(requestParameters: GetUrlPrefixFileSystemUrlPrefixPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FileUrlPrefixResponse> {
-        const response = await this.getUrlPrefixFileSystemUrlPrefixPostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Get User File System Info
      */
-    async getUserFileSystemInfoFileSystemUserFileSystemDetailPostRaw(requestParameters: GetUserFileSystemInfoFileSystemUserFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserFileSystemInfo>> {
+    async getUserFileSystemInfoFileSystemUserFileSystemDetailPostRaw(requestParameters: GetUserFileSystemInfoFileSystemUserFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserFileSystemDetail>> {
         if (requestParameters['userFileSystemInfoRequest'] == null) {
             throw new runtime.RequiredError(
                 'userFileSystemInfoRequest',
@@ -431,13 +379,13 @@ export class FileSystemApi extends runtime.BaseAPI {
             body: UserFileSystemInfoRequestToJSON(requestParameters['userFileSystemInfoRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => UserFileSystemInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserFileSystemDetailFromJSON(jsonValue));
     }
 
     /**
      * Get User File System Info
      */
-    async getUserFileSystemInfoFileSystemUserFileSystemDetailPost(requestParameters: GetUserFileSystemInfoFileSystemUserFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserFileSystemInfo> {
+    async getUserFileSystemInfoFileSystemUserFileSystemDetailPost(requestParameters: GetUserFileSystemInfoFileSystemUserFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserFileSystemDetail> {
         const response = await this.getUserFileSystemInfoFileSystemUserFileSystemDetailPostRaw(requestParameters, initOverrides);
         return await response.value();
     }

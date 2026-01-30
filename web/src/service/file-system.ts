@@ -1,6 +1,6 @@
 import { request } from '@/lib/request'
 import fileSystemApi from '@/api/file_system'
-import { AliyunOSSPresignUploadURLRequest, AliyunOSSPresignUploadURLResponse, FileSystemInfo, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemInstallResponse, FileSystemSearchRequest, FileUrlPrefixRequest, FileUrlPrefixResponse, MineFileSystemSearchResponse, NormalResponse, ProvideFileSystemSearchResponse, S3PresignUploadURLRequest, S3PresignUploadURLResponse, UserFileSystemDeleteRequest, UserFileSystemInfo, UserFileSystemInfoRequest, UserFileSystemUpdateRequest } from '@/generated'
+import { AliyunOSSPresignUploadURLRequest, AliyunOSSPresignUploadURLResponse, FileSystemInfo, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemInstallResponse, FileSystemSearchRequest, MineFileSystemSearchResponse, NormalResponse, ProvideFileSystemSearchResponse, S3PresignUploadURLRequest, S3PresignUploadURLResponse, UserFileSystemDeleteRequest, UserFileSystemDetail, UserFileSystemInfo, UserFileSystemInfoRequest, UserFileSystemUpdateRequest } from '@/generated'
 
 export const getProvideFileSystems = async (data: FileSystemSearchRequest): Promise<ProvideFileSystemSearchResponse> => {
     return await request(fileSystemApi.getProvideFileSystems, {
@@ -38,7 +38,7 @@ export const getFileSystemDetail = async (data: FileSystemInfoRequest): Promise<
     })
 }
 
-export const getUserFileSystemDetail = async (data: UserFileSystemInfoRequest): Promise<UserFileSystemInfo> => {
+export const getUserFileSystemDetail = async (data: UserFileSystemInfoRequest): Promise<UserFileSystemDetail> => {
     return await request(fileSystemApi.getUserFileSystemDetail, {
         data
     })

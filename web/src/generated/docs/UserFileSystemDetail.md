@@ -1,26 +1,36 @@
 
-# AliyunOSSPresignUploadURLResponse
+# UserFileSystemDetail
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`upload_url` | string
-`file_path` | string
-`expiration` | Date
+`id` | number
+`file_system_id` | number
+`title` | string
+`description` | string
+`demo_config` | string
+`config_json` | string
+`create_time` | Date
+`update_time` | Date
 
 ## Example
 
 ```typescript
-import type { AliyunOSSPresignUploadURLResponse } from ''
+import type { UserFileSystemDetail } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "upload_url": null,
-  "file_path": null,
-  "expiration": null,
-} satisfies AliyunOSSPresignUploadURLResponse
+  "id": null,
+  "file_system_id": null,
+  "title": null,
+  "description": null,
+  "demo_config": null,
+  "config_json": null,
+  "create_time": null,
+  "update_time": null,
+} satisfies UserFileSystemDetail
 
 console.log(example)
 
@@ -29,7 +39,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as AliyunOSSPresignUploadURLResponse
+const exampleParsed = JSON.parse(exampleJSON) as UserFileSystemDetail
 console.log(exampleParsed)
 ```
 
