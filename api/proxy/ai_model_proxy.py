@@ -10,6 +10,8 @@ from enums.user import UserRole
 from common.encrypt import decrypt_api_key
 from common.jwt_utils import create_token
 from common.dependencies import check_deployed_by_official_in_fuc, get_user_token_usage, plan_ability_checked_in_func
+from sqlalchemy.orm import Session
+from common.logger import exception_logger
 
 # =========================
 # DTO
@@ -60,7 +62,8 @@ class AIModelProxy:
         """
 
         # ---------- DB（同步世界） ----------
-        with SessionLocal() as db:
+        db = SessionLocal()
+        try:
             db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
             if db_user is None:
                 raise Exception("The user is not found")
@@ -137,6 +140,11 @@ class AIModelProxy:
                     )
             else:
                 raise Exception("The model provider for the model is not public, you are forbidden to use it")
+        except Exception as e:
+            exception_logger.error(f'''Error occurred while creating AI model proxy: {e}''')
+            raise e
+        finally:
+            db.close()
 
     # =========================
     # Public API
