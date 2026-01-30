@@ -16,7 +16,7 @@ from common.common import extract_title_and_summary
 from common.file import download_file_to_temp, extract_files_to_temp_from_zip
 from common.logger import info_logger, exception_logger
 from config.base import BASE_DIR
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.engine_enums import EngineProvided, EngineCategory
 from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
 from proxy.file_system_proxy import FileSystemProxy
@@ -100,7 +100,7 @@ class MineruApiEngine(MarkdownEngineBase):
 
         self._validate_local_files(file_paths)
 
-        db = SessionLocal()
+        db = session_scope()
         try:
             db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
             if not db_user:

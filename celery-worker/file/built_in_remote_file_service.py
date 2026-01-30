@@ -13,7 +13,7 @@ from botocore.exceptions import ClientError
 from common.dependencies import check_deployed_by_official_in_fuc
 from common.logger import exception_logger, info_logger
 from config.file_system import FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_USER_NAME
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.file import RemoteFileService
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
@@ -103,7 +103,6 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         self
     ):
         def _init():
-            db = SessionLocal()
             deployed_by_official = check_deployed_by_official_in_fuc()
             try:
                 if self.user_id is None:
@@ -152,20 +151,19 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                 )
                 self.s3_client = s3
                 
-                db_user = crud.user.get_user_by_id(
-                    db=db,
-                    user_id=self.user_id
-                )
-                if db_user is None:
-                    raise Exception("User not found")
-                self.bucket = db_user.uuid
+                with session_scope() as db:
+                    db_user = crud.user.get_user_by_id(
+                        db=db, 
+                        user_id=self.user_id
+                    )
+                    if db_user is None:
+                        raise Exception("User not found")
+                    self.bucket = db_user.uuid
                 
                 self.ensure_bucket_exists()
             except Exception as e:
                 exception_logger.error(f"Init User File System Error: {e}")
                 raise
-            finally:
-                db.close()
 
         await asyncio.to_thread(_init)
 

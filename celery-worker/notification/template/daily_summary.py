@@ -1,6 +1,6 @@
 import crud
 import schemas
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from datetime import date as date_type
 from typing import cast
 from protocol.notification_template import NotificationTemplate
@@ -23,7 +23,7 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
     ):
         if params is None:
             raise Exception("params is None")
-        db = SessionLocal()
+        db = session_scope()
         user_id = cast(int, params.get('user_id'))
         date = cast(date_type, params.get('date'))
         db_user = crud.user.get_user_by_id(

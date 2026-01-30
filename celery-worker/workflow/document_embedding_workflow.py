@@ -6,7 +6,7 @@ from langgraph.graph import StateGraph, END
 from common.logger import exception_logger
 from data.common import stream_chunk_document
 from data.milvus.insert import upsert_milvus
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from engine.embedding.factory import get_embedding_engine
 from enums.document import DocumentEmbeddingStatus
 
@@ -24,7 +24,7 @@ async def handle_update_document_embedding(
     document_id: int,
     user_id: int
 ) -> None:
-    db = SessionLocal()
+    db = session_scope()
     try:
         # 1) 校验 document
         db_document = crud.document.get_document_by_document_id(

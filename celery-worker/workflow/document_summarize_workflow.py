@@ -6,7 +6,7 @@ from langgraph.graph import StateGraph, END
 from common.ai import reducer_summary, summary_content
 from common.logger import exception_logger
 from data.common import extract_entities_relations, get_extract_llm_client, stream_chunk_document
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.document import DocumentSummarizeStatus
 from proxy.ai_model_proxy import AIModelProxy
 
@@ -20,7 +20,7 @@ async def handle_update_document_ai_summarize(
     document_id: int,
     user_id: int
 ):
-    db = SessionLocal()
+    db = session_scope()
     try:
         db_document = crud.document.get_document_by_document_id(
             db=db,

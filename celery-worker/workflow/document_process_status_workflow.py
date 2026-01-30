@@ -3,7 +3,7 @@ from typing import TypedDict
 from langgraph.graph import StateGraph, END
 
 import crud
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from common.logger import exception_logger
 
 
@@ -20,7 +20,7 @@ async def _update_document_status(
     if document_id is None or status is None:
         raise Exception("Document status workflow missing document_id or status")
 
-    db = SessionLocal()
+    db = session_scope()
     try:
         db_document_process_task = crud.task.get_document_process_task_by_document_id(
             db=db,

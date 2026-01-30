@@ -7,7 +7,7 @@ from langfuse.openai import OpenAI
 import crud
 from common.logger import exception_logger
 from data.custom_types.all import EntityInfo, RelationInfo
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from prompts.section_image import IMAGE_PLANNER_SYSTEM, build_image_planner_user_prompt
 from base_implement.engine_base import EngineBase
 from proxy.ai_model_proxy import AIModelProxy
@@ -29,7 +29,7 @@ class ImageGenerateEngineBase(EngineBase):
         entities: list[EntityInfo],
         relations: list[RelationInfo],
     ) -> ImagePlanResult:
-        db = SessionLocal()
+        db = session_scope()
         try:
             db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
             if db_user is None:

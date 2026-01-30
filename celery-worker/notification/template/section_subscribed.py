@@ -1,7 +1,7 @@
 import crud
 import schemas
 from typing import cast
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.section import UserSectionRole
 from protocol.notification_template import NotificationTemplate
 from common.file import get_remote_file_signed_url
@@ -27,7 +27,7 @@ class SectionSubscribedNotificationTemplate(NotificationTemplate):
             raise Exception("params is None")
         user_id = cast(int, params.get('user_id'))
         section_id = cast(int, params.get('section_id'))
-        db = SessionLocal()
+        db = session_scope()
         db_section = crud.section.get_section_by_section_id(
             db=db, 
             section_id=section_id

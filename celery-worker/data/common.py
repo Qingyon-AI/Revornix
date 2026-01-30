@@ -12,7 +12,7 @@ from enums.document import DocumentMdConvertStatus, DocumentAudioTranscribeStatu
 from chonkie.types import Chunk
 from chonkie.chunker.recursive import RecursiveChunker
 from enums.document import DocumentCategory
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from data.custom_types.all import RelationInfo, EntityInfo, ChunkInfo
 from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from typing import AsyncGenerator
@@ -37,7 +37,7 @@ async def stream_chunk_document(
     """
     以流式方式生成 ChunkInfo，避免一次性 embedding 占用大量内存
     """
-    db = SessionLocal()
+    db = session_scope()
     try:
         # 1️⃣ 获取文档与用户
         db_document = crud.document.get_document_by_document_id(
@@ -294,7 +294,7 @@ def merge_entitys_and_relations(
 async def get_extract_llm_client(
     user_id: int
 ) -> OpenAI:
-    db = SessionLocal()
+    db = session_scope()
     db_user = crud.user.get_user_by_id(
         db=db, 
         user_id=user_id

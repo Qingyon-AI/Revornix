@@ -5,7 +5,7 @@ from fastmcp.server.middleware import Middleware, MiddlewareContext
 
 import crud
 from data.neo4j.search import global_search
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 
 
 class UserAuthMiddleware(Middleware):
@@ -33,7 +33,7 @@ class UserAuthMiddleware(Middleware):
         self,
         api_key: str
     ):
-        db = SessionLocal()
+        db = session_scope()
         db_api_key = crud.api_key.get_api_key_by_api_key(
             db=db,
             api_key=api_key

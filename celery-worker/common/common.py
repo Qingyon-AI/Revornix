@@ -7,7 +7,7 @@ import inspect
 import asyncio
 from typing import Type
 from pathlib import Path
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.file import RemoteFileService
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService

@@ -21,7 +21,7 @@ from data.neo4j.insert import (
     upsert_entities_neo4j,
     upsert_relations_neo4j,
 )
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from engine.embedding.factory import get_embedding_engine
 from enums.ability import Ability
 from enums.document import (
@@ -43,7 +43,7 @@ async def handle_process_document_chunks(
     user_id: int,
     auto_summary: bool = False,
 ) -> None:
-    db = SessionLocal()
+    db = session_scope()
     try:
         # 1) 校验 document
         db_document = crud.document.get_document_by_document_id(

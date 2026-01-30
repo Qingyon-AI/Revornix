@@ -1,6 +1,6 @@
 import crud
 from common.logger import exception_logger, log_exception
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
 from notification.tool.email import EmailNotificationTool
@@ -21,7 +21,7 @@ async def trigger_user_notification_event(
     trigger_event_uuid: str,
     params: dict | None = None
 ):
-    db = SessionLocal()
+    db = session_scope()
     try:
         db_user = crud.user.get_user_by_id(
             db=db, 

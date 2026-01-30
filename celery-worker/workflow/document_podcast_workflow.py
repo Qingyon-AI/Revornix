@@ -5,7 +5,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.document import DocumentPodcastStatus, DocumentCategory
 from common.markdown_helpers import get_markdown_content_by_document_id
 from proxy.engine_proxy import EngineProxy
@@ -21,7 +21,7 @@ async def handle_update_document_ai_podcast(
     document_id: int,
     user_id: int
 ):
-    db = SessionLocal()
+    db = session_scope()
     try:
         # 1) 校验 document
         db_document = crud.document.get_document_by_document_id(

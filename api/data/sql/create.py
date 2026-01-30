@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 import crud
 from common.logger import exception_logger, info_logger
 from config.base import BASE_DIR, ROOT_USER_NAME, ROOT_USER_PASSWORD
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 
 from common.dependencies import check_deployed_by_official_in_fuc
 deployed_by_official = check_deployed_by_official_in_fuc()
@@ -346,7 +346,7 @@ async def seed_database(db: Session):
 # 主入口
 # =========================================================
 async def main():
-    # 让 alembic 与 SessionLocal 使用同一个库
+    # 让 alembic 与 session_scope 使用同一个库
     alembic_cfg.set_main_option("sqlalchemy.url", str(sqlalchemy_engine.url))
 
     # 1) 自动生成 migration（如果没有变化会报错，我们要吞掉）
@@ -365,7 +365,7 @@ async def main():
     info_logger.warning("STEP 1: Alembic upgrade done.")
 
     # 3) seed（你原逻辑）
-    db = SessionLocal()
+    db = session_scope()
     try:
         info_logger.info("🌱 Seeding database...")
         await seed_database(db=db)

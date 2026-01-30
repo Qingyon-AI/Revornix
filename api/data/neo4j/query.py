@@ -3,7 +3,7 @@ from langfuse.openai import OpenAI
 
 import crud
 from data.neo4j.search import *
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from prompts.query import query_context_summary
 from proxy.ai_model_proxy import AIModelProxy
 
@@ -19,19 +19,19 @@ async def global_query(
     )
     prompt = query_context_summary(query, str(results))
 
-    db = SessionLocal()
-    db_user = crud.user.get_user_by_id(
-        db=db,
-        user_id=user_id
-    )
-    if db_user is None:
-        raise Exception("User not found")
-    if db_user.default_revornix_model_id is None:
-        raise Exception("User default model not found")
-    model_configuration = (await AIModelProxy.create(
-        user_id=user_id,
-        model_id=db_user.default_revornix_model_id
-    )).get_configuration()
+    with session_scope() as db:
+        db_user = crud.user.get_user_by_id(
+            db=db,
+            user_id=user_id
+        )
+        if db_user is None:
+            raise Exception("User not found")
+        if db_user.default_revornix_model_id is None:
+            raise Exception("User default model not found")
+        model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=db_user.default_revornix_model_id
+        )).get_configuration()
 
     with propagate_attributes(
         user_id=str(user_id),
@@ -59,19 +59,19 @@ async def naive_query(
     )
     prompt = query_context_summary(query, str(results))
 
-    db = SessionLocal()
-    db_user = crud.user.get_user_by_id(
-        db=db,
-        user_id=user_id
-    )
-    if db_user is None:
-        raise Exception("User not found")
-    if db_user.default_revornix_model_id is None:
-        raise Exception("User default model not found")
-    model_configuration = (await AIModelProxy.create(
-        user_id=user_id,
-        model_id=db_user.default_revornix_model_id
-    )).get_configuration()
+    with session_scope() as db:
+        db_user = crud.user.get_user_by_id(
+            db=db,
+            user_id=user_id
+        )
+        if db_user is None:
+            raise Exception("User not found")
+        if db_user.default_revornix_model_id is None:
+            raise Exception("User default model not found")
+        model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=db_user.default_revornix_model_id
+        )).get_configuration()
 
     with propagate_attributes(
         user_id=str(user_id),

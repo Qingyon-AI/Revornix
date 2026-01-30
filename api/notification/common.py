@@ -1,6 +1,6 @@
 import crud
 from common.logger import exception_logger
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.notification import NotificationContentType, NotificationSourceUUID, NotificationTemplateUUID
 from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
@@ -20,7 +20,7 @@ async def trigger_user_notification_event(
     trigger_event_uuid: str,
     params: dict | None = None
 ):
-    db = SessionLocal()
+    db = session_scope()
     try:
         db_user = crud.user.get_user_by_id(
             db=db,

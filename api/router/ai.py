@@ -27,7 +27,7 @@ from common.encrypt import encrypt_api_key
 from common.interpret_event import EventInterpreter
 from common.jwt_utils import create_token
 from common.logger import exception_logger
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.ability import Ability
 from enums.mcp import MCPCategory
 from enums.model import UserModelProviderRole
@@ -420,7 +420,7 @@ async def create_agent(
     user_id: int,
     enable_mcp: bool = False
 ):
-    db = SessionLocal()
+    db = session_scope()
     try:
         user = crud.user.get_user_by_id(
             db=db,

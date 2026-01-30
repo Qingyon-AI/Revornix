@@ -4,7 +4,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from engine.tag.llm_document import LLMDocumentTagEngine
 
 
@@ -17,7 +17,7 @@ async def handle_tag_document(
     document_id: int,
     user_id: int
 ):
-    db = SessionLocal()
+    db = session_scope()
     try:
         tag_engine = LLMDocumentTagEngine(user_id=user_id)
         tags = await tag_engine.generate_tags(

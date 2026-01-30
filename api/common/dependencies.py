@@ -20,7 +20,7 @@ from common.logger import exception_logger
 from config.base import DEPLOY_HOSTS, OFFICIAL, UNION_PAY_URL_PREFIX
 from config.langfuse import LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
 from config.oauth2 import OAUTH_SECRET_KEY
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 
 if OAUTH_SECRET_KEY is None:
     raise Exception("OAUTH_SECRET_KEY is not set")
@@ -60,7 +60,7 @@ async def reject_if_official(
     raise schemas.error.CustomException(message='This api is only available for local use, and is disabled in the official deployment version', code=403)
 
 def get_db():
-    db = SessionLocal()
+    db = session_scope()
     try:
         yield db
     except Exception as e:
