@@ -291,7 +291,7 @@ const MineFileSystemAddCard = ({}: {}) => {
 						</form>
 					</Form>
 					<Separator />
-					<DialogFooter>
+					<DialogFooter className='flex flex-row items-center justify-end'>
 						<DialogClose asChild>
 							<Button type='button' variant={'secondary'}>
 								{t('cancel')}
