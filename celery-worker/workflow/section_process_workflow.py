@@ -6,7 +6,6 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.ai import make_section_markdown
-from common.common import get_user_remote_file_system
 from common.logger import exception_logger
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.neo4j.base import neo4j_driver
@@ -18,6 +17,7 @@ from schemas.task import SectionOverrideProperty
 from common.markdown_helpers import get_markdown_content_by_document_id
 from workflow.section_podcast_workflow import handle_update_section_ai_podcast
 from proxy.engine_proxy import EngineProxy
+from proxy.file_system_proxy import FileSystemProxy
 
 
 class SectionProcessState(TypedDict, total=False):
@@ -221,11 +221,8 @@ async def handle_process_section(
                     )
                 content = apply_generated_images(images_plan.markdown_with_markers, generated_images)
 
-        remote_file_service = await get_user_remote_file_system(
+        remote_file_service = await FileSystemProxy.create(
             user_id=user_id
-        )
-        await remote_file_service.init_client_by_user_file_system_id(
-            user_file_system_id=db_user.default_user_file_system
         )
         md_file_name = f"markdown/{uuid.uuid4().hex}.md"
         await remote_file_service.upload_raw_content_to_path(

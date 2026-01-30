@@ -1,10 +1,9 @@
 import crud
 
-from common.common import get_user_remote_file_system
 from common.logger import exception_logger
 from data.sql.base import SessionLocal
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentAudioTranscribeStatus
-
+from proxy.file_system_proxy import FileSystemProxy
 
 async def get_markdown_content_by_section_id(
     *,
@@ -22,11 +21,8 @@ async def get_markdown_content_by_section_id(
         if db_user.default_user_file_system is None:
             raise Exception("The user who want to get the markdown content does not have a default user file system")
 
-        remote_file_service = await get_user_remote_file_system(
+        remote_file_service = await FileSystemProxy.create(
             user_id=user_id
-        )
-        await remote_file_service.init_client_by_user_file_system_id(
-            user_file_system_id=db_user.default_user_file_system
         )
 
         db_section = crud.section.get_section_by_section_id(
@@ -63,12 +59,8 @@ async def get_markdown_content_by_document_id(
     if db_user.default_user_file_system is None:
         raise Exception("The user havn't set the default file system")
 
-    remote_file_service = await get_user_remote_file_system(
+    remote_file_service = await FileSystemProxy.create(
         user_id=user_id
-    )
-
-    await remote_file_service.init_client_by_user_file_system_id(
-        user_file_system_id=db_user.default_user_file_system
     )
 
     try:

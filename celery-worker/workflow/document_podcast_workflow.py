@@ -4,12 +4,12 @@ from typing import TypedDict
 import crud
 from langgraph.graph import StateGraph, END
 
-from common.common import get_user_remote_file_system
 from common.logger import exception_logger
 from data.sql.base import SessionLocal
 from enums.document import DocumentPodcastStatus, DocumentCategory
 from common.markdown_helpers import get_markdown_content_by_document_id
 from proxy.engine_proxy import EngineProxy
+from proxy.file_system_proxy import FileSystemProxy
 
 
 class DocumentPodcastState(TypedDict, total=False):
@@ -60,13 +60,10 @@ async def handle_update_document_ai_podcast(
             db_podcast_task.status = DocumentPodcastStatus.GENERATING
         db.commit()
 
-        remote_file_service = await get_user_remote_file_system(
+        remote_file_service = await FileSystemProxy.create(
             user_id=user_id
         )
-        await remote_file_service.init_client_by_user_file_system_id(
-            user_file_system_id=db_user.default_user_file_system
-        )
-
+    
         markdown_content = await get_markdown_content_by_document_id(
             document_id=db_document.id,
             user_id=user_id

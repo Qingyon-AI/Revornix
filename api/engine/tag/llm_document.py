@@ -5,11 +5,11 @@ from langfuse.openai import OpenAI
 
 import crud
 import schemas
-from common.common import get_user_remote_file_system
 from data.sql.base import SessionLocal
 from enums.document import DocumentCategory
 from prompts.document_auto_tag import document_auto_tag_prompt
 from proxy.ai_model_proxy import AIModelProxy
+from proxy.file_system_proxy import FileSystemProxy
 
 
 class LLMDocumentTagEngine:
@@ -49,11 +49,8 @@ class LLMDocumentTagEngine:
         if db_document is None:
             raise Exception("The document you want to generate the tags is not found")
 
-        remote_file_service = await get_user_remote_file_system(
+        remote_file_service = await FileSystemProxy.create(
             user_id=self.user_id
-        )
-        await remote_file_service.init_client_by_user_file_system_id(
-            user_file_system_id=db_user.default_user_file_system
         )
 
         document_content = ''

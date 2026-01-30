@@ -9,13 +9,14 @@ from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
 import crud
-from common.common import extract_title_and_summary, get_user_remote_file_system, is_dir_empty
+from common.common import extract_title_and_summary, is_dir_empty
 from common.logger import exception_logger
 from common.mineru import parse_doc
 from config.base import BASE_DIR
 from data.sql.base import SessionLocal
 from enums.engine_enums import EngineProvided, EngineCategory
 from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
+from proxy.file_system_proxy import FileSystemProxy
 
 
 class MineruEngine(MarkdownEngineBase):
@@ -72,8 +73,7 @@ class MineruEngine(MarkdownEngineBase):
             # 3. Upload extracted images
             images_dir = md_output_dir / "images"
             if images_dir.exists() and images_dir.is_dir() and not is_dir_empty(images_dir):
-                remote_fs = await get_user_remote_file_system(self.user_id)
-                await remote_fs.init_client_by_user_file_system_id(db_user.default_user_file_system)
+                remote_fs = await FileSystemProxy.create(user_id=self.user_id)
 
                 for img_file in images_dir.iterdir():
                     async with aiofiles.open(img_file, "rb") as f:
@@ -172,8 +172,7 @@ class MineruEngine(MarkdownEngineBase):
             # 4. Upload images
             images_dir = md_output_dir / "images"
             if images_dir.exists() and images_dir.is_dir() and not is_dir_empty(images_dir):
-                remote_fs = await get_user_remote_file_system(self.user_id)
-                await remote_fs.init_client_by_user_file_system_id(db_user.default_user_file_system)
+                remote_fs = await FileSystemProxy.create(user_id=self.user_id)
 
                 for img_file in images_dir.iterdir():
                     async with aiofiles.open(img_file, "rb") as f:

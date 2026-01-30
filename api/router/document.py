@@ -18,7 +18,6 @@ from common.celery.app import (
     start_process_section,
     update_document_process_status,
 )
-from common.common import get_user_remote_file_system
 from common.dependencies import (
     check_deployed_by_official,
     get_authorization_header,
@@ -389,13 +388,6 @@ async def generate_podcast(
     # podcast必须要存储系统，所以检查用户的存储系统配置
     if user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
-    else:
-        remote_file_service = await get_user_remote_file_system(
-            user_id=user.id
-        )
-        await remote_file_service.init_client_by_user_file_system_id(
-            user_file_system_id=user.default_user_file_system
-        )
 
     db_exist_podcast_task = crud.task.get_document_podcast_task_by_document_id(
         db=db,
@@ -664,13 +656,7 @@ async def transform_markdown(
 
     if user.default_user_file_system is None:
         raise Exception("The user havn't set the default file system yet")
-    else:
-        remote_file_service = await get_user_remote_file_system(
-            user_id=user.id
-        )
-        await remote_file_service.init_client_by_user_file_system_id(
-            user_file_system_id=user.default_user_file_system
-        )
+
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
         document_id=transform_markdown_request.document_id

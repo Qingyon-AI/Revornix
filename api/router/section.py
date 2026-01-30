@@ -17,7 +17,6 @@ from common.celery.app import (
     start_trigger_user_notification_event,
     update_section_process_status,
 )
-from common.common import get_user_remote_file_system
 from common.dependencies import get_current_user, get_current_user_without_throw, get_db, plan_ability_checked
 from enums.ability import Ability
 from enums.notification import NotificationTriggerEventUUID
@@ -49,13 +48,6 @@ async def generate_podcast(
 
     if user.default_user_file_system is None:
         raise Exception('Please set the default file system for the user first.')
-    else:
-        remote_file_service = await get_user_remote_file_system(
-            user_id=user.id
-        )
-        await remote_file_service.init_client_by_user_file_system_id(
-            user_file_system_id=user.default_user_file_system
-        )
 
     db_exist_podcast_task = crud.task.get_section_podcast_task_by_section_id(
         db=db,

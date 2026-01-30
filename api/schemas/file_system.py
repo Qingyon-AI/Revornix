@@ -9,7 +9,6 @@ class GenericFileSystemUploadResponse(BaseModel):
 class AliyunOSSPresignUploadURLResponse(BaseModel):
     upload_url: str
     file_path: str
-    fields: dict
     expiration: datetime
 
 class S3PresignUploadURLRequest(BaseModel):
@@ -58,6 +57,29 @@ class FileSystemInfo(BaseModel):
         from_attributes = True
 
 class UserFileSystemInfo(BaseModel):
+    id: int
+    file_system_id: int
+    title: str | None = None
+    description: str | None = None
+    demo_config: str | None = None
+    create_time: datetime
+    update_time: datetime | None
+    @field_serializer("create_time")
+    def serializer_create_time(self, v: datetime):
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    @field_serializer("update_time")
+    def serializer_update_time(self, v: datetime | None):
+        if v is None:
+            return None
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
+        return v
+    class Config:
+        from_attributes = True
+
+class UserFileSystemDetail(BaseModel):
     id: int
     file_system_id: int
     title: str | None = None

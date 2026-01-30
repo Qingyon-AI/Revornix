@@ -1,14 +1,15 @@
 import asyncio
+import json
 
 from io import BytesIO
 from typing import Any
 
+import crud
 import boto3
 from boto3.s3.transfer import TransferConfig
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
-import crud
 from common.dependencies import check_deployed_by_official_in_fuc
 from common.logger import exception_logger, info_logger
 from config.file_system import FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_USER_NAME
@@ -26,11 +27,11 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             file_service_name_zh='内置文件系统',
             file_service_description='Built-In file system, based on minio, free to use.',
             file_service_description_zh='内置文件系统，基于minio，可免费使用。',
-            file_service_config = {
+            file_service_config = json.dumps({
                 "endpoint_url": FILE_SYSTEM_SERVER_PUBLIC_URL,
                 "access_key_id": FILE_SYSTEM_USER_NAME,
                 "secret_access_key": FILE_SYSTEM_PASSWORD
-            }
+            })
         )
         self.s3_client: Any | None = None
         self.sts_upload_client: Any | None = None
@@ -98,35 +99,50 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             ExpiresIn=expires_seconds
         )
 
-    async def init_client_by_user_file_system_id(
+    def presign_put_url(
         self,
-        user_file_system_id: int
+        file_path: str,
+        content_type: str | None = None,
+        expires_in: int = 3600
+    ):
+        if self.s3_client is None:
+            raise Exception("S3 client not specified")
+        if self.bucket is None:
+            raise Exception("Bucket not specified")
+        response = self.s3_client.generate_presigned_post(
+            Bucket=self.bucket,
+            Key=file_path,
+            Fields={
+                "Content-Type": content_type
+            },
+            Conditions=[
+                {"Content-Type": content_type},
+                {"bucket": self.bucket},
+                ["eq", "$key", file_path]
+            ],
+            ExpiresIn=expires_in,
+        )
+        return response
+
+    async def init_client(
+        self,
     ):
         def _init():
             db = SessionLocal()
             deployed_by_official = check_deployed_by_official_in_fuc()
             try:
-                if self.file_service_config is None:
-                    raise Exception("The user's file system has not been initialized")
-                db_user_file_system = crud.file_system.get_user_file_system_by_id(
-                    db=db,
-                    user_file_system_id=user_file_system_id
-                )
-                if db_user_file_system is None:
-                    raise Exception("There is something wrong with the user's file system")
-
-                user = crud.user.get_user_by_id(
-                    db=db,
-                    user_id=db_user_file_system.user_id
-                )
-                if user is None:
-                    raise Exception("The user of the file system does not exist")
+                if self.user_id is None:
+                    raise Exception("User ID is not specified for built-in file service")
+                
+                file_service_config = self.get_config()
+                if file_service_config is None:
+                    raise Exception("File service config is not specified")
                 
                 sts = boto3.client(
                     "sts",
-                    endpoint_url=self.file_service_config.get("endpoint_url"),
-                    aws_access_key_id=self.file_service_config.get("access_key_id"),
-                    aws_secret_access_key=self.file_service_config.get("secret_access_key"),
+                    endpoint_url=file_service_config.get("endpoint_url"),
+                    aws_access_key_id=file_service_config.get("access_key_id"),
+                    aws_secret_access_key=file_service_config.get("secret_access_key"),
                     region_name="main",
                     verify=deployed_by_official,
                     config=Config(
@@ -147,7 +163,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                     raise Exception("Failed to get the user's file system's STS credentials")
                 s3 = boto3.client(
                     's3',
-                    endpoint_url=self.file_service_config.get("endpoint_url"),
+                    endpoint_url=file_service_config.get("endpoint_url"),
                     aws_access_key_id=creds['AccessKeyId'],
                     aws_secret_access_key=creds['SecretAccessKey'],
                     aws_session_token=creds['SessionToken'],
@@ -162,7 +178,13 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                 )
                 self.s3_client = s3
                 
-                self.bucket = user.uuid
+                db_user = crud.user.get_user_by_id(
+                    db=db,
+                    user_id=self.user_id
+                )
+                if db_user is None:
+                    raise Exception("User not found")
+                self.bucket = db_user.uuid
                 
                 self.ensure_bucket_exists()
             except Exception as e:
@@ -195,8 +217,8 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
 
     async def upload_file_to_path(
         self,
-        file_path: str,
-        file: BytesIO,
+        file_path,
+        file,
         content_type: str | None = None
     ):
         """上传文件到文件服务器的指定路径
@@ -288,29 +310,3 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             return self.s3_client.list_objects_v2(Bucket=self.bucket)
 
         return await asyncio.to_thread(_list)
-
-# 测试一下
-async def main():
-    from rich import print
-    file_service = BuiltInRemoteFileService()
-    await file_service.init_client_by_user_file_system_id(5)
-    res = await file_service.upload_raw_content_to_path(
-        file_path='test.txt',
-        content='hello world'
-    )
-    print(res)
-    res = await file_service.get_file_content_by_file_path('test.txt')
-    print(res)
-    res = file_service.presign_get_url(file_path='test.txt')
-    print(res)
-    import httpx
-    async with httpx.AsyncClient() as client:
-        res = await client.get(res)
-        print(res.text)
-    await file_service.delete_file('test.txt')
-    files = await file_service.list_files()
-    print(files)
-
-if __name__ == '__main__':
-    import asyncio
-    asyncio.run(main())
