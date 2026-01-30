@@ -48,7 +48,6 @@ class LLMDocumentTagEngine:
                 raise Exception("The document you want to generate the tags is not found")
 
             doc_category = db_document.category
-            quick_note_content = db_document.content
             md_file_name = None
             if doc_category == DocumentCategory.FILE or doc_category == DocumentCategory.WEBSITE:
                 db_convert_task = crud.task.get_document_convert_task_by_document_id(
@@ -74,11 +73,19 @@ class LLMDocumentTagEngine:
             remote_file_service = await FileSystemProxy.create(
                 user_id=self.user_id
             )
+            if md_file_name is None:
+                raise Exception("The document you want to process do not have a the md file name")
             document_content = await remote_file_service.get_file_content_by_file_path(
                 file_path=md_file_name
             )
         elif doc_category == DocumentCategory.QUICK_NOTE:
-            document_content = quick_note_content
+            db_quick_not_document = crud.document.get_quick_note_document_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_quick_not_document is None:
+                raise Exception("The document you want to process do not have a the quick note document info")
+            document_content = db_quick_not_document.content
         
         prompt = document_auto_tag_prompt(
             document_content=document_content,

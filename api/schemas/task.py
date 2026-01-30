@@ -53,11 +53,6 @@ class DocumentOverrideProperty(BaseModel):
     description: str | None = None
     cover: str | None = None
 
-class SectionOverrideProperty(BaseModel):
-    title: str | None = None
-    description: str | None = None
-    cover: str | None = None
-
 class SectionPodcastTask(BaseModel):
     creator_id: int
     status: int
