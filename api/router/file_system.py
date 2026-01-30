@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from typing import cast
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile, Query
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 import crud
@@ -98,6 +99,52 @@ def get_file_system_info(
     if db_file_system is None:
         raise schemas.error.CustomException(code=404, message="File System not found")
     return schemas.file_system.FileSystemInfo.model_validate(db_file_system)
+
+def _normalize_and_validate_path(path: str) -> str:
+    """
+    防止：
+    - 空 path
+    - 以 / 开头（避免绝对路径语义）
+    - .. 路径穿越
+    - 反斜杠
+    """
+    path = (path or "").strip()
+    if not path:
+        raise schemas.error.CustomException(code=400, message="path is required")
+
+    if path.startswith("/"):
+        path = path.lstrip("/")
+
+    if "\\" in path:
+        raise schemas.error.CustomException(code=400, message="invalid path")
+
+    parts = path.split("/")
+    if any(p in ("..", "") for p in parts):
+        # "" 会出现于 //，也一起拒掉
+        raise schemas.error.CustomException(code=400, message="invalid path")
+
+    return path
+
+@file_system_router.get("/url/resolve", include_in_schema=False)
+async def resolve_file(
+    path: str = Query(..., description="Object key/path in user's bucket"),
+    owner_id: int = Query(..., description="Owner's user id")
+):
+    # 1) path 校验（防穿越）
+    key = _normalize_and_validate_path(path)
+
+    # 2) 初始化文件服务
+    file_service = await FileSystemProxy.create(user_id=owner_id)
+
+    # 3) 生成短期 presigned URL（建议 60~300 秒）
+    url = file_service.presign_get_url(
+        file_path=key, 
+        expires_seconds=120
+    )
+
+    # 4) 返回 Redirect（307：保留 method；GET 用 302/307 都行）
+    # 你也可以用 302
+    return RedirectResponse(url=url, status_code=307)
 
 @file_system_router.post('/user-file-system/detail', response_model=schemas.file_system.UserFileSystemDetail)
 def get_user_file_system_info(

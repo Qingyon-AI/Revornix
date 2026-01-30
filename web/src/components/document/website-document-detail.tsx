@@ -101,6 +101,7 @@ const WebsiteDocumentDetail = ({
 				throw new Error(err.message);
 			}
 			if (typeof res === 'string') {
+				res = replaceImagePaths(res, document.creator.id);
 				setMarkdown(res);
 				setMarkdownRendered(true);
 			}
