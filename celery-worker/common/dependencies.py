@@ -10,7 +10,7 @@ from redis import Redis
 from collections import defaultdict
 from typing import Any
 from sqlalchemy.orm import Session
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from config.oauth2 import OAUTH_SECRET_KEY
 from config.base import OFFICIAL, DEPLOY_HOSTS, UNION_PAY_URL_PREFIX
 from urllib.parse import urlparse
@@ -58,7 +58,7 @@ async def reject_if_official(
     raise schemas.error.CustomException(message='This api is only available for local use, and is disabled in the official deployment version', code=403)
 
 def get_db():
-    db = SessionLocal()
+    db = session_scope()
     try:
         yield db
     except Exception as e:

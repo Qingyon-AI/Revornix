@@ -5,7 +5,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.section import SectionPodcastStatus
 from common.markdown_helpers import get_markdown_content_by_section_id
 from proxy.engine_proxy import EngineProxy
@@ -21,7 +21,7 @@ async def handle_update_section_ai_podcast(
     section_id: int,
     user_id: int
 ):
-    db = SessionLocal()
+    db = session_scope()
     try:
         db_section = crud.section.get_section_by_section_id(
             db=db,

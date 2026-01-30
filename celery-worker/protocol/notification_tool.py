@@ -2,7 +2,7 @@ import crud
 import schemas
 import json
 from typing import Protocol
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 
 class NotificationToolProtocol(Protocol):
 
@@ -13,24 +13,24 @@ class NotificationToolProtocol(Protocol):
         self, 
         source_id: int
     ):
-        db = SessionLocal()
-        db_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
-            db=db,
-            user_notification_source_id=source_id
-        )
-        if db_notification_source is None:
-            raise schemas.error.CustomException(message="notification source not found", code=404)
-        self.source = db_notification_source
+        with session_scope() as db:
+            db_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
+                db=db,
+                user_notification_source_id=source_id
+            )
+            if db_notification_source is None:
+                raise schemas.error.CustomException(message="notification source not found", code=404)
+            self.source = db_notification_source
 
     def set_target(self, target_id: int):
-        db = SessionLocal()
-        db_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
-            db=db,
-            user_notification_target_id=target_id
-        )
-        if db_notification_target is None:
-            raise schemas.error.CustomException(message="notification target not found", code=404)
-        self.target = db_notification_target
+        with session_scope() as db:
+            db_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
+                db=db,
+                user_notification_target_id=target_id
+            )
+            if db_notification_target is None:
+                raise schemas.error.CustomException(message="notification target not found", code=404)
+            self.target = db_notification_target
 
     def get_source_config(self):
         config = None

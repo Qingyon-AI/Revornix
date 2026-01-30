@@ -13,7 +13,7 @@ from common.common import extract_title_and_summary, is_dir_empty
 from common.logger import exception_logger
 from common.mineru import parse_doc
 from config.base import BASE_DIR
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.engine_enums import EngineProvided, EngineCategory
 from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
 from proxy.file_system_proxy import FileSystemProxy
@@ -39,7 +39,7 @@ class MineruEngine(MarkdownEngineBase):
         if not self.user_id:
             raise Exception("Engine is not initialized. Please initialize first.")
 
-        db = SessionLocal()
+        db = session_scope()
         try:
             db_user = crud.user.get_user_by_id(db=db, user_id=self.user_id)
             if not db_user:
@@ -147,7 +147,7 @@ class MineruEngine(MarkdownEngineBase):
         md_output_dir = BASE_DIR / "temp" / temp_id / "auto"
         os.makedirs(BASE_DIR / "temp", exist_ok=True)
 
-        db = SessionLocal()
+        db = session_scope()
 
         try:
             db_user = crud.user.get_user_by_id(db=db, user_id=self.user_id)
@@ -192,6 +192,7 @@ class MineruEngine(MarkdownEngineBase):
             exception_logger.error(f"Error occurred while analysing file using MinerU: {e}")
             raise
         finally:
+            db.close()
             shutil.rmtree(BASE_DIR / "temp" / temp_id, ignore_errors=True)
             if temp_file_path.exists():
                 temp_file_path.unlink(missing_ok=True)

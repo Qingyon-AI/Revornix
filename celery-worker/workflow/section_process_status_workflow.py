@@ -3,7 +3,7 @@ from typing import TypedDict
 from langgraph.graph import StateGraph, END
 
 import crud
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 
 
 class SectionProcessStatusState(TypedDict, total=False):
@@ -19,7 +19,7 @@ async def _update_section_status(
     if section_id is None or status is None:
         raise Exception("Section status workflow missing section_id or status")
 
-    db = SessionLocal()
+    db = session_scope()
     try:
         db_section_process_task = crud.task.get_section_process_task_by_section_id(
             db=db,

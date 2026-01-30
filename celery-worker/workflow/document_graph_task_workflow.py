@@ -19,7 +19,7 @@ from data.neo4j.insert import (
     upsert_doc_chunk_relations,
     upsert_doc_neo4j,
 )
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.ability import Ability
 from enums.document import DocumentGraphStatus
 from proxy.ai_model_proxy import AIModelProxy
@@ -40,7 +40,7 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
     if document_id is None or user_id is None:
         raise Exception("Document graph workflow missing document_id or user_id")
 
-    db = SessionLocal()
+    db = session_scope()
     try:
         db_document = crud.document.get_document_by_document_id(
             db=db,
@@ -146,7 +146,7 @@ def _persist_graph(state: DocumentGraphState) -> DocumentGraphState:
     document_id = state.get("document_id")
     if document_id is None:
         raise Exception("Knowledge graph workflow missing document_id")
-    db = SessionLocal()
+    db = session_scope()
     try:
         db_document = crud.document.get_document_by_document_id(
             db=db,
@@ -181,7 +181,7 @@ async def _mark_graph_success(state: DocumentGraphState) -> DocumentGraphState:
     if document_id is None:
         raise Exception("Document graph workflow missing document_id")
 
-    db = SessionLocal()
+    db = session_scope()
     try:
         db_graph_task = crud.task.get_document_graph_task_by_document_id(
             db=db,
@@ -236,7 +236,7 @@ async def run_document_graph_task_workflow(
         )
     except Exception as e:
         exception_logger.error(f"Something is error while graphing document info: {e}")
-        db = SessionLocal()
+        db = session_scope()
         try:
             db_graph_task = crud.task.get_document_graph_task_by_document_id(
                 db=db,

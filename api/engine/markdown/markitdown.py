@@ -9,7 +9,7 @@ from playwright.async_api import async_playwright
 
 import crud
 from common.common import extract_title_and_summary
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.engine_enums import EngineProvided, EngineCategory
 from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
 from proxy.ai_model_proxy import AIModelProxy
@@ -32,7 +32,7 @@ class MarkitdownEngine(MarkdownEngineBase):
         self,
         url: str
     ) -> WebsiteInfo:
-        db = SessionLocal()
+        db = session_scope()
         # 1. 读取引擎配置 & 校验
         engine_config = self.get_engine_config()
         if not engine_config:
@@ -131,7 +131,7 @@ class MarkitdownEngine(MarkdownEngineBase):
         self,
         file_path: str
     ):
-        db = SessionLocal()
+        db = session_scope()
         engine_config = self.get_engine_config()
         if engine_config is None:
             raise Exception("The engine is not initialized yet. Please initialize the engine first.")

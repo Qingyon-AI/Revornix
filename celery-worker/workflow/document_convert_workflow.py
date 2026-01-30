@@ -6,7 +6,7 @@ from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
 from config.base import BASE_DIR
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.document import DocumentCategory, DocumentMdConvertStatus
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
@@ -21,7 +21,7 @@ async def handle_convert_document_md(
     document_id: int,
     user_id: int
 ):
-    db = SessionLocal()
+    db = session_scope()
     try:
         # 1) 校验 document
         db_document = crud.document.get_document_by_document_id(

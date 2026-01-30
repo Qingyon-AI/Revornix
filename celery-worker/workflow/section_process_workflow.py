@@ -9,7 +9,7 @@ from common.ai import make_section_markdown
 from common.logger import exception_logger
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.neo4j.base import neo4j_driver
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.section import SectionDocumentIntegration, SectionProcessStatus
 from base_implement.image_generate_engine_base import ImageGenerateEngineBase
 from schemas.section import GeneratedImage
@@ -58,7 +58,7 @@ async def handle_process_section(
     auto_podcast: bool = False,
     override: SectionOverrideProperty | None = None
 ):
-    db = SessionLocal()
+    db = session_scope()
     try:
         db_section = crud.section.get_section_by_section_id(
             db=db,
@@ -261,6 +261,8 @@ async def handle_process_section(
         if db_section_process_task is not None:
             db_section_process_task.status = SectionProcessStatus.FAILED
             db.commit()
+    finally:
+        db.close()
 
 
 async def _process_section(state: SectionProcessState) -> SectionProcessState:

@@ -4,7 +4,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.document import DocumentProcessStatus
 from schemas.task import DocumentOverrideProperty
 from workflow.document_chunk_process_workflow import run_document_chunk_process_workflow
@@ -33,7 +33,7 @@ async def handle_process_document(
     auto_transcribe: bool = False,
     override: DocumentOverrideProperty | None = None
 ):
-    db = SessionLocal()
+    db = session_scope()
     
     try:
         db_document = crud.document.get_document_by_document_id(

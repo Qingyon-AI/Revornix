@@ -15,6 +15,6 @@ engine = create_sqlalchemy_engine(
     echo=False
 )
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+session_scope = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

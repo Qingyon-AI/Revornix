@@ -15,7 +15,7 @@ import crud
 import models
 from common.logger import exception_logger
 from data.custom_types.all import *
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.document import DocumentCategory, DocumentMdConvertStatus
 from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from protocol.remote_file_service import RemoteFileServiceProtocol
@@ -39,7 +39,7 @@ async def stream_chunk_document(
     """
     以流式方式生成 ChunkInfo，避免一次性 embedding 占用大量内存
     """
-    db = SessionLocal()
+    db = session_scope()
     try:
         # 1️⃣ 获取文档与用户
         db_document = crud.document.get_document_by_document_id(
@@ -238,7 +238,7 @@ def merge_entitys_and_relations(
 async def get_extract_llm_client(
     user_id: int
 ) -> OpenAI:
-    db = SessionLocal()
+    db = session_scope()
     db_user = crud.user.get_user_by_id(
         db=db,
         user_id=user_id

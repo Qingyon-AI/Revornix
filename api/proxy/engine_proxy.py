@@ -1,6 +1,6 @@
 import crud
 import json
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.model import UserModelProviderRole
 from datetime import datetime, timedelta, timezone
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func, get_user_token_usage
@@ -41,7 +41,7 @@ class EngineProxy:
         """
 
         # ---------- DB（同步世界） ----------
-        with SessionLocal() as db:
+        with session_scope() as db:
             db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
             if db_user is None:
                 raise Exception("The user is not found")

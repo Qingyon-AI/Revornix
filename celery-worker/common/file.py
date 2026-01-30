@@ -11,7 +11,7 @@ from config.base import BASE_DIR
 from common.logger import info_logger, exception_logger
 from tenacity import retry, stop_after_attempt, wait_fixed
 from pathlib import Path
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from proxy.file_system_proxy import FileSystemProxy
 
 async def get_remote_file_signed_url(
@@ -21,7 +21,7 @@ async def get_remote_file_signed_url(
     """获取远程文件系统中的文件的公网访问URL
     """
 
-    db = SessionLocal()
+    db = session_scope()
     try:
         file_service = await FileSystemProxy.create(
             user_id=user_id,

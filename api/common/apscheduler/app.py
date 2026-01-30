@@ -11,7 +11,7 @@ import crud
 import schemas
 from common.celery.app import start_process_document, start_process_section
 from common.logger import exception_logger, info_logger, warning_logger
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.document import DocumentCategory, DocumentMdConvertStatus, UserDocumentAuthority
 from enums.notification import (
     NotificationContentType,
@@ -42,7 +42,7 @@ async def fetch_and_save(
     parsed = feedparser.parse(response.content)
     if not parsed.entries:
         return
-    db = SessionLocal()
+    db = session_scope()
     try:
         for entry in parsed.entries:
 
@@ -150,167 +150,177 @@ async def fetch_and_save(
 
 async def fetch_all_rss_sources_and_update():
     now = datetime.now(tz=timezone.utc)
-    db = SessionLocal()
-    # TODO: 当rss过多的时候，会导致内存爆炸，考虑使用next迭代器，每次只获取一个rss
-    db_rss_servers = crud.rss.get_all_rss_servers(
-        db=db
-    )
-    for rss_server in db_rss_servers:
-        rss_server_info = schemas.rss.RssServerInfo.model_validate(rss_server)
-        rss_server_info.sections = []
-
-        # get the section of the user on the current day
-        db_user_day_section = crud.section.get_section_by_user_and_date(
-            db=db,
-            user_id=rss_server.user_id,
-            date=datetime.now().date()
+    db = session_scope()
+    try:
+        # TODO: 当rss过多的时候，会导致内存爆炸，考虑使用next迭代器，每次只获取一个rss
+        db_rss_servers = crud.rss.get_all_rss_servers(
+            db=db
         )
-        if db_user_day_section is None:
-            db_user_day_section = crud.section.create_section(
+        for rss_server in db_rss_servers:
+            rss_server_info = schemas.rss.RssServerInfo.model_validate(rss_server)
+            rss_server_info.sections = []
+
+            # get the section of the user on the current day
+            db_user_day_section = crud.section.get_section_by_user_and_date(
                 db=db,
-                creator_id=rss_server.user_id,
-                title=f'{now.date().isoformat()} Summary',
-                description=f"This document is the summary of all documents on {now.date().isoformat()}."
-            )
-            crud.section.create_section_user(
-                db=db,
-                section_id=db_user_day_section.id,
                 user_id=rss_server.user_id,
-                role=UserSectionRole.CREATOR,
-                authority=UserSectionAuthority.FULL_ACCESS
+                date=datetime.now().date()
             )
-            crud.section.create_date_section(
-                db=db,
-                section_id=db_user_day_section.id,
-                date=now.date()
-            )
-            db.commit()
-        rss_server_info.sections.append(
-            schemas.rss.RssSectionInfo.model_validate(db_user_day_section)
-        )
-
-        db_rss_sections = crud.rss.get_sections_by_rss_server_id(
-            db=db,
-            rss_server_id=rss_server.id
-        )
-        for db_rss_section in db_rss_sections:
+            if db_user_day_section is None:
+                db_user_day_section = crud.section.create_section(
+                    db=db,
+                    creator_id=rss_server.user_id,
+                    title=f'{now.date().isoformat()} Summary',
+                    description=f"This document is the summary of all documents on {now.date().isoformat()}."
+                )
+                crud.section.create_section_user(
+                    db=db,
+                    section_id=db_user_day_section.id,
+                    user_id=rss_server.user_id,
+                    role=UserSectionRole.CREATOR,
+                    authority=UserSectionAuthority.FULL_ACCESS
+                )
+                crud.section.create_date_section(
+                    db=db,
+                    section_id=db_user_day_section.id,
+                    date=now.date()
+                )
+                db.commit()
             rss_server_info.sections.append(
-                schemas.rss.RssSectionInfo.model_validate(db_rss_section)
+                schemas.rss.RssSectionInfo.model_validate(db_user_day_section)
             )
-        await fetch_and_save(rss_server_info)
-    db.close()
+
+            db_rss_sections = crud.rss.get_sections_by_rss_server_id(
+                db=db,
+                rss_server_id=rss_server.id
+            )
+            for db_rss_section in db_rss_sections:
+                rss_server_info.sections.append(
+                    schemas.rss.RssSectionInfo.model_validate(db_rss_section)
+                )
+            await fetch_and_save(rss_server_info)
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
 
 async def send_notification_scheduler(
     user_id:int,
     notification_task_id: int
 ):
-    db = SessionLocal()
-    db_notification_task = crud.notification.get_notification_task_by_notification_task_id(
-        db=db,
-        notification_task_id=notification_task_id
-    )
-    if db_notification_task is None:
-        raise schemas.error.CustomException(message="notification task not found", code=500)
-    if db_notification_task.notification_content_type == NotificationContentType.CUSTOM:
-        db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(
+    db = session_scope()
+    try:
+        db_notification_task = crud.notification.get_notification_task_by_notification_task_id(
             db=db,
             notification_task_id=notification_task_id
         )
-        if db_notification_content_custom is None:
-            raise schemas.error.CustomException(message="notification content custom not found", code=500)
-        title = db_notification_content_custom.title
-        content = db_notification_content_custom.content
-    elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
-        db_notification_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
-            db=db,
-            notification_task_id=notification_task_id
-        )
-        if db_notification_content_template is None:
-            raise schemas.error.CustomException(message="notification content template not found", code=500)
-        db_notification_template = crud.notification.get_notification_template_by_id(
-            db=db,
-            notification_template_id=db_notification_content_template.notification_template_id
-        )
-        if db_notification_template is None:
-            raise schemas.error.CustomException(message="notification template not found", code=500)
-        if db_notification_template.uuid == NotificationTemplateUUID.DAILY_SUMMARY.value:
-            template = DailySummaryNotificationTemplate()
-            generate_res = await template.generate(
-                params={
-                    "user_id": user_id,
-                    "date": datetime.now().date(),
-                }
+        if db_notification_task is None:
+            raise schemas.error.CustomException(message="notification task not found", code=500)
+        if db_notification_task.notification_content_type == NotificationContentType.CUSTOM:
+            db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(
+                db=db,
+                notification_task_id=notification_task_id
             )
-            title = generate_res.title
-            content = generate_res.content
-    db_user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
-        db=db,
-        user_notification_source_id=db_notification_task.user_notification_source_id
-    )
-    if db_user_notification_source is None:
-        raise schemas.error.CustomException(message="user notification source not found", code=500)
-    db_notification_source = crud.notification.get_notification_source_by_notification_source_id(
-        db=db,
-        notification_source_id=db_user_notification_source.notification_source_id
-    )
-    if db_notification_source is None:
-        raise schemas.error.CustomException(message="notification source not found", code=500)
-    send_res = None
-    if db_notification_source.uuid == NotificationSourceUUID.EMAIL.value:
-        email_notify = EmailNotificationTool()
-        email_notify.set_source(
-            source_id=db_notification_task.user_user_notification_source_id,
-        )
-        email_notify.set_target(
-            target_id=db_notification_task.user_notification_target_id,
-        )
-        if content:
-            content = markdown.markdown(content)
-        send_res = await email_notify.send_notification(
-            title=title,
-            content=content
-        )
-    elif db_notification_source.uuid == NotificationSourceUUID.APPLE.value:
-        apple_notify = AppleNotificationTool()
-        apple_notify.set_source(
-            source_id=db_notification_task.user_notification_source_id,
-        )
-        apple_notify.set_target(
-            target_id=db_notification_task.user_notification_target_id,
-        )
-        send_res = await apple_notify.send_notification(
-            title=title,
-            content=content
-        )
-    elif db_notification_source.uuid == NotificationSourceUUID.APPLE_SANDBOX.value:
-        ios_sandbox_notify = AppleSandboxNotificationTool()
-        ios_sandbox_notify.set_source(
-            source_id=db_notification_task.user_notification_source_id,
-        )
-        ios_sandbox_notify.set_target(
-            target_id=db_notification_task.user_notification_target_id,
-        )
-        send_res = await ios_sandbox_notify.send_notification(
-            title=title,
-            content=content
-        )
-    if not send_res:
-        raise schemas.error.CustomException(message="send notification failed", code=500)
-    else:
-        crud.notification.create_notification_record(
+            if db_notification_content_custom is None:
+                raise schemas.error.CustomException(message="notification content custom not found", code=500)
+            title = db_notification_content_custom.title
+            content = db_notification_content_custom.content
+        elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
+            db_notification_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
+                db=db,
+                notification_task_id=notification_task_id
+            )
+            if db_notification_content_template is None:
+                raise schemas.error.CustomException(message="notification content template not found", code=500)
+            db_notification_template = crud.notification.get_notification_template_by_id(
+                db=db,
+                notification_template_id=db_notification_content_template.notification_template_id
+            )
+            if db_notification_template is None:
+                raise schemas.error.CustomException(message="notification template not found", code=500)
+            if db_notification_template.uuid == NotificationTemplateUUID.DAILY_SUMMARY.value:
+                template = DailySummaryNotificationTemplate()
+                generate_res = await template.generate(
+                    params={
+                        "user_id": user_id,
+                        "date": datetime.now().date(),
+                    }
+                )
+                title = generate_res.title
+                content = generate_res.content
+        db_user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
             db=db,
-            user_id=user_id,
-            title=title,
-            content=content
+            user_notification_source_id=db_notification_task.user_notification_source_id
         )
-        db.commit()
-    db.close()
+        if db_user_notification_source is None:
+            raise schemas.error.CustomException(message="user notification source not found", code=500)
+        db_notification_source = crud.notification.get_notification_source_by_notification_source_id(
+            db=db,
+            notification_source_id=db_user_notification_source.notification_source_id
+        )
+        if db_notification_source is None:
+            raise schemas.error.CustomException(message="notification source not found", code=500)
+        send_res = None
+        if db_notification_source.uuid == NotificationSourceUUID.EMAIL.value:
+            email_notify = EmailNotificationTool()
+            email_notify.set_source(
+                source_id=db_notification_task.user_user_notification_source_id,
+            )
+            email_notify.set_target(
+                target_id=db_notification_task.user_notification_target_id,
+            )
+            if content:
+                content = markdown.markdown(content)
+            send_res = await email_notify.send_notification(
+                title=title,
+                content=content
+            )
+        elif db_notification_source.uuid == NotificationSourceUUID.APPLE.value:
+            apple_notify = AppleNotificationTool()
+            apple_notify.set_source(
+                source_id=db_notification_task.user_notification_source_id,
+            )
+            apple_notify.set_target(
+                target_id=db_notification_task.user_notification_target_id,
+            )
+            send_res = await apple_notify.send_notification(
+                title=title,
+                content=content
+            )
+        elif db_notification_source.uuid == NotificationSourceUUID.APPLE_SANDBOX.value:
+            ios_sandbox_notify = AppleSandboxNotificationTool()
+            ios_sandbox_notify.set_source(
+                source_id=db_notification_task.user_notification_source_id,
+            )
+            ios_sandbox_notify.set_target(
+                target_id=db_notification_task.user_notification_target_id,
+            )
+            send_res = await ios_sandbox_notify.send_notification(
+                title=title,
+                content=content
+            )
+        if not send_res:
+            raise schemas.error.CustomException(message="send notification failed", code=500)
+        else:
+            crud.notification.create_notification_record(
+                db=db,
+                user_id=user_id,
+                title=title,
+                content=content
+            )
+            db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
 
 scheduler.add_listener(job_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
 info_logger.info("Restarting all apscheduler tasks...")
 
-db = SessionLocal()
+db = session_scope()
 
 db_notification_tasks = crud.notification.get_all_notification_tasks(db=db)
 

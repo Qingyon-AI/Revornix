@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 import crud
 from datetime import datetime, timezone, timedelta
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.model import UserModelProviderRole, OfficialModelProvider
 from enums.ability import Ability
 from enums.user import UserRole
@@ -62,7 +62,7 @@ class AIModelProxy:
         """
 
         # ---------- DB（同步世界） ----------
-        db = SessionLocal()
+        db = session_scope()
         try:
             db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
             if db_user is None:

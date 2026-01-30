@@ -4,7 +4,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from enums.document import DocumentCategory, DocumentAudioTranscribeStatus
 from proxy.engine_proxy import EngineProxy
 
@@ -18,7 +18,7 @@ async def handle_transcribe_document_audio(
     document_id: int,
     user_id: int
 ):
-    db = SessionLocal()
+    db = session_scope()
     try:
         db_document = crud.document.get_document_by_document_id(
             db=db,

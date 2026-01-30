@@ -1,6 +1,6 @@
 import crud
 import json
-from data.sql.base import SessionLocal
+from data.sql.base import session_scope
 from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
 from file.aws_s3_remote_file_service import AWSS3RemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
@@ -19,7 +19,7 @@ class FileSystemProxy:
         *,
         user_id: int
     ):
-        db = SessionLocal()
+        db = session_scope()
         try:
             db_user = crud.user.get_user_by_id(
                 db=db,
