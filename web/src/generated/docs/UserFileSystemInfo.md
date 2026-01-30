@@ -11,7 +11,6 @@ Name | Type
 `title` | string
 `description` | string
 `demo_config` | string
-`config_json` | string
 `create_time` | Date
 `update_time` | Date
 
@@ -27,7 +26,6 @@ const example = {
   "title": null,
   "description": null,
   "demo_config": null,
-  "config_json": null,
   "create_time": null,
   "update_time": null,
 } satisfies UserFileSystemInfo

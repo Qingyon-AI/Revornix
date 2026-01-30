@@ -33,12 +33,6 @@ export interface AliyunOSSPresignUploadURLResponse {
     file_path: string;
     /**
      * 
-     * @type {{ [key: string]: any; }}
-     * @memberof AliyunOSSPresignUploadURLResponse
-     */
-    fields: { [key: string]: any; };
-    /**
-     * 
      * @type {Date}
      * @memberof AliyunOSSPresignUploadURLResponse
      */
@@ -51,7 +45,6 @@ export interface AliyunOSSPresignUploadURLResponse {
 export function instanceOfAliyunOSSPresignUploadURLResponse(value: object): value is AliyunOSSPresignUploadURLResponse {
     if (!('upload_url' in value) || value['upload_url'] === undefined) return false;
     if (!('file_path' in value) || value['file_path'] === undefined) return false;
-    if (!('fields' in value) || value['fields'] === undefined) return false;
     if (!('expiration' in value) || value['expiration'] === undefined) return false;
     return true;
 }
@@ -68,7 +61,6 @@ export function AliyunOSSPresignUploadURLResponseFromJSONTyped(json: any, ignore
         
         'upload_url': json['upload_url'],
         'file_path': json['file_path'],
-        'fields': json['fields'],
         'expiration': (new Date(json['expiration'])),
     };
 }
@@ -86,7 +78,6 @@ export function AliyunOSSPresignUploadURLResponseToJSONTyped(value?: AliyunOSSPr
         
         'upload_url': value['upload_url'],
         'file_path': value['file_path'],
-        'fields': value['fields'],
         'expiration': value['expiration'].toISOString(),
     };
 }

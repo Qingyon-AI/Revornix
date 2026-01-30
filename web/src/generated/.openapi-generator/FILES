@@ -18,7 +18,6 @@ docs/AddNotificationTaskRequest.md
 docs/AddRssServerRequest.md
 docs/AddRssServerResponse.md
 docs/AiApi.md
-docs/AliyunOSSPresignUploadURLRequest.md
 docs/AliyunOSSPresignUploadURLResponse.md
 docs/AllMySectionsResponse.md
 docs/ApiKeyApi.md
@@ -97,8 +96,6 @@ docs/FileSystemInfoRequest.md
 docs/FileSystemInstallRequest.md
 docs/FileSystemInstallResponse.md
 docs/FileSystemSearchRequest.md
-docs/FileUrlPrefixRequest.md
-docs/FileUrlPrefixResponse.md
 docs/FollowUserRequest.md
 docs/GenerateDocumentPodcastRequest.md
 docs/GenerateSectionPodcastRequest.md
@@ -260,6 +257,7 @@ docs/UsableEngineSearchRequest.md
 docs/UsableEnginesResponse.md
 docs/UserApi.md
 docs/UserFileSystemDeleteRequest.md
+docs/UserFileSystemDetail.md
 docs/UserFileSystemInfo.md
 docs/UserFileSystemInfoRequest.md
 docs/UserFileSystemUpdateRequest.md
@@ -287,7 +285,6 @@ models/AddNotificationTargetRequest.ts
 models/AddNotificationTaskRequest.ts
 models/AddRssServerRequest.ts
 models/AddRssServerResponse.ts
-models/AliyunOSSPresignUploadURLRequest.ts
 models/AliyunOSSPresignUploadURLResponse.ts
 models/AllMySectionsResponse.ts
 models/ApiKeyCreateRequest.ts
@@ -361,8 +358,6 @@ models/FileSystemInfoRequest.ts
 models/FileSystemInstallRequest.ts
 models/FileSystemInstallResponse.ts
 models/FileSystemSearchRequest.ts
-models/FileUrlPrefixRequest.ts
-models/FileUrlPrefixResponse.ts
 models/FollowUserRequest.ts
 models/GenerateDocumentPodcastRequest.ts
 models/GenerateSectionPodcastRequest.ts
@@ -517,6 +512,7 @@ models/UpdateRssServerRequest.ts
 models/UsableEngineSearchRequest.ts
 models/UsableEnginesResponse.ts
 models/UserFileSystemDeleteRequest.ts
+models/UserFileSystemDetail.ts
 models/UserFileSystemInfo.ts
 models/UserFileSystemInfoRequest.ts
 models/UserFileSystemUpdateRequest.ts

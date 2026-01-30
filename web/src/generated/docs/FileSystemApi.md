@@ -9,7 +9,6 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPost**](FileSystemApi.md#getawss3presignedurlfilesystemawss3presignuploadurlpost) | **POST** /file-system/aws-s3/presign-upload-url | Get Aws S3 Presigned Url |
 | [**getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPost**](FileSystemApi.md#getbuiltinpresignedurlfilesystembuiltinpresignuploadurlpost) | **POST** /file-system/built-in/presign-upload-url | Get Built In Presigned Url |
 | [**getFileSystemInfoFileSystemDetailPost**](FileSystemApi.md#getfilesysteminfofilesystemdetailpost) | **POST** /file-system/detail | Get File System Info |
-| [**getUrlPrefixFileSystemUrlPrefixPost**](FileSystemApi.md#geturlprefixfilesystemurlprefixpost) | **POST** /file-system/url-prefix | Get Url Prefix |
 | [**getUserFileSystemInfoFileSystemUserFileSystemDetailPost**](FileSystemApi.md#getuserfilesysteminfofilesystemuserfilesystemdetailpost) | **POST** /file-system/user-file-system/detail | Get User File System Info |
 | [**installUserFileSystemFileSystemInstallPost**](FileSystemApi.md#installuserfilesystemfilesysteminstallpost) | **POST** /file-system/install | Install User File System |
 | [**provideFileSystemFileSystemProvidePost**](FileSystemApi.md#providefilesystemfilesystemprovidepost) | **POST** /file-system/provide | Provide File System |
@@ -90,7 +89,7 @@ No authorization required
 
 ## getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost
 
-> AliyunOSSPresignUploadURLResponse getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost(aliyunOSSPresignUploadURLRequest, authorization)
+> AliyunOSSPresignUploadURLResponse getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost(s3PresignUploadURLRequest, authorization)
 
 Get Aliyun Oss Presigned Url
 
@@ -108,8 +107,8 @@ async function example() {
   const api = new FileSystemApi();
 
   const body = {
-    // AliyunOSSPresignUploadURLRequest
-    aliyunOSSPresignUploadURLRequest: ...,
+    // S3PresignUploadURLRequest
+    s3PresignUploadURLRequest: ...,
     // string (optional)
     authorization: authorization_example,
   } satisfies GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest;
@@ -131,7 +130,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **aliyunOSSPresignUploadURLRequest** | [AliyunOSSPresignUploadURLRequest](AliyunOSSPresignUploadURLRequest.md) |  | |
+| **s3PresignUploadURLRequest** | [S3PresignUploadURLRequest](S3PresignUploadURLRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
@@ -364,75 +363,9 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## getUrlPrefixFileSystemUrlPrefixPost
-
-> FileUrlPrefixResponse getUrlPrefixFileSystemUrlPrefixPost(fileUrlPrefixRequest)
-
-Get Url Prefix
-
-### Example
-
-```ts
-import {
-  Configuration,
-  FileSystemApi,
-} from '';
-import type { GetUrlPrefixFileSystemUrlPrefixPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new FileSystemApi();
-
-  const body = {
-    // FileUrlPrefixRequest
-    fileUrlPrefixRequest: ...,
-  } satisfies GetUrlPrefixFileSystemUrlPrefixPostRequest;
-
-  try {
-    const data = await api.getUrlPrefixFileSystemUrlPrefixPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **fileUrlPrefixRequest** | [FileUrlPrefixRequest](FileUrlPrefixRequest.md) |  | |
-
-### Return type
-
-[**FileUrlPrefixResponse**](FileUrlPrefixResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
 ## getUserFileSystemInfoFileSystemUserFileSystemDetailPost
 
-> UserFileSystemInfo getUserFileSystemInfoFileSystemUserFileSystemDetailPost(userFileSystemInfoRequest, authorization)
+> UserFileSystemDetail getUserFileSystemInfoFileSystemUserFileSystemDetailPost(userFileSystemInfoRequest, authorization)
 
 Get User File System Info
 
@@ -478,7 +411,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**UserFileSystemInfo**](UserFileSystemInfo.md)
+[**UserFileSystemDetail**](UserFileSystemDetail.md)
 
 ### Authorization
 

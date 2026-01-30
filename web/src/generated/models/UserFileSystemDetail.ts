@@ -16,57 +16,63 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface UserFileSystemInfo
+ * @interface UserFileSystemDetail
  */
-export interface UserFileSystemInfo {
+export interface UserFileSystemDetail {
     /**
      * 
      * @type {number}
-     * @memberof UserFileSystemInfo
+     * @memberof UserFileSystemDetail
      */
     id: number;
     /**
      * 
      * @type {number}
-     * @memberof UserFileSystemInfo
+     * @memberof UserFileSystemDetail
      */
     file_system_id: number;
     /**
      * 
      * @type {string}
-     * @memberof UserFileSystemInfo
+     * @memberof UserFileSystemDetail
      */
     title: string;
     /**
      * 
      * @type {string}
-     * @memberof UserFileSystemInfo
+     * @memberof UserFileSystemDetail
      */
     description?: string | null;
     /**
      * 
      * @type {string}
-     * @memberof UserFileSystemInfo
+     * @memberof UserFileSystemDetail
      */
     demo_config?: string | null;
     /**
      * 
+     * @type {string}
+     * @memberof UserFileSystemDetail
+     */
+    config_json?: string | null;
+    /**
+     * 
      * @type {Date}
-     * @memberof UserFileSystemInfo
+     * @memberof UserFileSystemDetail
      */
     create_time: Date;
     /**
      * 
      * @type {Date}
-     * @memberof UserFileSystemInfo
+     * @memberof UserFileSystemDetail
      */
     update_time: Date | null;
 }
 
 /**
- * Check if a given object implements the UserFileSystemInfo interface.
+ * Check if a given object implements the UserFileSystemDetail interface.
  */
-export function instanceOfUserFileSystemInfo(value: object): value is UserFileSystemInfo {
+export function instanceOfUserFileSystemDetail(value: object): value is UserFileSystemDetail {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('file_system_id' in value) || value['file_system_id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
@@ -75,11 +81,11 @@ export function instanceOfUserFileSystemInfo(value: object): value is UserFileSy
     return true;
 }
 
-export function UserFileSystemInfoFromJSON(json: any): UserFileSystemInfo {
-    return UserFileSystemInfoFromJSONTyped(json, false);
+export function UserFileSystemDetailFromJSON(json: any): UserFileSystemDetail {
+    return UserFileSystemDetailFromJSONTyped(json, false);
 }
 
-export function UserFileSystemInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserFileSystemInfo {
+export function UserFileSystemDetailFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserFileSystemDetail {
     if (json == null) {
         return json;
     }
@@ -90,16 +96,17 @@ export function UserFileSystemInfoFromJSONTyped(json: any, ignoreDiscriminator: 
         'title': json['title'],
         'description': json['description'] == null ? undefined : json['description'],
         'demo_config': json['demo_config'] == null ? undefined : json['demo_config'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
 }
 
-export function UserFileSystemInfoToJSON(json: any): UserFileSystemInfo {
-    return UserFileSystemInfoToJSONTyped(json, false);
+export function UserFileSystemDetailToJSON(json: any): UserFileSystemDetail {
+    return UserFileSystemDetailToJSONTyped(json, false);
 }
 
-export function UserFileSystemInfoToJSONTyped(value?: UserFileSystemInfo | null, ignoreDiscriminator: boolean = false): any {
+export function UserFileSystemDetailToJSONTyped(value?: UserFileSystemDetail | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -111,6 +118,7 @@ export function UserFileSystemInfoToJSONTyped(value?: UserFileSystemInfo | null,
         'title': value['title'],
         'description': value['description'],
         'demo_config': value['demo_config'],
+        'config_json': value['config_json'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
