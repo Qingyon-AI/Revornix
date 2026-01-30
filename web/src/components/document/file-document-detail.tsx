@@ -122,6 +122,7 @@ const FileDocumentDetail = ({
 				throw new Error(err.message);
 			}
 			if (typeof res === 'string') {
+				replaceImagePaths(res, document.creator.id);
 				setMarkdown(res);
 				setMarkdownRendered(true);
 			}
