@@ -4,6 +4,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
+from common.document_guard import ensure_document_active
 from data.sql.base import session_scope
 from enums.document import DocumentCategory, DocumentAudioTranscribeStatus
 from proxy.engine_proxy import EngineProxy
@@ -67,6 +68,7 @@ async def handle_transcribe_document_audio(
             engine_id=db_user.default_audio_transcribe_engine_id
         )
 
+        ensure_document_active(db=db, document_id=document_id)
         db_audio_document = crud.document.get_audio_document_by_document_id(
             db=db,
             document_id=document_id
@@ -78,6 +80,7 @@ async def handle_transcribe_document_audio(
             audio_file_name=db_audio_document.audio_file_name
         )
 
+        ensure_document_active(db=db, document_id=document_id)
         db_transcribe_task.transcribed_text = text
         db_transcribe_task.status = DocumentAudioTranscribeStatus.SUCCESS
         db.commit()

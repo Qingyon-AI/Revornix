@@ -5,6 +5,7 @@ from langgraph.graph import StateGraph, END
 
 from common.ai import reducer_summary, summary_content
 from common.logger import exception_logger
+from common.document_guard import ensure_document_active
 from data.common import extract_entities_relations, get_extract_llm_client, stream_chunk_document
 from data.sql.base import session_scope
 from enums.document import DocumentSummarizeStatus
@@ -85,6 +86,7 @@ async def handle_update_document_ai_summarize(
                 new_relations=sub_relations
             )
         if final_summary_info:
+            ensure_document_active(db=db, document_id=document_id)
             db_summarize_task.summary = final_summary_info.summary
             db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
             db_document.title = final_summary_info.title

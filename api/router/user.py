@@ -835,6 +835,10 @@ def delete_user(
     )
     document_ids = [document.id for document in db_documents]
 
+    crud.task.cancel_document_tasks_by_document_ids(
+        db=db,
+        document_ids=document_ids
+    )
     crud.document.delete_user_documents_by_document_ids(
         db=db,
         document_ids=document_ids,

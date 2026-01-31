@@ -4,6 +4,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
+from common.document_guard import ensure_document_active
 from data.sql.base import session_scope
 from engine.tag.llm_document import LLMDocumentTagEngine
 
@@ -19,6 +20,7 @@ async def handle_tag_document(
 ):
     db = session_scope()
     try:
+        ensure_document_active(db=db, document_id=document_id)
         tag_engine = LLMDocumentTagEngine(user_id=user_id)
         tags = await tag_engine.generate_tags(
             document_id=document_id
@@ -28,6 +30,7 @@ async def handle_tag_document(
         tag_ids = [
             tag.id for tag in tags
         ]
+        ensure_document_active(db=db, document_id=document_id)
         crud.document.create_document_labels(
             db=db,
             document_id=document_id,

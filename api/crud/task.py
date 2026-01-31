@@ -386,3 +386,62 @@ def delete_document_convert_task_by_document_ids(
     )
     query = query.update({models.task.DocumentConvertToMdTask.delete_at: now}, synchronize_session=False)
     db.flush()
+
+def cancel_document_tasks_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    if not document_ids:
+        return
+    now = datetime.now(timezone.utc)
+
+    def _cancel(model, failed_status, active_statuses):
+        query = db.query(model)
+        query = query.filter(
+            model.document_id.in_(document_ids),
+            model.delete_at.is_(None),
+            model.status.in_(active_statuses),
+        )
+        query.update(
+            {
+                model.status: failed_status,
+                model.update_time: now,
+            },
+            synchronize_session=False,
+        )
+
+    _cancel(
+        models.task.DocumentProcessTask,
+        DocumentProcessStatus.FAILED,
+        [DocumentProcessStatus.WAIT_TO, DocumentProcessStatus.PROCESSING],
+    )
+    _cancel(
+        models.task.DocumentConvertToMdTask,
+        DocumentMdConvertStatus.FAILED,
+        [DocumentMdConvertStatus.WAIT_TO, DocumentMdConvertStatus.CONVERTING],
+    )
+    _cancel(
+        models.task.DocumentEmbeddingTask,
+        DocumentEmbeddingStatus.FAILED,
+        [DocumentEmbeddingStatus.WAIT_TO, DocumentEmbeddingStatus.EMBEDDING],
+    )
+    _cancel(
+        models.task.DocumentGraphTask,
+        DocumentGraphStatus.FAILED,
+        [DocumentGraphStatus.WAIT_TO, DocumentGraphStatus.BUILDING],
+    )
+    _cancel(
+        models.task.DocumentSummarizeTask,
+        DocumentSummarizeStatus.FAILED,
+        [DocumentSummarizeStatus.WAIT_TO, DocumentSummarizeStatus.SUMMARIZING],
+    )
+    _cancel(
+        models.task.DocumentPodcastTask,
+        DocumentPodcastStatus.FAILED,
+        [DocumentPodcastStatus.WAIT_TO, DocumentPodcastStatus.GENERATING],
+    )
+    _cancel(
+        models.task.DocumentAudioTranscribeTask,
+        DocumentAudioTranscribeStatus.FAILED,
+        [DocumentAudioTranscribeStatus.WAIT_TO, DocumentAudioTranscribeStatus.TRANSCRIBING],
+    )

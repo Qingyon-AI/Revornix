@@ -4,6 +4,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
+from common.document_guard import ensure_document_active
 from data.common import stream_chunk_document
 from data.milvus.insert import upsert_milvus
 from data.sql.base import session_scope
@@ -97,6 +98,7 @@ async def handle_update_document_embedding(
             )
 
         # 7) 成功
+        ensure_document_active(db=db, document_id=document_id)
         db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
         db.commit()
 

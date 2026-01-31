@@ -4,6 +4,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
+from common.document_guard import ensure_document_active
 from data.sql.base import session_scope
 from enums.document import DocumentProcessStatus
 from schemas.task import DocumentOverrideProperty
@@ -72,12 +73,14 @@ async def handle_process_document(
 
         # 音频转文本
         if auto_transcribe:
+            ensure_document_active(db=db, document_id=document_id)
             await run_document_transcribe_workflow(
                 document_id=document_id,
                 user_id=user_id
             )
 
         # pdf/docx/png等内容 转markdown
+        ensure_document_active(db=db, document_id=document_id)
         await run_document_convert_workflow(
             document_id=document_id,
             user_id=user_id
@@ -85,6 +88,7 @@ async def handle_process_document(
 
         # 覆盖文档元信息
         if override is not None:
+            ensure_document_active(db=db, document_id=document_id)
             db_document = crud.document.get_document_by_document_id(
                 db=db,
                 document_id=document_id
@@ -101,12 +105,14 @@ async def handle_process_document(
 
         # 打标
         if auto_tag:
+            ensure_document_active(db=db, document_id=document_id)
             await run_document_tag_workflow(
                 document_id=document_id,
                 user_id=user_id
             )
 
         # chunk & embedding & graph & summarize
+        ensure_document_active(db=db, document_id=document_id)
         await run_document_chunk_process_workflow(
             document_id=document_id,
             user_id=user_id,
@@ -115,11 +121,13 @@ async def handle_process_document(
 
         # 播客生成任务
         if auto_podcast:
+            ensure_document_active(db=db, document_id=document_id)
             await run_document_podcast_workflow(
                 document_id=db_document.id,
                 user_id=user_id
             )
 
+        ensure_document_active(db=db, document_id=document_id)
         db_document_process_task.status = DocumentProcessStatus.SUCCESS.value
         db.commit()
     except Exception as e:
