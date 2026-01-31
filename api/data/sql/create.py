@@ -73,7 +73,7 @@ from schemas.error import CustomException
 
 from datetime import datetime
 from alembic.util.exc import CommandError
-from data.sql.base import sqlalchemy_engine  # 你得有这个 engine
+from data.sql.base import engine  # 你得有这个 engine
 
 
 # =========================================================
@@ -93,7 +93,7 @@ if not ROOT_USER_NAME or not ROOT_USER_PASSWORD:
 
 
 # =========================================================
-# Alembic 配置：强制与 sqlalchemy_engine 使用同一数据库
+# Alembic 配置：强制与 engine 使用同一数据库
 # =========================================================
 alembic_cfg = Config(str(BASE_DIR / "alembic.ini"))
 
@@ -347,7 +347,7 @@ async def seed_database(db: Session):
 # =========================================================
 async def main():
     # 让 alembic 与 session_scope 使用同一个库
-    alembic_cfg.set_main_option("sqlalchemy.url", str(sqlalchemy_engine.url))
+    alembic_cfg.set_main_option("sqlalchemy.url", str(engine.url))
 
     # 1) 自动生成 migration（如果没有变化会报错，我们要吞掉）
     msg = f"auto {datetime.now().strftime('%Y%m%d_%H%M%S')}"
