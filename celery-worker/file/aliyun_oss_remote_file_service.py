@@ -3,6 +3,7 @@ import json
 from typing import Any, cast
 
 import boto3
+import schemas
 import alibabacloud_oss_v2 as oss
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
@@ -48,10 +49,45 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
             raise Exception("Failed to get the presigned URL")
         
         return pre_result.url
-
-    async def init_client(
-        self
+    
+    def presign_put_url(
+        self,
+        file_path: str,
+        content_type: str | None = None,
+        expires_in: int = 3600
     ):
+        if self.oss_client is None:
+            raise Exception("OSS v2 client not initialized")
+        if self.bucket is None:
+            raise Exception("Bucket not specified")
+
+        put_object_request = oss.PutObjectRequest(
+            bucket=self.bucket,
+            key=file_path
+        )
+
+        if content_type is not None:
+            put_object_request.content_type = content_type
+
+        pre_result = self.oss_client.presign(
+            request=put_object_request,
+            expires=timedelta(seconds=expires_in)
+        )
+
+        if pre_result is None:
+            raise Exception("Failed to get presigned URL")
+
+        if pre_result.url is None or pre_result.signed_headers is None or pre_result.expiration is None:
+            raise Exception("Failed to get presigned URL")
+        
+        return schemas.file_system.PresignUploadURLResponse(
+            file_path=file_path,
+            upload_url=pre_result.url,
+            expiration=pre_result.expiration,
+        )
+
+
+    async def init_client(self):
         def _init():
             try:
                 file_service_config = self.get_config()
@@ -143,7 +179,7 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
         self, 
         file_path, 
         file, 
-        content_type: str | None = None
+        content_type
     ):
         def _upload():
             if self.s3_client is None:

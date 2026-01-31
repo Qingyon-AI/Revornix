@@ -18,7 +18,6 @@ docs/AddNotificationTaskRequest.md
 docs/AddRssServerRequest.md
 docs/AddRssServerResponse.md
 docs/AiApi.md
-docs/AliyunOSSPresignUploadURLResponse.md
 docs/AllMySectionsResponse.md
 docs/ApiKeyApi.md
 docs/ApiKeyCreateRequest.md
@@ -177,6 +176,8 @@ docs/PaginationApiKeyInfo.md
 docs/PaginationNotificationTask.md
 docs/PasswordUpdateRequest.md
 docs/PhoneInfo.md
+docs/PresignUploadURLRequest.md
+docs/PresignUploadURLResponse.md
 docs/PrivateUserInfo.md
 docs/ProvideFileSystemSearchResponse.md
 docs/QuickNoteDocumentInfo.md
@@ -186,14 +187,12 @@ docs/RssApi.md
 docs/RssDocumentInfo.md
 docs/RssSectionInfo.md
 docs/RssServerInfo.md
-docs/S3PresignUploadURLRequest.md
-docs/S3PresignUploadURLResponse.md
 docs/SchemasDocumentBaseSectionInfo.md
 docs/SchemasDocumentCreateLabelResponse.md
-docs/SchemasDocumentLabel.md
 docs/SchemasDocumentLabelAddRequest.md
 docs/SchemasDocumentLabelListResponse.md
 docs/SchemasSectionBaseSectionInfo.md
+docs/SchemasSectionLabel.md
 docs/SchemasSectionLabelDeleteRequest.md
 docs/SearchAllMyDocumentsRequest.md
 docs/SearchApiKeysRequest.md
@@ -285,7 +284,6 @@ models/AddNotificationTargetRequest.ts
 models/AddNotificationTaskRequest.ts
 models/AddRssServerRequest.ts
 models/AddRssServerResponse.ts
-models/AliyunOSSPresignUploadURLResponse.ts
 models/AllMySectionsResponse.ts
 models/ApiKeyCreateRequest.ts
 models/ApiKeyCreateResponse.ts
@@ -436,6 +434,8 @@ models/PaginationApiKeyInfo.ts
 models/PaginationNotificationTask.ts
 models/PasswordUpdateRequest.ts
 models/PhoneInfo.ts
+models/PresignUploadURLRequest.ts
+models/PresignUploadURLResponse.ts
 models/PrivateUserInfo.ts
 models/ProvideFileSystemSearchResponse.ts
 models/QuickNoteDocumentInfo.ts
@@ -444,14 +444,12 @@ models/ReadRequest.ts
 models/RssDocumentInfo.ts
 models/RssSectionInfo.ts
 models/RssServerInfo.ts
-models/S3PresignUploadURLRequest.ts
-models/S3PresignUploadURLResponse.ts
 models/SchemasDocumentBaseSectionInfo.ts
 models/SchemasDocumentCreateLabelResponse.ts
-models/SchemasDocumentLabel.ts
 models/SchemasDocumentLabelAddRequest.ts
 models/SchemasDocumentLabelListResponse.ts
 models/SchemasSectionBaseSectionInfo.ts
+models/SchemasSectionLabel.ts
 models/SchemasSectionLabelDeleteRequest.ts
 models/SearchAllMyDocumentsRequest.ts
 models/SearchApiKeysRequest.ts

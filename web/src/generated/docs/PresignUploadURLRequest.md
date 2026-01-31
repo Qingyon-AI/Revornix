@@ -1,22 +1,24 @@
 
-# SchemasDocumentLabelListResponse
+# PresignUploadURLRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`data` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
+`file_path` | string
+`content_type` | string
 
 ## Example
 
 ```typescript
-import type { SchemasDocumentLabelListResponse } from ''
+import type { PresignUploadURLRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "data": null,
-} satisfies SchemasDocumentLabelListResponse
+  "file_path": null,
+  "content_type": null,
+} satisfies PresignUploadURLRequest
 
 console.log(example)
 
@@ -25,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as SchemasDocumentLabelListResponse
+const exampleParsed = JSON.parse(exampleJSON) as PresignUploadURLRequest
 console.log(exampleParsed)
 ```
 
