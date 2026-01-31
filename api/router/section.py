@@ -218,11 +218,6 @@ async def section_seo_detail_request(
             user_id=res.creator.id,
             file_name=res.md_file_name
         )
-    if res.cover is not None:
-        res.cover = await get_remote_file_signed_url(
-            user_id=res.creator.id,
-            file_name=res.cover
-        )
 
     db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(
         db=db,
@@ -1120,11 +1115,6 @@ async def get_section_detail(
             res.md_file_name = await get_remote_file_signed_url(
                 user_id=res.creator.id,
                 file_name=res.md_file_name
-            )
-        if res.cover is not None:
-            res.cover = await get_remote_file_signed_url(
-                user_id=res.creator.id,
-                file_name=res.cover
             )
 
         db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(
