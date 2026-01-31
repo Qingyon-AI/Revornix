@@ -5,10 +5,8 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**deleteUserFileSystemFileSystemUserFileSystemDeletePost**](FileSystemApi.md#deleteuserfilesystemfilesystemuserfilesystemdeletepost) | **POST** /file-system/user-file-system/delete | Delete User File System |
-| [**getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost**](FileSystemApi.md#getaliyunosspresignedurlfilesystemaliyunosspresignuploadurlpost) | **POST** /file-system/aliyun-oss/presign-upload-url | Get Aliyun Oss Presigned Url |
-| [**getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPost**](FileSystemApi.md#getawss3presignedurlfilesystemawss3presignuploadurlpost) | **POST** /file-system/aws-s3/presign-upload-url | Get Aws S3 Presigned Url |
-| [**getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPost**](FileSystemApi.md#getbuiltinpresignedurlfilesystembuiltinpresignuploadurlpost) | **POST** /file-system/built-in/presign-upload-url | Get Built In Presigned Url |
 | [**getFileSystemInfoFileSystemDetailPost**](FileSystemApi.md#getfilesysteminfofilesystemdetailpost) | **POST** /file-system/detail | Get File System Info |
+| [**getPresignedUrlFileSystemPresignUploadUrlPost**](FileSystemApi.md#getpresignedurlfilesystempresignuploadurlpost) | **POST** /file-system/presign-upload-url | Get Presigned Url |
 | [**getUserFileSystemInfoFileSystemUserFileSystemDetailPost**](FileSystemApi.md#getuserfilesysteminfofilesystemuserfilesystemdetailpost) | **POST** /file-system/user-file-system/detail | Get User File System Info |
 | [**installUserFileSystemFileSystemInstallPost**](FileSystemApi.md#installuserfilesystemfilesysteminstallpost) | **POST** /file-system/install | Install User File System |
 | [**provideFileSystemFileSystemProvidePost**](FileSystemApi.md#providefilesystemfilesystemprovidepost) | **POST** /file-system/provide | Provide File System |
@@ -87,213 +85,6 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost
-
-> AliyunOSSPresignUploadURLResponse getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost(s3PresignUploadURLRequest, authorization)
-
-Get Aliyun Oss Presigned Url
-
-### Example
-
-```ts
-import {
-  Configuration,
-  FileSystemApi,
-} from '';
-import type { GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new FileSystemApi();
-
-  const body = {
-    // S3PresignUploadURLRequest
-    s3PresignUploadURLRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-  } satisfies GetAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPostRequest;
-
-  try {
-    const data = await api.getAliyunOssPresignedUrlFileSystemAliyunOssPresignUploadUrlPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **s3PresignUploadURLRequest** | [S3PresignUploadURLRequest](S3PresignUploadURLRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**AliyunOSSPresignUploadURLResponse**](AliyunOSSPresignUploadURLResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPost
-
-> S3PresignUploadURLResponse getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPost(s3PresignUploadURLRequest, authorization)
-
-Get Aws S3 Presigned Url
-
-### Example
-
-```ts
-import {
-  Configuration,
-  FileSystemApi,
-} from '';
-import type { GetAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new FileSystemApi();
-
-  const body = {
-    // S3PresignUploadURLRequest
-    s3PresignUploadURLRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-  } satisfies GetAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPostRequest;
-
-  try {
-    const data = await api.getAwsS3PresignedUrlFileSystemAwsS3PresignUploadUrlPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **s3PresignUploadURLRequest** | [S3PresignUploadURLRequest](S3PresignUploadURLRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**S3PresignUploadURLResponse**](S3PresignUploadURLResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPost
-
-> S3PresignUploadURLResponse getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPost(s3PresignUploadURLRequest, authorization)
-
-Get Built In Presigned Url
-
-### Example
-
-```ts
-import {
-  Configuration,
-  FileSystemApi,
-} from '';
-import type { GetBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new FileSystemApi();
-
-  const body = {
-    // S3PresignUploadURLRequest
-    s3PresignUploadURLRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-  } satisfies GetBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPostRequest;
-
-  try {
-    const data = await api.getBuiltInPresignedUrlFileSystemBuiltInPresignUploadUrlPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **s3PresignUploadURLRequest** | [S3PresignUploadURLRequest](S3PresignUploadURLRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**S3PresignUploadURLResponse**](S3PresignUploadURLResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
 ## getFileSystemInfoFileSystemDetailPost
 
 > FileSystemInfo getFileSystemInfoFileSystemDetailPost(fileSystemInfoRequest, authorization)
@@ -343,6 +134,75 @@ example().catch(console.error);
 ### Return type
 
 [**FileSystemInfo**](FileSystemInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getPresignedUrlFileSystemPresignUploadUrlPost
+
+> PresignUploadURLResponse getPresignedUrlFileSystemPresignUploadUrlPost(presignUploadURLRequest, authorization)
+
+Get Presigned Url
+
+### Example
+
+```ts
+import {
+  Configuration,
+  FileSystemApi,
+} from '';
+import type { GetPresignedUrlFileSystemPresignUploadUrlPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new FileSystemApi();
+
+  const body = {
+    // PresignUploadURLRequest
+    presignUploadURLRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies GetPresignedUrlFileSystemPresignUploadUrlPostRequest;
+
+  try {
+    const data = await api.getPresignedUrlFileSystemPresignUploadUrlPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **presignUploadURLRequest** | [PresignUploadURLRequest](PresignUploadURLRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**PresignUploadURLResponse**](PresignUploadURLResponse.md)
 
 ### Authorization
 

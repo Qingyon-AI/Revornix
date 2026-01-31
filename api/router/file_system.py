@@ -1,89 +1,43 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import cast
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
+import json
 import crud
 import models
 import schemas
-from common.dependencies import get_current_user, get_db
+from common.encrypt import decrypt_file_system_config
 from enums.file import RemoteFileService
+from common.dependencies import get_current_user, get_db
 from proxy.file_system_proxy import FileSystemProxy
 from common.encrypt import encrypt_file_system_config, decrypt_file_system_config
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
-from file.aliyun_oss_remote_file_service import AliyunOSSRemoteFileService
-from file.aws_s3_remote_file_service import AWSS3RemoteFileService
-from file.built_in_remote_file_service import BuiltInRemoteFileService
 
 file_system_router = APIRouter()
 
 
-@file_system_router.post("/built-in/presign-upload-url", response_model=schemas.file_system.S3PresignUploadURLResponse)
-def get_built_in_presigned_url(
-    s3_presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
+@file_system_router.post("/presign-upload-url", response_model=schemas.file_system.PresignUploadURLResponse)
+async def get_presigned_url(
+    presign_upload_url_request: schemas.file_system.PresignUploadURLRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
-):
-    expires_in = 3600
-    now = datetime.now(timezone.utc)
-    
-    file_service = BuiltInRemoteFileService()
-    expiration = now + timedelta(seconds=expires_in)
+):  
+    file_service = await FileSystemProxy.create(
+        user_id=current_user.id
+    )
     response = file_service.presign_put_url(
-        file_path=s3_presign_upload_url_request.file_path,
-        content_type=s3_presign_upload_url_request.content_type,
-        expires_in=3600
-    )
-    return schemas.file_system.S3PresignUploadURLResponse(
-        upload_url=response.get('url'),
-        file_path=s3_presign_upload_url_request.file_path,
-        fields=response.get('fields'),
-        expiration=expiration
-    )
-
-@file_system_router.post("/aws-s3/presign-upload-url", response_model=schemas.file_system.S3PresignUploadURLResponse)
-def get_aws_s3_presigned_url(
-    s3_presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
-    current_user: models.user.User = Depends(get_current_user)
-):
-    expires_in = 3600
-    now = datetime.now(timezone.utc)
-    
-    file_service = AWSS3RemoteFileService()
-    expiration = now + timedelta(seconds=expires_in)
-    response = file_service.presign_put_url(
-        file_path=s3_presign_upload_url_request.file_path,
-        content_type=s3_presign_upload_url_request.content_type,
-        expires_in=expires_in
-    )
-    return schemas.file_system.S3PresignUploadURLResponse(
-        upload_url=response.get('url'),
-        file_path=s3_presign_upload_url_request.file_path,
-        fields=response.get('fields'),
-        expiration=expiration
-    )
-
-@file_system_router.post('/aliyun-oss/presign-upload-url', response_model=schemas.file_system.AliyunOSSPresignUploadURLResponse)
-def get_aliyun_oss_presigned_url(
-    presign_upload_url_request: schemas.file_system.S3PresignUploadURLRequest,
-    current_user: models.user.User = Depends(get_current_user)
-):
-    file_service = AliyunOSSRemoteFileService()
-    pre_result = file_service.presign_put_url(
         file_path=presign_upload_url_request.file_path,
         content_type=presign_upload_url_request.content_type,
         expires_in=3600
     )
-    
-    if pre_result.url is None or pre_result.signed_headers is None or pre_result.expiration is None:
-        raise Exception("Failed to get presigned URL")
-    
-    return schemas.file_system.AliyunOSSPresignUploadURLResponse(
+    return schemas.file_system.PresignUploadURLResponse(
+        upload_url=response.upload_url,
         file_path=presign_upload_url_request.file_path,
-        upload_url=pre_result.url,
-        expiration=pre_result.expiration
+        fields=response.fields,
+        expiration=response.expiration
     )
 
 @file_system_router.post('/detail', response_model=schemas.file_system.FileSystemInfo)
@@ -277,6 +231,7 @@ def update_file_system(
     db.commit()
     return schemas.common.SuccessResponse()
 
+
 @file_system_router.post("/generic-s3/upload", response_model=schemas.file_system.GenericFileSystemUploadResponse)
 async def upload_file_system(
     file: UploadFile = File(...),
@@ -296,6 +251,9 @@ async def upload_file_system(
     )
     if user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User File System not found")
+    if user_file_system.config_json is None:
+        raise schemas.error.CustomException(code=404, message="The config_json of User File System is None")
+
     remote_file_service = await FileSystemProxy.create(
         user_id=current_user.id
     )
@@ -304,6 +262,9 @@ async def upload_file_system(
     if remote_file_service.file_service_uuid != RemoteFileService.Generic_S3.meta.id:
         raise schemas.error.CustomException(code=404, message="The default user file system is not Generic S3")
     generic_s3_remote_file_service = GenericS3RemoteFileService()
+    file_config = json.loads(decrypt_file_system_config(user_file_system.config_json))
+    generic_s3_remote_file_service.set_config(file_config)
+    await generic_s3_remote_file_service.init_client()
     await generic_s3_remote_file_service.upload_raw_content_to_path(
         file_path=file_path,
         content=content,

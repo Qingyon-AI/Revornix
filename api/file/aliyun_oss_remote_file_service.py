@@ -3,6 +3,7 @@ import json
 from typing import Any, cast
 
 import boto3
+import schemas
 import alibabacloud_oss_v2 as oss
 from aliyunsdkcore.client import AcsClient
 from aliyunsdksts.request.v20150401.AssumeRoleRequest import AssumeRoleRequest
@@ -79,7 +80,11 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
         if pre_result.url is None or pre_result.signed_headers is None or pre_result.expiration is None:
             raise Exception("Failed to get presigned URL")
         
-        return pre_result
+        return schemas.file_system.PresignUploadURLResponse(
+            file_path=file_path,
+            upload_url=pre_result.url,
+            expiration=pre_result.expiration,
+        )
 
 
     async def init_client(self):

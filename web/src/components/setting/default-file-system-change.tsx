@@ -24,15 +24,18 @@ import { useUserContext } from '@/provider/user-provider';
 import { getMineFileSystems } from '@/service/file-system';
 import { updateUserDefaultFileSystem } from '@/service/user';
 import { utils } from '@kinda/utils';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
-import { AlertCircleIcon } from 'lucide-react';
+import { AlertCircleIcon, Loader2 } from 'lucide-react';
+import { getQueryClient } from '@/lib/get-query-client';
 
 const DefaultFileSystemChange = () => {
 	const t = useTranslations();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
+
+	const queryClient = getQueryClient();
 
 	const { data: mineFileSystems, isFetching: isFetchingMineFileSystems } =
 		useQuery({
@@ -46,7 +49,7 @@ const DefaultFileSystemChange = () => {
 	const [selectedFs, setSelectedFs] = useState<string | undefined>(
 		mainUserInfo?.default_user_file_system
 			? String(mainUserInfo.default_user_file_system)
-			: undefined
+			: undefined,
 	);
 
 	// 对话框是否打开
@@ -74,28 +77,28 @@ const DefaultFileSystemChange = () => {
 		setConfirmOpen(true);
 	};
 
-	const handleConfirmChange = async () => {
-		if (targetFsId == null) {
-			setConfirmOpen(false);
-			return;
-		}
-		const [res, err] = await utils.to(
-			updateUserDefaultFileSystem({
+	const mutateChange = useMutation({
+		mutationFn: () => {
+			return updateUserDefaultFileSystem({
 				default_user_file_system: targetFsId,
-			})
-		);
-		if (err) {
-			toast.error(err.message);
-			// 失败的话，保持原来的选中值（不更改 selectedFs）
-		} else {
+			});
+		},
+		onError(error, variables, onMutateResult, context) {
+			console.error(error);
+			toast.error(error.message);
+		},
+		onSuccess(data, variables, onMutateResult, context) {
 			toast.success(
-				t('setting_file_system_page_current_file_system_update_successfully')
+				t('setting_file_system_page_current_file_system_update_successfully'),
 			);
-			await refreshMainUserInfo(); // 更新用户信息
 			// 刷新 mainUserInfo -> effect 会同步 selectedFs
-		}
-		setConfirmOpen(false);
-	};
+			refreshMainUserInfo(); // 更新用户信息
+			queryClient.invalidateQueries({
+				queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
+			});
+			setConfirmOpen(false);
+		},
+	});
 
 	const handleCancelChange = () => {
 		// 取消：恢复本地选中值到 mainUserInfo 默认值
@@ -115,7 +118,7 @@ const DefaultFileSystemChange = () => {
 				<SelectTrigger className='min-w-[180px]'>
 					<SelectValue
 						placeholder={t(
-							'setting_file_system_page_current_user_file_system_select'
+							'setting_file_system_page_current_user_file_system_select',
 						)}
 					/>
 				</SelectTrigger>
@@ -150,8 +153,15 @@ const DefaultFileSystemChange = () => {
 						<AlertDialogCancel onClick={handleCancelChange}>
 							{t('cancel')}
 						</AlertDialogCancel>
-						<AlertDialogAction onClick={handleConfirmChange}>
+						<AlertDialogAction
+							disabled={mutateChange.isPending}
+							onClick={() => {
+								mutateChange.mutate();
+							}}>
 							{t('confirm')}
+							{mutateChange.isPending && (
+								<Loader2 className='animate-spin size-4' />
+							)}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

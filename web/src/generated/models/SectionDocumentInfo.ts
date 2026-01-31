@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { SchemasDocumentLabel } from './SchemasDocumentLabel';
+import type { SchemasSectionLabel } from './SchemasSectionLabel';
 import {
-    SchemasDocumentLabelFromJSON,
-    SchemasDocumentLabelFromJSONTyped,
-    SchemasDocumentLabelToJSON,
-    SchemasDocumentLabelToJSONTyped,
-} from './SchemasDocumentLabel';
+    SchemasSectionLabelFromJSON,
+    SchemasSectionLabelFromJSONTyped,
+    SchemasSectionLabelToJSON,
+    SchemasSectionLabelToJSONTyped,
+} from './SchemasSectionLabel';
 import type { SchemasSectionBaseSectionInfo } from './SchemasSectionBaseSectionInfo';
 import {
     SchemasSectionBaseSectionInfoFromJSON,
@@ -85,10 +85,10 @@ export interface SectionDocumentInfo {
     from_plat?: string | null;
     /**
      * 
-     * @type {Array<SchemasDocumentLabel>}
+     * @type {Array<SchemasSectionLabel>}
      * @memberof SectionDocumentInfo
      */
-    labels?: Array<SchemasDocumentLabel> | null;
+    labels?: Array<SchemasSectionLabel> | null;
     /**
      * 
      * @type {Array<SchemasSectionBaseSectionInfo>}
@@ -144,7 +144,7 @@ export function SectionDocumentInfoFromJSONTyped(json: any, ignoreDiscriminator:
         'cover': json['cover'] == null ? undefined : json['cover'],
         'description': json['description'] == null ? undefined : json['description'],
         'from_plat': json['from_plat'] == null ? undefined : json['from_plat'],
-        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasDocumentLabelFromJSON)),
+        'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SchemasSectionLabelFromJSON)),
         'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SchemasSectionBaseSectionInfoFromJSON)),
         'users': json['users'] == null ? undefined : ((json['users'] as Array<any>).map(UserPublicInfoFromJSON)),
         'create_time': (new Date(json['create_time'])),
@@ -170,7 +170,7 @@ export function SectionDocumentInfoToJSONTyped(value?: SectionDocumentInfo | nul
         'cover': value['cover'],
         'description': value['description'],
         'from_plat': value['from_plat'],
-        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasDocumentLabelToJSON)),
+        'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SchemasSectionLabelToJSON)),
         'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SchemasSectionBaseSectionInfoToJSON)),
         'users': value['users'] == null ? undefined : ((value['users'] as Array<any>).map(UserPublicInfoToJSON)),
         'create_time': value['create_time'].toISOString(),

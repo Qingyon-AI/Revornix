@@ -1,6 +1,6 @@
 import { request } from '@/lib/request'
 import fileSystemApi from '@/api/file_system'
-import { AliyunOSSPresignUploadURLRequest, AliyunOSSPresignUploadURLResponse, FileSystemInfo, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemInstallResponse, FileSystemSearchRequest, MineFileSystemSearchResponse, NormalResponse, ProvideFileSystemSearchResponse, S3PresignUploadURLRequest, S3PresignUploadURLResponse, UserFileSystemDeleteRequest, UserFileSystemDetail, UserFileSystemInfo, UserFileSystemInfoRequest, UserFileSystemUpdateRequest } from '@/generated'
+import { FileSystemInfo, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemInstallResponse, FileSystemSearchRequest, MineFileSystemSearchResponse, NormalResponse, ProvideFileSystemSearchResponse, PresignUploadURLResponse, UserFileSystemDeleteRequest, UserFileSystemDetail, UserFileSystemInfoRequest, UserFileSystemUpdateRequest, PresignUploadURLRequest } from '@/generated'
 
 export const getProvideFileSystems = async (data: FileSystemSearchRequest): Promise<ProvideFileSystemSearchResponse> => {
     return await request(fileSystemApi.getProvideFileSystems, {
@@ -44,20 +44,8 @@ export const getUserFileSystemDetail = async (data: UserFileSystemInfoRequest): 
     })
 }
 
-export const getAliyunOSSPresignUploadURL = async (data: AliyunOSSPresignUploadURLRequest): Promise<AliyunOSSPresignUploadURLResponse> => {
-    return await request(fileSystemApi.getAliyunOSSPresignUploadURL, {
-        data
-    })
-}
-
-export const getAWSS3PresignUploadURL = async (data: S3PresignUploadURLRequest): Promise<S3PresignUploadURLResponse> => {
-    return await request(fileSystemApi.getAWSS3PresignUploadURL, {
-        data
-    })
-}
-
-export const getBuiltInPresignUploadURL = async (data: S3PresignUploadURLRequest): Promise<S3PresignUploadURLResponse> => {
-    return await request(fileSystemApi.getBuiltInPresignUploadURL, {
+export const getPresignUploadURL = async (data: PresignUploadURLRequest): Promise<PresignUploadURLResponse> => {
+    return await request(fileSystemApi.getPresignUploadURL, {
         data
     })
 }

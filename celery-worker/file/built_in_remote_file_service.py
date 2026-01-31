@@ -5,10 +5,12 @@ from io import BytesIO
 from typing import Any
 
 import crud
+import schemas
 import boto3
 from boto3.s3.transfer import TransferConfig
 from botocore.config import Config
 from botocore.exceptions import ClientError
+from datetime import datetime, timedelta, timezone
 
 from common.dependencies import check_deployed_by_official_in_fuc
 from common.logger import exception_logger, info_logger
@@ -99,14 +101,47 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             ExpiresIn=expires_seconds
         )
 
+    def presign_put_url(
+        self,
+        file_path: str,
+        content_type: str | None = None,
+        expires_in: int = 3600
+    ):
+        if self.s3_client is None:
+            raise Exception("S3 client not specified")
+        if self.bucket is None:
+            raise Exception("Bucket not specified")
+        now = datetime.now(timezone.utc)
+        expiration = now + timedelta(seconds=expires_in)
+        response = self.s3_client.generate_presigned_post(
+            Bucket=self.bucket,
+            Key=file_path,
+            Fields={
+                "Content-Type": content_type
+            },
+            Conditions=[
+                {"Content-Type": content_type},
+                {"bucket": self.bucket},
+                ["eq", "$key", file_path]
+            ],
+            ExpiresIn=expires_in,
+        )
+        return schemas.file_system.PresignUploadURLResponse(
+            upload_url=response.get("url"),
+            fields=response.get("fields"),
+            file_path=file_path,
+            expiration=expiration
+        )
+
     async def init_client(
-        self
+        self,
     ):
         def _init():
             deployed_by_official = check_deployed_by_official_in_fuc()
             try:
                 if self.user_id is None:
-                    raise Exception("User id is not specified for built-in file service")
+                    raise Exception("User ID is not specified for built-in file service")
+                
                 file_service_config = self.get_config()
                 if file_service_config is None:
                     raise Exception("File service config is not specified")
@@ -151,6 +186,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                 )
                 self.s3_client = s3
                 
+                # 再在“需要 DB 的瞬间”打开 session，并立刻关闭
                 with session_scope() as db:
                     db_user = crud.user.get_user_by_id(
                         db=db, 

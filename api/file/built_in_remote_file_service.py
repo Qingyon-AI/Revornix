@@ -5,10 +5,12 @@ from io import BytesIO
 from typing import Any
 
 import crud
+import schemas
 import boto3
 from boto3.s3.transfer import TransferConfig
 from botocore.config import Config
 from botocore.exceptions import ClientError
+from datetime import datetime, timedelta, timezone
 
 from common.dependencies import check_deployed_by_official_in_fuc
 from common.logger import exception_logger, info_logger
@@ -109,6 +111,8 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             raise Exception("S3 client not specified")
         if self.bucket is None:
             raise Exception("Bucket not specified")
+        now = datetime.now(timezone.utc)
+        expiration = now + timedelta(seconds=expires_in)
         response = self.s3_client.generate_presigned_post(
             Bucket=self.bucket,
             Key=file_path,
@@ -122,7 +126,12 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             ],
             ExpiresIn=expires_in,
         )
-        return response
+        return schemas.file_system.PresignUploadURLResponse(
+            upload_url=response.get("url"),
+            fields=response.get("fields"),
+            file_path=file_path,
+            expiration=expiration
+        )
 
     async def init_client(
         self,

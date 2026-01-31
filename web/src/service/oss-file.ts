@@ -1,5 +1,5 @@
 import { utils } from "@kinda/utils";
-import { getAliyunOSSPresignUploadURL } from "./file-system";
+import { getPresignUploadURL } from "./file-system";
 import { getMyInfo } from "./user";
 
 export class OSSFileService implements FileServiceProtocol {
@@ -37,7 +37,7 @@ export class OSSFileService implements FileServiceProtocol {
 
     async uploadFile(file_path: string, file: File, content_type?: string): Promise<any> {
         const finalContentType = content_type || file.type || 'application/octet-stream';
-        const [res_presign_url, err_presign_url] = await utils.to(getAliyunOSSPresignUploadURL({
+        const [res_presign_url, err_presign_url] = await utils.to(getPresignUploadURL({
             file_path: file_path,
             content_type: finalContentType
         }));
