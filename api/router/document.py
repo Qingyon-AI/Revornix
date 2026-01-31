@@ -1356,6 +1356,10 @@ def delete_document(
             raise Exception("The document is not found")
         if db_document.creator_id != user.id:
             raise Exception("You are not the owner of the document")
+    crud.task.cancel_document_tasks_by_document_ids(
+        db=db,
+        document_ids=documents_delete_request.document_ids
+    )
     crud.document.delete_user_documents_by_document_ids(
         db=db,
         document_ids=documents_delete_request.document_ids,

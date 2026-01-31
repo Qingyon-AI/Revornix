@@ -5,6 +5,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
+from common.document_guard import ensure_document_active
 from data.sql.base import session_scope
 from enums.document import DocumentPodcastStatus, DocumentCategory
 from common.markdown_helpers import get_markdown_content_by_document_id
@@ -64,6 +65,7 @@ async def handle_update_document_ai_podcast(
             user_id=user_id
         )
     
+        ensure_document_active(db=db, document_id=document_id)
         markdown_content = await get_markdown_content_by_document_id(
             document_id=db_document.id,
             user_id=user_id
@@ -81,6 +83,7 @@ async def handle_update_document_ai_podcast(
             engine_id=db_engine.id
         )
 
+        ensure_document_active(db=db, document_id=document_id)
         audio_bytes = await engine.synthesize(
             text=markdown_content
         )
@@ -89,12 +92,14 @@ async def handle_update_document_ai_podcast(
             db.commit()
             raise Exception("The podcast of the document is not generated because of the error of the engine")
         podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
+        ensure_document_active(db=db, document_id=document_id)
         await remote_file_service.upload_raw_content_to_path(
             file_path=podcast_file_name,
             content=audio_bytes,
             content_type="audio/mpeg"
         )
 
+        ensure_document_active(db=db, document_id=document_id)
         db_podcast_task.status = DocumentPodcastStatus.SUCCESS
         db_podcast_task.podcast_file_name = podcast_file_name
         db.commit()

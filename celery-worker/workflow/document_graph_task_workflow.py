@@ -6,6 +6,7 @@ from langgraph.graph import StateGraph, END
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from common.jwt_utils import create_token
 from common.logger import exception_logger
+from common.document_guard import ensure_document_active
 from data.common import stream_chunk_document, extract_entities_relations, get_extract_llm_client
 from data.custom_types.all import DocumentInfo
 from data.neo4j.insert import (
@@ -183,6 +184,7 @@ async def _mark_graph_success(state: DocumentGraphState) -> DocumentGraphState:
 
     db = session_scope()
     try:
+        ensure_document_active(db=db, document_id=document_id)
         db_graph_task = crud.task.get_document_graph_task_by_document_id(
             db=db,
             document_id=document_id

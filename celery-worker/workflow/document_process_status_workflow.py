@@ -5,6 +5,7 @@ from langgraph.graph import StateGraph, END
 import crud
 from data.sql.base import session_scope
 from common.logger import exception_logger
+from common.document_guard import DocumentDeletedError, ensure_document_active
 
 
 class DocumentProcessStatusState(TypedDict, total=False):
@@ -22,6 +23,10 @@ async def _update_document_status(
 
     db = session_scope()
     try:
+        try:
+            ensure_document_active(db=db, document_id=document_id)
+        except DocumentDeletedError:
+            return state
         db_document_process_task = crud.task.get_document_process_task_by_document_id(
             db=db,
             document_id=document_id

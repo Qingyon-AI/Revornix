@@ -2,6 +2,7 @@ import crud
 import json
 import hashlib
 import asyncio
+import time
 import torch
 import models
 from typing import cast
@@ -14,6 +15,7 @@ from chonkie.chunker.recursive import RecursiveChunker
 from enums.document import DocumentCategory
 from data.sql.base import session_scope
 from data.custom_types.all import RelationInfo, EntityInfo, ChunkInfo
+from common.document_guard import ensure_document_active
 from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from typing import AsyncGenerator
 from sqlalchemy.orm import Session
@@ -81,6 +83,7 @@ async def stream_chunk_document(
         ]
 
         global_idx = 0
+        last_check = 0.0
         for seg_idx, segment in enumerate(segments):
             # ✅ 在后台线程中执行 CPU 密集的 chunking
             raw_chunks = await asyncio.to_thread(chunker, segment)
@@ -93,6 +96,10 @@ async def stream_chunk_document(
             ]
 
             for idx, chunk in enumerate(chunks):
+                now = time.monotonic()
+                if now - last_check >= 2.0:
+                    ensure_document_active(db=db, document_id=doc_id)
+                    last_check = now
                 chunk_info = ChunkInfo(
                     id=make_chunk_id(doc_id=doc_id, idx=global_idx, text=chunk.text),
                     text=chunk.text,

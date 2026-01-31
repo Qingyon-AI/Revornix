@@ -7,6 +7,7 @@ from common.ai import reducer_summary, summary_content
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from common.jwt_utils import create_token
 from common.logger import exception_logger
+from common.document_guard import ensure_document_active
 from data.common import extract_entities_relations, get_extract_llm_client, stream_chunk_document
 from data.custom_types.all import DocumentInfo, EntityInfo, RelationInfo
 from data.milvus.insert import upsert_milvus
@@ -151,6 +152,7 @@ async def handle_process_document_chunks(
                 upsert_chunks_neo4j(
                     chunks_info=[chunk_info]
                 )
+            ensure_document_active(db=db, document_id=document_id)
             db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
             if auto_summary and db_summarize_task is not None and final_summary_info is not None:
                 db_summarize_task.summary = final_summary_info.summary
@@ -177,6 +179,7 @@ async def handle_process_document_chunks(
         try:
             if deployed_by_official and not auth_status:
                 raise Exception("User does not have permission to build graph")
+            ensure_document_active(db=db, document_id=document_id)
             upsert_doc_neo4j(
                 docs_info=[
                     DocumentInfo(
