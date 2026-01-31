@@ -87,6 +87,12 @@ const FileUpload = ({
 		setFile(null);
 		setFileName(null);
 		setUploadingStatus(null);
+
+		// ✅ 关键：清空 input 的值，确保下次选同一个文件也会触发 onChange
+		if (upload.current) {
+			upload.current.value = '';
+		}
+
 		onDelete && onDelete();
 	};
 
@@ -95,7 +101,7 @@ const FileUpload = ({
 			onClick={handleOnUploadFile}
 			className={cn(
 				'relative p-5 rounded border border-input flex justify-center items-center flex-col text-xs gap-2 text-muted-foreground cursor-pointer hover:bg-muted',
-				className
+				className,
 			)}>
 			{uploadingStatus && (
 				<>
