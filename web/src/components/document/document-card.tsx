@@ -9,6 +9,7 @@ import {
 	DocumentMdConvertStatus,
 	DocumentEmbeddingStatus,
 } from '@/enums/document';
+import { replacePath } from '@/lib/utils';
 
 const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 	const t = useTranslations();
@@ -19,7 +20,7 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 			className='flex flex-col rounded overflow-hidden dark:bg-white/5 bg-black/5 group h-full'>
 			{document?.cover ? (
 				<img
-					src={document.cover}
+					src={replacePath(document.cover, document.creator_id)}
 					alt='cover'
 					className='w-full h-36 object-cover mb-2 group-hover:scale-105 transition-transform duration-300 ease-in-out'
 				/>

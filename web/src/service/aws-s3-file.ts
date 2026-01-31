@@ -48,7 +48,7 @@ export class AWSS3FileService implements FileServiceProtocol {
         const formData = new FormData();
 
         // 将 fields 中所有键值填入 formData
-        Object.entries(fields).forEach(([key, value]) => {
+        fields && Object.entries(fields).forEach(([key, value]) => {
             formData.append(key, value);
         });
 

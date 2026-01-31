@@ -33,10 +33,10 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import CustomImage from '../ui/custom-image';
 import { Badge } from '../ui/badge';
-import { cn, isAllowedDeployHost } from '@/lib/utils';
+import { cn, isAllowedDeployHost, replacePath } from '@/lib/utils';
 import { UserRole } from '@/enums/user';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 export function NavUser() {
 	const t = useTranslations();
@@ -158,17 +158,16 @@ export function NavUser() {
 						<SidebarMenuButton
 							size='lg'
 							className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'>
-							<CustomImage
-								src={mainUserInfo.avatar!}
-								alt='avatar'
-								className='object-cover size-8 rounded-lg'
-								errorPlaceHolder={
-									<div className='rounded-lg size-8 flex items-center justify-center bg-muted'>
-										A
-									</div>
-								}
-							/>
-
+							<Avatar className='size-8' title={mainUserInfo.nickname ?? ''}>
+								<AvatarImage
+									src={replacePath(mainUserInfo.avatar, mainUserInfo.id)}
+									alt='avatar'
+									className='size-8 object-cover'
+								/>
+								<AvatarFallback className='size-8'>
+									{mainUserInfo.nickname}
+								</AvatarFallback>
+							</Avatar>
 							<div className='grid flex-1 text-left text-sm leading-tight'>
 								<span className='truncate font-semibold'>
 									{mainUserInfo.nickname}
@@ -189,11 +188,16 @@ export function NavUser() {
 						sideOffset={4}>
 						<DropdownMenuLabel className='p-0 font-normal'>
 							<div className='flex items-center gap-2 px-1 py-1.5'>
-								<CustomImage
-									src={mainUserInfo.avatar!}
-									alt='avatar'
-									className='object-cover size-8 rounded-lg'
-								/>
+								<Avatar>
+									<AvatarImage
+										src={replacePath(mainUserInfo.avatar, mainUserInfo.id)}
+										alt='avatar'
+										className='size-8 object-cover'
+									/>
+									<AvatarFallback className='size-8'>
+										{mainUserInfo.nickname}
+									</AvatarFallback>
+								</Avatar>
 								<div className='grid flex-1 text-sm'>
 									<span className='font-semibold truncate'>
 										{mainUserInfo.nickname}
