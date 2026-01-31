@@ -41,6 +41,9 @@ class EntityInfo(BaseModel):
     text: str
     chunks: list[str]
     entity_type: str
+    context_hash: str | None = None
+    context_sample: str | None = None
+    context_embedding: list[float] | None = None
 
 class CommunityInfo(BaseModel):
     id: str

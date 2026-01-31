@@ -7,7 +7,12 @@ from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_
 from common.jwt_utils import create_token
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
-from data.common import stream_chunk_document, extract_entities_relations, get_extract_llm_client
+from data.common import (
+    stream_chunk_document,
+    extract_entities_relations,
+    get_extract_llm_client,
+    resolve_entities_with_semantic_dedupe,
+)
 from data.custom_types.all import DocumentInfo
 from data.neo4j.insert import (
     upsert_entities_neo4j,
@@ -20,6 +25,8 @@ from data.neo4j.insert import (
     upsert_doc_chunk_relations,
     upsert_doc_neo4j,
 )
+from data.neo4j.search import get_entities_by_text_and_type
+from engine.embedding.factory import get_embedding_engine
 from data.sql.base import session_scope
 from enums.ability import Ability
 from enums.document import DocumentGraphStatus
@@ -125,6 +132,8 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
     if llm_client is None or llm_model is None or user_id is None or document_id is None:
         raise Exception("Knowledge graph workflow missing required context")
 
+    existing_entities_index: dict[tuple[str, str], list[dict]] = {}
+    embedding_engine = get_embedding_engine()
     async for chunk_info in stream_chunk_document(doc_id=document_id):
         sub_entities, sub_relations = extract_entities_relations(
             user_id=user_id,
@@ -132,6 +141,20 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
             llm_model=llm_model,
             chunk=chunk_info
         )
+        if sub_entities:
+            keys = list({(e.entity_type, e.text) for e in sub_entities})
+            missing_keys = [k for k in keys if k not in existing_entities_index]
+            if missing_keys:
+                existing_entities_index.update(get_entities_by_text_and_type(missing_keys))
+            sub_entities, sub_relations = resolve_entities_with_semantic_dedupe(
+                entities=sub_entities,
+                relations=sub_relations,
+                chunk_text=chunk_info.text,
+                existing_entities_index=existing_entities_index,
+                embedding_engine=embedding_engine,
+                llm_client=llm_client,
+                llm_model=llm_model,
+            )
         if sub_entities:
             upsert_entities_neo4j(sub_entities)
         if sub_relations:

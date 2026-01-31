@@ -25,10 +25,97 @@ from proxy.file_system_proxy import FileSystemProxy
 
 def make_chunk_id(
     doc_id: int, 
-    idx: int, 
-text: str) -> str:
+    idx: int,
+    text: str
+) -> str:
     h = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
     return f"DOC_{doc_id}_IDX_{idx}_H_{h}"
+
+def _normalize_context_text(text: str) -> str:
+    return " ".join(text.split()).strip().lower()
+
+def make_context_hash(text: str) -> str:
+    normalized = _normalize_context_text(text)
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:16]
+
+def make_entity_id(entity_type: str, text: str, context_hash: str) -> str:
+    key = f"{entity_type}|{text}|{context_hash}"
+    return f"ENT_{hashlib.sha256(key.encode('utf-8')).hexdigest()[:16]}"
+
+def _extract_entity_context_sample(text: str, entity_text: str, window: int = 200, max_len: int = 512) -> str:
+    if not text:
+        return ""
+    lower_text = text.lower()
+    lower_entity = entity_text.lower()
+    idx = lower_text.find(lower_entity) if entity_text else -1
+    if idx >= 0:
+        start = max(0, idx - window)
+        end = min(len(text), idx + len(entity_text) + window)
+        sample = text[start:end]
+    else:
+        sample = text
+    return sample[:max_len]
+
+def _cosine_similarity(a: list[float], b: list[float]) -> float:
+    if not a or not b or len(a) != len(b):
+        return -1.0
+    try:
+        import numpy as np
+        va = np.asarray(a, dtype=np.float32)
+        vb = np.asarray(b, dtype=np.float32)
+        denom = np.linalg.norm(va) * np.linalg.norm(vb)
+        if denom == 0.0:
+            return -1.0
+        return float(np.dot(va, vb) / denom)
+    except Exception:
+        dot = 0.0
+        norm_a = 0.0
+        norm_b = 0.0
+        for x, y in zip(a, b):
+            dot += x * y
+            norm_a += x * x
+            norm_b += y * y
+        if norm_a == 0.0 or norm_b == 0.0:
+            return -1.0
+        return dot / ((norm_a ** 0.5) * (norm_b ** 0.5))
+
+def _llm_semantic_match(
+    *,
+    llm_client: OpenAI,
+    llm_model: str,
+    entity_text: str,
+    entity_type: str,
+    context_a: str,
+    context_b: str,
+) -> bool:
+    prompt = f"""
+You are judging whether the same term refers to the same meaning in two contexts.
+Term: {entity_text}
+Type: {entity_type}
+
+Context A:
+{context_a}
+
+Context B:
+{context_b}
+
+Return strict JSON only:
+{{"same": true}} or {{"same": false}}
+"""
+    try:
+        resp = llm_client.chat.completions.create(
+            model=llm_model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            response_format={"type": "json_object"},
+            max_tokens=256,
+        )
+        content = resp.choices[0].message.content or ""
+        data = json.loads(content)
+        return bool(data.get("same"))
+    except Exception as e:
+        exception_logger.error(f"LLM semantic match failed: {e}")
+        return False
 
 # -----------------------------
 # chunking：把长文本按语义切成 chunk（带 overlap），注意此处文本必须为一篇完整的文章，否则idx会乱
@@ -268,11 +355,11 @@ def merge_entitys_and_relations(
     entities: list[EntityInfo], 
     relations: list[RelationInfo]
 ) -> tuple[list[EntityInfo], list[RelationInfo]]:
-    seen_entities: dict[tuple[str, str], EntityInfo] = {}
+    seen_entities: dict[tuple[str, str, str | None], EntityInfo] = {}
     dedup_entities: list[EntityInfo] = []
 
     for e in entities:
-        key = (e.entity_type, e.text)
+        key = (e.entity_type, e.text, e.context_hash)
         if key not in seen_entities:
             # 初始化 chunks
             if not hasattr(e, "chunks") or e.chunks is None:
@@ -297,6 +384,173 @@ def merge_entitys_and_relations(
             dedup_relations.append(r)
 
     return dedup_entities, dedup_relations
+
+def filter_entities_relations_by_context_consistency(
+    entities: list[EntityInfo],
+    relations: list[RelationInfo],
+    context_index: dict[tuple[str, str], str],
+    existing_context_index: dict[tuple[str, str], set[str | None]] | None = None,
+) -> tuple[list[EntityInfo], list[RelationInfo]]:
+    allowed_ids: set[str] = set()
+    filtered_entities: list[EntityInfo] = []
+    if existing_context_index is None:
+        existing_context_index = {}
+
+    for e in entities:
+        key = (e.entity_type, e.text)
+        context_hash = e.context_hash or ""
+        existing_hashes = existing_context_index.get(key)
+        if existing_hashes:
+            if any(h is None or h == "" for h in existing_hashes):
+                continue
+            if any(h != context_hash for h in existing_hashes):
+                continue
+        existing = context_index.get(key)
+        if existing is None:
+            context_index[key] = context_hash
+        elif existing != context_hash:
+            continue
+        filtered_entities.append(e)
+        allowed_ids.add(e.id)
+        if key not in existing_context_index:
+            existing_context_index[key] = {context_hash}
+        else:
+            existing_context_index[key].add(context_hash)
+
+    filtered_relations = [
+        r for r in relations
+        if r.src_node in allowed_ids and r.tgt_node in allowed_ids
+    ]
+    return filtered_entities, filtered_relations
+
+def resolve_entities_with_semantic_dedupe(
+    *,
+    entities: list[EntityInfo],
+    relations: list[RelationInfo],
+    chunk_text: str,
+    existing_entities_index: dict[tuple[str, str], list[dict]],
+    embedding_engine,
+    llm_client: OpenAI,
+    llm_model: str,
+    similarity_high: float = 0.85,
+    similarity_low: float = 0.7,
+) -> tuple[list[EntityInfo], list[RelationInfo]]:
+    if not entities:
+        return [], []
+
+    context_samples = [
+        _extract_entity_context_sample(chunk_text, e.text)
+        for e in entities
+    ]
+    embeddings: list = []
+    if context_samples:
+        max_batch = 10
+        for i in range(0, len(context_samples), max_batch):
+            batch = context_samples[i:i + max_batch]
+            batch_vecs = embedding_engine.embed(batch)
+            if hasattr(batch_vecs, "tolist"):
+                batch_vecs = batch_vecs.tolist()
+            embeddings.extend(list(batch_vecs))
+
+    id_map: dict[str, str] = {}
+    resolved_entities: list[EntityInfo] = []
+
+    for e, sample, emb in zip(entities, context_samples, embeddings):
+        original_id = e.id
+        key = (e.entity_type, e.text)
+        candidates = existing_entities_index.get(key, [])
+
+        emb_list = emb.tolist() if hasattr(emb, "tolist") else list(emb)
+
+        best_candidate = None
+        best_sim = -1.0
+        for c in candidates:
+            c_emb = c.get("context_embedding")
+            if not c_emb:
+                continue
+            sim = _cosine_similarity(emb_list, c_emb)
+            if sim > best_sim:
+                best_sim = sim
+                best_candidate = c
+
+        match = None
+        if best_candidate and best_sim >= similarity_high:
+            match = best_candidate
+        elif best_candidate and best_sim >= similarity_low:
+            c_sample = best_candidate.get("context_sample") or ""
+            if c_sample:
+                same = _llm_semantic_match(
+                    llm_client=llm_client,
+                    llm_model=llm_model,
+                    entity_text=e.text,
+                    entity_type=e.entity_type,
+                    context_a=c_sample,
+                    context_b=sample,
+                )
+                if same:
+                    match = best_candidate
+        elif not best_candidate and candidates:
+            c_sample = None
+            for c in candidates:
+                if c.get("context_sample"):
+                    c_sample = c["context_sample"]
+                    best_candidate = c
+                    break
+            if c_sample:
+                same = _llm_semantic_match(
+                    llm_client=llm_client,
+                    llm_model=llm_model,
+                    entity_text=e.text,
+                    entity_type=e.entity_type,
+                    context_a=c_sample,
+                    context_b=sample,
+                )
+                if same:
+                    match = best_candidate
+
+        if match:
+            canonical_id = match.get("id")
+            context_hash = match.get("context_hash") or make_context_hash(sample)
+            if not match.get("context_hash"):
+                match["context_hash"] = context_hash
+            if not match.get("context_sample"):
+                match["context_sample"] = sample
+            if not match.get("context_embedding"):
+                match["context_embedding"] = emb_list
+        else:
+            context_hash = make_context_hash(sample)
+            canonical_id = make_entity_id(e.entity_type, e.text, context_hash)
+            existing_entities_index.setdefault(key, []).append(
+                {
+                    "id": canonical_id,
+                    "context_hash": context_hash,
+                    "context_sample": sample,
+                    "context_embedding": emb_list,
+                }
+            )
+
+        e.id = canonical_id
+        e.context_hash = context_hash
+        e.context_sample = sample
+        e.context_embedding = emb_list
+        resolved_entities.append(e)
+        id_map[original_id] = canonical_id
+
+    resolved_relations: list[RelationInfo] = []
+    for r in relations:
+        src = id_map.get(r.src_node)
+        tgt = id_map.get(r.tgt_node)
+        if src is None or tgt is None:
+            continue
+        resolved_relations.append(
+            RelationInfo(
+                src_node=src,
+                tgt_node=tgt,
+                relation_type=r.relation_type,
+            )
+        )
+
+    return resolved_entities, resolved_relations
 
 async def get_extract_llm_client(
     user_id: int

@@ -29,6 +29,62 @@ def build_time_filter(
         params[key] = to_neo4j_datetime_str(time_end)
     return (" AND " + " AND ".join(clauses)) if clauses else "", params
 
+# ===================== Entity Context Hash Lookup =====================
+def get_entity_context_hashes(
+    entity_keys: list[tuple[str, str]]
+) -> dict[tuple[str, str], set[str | None]]:
+    if not entity_keys:
+        return {}
+    rows = [
+        {"entity_type": entity_type, "text": text}
+        for (entity_type, text) in entity_keys
+    ]
+    result_map: dict[tuple[str, str], set[str | None]] = {
+        (entity_type, text): set() for (entity_type, text) in entity_keys
+    }
+    cypher = """
+    UNWIND $rows AS r
+    MATCH (e:Entity {text: r.text, entity_type: r.entity_type})
+    RETURN r.text AS text, r.entity_type AS entity_type, collect(DISTINCT e.context_hash) AS hashes
+    """
+    with neo4j_driver.session() as sess:
+        records = sess.run(cypher, {"rows": rows})
+        for r in records:
+            key = (r["entity_type"], r["text"])
+            hashes = r["hashes"] or []
+            result_map[key].update(hashes)
+    return result_map
+
+def get_entities_by_text_and_type(
+    entity_keys: list[tuple[str, str]]
+) -> dict[tuple[str, str], list[Dict[str, Any]]]:
+    if not entity_keys:
+        return {}
+    rows = [
+        {"entity_type": entity_type, "text": text}
+        for (entity_type, text) in entity_keys
+    ]
+    result_map: dict[tuple[str, str], list[Dict[str, Any]]] = {
+        (entity_type, text): [] for (entity_type, text) in entity_keys
+    }
+    cypher = """
+    UNWIND $rows AS r
+    MATCH (e:Entity {text: r.text, entity_type: r.entity_type})
+    RETURN r.text AS text, r.entity_type AS entity_type,
+           collect({
+             id: e.id,
+             context_hash: e.context_hash,
+             context_sample: e.context_sample,
+             context_embedding: e.context_embedding
+           }) AS entities
+    """
+    with neo4j_driver.session() as sess:
+        records = sess.run(cypher, {"rows": rows})
+        for r in records:
+            key = (r["entity_type"], r["text"])
+            result_map[key] = r["entities"] or []
+    return result_map
+
 # ===================== Local Search =====================
 def local_search_by_entity(
     user_id: int,
