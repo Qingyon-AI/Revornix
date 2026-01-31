@@ -204,11 +204,11 @@ def merge_entitys_and_relations(
     entities: list[EntityInfo],
     relations: list[RelationInfo]
 ) -> tuple[list[EntityInfo], list[RelationInfo]]:
-    seen_entities: dict[tuple[str, str], EntityInfo] = {}
+    seen_entities: dict[tuple[str, str, str | None], EntityInfo] = {}
     dedup_entities: list[EntityInfo] = []
 
     for e in entities:
-        key = (e.entity_type, e.text)
+        key = (e.entity_type, e.text, e.context_hash)
         if key not in seen_entities:
             # 初始化 chunks
             if not hasattr(e, "chunks") or e.chunks is None:

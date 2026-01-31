@@ -89,7 +89,10 @@ def upsert_entities_neo4j(
     MERGE (e:Entity {id: r.id})
     SET e.text = r.text,
         e.entity_type = r.entity_type,
-        e.chunks = r.chunks,
+        e.chunks = apoc.coll.toSet(coalesce(e.chunks, []) + coalesce(r.chunks, [])),
+        e.context_hash = coalesce(e.context_hash, r.context_hash),
+        e.context_sample = coalesce(e.context_sample, r.context_sample),
+        e.context_embedding = coalesce(e.context_embedding, r.context_embedding),
         e.updated_at = datetime(r.updated_at),
         e.created_at = coalesce(e.created_at, datetime(r.created_at))
     RETURN count(*) AS updated
@@ -101,6 +104,9 @@ def upsert_entities_neo4j(
             "text": e.text,
             "entity_type": e.entity_type,
             "chunks": e.chunks,
+            "context_hash": e.context_hash,
+            "context_sample": e.context_sample,
+            "context_embedding": e.context_embedding,
             "created_at": now,
             "updated_at": now
         }

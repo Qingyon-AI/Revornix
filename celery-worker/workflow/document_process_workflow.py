@@ -35,6 +35,10 @@ async def handle_process_document(
     override: DocumentOverrideProperty | None = None
 ):
     db = session_scope()
+    def _truncate(text: str, limit: int) -> str:
+        if len(text) <= limit:
+            return text
+        return text[: max(0, limit - 3)] + "..."
     
     try:
         db_document = crud.document.get_document_by_document_id(
@@ -137,8 +141,10 @@ async def handle_process_document(
             document_id=document_id
         )
         if db_document is not None:
-            db_document.title = f"Error: {e}"
-            db_document.description = f"Error: {e}"
+            title = _truncate(f"Error: {e}", 200)
+            description = _truncate(f"Error: {e}", 1000)
+            db_document.title = title
+            db_document.description = description
         db_document_process_task = crud.task.get_document_process_task_by_document_id(
             db=db,
             document_id=document_id

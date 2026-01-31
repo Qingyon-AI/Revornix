@@ -120,7 +120,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 									<AvatarImage
 										src={replacePath(data?.creator.avatar, data.creator.id)}
 										alt='avatar'
-										className='size-6'
+										className='size-6 object-cover'
 									/>
 									<AvatarFallback className='size-6'>
 										{data?.creator.nickname}
