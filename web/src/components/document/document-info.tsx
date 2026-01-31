@@ -27,6 +27,8 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { Button } from '../ui/button';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '../ui/alert';
+import { replacePath } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const DocumentInfo = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -87,7 +89,11 @@ const DocumentInfo = ({ id }: { id: number }) => {
 							<img
 								className='w-full h-40 relative object-cover'
 								alt='cover'
-								src={data.cover ? data.cover : '/images/cover.jpg'}
+								src={
+									data.cover
+										? replacePath(data.cover, data.creator.id)
+										: '/images/cover.jpg'
+								}
 							/>
 						</div>
 						<div className='flex flex-row justify-between items-center px-5 mb-3'>
@@ -102,12 +108,25 @@ const DocumentInfo = ({ id }: { id: number }) => {
 						</div>
 						{data.creator && (
 							<div
-								className='flex flex-row items-center px-5 mb-3'
+								className='flex flex-row items-center px-5 mb-3 gap-1'
 								onClick={() => router.push(`/user/detail/${data.creator!.id}`)}>
-								<CustomImage
-									src={data.creator!.avatar!}
-									className='w-5 h-5 rounded-full mr-2 object-cover'
-								/>
+								<Avatar
+									className='size-6'
+									title={data?.creator.nickname ?? ''}
+									onClick={(e) => {
+										router.push(`/user/detail/${data?.creator.id}`);
+										e.preventDefault();
+										e.stopPropagation();
+									}}>
+									<AvatarImage
+										src={replacePath(data?.creator.avatar, data.creator.id)}
+										alt='avatar'
+										className='size-6'
+									/>
+									<AvatarFallback className='size-6'>
+										{data?.creator.nickname}
+									</AvatarFallback>
+								</Avatar>
 								<p className='text-xs text-muted-foreground'>
 									{data.creator!.nickname}
 								</p>

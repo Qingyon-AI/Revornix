@@ -371,6 +371,7 @@ async def handle_process_section(
                     db.commit()
         except Exception as inner_exception:
             exception_logger.error(f"Failed to update section process status: {inner_exception}")
+        raise e
 
 
 def _build_workflow():
