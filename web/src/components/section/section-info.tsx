@@ -12,6 +12,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import SectionInfoSubscriber from './section-info-subscriber';
 import SectionInfoMember from './section-info-member';
+import { replacePath } from '@/lib/utils';
 
 const SectionInfo = ({ id }: { id: number }) => {
 	const locale = useLocale();
@@ -33,7 +34,11 @@ const SectionInfo = ({ id }: { id: number }) => {
 		<>
 			<div className='mb-5'>
 				<img
-					src={section?.cover ? section.cover : '/images/cover.jpg'}
+					src={
+						section?.cover
+							? replacePath(section.cover, section.creator.id)
+							: '/images/cover.jpg'
+					}
 					alt='cover'
 					className='w-full h-40 object-cover'
 				/>
@@ -92,7 +97,10 @@ const SectionInfo = ({ id }: { id: number }) => {
 										e.stopPropagation();
 									}}>
 									<AvatarImage
-										src={section?.creator.avatar}
+										src={replacePath(
+											section?.creator.avatar,
+											section.creator.id,
+										)}
 										alt='avatar'
 										className='size-6'
 									/>
