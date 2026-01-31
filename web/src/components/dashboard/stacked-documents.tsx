@@ -1,6 +1,6 @@
 import { DocumentInfo } from '@/generated';
 import { useRouter } from 'nextjs-toploader/app';
-import CustomImage from '../ui/custom-image';
+import { replacePath } from '@/lib/utils';
 
 const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 	const router = useRouter();
@@ -38,9 +38,9 @@ const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 							</div>
 
 							{document.cover && (
-								<CustomImage
+								<img
 									className='ml-5 h-full aspect-square rounded object-cover'
-									src={document.cover}
+									src={replacePath(document.cover, document.creator_id)}
 									alt='cover'
 								/>
 							)}

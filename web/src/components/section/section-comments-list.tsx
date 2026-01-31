@@ -8,15 +8,15 @@ import { Skeleton } from '../ui/skeleton';
 import { format } from 'date-fns';
 import { useRouter } from 'nextjs-toploader/app';
 import { useTranslations } from 'next-intl';
-import CustomImage from '../ui/custom-image';
 import {
 	Empty,
-	EmptyContent,
 	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
 import { TrashIcon } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { replacePath } from '@/lib/utils';
 
 const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
@@ -42,7 +42,7 @@ const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 							limit: lastPage.limit,
 							keyword: keyword,
 							section_id: section_id,
-					  }
+						}
 					: undefined;
 			},
 		});
@@ -79,10 +79,19 @@ const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 										onClick={() =>
 											router.push(`/user/detail/${comment.creator.id}`)
 										}>
-										<CustomImage
-											src={comment.creator.avatar}
-											className='w-5 h-5 rounded-full mr-2 object-cover'
-										/>
+										<Avatar className='mr-2'>
+											<AvatarImage
+												src={replacePath(
+													comment.creator.avatar,
+													comment.creator.id,
+												)}
+												alt='avatar'
+												className='size-5 object-cover'
+											/>
+											<AvatarFallback className='size-8'>
+												{comment.creator.nickname}
+											</AvatarFallback>
+										</Avatar>
 										<p className='text-xs text-muted-foreground'>
 											{comment.creator.nickname}
 										</p>

@@ -8,9 +8,10 @@ import { useRouter } from 'nextjs-toploader/app';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
 import DocumentCommentForm from './document-comment-form';
-import CustomImage from '../ui/custom-image';
 import { Alert, AlertDescription } from '../ui/alert';
 import { OctagonAlert } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { replacePath } from '@/lib/utils';
 
 const DocumentNotes = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -42,7 +43,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 							limit: lastPage.limit,
 							keyword: keyword,
 							document_id: document!.id,
-					  }
+						}
 					: undefined;
 			},
 		});
@@ -78,10 +79,16 @@ const DocumentNotes = ({ id }: { id: number }) => {
 									<div
 										className='flex flex-row items-center'
 										onClick={() => router.push(`/user/detail/${note.user.id}`)}>
-										<CustomImage
-											src={note.user.avatar}
-											className='w-5 h-5 rounded-full mr-2 object-cover'
-										/>
+										<Avatar className='mr-2'>
+											<AvatarImage
+												src={replacePath(note.user.avatar, note.user.id)}
+												alt='avatar'
+												className='size-5 object-cover'
+											/>
+											<AvatarFallback className='size-5'>
+												{note.user.nickname}
+											</AvatarFallback>
+										</Avatar>
 										<p className='text-xs text-muted-foreground'>
 											{note.user.nickname}
 										</p>

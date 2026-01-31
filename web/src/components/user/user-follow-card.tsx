@@ -19,7 +19,8 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { Loader2 } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
 import Link from 'next/link';
-import CustomImage from '../ui/custom-image';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { replacePath } from '@/lib/utils';
 
 const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 	const queryClient = getQueryClient();
@@ -29,7 +30,7 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 	const handleCancelFollow = async () => {
 		setCanceling(true);
 		const [res, err] = await utils.to(
-			followUser({ to_user_id: user.id, status: false })
+			followUser({ to_user_id: user.id, status: false }),
 		);
 		if (err) {
 			toast.error(`操作失败，${err.message}`);
@@ -53,11 +54,14 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 		<Card key={user.id} className='px-5 gap-2'>
 			<Link href={`/user/detail/${user.id}`}>
 				<div className='flex flex-row items-center gap-2 mb-2'>
-					<CustomImage
-						className='rounded w-12 h-12 object-cover'
-						src={user.avatar}
-						alt=''
-					/>
+					<Avatar>
+						<AvatarImage
+							src={replacePath(user.avatar, user.id)}
+							alt='avatar'
+							className='size-12 object-cover'
+						/>
+						<AvatarFallback className='size-12'>{user.nickname}</AvatarFallback>
+					</Avatar>
 					<div className='flex flex-col gap-1'>
 						<p className='font-bold'>{user.nickname}</p>
 						<p className='text-muted-foreground text-sm'>

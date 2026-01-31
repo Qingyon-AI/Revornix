@@ -7,7 +7,8 @@ import { enUS } from 'date-fns/locale/en-US';
 import { useRouter } from 'nextjs-toploader/app';
 import { Badge } from '../ui/badge';
 import { useLocale, useTranslations } from 'next-intl';
-import CustomImage from '../ui/custom-image';
+import { replacePath } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const SectionCard = ({ section }: { section: SectionInfo }) => {
 	const locale = useLocale();
@@ -19,8 +20,8 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 			className='flex flex-col rounded overflow-hidden dark:bg-white/5 bg-black/5 group h-full'>
 			<div className='relative w-full h-48 overflow-hidden'>
 				{section?.cover ? (
-					<CustomImage
-						src={section.cover}
+					<img
+						src={replacePath(section.cover, section.creator.id)}
 						alt='cover'
 						className='w-full h-full object-cover mb-2 group-hover:scale-105 transition-transform duration-300 ease-in-out'
 					/>
@@ -55,16 +56,23 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 			)}
 			<div className='flex flex-row gap-2 items-center text-xs text-muted-foreground justify-between p-2'>
 				<div className='flex flex-row items-center gap-1'>
-					<CustomImage
+					<Avatar
+						className='size-5'
+						title={section?.creator.nickname ?? ''}
 						onClick={(e) => {
 							router.push(`/user/detail/${section.creator.id}`);
 							e.preventDefault();
 							e.stopPropagation();
-						}}
-						src={section.creator.avatar}
-						alt='avatar'
-						className='rounded-full object-cover w-5 h-5'
-					/>
+						}}>
+						<AvatarImage
+							src={replacePath(section?.creator.avatar, section.creator.id)}
+							alt='avatar'
+							className='size-5 object-cover'
+						/>
+						<AvatarFallback className='size-5'>
+							{section?.creator.nickname}
+						</AvatarFallback>
+					</Avatar>
 					{formatDistance(new Date(section.create_time), new Date(), {
 						addSuffix: true,
 						locale: locale === 'zh' ? zhCN : enUS,

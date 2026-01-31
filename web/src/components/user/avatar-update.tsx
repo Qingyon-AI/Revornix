@@ -9,9 +9,10 @@ import { updateUserInfo } from '@/service/user';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
-import CustomImage from '../ui/custom-image';
 import { FileService } from '@/lib/file';
 import { getUserFileSystemDetail } from '@/service/file-system';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { replacePath } from '@/lib/utils';
 
 const AvatarUpdate = () => {
 	const t = useTranslations();
@@ -92,11 +93,16 @@ const AvatarUpdate = () => {
 			{mainUserInfo && mainUserInfo.avatar && (
 				<>
 					<div className='flex flex-row'>
-						<CustomImage
-							src={mainUserInfo.avatar}
-							className='mr-2 size-8 rounded object-cover'
-							alt='avatar'
-						/>
+						<Avatar className='size-8' title={mainUserInfo.nickname ?? ''}>
+							<AvatarImage
+								src={replacePath(mainUserInfo.avatar, mainUserInfo.id)}
+								alt='avatar'
+								className='size-8 mr-2 object-cover'
+							/>
+							<AvatarFallback className='size-8'>
+								{mainUserInfo.nickname}
+							</AvatarFallback>
+						</Avatar>
 						<Button
 							className='text-xs'
 							variant={'link'}

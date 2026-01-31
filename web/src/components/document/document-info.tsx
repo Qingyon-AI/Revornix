@@ -11,7 +11,6 @@ import { useRouter } from 'nextjs-toploader/app';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Separator } from '../ui/separator';
-import CustomImage from '../ui/custom-image';
 import {
 	DocumentCategory,
 	DocumentEmbeddingStatus,
