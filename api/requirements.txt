@@ -42,6 +42,6 @@ websockets==15.0.1
 lark_oapi==1.4.24
 python-telegram-bot==22.5
 hf_transfer==0.1.9
-langfuse==3.11.1
+langfuse==3.12.1
 sentry_sdk==2.48.0
-langgraph==1.0.6
+langgraph==1.0.7

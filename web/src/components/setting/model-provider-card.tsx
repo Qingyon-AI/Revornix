@@ -39,6 +39,7 @@ import ModelProviderUpdate from './model-provider-update';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
 import { Badge } from '../ui/badge';
+import { replacePath } from '@/lib/utils';
 
 interface ModelCardProps {
 	modelProvider: ModelProvider;
@@ -283,7 +284,10 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 							e.stopPropagation();
 						}}>
 						<AvatarImage
-							src={modelProvider.creator.avatar}
+							src={replacePath(
+								modelProvider.creator.avatar,
+								modelProvider.creator.id,
+							)}
 							alt='user avatar'
 							className='size-5 object-cover'
 						/>
