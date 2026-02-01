@@ -41,6 +41,7 @@ import { EngineInfo } from '@/generated';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
 import { format } from 'date-fns';
+import { replacePath } from '@/lib/utils';
 
 const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 	const locale = useLocale();
@@ -224,7 +225,12 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 							e.stopPropagation();
 						}}>
 						<AvatarImage
-							src={engine_info.creator.avatar ?? ''}
+							src={
+								replacePath(
+									engine_info.creator.avatar,
+									engine_info.creator.id,
+								) ?? ''
+							}
 							alt='user avatar'
 							className='size-5 object-cover'
 						/>
