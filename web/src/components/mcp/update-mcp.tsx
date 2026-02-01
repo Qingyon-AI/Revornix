@@ -25,34 +25,37 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import z from 'zod';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../ui/button';
-import { Loader2, Pencil } from 'lucide-react';
+import { Loader2, Pencil, XCircleIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getMCPServerDetail, updateMCPServer } from '@/service/mcp';
 import { Textarea } from '../ui/textarea';
 import { MCPCategory } from '@/enums/mcp';
+import { diffValues } from '@/lib/utils';
+import { Spinner } from '../ui/spinner';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia } from '../ui/empty';
 
 const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 	const t = useTranslations();
 
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
 
-	const mcpUpdateFormSchema = z
+	const formSchema = z
 		.object({
 			id: z.number(),
-			name: z.string().min(1).max(20).optional().nullable(),
-			category: z.number().min(0).max(1).optional().nullable(),
-			cmd: z.string().optional().nullable(),
-			args: z.string().optional().nullable(),
-			env: z.string().optional().nullable(),
-			url: z.string().optional().nullable(),
-			headers: z.string().optional().nullable(),
-			enable: z.boolean().optional().nullable(),
+			name: z.string().min(1).max(20).optional(),
+			category: z.number().min(0).max(1).optional(),
+			cmd: z.string().optional(),
+			args: z.string().optional(),
+			env: z.string().optional(),
+			url: z.string().optional(),
+			headers: z.string().optional(),
+			enable: z.boolean().optional(),
 		})
 		.refine(
 			(data) => {
@@ -64,7 +67,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 			{
 				message: t('mcp_server_cmd_needed'),
 				path: ['cmd'],
-			}
+			},
 		)
 		.refine(
 			(data) => {
@@ -76,7 +79,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 			{
 				message: t('mcp_server_args_needed'),
 				path: ['args'],
-			}
+			},
 		)
 		.refine(
 			(data) => {
@@ -88,14 +91,19 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 			{
 				message: t('mcp_server_url_needed'),
 				path: ['url'],
-			}
+			},
 		);
 
 	const queryClient = getQueryClient();
 
-	const mcpUpdateForm = useForm({
-		resolver: zodResolver(mcpUpdateFormSchema),
+	const form = useForm({
+		resolver: zodResolver(formSchema),
+		defaultValues: {
+			id: mcp_id,
+		},
 	});
+
+	const initialValuesRef = useRef<z.infer<typeof formSchema> | null>(null);
 
 	const mutateUpdateMCPServer = useMutation({
 		mutationFn: updateMCPServer,
@@ -105,14 +113,18 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 			queryClient.invalidateQueries({
 				queryKey: ['mcp-server-search'],
 			});
+			queryClient.invalidateQueries({
+				queryKey: ['mcp-server-detail', mcp_id],
+			});
 		},
 		onError: (error) => {
+			console.error(error);
 			toast.error(error.message);
 		},
 	});
 
 	const handleMCPUpdateFormSubmit = async (
-		event: React.FormEvent<HTMLFormElement>
+		event: React.FormEvent<HTMLFormElement>,
 	) => {
 		if (event) {
 			if (typeof event.preventDefault === 'function') {
@@ -122,17 +134,29 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 				event.stopPropagation();
 			}
 		}
-		return mcpUpdateForm.handleSubmit(
+		return form.handleSubmit(
 			onUpdateFormValidateSuccess,
-			onUpdateFormValidateError
+			onUpdateFormValidateError,
 		)(event);
 	};
 
 	const onUpdateFormValidateSuccess = async (
-		values: z.infer<typeof mcpUpdateFormSchema>
+		values: z.infer<typeof formSchema>,
 	) => {
-		await mutateUpdateMCPServer.mutateAsync(values);
-		mcpUpdateForm.reset();
+		if (!initialValuesRef.current) return;
+
+		const patch = diffValues(values, initialValuesRef.current);
+
+		// 如果啥都没改
+		if (Object.keys(patch).length === 0) {
+			toast.info(t('form_no_change'));
+			return;
+		}
+
+		mutateUpdateMCPServer.mutate({
+			...values,
+			id: mcp_id,
+		});
 	};
 
 	const onUpdateFormValidateError = (errors: any) => {
@@ -140,29 +164,41 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 		toast.error(t('form_validate_failed'));
 	};
 
-	const { data } = useQuery({
+	const { data, isFetching, isError, error, isSuccess, refetch } = useQuery({
 		queryKey: ['mcp-server-detail', mcp_id],
 		queryFn: () => getMCPServerDetail({ id: mcp_id }),
+		enabled: showUpdateDialog,
 	});
 
 	useEffect(() => {
 		if (!data) return;
-		mcpUpdateForm.reset({
-			id: data.id,
+
+		const initialFormValues: z.infer<typeof formSchema> = {
+			id: mcp_id,
 			name: data.name,
 			category: data.category,
-			cmd: data.cmd,
-			args: data.args,
-			env: data.env,
-			url: data.url,
-			headers: data.headers,
+			cmd: data.cmd ?? '',
+			args: data.args ?? '',
+			env: data.env ?? '',
+			url: data.url ?? '',
+			headers: data.headers ?? '',
 			enable: data.enable,
-		});
-	}, [data]);
+		};
+
+		form.reset(initialFormValues);
+		initialValuesRef.current = initialFormValues; // ✅ 存表单结构
+	}, [data, mcp_id, showUpdateDialog]);
 
 	return (
 		<>
-			<Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
+			<Dialog
+				open={showUpdateDialog}
+				onOpenChange={(open) => {
+					setShowUpdateDialog(open);
+					if (open) {
+						refetch(); // ✅ 每次打开都拉最新
+					}
+				}}>
 				<DialogTrigger asChild>
 					<Button size={'icon'}>
 						<Pencil />
@@ -172,34 +208,31 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 					<DialogHeader>
 						<DialogTitle>{t('mcp_server_update_form_title')}</DialogTitle>
 					</DialogHeader>
-					<div>
-						<Form {...mcpUpdateForm}>
+
+					{!data && isFetching && (
+						<div className='bg-muted text-xs text-muted-foreground p-5 rounded flex flex-row items-center justify-center gap-2'>
+							<span>{t('loading')}</span>
+							<Spinner />
+						</div>
+					)}
+
+					{!data && isError && error && (
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<XCircleIcon />
+								</EmptyMedia>
+								<EmptyDescription>{error.message}</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
+					)}
+
+					{isSuccess && data && (
+						<Form {...form}>
 							<form onSubmit={handleMCPUpdateFormSubmit} className='space-y-4'>
 								<FormField
-									name='name'
-									control={mcpUpdateForm.control}
-									render={({ field }) => {
-										return (
-											<FormItem>
-												<FormLabel>
-													{t('mcp_server_update_form_name_label')}
-												</FormLabel>
-												<Input
-													{...field}
-													value={field.value ?? ''}
-													placeholder={t(
-														'mcp_server_update_form_name_placeholder'
-													)}
-												/>
-
-												<FormMessage />
-											</FormItem>
-										);
-									}}
-								/>
-								<FormField
 									name='category'
-									control={mcpUpdateForm.control}
+									control={form.control}
 									render={({ field }) => {
 										return (
 											<FormItem>
@@ -207,14 +240,16 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 													{t('mcp_server_update_form_category_label')}
 												</FormLabel>
 												<Select
-													onValueChange={(value) =>
-														field.onChange(Number(value))
+													value={
+														field.value === undefined
+															? undefined
+															: String(field.value)
 													}
-													defaultValue={String(field.value)}>
+													disabled>
 													<SelectTrigger className='w-full'>
 														<SelectValue
 															placeholder={t(
-																'mcp_server_update_form_category_placeholder'
+																'mcp_server_update_form_category_placeholder',
 															)}
 														/>
 													</SelectTrigger>
@@ -234,11 +269,33 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 										);
 									}}
 								/>
-								{Number(mcpUpdateForm.watch('category')) === 1 && (
+								<FormField
+									name='name'
+									control={form.control}
+									render={({ field }) => {
+										return (
+											<FormItem>
+												<FormLabel>
+													{t('mcp_server_update_form_name_label')}
+												</FormLabel>
+												<Input
+													{...field}
+													value={field.value ?? ''}
+													placeholder={t(
+														'mcp_server_update_form_name_placeholder',
+													)}
+												/>
+
+												<FormMessage />
+											</FormItem>
+										);
+									}}
+								/>
+								{Number(form.watch('category')) === 1 && (
 									<>
 										<FormField
 											name='url'
-											control={mcpUpdateForm.control}
+											control={form.control}
 											render={({ field }) => {
 												return (
 													<FormItem>
@@ -249,7 +306,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 															{...field}
 															value={field.value ?? ''}
 															placeholder={t(
-																'mcp_server_update_form_url_placeholder'
+																'mcp_server_update_form_url_placeholder',
 															)}
 														/>
 														<FormMessage />
@@ -259,7 +316,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 										/>
 										<FormField
 											name='headers'
-											control={mcpUpdateForm.control}
+											control={form.control}
 											render={({ field }) => {
 												return (
 													<FormItem>
@@ -270,7 +327,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 															{...field}
 															value={field.value ?? ''}
 															placeholder={t(
-																'mcp_server_update_form_headers_placeholder'
+																'mcp_server_update_form_headers_placeholder',
 															)}
 														/>
 														<FormMessage />
@@ -280,11 +337,11 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 										/>
 									</>
 								)}
-								{Number(mcpUpdateForm.watch('category')) === 0 && (
+								{Number(form.watch('category')) === 0 && (
 									<>
 										<FormField
 											name='cmd'
-											control={mcpUpdateForm.control}
+											control={form.control}
 											render={({ field }) => {
 												return (
 													<FormItem>
@@ -295,7 +352,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 															{...field}
 															value={field.value ?? ''}
 															placeholder={t(
-																'mcp_server_update_form_script_placeholder'
+																'mcp_server_update_form_script_placeholder',
 															)}
 														/>
 														<FormMessage />
@@ -305,7 +362,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 										/>
 										<FormField
 											name='args'
-											control={mcpUpdateForm.control}
+											control={form.control}
 											render={({ field }) => {
 												return (
 													<FormItem>
@@ -316,7 +373,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 															{...field}
 															value={field.value ?? ''}
 															placeholder={t(
-																'mcp_server_update_form_args_placeholder'
+																'mcp_server_update_form_args_placeholder',
 															)}
 														/>
 														<FormMessage />
@@ -326,7 +383,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 										/>
 										<FormField
 											name='env'
-											control={mcpUpdateForm.control}
+											control={form.control}
 											render={({ field }) => {
 												return (
 													<FormItem>
@@ -337,7 +394,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 															{...field}
 															value={field.value ?? ''}
 															placeholder={t(
-																'mcp_server_update_form_env_placeholder'
+																'mcp_server_update_form_env_placeholder',
 															)}
 														/>
 														<FormMessage />
@@ -364,7 +421,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 								</DialogFooter>
 							</form>
 						</Form>
-					</div>
+					)}
 				</DialogContent>
 			</Dialog>
 		</>

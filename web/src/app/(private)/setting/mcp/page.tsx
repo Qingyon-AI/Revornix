@@ -129,7 +129,7 @@ const MCPPage = () => {
 											<Badge>
 												{mcp_server.category === MCPCategory.STD
 													? 'std'
-													: 'stream'}
+													: 'http'}
 											</Badge>
 										</TableCell>
 										<TableCell>
