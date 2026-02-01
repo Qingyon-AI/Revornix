@@ -125,7 +125,7 @@ const TodayNews = () => {
 				{refreshStatus ? (
 					<Skeleton className='w-full min-h-[240px] h-full' />
 				) : error ? (
-					<Empty>
+					<Empty className='h-full'>
 						<EmptyHeader>
 							<EmptyMedia variant='icon'>
 								<TrashIcon />
