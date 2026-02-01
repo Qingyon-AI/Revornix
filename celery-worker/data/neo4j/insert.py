@@ -146,7 +146,30 @@ def upsert_relations_neo4j(
 # -----------------------------
 # 8.1) Neo4j：Chunk -> Entity 关系
 # -----------------------------
-def upsert_chunk_entity_relations():
+def upsert_chunk_entity_relations(
+    entities_info: list[EntityInfo] | None = None
+):
+    if entities_info:
+        pairs = {
+            (cid, e.id)
+            for e in entities_info
+            for cid in (e.chunks or [])
+        }
+        if not pairs:
+            return
+        rows = [
+            {"chunk_id": chunk_id, "entity_id": entity_id}
+            for (chunk_id, entity_id) in pairs
+        ]
+        cypher = """
+        UNWIND $rows AS r
+        MATCH (c:Chunk {id: r.chunk_id})
+        MATCH (e:Entity {id: r.entity_id})
+        MERGE (c)-[:MENTIONS]->(e)
+        """
+        with neo4j_driver.session() as session:
+            session.run(cypher, rows=rows)
+        return
     cypher = """
     MATCH (e:Entity)
     UNWIND e.chunks AS eid

@@ -216,7 +216,7 @@ async def handle_process_document_chunks(
             upsert_doc_chunk_relations()
             upsert_entities_neo4j(entities)
             upsert_relations_neo4j(relations)
-            upsert_chunk_entity_relations()
+            upsert_chunk_entity_relations(entities)
             create_communities_from_chunks()
             create_community_nodes_and_relationships_with_size()
             annotate_node_degrees()

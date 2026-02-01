@@ -1,8 +1,6 @@
 from datetime import datetime, timezone
-
 from data.custom_types.all import ChunkInfo, DocumentInfo, EntityInfo, RelationInfo
 from data.neo4j.base import neo4j_driver
-
 
 def now_str():
     return datetime.now(tz=timezone.utc).isoformat()
@@ -10,7 +8,9 @@ def now_str():
 # -----------------------------
 # 1) 批量 upsert Document节点
 # -----------------------------
-def upsert_doc_neo4j(docs_info: list[DocumentInfo]):
+def upsert_doc_neo4j(
+    docs_info: list[DocumentInfo]
+):
     cypher = """
     UNWIND $rows AS r
     MERGE (d:Document {id: r.id})
@@ -51,7 +51,9 @@ def upsert_doc_chunk_relations():
 # -----------------------------
 # 4) 批量 upsert Chunk 节点
 # -----------------------------
-def upsert_chunks_neo4j(chunks_info: list[ChunkInfo]):
+def upsert_chunks_neo4j(
+    chunks_info: list[ChunkInfo]
+):
     cypher = """
     UNWIND $rows AS r
     MERGE (c:Chunk {id: r.id})
@@ -65,7 +67,10 @@ def upsert_chunks_neo4j(chunks_info: list[ChunkInfo]):
     now = now_str()
     rows = [
         {
-            **c.model_dump(),
+            "doc_id": c.doc_id,
+            "id": c.id,
+            "text": c.text,
+            "idx": c.idx,
             "created_at": now,
             "updated_at": now
         } for c in chunks_info
@@ -76,13 +81,18 @@ def upsert_chunks_neo4j(chunks_info: list[ChunkInfo]):
 # -----------------------------
 # 7) 批量 upsert Entity 节点
 # -----------------------------
-def upsert_entities_neo4j(entities_info: list[EntityInfo]):
+def upsert_entities_neo4j(
+    entities_info: list[EntityInfo]
+):
     cypher = """
     UNWIND $rows AS r
     MERGE (e:Entity {id: r.id})
     SET e.text = r.text,
         e.entity_type = r.entity_type,
-        e.chunks = r.chunks,
+        e.chunks = apoc.coll.toSet(coalesce(e.chunks, []) + coalesce(r.chunks, [])),
+        e.context_hash = coalesce(e.context_hash, r.context_hash),
+        e.context_sample = coalesce(e.context_sample, r.context_sample),
+        e.context_embedding = coalesce(e.context_embedding, r.context_embedding),
         e.updated_at = datetime(r.updated_at),
         e.created_at = coalesce(e.created_at, datetime(r.created_at))
     RETURN count(*) AS updated
@@ -94,6 +104,9 @@ def upsert_entities_neo4j(entities_info: list[EntityInfo]):
             "text": e.text,
             "entity_type": e.entity_type,
             "chunks": e.chunks,
+            "context_hash": e.context_hash,
+            "context_sample": e.context_sample,
+            "context_embedding": e.context_embedding,
             "created_at": now,
             "updated_at": now
         }
@@ -105,7 +118,9 @@ def upsert_entities_neo4j(entities_info: list[EntityInfo]):
 # -----------------------------
 # 8) 批量 upsert Entity -> Entity 的关系
 # -----------------------------
-def upsert_relations_neo4j(relations_info: list[RelationInfo]):
+def upsert_relations_neo4j(
+    relations_info: list[RelationInfo]
+):
     cypher = """
     UNWIND $rows AS r
     MERGE (a:Entity {id: r.src_node})
@@ -131,7 +146,30 @@ def upsert_relations_neo4j(relations_info: list[RelationInfo]):
 # -----------------------------
 # 8.1) Neo4j：Chunk -> Entity 关系
 # -----------------------------
-def upsert_chunk_entity_relations():
+def upsert_chunk_entity_relations(
+    entities_info: list[EntityInfo] | None = None
+):
+    if entities_info:
+        pairs = {
+            (cid, e.id)
+            for e in entities_info
+            for cid in (e.chunks or [])
+        }
+        if not pairs:
+            return
+        rows = [
+            {"chunk_id": chunk_id, "entity_id": entity_id}
+            for (chunk_id, entity_id) in pairs
+        ]
+        cypher = """
+        UNWIND $rows AS r
+        MATCH (c:Chunk {id: r.chunk_id})
+        MATCH (e:Entity {id: r.entity_id})
+        MERGE (c)-[:MENTIONS]->(e)
+        """
+        with neo4j_driver.session() as session:
+            session.run(cypher, rows=rows)
+        return
     cypher = """
     MATCH (e:Entity)
     UNWIND e.chunks AS eid
@@ -194,7 +232,7 @@ def create_community_nodes_and_relationships_with_size():
             SET com.size = member_count
         """)
 
-        communities = session.run("MATCH (com:Community) RETURN com.id, com.size")
+        session.run("MATCH (com:Community) RETURN com.id, com.size")
 
 # -----------------------------
 # 11) 所有节点 degree 标注

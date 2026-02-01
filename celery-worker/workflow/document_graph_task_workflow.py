@@ -155,13 +155,15 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
                 llm_client=llm_client,
                 llm_model=llm_model,
             )
+        upsert_chunks_neo4j(
+            chunks_info=[chunk_info]
+        )
         if sub_entities:
             upsert_entities_neo4j(sub_entities)
         if sub_relations:
             upsert_relations_neo4j(sub_relations)
-        upsert_chunks_neo4j(
-            chunks_info=[chunk_info]
-        )
+        if sub_entities:
+            upsert_chunk_entity_relations(sub_entities)
 
     return state
 
