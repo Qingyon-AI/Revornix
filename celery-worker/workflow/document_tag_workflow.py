@@ -37,9 +37,6 @@ async def handle_tag_document(
             label_ids=tag_ids
         )
         db.commit()
-    except Exception as e:
-        exception_logger.error(f"Something is error while tagging the document: {e}")
-        raise
     finally:
         db.close()
 
@@ -83,9 +80,13 @@ async def run_document_tag_workflow(
     user_id: int
 ) -> None:
     workflow = get_document_tag_workflow()
-    await workflow.ainvoke(
-        {
-            "document_id": document_id,
-            "user_id": user_id,
-        }
-    )
+    try:
+        await workflow.ainvoke(
+            {
+                "document_id": document_id,
+                "user_id": user_id,
+            }
+        )
+    except Exception as e:
+        exception_logger.error(f"Something is error while tagging the document: {e}")
+        raise

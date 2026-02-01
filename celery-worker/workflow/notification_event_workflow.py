@@ -2,6 +2,7 @@ from typing import TypedDict
 
 from langgraph.graph import StateGraph, END
 
+from common.logger import exception_logger
 from notification.common import trigger_user_notification_event
 
 
@@ -53,10 +54,14 @@ async def run_notification_event_workflow(
     params: dict | None = None
 ) -> None:
     workflow = get_notification_event_workflow()
-    await workflow.ainvoke(
-        {
-            "user_id": user_id,
-            "trigger_event_uuid": trigger_event_uuid,
-            "params": params,
-        }
-    )
+    try:
+        await workflow.ainvoke(
+            {
+                "user_id": user_id,
+                "trigger_event_uuid": trigger_event_uuid,
+                "params": params,
+            }
+        )
+    except Exception as e:
+        exception_logger.error(f"Something is error while triggering notification event: {e}")
+        raise
