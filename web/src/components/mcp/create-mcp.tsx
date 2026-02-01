@@ -57,7 +57,7 @@ const CreateMcp = () => {
 			{
 				message: t('mcp_server_cmd_needed'),
 				path: ['cmd'],
-			}
+			},
 		)
 		.refine(
 			(data) => {
@@ -69,7 +69,7 @@ const CreateMcp = () => {
 			{
 				message: t('mcp_server_args_needed'),
 				path: ['args'],
-			}
+			},
 		)
 		.refine(
 			(data) => {
@@ -81,7 +81,7 @@ const CreateMcp = () => {
 			{
 				message: t('mcp_server_url_needed'),
 				path: ['url'],
-			}
+			},
 		);
 	const mcpCreateForm = useForm({
 		resolver: zodResolver(mcpCreateFormSchema),
@@ -118,7 +118,7 @@ const CreateMcp = () => {
 	});
 
 	const handleMCPCreateFormSubmit = async (
-		event: React.FormEvent<HTMLFormElement>
+		event: React.FormEvent<HTMLFormElement>,
 	) => {
 		if (event) {
 			if (typeof event.preventDefault === 'function') {
@@ -130,12 +130,12 @@ const CreateMcp = () => {
 		}
 		return mcpCreateForm.handleSubmit(
 			onCreateFormValidateSuccess,
-			onCreateFormValidateError
+			onCreateFormValidateError,
 		)(event);
 	};
 
 	const onCreateFormValidateSuccess = async (
-		values: z.infer<typeof mcpCreateFormSchema>
+		values: z.infer<typeof mcpCreateFormSchema>,
 	) => {
 		await mutateCreateMCPServer.mutateAsync(values);
 		mcpCreateForm.reset();
@@ -161,26 +161,6 @@ const CreateMcp = () => {
 					<Form {...mcpCreateForm}>
 						<form onSubmit={handleMCPCreateFormSubmit} className='space-y-4'>
 							<FormField
-								name='name'
-								control={mcpCreateForm.control}
-								render={({ field }) => {
-									return (
-										<FormItem>
-											<FormLabel>
-												{t('mcp_server_create_form_name_label')}
-											</FormLabel>
-											<Input
-												{...field}
-												placeholder={t(
-													'mcp_server_create_form_name_placeholder'
-												)}
-											/>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-							<FormField
 								name='category'
 								control={mcpCreateForm.control}
 								render={({ field }) => {
@@ -195,7 +175,7 @@ const CreateMcp = () => {
 												<SelectTrigger className='w-full'>
 													<SelectValue
 														placeholder={t(
-															'mcp_server_create_form_category_placeholder'
+															'mcp_server_create_form_category_placeholder',
 														)}
 													/>
 												</SelectTrigger>
@@ -215,6 +195,26 @@ const CreateMcp = () => {
 									);
 								}}
 							/>
+							<FormField
+								name='name'
+								control={mcpCreateForm.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>
+												{t('mcp_server_create_form_name_label')}
+											</FormLabel>
+											<Input
+												{...field}
+												placeholder={t(
+													'mcp_server_create_form_name_placeholder',
+												)}
+											/>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
 							{mcpCreateForm.watch('category') === 1 && (
 								<>
 									<FormField
@@ -229,7 +229,7 @@ const CreateMcp = () => {
 													<Input
 														{...field}
 														placeholder={t(
-															'mcp_server_create_form_url_placeholder'
+															'mcp_server_create_form_url_placeholder',
 														)}
 													/>
 													<FormMessage />
@@ -249,7 +249,7 @@ const CreateMcp = () => {
 													<Textarea
 														{...field}
 														placeholder={t(
-															'mcp_server_create_form_headers_placeholder'
+															'mcp_server_create_form_headers_placeholder',
 														)}
 													/>
 													<FormMessage />
@@ -273,7 +273,7 @@ const CreateMcp = () => {
 													<Input
 														{...field}
 														placeholder={t(
-															'mcp_server_create_form_script_placeholder'
+															'mcp_server_create_form_script_placeholder',
 														)}
 													/>
 													<FormMessage />
@@ -293,7 +293,7 @@ const CreateMcp = () => {
 													<Input
 														{...field}
 														placeholder={t(
-															'mcp_server_create_form_args_placeholder'
+															'mcp_server_create_form_args_placeholder',
 														)}
 													/>
 													<FormMessage />
@@ -313,7 +313,7 @@ const CreateMcp = () => {
 													<Textarea
 														{...field}
 														placeholder={t(
-															'mcp_server_create_form_env_placeholder'
+															'mcp_server_create_form_env_placeholder',
 														)}
 													/>
 													<FormMessage />
