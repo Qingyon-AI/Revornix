@@ -66,7 +66,7 @@ const TodaySummary = () => {
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
 			const [res, err] = await utils.to(
-				fileService.getFileContent(section?.md_file_name)
+				fileService.getFileContent(section?.md_file_name),
 			);
 			if (!res || err) {
 				setMarkdownGetError(err.message);
@@ -108,9 +108,11 @@ const TodaySummary = () => {
 			</CardHeader>
 			<CardContent className='flex-1'>
 				{(isFetching ||
-					(section && section.md_file_name && !isError && !markdown)) && (
-					<Skeleton className='h-full w-full' />
-				)}
+					(section &&
+						section.md_file_name &&
+						!isError &&
+						!markdown &&
+						!markdownGetError)) && <Skeleton className='h-full w-full' />}
 				{section && !section?.md_file_name && (
 					<Empty>
 						<EmptyHeader>
