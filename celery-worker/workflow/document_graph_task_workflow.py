@@ -31,7 +31,6 @@ from data.sql.base import session_scope
 from enums.ability import Ability
 from enums.document import DocumentGraphStatus
 from proxy.ai_model_proxy import AIModelProxy
-from langfuse.openai import OpenAI
 
 
 class DocumentGraphState(TypedDict, total=False):
@@ -39,7 +38,6 @@ class DocumentGraphState(TypedDict, total=False):
     user_id: int
     model_id: int
     llm_model_name: str
-    llm_client: OpenAI
 
 
 async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
@@ -113,25 +111,22 @@ async def _prepare_context(state: DocumentGraphState) -> DocumentGraphState:
         user_id=user_id,
         model_id=model_id
     )).get_configuration()
-    llm_client = await get_extract_llm_client(
-        user_id=user_id
-    )
-
     return {
         **state,
         "llm_model_name": model_configuration.model_name,
-        "llm_client": llm_client,
     }
 
 
 async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
-    llm_client = state.get("llm_client")
     llm_model = state.get("llm_model_name")
     user_id = state.get("user_id")
     document_id = state.get("document_id")
-    if llm_client is None or llm_model is None or user_id is None or document_id is None:
+    if llm_model is None or user_id is None or document_id is None:
         raise Exception("Knowledge graph workflow missing required context")
 
+    llm_client = await get_extract_llm_client(
+        user_id=user_id
+    )
     existing_entities_index: dict[tuple[str, str], list[dict]] = {}
     embedding_engine = get_embedding_engine()
     async for chunk_info in stream_chunk_document(doc_id=document_id):

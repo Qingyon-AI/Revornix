@@ -67,9 +67,13 @@ async def run_document_process_status_workflow(
     status: int
 ) -> None:
     workflow = get_document_process_status_workflow()
-    await workflow.ainvoke(
-        {
-            "document_id": document_id,
-            "status": status,
-        }
-    )
+    try:
+        await workflow.ainvoke(
+            {
+                "document_id": document_id,
+                "status": status,
+            }
+        )
+    except Exception as e:
+        exception_logger.error(f"Something is error while updating the document status: {e}")
+        raise

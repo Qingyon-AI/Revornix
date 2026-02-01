@@ -15,12 +15,18 @@ from proxy.file_system_proxy import FileSystemProxy
 class SectionPodcastState(TypedDict, total=False):
     section_id: int
     user_id: int
+    engine_id: int
+    podcast_file_name: str
 
 
-async def handle_update_section_ai_podcast(
-    section_id: int,
-    user_id: int
-):
+async def _init_section_podcast_task(
+    state: SectionPodcastState
+) -> SectionPodcastState:
+    section_id = state.get("section_id")
+    user_id = state.get("user_id")
+    if section_id is None or user_id is None:
+        raise Exception("Section podcast workflow missing section_id or user_id")
+
     db = session_scope()
     try:
         db_section = crud.section.get_section_by_section_id(
@@ -40,6 +46,7 @@ async def handle_update_section_ai_podcast(
             raise Exception("The user who want to process section has not set default user file system")
         if db_user.default_podcast_user_engine_id is None:
             raise Exception("The user who want to process section has not set default podcast user engine")
+        state["engine_id"] = db_user.default_podcast_user_engine_id
 
         db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
             db=db,
@@ -56,7 +63,22 @@ async def handle_update_section_ai_podcast(
             if db_podcast_task.status != SectionPodcastStatus.GENERATING:
                 db_podcast_task.status = SectionPodcastStatus.GENERATING
         db.commit()
-        
+    finally:
+        db.close()
+    return state
+
+
+async def _generate_section_podcast(
+    state: SectionPodcastState
+) -> SectionPodcastState:
+    section_id = state.get("section_id")
+    user_id = state.get("user_id")
+    engine_id = state.get("engine_id")
+    if section_id is None or user_id is None or engine_id is None:
+        raise Exception("Section podcast workflow missing context")
+
+    db = session_scope()
+    try:
         remote_file_service = await FileSystemProxy.create(
             user_id=user_id
         )
@@ -65,25 +87,23 @@ async def handle_update_section_ai_podcast(
             section_id=section_id,
             user_id=user_id
         )
-        
+
         db_engine = crud.engine.get_engine_by_engine_id(
             db=db,
-            engine_id=db_user.default_podcast_user_engine_id
+            engine_id=engine_id
         )
         if db_engine is None:
             raise Exception("There is something wrong with the user's podcast generator engine")
 
         engine = await EngineProxy.create(
             user_id=user_id,
-            engine_id=db_user.default_podcast_user_engine_id
+            engine_id=engine_id
         )
 
         audio_bytes = await engine.synthesize(
             text=markdown_content
         )
         if audio_bytes is None:
-            db_podcast_task.status = SectionPodcastStatus.FAILED
-            db.commit()
             raise Exception("The podcast of the section is not generated because of the error of the engine")
 
         podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
@@ -92,43 +112,44 @@ async def handle_update_section_ai_podcast(
             content=audio_bytes,
             content_type="audio/mpeg"
         )
+        state["podcast_file_name"] = podcast_file_name
+    finally:
+        db.close()
+    return state
 
-        db_podcast_task.status = SectionPodcastStatus.SUCCESS
-        db_podcast_task.podcast_file_name = podcast_file_name
-        db.commit()
 
-    except Exception as e:
-        exception_logger.error(f"Something is error while updating the ai podcast: {e}")
+async def _mark_section_podcast_success(
+    state: SectionPodcastState
+) -> SectionPodcastState:
+    section_id = state.get("section_id")
+    podcast_file_name = state.get("podcast_file_name")
+    if section_id is None:
+        raise Exception("Section podcast workflow missing section_id")
+
+    db = session_scope()
+    try:
         db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
             db=db,
             section_id=section_id
         )
         if db_podcast_task is not None:
-            db_podcast_task.status = SectionPodcastStatus.FAILED
+            db_podcast_task.status = SectionPodcastStatus.SUCCESS
+            db_podcast_task.podcast_file_name = podcast_file_name
             db.commit()
-        raise
     finally:
         db.close()
-
-
-async def _generate_section_podcast(state: SectionPodcastState) -> SectionPodcastState:
-    section_id = state.get("section_id")
-    user_id = state.get("user_id")
-    if section_id is None or user_id is None:
-        raise Exception("Section podcast workflow missing section_id or user_id")
-
-    await handle_update_section_ai_podcast(
-        section_id=section_id,
-        user_id=user_id
-    )
     return state
 
 
 def _build_workflow():
     workflow = StateGraph(SectionPodcastState)
+    workflow.add_node("init_section_podcast_task", _init_section_podcast_task)
     workflow.add_node("generate_section_podcast", _generate_section_podcast)
-    workflow.set_entry_point("generate_section_podcast")
-    workflow.add_edge("generate_section_podcast", END)
+    workflow.add_node("mark_section_podcast_success", _mark_section_podcast_success)
+    workflow.set_entry_point("init_section_podcast_task")
+    workflow.add_edge("init_section_podcast_task", "generate_section_podcast")
+    workflow.add_edge("generate_section_podcast", "mark_section_podcast_success")
+    workflow.add_edge("mark_section_podcast_success", END)
     return workflow.compile()
 
 
@@ -148,9 +169,24 @@ async def run_section_podcast_workflow(
     user_id: int
 ) -> None:
     workflow = get_section_podcast_workflow()
-    await workflow.ainvoke(
-        {
-            "section_id": section_id,
-            "user_id": user_id,
-        }
-    )
+    try:
+        await workflow.ainvoke(
+            {
+                "section_id": section_id,
+                "user_id": user_id,
+            }
+        )
+    except Exception as e:
+        exception_logger.error(f"Something is error while updating the ai podcast: {e}")
+        db = session_scope()
+        try:
+            db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
+                db=db,
+                section_id=section_id
+            )
+            if db_podcast_task is not None:
+                db_podcast_task.status = SectionPodcastStatus.FAILED
+                db.commit()
+        finally:
+            db.close()
+        raise

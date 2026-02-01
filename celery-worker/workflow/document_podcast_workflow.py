@@ -16,12 +16,19 @@ from proxy.file_system_proxy import FileSystemProxy
 class DocumentPodcastState(TypedDict, total=False):
     document_id: int
     user_id: int
+    engine_id: int
+    podcast_file_name: str
+    skip_processing: bool
 
 
-async def handle_update_document_ai_podcast(
-    document_id: int,
-    user_id: int
-):
+async def _init_podcast_task(
+    state: DocumentPodcastState
+) -> DocumentPodcastState:
+    document_id = state.get("document_id")
+    user_id = state.get("user_id")
+    if document_id is None or user_id is None:
+        raise Exception("Document podcast workflow missing document_id or user_id")
+
     db = session_scope()
     try:
         # 1) 校验 document
@@ -32,7 +39,8 @@ async def handle_update_document_ai_podcast(
         if db_document is None:
             raise Exception("The document which you want to create the podcast is not found")
         if db_document.category == DocumentCategory.AUDIO:
-            return  # 音频文档不需要生成播客，直接使用用户上传的音频
+            state["skip_processing"] = True
+            return state  # 音频文档不需要生成播客，直接使用用户上传的音频
 
         # 2) 校验 user
         db_user = crud.user.get_user_by_id(
@@ -45,6 +53,7 @@ async def handle_update_document_ai_podcast(
             raise Exception("The document's creator has not set the default file system")
         if db_user.default_podcast_user_engine_id is None:
             raise Exception("The document's creator has not set the default podcast generate engine")
+        state["engine_id"] = db_user.default_podcast_user_engine_id
 
         # 3) 获取/创建task 标记为进行时
         db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
@@ -60,20 +69,37 @@ async def handle_update_document_ai_podcast(
         if db_podcast_task.status != DocumentPodcastStatus.GENERATING:
             db_podcast_task.status = DocumentPodcastStatus.GENERATING
         db.commit()
+    finally:
+        db.close()
+    return state
 
+
+async def _generate_document_podcast(
+    state: DocumentPodcastState
+) -> DocumentPodcastState:
+    if state.get("skip_processing"):
+        return state
+    document_id = state.get("document_id")
+    user_id = state.get("user_id")
+    engine_id = state.get("engine_id")
+    if document_id is None or user_id is None or engine_id is None:
+        raise Exception("Document podcast workflow missing context")
+
+    db = session_scope()
+    try:
         remote_file_service = await FileSystemProxy.create(
             user_id=user_id
         )
-    
+
         ensure_document_active(db=db, document_id=document_id)
         markdown_content = await get_markdown_content_by_document_id(
-            document_id=db_document.id,
+            document_id=document_id,
             user_id=user_id
         )
-        
+
         db_engine = crud.engine.get_engine_by_engine_id(
             db=db,
-            engine_id=db_user.default_podcast_user_engine_id
+            engine_id=engine_id
         )
         if db_engine is None:
             raise Exception("There is something wrong with the user's default podcast generate engine")
@@ -88,8 +114,6 @@ async def handle_update_document_ai_podcast(
             text=markdown_content
         )
         if audio_bytes is None:
-            db_podcast_task.status = DocumentPodcastStatus.FAILED
-            db.commit()
             raise Exception("The podcast of the document is not generated because of the error of the engine")
         podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
         ensure_document_active(db=db, document_id=document_id)
@@ -98,43 +122,47 @@ async def handle_update_document_ai_podcast(
             content=audio_bytes,
             content_type="audio/mpeg"
         )
+        state["podcast_file_name"] = podcast_file_name
+    finally:
+        db.close()
+    return state
 
+
+async def _mark_podcast_success(
+    state: DocumentPodcastState
+) -> DocumentPodcastState:
+    if state.get("skip_processing"):
+        return state
+    document_id = state.get("document_id")
+    podcast_file_name = state.get("podcast_file_name")
+    if document_id is None:
+        raise Exception("Document podcast workflow missing document_id")
+
+    db = session_scope()
+    try:
         ensure_document_active(db=db, document_id=document_id)
-        db_podcast_task.status = DocumentPodcastStatus.SUCCESS
-        db_podcast_task.podcast_file_name = podcast_file_name
-        db.commit()
-    except Exception as e:
-        exception_logger.error(f"Something is error while updating the ai podcast: {e}")
         db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
             db=db,
             document_id=document_id
         )
         if db_podcast_task is not None:
-            db_podcast_task.status = DocumentPodcastStatus.FAILED
+            db_podcast_task.status = DocumentPodcastStatus.SUCCESS
+            db_podcast_task.podcast_file_name = podcast_file_name
             db.commit()
-        raise
     finally:
         db.close()
-
-
-async def _generate_document_podcast(state: DocumentPodcastState) -> DocumentPodcastState:
-    document_id = state.get("document_id")
-    user_id = state.get("user_id")
-    if document_id is None or user_id is None:
-        raise Exception("Document podcast workflow missing document_id or user_id")
-
-    await handle_update_document_ai_podcast(
-        document_id=document_id,
-        user_id=user_id
-    )
     return state
 
 
 def _build_workflow():
     workflow = StateGraph(DocumentPodcastState)
+    workflow.add_node("init_podcast_task", _init_podcast_task)
     workflow.add_node("generate_document_podcast", _generate_document_podcast)
-    workflow.set_entry_point("generate_document_podcast")
-    workflow.add_edge("generate_document_podcast", END)
+    workflow.add_node("mark_podcast_success", _mark_podcast_success)
+    workflow.set_entry_point("init_podcast_task")
+    workflow.add_edge("init_podcast_task", "generate_document_podcast")
+    workflow.add_edge("generate_document_podcast", "mark_podcast_success")
+    workflow.add_edge("mark_podcast_success", END)
     return workflow.compile()
 
 
@@ -154,9 +182,24 @@ async def run_document_podcast_workflow(
     user_id: int
 ) -> None:
     workflow = get_document_podcast_workflow()
-    await workflow.ainvoke(
-        {
-            "document_id": document_id,
-            "user_id": user_id,
-        }
-    )
+    try:
+        await workflow.ainvoke(
+            {
+                "document_id": document_id,
+                "user_id": user_id,
+            }
+        )
+    except Exception as e:
+        exception_logger.error(f"Something is error while updating the ai podcast: {e}")
+        db = session_scope()
+        try:
+            db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_podcast_task is not None:
+                db_podcast_task.status = DocumentPodcastStatus.FAILED
+                db.commit()
+        finally:
+            db.close()
+        raise

@@ -1,10 +1,6 @@
 'use client';
 
-import {
-	DocumentCategory,
-	DocumentMdConvertStatus,
-	SectionDocumentIntegration,
-} from '@/enums/document';
+import { DocumentCategory, SectionDocumentIntegration } from '@/enums/document';
 import { SectionDocumentInfo } from '@/generated';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
@@ -63,21 +59,23 @@ const SectionDocumentCard = ({
 						{document.category === DocumentCategory.WEBSITE
 							? t('document_category_link')
 							: document.category === DocumentCategory.FILE
-							? t('document_category_file')
-							: document.category === DocumentCategory.QUICK_NOTE
-							? t('document_category_quick_note')
-							: t('document_category_others')}
+								? t('document_category_file')
+								: document.category === DocumentCategory.QUICK_NOTE
+									? t('document_category_quick_note')
+									: document.category === DocumentCategory.AUDIO
+										? t('document_category_audio')
+										: t('document_category_others')}
 					</div>
 					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
 						{document.status === SectionDocumentIntegration.WAIT_TO
 							? t('section_document_card_section_supplement_todo')
 							: document.status === SectionDocumentIntegration.SUPPLEMENTING
-							? t('section_document_card_section_supplement_doing')
-							: document.status === SectionDocumentIntegration.SUCCESS
-							? t('section_document_card_section_supplement_done')
-							: document.status === SectionDocumentIntegration.FAILED
-							? t('section_document_card_section_supplement_failed')
-							: t('section_document_card_section_supplement_unknown')}
+								? t('section_document_card_section_supplement_doing')
+								: document.status === SectionDocumentIntegration.SUCCESS
+									? t('section_document_card_section_supplement_done')
+									: document.status === SectionDocumentIntegration.FAILED
+										? t('section_document_card_section_supplement_failed')
+										: t('section_document_card_section_supplement_unknown')}
 					</div>
 				</div>
 				<div className='text-xs text-muted-foreground'>

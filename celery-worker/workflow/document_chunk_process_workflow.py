@@ -43,13 +43,18 @@ class DocumentChunkProcessState(TypedDict, total=False):
     document_id: int
     user_id: int
     auto_summary: bool
+    model_id: int
+    llm_model_name: str
 
 
-async def handle_process_document_chunks(
-    document_id: int,
-    user_id: int,
-    auto_summary: bool = False,
-) -> None:
+async def _init_chunk_tasks(
+    state: DocumentChunkProcessState
+) -> DocumentChunkProcessState:
+    document_id = state.get("document_id")
+    user_id = state.get("user_id")
+    if document_id is None or user_id is None:
+        raise Exception("Document chunk workflow missing document_id or user_id")
+
     db = session_scope()
     try:
         # 1) 校验 document
@@ -70,6 +75,8 @@ async def handle_process_document_chunks(
         if db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to process document has not set default document reader model")
 
+        state["model_id"] = db_user.default_document_reader_model_id
+
         # 3) 获取/创建任务记录，置为 进行时
         db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
             db=db,
@@ -84,6 +91,7 @@ async def handle_process_document_chunks(
         if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
             db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
         db_summarize_task = None
+        auto_summary = bool(state.get("auto_summary", False))
         if auto_summary:
             db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
                 db=db,
@@ -110,21 +118,51 @@ async def handle_process_document_chunks(
         if db_graph_task.status != DocumentGraphStatus.BUILDING:
             db_graph_task.status = DocumentGraphStatus.BUILDING
         db.commit()
+    finally:
+        db.close()
+    return state
 
-        model_configuration = (await AIModelProxy.create(
-            user_id=user_id,
-            model_id=db_user.default_document_reader_model_id
-        )).get_configuration()
 
-        llm_client = await get_extract_llm_client(
-            user_id=user_id
-        )
+async def _prepare_chunk_context(
+    state: DocumentChunkProcessState
+) -> DocumentChunkProcessState:
+    user_id = state.get("user_id")
+    model_id = state.get("model_id")
+    if user_id is None or model_id is None:
+        raise Exception("Document chunk workflow missing model_id or user_id")
+
+    model_configuration = (await AIModelProxy.create(
+        user_id=user_id,
+        model_id=model_id
+    )).get_configuration()
+
+    state["llm_model_name"] = model_configuration.model_name
+    return state
+
+
+async def _process_document_chunks(
+    state: DocumentChunkProcessState
+) -> DocumentChunkProcessState:
+    document_id = state.get("document_id")
+    user_id = state.get("user_id")
+    auto_summary = bool(state.get("auto_summary", False))
+    model_id = state.get("model_id")
+    llm_model = state.get("llm_model_name")
+    if document_id is None or user_id is None or model_id is None or llm_model is None:
+        raise Exception("Document chunk workflow missing context")
+
+    llm_client = await get_extract_llm_client(
+        user_id=user_id
+    )
+    embedding_engine = get_embedding_engine()
+
+    db = session_scope()
+    try:
         entities: list[EntityInfo] = []
         relations: list[RelationInfo] = []
         existing_entities_index: dict[tuple[str, str], list[dict]] = {}
-        embedding_engine = get_embedding_engine()
-
         final_summary_info = None
+
         # 4) 任务进行
         try:
             async for chunk_info in stream_chunk_document(doc_id=document_id):
@@ -133,7 +171,7 @@ async def handle_process_document_chunks(
                 sub_entities, sub_relations = extract_entities_relations(
                     user_id=user_id,
                     llm_client=llm_client,
-                    llm_model=model_configuration.model_name,
+                    llm_model=llm_model,
                     chunk=chunk_info
                 )
                 if sub_entities:
@@ -148,19 +186,19 @@ async def handle_process_document_chunks(
                         existing_entities_index=existing_entities_index,
                         embedding_engine=embedding_engine,
                         llm_client=llm_client,
-                        llm_model=model_configuration.model_name,
+                        llm_model=llm_model,
                     )
                 entities.extend(sub_entities)
                 relations.extend(sub_relations)
                 chunk_info.summary = (await summary_content(
                     user_id=user_id,
-                    model_id=db_user.default_document_reader_model_id,
+                    model_id=model_id,
                     content=chunk_info.text
                 )).summary
                 if auto_summary:
                     final_summary_info = await reducer_summary(
                         user_id=user_id,
-                        model_id=db_user.default_document_reader_model_id,
+                        model_id=model_id,
                         current_summary=final_summary_info.summary if final_summary_info is not None else None,
                         new_summary_to_append=chunk_info.summary,
                         new_entities=sub_entities,
@@ -174,20 +212,59 @@ async def handle_process_document_chunks(
                     chunks_info=[chunk_info]
                 )
             ensure_document_active(db=db, document_id=document_id)
-            db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
-            if auto_summary and db_summarize_task is not None and final_summary_info is not None:
-                db_summarize_task.summary = final_summary_info.summary
-                db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
-                db_document.title = final_summary_info.title
-                db_document.description = final_summary_info.description
+            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_embedding_task is not None:
+                db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+            if auto_summary and final_summary_info is not None:
+                db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+                    db=db,
+                    document_id=document_id
+                )
+                if db_summarize_task is not None:
+                    db_summarize_task.summary = final_summary_info.summary
+                    db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+                db_document = crud.document.get_document_by_document_id(
+                    db=db,
+                    document_id=document_id
+                )
+                if db_document is not None:
+                    db_document.title = final_summary_info.title
+                    db_document.description = final_summary_info.description
         except Exception as e:
             exception_logger.error(f"Something is error while embedding document info: {e}")
-            db_embedding_task.status = DocumentEmbeddingStatus.FAILED
-            if auto_summary and db_summarize_task is not None:
-                db_summarize_task.status = DocumentSummarizeStatus.FAILED
+            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_embedding_task is not None:
+                db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+            if auto_summary:
+                db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+                    db=db,
+                    document_id=document_id
+                )
+                if db_summarize_task is not None:
+                    db_summarize_task.status = DocumentSummarizeStatus.FAILED
             raise
         finally:
             db.commit()
+        # 5) 图谱构建
+        db_document = crud.document.get_document_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_document is None:
+            raise Exception("The document you want to process is not found")
+
+        db_user = crud.user.get_user_by_id(
+            db=db,
+            user_id=user_id
+        )
+        if db_user is None:
+            raise Exception("The user which you want to process document is not found")
 
         access_token, _ = create_token(
             user=db_user
@@ -220,39 +297,37 @@ async def handle_process_document_chunks(
             create_communities_from_chunks()
             create_community_nodes_and_relationships_with_size()
             annotate_node_degrees()
-            db_graph_task.status = DocumentGraphStatus.SUCCESS.value
+            db_graph_task = crud.task.get_document_graph_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_graph_task is not None:
+                db_graph_task.status = DocumentGraphStatus.SUCCESS.value
         except Exception as e:
             exception_logger.error(f"Something is error while graphing document info: {e}")
-            db_graph_task.status = DocumentGraphStatus.FAILED.value
+            db_graph_task = crud.task.get_document_graph_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_graph_task is not None:
+                db_graph_task.status = DocumentGraphStatus.FAILED.value
             raise
         finally:
             db.commit()
     finally:
         db.close()
 
-
-async def _process_document_chunks(
-    state: DocumentChunkProcessState
-) -> DocumentChunkProcessState:
-    document_id = state.get("document_id")
-    user_id = state.get("user_id")
-    if document_id is None or user_id is None:
-        raise Exception("Document chunk workflow missing document_id or user_id")
-
-    auto_summary = bool(state.get("auto_summary", False))
-
-    await handle_process_document_chunks(
-        document_id=document_id,
-        user_id=user_id,
-        auto_summary=auto_summary,
-    )
     return state
 
 
 def _build_workflow():
     workflow = StateGraph(DocumentChunkProcessState)
+    workflow.add_node("init_chunk_tasks", _init_chunk_tasks)
+    workflow.add_node("prepare_chunk_context", _prepare_chunk_context)
     workflow.add_node("process_document_chunks", _process_document_chunks)
-    workflow.set_entry_point("process_document_chunks")
+    workflow.set_entry_point("init_chunk_tasks")
+    workflow.add_edge("init_chunk_tasks", "prepare_chunk_context")
+    workflow.add_edge("prepare_chunk_context", "process_document_chunks")
     workflow.add_edge("process_document_chunks", END)
     return workflow.compile()
 
@@ -274,10 +349,14 @@ async def run_document_chunk_process_workflow(
     auto_summary: bool = False,
 ) -> None:
     workflow = get_document_chunk_process_workflow()
-    await workflow.ainvoke(
-        {
-            "document_id": document_id,
-            "user_id": user_id,
-            "auto_summary": auto_summary,
-        }
-    )
+    try:
+        await workflow.ainvoke(
+            {
+                "document_id": document_id,
+                "user_id": user_id,
+                "auto_summary": auto_summary,
+            }
+        )
+    except Exception as e:
+        exception_logger.error(f"Something is error while processing document chunks: {e}")
+        raise

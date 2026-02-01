@@ -21,10 +21,14 @@ class DocumentEmbeddingState(TypedDict, total=False):
 EMBED_BATCH_SIZE = 64
 
 
-async def handle_update_document_embedding(
-    document_id: int,
-    user_id: int
-) -> None:
+async def _init_embedding_task(
+    state: DocumentEmbeddingState
+) -> DocumentEmbeddingState:
+    document_id = state.get("document_id")
+    user_id = state.get("user_id")
+    if document_id is None or user_id is None:
+        raise Exception("Document embedding workflow missing document_id or user_id")
+
     db = session_scope()
     try:
         # 1) 校验 document
@@ -58,37 +62,33 @@ async def handle_update_document_embedding(
         if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
             db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
         db.commit()
+    finally:
+        db.close()
+    return state
 
-        # 4) 初始化 embedding 引擎（只做一次）
-        embedding_engine = get_embedding_engine()
 
-        # 5) 批量缓存
-        embed_chunks: list = []
-        embed_texts: list[str] = []
+async def _embed_document(
+    state: DocumentEmbeddingState
+) -> DocumentEmbeddingState:
+    document_id = state.get("document_id")
+    user_id = state.get("user_id")
+    if document_id is None or user_id is None:
+        raise Exception("Document embedding workflow missing context")
+    embedding_engine = get_embedding_engine()
 
-        # 如果你想 embedding batch 和 milvus batch 分开控制，
-        # 可以再做一层 milvus_buffer；这里先用“embed 批完就写 milvus”版本（最简单可靠）
-        async for chunk_info in stream_chunk_document(doc_id=document_id):
-            embed_chunks.append(chunk_info)
-            embed_texts.append(chunk_info.text)
+    # 批量缓存
+    embed_chunks: list = []
+    embed_texts: list[str] = []
 
-            # 满一个 embedding batch：一次 embed + 一次 upsert milvus
-            if len(embed_chunks) >= EMBED_BATCH_SIZE:
-                vectors = embedding_engine.embed(embed_texts)  # 期望返回 list/ndarray，长度=EMBED_BATCH_SIZE
-                for ci, vec in zip(embed_chunks, vectors):
-                    ci.embedding = vec.tolist()
+    # 如果你想 embedding batch 和 milvus batch 分开控制，
+    # 可以再做一层 milvus_buffer；这里先用“embed 批完就写 milvus”版本（最简单可靠）
+    async for chunk_info in stream_chunk_document(doc_id=document_id):
+        embed_chunks.append(chunk_info)
+        embed_texts.append(chunk_info.text)
 
-                upsert_milvus(
-                    user_id=user_id,
-                    chunks_info=embed_chunks
-                )
-
-                embed_chunks.clear()
-                embed_texts.clear()
-
-        # 6) 处理最后不足一个 batch 的尾巴
-        if embed_chunks:
-            vectors = embedding_engine.embed(embed_texts)
+        # 满一个 embedding batch：一次 embed + 一次 upsert milvus
+        if len(embed_chunks) >= EMBED_BATCH_SIZE:
+            vectors = embedding_engine.embed(embed_texts)  # 期望返回 list/ndarray，长度=EMBED_BATCH_SIZE
             for ci, vec in zip(embed_chunks, vectors):
                 ci.embedding = vec.tolist()
 
@@ -97,44 +97,53 @@ async def handle_update_document_embedding(
                 chunks_info=embed_chunks
             )
 
-        # 7) 成功
-        ensure_document_active(db=db, document_id=document_id)
-        db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
-        db.commit()
+            embed_chunks.clear()
+            embed_texts.clear()
 
-    except Exception as e:
-        exception_logger.error(f"Something is error while embedding document info: {e}", exc_info=True)
+    # 处理最后不足一个 batch 的尾巴
+    if embed_chunks:
+        vectors = embedding_engine.embed(embed_texts)
+        for ci, vec in zip(embed_chunks, vectors):
+            ci.embedding = vec.tolist()
+
+        upsert_milvus(
+            user_id=user_id,
+            chunks_info=embed_chunks
+        )
+    return state
+
+
+async def _mark_embedding_success(
+    state: DocumentEmbeddingState
+) -> DocumentEmbeddingState:
+    document_id = state.get("document_id")
+    if document_id is None:
+        raise Exception("Document embedding workflow missing document_id")
+
+    db = session_scope()
+    try:
+        ensure_document_active(db=db, document_id=document_id)
         db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
             db=db,
             document_id=document_id
         )
         if db_embedding_task is not None:
-            db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+            db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
             db.commit()
-        raise
-
     finally:
         db.close()
-
-
-async def _embed_document(state: DocumentEmbeddingState) -> DocumentEmbeddingState:
-    document_id = state.get("document_id")
-    user_id = state.get("user_id")
-    if document_id is None or user_id is None:
-        raise Exception("Document embedding workflow missing document_id or user_id")
-
-    await handle_update_document_embedding(
-        document_id=document_id,
-        user_id=user_id
-    )
     return state
 
 
 def _build_workflow():
     workflow = StateGraph(DocumentEmbeddingState)
+    workflow.add_node("init_embedding_task", _init_embedding_task)
     workflow.add_node("embed_document", _embed_document)
-    workflow.set_entry_point("embed_document")
-    workflow.add_edge("embed_document", END)
+    workflow.add_node("mark_embedding_success", _mark_embedding_success)
+    workflow.set_entry_point("init_embedding_task")
+    workflow.add_edge("init_embedding_task", "embed_document")
+    workflow.add_edge("embed_document", "mark_embedding_success")
+    workflow.add_edge("mark_embedding_success", END)
     return workflow.compile()
 
 
@@ -154,9 +163,24 @@ async def run_document_embedding_workflow(
     user_id: int
 ) -> None:
     workflow = get_document_embedding_workflow()
-    await workflow.ainvoke(
-        {
-            "document_id": document_id,
-            "user_id": user_id,
-        }
-    )
+    try:
+        await workflow.ainvoke(
+            {
+                "document_id": document_id,
+                "user_id": user_id,
+            }
+        )
+    except Exception as e:
+        exception_logger.error(f"Something is error while embedding document info: {e}", exc_info=True)
+        db = session_scope()
+        try:
+            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_embedding_task is not None:
+                db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+                db.commit()
+        finally:
+            db.close()
+        raise

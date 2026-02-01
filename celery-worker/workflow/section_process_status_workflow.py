@@ -4,6 +4,7 @@ from langgraph.graph import StateGraph, END
 
 import crud
 from data.sql.base import session_scope
+from common.logger import exception_logger
 
 
 class SectionProcessStatusState(TypedDict, total=False):
@@ -58,9 +59,13 @@ async def run_section_process_status_workflow(
     status: int
 ) -> None:
     workflow = get_section_process_status_workflow()
-    await workflow.ainvoke(
-        {
-            "section_id": section_id,
-            "status": status,
-        }
-    )
+    try:
+        await workflow.ainvoke(
+            {
+                "section_id": section_id,
+                "status": status,
+            }
+        )
+    except Exception as e:
+        exception_logger.error(f"Something is error while updating the section status: {e}")
+        raise
