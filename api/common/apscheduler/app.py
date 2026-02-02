@@ -15,14 +15,13 @@ from data.sql.base import session_scope
 from enums.document import DocumentCategory, UserDocumentAuthority
 from enums.notification import (
     NotificationContentType,
-    NotificationTemplateUUID,
     NotificationTriggerType,
+    NotificationSourceProvided,
+    NotificationTemplate
 )
 from enums.section import SectionDocumentIntegration, UserSectionAuthority, UserSectionRole
 from notification.template.daily_summary import DailySummaryNotificationTemplate
-from notification.tool.apple import AppleNotificationTool
-from notification.tool.apple_sandbox import AppleSandboxNotificationTool
-from notification.tool.email import EmailNotificationTool
+from proxy.notification_proxy import NotificationProxy
 
 scheduler = AsyncIOScheduler()
 
@@ -216,6 +215,7 @@ async def send_notification_scheduler(
         )
         if db_notification_task is None:
             raise schemas.error.CustomException(message="notification task not found", code=500)
+
         if db_notification_task.notification_content_type == NotificationContentType.CUSTOM:
             db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(
                 db=db,
@@ -226,79 +226,35 @@ async def send_notification_scheduler(
             title = db_notification_content_custom.title
             content = db_notification_content_custom.content
         elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
-            db_notification_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
-                db=db,
-                notification_task_id=notification_task_id
+            generate_res = await NotificationProxy.create_message_using_template(
+                template_id=db_notification_task.notification_template_id,
+                params={
+                    "user_id": user_id,
+                    "date": datetime.now().date(),
+                }
             )
-            if db_notification_content_template is None:
-                raise schemas.error.CustomException(message="notification content template not found", code=500)
-            db_notification_template = crud.notification.get_notification_template_by_id(
-                db=db,
-                notification_template_id=db_notification_content_template.notification_template_id
-            )
-            if db_notification_template is None:
-                raise schemas.error.CustomException(message="notification template not found", code=500)
-            if db_notification_template.uuid == NotificationTemplateUUID.DAILY_SUMMARY.value:
-                template = DailySummaryNotificationTemplate()
-                generate_res = await template.generate(
-                    params={
-                        "user_id": user_id,
-                        "date": datetime.now().date(),
-                    }
-                )
-                title = generate_res.title
-                content = generate_res.content
-        db_user_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
+            title = generate_res.title
+            content = generate_res.content
+
+        db_notification_source = crud.notification.get_notification_source_by_id(
             db=db,
-            user_notification_source_id=db_notification_task.user_notification_source_id
-        )
-        if db_user_notification_source is None:
-            raise schemas.error.CustomException(message="user notification source not found", code=500)
-        db_notification_source = crud.notification.get_notification_source_by_notification_source_id(
-            db=db,
-            notification_source_id=db_user_notification_source.notification_source_id
+            notification_source_id=db_notification_task.notification_source_id
         )
         if db_notification_source is None:
             raise schemas.error.CustomException(message="notification source not found", code=500)
+        
         send_res = None
-        if db_notification_source.uuid == NotificationSourceProvidedUUID.EMAIL.value:
-            email_notify = EmailNotificationTool()
-            email_notify.set_source(
-                source_id=db_notification_task.user_user_notification_source_id,
-            )
-            email_notify.set_target(
-                target_id=db_notification_task.user_notification_target_id,
-            )
-            if content:
-                content = markdown.markdown(content)
-            send_res = await email_notify.send_notification(
-                title=title,
-                content=content
-            )
-        elif db_notification_source.uuid == NotificationSourceProvidedUUID.APPLE.value:
-            apple_notify = AppleNotificationTool()
-            apple_notify.set_source(
-                source_id=db_notification_task.user_notification_source_id,
-            )
-            apple_notify.set_target(
-                target_id=db_notification_task.user_notification_target_id,
-            )
-            send_res = await apple_notify.send_notification(
-                title=title,
-                content=content
-            )
-        elif db_notification_source.uuid == NotificationSourceProvidedUUID.APPLE_SANDBOX.value:
-            ios_sandbox_notify = AppleSandboxNotificationTool()
-            ios_sandbox_notify.set_source(
-                source_id=db_notification_task.user_notification_source_id,
-            )
-            ios_sandbox_notify.set_target(
-                target_id=db_notification_task.user_notification_target_id,
-            )
-            send_res = await ios_sandbox_notify.send_notification(
-                title=title,
-                content=content
-            )
+        notification_tool = NotificationProxy.create_notification_tool(
+            user_id=user_id,
+            notification_source_id=db_notification_task.notification_source_id,
+            notification_target_id=db_notification_task.notification_target_id
+        )
+        if content:
+            content = markdown.markdown(content)
+        send_res = await notification_tool.send_notification(
+            title=title,
+            content=content
+        )
         if not send_res:
             raise schemas.error.CustomException(message="send notification failed", code=500)
         else:

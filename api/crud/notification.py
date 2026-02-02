@@ -288,6 +288,28 @@ def create_notification_record(
     db.flush()
     return notification
 
+def get_notification_source_provided_by_id(
+    db: Session,
+    id: int
+):
+    query = db.query(models.notification.NotificationSourceProvided)
+    query = query.filter(
+        models.notification.NotificationSourceProvided.id == id,
+        models.notification.NotificationSourceProvided.delete_at.is_(None)
+    )
+    return query.one_or_none()
+
+def get_notification_target_provided_by_id(
+    db: Session,
+    id: int
+):
+    query = db.query(models.notification.NotificationTargetProvided)
+    query = query.filter(
+        models.notification.NotificationTargetProvided.id == id,
+        models.notification.NotificationTargetProvided.delete_at.is_(None)
+    )
+    return query.one_or_none()
+
 def get_notification_source_by_uuid(
     db: Session,
     uuid: str
@@ -739,12 +761,12 @@ def count_all_notification_sources_for_user(
     query = db.query(models.notification.NotificationSource, models.notification.UserNotificationSource)
     query = query.options(
         joinedload(models.notification.NotificationSource.creator),
-        joinedload(models.notification.NotificationSource.engine_provided)
+        joinedload(models.notification.NotificationSource.notification_source_provided)
     )
     query = query.outerjoin(
         models.notification.UserNotificationSource,
         and_(
-            models.notification.UserNotificationSource.engine_id == models.notification.NotificationSource.id,
+            models.notification.UserNotificationSource.notification_source_id == models.notification.NotificationSource.id,
             models.notification.UserNotificationSource.user_id == user_id,
             models.notification.UserNotificationSource.delete_at.is_(None),
         ),
@@ -771,12 +793,12 @@ def search_notification_targets_for_user(
     query = db.query(models.notification.NotificationTarget, models.notification.UserNotificationTarget)
     query = query.options(
         joinedload(models.notification.NotificationTarget.creator),
-        joinedload(models.notification.NotificationTarget.notification_source_provided)
+        joinedload(models.notification.NotificationTarget.notification_target_provided)
     )
     query = query.outerjoin(
         models.notification.UserNotificationTarget,
         and_(
-            models.notification.UserNotificationTarget.notification_source_id == models.notification.UserNotificationTarget.id,
+            models.notification.UserNotificationTarget.notification_target_id == models.notification.UserNotificationTarget.id,
             models.notification.UserNotificationTarget.user_id == user_id,
             models.notification.UserNotificationTarget.delete_at.is_(None),
         ),
@@ -807,12 +829,12 @@ def search_next_notification_target_for_user(
     query = db.query(models.notification.NotificationTarget, models.notification.UserNotificationTarget)
     query = query.options(
         joinedload(models.notification.NotificationTarget.creator),
-        joinedload(models.notification.NotificationTarget.notification_source_provided)
+        joinedload(models.notification.NotificationTarget.notification_target_provided)
     )
     query = query.outerjoin(
         models.notification.UserNotificationTarget,
         and_(
-            models.notification.UserNotificationTarget.notification_source_id == models.notification.NotificationTarget.id,
+            models.notification.UserNotificationTarget.notification_target_id == models.notification.NotificationTarget.id,
             models.notification.UserNotificationTarget.user_id == user_id,
             models.notification.UserNotificationTarget.delete_at.is_(None),
         ),
@@ -838,12 +860,12 @@ def count_all_notification_targets_for_user(
     query = db.query(models.notification.NotificationTarget, models.notification.UserNotificationTarget)
     query = query.options(
         joinedload(models.notification.NotificationTarget.creator),
-        joinedload(models.notification.NotificationTarget.engine_provided)
+        joinedload(models.notification.NotificationTarget.notification_target_provided)
     )
     query = query.outerjoin(
         models.notification.UserNotificationTarget,
         and_(
-            models.notification.UserNotificationTarget.engine_id == models.notification.NotificationTarget.id,
+            models.notification.UserNotificationTarget.notification_target_id == models.notification.NotificationTarget.id,
             models.notification.UserNotificationTarget.user_id == user_id,
             models.notification.UserNotificationTarget.delete_at.is_(None),
         ),

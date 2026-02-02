@@ -23,12 +23,35 @@ class NotificationContentType(IntEnum):
     CUSTOM = 0
     TEMPLATE = 1
 
-class NotificationTemplateUUID(Enum):
-    DAILY_SUMMARY = '8f5016dc375e447f82729df765b12847'
-    SECTION_COMMENTED = '1ba024dfd7c249d8a09bb873dca708e6'
-    SECTION_UPDATED = '4b655b12996540e1b6ee23d16a093bf6'
-    SECTION_SUBSCRIBED = 'dd4726e202d543cd9eca59e2311d0f11'
-    REMOVED_FROM_SECTION = '25a2b86e0ed24ef1964ea94d906ebbd7'
+class NotificationTemplateMeta(NamedTuple):
+    uuid: str
+    name: str
+
+class NotificationTemplate(Enum):
+    DAILY_SUMMARY = NotificationTemplateMeta(
+        uuid='8f5016dc375e447f82729df765b12847',
+        name='Daily Summary',
+    )
+    SECTION_COMMENTED = NotificationTemplateMeta(
+        uuid='1ba024dfd7c249d8a09bb873dca708e6',
+        name='Section Commented',
+    )
+    SECTION_UPDATED = NotificationTemplateMeta(
+        uuid='4b655b12996540e1b6ee23d16a093bf6',
+        name='Section Updated',
+    )
+    SECTION_SUBSCRIBED = NotificationTemplateMeta(
+        uuid='dd4726e202d543cd9eca59e2311d0f11',
+        name='Section Subscribed',
+    )
+    REMOVED_FROM_SECTION = NotificationTemplateMeta(
+        uuid='25a2b86e0ed24ef1964ea94d906ebbd7',
+        name='Removed From Section',
+    )
+
+    @property
+    def meta(self) -> NotificationTemplateMeta:
+        return self.value
 
 class NotificationSourceProvidedMeta(NamedTuple):
     uuid: str
