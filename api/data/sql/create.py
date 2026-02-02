@@ -35,18 +35,18 @@ from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 
 # ---------------- Notification ----------------
-from notification.source.apple_notification_source import AppleNotificationSource
-from notification.source.apple_sandbox_notification_source import AppleSandBoxNotificationSource
-from notification.source.dingtalk_notification_source import DingTalkNotificationSource
-from notification.source.email_notification_source import EmailNotificationSource
-from notification.source.feishu_notification_source import FeishuNotificationSource
-from notification.source.telegram_notification_source import TelegramNotificationSource
-from notification.target.apple_notification_target import AppleNotificationTarget
-from notification.target.apple_sandbox_notification_target import AppleSandBoxNotificationTarget
-from notification.target.dingtalk_notification_target import DingTalkNotificationTarget
-from notification.target.email_notification_target import EmailNotificationTarget
-from notification.target.feishu_notification_target import FeishuNotificationTarget
-from notification.target.telegram_notification_target import TelegramNotificationTarget
+from notification.source.apple_notification_source_provided import AppleNotificationSourceProvided
+from notification.source.apple_sandbox_notification_source_provided import AppleSandBoxNotificationSourceProvided
+from notification.source.dingtalk_notification_source_provided import DingTalkNotificationSourceProvided
+from notification.source.email_notification_source_provided import EmailNotificationSourceProvided
+from notification.source.feishu_notification_source_provided import FeishuNotificationSourceProvided
+from notification.source.telegram_notification_source_provided import TelegramNotificationSourceProvided
+from notification.target.apple_notification_target_provided import AppleNotificationTargetProvided
+from notification.target.apple_sandbox_notification_target_provided import AppleSandBoxNotificationTargetProvided
+from notification.target.dingtalk_notification_target_provided import DingTalkNotificationTargetProvided
+from notification.target.email_notification_target_provided import EmailNotificationTargetProvided
+from notification.target.feishu_notification_target_provided import FeishuNotificationTargetProvided
+from notification.target.telegram_notification_target_provided import TelegramNotificationTargetProvided
 from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
@@ -58,8 +58,8 @@ from notification.trigger_event.section_subscribed import SectionSubscribedNotif
 from notification.trigger_event.section_updated import SectionUpdatedNotificationTriggerEvent
 
 from protocol.engine import EngineProtocol
-from protocol.notification_source import NotificationSourceProtocol
-from protocol.notification_target import NotificationTargetProtocol
+from protocol.notification_source import NotificationSourceProvidedProtocol
+from protocol.notification_target import NotificationTargetProvidedProtocol
 from protocol.notification_template import NotificationTemplate
 from protocol.notification_trigger import NotificationTriggerEventProtocol
 from protocol.remote_file_service import RemoteFileServiceProtocol
@@ -68,6 +68,7 @@ from enums.model import OfficialModelProvider, UserModelProviderRole
 from enums.engine_enums import Engine, UserEngineRole
 from enums.user import UserRole
 from enums.file import RemoteFileService
+from enums.notification import UserNotificationSourceRole, UserNotificationTargetRole, NotificationSource
 
 from schemas.error import CustomException
 
@@ -236,46 +237,52 @@ async def seed_database(db: Session):
                 demo_config=ep.engine_demo_config,
             )
     
-    # -------- Notification Sources --------
-    sources: list[NotificationSourceProtocol] = [
-        EmailNotificationSource(),
-        AppleNotificationSource(),
-        AppleSandBoxNotificationSource(),
-        FeishuNotificationSource(),
-        DingTalkNotificationSource(),
-        TelegramNotificationSource(),
+    # -------- Notification Source Provideds --------
+    notification_source_provideds: list[NotificationSourceProvidedProtocol] = [
+        EmailNotificationSourceProvided(),
+        AppleNotificationSourceProvided(),
+        AppleSandBoxNotificationSourceProvided(),
+        FeishuNotificationSourceProvided(),
+        DingTalkNotificationSourceProvided(),
+        TelegramNotificationSourceProvided(),
     ]
-    for source in sources:
-        if crud.notification.get_notification_source_by_uuid(db, source.uuid) is None:
-            crud.notification.create_notification_source(
+    for notification_source_provided in notification_source_provideds:
+        if crud.notification.get_notification_source_provided_by_uuid(
+            db=db, 
+            uuid=notification_source_provided.uuid
+        ) is None:
+            crud.notification.create_notification_source_provided(
                 db=db,
-                uuid=source.uuid,
-                name=source.name,
-                name_zh=source.name_zh,
-                description=source.description,
-                description_zh=source.description_zh,
-                demo_config=source.demo_config,
+                uuid=notification_source_provided.uuid,
+                name=notification_source_provided.name,
+                name_zh=notification_source_provided.name_zh,
+                description=notification_source_provided.description,
+                description_zh=notification_source_provided.description_zh,
+                demo_config=notification_source_provided.demo_config,
             )
 
-    # -------- Notification Targets --------
-    targets: list[NotificationTargetProtocol] = [
-        EmailNotificationTarget(),
-        AppleNotificationTarget(),
-        AppleSandBoxNotificationTarget(),
-        FeishuNotificationTarget(),
-        DingTalkNotificationTarget(),
-        TelegramNotificationTarget(),
+    # -------- Notification Target Provideds --------
+    notification_target_provideds: list[NotificationTargetProvidedProtocol] = [
+        EmailNotificationTargetProvided(),
+        AppleNotificationTargetProvided(),
+        AppleSandBoxNotificationTargetProvided(),
+        FeishuNotificationTargetProvided(),
+        DingTalkNotificationTargetProvided(),
+        TelegramNotificationTargetProvided(),
     ]
-    for target in targets:
-        if crud.notification.get_notification_target_by_uuid(db, target.uuid) is None:
-            crud.notification.create_notification_target(
+    for notification_target_provided in notification_target_provideds:
+        if crud.notification.get_notification_target_provided_by_uuid(
+            db=db, 
+            uuid=notification_target_provided.uuid
+        ) is None:
+            crud.notification.create_notification_target_provided(
                 db=db,
-                uuid=target.uuid,
-                name=target.name,
-                name_zh=target.name_zh,
-                description=target.description,
-                description_zh=target.description_zh,
-                demo_config=target.demo_config,
+                uuid=notification_target_provided.uuid,
+                name=notification_target_provided.name,
+                name_zh=notification_target_provided.name_zh,
+                description=notification_target_provided.description,
+                description_zh=notification_target_provided.description_zh,
+                demo_config=notification_target_provided.demo_config,
             )
 
 
@@ -341,8 +348,42 @@ async def seed_database(db: Session):
                     engine_id=db_engine.id,
                     role=UserEngineRole.CREATOR
                 )
+        # Notification Sources
+        notification_sources = [
+            NotificationSource.Official_EMAIL,
+            NotificationSource.Official_APPLE,
+            NotificationSource.Official_APPLE_SANDBOX,
+            NotificationSource.Official_FEISHU,
+            NotificationSource.Official_DINGTALK,
+            NotificationSource.Official_TELEGRAM
+        ]
+        for notification_source in notification_sources:
+            if crud.notification.get_notification_source_by_uuid(db=db, uuid=notification_source.meta.uuid) is None:
+                
+                db_notification_source_provided = crud.notification.get_notification_source_provided_by_uuid(
+                    db=db,
+                    uuid=notification_source.meta.notification_source_provided.meta.uuid
+                )
+                if db_notification_source_provided is None:
+                    raise RuntimeError(f"❌ NotificationSourceProvided {notification_source.meta.notification_source_provided.meta.uuid} not found")
+                
+                db_notification_source = crud.notification.create_notification_source(
+                    db=db,
+                    notification_source_provided_id=db_notification_source_provided.id,
+                    creator_id=db_root_user.id,
+                    title=notification_source.meta.name,
+                    description=notification_source.meta.description,
+                    uuid=notification_source.meta.uuid,
+                    is_public=True
+                )
+                crud.notification.create_user_notification_source(
+                    db=db,
+                    user_id=db_root_user.id,
+                    notification_source_id=db_notification_source.id,
+                    role=UserNotificationSourceRole.CREATOR
+                )
+        # Notification Targets
         
-
 
 # =========================================================
 # 主入口

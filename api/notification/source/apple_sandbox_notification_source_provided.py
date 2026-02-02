@@ -1,9 +1,9 @@
 import json
 
-from protocol.notification_source import NotificationSourceProtocol
+from protocol.notification_source import NotificationSourceProvidedProtocol
 
 
-class AppleSandBoxNotificationSource(NotificationSourceProtocol):
+class AppleSandBoxNotificationSourceProvided(NotificationSourceProvidedProtocol):
 
     def __init__(
         self

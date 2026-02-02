@@ -1,9 +1,9 @@
 import json
 
-from protocol.notification_target import NotificationTargetProtocol
+from protocol.notification_target import NotificationTargetProvidedProtocol
 
 
-class TelegramNotificationTarget(NotificationTargetProtocol):
+class TelegramNotificationTargetProvided(NotificationTargetProvidedProtocol):
 
     def __init__(
         self

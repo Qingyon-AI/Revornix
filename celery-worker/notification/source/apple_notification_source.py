@@ -1,7 +1,7 @@
 import json
-from protocol.notification_source import NotificationSourceProtocol
+from protocol.notification_source import NotificationSourceProvidedProtocol
 
-class AppleNotificationSource(NotificationSourceProtocol):
+class AppleNotificationSource(NotificationSourceProvidedProtocol):
     
     def __init__(
         self
