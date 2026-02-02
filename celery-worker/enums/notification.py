@@ -1,5 +1,14 @@
 from enum import IntEnum, Enum
 
+class UserNotificationSourceRole(IntEnum):
+    CREATOR = 0
+    FORKER = 1
+
+class UserNotificationTargetRole(IntEnum):
+    CREATOR = 0
+    FORKER = 1
+
+
 class NotificationTriggerEventUUID(Enum):
     REMOVED_FROM_SECTION = 'bf860113d5ee4486a23a6692888d27f3'
     SECTION_COMMENTED = '2840a3b104124bd59afbae2a57c93dbf'

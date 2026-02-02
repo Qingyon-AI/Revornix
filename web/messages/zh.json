@@ -220,7 +220,7 @@
     "setting_notification_source_manage_alert": "这里可以配置通知源，配置完成后你就可以开启通知了。",
     "setting_notification_source_manage_add_form_label": "新增通知源",
     "setting_notification_source_manage_update_form_label": "编辑通知源",
-    "setting_notification_source_manage_form_alert": "增加源可以便利的通过各种方式通知到各终端，当前仅支持email方式。",
+    "setting_notification_source_manage_form_alert": "增加源可以便利的通过各种方式通知到各终端。",
     "setting_notification_source_manage_form_title": "源名称",
     "setting_notification_source_manage_form_title_placeholder": "请输入源名称",
     "setting_notification_source_manage_form_description": "源描述",

@@ -170,7 +170,7 @@ async def seed_database(db: Session):
         db_root_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
         file_service = BuiltInRemoteFileService()
-        await file_service.init_client_by_user_file_system_id(user_file_system_id=db_user_file_system.id)
+        await file_service.init_client()
         # 这里不要 commit，统一由外层 commit（更安全）
         db.flush()
 
@@ -211,6 +211,31 @@ async def seed_database(db: Session):
                 description_zh=trigger.description_zh,
             )
 
+    # -------- EngineProvideds --------
+    engine_provideds: list[EngineProtocol] = [
+        MineruEngine(),
+        JinaEngine(),
+        MarkitdownEngine(),
+        MineruApiEngine(),
+        VolcTTSEngine(),
+        BananaImageGenerateEngine(),
+        OpenAIAudioEngine(),
+        VolcSTTFastEngine(),
+        VolcSTTStandardEngine()
+    ]
+    for ep in engine_provideds:
+        if crud.engine.get_engine_provided_by_engine_uuid(db=db, engine_provided_uuid=ep.engine_uuid) is None:
+            crud.engine.create_engine_provided(
+                db=db,
+                category=ep.engine_category,
+                uuid=ep.engine_uuid,
+                name=ep.engine_name,
+                name_zh=ep.engine_name_zh,
+                description=ep.engine_description,
+                description_zh=ep.engine_description_zh,
+                demo_config=ep.engine_demo_config,
+            )
+    
     # -------- Notification Sources --------
     sources: list[NotificationSourceProtocol] = [
         EmailNotificationSource(),
@@ -253,30 +278,6 @@ async def seed_database(db: Session):
                 demo_config=target.demo_config,
             )
 
-    # -------- EngineProvideds --------
-    engine_provideds: list[EngineProtocol] = [
-        MineruEngine(),
-        JinaEngine(),
-        MarkitdownEngine(),
-        MineruApiEngine(),
-        VolcTTSEngine(),
-        BananaImageGenerateEngine(),
-        OpenAIAudioEngine(),
-        VolcSTTFastEngine(),
-        VolcSTTStandardEngine()
-    ]
-    for ep in engine_provideds:
-        if crud.engine.get_engine_provided_by_engine_uuid(db=db, engine_provided_uuid=ep.engine_uuid) is None:
-            crud.engine.create_engine_provided(
-                db=db,
-                category=ep.engine_category,
-                uuid=ep.engine_uuid,
-                name=ep.engine_name,
-                name_zh=ep.engine_name_zh,
-                description=ep.engine_description,
-                description_zh=ep.engine_description_zh,
-                demo_config=ep.engine_demo_config,
-            )
 
     if deployed_by_official:
         # Model Providers and Models
@@ -340,6 +341,7 @@ async def seed_database(db: Session):
                     engine_id=db_engine.id,
                     role=UserEngineRole.CREATOR
                 )
+        
 
 
 # =========================================================
