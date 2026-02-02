@@ -28,6 +28,7 @@ class NotificationSource(Base):
     __tablename__ = "notification_source"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(String(500))
@@ -73,11 +74,13 @@ class NotificationTarget(Base):
     __tablename__ = "notification_target"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(String(500))
     creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     notification_target_provided_id: Mapped[int] = mapped_column(ForeignKey("notification_target_provided.id"), index=True, nullable=False)
     config_json: Mapped[str | None] = mapped_column(String(2000))
+    is_public: Mapped[bool] = mapped_column(Boolean, default=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

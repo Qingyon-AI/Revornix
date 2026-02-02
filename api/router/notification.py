@@ -84,7 +84,7 @@ def add_notification_source(
     return schemas.common.SuccessResponse()
 
 @notification_router.post("/source/update", response_model=schemas.common.NormalResponse)
-def update_email_source(
+def update_notification_source(
     update_notification_source_request: schemas.notification.UpdateNotificationSourceRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -189,22 +189,43 @@ def get_notification_sources(
         next_start=next_start
     )
 
-@notification_router.post("/source/detail", response_model=schemas.notification.NotificationSource)
+@notification_router.post("/source/detail", response_model=schemas.notification.NotificationSourceDetail)
 def get_notification_detail(
     notification_source_detail_request: schemas.notification.NotificationSourceDetailRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    notification_source = crud.notification.get_notification_source_by_id(
+    db_notification_source = crud.notification.get_notification_source_by_id(
         db=db,
         notification_source_id=notification_source_detail_request.notification_source_id
     )
-    if notification_source is None:
+    if db_notification_source is None:
         raise schemas.error.CustomException(message="notification source not found", code=404)
-    if notification_source.creator_id != user.id:
-        raise schemas.error.CustomException(message="you don't have permission to access this notification source", code=403)
+    db_notification_source_provided = crud.notification.get_notification_source_provided_by_id(
+        db=db,
+        id=db_notification_source.notification_source_provided_id
+    )
+    if db_notification_source_provided is None:
+        raise schemas.error.CustomException(message="This notification source is not provided", code=404)
 
-    return schemas.notification.NotificationSource.model_validate(notification_source)
+    if db_notification_source.creator_id != user.id:
+        if not db_notification_source.is_public:
+            raise schemas.error.CustomException(code=403, message="You don't have permission to access this notification source")
+        else:
+            base = schemas.notification.NotificationSource.model_validate(db_notification_source, from_attributes=True)
+            return schemas.notification.NotificationSource.model_validate(
+                {
+                    **base.model_dump(),
+                    "is_forked": crud.notification.get_user_notification_source_by_user_id_and_notification_source_id(
+                        db=db,
+                        user_id=user.id,
+                        notification_source_id=notification_source_detail_request.notification_source_id,
+                        filter_role=UserNotificationSourceRole.FORKER
+                    ) is not None,
+                }
+            )
+    else:
+        return schemas.notification.NotificationSourceDetail.model_validate(db_notification_source, from_attributes=True)
 
 @notification_router.post("/source/delete", response_model=schemas.common.NormalResponse)
 def delete_notification_source(
@@ -278,7 +299,7 @@ def update_notification_target(
     db.commit()
     return schemas.common.SuccessResponse()
 
-@notification_router.post('/target/mine', response_model=schemas.notification.NotificationTargetsResponse)
+@notification_router.post('/target/mine', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationTarget])
 def get_mine_notification_target(
     notification_target_search_request: schemas.notification.SearchNotificationTargetRequest,
     db: Session = Depends(get_db),
@@ -365,10 +386,11 @@ def delete_notification_target(
     db.commit()
     return schemas.common.SuccessResponse()
 
-@notification_router.post("/target/detail", response_model=schemas.notification.NotificationTarget)
+@notification_router.post("/target/detail", response_model=schemas.notification.NotificationTargetDetail)
 def get_notification_target_detail(
     notification_target_detail_request: schemas.notification.NotificationTargetDetailRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
 ):
     db_notification_target = crud.notification.get_notification_target_by_id(
         db=db,
@@ -376,7 +398,31 @@ def get_notification_target_detail(
     )
     if db_notification_target is None:
         raise schemas.error.CustomException(message="notification target not found", code=404)
-    return schemas.notification.NotificationTarget.model_validate(db_notification_target)
+    db_notification_target_provided = crud.notification.get_notification_target_provided_by_id(
+        db=db,
+        id=db_notification_target.notification_target_provided_id
+    )
+    if db_notification_target_provided is None:
+        raise schemas.error.CustomException(message="This notification target is not provided", code=404)
+
+    if db_notification_target.creator_id != user.id:
+        if not db_notification_target.is_public:
+            raise schemas.error.CustomException(code=403, message="You don't have permission to access this notification target")
+        else:
+            base = schemas.notification.NotificationTarget.model_validate(db_notification_target, from_attributes=True)
+            return schemas.notification.NotificationTarget.model_validate(
+                {
+                    **base.model_dump(),
+                    "is_forked": crud.notification.get_user_notification_target_by_user_id_and_notification_target_id(
+                        db=db,
+                        user_id=user.id,
+                        notification_target_id=notification_target_detail_request.notification_target_id,
+                        filter_role=UserNotificationTargetRole.FORKER
+                    ) is not None,
+                }
+            )
+    else:
+        return schemas.notification.NotificationTargetDetail.model_validate(db_notification_target, from_attributes=True)
 
 @notification_router.post("/target/provided", response_model=schemas.notification.NotificationTargetsResponse)
 def get_provided_notification_target(

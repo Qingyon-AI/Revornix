@@ -1,24 +1,22 @@
-import json
-from typing import Protocol
-
 import crud
 import schemas
+import json
+from typing import Protocol
 from data.sql.base import session_scope
-
 
 class NotificationToolProtocol(Protocol):
 
-    source: schemas.notification.UserNotificationSource | None
-    target: schemas.notification.UserNotificationTarget | None
+    source: schemas.notification.NotificationSource | None
+    target: schemas.notification.NotificationTarget | None
 
     def set_source(
-        self,
+        self, 
         source_id: int
     ):
         with session_scope() as db:
-            db_notification_source = crud.notification.get_user_notification_source_by_user_notification_source_id(
+            db_notification_source = crud.notification.get_notification_source_by_id(
                 db=db,
-                user_notification_source_id=source_id
+                notification_source_id=source_id
             )
             if db_notification_source is None:
                 raise schemas.error.CustomException(message="notification source not found", code=404)
@@ -26,9 +24,9 @@ class NotificationToolProtocol(Protocol):
 
     def set_target(self, target_id: int):
         with session_scope() as db:
-            db_notification_target = crud.notification.get_user_notification_target_by_user_notification_target_id(
+            db_notification_target = crud.notification.get_notification_target_by_id(
                 db=db,
-                user_notification_target_id=target_id
+                notification_target_id=target_id
             )
             if db_notification_target is None:
                 raise schemas.error.CustomException(message="notification target not found", code=404)
@@ -51,7 +49,7 @@ class NotificationToolProtocol(Protocol):
         return config
 
     async def send_notification(
-        self,
+        self, 
         title: str,
         content: str | None = None,
         cover: str | None = None,
