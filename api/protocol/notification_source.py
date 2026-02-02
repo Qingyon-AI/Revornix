@@ -1,14 +1,4 @@
-from typing import Protocol
-
-
-class NotificationSourceProtocol(Protocol):
-
-    uuid: str
-    name: str
-    name_zh: str
-    description: str | None
-    description_zh: str | None
-    demo_config: str | None
+class NotificationSourceProtocol():
 
     def __init__(
         self,

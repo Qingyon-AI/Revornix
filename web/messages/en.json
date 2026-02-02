@@ -220,7 +220,7 @@
     "setting_notification_source_manage_alert": "You can configure notification sources here. Once configured, you can enable notifications.",
     "setting_notification_source_manage_add_form_label": "Add Notification Source",
     "setting_notification_source_manage_update_form_label": "Edit Notification Source",
-    "setting_notification_source_manage_form_alert": "Adding a source allows you to send notifications to various terminals. Currently, only email is supported.",
+    "setting_notification_source_manage_form_alert": "Adding a source allows you to send notifications to various terminals.",
     "setting_notification_source_manage_form_title": "Source Name",
     "setting_notification_source_manage_form_title_placeholder": "Please enter the source name",
     "setting_notification_source_manage_form_description": "Source Description",
