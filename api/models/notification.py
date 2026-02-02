@@ -28,6 +28,7 @@ class NotificationSource(Base):
     __tablename__ = "notification_source"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(String(500))
@@ -73,6 +74,7 @@ class NotificationTarget(Base):
     __tablename__ = "notification_target"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(String(500))
     creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)

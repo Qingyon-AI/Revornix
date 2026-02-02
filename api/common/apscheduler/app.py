@@ -12,10 +12,9 @@ import schemas
 from common.celery.app import start_process_document, start_process_section
 from common.logger import exception_logger, info_logger, warning_logger
 from data.sql.base import session_scope
-from enums.document import DocumentCategory, DocumentMdConvertStatus, UserDocumentAuthority
+from enums.document import DocumentCategory, UserDocumentAuthority
 from enums.notification import (
     NotificationContentType,
-    NotificationSourceUUID,
     NotificationTemplateUUID,
     NotificationTriggerType,
 )
@@ -262,7 +261,7 @@ async def send_notification_scheduler(
         if db_notification_source is None:
             raise schemas.error.CustomException(message="notification source not found", code=500)
         send_res = None
-        if db_notification_source.uuid == NotificationSourceUUID.EMAIL.value:
+        if db_notification_source.uuid == NotificationSourceProvidedUUID.EMAIL.value:
             email_notify = EmailNotificationTool()
             email_notify.set_source(
                 source_id=db_notification_task.user_user_notification_source_id,
@@ -276,7 +275,7 @@ async def send_notification_scheduler(
                 title=title,
                 content=content
             )
-        elif db_notification_source.uuid == NotificationSourceUUID.APPLE.value:
+        elif db_notification_source.uuid == NotificationSourceProvidedUUID.APPLE.value:
             apple_notify = AppleNotificationTool()
             apple_notify.set_source(
                 source_id=db_notification_task.user_notification_source_id,
@@ -288,7 +287,7 @@ async def send_notification_scheduler(
                 title=title,
                 content=content
             )
-        elif db_notification_source.uuid == NotificationSourceUUID.APPLE_SANDBOX.value:
+        elif db_notification_source.uuid == NotificationSourceProvidedUUID.APPLE_SANDBOX.value:
             ios_sandbox_notify = AppleSandboxNotificationTool()
             ios_sandbox_notify.set_source(
                 source_id=db_notification_task.user_notification_source_id,

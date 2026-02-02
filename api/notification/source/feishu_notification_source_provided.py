@@ -1,9 +1,9 @@
 import json
 
-from protocol.notification_source import NotificationSourceProtocol
+from protocol.notification_source import NotificationSourceProvidedProtocol
 
 
-class FeishuNotificationSource(NotificationSourceProtocol):
+class FeishuNotificationSourceProvided(NotificationSourceProvidedProtocol):
 
     def __init__(
         self

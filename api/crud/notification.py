@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 
 import models
 from enums.notification import NotificationTriggerType, UserNotificationSourceRole, UserNotificationTargetRole
+from uuid import uuid4
 
 
 def create_notification_template(
@@ -162,15 +163,19 @@ def create_notification_source(
     title: str,
     description: str | None = None,
     config_json: str | None = None,
+    uuid: str | None = None,
     is_public: bool = False
 ):
     now = datetime.now(timezone.utc)
+    if uuid is None:
+        uuid = str(uuid4())
     notification_source = models.notification.NotificationSource(
         notification_source_provided_id=notification_source_provided_id,
         title=title,
         description=description,
         creator_id=creator_id,
         config_json=config_json,
+        uuid=uuid,
         is_public=is_public,
         create_time=now
     )
@@ -225,15 +230,19 @@ def create_notification_target(
     title: str,
     description: str | None = None,
     config_json: str | None = None,
+    uuid: str | None = None,
     is_public: bool = False
 ):
     now = datetime.now(timezone.utc)
+    if uuid is None:
+        uuid = str(uuid4())
     notification_target = models.notification.NotificationTarget(
         notification_target_provided_id=notification_target_provided_id,
         title=title,
         description=description,
         creator_id=creator_id,
         config_json=config_json,
+        uuid=uuid,
         is_public=is_public,
         create_time=now
     )
@@ -278,6 +287,48 @@ def create_notification_record(
     db.add(notification)
     db.flush()
     return notification
+
+def get_notification_source_by_uuid(
+    db: Session,
+    uuid: str
+):
+    query = db.query(models.notification.NotificationSource)
+    query = query.filter(
+        models.notification.NotificationSource.uuid == uuid,
+        models.notification.NotificationSource.delete_at.is_(None)
+    )
+    return query.one_or_none()
+
+def get_notification_target_by_uuid(
+    db: Session,
+    uuid: str
+):
+    query = db.query(models.notification.NotificationTarget)
+    query = query.filter(
+        models.notification.NotificationTarget.uuid == uuid,
+        models.notification.NotificationTarget.delete_at.is_(None)
+    )
+    return query.one_or_none()
+
+def get_notification_source_provided_by_uuid(
+    db: Session,
+    uuid: str
+):
+    query = db.query(models.notification.NotificationSourceProvided)
+    query = query.filter(
+        models.notification.NotificationSourceProvided.uuid == uuid
+    )
+    return query.one_or_none()
+
+def get_notification_target_provided_by_uuid(
+    db: Session,
+    uuid: str
+):
+    query = db.query(models.notification.NotificationTargetProvided)
+    query = query.filter(
+        models.notification.NotificationTargetProvided.uuid == uuid,
+    )
+    return query.one_or_none()
 
 def get_notification_task_by_notification_target_id(
     db: Session,

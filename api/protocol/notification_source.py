@@ -1,4 +1,4 @@
-class NotificationSourceProtocol():
+class NotificationSourceProvidedProtocol():
 
     def __init__(
         self,

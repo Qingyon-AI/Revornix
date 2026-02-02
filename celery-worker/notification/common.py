@@ -7,7 +7,7 @@ from notification.tool.email import EmailNotificationTool
 from notification.tool.feishu import FeishuNotificationTool
 from notification.tool.dingtalk import DingTalkNotificationTool
 from notification.tool.telegram import TelegramNotificationTool
-from enums.notification import NotificationSourceUUID, NotificationContentType
+from enums.notification import NotificationSourceProvidedUUID, NotificationContentType
 from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
 from notification.template.section_updated import SectionUpdatedNotificationTemplate
@@ -122,17 +122,17 @@ async def trigger_user_notification_event(
                     cover=cover,
                     link=link
                 )
-                if notification_source.uuid == NotificationSourceUUID.EMAIL.value:
+                if notification_source.uuid == NotificationSourceProvidedUUID.EMAIL.value:
                     notification_tool = EmailNotificationTool()
-                elif notification_source.uuid == NotificationSourceUUID.APPLE.value:
+                elif notification_source.uuid == NotificationSourceProvidedUUID.APPLE.value:
                     notification_tool = AppleNotificationTool()
-                elif notification_source.uuid == NotificationSourceUUID.APPLE_SANDBOX.value:
+                elif notification_source.uuid == NotificationSourceProvidedUUID.APPLE_SANDBOX.value:
                     notification_tool = AppleSandboxNotificationTool()
-                elif notification_source.uuid == NotificationSourceUUID.FEISHU.value:
+                elif notification_source.uuid == NotificationSourceProvidedUUID.FEISHU.value:
                     notification_tool = FeishuNotificationTool()
-                elif notification_source.uuid == NotificationSourceUUID.DINGTALK.value:
+                elif notification_source.uuid == NotificationSourceProvidedUUID.DINGTALK.value:
                     notification_tool = DingTalkNotificationTool()
-                elif notification_source.uuid == NotificationSourceUUID.TELEGRAM.value:
+                elif notification_source.uuid == NotificationSourceProvidedUUID.TELEGRAM.value:
                     notification_tool = TelegramNotificationTool()
                 else:
                     raise Exception("Notification source not supported")
