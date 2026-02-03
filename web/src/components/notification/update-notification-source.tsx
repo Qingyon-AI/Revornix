@@ -397,7 +397,7 @@ const UpdateNotificationSource = ({
 						{!authorized && (
 							<Alert className='bg-amber-600/10 dark:bg-amber-600/15 text-amber-500 border-amber-500/50 dark:border-amber-600/50'>
 								<ShieldAlert className='size-4' />
-								<AlertTitle>{t('setting_notification_source_manage_form_config_json_demo')}</AlertTitle>
+								<AlertTitle>{t('setting_notification_source_manage_forbidden')}</AlertTitle>
 							</Alert>
 						)}
 						{authorized && (

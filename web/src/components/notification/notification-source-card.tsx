@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import UpdateNotificationSource from '@/components/notification/update-notification-source';
 import { useMemo, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -84,7 +84,7 @@ const NotificationSourceCard = ({
 
 	return (
 		<Card>
-			<CardHeader>
+			<CardHeader className='flex-1'>
 				<CardTitle className='flex flex-row items-center w-full min-w-0'>
 					<div className='flex flex-row items-center gap-2 flex-1 min-w-0 flex-wrap break-all'>
 						<span className='line-clamp-2'>{notification_source.title}</span>
@@ -174,7 +174,7 @@ const NotificationSourceCard = ({
 										status: false,
 									});
 								}}>
-								{t('setting_model_provider_unfork')}
+								{t('setting_notification_source_unfork')}
 								{mutateForkNotificationSource.isPending && (
 									<Loader2 className='h-4 w-4 animate-spin' />
 								)}

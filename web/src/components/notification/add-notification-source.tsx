@@ -288,7 +288,7 @@ const AddNotificationSource = () => {
 										<FormItem className='rounded-lg border border-input p-3'>
 											<div className='flex flex-row gap-1 items-center'>
 												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('setting_model_provider_is_public')}
+													{t('setting_notification_source_is_public')}
 												</FormLabel>
 												<Switch
 													checked={field.value}
@@ -298,7 +298,9 @@ const AddNotificationSource = () => {
 												/>
 											</div>
 											<FormDescription>
-												{t('setting_notification_source_manage_form_is_public_tips')}
+												{t(
+													'setting_notification_source_manage_form_is_public_tips',
+												)}
 											</FormDescription>
 										</FormItem>
 									);

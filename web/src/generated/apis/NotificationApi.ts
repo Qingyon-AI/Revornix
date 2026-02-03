@@ -36,11 +36,11 @@ import type {
   NotificationSourceDetail,
   NotificationSourceDetailRequest,
   NotificationSourceForkRequest,
-  NotificationSourcesResponse,
+  NotificationSourcesProvidedResponse,
   NotificationTargetDetail,
   NotificationTargetDetailRequest,
   NotificationTargetForkRequest,
-  NotificationTargetsResponse,
+  NotificationTargetsProvidedResponse,
   NotificationTask,
   NotificationTaskDetailRequest,
   NotificationTemplatesResponse,
@@ -98,16 +98,16 @@ import {
     NotificationSourceDetailRequestToJSON,
     NotificationSourceForkRequestFromJSON,
     NotificationSourceForkRequestToJSON,
-    NotificationSourcesResponseFromJSON,
-    NotificationSourcesResponseToJSON,
+    NotificationSourcesProvidedResponseFromJSON,
+    NotificationSourcesProvidedResponseToJSON,
     NotificationTargetDetailFromJSON,
     NotificationTargetDetailToJSON,
     NotificationTargetDetailRequestFromJSON,
     NotificationTargetDetailRequestToJSON,
     NotificationTargetForkRequestFromJSON,
     NotificationTargetForkRequestToJSON,
-    NotificationTargetsResponseFromJSON,
-    NotificationTargetsResponseToJSON,
+    NotificationTargetsProvidedResponseFromJSON,
+    NotificationTargetsProvidedResponseToJSON,
     NotificationTaskFromJSON,
     NotificationTaskToJSON,
     NotificationTaskDetailRequestFromJSON,
@@ -171,6 +171,16 @@ export interface DeleteNotificationTaskNotificationTaskDeletePostRequest {
     authorization?: string | null;
 }
 
+export interface ForkNotificationSourceNotificationSourceForkPostRequest {
+    notificationSourceForkRequest: NotificationSourceForkRequest;
+    authorization?: string | null;
+}
+
+export interface ForkNotificationTargetNotificationTargetForkPostRequest {
+    notificationTargetForkRequest: NotificationTargetForkRequest;
+    authorization?: string | null;
+}
+
 export interface GetMineNotificationTargetNotificationTargetMinePostRequest {
     searchNotificationTargetRequest: SearchNotificationTargetRequest;
     authorization?: string | null;
@@ -229,16 +239,6 @@ export interface GetProvidedNotificationTargetNotificationTargetProvidedPostRequ
 }
 
 export interface GetTriggerEventsNotificationTriggerEventAllPostRequest {
-    authorization?: string | null;
-}
-
-export interface InstallEngineNotificationSourceForkPostRequest {
-    notificationSourceForkRequest: NotificationSourceForkRequest;
-    authorization?: string | null;
-}
-
-export interface InstallEngineNotificationTargetForkPostRequest {
-    notificationTargetForkRequest: NotificationTargetForkRequest;
     authorization?: string | null;
 }
 
@@ -574,6 +574,92 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async deleteNotificationTaskNotificationTaskDeletePost(requestParameters: DeleteNotificationTaskNotificationTaskDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.deleteNotificationTaskNotificationTaskDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Fork Notification Source
+     */
+    async forkNotificationSourceNotificationSourceForkPostRaw(requestParameters: ForkNotificationSourceNotificationSourceForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['notificationSourceForkRequest'] == null) {
+            throw new runtime.RequiredError(
+                'notificationSourceForkRequest',
+                'Required parameter "notificationSourceForkRequest" was null or undefined when calling forkNotificationSourceNotificationSourceForkPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/notification/source/fork`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: NotificationSourceForkRequestToJSON(requestParameters['notificationSourceForkRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Fork Notification Source
+     */
+    async forkNotificationSourceNotificationSourceForkPost(requestParameters: ForkNotificationSourceNotificationSourceForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.forkNotificationSourceNotificationSourceForkPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Fork Notification Target
+     */
+    async forkNotificationTargetNotificationTargetForkPostRaw(requestParameters: ForkNotificationTargetNotificationTargetForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        if (requestParameters['notificationTargetForkRequest'] == null) {
+            throw new runtime.RequiredError(
+                'notificationTargetForkRequest',
+                'Required parameter "notificationTargetForkRequest" was null or undefined when calling forkNotificationTargetNotificationTargetForkPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/notification/target/fork`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: NotificationTargetForkRequestToJSON(requestParameters['notificationTargetForkRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Fork Notification Target
+     */
+    async forkNotificationTargetNotificationTargetForkPost(requestParameters: ForkNotificationTargetNotificationTargetForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.forkNotificationTargetNotificationTargetForkPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1000,7 +1086,7 @@ export class NotificationApi extends runtime.BaseAPI {
     /**
      * Get Provided Notification Source
      */
-    async getProvidedNotificationSourceNotificationSourceProvidedPostRaw(requestParameters: GetProvidedNotificationSourceNotificationSourceProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourcesResponse>> {
+    async getProvidedNotificationSourceNotificationSourceProvidedPostRaw(requestParameters: GetProvidedNotificationSourceNotificationSourceProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourcesProvidedResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1019,13 +1105,13 @@ export class NotificationApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationSourcesResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationSourcesProvidedResponseFromJSON(jsonValue));
     }
 
     /**
      * Get Provided Notification Source
      */
-    async getProvidedNotificationSourceNotificationSourceProvidedPost(requestParameters: GetProvidedNotificationSourceNotificationSourceProvidedPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationSourcesResponse> {
+    async getProvidedNotificationSourceNotificationSourceProvidedPost(requestParameters: GetProvidedNotificationSourceNotificationSourceProvidedPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationSourcesProvidedResponse> {
         const response = await this.getProvidedNotificationSourceNotificationSourceProvidedPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1033,7 +1119,7 @@ export class NotificationApi extends runtime.BaseAPI {
     /**
      * Get Provided Notification Target
      */
-    async getProvidedNotificationTargetNotificationTargetProvidedPostRaw(requestParameters: GetProvidedNotificationTargetNotificationTargetProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetsResponse>> {
+    async getProvidedNotificationTargetNotificationTargetProvidedPostRaw(requestParameters: GetProvidedNotificationTargetNotificationTargetProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetsProvidedResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1052,13 +1138,13 @@ export class NotificationApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTargetsResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTargetsProvidedResponseFromJSON(jsonValue));
     }
 
     /**
      * Get Provided Notification Target
      */
-    async getProvidedNotificationTargetNotificationTargetProvidedPost(requestParameters: GetProvidedNotificationTargetNotificationTargetProvidedPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTargetsResponse> {
+    async getProvidedNotificationTargetNotificationTargetProvidedPost(requestParameters: GetProvidedNotificationTargetNotificationTargetProvidedPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTargetsProvidedResponse> {
         const response = await this.getProvidedNotificationTargetNotificationTargetProvidedPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1093,92 +1179,6 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async getTriggerEventsNotificationTriggerEventAllPost(requestParameters: GetTriggerEventsNotificationTriggerEventAllPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TriggerEventsResponse> {
         const response = await this.getTriggerEventsNotificationTriggerEventAllPostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Install Engine
-     */
-    async installEngineNotificationSourceForkPostRaw(requestParameters: InstallEngineNotificationSourceForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        if (requestParameters['notificationSourceForkRequest'] == null) {
-            throw new runtime.RequiredError(
-                'notificationSourceForkRequest',
-                'Required parameter "notificationSourceForkRequest" was null or undefined when calling installEngineNotificationSourceForkPost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-
-        let urlPath = `/notification/source/fork`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: NotificationSourceForkRequestToJSON(requestParameters['notificationSourceForkRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Install Engine
-     */
-    async installEngineNotificationSourceForkPost(requestParameters: InstallEngineNotificationSourceForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
-        const response = await this.installEngineNotificationSourceForkPostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Install Engine
-     */
-    async installEngineNotificationTargetForkPostRaw(requestParameters: InstallEngineNotificationTargetForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        if (requestParameters['notificationTargetForkRequest'] == null) {
-            throw new runtime.RequiredError(
-                'notificationTargetForkRequest',
-                'Required parameter "notificationTargetForkRequest" was null or undefined when calling installEngineNotificationTargetForkPost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-
-        let urlPath = `/notification/target/fork`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: NotificationTargetForkRequestToJSON(requestParameters['notificationTargetForkRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Install Engine
-     */
-    async installEngineNotificationTargetForkPost(requestParameters: InstallEngineNotificationTargetForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
-        const response = await this.installEngineNotificationTargetForkPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

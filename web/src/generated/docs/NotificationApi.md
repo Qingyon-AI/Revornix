@@ -11,6 +11,8 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**deleteNotificationSourceNotificationSourceDeletePost**](NotificationApi.md#deletenotificationsourcenotificationsourcedeletepost) | **POST** /notification/source/delete | Delete Notification Source |
 | [**deleteNotificationTargetNotificationTargetDeletePost**](NotificationApi.md#deletenotificationtargetnotificationtargetdeletepost) | **POST** /notification/target/delete | Delete Notification Target |
 | [**deleteNotificationTaskNotificationTaskDeletePost**](NotificationApi.md#deletenotificationtasknotificationtaskdeletepost) | **POST** /notification/task/delete | Delete Notification Task |
+| [**forkNotificationSourceNotificationSourceForkPost**](NotificationApi.md#forknotificationsourcenotificationsourceforkpost) | **POST** /notification/source/fork | Fork Notification Source |
+| [**forkNotificationTargetNotificationTargetForkPost**](NotificationApi.md#forknotificationtargetnotificationtargetforkpost) | **POST** /notification/target/fork | Fork Notification Target |
 | [**getMineNotificationTargetNotificationTargetMinePost**](NotificationApi.md#getminenotificationtargetnotificationtargetminepost) | **POST** /notification/target/mine | Get Mine Notification Target |
 | [**getMineNotificationTaskNotificationTaskMinePost**](NotificationApi.md#getminenotificationtasknotificationtaskminepost) | **POST** /notification/task/mine | Get Mine Notification Task |
 | [**getNotificationDetailNotificationSourceDetailPost**](NotificationApi.md#getnotificationdetailnotificationsourcedetailpost) | **POST** /notification/source/detail | Get Notification Detail |
@@ -24,8 +26,6 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**getProvidedNotificationSourceNotificationSourceProvidedPost**](NotificationApi.md#getprovidednotificationsourcenotificationsourceprovidedpost) | **POST** /notification/source/provided | Get Provided Notification Source |
 | [**getProvidedNotificationTargetNotificationTargetProvidedPost**](NotificationApi.md#getprovidednotificationtargetnotificationtargetprovidedpost) | **POST** /notification/target/provided | Get Provided Notification Target |
 | [**getTriggerEventsNotificationTriggerEventAllPost**](NotificationApi.md#gettriggereventsnotificationtriggereventallpost) | **POST** /notification/trigger-event/all | Get Trigger Events |
-| [**installEngineNotificationSourceForkPost**](NotificationApi.md#installenginenotificationsourceforkpost) | **POST** /notification/source/fork | Install Engine |
-| [**installEngineNotificationTargetForkPost**](NotificationApi.md#installenginenotificationtargetforkpost) | **POST** /notification/target/fork | Install Engine |
 | [**readAllNotificationRecordNotificationRecordReadAllPost**](NotificationApi.md#readallnotificationrecordnotificationrecordreadallpost) | **POST** /notification/record/read-all | Read All Notification Record |
 | [**readNotificationRecordNotificationRecordReadPost**](NotificationApi.md#readnotificationrecordnotificationrecordreadpost) | **POST** /notification/record/read | Read Notification Record |
 | [**searchNotificationRecordNotificationRecordSearchPost**](NotificationApi.md#searchnotificationrecordnotificationrecordsearchpost) | **POST** /notification/record/search | Search Notification Record |
@@ -493,6 +493,144 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **deleteNotificationTaskRequest** | [DeleteNotificationTaskRequest](DeleteNotificationTaskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## forkNotificationSourceNotificationSourceForkPost
+
+> NormalResponse forkNotificationSourceNotificationSourceForkPost(notificationSourceForkRequest, authorization)
+
+Fork Notification Source
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { ForkNotificationSourceNotificationSourceForkPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // NotificationSourceForkRequest
+    notificationSourceForkRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies ForkNotificationSourceNotificationSourceForkPostRequest;
+
+  try {
+    const data = await api.forkNotificationSourceNotificationSourceForkPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **notificationSourceForkRequest** | [NotificationSourceForkRequest](NotificationSourceForkRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## forkNotificationTargetNotificationTargetForkPost
+
+> NormalResponse forkNotificationTargetNotificationTargetForkPost(notificationTargetForkRequest, authorization)
+
+Fork Notification Target
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { ForkNotificationTargetNotificationTargetForkPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // NotificationTargetForkRequest
+    notificationTargetForkRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies ForkNotificationTargetNotificationTargetForkPostRequest;
+
+  try {
+    const data = await api.forkNotificationTargetNotificationTargetForkPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **notificationTargetForkRequest** | [NotificationTargetForkRequest](NotificationTargetForkRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
@@ -1207,7 +1345,7 @@ No authorization required
 
 ## getProvidedNotificationSourceNotificationSourceProvidedPost
 
-> NotificationSourcesResponse getProvidedNotificationSourceNotificationSourceProvidedPost(authorization)
+> NotificationSourcesProvidedResponse getProvidedNotificationSourceNotificationSourceProvidedPost(authorization)
 
 Get Provided Notification Source
 
@@ -1250,7 +1388,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**NotificationSourcesResponse**](NotificationSourcesResponse.md)
+[**NotificationSourcesProvidedResponse**](NotificationSourcesProvidedResponse.md)
 
 ### Authorization
 
@@ -1273,7 +1411,7 @@ No authorization required
 
 ## getProvidedNotificationTargetNotificationTargetProvidedPost
 
-> NotificationTargetsResponse getProvidedNotificationTargetNotificationTargetProvidedPost(authorization)
+> NotificationTargetsProvidedResponse getProvidedNotificationTargetNotificationTargetProvidedPost(authorization)
 
 Get Provided Notification Target
 
@@ -1316,7 +1454,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**NotificationTargetsResponse**](NotificationTargetsResponse.md)
+[**NotificationTargetsProvidedResponse**](NotificationTargetsProvidedResponse.md)
 
 ### Authorization
 
@@ -1391,144 +1529,6 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## installEngineNotificationSourceForkPost
-
-> NormalResponse installEngineNotificationSourceForkPost(notificationSourceForkRequest, authorization)
-
-Install Engine
-
-### Example
-
-```ts
-import {
-  Configuration,
-  NotificationApi,
-} from '';
-import type { InstallEngineNotificationSourceForkPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new NotificationApi();
-
-  const body = {
-    // NotificationSourceForkRequest
-    notificationSourceForkRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-  } satisfies InstallEngineNotificationSourceForkPostRequest;
-
-  try {
-    const data = await api.installEngineNotificationSourceForkPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **notificationSourceForkRequest** | [NotificationSourceForkRequest](NotificationSourceForkRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**NormalResponse**](NormalResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## installEngineNotificationTargetForkPost
-
-> NormalResponse installEngineNotificationTargetForkPost(notificationTargetForkRequest, authorization)
-
-Install Engine
-
-### Example
-
-```ts
-import {
-  Configuration,
-  NotificationApi,
-} from '';
-import type { InstallEngineNotificationTargetForkPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new NotificationApi();
-
-  const body = {
-    // NotificationTargetForkRequest
-    notificationTargetForkRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-  } satisfies InstallEngineNotificationTargetForkPostRequest;
-
-  try {
-    const data = await api.installEngineNotificationTargetForkPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **notificationTargetForkRequest** | [NotificationTargetForkRequest](NotificationTargetForkRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**NormalResponse**](NormalResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 
