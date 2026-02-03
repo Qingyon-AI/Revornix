@@ -114,7 +114,7 @@ const AddNotificationTask = () => {
 	});
 
 	const { data: mineNotificationTargets } = useQuery({
-		queryKey: ['notification-target'],
+		queryKey: ['searchNotificationTargets'],
 		queryFn: getMineNotificationTargets,
 	});
 

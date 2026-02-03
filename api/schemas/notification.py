@@ -228,7 +228,7 @@ class NotificationTargetDetail(BaseModel):
         from_attributes = True
 
 class NotificationTargetsProvidedResponse(BaseModel):
-    data: list[NotificationTarget]
+    data: list[NotificationTargetProvided]
 
 class NotificationTargetDetailRequest(BaseModel):
     notification_target_id: int
@@ -239,7 +239,7 @@ class NotificationSourceDetailRequest(BaseModel):
 class NotificationTargetsResponse(BaseModel):
     data: list[NotificationTarget]
 
-class NotificationSourcesResponse(BaseModel):
+class NotificationSourcesProvidedResponse(BaseModel):
     data: list[NotificationSourceProvided]
 
 
@@ -256,9 +256,6 @@ class AddNotificationSourceRequest(BaseModel):
     is_public: bool
     description: str | None = None
     config_json: str | None = None
-
-class NotificationSourcesProvidedResponse(BaseModel):
-    data: list[NotificationSourceProvided]
 
 class UpdateNotificationSourceRequest(BaseModel):
     notification_source_id: int

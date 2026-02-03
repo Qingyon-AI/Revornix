@@ -1,4 +1,3 @@
-import { UserNotificationTarget } from '@/generated';
 import { Button } from '@/components/ui/button';
 import {
 	AlertDialog,
@@ -12,6 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
 	Card,
+	CardContent,
 	CardDescription,
 	CardFooter,
 	CardHeader,
@@ -19,36 +19,34 @@ import {
 } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
-import UpdateNotificationTarget from '@/components/notification/update-notification-target';
-import { useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import {
 	deleteNotificationTarget,
-	getNotificationTargetRelatedTasks,
+	forkNotificationTarget,
 } from '@/service/notification';
-import { Loader2 } from 'lucide-react';
+import { Loader2, XCircleIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Skeleton } from '../ui/skeleton';
-import Link from 'next/link';
+import { useRouter } from 'nextjs-toploader/app';
+import { useUserContext } from '@/provider/user-provider';
+import { Badge } from '../ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { NotificationTarget } from '@/generated';
+import { replacePath } from '@/lib/utils';
+import { format } from 'date-fns';
+import UpdateNotificationTarget from './update-notification-target';
 
 const NotificationTargetCard = ({
 	notification_target,
 }: {
-	notification_target: UserNotificationTarget;
+	notification_target: NotificationTarget;
 }) => {
 	const t = useTranslations();
+	const router = useRouter();
+	const { refreshMainUserInfo, mainUserInfo } = useUserContext();
 	const queryClient = getQueryClient();
 
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-	const { data: notificationTargetRelatedTasks, isFetching } = useQuery({
-		queryKey: ['notification-source-related-tasks'],
-		queryFn: async () => {
-			return await getNotificationTargetRelatedTasks({
-				user_notification_target_id: notification_target.id,
-			});
-		},
-	});
 
 	const muteDeleteNotificationTarget = useMutation({
 		mutationFn: deleteNotificationTarget,
@@ -58,81 +56,170 @@ const NotificationTargetCard = ({
 		onSuccess(data, variables, context) {
 			toast.success(t('setting_notification_target_manage_delete_success'));
 			queryClient.invalidateQueries({
-				queryKey: ['notification-target'],
+				queryKey: ['searchNotificationTargets'],
 			});
 			setShowDeleteDialog(false);
 		},
 	});
 
+	const mutateForkNotificationTarget = useMutation({
+		mutationFn: forkNotificationTarget,
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				predicate(query) {
+					return query.queryKey.includes('notification-target');
+				},
+			});
+			refreshMainUserInfo();
+		},
+		onError(error, variables, onMutateResult, context) {
+			console.error(error);
+			toast.error(error.message);
+		},
+	});
+
+	const isMineNotificationTarget = useMemo(() => {
+		return mainUserInfo && mainUserInfo.id === notification_target?.creator.id;
+	}, [notification_target?.creator.id, mainUserInfo]);
+
 	return (
 		<Card>
-			<CardHeader>
-				<CardTitle>{notification_target.title}</CardTitle>
-				<CardDescription>{notification_target.description}</CardDescription>
-			</CardHeader>
-			<CardFooter className='flex flex-row items-center gap-1 justify-end'>
-				<UpdateNotificationTarget
-					user_notification_target_id={notification_target.id}
-				/>
-				<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-					<AlertDialogTrigger asChild>
-						<Button variant='destructive'>{t('delete')}</Button>
-					</AlertDialogTrigger>
-					<AlertDialogContent>
-						<AlertDialogHeader>
-							<AlertDialogTitle>{t('warning')}</AlertDialogTitle>
-							<AlertDialogDescription>
-								{t('setting_notification_target_manage_delete_alert')}
-							</AlertDialogDescription>
-						</AlertDialogHeader>
-						{isFetching && <Skeleton className='w-full h-20' />}
-						{!isFetching && notificationTargetRelatedTasks && (
-							<>
-								<div className='text-sm font-bold'>
-									{t('setting_notification_target_related_tasks')}
-								</div>
-								<div className='bg-muted px-5 py-3 rounded-lg max-h-40 overflow-auto'>
-									{notificationTargetRelatedTasks.data.length === 0 ? (
-										<div className='text-xs text-center text-muted-foreground'>
-											{t('setting_notification_target_related_tasks_empty')}
-										</div>
-									) : (
-										<div className='flex flex-col divide-y'>
-											{notificationTargetRelatedTasks?.data.map(
-												(task, index) => {
-													return (
-														<Link
-															key={index}
-															href={`/setting/notification/task-manage#${task.id}`}
-															className='text-sm font-bold py-2 line-clamp-1'>
-															{task.title}
-														</Link>
-													);
-												}
-											)}
-										</div>
-									)}
-								</div>
-							</>
-						)}
-						<AlertDialogFooter>
+			<CardHeader className='flex-1'>
+				<CardTitle className='flex flex-row items-center w-full min-w-0'>
+					<div className='flex flex-row items-center gap-2 flex-1 min-w-0 flex-wrap break-all'>
+						<span className='line-clamp-2'>{notification_target.title}</span>
+					</div>
+					<AlertDialog
+						open={showDeleteDialog}
+						onOpenChange={setShowDeleteDialog}>
+						<AlertDialogTrigger asChild>
 							<Button
-								variant={'destructive'}
+								size={'icon'}
+								type='button'
+								variant={'ghost'}
+								className='ml-auto'>
+								<XCircleIcon className='size-4' />
+							</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>{t('tip')}</AlertDialogTitle>
+								<AlertDialogDescription>
+									{t('setting_notification_target_manage_delete_alert')}
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<Button
+									variant={'destructive'}
+									onClick={async () => {
+										const res = await muteDeleteNotificationTarget.mutateAsync({
+											notification_target_ids: [notification_target.id],
+										});
+										if (res.success) {
+											setShowDeleteDialog(false);
+										}
+									}}
+									disabled={muteDeleteNotificationTarget.isPending}>
+									{t('confirm')}
+									{muteDeleteNotificationTarget.isPending && (
+										<Loader2 className='animate-spin' />
+									)}
+								</Button>
+								<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
+				</CardTitle>
+				<CardDescription className='flex flex-col flex-1'>
+					<span className='mb-2'>{notification_target.description}</span>
+					{notification_target.is_public && (
+						<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
+							<div className='h-1.5 w-1.5 rounded-full bg-amber-500 mr-1' />{' '}
+							Public
+						</Badge>
+					)}
+				</CardDescription>
+			</CardHeader>
+			<CardContent className='relative gap-2 flex flex-row items-center justify-end'>
+				<UpdateNotificationTarget
+					notification_target_id={notification_target.id}
+				/>
+				{!isMineNotificationTarget && (
+					<>
+						{!notification_target.is_forked && (
+							<Button
+								className='shadow-none'
+								variant={'outline'}
+								disabled={mutateForkNotificationTarget.isPending}
 								onClick={() => {
-									muteDeleteNotificationTarget.mutateAsync({
-										user_notification_target_ids: [notification_target.id],
+									mutateForkNotificationTarget.mutate({
+										notification_target_id: notification_target.id,
+										status: true,
 									});
-								}}
-								disabled={muteDeleteNotificationTarget.isPending}>
-								{t('confirm')}
-								{muteDeleteNotificationTarget.isPending && (
+								}}>
+								{t('setting_notification_target_fork')}
+								{mutateForkNotificationTarget.isPending && (
 									<Loader2 className='h-4 w-4 animate-spin' />
 								)}
 							</Button>
-							<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-						</AlertDialogFooter>
-					</AlertDialogContent>
-				</AlertDialog>
+						)}
+						{notification_target.is_forked && (
+							<Button
+								className='shadow-none text-xs'
+								variant={'destructive'}
+								disabled={mutateForkNotificationTarget.isPending}
+								onClick={() => {
+									mutateForkNotificationTarget.mutate({
+										notification_target_id: notification_target.id,
+										status: false,
+									});
+								}}>
+								{t('setting_notification_target_unfork')}
+								{mutateForkNotificationTarget.isPending && (
+									<Loader2 className='h-4 w-4 animate-spin' />
+								)}
+							</Button>
+						)}
+					</>
+				)}
+			</CardContent>
+			<CardFooter className='flex flex-row items-center'>
+				<Avatar
+					className='size-5'
+					title={
+						notification_target.creator.nickname
+							? notification_target.creator.nickname
+							: 'Unknown User'
+					}
+					onClick={(e) => {
+						router.push(`/user/detail/${notification_target.creator.id}`);
+						e.preventDefault();
+						e.stopPropagation();
+					}}>
+					<AvatarImage
+						src={
+							replacePath(
+								notification_target.creator.avatar,
+								notification_target.creator.id,
+							) ?? ''
+						}
+						alt='user avatar'
+						className='size-5 object-cover'
+					/>
+					<AvatarFallback className='size-5'>
+						{notification_target.creator.nickname}
+					</AvatarFallback>
+				</Avatar>
+				<span className='text-xs text-muted-foreground ml-2'>
+					{notification_target.creator.nickname}
+				</span>
+				<span className='ml-auto text-xs text-muted-foreground'>
+					{notification_target.create_time &&
+						format(
+							new Date(notification_target.create_time),
+							'yyyy-MM-dd HH:mm',
+						)}
+				</span>
 			</CardFooter>
 		</Card>
 	);

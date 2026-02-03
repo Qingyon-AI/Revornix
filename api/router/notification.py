@@ -111,21 +111,21 @@ def update_notification_source(
     db.commit()
     return schemas.common.NormalResponse(message="success")
 
-@notification_router.post('/source/provided', response_model=schemas.notification.NotificationSourcesResponse)
+@notification_router.post('/source/provided', response_model=schemas.notification.NotificationSourcesProvidedResponse)
 def get_provided_notification_source(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_sources = crud.notification.get_all_provided_notification_sources(
+    db_notification_sources_provided = crud.notification.get_all_provided_notification_sources(
         db=db
     )
-    notification_sources = [
-        schemas.notification.NotificationSourceProvided.model_validate(db_notification_source) for db_notification_source in db_notification_sources
+    notification_sources_provided = [
+        schemas.notification.NotificationSourceProvided.model_validate(db_notification_source) for db_notification_source in db_notification_sources_provided
     ]
-    return schemas.notification.NotificationSourcesResponse(data=notification_sources)
+    return schemas.notification.NotificationSourcesProvidedResponse(data=notification_sources_provided)
 
 @notification_router.post("/source/fork", response_model=schemas.common.NormalResponse)
-def install_engine(
+def fork_notification_source(
     notification_source_fork_request: schemas.notification.NotificationSourceForkRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
@@ -162,7 +162,7 @@ def install_engine(
     return schemas.common.SuccessResponse()
 
 @notification_router.post("/target/fork", response_model=schemas.common.NormalResponse)
-def install_engine(
+def fork_notification_target(
     notification_target_fork_request: schemas.notification.NotificationTargetForkRequest,
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
@@ -309,6 +309,15 @@ def delete_notification_source(
 ):
     now = datetime.now(tz=timezone.utc)
     for notification_source_id in delete_notification_source_request.notification_source_ids:
+        db_notification_source = crud.notification.get_notification_source_by_id(
+            db=db,
+            notification_source_id=notification_source_id
+        )
+        if db_notification_source is None:
+            raise schemas.error.CustomException(message="notification source not found", code=404)
+        if db_notification_source.creator_id != user.id:
+            raise schemas.error.CustomException(message="you don't have permission to delete this notification source", code=403)
+        db_notification_source.delete_at = now
         db_user_notification_source = crud.notification.get_user_notification_source_by_user_id_and_notification_source_id(
             db=db,
             user_id=user.id,
@@ -316,8 +325,8 @@ def delete_notification_source(
             filter_role=UserNotificationSourceRole.CREATOR
         )
         if db_user_notification_source is None:
-            raise schemas.error.CustomException(message="notification source not found", code=404)
-        if db_user_notification_source.creator_id != user.id:
+            raise schemas.error.CustomException(message="the user notification source not found", code=404)
+        if db_user_notification_source.user_id != user.id:
             raise schemas.error.CustomException(message="you don't have permission to delete this notification source", code=403)
         db_user_notification_source.delete_at = now
     db.commit()
@@ -446,6 +455,15 @@ def delete_notification_target(
 ):
     now = datetime.now(tz=timezone.utc)
     for notification_target_id in delete_notification_target_request.notification_target_ids:
+        db_notification_target = crud.notification.get_notification_target_by_id(
+            db=db,
+            notification_target_id=notification_target_id
+        )
+        if db_notification_target is None:
+            raise schemas.error.CustomException(message="notification target not found", code=404)
+        if db_notification_target.creator_id != user.id:
+            raise schemas.error.CustomException(message="you don't have permission to delete this notification target", code=403)
+        db_notification_target.delete_at = now
         db_user_notification_target = crud.notification.get_user_notification_target_by_user_id_and_notification_target_id(
             db=db,
             user_id=user.id,
@@ -453,8 +471,8 @@ def delete_notification_target(
             filter_role=UserNotificationTargetRole.CREATOR
         )
         if db_user_notification_target is None:
-            raise schemas.error.CustomException(message="notification target not found", code=404)
-        if db_user_notification_target.creator_id != user.id:
+            raise schemas.error.CustomException(message="The user notification target not found", code=404)
+        if db_user_notification_target.user_id != user.id:
             return schemas.error.CustomException(message="you don't have permission to delete this notification target", code=403)
         db_user_notification_target.delete_at = now
     db.commit()
@@ -498,18 +516,18 @@ def get_notification_target_detail(
     else:
         return schemas.notification.NotificationTargetDetail.model_validate(db_notification_target, from_attributes=True)
 
-@notification_router.post("/target/provided", response_model=schemas.notification.NotificationTargetsResponse)
+@notification_router.post("/target/provided", response_model=schemas.notification.NotificationTargetsProvidedResponse)
 def get_provided_notification_target(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_targets = crud.notification.get_all_notification_target_provideds(
+    db_notification_targets_provided = crud.notification.get_all_notification_target_provideds(
         db=db
     )
-    notification_targets = [
-        schemas.notification.NotificationTarget.model_validate(db_notification_target) for db_notification_target in db_notification_targets
+    notification_targets_provided = [
+        schemas.notification.NotificationTargetProvided.model_validate(db_notification_target) for db_notification_target in db_notification_targets_provided
     ]
-    return schemas.notification.NotificationTargetsResponse(data=notification_targets)
+    return schemas.notification.NotificationTargetsProvidedResponse(data=notification_targets_provided)
 
 @notification_router.post('/template/all', response_model=schemas.notification.NotificationTemplatesResponse)
 def get_notification_templates(
