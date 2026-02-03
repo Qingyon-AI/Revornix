@@ -245,7 +245,7 @@
     "setting_notification_target_related_tasks": "Notification Tasks Associated with This Target",
     "setting_notification_target_related_tasks_empty": "No notification tasks associated with this target",
     "setting_notification_target_manage_alert": "Notification Target Community Reminder",
-    "setting_notification_target_manage_alert_detail": "This page not only displays the notification sources you have created yourself,but also shows all notification sources in the Revornix community that users have set to public. You can conveniently use these public notification sources by clicking the Clone button. At the same time, you can also create your own public notification sources for other community members to use. Note: For security reasons, once a notification source is made public, other users can use it but cannot view your engine configuration.",
+    "setting_notification_target_manage_alert_detail": "This page not only displays the notification targets you have created yourself,but also shows all notification targets in the Revornix community that users have set to public. You can conveniently use these public notification targets by clicking the Clone button. At the same time, you can also create your own public notification targets for other community members to use. Note: For security reasons, once a notification target is made public, other users can use it but cannot view your engine configuration.",
     "setting_notification_target_manage_search": "Search Notification Target",
     "setting_notification_target_manage_empty": "No notification targets available",
     "setting_notification_target_manage_add_form_label": "Add Notification Target",
