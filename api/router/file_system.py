@@ -199,11 +199,18 @@ def delete_user_file_system(
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
-    crud.file_system.delete_user_file_system_by_user_id_and_user_file_system_id(
+    now = datetime.now(tz=timezone.utc)
+    
+    db_user_file_system = crud.file_system.get_user_file_system_by_id(
         db=db,
-        user_id=current_user.id,
         user_file_system_id=user_file_system_delete_request.user_file_system_id
     )
+    if db_user_file_system is None:
+        raise schemas.error.CustomException(code=404, message="User File System not found")
+    if db_user_file_system.user_id != current_user.id:
+        raise schemas.error.CustomException(code=403, message="User File System not found")
+    db_user_file_system.delete_at =now
+    
     db.commit()
     return schemas.common.SuccessResponse()
 
