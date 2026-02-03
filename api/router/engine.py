@@ -259,6 +259,17 @@ def delete_engine(
     
     db_engine.delete_at = now
     
+    db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(
+        db=db,
+        user_id=user.id,
+        engine_id=engine_delete_request.engine_id,
+        filter_role=UserEngineRole.CREATOR
+    )
+    if db_user_engine is None:
+        raise schemas.error.CustomException(code=403, message="Permission denied")
+
+    db_user_engine.delete_at = now
+    
     db.commit()
     return schemas.common.SuccessResponse()
 
