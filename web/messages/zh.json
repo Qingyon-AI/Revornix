@@ -245,7 +245,7 @@
     "setting_notification_target_related_tasks": "相关通知任务",
     "setting_notification_target_related_tasks_empty": "暂无相关通知任务和该通知目标关联",
     "setting_notification_target_manage_alert": "通知目标社区提醒",
-    "setting_notification_target_manage_alert_detail": "这里不单单显示你自己创建的通知源，也会显示所有Revornix社区中用户设置为公开的通知源，你可以通过点击复刻按钮来便利的使用这些公开的通知源。同时，你也可以创建自己的公开通知源来供社区中的其他人使用。注意：为了安全起见，公开之后，其他用户可以使用你的通知源，但无法看到你的引擎配置。",
+    "setting_notification_target_manage_alert_detail": "这里不单单显示你自己创建的通知目标，也会显示所有Revornix社区中用户设置为公开的通知目标，你可以通过点击复刻按钮来便利的使用这些公开的通知目标。同时，你也可以创建自己的公开通知目标来供社区中的其他人使用。注意：为了安全起见，公开之后，其他用户可以使用你的通知目标，但无法看到你的引擎配置。",
     "setting_notification_target_manage_search": "搜索通知目标",
     "setting_notification_target_manage_empty": "暂无相关通知目标",
     "setting_notification_target_manage_add_form_label": "增加通知目标",
