@@ -124,7 +124,7 @@ const UpdateNotificationTask = ({
 	});
 
 	const { data: mineNotificationSources } = useQuery({
-		queryKey: ['notification-source'],
+		queryKey: ['searchNotificationSources'],
 		queryFn: getMineNotificationSources,
 	});
 

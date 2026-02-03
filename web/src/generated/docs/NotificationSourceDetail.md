@@ -9,9 +9,12 @@ Name | Type
 `id` | number
 `title` | string
 `description` | string
-`category` | number
-`email_notification_source` | [EmailNotificationSource](EmailNotificationSource.md)
-`ios_notification_source` | [IOSNotificationSource](IOSNotificationSource.md)
+`notification_source_provided` | [NotificationSourceProvided](NotificationSourceProvided.md)
+`create_time` | Date
+`update_time` | Date
+`config_json` | string
+`creator` | [UserPublicInfo](UserPublicInfo.md)
+`is_public` | boolean
 
 ## Example
 
@@ -23,9 +26,12 @@ const example = {
   "id": null,
   "title": null,
   "description": null,
-  "category": null,
-  "email_notification_source": null,
-  "ios_notification_source": null,
+  "notification_source_provided": null,
+  "create_time": null,
+  "update_time": null,
+  "config_json": null,
+  "creator": null,
+  "is_public": null,
 } satisfies NotificationSourceDetail
 
 console.log(example)

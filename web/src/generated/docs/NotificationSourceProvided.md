@@ -1,30 +1,38 @@
 
-# UpdateNotificationTargetRequest
+# NotificationSourceProvided
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`notification_target_id` | number
-`title` | string
+`id` | number
+`uuid` | string
+`name` | string
+`name_zh` | string
 `description` | string
-`config_json` | string
-`is_public` | boolean
+`description_zh` | string
+`create_time` | Date
+`update_time` | Date
+`demo_config` | string
 
 ## Example
 
 ```typescript
-import type { UpdateNotificationTargetRequest } from ''
+import type { NotificationSourceProvided } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "notification_target_id": null,
-  "title": null,
+  "id": null,
+  "uuid": null,
+  "name": null,
+  "name_zh": null,
   "description": null,
-  "config_json": null,
-  "is_public": null,
-} satisfies UpdateNotificationTargetRequest
+  "description_zh": null,
+  "create_time": null,
+  "update_time": null,
+  "demo_config": null,
+} satisfies NotificationSourceProvided
 
 console.log(example)
 
@@ -33,7 +41,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as UpdateNotificationTargetRequest
+const exampleParsed = JSON.parse(exampleJSON) as NotificationSourceProvided
 console.log(exampleParsed)
 ```
 

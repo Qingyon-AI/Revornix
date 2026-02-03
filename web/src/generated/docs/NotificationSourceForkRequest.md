@@ -1,24 +1,24 @@
 
-# LabelSummaryItem
+# NotificationSourceForkRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`label_info` | [SchemasDocumentLabel](SchemasDocumentLabel.md)
-`count` | number
+`notification_source_id` | number
+`status` | boolean
 
 ## Example
 
 ```typescript
-import type { LabelSummaryItem } from ''
+import type { NotificationSourceForkRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "label_info": null,
-  "count": null,
-} satisfies LabelSummaryItem
+  "notification_source_id": null,
+  "status": null,
+} satisfies NotificationSourceForkRequest
 
 console.log(example)
 
@@ -27,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as LabelSummaryItem
+const exampleParsed = JSON.parse(exampleJSON) as NotificationSourceForkRequest
 console.log(exampleParsed)
 ```
 

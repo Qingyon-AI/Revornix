@@ -13,6 +13,20 @@
  */
 
 import { mapValues } from '../runtime';
+import type { NotificationSource } from './NotificationSource';
+import {
+    NotificationSourceFromJSON,
+    NotificationSourceFromJSONTyped,
+    NotificationSourceToJSON,
+    NotificationSourceToJSONTyped,
+} from './NotificationSource';
+import type { NotificationTarget } from './NotificationTarget';
+import {
+    NotificationTargetFromJSON,
+    NotificationTargetFromJSONTyped,
+    NotificationTargetToJSON,
+    NotificationTargetToJSONTyped,
+} from './NotificationTarget';
 import type { NotificationTriggerEvent } from './NotificationTriggerEvent';
 import {
     NotificationTriggerEventFromJSON,
@@ -20,20 +34,6 @@ import {
     NotificationTriggerEventToJSON,
     NotificationTriggerEventToJSONTyped,
 } from './NotificationTriggerEvent';
-import type { UserNotificationSource } from './UserNotificationSource';
-import {
-    UserNotificationSourceFromJSON,
-    UserNotificationSourceFromJSONTyped,
-    UserNotificationSourceToJSON,
-    UserNotificationSourceToJSONTyped,
-} from './UserNotificationSource';
-import type { UserNotificationTarget } from './UserNotificationTarget';
-import {
-    UserNotificationTargetFromJSON,
-    UserNotificationTargetFromJSONTyped,
-    UserNotificationTargetToJSON,
-    UserNotificationTargetToJSONTyped,
-} from './UserNotificationTarget';
 import type { NotificationTriggerScheduler } from './NotificationTriggerScheduler';
 import {
     NotificationTriggerSchedulerFromJSON,
@@ -122,16 +122,16 @@ export interface NotificationTask {
     notification_template_id?: number | null;
     /**
      * 
-     * @type {UserNotificationSource}
+     * @type {NotificationSource}
      * @memberof NotificationTask
      */
-    user_notification_source?: UserNotificationSource | null;
+    notification_source?: NotificationSource | null;
     /**
      * 
-     * @type {UserNotificationTarget}
+     * @type {NotificationTarget}
      * @memberof NotificationTask
      */
-    user_notification_target?: UserNotificationTarget | null;
+    notification_target?: NotificationTarget | null;
     /**
      * 
      * @type {Date}
@@ -182,8 +182,8 @@ export function NotificationTaskFromJSONTyped(json: any, ignoreDiscriminator: bo
         'notification_link': json['notification_link'] == null ? undefined : json['notification_link'],
         'notification_cover': json['notification_cover'] == null ? undefined : json['notification_cover'],
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
-        'user_notification_source': json['user_notification_source'] == null ? undefined : UserNotificationSourceFromJSON(json['user_notification_source']),
-        'user_notification_target': json['user_notification_target'] == null ? undefined : UserNotificationTargetFromJSON(json['user_notification_target']),
+        'notification_source': json['notification_source'] == null ? undefined : NotificationSourceFromJSON(json['notification_source']),
+        'notification_target': json['notification_target'] == null ? undefined : NotificationTargetFromJSON(json['notification_target']),
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
@@ -212,8 +212,8 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
         'notification_link': value['notification_link'],
         'notification_cover': value['notification_cover'],
         'notification_template_id': value['notification_template_id'],
-        'user_notification_source': UserNotificationSourceToJSON(value['user_notification_source']),
-        'user_notification_target': UserNotificationTargetToJSON(value['user_notification_target']),
+        'notification_source': NotificationSourceToJSON(value['notification_source']),
+        'notification_target': NotificationTargetToJSON(value['notification_target']),
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };

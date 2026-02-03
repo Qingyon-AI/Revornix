@@ -24,14 +24,14 @@ export interface GetNotificationTargetRelatedTaskRequest {
      * @type {number}
      * @memberof GetNotificationTargetRelatedTaskRequest
      */
-    user_notification_target_id: number;
+    notification_target_id: number;
 }
 
 /**
  * Check if a given object implements the GetNotificationTargetRelatedTaskRequest interface.
  */
 export function instanceOfGetNotificationTargetRelatedTaskRequest(value: object): value is GetNotificationTargetRelatedTaskRequest {
-    if (!('user_notification_target_id' in value) || value['user_notification_target_id'] === undefined) return false;
+    if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
     return true;
 }
 
@@ -45,7 +45,7 @@ export function GetNotificationTargetRelatedTaskRequestFromJSONTyped(json: any, 
     }
     return {
         
-        'user_notification_target_id': json['user_notification_target_id'],
+        'notification_target_id': json['notification_target_id'],
     };
 }
 
@@ -60,7 +60,7 @@ export function GetNotificationTargetRelatedTaskRequestToJSONTyped(value?: GetNo
 
     return {
         
-        'user_notification_target_id': value['user_notification_target_id'],
+        'notification_target_id': value['notification_target_id'],
     };
 }
 

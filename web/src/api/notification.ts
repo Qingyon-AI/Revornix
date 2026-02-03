@@ -28,4 +28,6 @@ export default {
     getTriggerEvents: API_PREFIX + '/notification/trigger-event/all',
     getNotificationSourceRelatedTasks: API_PREFIX + '/notification/source/task',
     getNotificationTargetRelatedTasks: API_PREFIX + '/notification/target/task',
+    forkNotificationSource: API_PREFIX + '/notification/source/fork',
+    forkNotificationTarget: API_PREFIX + '/notification/target/fork',
 } 

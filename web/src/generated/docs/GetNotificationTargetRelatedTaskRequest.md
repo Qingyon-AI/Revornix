@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`user_notification_target_id` | number
+`notification_target_id` | number
 
 ## Example
 
@@ -15,7 +15,7 @@ import type { GetNotificationTargetRelatedTaskRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "user_notification_target_id": null,
+  "notification_target_id": null,
 } satisfies GetNotificationTargetRelatedTaskRequest
 
 console.log(example)

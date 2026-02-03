@@ -24,14 +24,14 @@ export interface GetNotificationSourceRelatedTaskRequest {
      * @type {number}
      * @memberof GetNotificationSourceRelatedTaskRequest
      */
-    user_notification_source_id: number;
+    notification_source_id: number;
 }
 
 /**
  * Check if a given object implements the GetNotificationSourceRelatedTaskRequest interface.
  */
 export function instanceOfGetNotificationSourceRelatedTaskRequest(value: object): value is GetNotificationSourceRelatedTaskRequest {
-    if (!('user_notification_source_id' in value) || value['user_notification_source_id'] === undefined) return false;
+    if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
     return true;
 }
 
@@ -45,7 +45,7 @@ export function GetNotificationSourceRelatedTaskRequestFromJSONTyped(json: any, 
     }
     return {
         
-        'user_notification_source_id': json['user_notification_source_id'],
+        'notification_source_id': json['notification_source_id'],
     };
 }
 
@@ -60,7 +60,7 @@ export function GetNotificationSourceRelatedTaskRequestToJSONTyped(value?: GetNo
 
     return {
         
-        'user_notification_source_id': value['user_notification_source_id'],
+        'notification_source_id': value['notification_source_id'],
     };
 }
 

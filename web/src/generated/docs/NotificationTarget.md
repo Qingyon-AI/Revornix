@@ -7,14 +7,14 @@
 Name | Type
 ------------ | -------------
 `id` | number
-`uuid` | string
-`name` | string
-`name_zh` | string
+`title` | string
+`notification_target_provided` | [NotificationTargetProvided](NotificationTargetProvided.md)
 `description` | string
-`description_zh` | string
 `create_time` | Date
 `update_time` | Date
-`demo_config` | string
+`creator` | [UserPublicInfo](UserPublicInfo.md)
+`is_forked` | boolean
+`is_public` | boolean
 
 ## Example
 
@@ -24,14 +24,14 @@ import type { NotificationTarget } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
-  "uuid": null,
-  "name": null,
-  "name_zh": null,
+  "title": null,
+  "notification_target_provided": null,
   "description": null,
-  "description_zh": null,
   "create_time": null,
   "update_time": null,
-  "demo_config": null,
+  "creator": null,
+  "is_forked": null,
+  "is_public": null,
 } satisfies NotificationTarget
 
 console.log(example)

@@ -13,6 +13,21 @@
  */
 
 import { mapValues } from '../runtime';
+import type { NotificationSourceProvided } from './NotificationSourceProvided';
+import {
+    NotificationSourceProvidedFromJSON,
+    NotificationSourceProvidedFromJSONTyped,
+    NotificationSourceProvidedToJSON,
+    NotificationSourceProvidedToJSONTyped,
+} from './NotificationSourceProvided';
+import type { UserPublicInfo } from './UserPublicInfo';
+import {
+    UserPublicInfoFromJSON,
+    UserPublicInfoFromJSONTyped,
+    UserPublicInfoToJSON,
+    UserPublicInfoToJSONTyped,
+} from './UserPublicInfo';
+
 /**
  * 
  * @export
@@ -30,19 +45,7 @@ export interface NotificationSource {
      * @type {string}
      * @memberof NotificationSource
      */
-    uuid: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof NotificationSource
-     */
-    name: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof NotificationSource
-     */
-    name_zh: string;
+    title: string;
     /**
      * 
      * @type {string}
@@ -51,10 +54,10 @@ export interface NotificationSource {
     description: string | null;
     /**
      * 
-     * @type {string}
+     * @type {NotificationSourceProvided}
      * @memberof NotificationSource
      */
-    description_zh: string | null;
+    notification_source_provided: NotificationSourceProvided;
     /**
      * 
      * @type {Date}
@@ -69,10 +72,22 @@ export interface NotificationSource {
     update_time: Date | null;
     /**
      * 
-     * @type {string}
+     * @type {UserPublicInfo}
      * @memberof NotificationSource
      */
-    demo_config: string | null;
+    creator: UserPublicInfo;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof NotificationSource
+     */
+    is_forked?: boolean | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof NotificationSource
+     */
+    is_public: boolean;
 }
 
 /**
@@ -80,14 +95,13 @@ export interface NotificationSource {
  */
 export function instanceOfNotificationSource(value: object): value is NotificationSource {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('uuid' in value) || value['uuid'] === undefined) return false;
-    if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
+    if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('description_zh' in value) || value['description_zh'] === undefined) return false;
+    if (!('notification_source_provided' in value) || value['notification_source_provided'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
-    if (!('demo_config' in value) || value['demo_config'] === undefined) return false;
+    if (!('creator' in value) || value['creator'] === undefined) return false;
+    if (!('is_public' in value) || value['is_public'] === undefined) return false;
     return true;
 }
 
@@ -102,14 +116,14 @@ export function NotificationSourceFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'id': json['id'],
-        'uuid': json['uuid'],
-        'name': json['name'],
-        'name_zh': json['name_zh'],
+        'title': json['title'],
         'description': json['description'],
-        'description_zh': json['description_zh'],
+        'notification_source_provided': NotificationSourceProvidedFromJSON(json['notification_source_provided']),
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
-        'demo_config': json['demo_config'],
+        'creator': UserPublicInfoFromJSON(json['creator']),
+        'is_forked': json['is_forked'] == null ? undefined : json['is_forked'],
+        'is_public': json['is_public'],
     };
 }
 
@@ -125,14 +139,14 @@ export function NotificationSourceToJSONTyped(value?: NotificationSource | null,
     return {
         
         'id': value['id'],
-        'uuid': value['uuid'],
-        'name': value['name'],
-        'name_zh': value['name_zh'],
+        'title': value['title'],
         'description': value['description'],
-        'description_zh': value['description_zh'],
+        'notification_source_provided': NotificationSourceProvidedToJSON(value['notification_source_provided']),
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
-        'demo_config': value['demo_config'],
+        'creator': UserPublicInfoToJSON(value['creator']),
+        'is_forked': value['is_forked'],
+        'is_public': value['is_public'],
     };
 }
 

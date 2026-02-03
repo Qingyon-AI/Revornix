@@ -6,11 +6,11 @@
 
 Name | Type
 ------------ | -------------
-`user_notification_source_id` | number
-`user_notification_target_id` | number
+`notification_source_id` | number
+`notification_target_id` | number
 `enable` | boolean
 `title` | string
-`notification_content_type` | number
+`content_type` | number
 `notification_template_id` | number
 `notification_title` | string
 `notification_content` | string
@@ -27,11 +27,11 @@ import type { AddNotificationTaskRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "user_notification_source_id": null,
-  "user_notification_target_id": null,
+  "notification_source_id": null,
+  "notification_target_id": null,
   "enable": null,
   "title": null,
-  "notification_content_type": null,
+  "content_type": null,
   "notification_template_id": null,
   "notification_title": null,
   "notification_content": null,
