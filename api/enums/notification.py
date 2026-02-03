@@ -100,37 +100,37 @@ class NotificationSource(Enum):
     Official_EMAIL = NotificationSourceMeta(
         uuid='657d7c9c2ec74a79bd2b19382c6aaaca',
         name='Official_EMAIL',
-        description='',
+        description='The official email notification source provided by Revornix.',
         notification_source_provided=NotificationSourceProvided.EMAIL
     )
     Official_APPLE = NotificationSourceMeta(
         uuid='f3796e55279a4167ba0766e1c46f9ddf',
         name='Official_APPLE',
-        description='',
+        description='The official Apple device notification source provided by Revornix.',
         notification_source_provided=NotificationSourceProvided.APPLE
     )
     Official_APPLE_SANDBOX = NotificationSourceMeta(
         uuid='c9fcf491575b4d82960f34424ff774fb',
         name='Official_APPLE_SANDBOX',
-        description='',
+        description='The official Apple device (sandbox) notification source provided by Revornix.',
         notification_source_provided=NotificationSourceProvided.APPLE_SANDBOX
     )
     Official_FEISHU = NotificationSourceMeta(
         uuid='cac40e7ddc6441ae8d39b8ef129ba8b4',
         name='Official_FEISHU',
-        description='',
+        description='The official Feishu notification source provided by Revornix.',
         notification_source_provided=NotificationSourceProvided.FEISHU
     )
     Official_DINGTALK = NotificationSourceMeta(
         uuid='a8e9f5d8e7e547a7b5c6c7d8e9f5d8e7',
         name='Official_DINGTALK',
-        description='',
+        description='The official DingTalk notification source provided by Revornix.',
         notification_source_provided=NotificationSourceProvided.DINGTALK
     )
     Official_TELEGRAM = NotificationSourceMeta(
         uuid='94f136520168412faab697b8046ee4ae',
         name='Official_TELEGRAM',
-        description='',
+        description='The official Telegram notification source provided by Revornix.',
         notification_source_provided=NotificationSourceProvided.TELEGRAM
     )
 
