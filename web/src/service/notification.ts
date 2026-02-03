@@ -1,6 +1,18 @@
 import notificationApi from '@/api/notification'
-import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, DeleteUserNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, UserNotificationSourceDetailRequest, AddNotificationTargetRequest, DeleteUserNotificationTargetRequest, UserNotificationTargetDetailRequest, UpdateNotificationTargetRequest, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, NotificationTargetsResponse, PaginationNotificationTask, PageableRequest, UserNotificationSourcesResponse, UserNotificationTargetsResponse, UserNotificationSource, UserNotificationTarget, TriggerEventsResponse, GetNotificationSourceRelatedTaskResponse, GetNotificationTargetRelatedTaskResponse, GetNotificationTargetRelatedTaskRequest, GetNotificationSourceRelatedTaskRequest } from '@/generated';
+import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, UpdateNotificationSourceRequest, NotificationSourcesResponse, AddNotificationTargetRequest, UpdateNotificationTargetRequest, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, NotificationTargetsResponse, PaginationNotificationTask, PageableRequest, TriggerEventsResponse, GetNotificationSourceRelatedTaskResponse, GetNotificationTargetRelatedTaskResponse, GetNotificationTargetRelatedTaskRequest, GetNotificationSourceRelatedTaskRequest, SearchNotificationSourceRequest, InifiniteScrollPagnitionNotificationSource, NotificationSourceForkRequest, NotificationTargetForkRequest, DeleteNotificationSourceRequest, NotificationSourceDetailRequest, NotificationSourceDetail, DeleteNotificationTargetRequest, NotificationTargetDetailRequest } from '@/generated';
 import { request } from '@/lib/request';
+
+export const forkNotificationSource = async (data: NotificationSourceForkRequest): Promise<NormalResponse> => {
+    return await request(notificationApi.forkNotificationSource, {
+        data
+    })
+}
+
+export const forkNotificationTarget = async (data: NotificationTargetForkRequest): Promise<NormalResponse> => {
+    return await request(notificationApi.forkNotificationTarget, {
+        data
+    })
+}
 
 export const getNotificationSourceRelatedTasks = async (data: GetNotificationSourceRelatedTaskRequest): Promise<GetNotificationSourceRelatedTaskResponse> => {
     return await request(notificationApi.getNotificationSourceRelatedTasks, {
@@ -60,20 +72,22 @@ export const addNotificationSource = async (data: AddNotificationSourceRequest):
     })
 }
 
-export const deleteNotificationSource = async (data: DeleteUserNotificationSourceRequest): Promise<NormalResponse> => {
+export const deleteNotificationSource = async (data: DeleteNotificationSourceRequest): Promise<NormalResponse> => {
     return await request(notificationApi.deleteNotificationSource, {
         data
     })
 }
 
-export const getMineNotificationSourceDetail = async (data: UserNotificationSourceDetailRequest): Promise<UserNotificationSource> => {
+export const getMineNotificationSourceDetail = async (data: NotificationSourceDetailRequest): Promise<NotificationSourceDetail> => {
     return await request(notificationApi.getNotificationSourceDetail, {
         data
     })
 }
 
-export const getMineNotificationSources = async (): Promise<UserNotificationSourcesResponse> => {
-    return await request(notificationApi.getMineNotificationSources)
+export const getMineNotificationSources = async (data: SearchNotificationSourceRequest): Promise<InifiniteScrollPagnitionNotificationSource> => {
+    return await request(notificationApi.getMineNotificationSources, {
+        data
+    })
 }
 
 export const updateNotificationSource = async (data: UpdateNotificationSourceRequest): Promise<NormalResponse> => {
@@ -88,19 +102,19 @@ export const addNotificationTarget = async (data: AddNotificationTargetRequest):
     })
 }
 
-export const deleteNotificationTarget = async (data: DeleteUserNotificationTargetRequest): Promise<NormalResponse> => {
+export const deleteNotificationTarget = async (data: DeleteNotificationTargetRequest): Promise<NormalResponse> => {
     return await request(notificationApi.deleteNotificationTarget, {
         data
     })
 }
 
-export const getMineNotificationTargetDetail = async (data: UserNotificationTargetDetailRequest): Promise<UserNotificationTarget> => {
+export const getMineNotificationTargetDetail = async (data: NotificationTargetDetailRequest): Promise<NotificationTargetDetailRequest> => {
     return await request(notificationApi.getNotificationTargetDetail, {
         data
     })
 }
 
-export const getMineNotificationTargets = async (): Promise<UserNotificationTargetsResponse> => {
+export const getMineNotificationTargets = async (): Promise<NotificationTargetsResponse> => {
     return await request(notificationApi.getMineNotificationTargets)
 }
 

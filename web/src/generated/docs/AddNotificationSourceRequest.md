@@ -6,8 +6,9 @@
 
 Name | Type
 ------------ | -------------
-`notification_source_id` | number
+`notification_source_provided_id` | number
 `title` | string
+`is_public` | boolean
 `description` | string
 `config_json` | string
 
@@ -18,8 +19,9 @@ import type { AddNotificationSourceRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "notification_source_id": null,
+  "notification_source_provided_id": null,
   "title": null,
+  "is_public": null,
   "description": null,
   "config_json": null,
 } satisfies AddNotificationSourceRequest

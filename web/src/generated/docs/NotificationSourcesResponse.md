@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`data` | [Array&lt;NotificationSource&gt;](NotificationSource.md)
+`data` | [Array&lt;NotificationSourceProvided&gt;](NotificationSourceProvided.md)
 
 ## Example
 

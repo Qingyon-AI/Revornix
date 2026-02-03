@@ -4,6 +4,14 @@ from pydantic import BaseModel, field_serializer
 
 from .user import UserPublicInfo
 
+class NotificationSourceForkRequest(BaseModel):
+    notification_source_id: int
+    status: bool
+    
+class NotificationTargetForkRequest(BaseModel):
+    notification_target_id: int
+    status: bool
+
 class SearchNotificationTargetRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
@@ -136,6 +144,7 @@ class NotificationSource(BaseModel):
     update_time: datetime | None
     creator: UserPublicInfo
     is_forked: bool | None = None
+    is_public: bool
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:
@@ -158,6 +167,7 @@ class NotificationSourceDetail(BaseModel):
     update_time: datetime | None
     config_json: str | None
     creator: UserPublicInfo
+    is_public: bool
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:
@@ -180,6 +190,7 @@ class NotificationTarget(BaseModel):
     update_time: datetime | None
     creator: UserPublicInfo
     is_forked: bool | None = None
+    is_public: bool
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:
@@ -202,6 +213,7 @@ class NotificationTargetDetail(BaseModel):
     update_time: datetime | None
     config_json: str | None
     creator: UserPublicInfo
+    is_public: bool
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:

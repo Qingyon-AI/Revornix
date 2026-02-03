@@ -24,13 +24,19 @@ export interface AddNotificationSourceRequest {
      * @type {number}
      * @memberof AddNotificationSourceRequest
      */
-    notification_source_id: number;
+    notification_source_provided_id: number;
     /**
      * 
      * @type {string}
      * @memberof AddNotificationSourceRequest
      */
     title: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AddNotificationSourceRequest
+     */
+    is_public: boolean;
     /**
      * 
      * @type {string}
@@ -49,8 +55,9 @@ export interface AddNotificationSourceRequest {
  * Check if a given object implements the AddNotificationSourceRequest interface.
  */
 export function instanceOfAddNotificationSourceRequest(value: object): value is AddNotificationSourceRequest {
-    if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
+    if (!('notification_source_provided_id' in value) || value['notification_source_provided_id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
+    if (!('is_public' in value) || value['is_public'] === undefined) return false;
     return true;
 }
 
@@ -64,8 +71,9 @@ export function AddNotificationSourceRequestFromJSONTyped(json: any, ignoreDiscr
     }
     return {
         
-        'notification_source_id': json['notification_source_id'],
+        'notification_source_provided_id': json['notification_source_provided_id'],
         'title': json['title'],
+        'is_public': json['is_public'],
         'description': json['description'] == null ? undefined : json['description'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
@@ -82,8 +90,9 @@ export function AddNotificationSourceRequestToJSONTyped(value?: AddNotificationS
 
     return {
         
-        'notification_source_id': value['notification_source_id'],
+        'notification_source_provided_id': value['notification_source_provided_id'],
         'title': value['title'],
+        'is_public': value['is_public'],
         'description': value['description'],
         'config_json': value['config_json'],
     };

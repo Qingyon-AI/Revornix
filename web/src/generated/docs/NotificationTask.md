@@ -18,8 +18,8 @@ Name | Type
 `notification_link` | string
 `notification_cover` | string
 `notification_template_id` | number
-`user_notification_source` | [UserNotificationSource](UserNotificationSource.md)
-`user_notification_target` | [UserNotificationTarget](UserNotificationTarget.md)
+`notification_source` | [NotificationSource](NotificationSource.md)
+`notification_target` | [NotificationTarget](NotificationTarget.md)
 `create_time` | Date
 `update_time` | Date
 
@@ -42,8 +42,8 @@ const example = {
   "notification_link": null,
   "notification_cover": null,
   "notification_template_id": null,
-  "user_notification_source": null,
-  "user_notification_target": null,
+  "notification_source": null,
+  "notification_target": null,
   "create_time": null,
   "update_time": null,
 } satisfies NotificationTask

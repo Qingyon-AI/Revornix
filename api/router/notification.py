@@ -124,6 +124,80 @@ def get_provided_notification_source(
     ]
     return schemas.notification.NotificationSourcesResponse(data=notification_sources)
 
+@notification_router.post("/source/fork", response_model=schemas.common.NormalResponse)
+def install_engine(
+    notification_source_fork_request: schemas.notification.NotificationSourceForkRequest,
+    db: Session = Depends(get_db),
+    current_user: models.user.User = Depends(get_current_user)
+):
+    now = datetime.now(tz=timezone.utc)
+    
+    db_user_notification_source = crud.notification.get_user_notification_source_by_user_id_and_notification_source_id(
+        db=db,
+        user_id=current_user.id,
+        notification_source_id=notification_source_fork_request.notification_source_id,
+        filter_role=UserNotificationSourceRole.FORKER
+    )
+
+    if db_user_notification_source is not None:
+        if notification_source_fork_request.status:
+            raise schemas.error.CustomException(code=403, message="You have forked this notification source")
+        else:
+            db_user_notification_source.delete_at = now
+            db.commit()
+            return schemas.common.SuccessResponse()
+    else:
+        if notification_source_fork_request.status:
+            crud.notification.create_user_notification_source(
+                db=db,
+                user_id=current_user.id,
+                notification_source_id=notification_source_fork_request.notification_source_id,
+                role=UserNotificationSourceRole.FORKER,
+            )
+        else:
+            raise schemas.error.CustomException(code=403, message="You have not forked this notification source")
+
+    db.commit()
+
+    return schemas.common.SuccessResponse()
+
+@notification_router.post("/target/fork", response_model=schemas.common.NormalResponse)
+def install_engine(
+    notification_target_fork_request: schemas.notification.NotificationTargetForkRequest,
+    db: Session = Depends(get_db),
+    current_user: models.user.User = Depends(get_current_user)
+):
+    now = datetime.now(tz=timezone.utc)
+    
+    db_user_notification_target = crud.notification.get_user_notification_target_by_user_id_and_notification_target_id(
+        db=db,
+        user_id=current_user.id,
+        notification_target_id=notification_target_fork_request.notification_target_id,
+        filter_role=UserNotificationTargetRole.FORKER
+    )
+
+    if db_user_notification_target is not None:
+        if notification_target_fork_request.status:
+            raise schemas.error.CustomException(code=403, message="You have forked this notification target")
+        else:
+            db_user_notification_target.delete_at = now
+            db.commit()
+            return schemas.common.SuccessResponse()
+    else:
+        if notification_target_fork_request.status:
+            crud.notification.create_user_notification_target(
+                db=db,
+                user_id=current_user.id,
+                notification_target_id=notification_target_fork_request.notification_target_id,
+                role=UserNotificationTargetRole.FORKER,
+            )
+        else:
+            raise schemas.error.CustomException(code=403, message="You have not forked this notification target")
+
+    db.commit()
+
+    return schemas.common.SuccessResponse()
+
 @notification_router.post("/source/mine", response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationSource])
 def get_notification_sources(
     notification_source_search_request: schemas.notification.SearchNotificationSourceRequest,

@@ -24,13 +24,7 @@ export interface UpdateNotificationTargetRequest {
      * @type {number}
      * @memberof UpdateNotificationTargetRequest
      */
-    user_notification_target_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UpdateNotificationTargetRequest
-     */
-    notification_target_id?: number | null;
+    notification_target_id: number;
     /**
      * 
      * @type {string}
@@ -49,13 +43,19 @@ export interface UpdateNotificationTargetRequest {
      * @memberof UpdateNotificationTargetRequest
      */
     config_json?: string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdateNotificationTargetRequest
+     */
+    is_public?: boolean | null;
 }
 
 /**
  * Check if a given object implements the UpdateNotificationTargetRequest interface.
  */
 export function instanceOfUpdateNotificationTargetRequest(value: object): value is UpdateNotificationTargetRequest {
-    if (!('user_notification_target_id' in value) || value['user_notification_target_id'] === undefined) return false;
+    if (!('notification_target_id' in value) || value['notification_target_id'] === undefined) return false;
     return true;
 }
 
@@ -69,11 +69,11 @@ export function UpdateNotificationTargetRequestFromJSONTyped(json: any, ignoreDi
     }
     return {
         
-        'user_notification_target_id': json['user_notification_target_id'],
-        'notification_target_id': json['notification_target_id'] == null ? undefined : json['notification_target_id'],
+        'notification_target_id': json['notification_target_id'],
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
+        'is_public': json['is_public'] == null ? undefined : json['is_public'],
     };
 }
 
@@ -88,11 +88,11 @@ export function UpdateNotificationTargetRequestToJSONTyped(value?: UpdateNotific
 
     return {
         
-        'user_notification_target_id': value['user_notification_target_id'],
         'notification_target_id': value['notification_target_id'],
         'title': value['title'],
         'description': value['description'],
         'config_json': value['config_json'],
+        'is_public': value['is_public'],
     };
 }
 

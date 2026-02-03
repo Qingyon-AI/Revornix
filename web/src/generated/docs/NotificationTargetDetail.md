@@ -8,10 +8,13 @@ Name | Type
 ------------ | -------------
 `id` | number
 `title` | string
-`category` | number
+`notification_target_provided` | [NotificationTargetProvided](NotificationTargetProvided.md)
 `description` | string
-`email_notification_target` | [EmailNotificationTarget](EmailNotificationTarget.md)
-`ios_notification_target` | [IOSNotificationTarget](IOSNotificationTarget.md)
+`create_time` | Date
+`update_time` | Date
+`config_json` | string
+`creator` | [UserPublicInfo](UserPublicInfo.md)
+`is_public` | boolean
 
 ## Example
 
@@ -22,10 +25,13 @@ import type { NotificationTargetDetail } from ''
 const example = {
   "id": null,
   "title": null,
-  "category": null,
+  "notification_target_provided": null,
   "description": null,
-  "email_notification_target": null,
-  "ios_notification_target": null,
+  "create_time": null,
+  "update_time": null,
+  "config_json": null,
+  "creator": null,
+  "is_public": null,
 } satisfies NotificationTargetDetail
 
 console.log(example)

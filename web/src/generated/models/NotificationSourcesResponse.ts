@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { NotificationSource } from './NotificationSource';
+import type { NotificationSourceProvided } from './NotificationSourceProvided';
 import {
-    NotificationSourceFromJSON,
-    NotificationSourceFromJSONTyped,
-    NotificationSourceToJSON,
-    NotificationSourceToJSONTyped,
-} from './NotificationSource';
+    NotificationSourceProvidedFromJSON,
+    NotificationSourceProvidedFromJSONTyped,
+    NotificationSourceProvidedToJSON,
+    NotificationSourceProvidedToJSONTyped,
+} from './NotificationSourceProvided';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface NotificationSourcesResponse {
     /**
      * 
-     * @type {Array<NotificationSource>}
+     * @type {Array<NotificationSourceProvided>}
      * @memberof NotificationSourcesResponse
      */
-    data: Array<NotificationSource>;
+    data: Array<NotificationSourceProvided>;
 }
 
 /**
@@ -53,7 +53,7 @@ export function NotificationSourcesResponseFromJSONTyped(json: any, ignoreDiscri
     }
     return {
         
-        'data': ((json['data'] as Array<any>).map(NotificationSourceFromJSON)),
+        'data': ((json['data'] as Array<any>).map(NotificationSourceProvidedFromJSON)),
     };
 }
 
@@ -68,7 +68,7 @@ export function NotificationSourcesResponseToJSONTyped(value?: NotificationSourc
 
     return {
         
-        'data': ((value['data'] as Array<any>).map(NotificationSourceToJSON)),
+        'data': ((value['data'] as Array<any>).map(NotificationSourceProvidedToJSON)),
     };
 }
 

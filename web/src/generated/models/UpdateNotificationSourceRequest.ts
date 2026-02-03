@@ -24,13 +24,7 @@ export interface UpdateNotificationSourceRequest {
      * @type {number}
      * @memberof UpdateNotificationSourceRequest
      */
-    user_notification_source_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UpdateNotificationSourceRequest
-     */
-    notification_source_id?: number | null;
+    notification_source_id: number;
     /**
      * 
      * @type {string}
@@ -45,6 +39,12 @@ export interface UpdateNotificationSourceRequest {
     description?: string | null;
     /**
      * 
+     * @type {boolean}
+     * @memberof UpdateNotificationSourceRequest
+     */
+    is_public?: boolean | null;
+    /**
+     * 
      * @type {string}
      * @memberof UpdateNotificationSourceRequest
      */
@@ -55,7 +55,7 @@ export interface UpdateNotificationSourceRequest {
  * Check if a given object implements the UpdateNotificationSourceRequest interface.
  */
 export function instanceOfUpdateNotificationSourceRequest(value: object): value is UpdateNotificationSourceRequest {
-    if (!('user_notification_source_id' in value) || value['user_notification_source_id'] === undefined) return false;
+    if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
     return true;
 }
 
@@ -69,10 +69,10 @@ export function UpdateNotificationSourceRequestFromJSONTyped(json: any, ignoreDi
     }
     return {
         
-        'user_notification_source_id': json['user_notification_source_id'],
-        'notification_source_id': json['notification_source_id'] == null ? undefined : json['notification_source_id'],
+        'notification_source_id': json['notification_source_id'],
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
+        'is_public': json['is_public'] == null ? undefined : json['is_public'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
 }
@@ -88,10 +88,10 @@ export function UpdateNotificationSourceRequestToJSONTyped(value?: UpdateNotific
 
     return {
         
-        'user_notification_source_id': value['user_notification_source_id'],
         'notification_source_id': value['notification_source_id'],
         'title': value['title'],
         'description': value['description'],
+        'is_public': value['is_public'],
         'config_json': value['config_json'],
     };
 }

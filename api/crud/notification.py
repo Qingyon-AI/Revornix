@@ -748,7 +748,7 @@ def search_next_notification_source_for_user(
         )
     )
     if keyword:
-        query = query.filter(models.notification.NotificationSource.name.ilike(f"%{keyword}%"))
+        query = query.filter(models.notification.NotificationSource.title.ilike(f"%{keyword}%"))
     query = query.order_by(models.notification.NotificationSource.id.desc())
     query = query.filter(models.notification.NotificationSource.id < notification_source.id)
     return query.first()
@@ -779,7 +779,7 @@ def count_all_notification_sources_for_user(
         )
     )
     if keyword:
-        query = query.filter(models.notification.NotificationSource.name.ilike(f"%{keyword}%"))
+        query = query.filter(models.notification.NotificationSource.title.ilike(f"%{keyword}%"))
     query = query.order_by(models.notification.NotificationSource.id.desc())
     return query.count()
 
@@ -847,7 +847,7 @@ def search_next_notification_target_for_user(
         )
     )
     if keyword:
-        query = query.filter(models.notification.NotificationTarget.name.ilike(f"%{keyword}%"))
+        query = query.filter(models.notification.NotificationTarget.title.ilike(f"%{keyword}%"))
     query = query.order_by(models.notification.NotificationTarget.id.desc())
     query = query.filter(models.notification.NotificationTarget.id < notification_target.id)
     return query.first()
@@ -878,7 +878,7 @@ def count_all_notification_targets_for_user(
         )
     )
     if keyword:
-        query = query.filter(models.notification.NotificationTarget.name.ilike(f"%{keyword}%"))
+        query = query.filter(models.notification.NotificationTarget.title.ilike(f"%{keyword}%"))
     query = query.order_by(models.notification.NotificationTarget.id.desc())
     return query.count()
 

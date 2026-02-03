@@ -6,8 +6,9 @@
 
 Name | Type
 ------------ | -------------
-`notification_target_id` | number
+`notification_target_provided_id` | number
 `title` | string
+`is_public` | boolean
 `description` | string
 `config_json` | string
 
@@ -18,8 +19,9 @@ import type { AddNotificationTargetRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "notification_target_id": null,
+  "notification_target_provided_id": null,
   "title": null,
+  "is_public": null,
   "description": null,
   "config_json": null,
 } satisfies AddNotificationTargetRequest
