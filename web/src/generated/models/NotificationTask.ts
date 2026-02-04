@@ -71,7 +71,7 @@ export interface NotificationTask {
      * @type {number}
      * @memberof NotificationTask
      */
-    notification_content_type: number;
+    content_type: number;
     /**
      * 
      * @type {number}
@@ -153,7 +153,7 @@ export function instanceOfNotificationTask(value: object): value is Notification
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('enable' in value) || value['enable'] === undefined) return false;
-    if (!('notification_content_type' in value) || value['notification_content_type'] === undefined) return false;
+    if (!('content_type' in value) || value['content_type'] === undefined) return false;
     if (!('trigger_type' in value) || value['trigger_type'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
@@ -173,7 +173,7 @@ export function NotificationTaskFromJSONTyped(json: any, ignoreDiscriminator: bo
         'id': json['id'],
         'title': json['title'],
         'enable': json['enable'],
-        'notification_content_type': json['notification_content_type'],
+        'content_type': json['content_type'],
         'trigger_type': json['trigger_type'],
         'trigger_event': json['trigger_event'] == null ? undefined : NotificationTriggerEventFromJSON(json['trigger_event']),
         'trigger_scheduler': json['trigger_scheduler'] == null ? undefined : NotificationTriggerSchedulerFromJSON(json['trigger_scheduler']),
@@ -203,7 +203,7 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
         'id': value['id'],
         'title': value['title'],
         'enable': value['enable'],
-        'notification_content_type': value['notification_content_type'],
+        'content_type': value['content_type'],
         'trigger_type': value['trigger_type'],
         'trigger_event': NotificationTriggerEventToJSON(value['trigger_event']),
         'trigger_scheduler': NotificationTriggerSchedulerToJSON(value['trigger_scheduler']),

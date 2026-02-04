@@ -1,22 +1,22 @@
 
-# SchemasDocumentLabelListResponse
+# NotificationTargetsUsableResponse
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`data` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
+`data` | [Array&lt;NotificationTarget&gt;](NotificationTarget.md)
 
 ## Example
 
 ```typescript
-import type { SchemasDocumentLabelListResponse } from ''
+import type { NotificationTargetsUsableResponse } from ''
 
 // TODO: Update the object below with actual values
 const example = {
   "data": null,
-} satisfies SchemasDocumentLabelListResponse
+} satisfies NotificationTargetsUsableResponse
 
 console.log(example)
 
@@ -25,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as SchemasDocumentLabelListResponse
+const exampleParsed = JSON.parse(exampleJSON) as NotificationTargetsUsableResponse
 console.log(exampleParsed)
 ```
 

@@ -37,10 +37,12 @@ import type {
   NotificationSourceDetailRequest,
   NotificationSourceForkRequest,
   NotificationSourcesProvidedResponse,
+  NotificationSourcesUsableResponse,
   NotificationTargetDetail,
   NotificationTargetDetailRequest,
   NotificationTargetForkRequest,
   NotificationTargetsProvidedResponse,
+  NotificationTargetsUsableResponse,
   NotificationTask,
   NotificationTaskDetailRequest,
   NotificationTemplatesResponse,
@@ -100,6 +102,8 @@ import {
     NotificationSourceForkRequestToJSON,
     NotificationSourcesProvidedResponseFromJSON,
     NotificationSourcesProvidedResponseToJSON,
+    NotificationSourcesUsableResponseFromJSON,
+    NotificationSourcesUsableResponseToJSON,
     NotificationTargetDetailFromJSON,
     NotificationTargetDetailToJSON,
     NotificationTargetDetailRequestFromJSON,
@@ -108,6 +112,8 @@ import {
     NotificationTargetForkRequestToJSON,
     NotificationTargetsProvidedResponseFromJSON,
     NotificationTargetsProvidedResponseToJSON,
+    NotificationTargetsUsableResponseFromJSON,
+    NotificationTargetsUsableResponseToJSON,
     NotificationTaskFromJSON,
     NotificationTaskToJSON,
     NotificationTaskDetailRequestFromJSON,
@@ -181,11 +187,6 @@ export interface ForkNotificationTargetNotificationTargetForkPostRequest {
     authorization?: string | null;
 }
 
-export interface GetMineNotificationTargetNotificationTargetMinePostRequest {
-    searchNotificationTargetRequest: SearchNotificationTargetRequest;
-    authorization?: string | null;
-}
-
 export interface GetMineNotificationTaskNotificationTaskMinePostRequest {
     pageableRequest: PageableRequest;
     authorization?: string | null;
@@ -206,13 +207,18 @@ export interface GetNotificationSourceRelatedTaskNotificationSourceTaskPostReque
     authorization?: string | null;
 }
 
-export interface GetNotificationSourcesNotificationSourceMinePostRequest {
+export interface GetNotificationSourcesNotificationSourceCommunityPostRequest {
     searchNotificationSourceRequest: SearchNotificationSourceRequest;
     authorization?: string | null;
 }
 
 export interface GetNotificationTargetDetailNotificationTargetDetailPostRequest {
     notificationTargetDetailRequest: NotificationTargetDetailRequest;
+    authorization?: string | null;
+}
+
+export interface GetNotificationTargetNotificationTargetCommunityPostRequest {
+    searchNotificationTargetRequest: SearchNotificationTargetRequest;
     authorization?: string | null;
 }
 
@@ -239,6 +245,14 @@ export interface GetProvidedNotificationTargetNotificationTargetProvidedPostRequ
 }
 
 export interface GetTriggerEventsNotificationTriggerEventAllPostRequest {
+    authorization?: string | null;
+}
+
+export interface GetUsableNotificationSourceNotificationSourceUsablePostRequest {
+    authorization?: string | null;
+}
+
+export interface GetUsableNotificationTargetNotificationTargetUsablePostRequest {
     authorization?: string | null;
 }
 
@@ -664,49 +678,6 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Mine Notification Target
-     */
-    async getMineNotificationTargetNotificationTargetMinePostRaw(requestParameters: GetMineNotificationTargetNotificationTargetMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationTarget>> {
-        if (requestParameters['searchNotificationTargetRequest'] == null) {
-            throw new runtime.RequiredError(
-                'searchNotificationTargetRequest',
-                'Required parameter "searchNotificationTargetRequest" was null or undefined when calling getMineNotificationTargetNotificationTargetMinePost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-
-        let urlPath = `/notification/target/mine`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: SearchNotificationTargetRequestToJSON(requestParameters['searchNotificationTargetRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionNotificationTargetFromJSON(jsonValue));
-    }
-
-    /**
-     * Get Mine Notification Target
-     */
-    async getMineNotificationTargetNotificationTargetMinePost(requestParameters: GetMineNotificationTargetNotificationTargetMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionNotificationTarget> {
-        const response = await this.getMineNotificationTargetNotificationTargetMinePostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Get Mine Notification Task
      */
     async getMineNotificationTaskNotificationTaskMinePostRaw(requestParameters: GetMineNotificationTaskNotificationTaskMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PaginationNotificationTask>> {
@@ -881,11 +852,11 @@ export class NotificationApi extends runtime.BaseAPI {
     /**
      * Get Notification Sources
      */
-    async getNotificationSourcesNotificationSourceMinePostRaw(requestParameters: GetNotificationSourcesNotificationSourceMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationSource>> {
+    async getNotificationSourcesNotificationSourceCommunityPostRaw(requestParameters: GetNotificationSourcesNotificationSourceCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationSource>> {
         if (requestParameters['searchNotificationSourceRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchNotificationSourceRequest',
-                'Required parameter "searchNotificationSourceRequest" was null or undefined when calling getNotificationSourcesNotificationSourceMinePost().'
+                'Required parameter "searchNotificationSourceRequest" was null or undefined when calling getNotificationSourcesNotificationSourceCommunityPost().'
             );
         }
 
@@ -900,7 +871,7 @@ export class NotificationApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/notification/source/mine`;
+        let urlPath = `/notification/source/community`;
 
         const response = await this.request({
             path: urlPath,
@@ -916,8 +887,8 @@ export class NotificationApi extends runtime.BaseAPI {
     /**
      * Get Notification Sources
      */
-    async getNotificationSourcesNotificationSourceMinePost(requestParameters: GetNotificationSourcesNotificationSourceMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionNotificationSource> {
-        const response = await this.getNotificationSourcesNotificationSourceMinePostRaw(requestParameters, initOverrides);
+    async getNotificationSourcesNotificationSourceCommunityPost(requestParameters: GetNotificationSourcesNotificationSourceCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionNotificationSource> {
+        const response = await this.getNotificationSourcesNotificationSourceCommunityPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -961,6 +932,49 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async getNotificationTargetDetailNotificationTargetDetailPost(requestParameters: GetNotificationTargetDetailNotificationTargetDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTargetDetail> {
         const response = await this.getNotificationTargetDetailNotificationTargetDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Notification Target
+     */
+    async getNotificationTargetNotificationTargetCommunityPostRaw(requestParameters: GetNotificationTargetNotificationTargetCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationTarget>> {
+        if (requestParameters['searchNotificationTargetRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchNotificationTargetRequest',
+                'Required parameter "searchNotificationTargetRequest" was null or undefined when calling getNotificationTargetNotificationTargetCommunityPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/notification/target/community`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchNotificationTargetRequestToJSON(requestParameters['searchNotificationTargetRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionNotificationTargetFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Notification Target
+     */
+    async getNotificationTargetNotificationTargetCommunityPost(requestParameters: GetNotificationTargetNotificationTargetCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionNotificationTarget> {
+        const response = await this.getNotificationTargetNotificationTargetCommunityPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1179,6 +1193,72 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async getTriggerEventsNotificationTriggerEventAllPost(requestParameters: GetTriggerEventsNotificationTriggerEventAllPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TriggerEventsResponse> {
         const response = await this.getTriggerEventsNotificationTriggerEventAllPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Usable Notification Source
+     */
+    async getUsableNotificationSourceNotificationSourceUsablePostRaw(requestParameters: GetUsableNotificationSourceNotificationSourceUsablePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourcesUsableResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/notification/source/usable`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationSourcesUsableResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Usable Notification Source
+     */
+    async getUsableNotificationSourceNotificationSourceUsablePost(requestParameters: GetUsableNotificationSourceNotificationSourceUsablePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationSourcesUsableResponse> {
+        const response = await this.getUsableNotificationSourceNotificationSourceUsablePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Usable Notification Target
+     */
+    async getUsableNotificationTargetNotificationTargetUsablePostRaw(requestParameters: GetUsableNotificationTargetNotificationTargetUsablePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetsUsableResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/notification/target/usable`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTargetsUsableResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Usable Notification Target
+     */
+    async getUsableNotificationTargetNotificationTargetUsablePost(requestParameters: GetUsableNotificationTargetNotificationTargetUsablePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTargetsUsableResponse> {
+        const response = await this.getUsableNotificationTargetNotificationTargetUsablePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -189,6 +189,7 @@ class NotificationRecord(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     cover: Mapped[str | None] = mapped_column(String(2000))
     link: Mapped[str | None] = mapped_column(String(2000))
     title: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
@@ -197,3 +198,5 @@ class NotificationRecord(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    
+    creator: Mapped["User"] = relationship("User", backref="created_notification_records")

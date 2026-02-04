@@ -175,7 +175,7 @@ def get_all_engines(
         query = query.filter(models.engine.EngineProvided.category == filter_category)
     return query.all()
 
-def get_engines_for_user(
+def get_usable_engines_for_user(
     db: Session,
     user_id: int,
     keyword: str | None = None,

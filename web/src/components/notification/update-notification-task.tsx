@@ -20,11 +20,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { getQueryClient } from '@/lib/get-query-client';
 import {
-	getMineNotificationSources,
-	getMineNotificationTargets,
 	getNotificationTaskDetail,
 	getNotificationTemplate,
 	getTriggerEvents,
+	getUsableNotificationSources,
+	getUsableNotificationTargets,
 	updateNotificationTask,
 } from '@/service/notification';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -76,7 +76,7 @@ const UpdateNotificationTask = ({
 			notification_content: z.string().optional().nullable(),
 			notification_cover: z.string().optional().nullable(),
 			notification_link: z.string().optional().nullable(),
-			notification_content_type: z.number(),
+			content_type: z.number(),
 			notification_template_id: z.coerce
 				.number({
 					required_error: 'Please select the template',
@@ -86,12 +86,12 @@ const UpdateNotificationTask = ({
 			trigger_scheduler_cron: z.string().optional(),
 			trigger_event_id: z.number().optional(),
 			enable: z.boolean(),
-			user_notification_source_id: z.coerce.number().optional(),
-			user_notification_target_id: z.coerce.number().optional(),
+			notification_source_id: z.coerce.number().optional(),
+			notification_target_id: z.coerce.number().optional(),
 		})
 		.superRefine((data, ctx) => {
 			// If content type is 0 => title required
-			if (data.notification_content_type === 0) {
+			if (data.content_type === 0) {
 				if (!data.title || data.title.trim() === '') {
 					ctx.addIssue({
 						code: z.ZodIssueCode.custom,
@@ -102,7 +102,7 @@ const UpdateNotificationTask = ({
 			}
 
 			// If content type is 1 => template_id required
-			if (data.notification_content_type === 1) {
+			if (data.content_type === 1) {
 				if (!data.notification_template_id) {
 					ctx.addIssue({
 						code: z.ZodIssueCode.custom,
@@ -124,13 +124,13 @@ const UpdateNotificationTask = ({
 	});
 
 	const { data: mineNotificationSources } = useQuery({
-		queryKey: ['searchNotificationSources'],
-		queryFn: getMineNotificationSources,
+		queryKey: ['searchUsableNotificationSources'],
+		queryFn: getUsableNotificationSources,
 	});
 
 	const { data: mineNotificationTargets } = useQuery({
-		queryKey: ['searchNotificationTargets'],
-		queryFn: getMineNotificationTargets,
+		queryKey: ['searchUsableNotificationTargets'],
+		queryFn: getUsableNotificationTargets,
 	});
 
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
@@ -142,7 +142,7 @@ const UpdateNotificationTask = ({
 			notification_title: '',
 			notification_content: '',
 			enable: true,
-			notification_content_type: 0,
+			content_type: 0,
 		},
 	});
 
@@ -196,9 +196,9 @@ const UpdateNotificationTask = ({
 				trigger_scheduler_cron: data.trigger_scheduler?.cron_expr,
 				trigger_event_id: data.trigger_event?.trigger_event_id,
 				enable: data.enable,
-				user_notification_source_id: data.user_notification_source?.id,
-				user_notification_target_id: data.user_notification_target?.id,
-				notification_content_type: data.notification_content_type,
+				notification_source_id: data.notification_source?.id,
+				notification_target_id: data.notification_target?.id,
+				content_type: data.content_type,
 				notification_title: data.notification_title ?? undefined,
 				notification_content: data.notification_content ?? undefined,
 				notification_template_id: data.notification_template_id ?? undefined,
@@ -249,7 +249,7 @@ const UpdateNotificationTask = ({
 											<Input
 												{...field}
 												placeholder={t(
-													'setting_notification_task_manage_form_task_title_placeholder'
+													'setting_notification_task_manage_form_task_title_placeholder',
 												)}
 											/>
 											<FormMessage />
@@ -258,7 +258,7 @@ const UpdateNotificationTask = ({
 								}}
 							/>
 							<FormField
-								name='user_notification_source_id'
+								name='notification_source_id'
 								control={form.control}
 								render={({ field }) => {
 									return (
@@ -274,7 +274,7 @@ const UpdateNotificationTask = ({
 												<SelectTrigger className='w-full'>
 													<SelectValue
 														placeholder={t(
-															'setting_notification_task_manage_form_source_placeholder'
+															'setting_notification_task_manage_form_source_placeholder',
 														)}
 													/>
 												</SelectTrigger>
@@ -289,7 +289,7 @@ const UpdateNotificationTask = ({
 																		{item.title}
 																	</SelectItem>
 																);
-															}
+															},
 														)}
 													</SelectGroup>
 												</SelectContent>
@@ -300,7 +300,7 @@ const UpdateNotificationTask = ({
 								}}
 							/>
 							<FormField
-								name='user_notification_target_id'
+								name='notification_target_id'
 								control={form.control}
 								render={({ field }) => {
 									return (
@@ -316,7 +316,7 @@ const UpdateNotificationTask = ({
 												<SelectTrigger className='w-full'>
 													<SelectValue
 														placeholder={t(
-															'setting_notification_task_manage_form_target_placeholder'
+															'setting_notification_task_manage_form_target_placeholder',
 														)}
 													/>
 												</SelectTrigger>
@@ -331,7 +331,7 @@ const UpdateNotificationTask = ({
 																		{item.title}
 																	</SelectItem>
 																);
-															}
+															},
 														)}
 													</SelectGroup>
 												</SelectContent>
@@ -349,7 +349,7 @@ const UpdateNotificationTask = ({
 										<FormItem>
 											<FormLabel>
 												{t(
-													'setting_notification_task_manage_form_trigger_type'
+													'setting_notification_task_manage_form_trigger_type',
 												)}
 											</FormLabel>
 											<Select
@@ -362,7 +362,7 @@ const UpdateNotificationTask = ({
 												<SelectTrigger className='w-full'>
 													<SelectValue
 														placeholder={t(
-															'setting_notification_task_manage_form_trigger_type_placeholder'
+															'setting_notification_task_manage_form_trigger_type_placeholder',
 														)}
 													/>
 												</SelectTrigger>
@@ -370,12 +370,12 @@ const UpdateNotificationTask = ({
 													<SelectGroup>
 														<SelectItem value={'0'}>
 															{t(
-																'setting_notification_task_manage_form_trigger_type_event'
+																'setting_notification_task_manage_form_trigger_type_event',
 															)}
 														</SelectItem>
 														<SelectItem value={'1'}>
 															{t(
-																'setting_notification_task_manage_form_trigger_type_scheduler'
+																'setting_notification_task_manage_form_trigger_type_scheduler',
 															)}
 														</SelectItem>
 													</SelectGroup>
@@ -396,7 +396,7 @@ const UpdateNotificationTask = ({
 											<FormItem>
 												<FormLabel>
 													{t(
-														'setting_notification_task_manage_form_trigger_event_id'
+														'setting_notification_task_manage_form_trigger_event_id',
 													)}
 												</FormLabel>
 												<Select
@@ -411,11 +411,11 @@ const UpdateNotificationTask = ({
 													<SelectTrigger className='w-full'>
 														<SelectValue
 															placeholder={t(
-																'setting_notification_task_manage_form_trigger_event_id_placeholder'
+																'setting_notification_task_manage_form_trigger_event_id_placeholder',
 															)}>
 															{(() => {
 																const sel = triggerEvents?.data.find(
-																	(item) => item.id === field.value
+																	(item) => item.id === field.value,
 																);
 																return sel
 																	? locale === 'zh'
@@ -467,7 +467,7 @@ const UpdateNotificationTask = ({
 											<FormItem>
 												<FormLabel>
 													{t(
-														'setting_notification_task_manage_form_trigger_scheduler'
+														'setting_notification_task_manage_form_trigger_scheduler',
 													)}
 													<Tooltip>
 														<TooltipTrigger>
@@ -475,7 +475,7 @@ const UpdateNotificationTask = ({
 														</TooltipTrigger>
 														<TooltipContent>
 															{t(
-																'setting_notification_task_manage_form_trigger_scheduler_alert'
+																'setting_notification_task_manage_form_trigger_scheduler_alert',
 															)}
 															<Link
 																className='ml-1 underline underline-offset-2'
@@ -488,7 +488,7 @@ const UpdateNotificationTask = ({
 												<Input
 													className='font-mono'
 													placeholder={t(
-														'setting_notification_task_manage_form_trigger_scheduler_placeholder'
+														'setting_notification_task_manage_form_trigger_scheduler_placeholder',
 													)}
 													{...field}
 												/>
@@ -499,19 +499,19 @@ const UpdateNotificationTask = ({
 								/>
 							)}
 							<Tabs
-								value={form.watch('notification_content_type')?.toString()}
+								value={form.watch('content_type')?.toString()}
 								onValueChange={(value) => {
-									form.setValue('notification_content_type', Number(value));
+									form.setValue('content_type', Number(value));
 								}}>
 								<TabsList className='w-full mb-1'>
 									<TabsTrigger value='1'>
 										{t(
-											'setting_notification_task_manage_form_content_type_template'
+											'setting_notification_task_manage_form_content_type_template',
 										)}
 									</TabsTrigger>
 									<TabsTrigger value='0'>
 										{t(
-											'setting_notification_task_manage_form_content_type_custom'
+											'setting_notification_task_manage_form_content_type_custom',
 										)}
 									</TabsTrigger>
 								</TabsList>
@@ -524,7 +524,7 @@ const UpdateNotificationTask = ({
 												<FormItem>
 													<FormLabel>
 														{t(
-															'setting_notification_task_manage_form_template'
+															'setting_notification_task_manage_form_template',
 														)}
 													</FormLabel>
 													<Select
@@ -537,11 +537,11 @@ const UpdateNotificationTask = ({
 														<SelectTrigger className='w-full'>
 															<SelectValue
 																placeholder={t(
-																	'setting_notification_task_manage_form_template_placeholder'
+																	'setting_notification_task_manage_form_template_placeholder',
 																)}>
 																{(() => {
 																	const sel = notificationTemplates?.data.find(
-																		(item) => item.id === field.value
+																		(item) => item.id === field.value,
 																	);
 																	return sel
 																		? locale === 'zh'
@@ -573,7 +573,7 @@ const UpdateNotificationTask = ({
 																				</div>
 																			</SelectItem>
 																		);
-																	}
+																	},
 																)}
 															</SelectGroup>
 														</SelectContent>
@@ -597,7 +597,7 @@ const UpdateNotificationTask = ({
 													<Input
 														{...field}
 														placeholder={t(
-															'setting_notification_task_manage_form_title_placeholder'
+															'setting_notification_task_manage_form_title_placeholder',
 														)}
 														value={field.value || ''}
 													/>
@@ -618,7 +618,7 @@ const UpdateNotificationTask = ({
 													<Textarea
 														{...field}
 														placeholder={t(
-															'setting_notification_task_manage_form_content_placeholder'
+															'setting_notification_task_manage_form_content_placeholder',
 														)}
 														value={field.value || ''}
 													/>
@@ -639,7 +639,7 @@ const UpdateNotificationTask = ({
 													<Input
 														{...field}
 														placeholder={t(
-															'setting_notification_task_manage_form_link_placeholder'
+															'setting_notification_task_manage_form_link_placeholder',
 														)}
 														value={field.value || ''}
 													/>
@@ -685,7 +685,7 @@ const UpdateNotificationTask = ({
 												</FormLabel>
 												<FormDescription>
 													{t(
-														'setting_notification_task_manage_form_enable_alert'
+														'setting_notification_task_manage_form_enable_alert',
 													)}
 												</FormDescription>
 											</div>

@@ -57,17 +57,17 @@ class NotificationProxy:
 
             notification_tool = None
 
-            if notification_source.uuid == NotificationSourceProvided.EMAIL.meta.uuid:
+            if notification_source.notification_source_provided.uuid == NotificationSourceProvided.EMAIL.meta.uuid:
                 notification_tool = EmailNotificationTool()
-            elif notification_source.uuid == NotificationSourceProvided.APPLE.meta.uuid:
+            elif notification_source.notification_source_provided.uuid == NotificationSourceProvided.APPLE.meta.uuid:
                 notification_tool = AppleNotificationTool()
-            elif notification_source.uuid == NotificationSourceProvided.APPLE_SANDBOX.meta.uuid:
+            elif notification_source.notification_source_provided.uuid == NotificationSourceProvided.APPLE_SANDBOX.meta.uuid:
                 notification_tool = AppleSandboxNotificationTool()
-            elif notification_source.uuid == NotificationSourceProvided.FEISHU.meta.uuid:
+            elif notification_source.notification_source_provided.uuid == NotificationSourceProvided.FEISHU.meta.uuid:
                 notification_tool = FeishuNotificationTool()
-            elif notification_source.uuid == NotificationSourceProvided.DINGTALK.meta.uuid:
+            elif notification_source.notification_source_provided.uuid == NotificationSourceProvided.DINGTALK.meta.uuid:
                 notification_tool = DingTalkNotificationTool()
-            elif notification_source.uuid == NotificationSourceProvided.TELEGRAM.meta.uuid:
+            elif notification_source.notification_source_provided.uuid == NotificationSourceProvided.TELEGRAM.meta.uuid:
                 notification_tool = TelegramNotificationTool()
             else:
                 raise Exception("Notification source not supported")
@@ -123,12 +123,3 @@ class NotificationProxy:
                 raise Exception(f'Failed to generate the message using template {template_id}')
             
             return message
-    
-    async def send_notification(
-        self,
-        title: str,
-        content: str | None = None,
-        cover: str | None = None,
-        link: str | None = None
-    ):
-        ...
