@@ -165,7 +165,7 @@ class NotificationSourceDetail(BaseModel):
     notification_source_provided: NotificationSourceProvided
     create_time: datetime
     update_time: datetime | None
-    config_json: str | None
+    config_json: str | None = None
     creator: UserPublicInfo
     is_public: bool
     @field_serializer("create_time")

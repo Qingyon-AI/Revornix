@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`creator_id` | number
 `title` | string
 `enable` | boolean
 `content_type` | number
@@ -31,6 +32,7 @@ import type { NotificationTask } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "creator_id": null,
   "title": null,
   "enable": null,
   "content_type": null,

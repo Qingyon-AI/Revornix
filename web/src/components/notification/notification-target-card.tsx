@@ -67,7 +67,7 @@ const NotificationTargetCard = ({
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				predicate(query) {
-					return query.queryKey.includes('notification-target');
+					return query.queryKey.includes('searchNotificationTargets');
 				},
 			});
 			refreshMainUserInfo();

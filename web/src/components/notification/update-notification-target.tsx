@@ -283,6 +283,7 @@ const UpdateNotificationTarget = ({
 																)}
 															</FormLabel>
 															<Textarea
+																disabled={!authorized}
 																placeholder={t(
 																	'setting_notification_target_manage_form_config_json_placeholder',
 																)}
@@ -325,6 +326,7 @@ const UpdateNotificationTarget = ({
 														{t('setting_notification_target_manage_form_title')}
 													</FormLabel>
 													<Input
+														disabled={!authorized}
 														className='col-span-9'
 														{...field}
 														placeholder={t(
@@ -352,6 +354,7 @@ const UpdateNotificationTarget = ({
 													<Input
 														className='col-span-9'
 														{...field}
+														disabled={!authorized}
 														placeholder={t(
 															'setting_notification_target_manage_form_description_placeholder',
 														)}

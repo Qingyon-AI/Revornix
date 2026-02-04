@@ -90,6 +90,9 @@ const AddNotificationTarget = () => {
 					return query.queryKey.includes('searchNotificationTargets');
 				},
 			});
+			queryClient.invalidateQueries({
+				queryKey: ['searchUsableNotificationTargets'],
+			});
 			form.reset();
 			setShowAddDialog(false);
 		},

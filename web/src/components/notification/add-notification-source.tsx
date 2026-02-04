@@ -92,6 +92,9 @@ const AddNotificationSource = () => {
 					return query.queryKey.includes('searchNotificationSources');
 				},
 			});
+			queryClient.invalidateQueries({
+				queryKey: ['searchUsableNotificationSources'],
+			});
 			form.reset();
 			setShowAddDialog(false);
 		},

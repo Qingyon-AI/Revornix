@@ -12,6 +12,7 @@ Name | Type
 `read_at` | Date
 `link` | string
 `cover` | string
+`creator` | [UserPublicInfo](UserPublicInfo.md)
 `create_time` | Date
 `update_time` | Date
 
@@ -28,6 +29,7 @@ const example = {
   "read_at": null,
   "link": null,
   "cover": null,
+  "creator": null,
   "create_time": null,
   "update_time": null,
 } satisfies NotificationRecord

@@ -56,6 +56,12 @@ export interface NotificationTask {
     id: number;
     /**
      * 
+     * @type {number}
+     * @memberof NotificationTask
+     */
+    creator_id: number;
+    /**
+     * 
      * @type {string}
      * @memberof NotificationTask
      */
@@ -151,6 +157,7 @@ export interface NotificationTask {
  */
 export function instanceOfNotificationTask(value: object): value is NotificationTask {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('enable' in value) || value['enable'] === undefined) return false;
     if (!('content_type' in value) || value['content_type'] === undefined) return false;
@@ -171,6 +178,7 @@ export function NotificationTaskFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
         
         'id': json['id'],
+        'creator_id': json['creator_id'],
         'title': json['title'],
         'enable': json['enable'],
         'content_type': json['content_type'],
@@ -201,6 +209,7 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
     return {
         
         'id': value['id'],
+        'creator_id': value['creator_id'],
         'title': value['title'],
         'enable': value['enable'],
         'content_type': value['content_type'],

@@ -67,7 +67,7 @@ const NotificationSourceCard = ({
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				predicate(query) {
-					return query.queryKey.includes('notification-source');
+					return query.queryKey.includes('searchNotificationSources');
 				},
 			});
 			refreshMainUserInfo();

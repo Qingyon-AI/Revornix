@@ -75,7 +75,7 @@ export interface NotificationSourceDetail {
      * @type {string}
      * @memberof NotificationSourceDetail
      */
-    config_json: string | null;
+    config_json?: string | null;
     /**
      * 
      * @type {UserPublicInfo}
@@ -100,7 +100,6 @@ export function instanceOfNotificationSourceDetail(value: object): value is Noti
     if (!('notification_source_provided' in value) || value['notification_source_provided'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
-    if (!('config_json' in value) || value['config_json'] === undefined) return false;
     if (!('creator' in value) || value['creator'] === undefined) return false;
     if (!('is_public' in value) || value['is_public'] === undefined) return false;
     return true;
@@ -122,7 +121,7 @@ export function NotificationSourceDetailFromJSONTyped(json: any, ignoreDiscrimin
         'notification_source_provided': NotificationSourceProvidedFromJSON(json['notification_source_provided']),
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
-        'config_json': json['config_json'],
+        'config_json': json['config_json'] == null ? undefined : json['config_json'],
         'creator': UserPublicInfoFromJSON(json['creator']),
         'is_public': json['is_public'],
     };

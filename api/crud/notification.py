@@ -84,7 +84,7 @@ def create_notification_task_content_template(
 
 def create_notification_task(
     db: Session,
-    user_id: int,
+    creator_id: int,
     title: str,
     content_type: int,
     notification_source_id: int,
@@ -94,7 +94,7 @@ def create_notification_task(
 ):
     now = datetime.now(timezone.utc)
     notification_task = models.notification.NotificationTask(
-        user_id=user_id,
+        creator_id=creator_id,
         title=title,
         content_type=content_type,
         notification_source_id=notification_source_id,
