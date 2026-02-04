@@ -24,6 +24,8 @@ import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
 import { replacePath } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useRouter } from 'nextjs-toploader/app';
 
 const NotificationRecordCard = ({
 	notification,
@@ -32,6 +34,7 @@ const NotificationRecordCard = ({
 }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
+	const router = useRouter();
 	const mutateRead = useMutation({
 		mutationKey: ['readNotification', notification.id],
 		mutationFn: readNotificationRecords,
@@ -117,8 +120,37 @@ const NotificationRecordCard = ({
 					)}
 					<Separator />
 					<DialogFooter className='flex justify-between! items-center'>
-						<div className='text-muted-foreground text-xs'>
-							{format(notification.create_time as Date, 'yyyy-MM-dd HH:mm:ss')}
+						<div className='flex flex-row gap-2 items-center text-muted-foreground text-xs'>
+							<Avatar
+								className='size-7 cursor-pointer'
+								onClick={() =>
+									router.push(`/user/detail/${notification.creator.id}`)
+								}>
+								<AvatarImage
+									src={replacePath(
+										notification.creator.avatar,
+										notification.creator.id,
+									)}
+									alt='avatar'
+									className='size-7 object-cover'
+								/>
+								<AvatarFallback className='size-7'>
+									{notification.creator.nickname}
+								</AvatarFallback>
+							</Avatar>
+							<div className='flex flex-col gap-1'>
+								<p
+									className='text-xs text-muted-foreground cursor-pointer'
+									onClick={() =>
+										router.push(`/user/detail/${notification.creator.id}`)
+									}>
+									{notification.creator.nickname}
+								</p>
+								{format(
+									notification.create_time as Date,
+									'yyyy-MM-dd HH:mm:ss',
+								)}
+							</div>
 						</div>
 						<div className='flex flex-row gap-2 items-center'>
 							<Button
@@ -194,7 +226,42 @@ const NotificationRecordCard = ({
 					<Separator className='my-1' />
 					<div className='flex justify-between items-center'>
 						<div className='text-muted-foreground text-xs'>
-							{format(notification.create_time as Date, 'yyyy-MM-dd HH:mm:ss')}
+							<div className='flex flex-row gap-2 items-center'>
+								<Avatar
+									className='size-7'
+									onClick={(e) => {
+										e.stopPropagation();
+										e.preventDefault();
+										router.push(`/user/detail/${notification.creator.id}`);
+									}}>
+									<AvatarImage
+										src={replacePath(
+											notification.creator.avatar,
+											notification.creator.id,
+										)}
+										alt='avatar'
+										className='size-7 object-cover'
+									/>
+									<AvatarFallback className='size-7'>
+										{notification.creator.nickname}
+									</AvatarFallback>
+								</Avatar>
+								<div className='flex flex-col gap-1'>
+									<p
+										className='text-xs text-muted-foreground'
+										onClick={(e) => {
+											e.stopPropagation();
+											e.preventDefault();
+											router.push(`/user/detail/${notification.creator.id}`);
+										}}>
+										{notification.creator.nickname}
+									</p>
+									{format(
+										notification.create_time as Date,
+										'yyyy-MM-dd HH:mm:ss',
+									)}
+								</div>
+							</div>
 						</div>
 						{notification.read_at ? (
 							<p className='text-muted-foreground text-xs'>

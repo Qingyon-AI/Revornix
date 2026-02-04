@@ -455,7 +455,7 @@
     "search_note": "Note: Vectorized search results may be inaccurate. Please filter according to your actual needs.",
     "notification_all_marked_read": "Mark All as Read",
     "notification_all_marked_read_done": "All marked as read",
-    "notification_system": "System Notification",
+    "notification_system": "Notification",
     "notification_link": "Link",
     "notification_empty": "No notifications",
     "notification_unread": "Unread",
