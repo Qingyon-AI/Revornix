@@ -192,13 +192,13 @@ export interface GetMineNotificationTaskNotificationTaskMinePostRequest {
     authorization?: string | null;
 }
 
-export interface GetNotificationDetailNotificationSourceDetailPostRequest {
-    notificationSourceDetailRequest: NotificationSourceDetailRequest;
+export interface GetNotificationRecordDetailNotificationRecordDetailPostRequest {
+    notificationRecordDetailRequest: NotificationRecordDetailRequest;
     authorization?: string | null;
 }
 
-export interface GetNotificationRecordDetailNotificationRecordDetailPostRequest {
-    notificationRecordDetailRequest: NotificationRecordDetailRequest;
+export interface GetNotificationSourceDetailNotificationSourceDetailPostRequest {
+    notificationSourceDetailRequest: NotificationSourceDetailRequest;
     authorization?: string | null;
 }
 
@@ -721,49 +721,6 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Notification Detail
-     */
-    async getNotificationDetailNotificationSourceDetailPostRaw(requestParameters: GetNotificationDetailNotificationSourceDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourceDetail>> {
-        if (requestParameters['notificationSourceDetailRequest'] == null) {
-            throw new runtime.RequiredError(
-                'notificationSourceDetailRequest',
-                'Required parameter "notificationSourceDetailRequest" was null or undefined when calling getNotificationDetailNotificationSourceDetailPost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-
-        let urlPath = `/notification/source/detail`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: NotificationSourceDetailRequestToJSON(requestParameters['notificationSourceDetailRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationSourceDetailFromJSON(jsonValue));
-    }
-
-    /**
-     * Get Notification Detail
-     */
-    async getNotificationDetailNotificationSourceDetailPost(requestParameters: GetNotificationDetailNotificationSourceDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationSourceDetail> {
-        const response = await this.getNotificationDetailNotificationSourceDetailPostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Get Notification Record Detail
      */
     async getNotificationRecordDetailNotificationRecordDetailPostRaw(requestParameters: GetNotificationRecordDetailNotificationRecordDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationRecord>> {
@@ -803,6 +760,49 @@ export class NotificationApi extends runtime.BaseAPI {
      */
     async getNotificationRecordDetailNotificationRecordDetailPost(requestParameters: GetNotificationRecordDetailNotificationRecordDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationRecord> {
         const response = await this.getNotificationRecordDetailNotificationRecordDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Notification Source Detail
+     */
+    async getNotificationSourceDetailNotificationSourceDetailPostRaw(requestParameters: GetNotificationSourceDetailNotificationSourceDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourceDetail>> {
+        if (requestParameters['notificationSourceDetailRequest'] == null) {
+            throw new runtime.RequiredError(
+                'notificationSourceDetailRequest',
+                'Required parameter "notificationSourceDetailRequest" was null or undefined when calling getNotificationSourceDetailNotificationSourceDetailPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/notification/source/detail`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: NotificationSourceDetailRequestToJSON(requestParameters['notificationSourceDetailRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationSourceDetailFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Notification Source Detail
+     */
+    async getNotificationSourceDetailNotificationSourceDetailPost(requestParameters: GetNotificationSourceDetailNotificationSourceDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationSourceDetail> {
+        const response = await this.getNotificationSourceDetailNotificationSourceDetailPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

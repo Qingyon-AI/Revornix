@@ -602,7 +602,7 @@ def add_notification_task(
 ):
     db_notification_task = crud.notification.create_notification_task(
         db=db,
-        user_id=user.id,
+        creator_id=user.id,
         title=add_notification_task_request.title,
         content_type=add_notification_task_request.content_type,
         notification_target_id=add_notification_task_request.notification_target_id,

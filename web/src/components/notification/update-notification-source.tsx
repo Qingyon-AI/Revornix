@@ -277,6 +277,7 @@ const UpdateNotificationSource = ({
 														{t('setting_notification_source_manage_form_title')}
 													</FormLabel>
 													<Input
+														disabled={!authorized}
 														className='col-span-9'
 														{...field}
 														placeholder={t(
@@ -302,6 +303,7 @@ const UpdateNotificationSource = ({
 														)}
 													</FormLabel>
 													<Textarea
+														disabled={!authorized}
 														className='col-span-9'
 														{...field}
 														placeholder={t(
@@ -351,7 +353,9 @@ const UpdateNotificationSource = ({
 												/>
 												<div className='grid grid-cols-12 gap-2'>
 													<FormLabel className='col-span-3'>
-														{t('setting_notification_source_manage_form_config_json_demo')}
+														{t(
+															'setting_notification_source_manage_form_config_json_demo',
+														)}
 													</FormLabel>
 													<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
 														{data.notification_source_provided.demo_config}
@@ -397,7 +401,9 @@ const UpdateNotificationSource = ({
 						{!authorized && (
 							<Alert className='bg-amber-600/10 dark:bg-amber-600/15 text-amber-500 border-amber-500/50 dark:border-amber-600/50'>
 								<ShieldAlert className='size-4' />
-								<AlertTitle>{t('setting_notification_source_manage_forbidden')}</AlertTitle>
+								<AlertTitle>
+									{t('setting_notification_source_manage_forbidden')}
+								</AlertTitle>
 							</Alert>
 						)}
 						{authorized && (

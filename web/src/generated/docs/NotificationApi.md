@@ -14,8 +14,8 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**forkNotificationSourceNotificationSourceForkPost**](NotificationApi.md#forknotificationsourcenotificationsourceforkpost) | **POST** /notification/source/fork | Fork Notification Source |
 | [**forkNotificationTargetNotificationTargetForkPost**](NotificationApi.md#forknotificationtargetnotificationtargetforkpost) | **POST** /notification/target/fork | Fork Notification Target |
 | [**getMineNotificationTaskNotificationTaskMinePost**](NotificationApi.md#getminenotificationtasknotificationtaskminepost) | **POST** /notification/task/mine | Get Mine Notification Task |
-| [**getNotificationDetailNotificationSourceDetailPost**](NotificationApi.md#getnotificationdetailnotificationsourcedetailpost) | **POST** /notification/source/detail | Get Notification Detail |
 | [**getNotificationRecordDetailNotificationRecordDetailPost**](NotificationApi.md#getnotificationrecorddetailnotificationrecorddetailpost) | **POST** /notification/record/detail | Get Notification Record Detail |
+| [**getNotificationSourceDetailNotificationSourceDetailPost**](NotificationApi.md#getnotificationsourcedetailnotificationsourcedetailpost) | **POST** /notification/source/detail | Get Notification Source Detail |
 | [**getNotificationSourceRelatedTaskNotificationSourceTaskPost**](NotificationApi.md#getnotificationsourcerelatedtasknotificationsourcetaskpost) | **POST** /notification/source/task | Get Notification Source Related Task |
 | [**getNotificationSourcesNotificationSourceCommunityPost**](NotificationApi.md#getnotificationsourcesnotificationsourcecommunitypost) | **POST** /notification/source/community | Get Notification Sources |
 | [**getNotificationTargetDetailNotificationTargetDetailPost**](NotificationApi.md#getnotificationtargetdetailnotificationtargetdetailpost) | **POST** /notification/target/detail | Get Notification Target Detail |
@@ -727,75 +727,6 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## getNotificationDetailNotificationSourceDetailPost
-
-> NotificationSourceDetail getNotificationDetailNotificationSourceDetailPost(notificationSourceDetailRequest, authorization)
-
-Get Notification Detail
-
-### Example
-
-```ts
-import {
-  Configuration,
-  NotificationApi,
-} from '';
-import type { GetNotificationDetailNotificationSourceDetailPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new NotificationApi();
-
-  const body = {
-    // NotificationSourceDetailRequest
-    notificationSourceDetailRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-  } satisfies GetNotificationDetailNotificationSourceDetailPostRequest;
-
-  try {
-    const data = await api.getNotificationDetailNotificationSourceDetailPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **notificationSourceDetailRequest** | [NotificationSourceDetailRequest](NotificationSourceDetailRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**NotificationSourceDetail**](NotificationSourceDetail.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
 ## getNotificationRecordDetailNotificationRecordDetailPost
 
 > NotificationRecord getNotificationRecordDetailNotificationRecordDetailPost(notificationRecordDetailRequest, authorization)
@@ -845,6 +776,75 @@ example().catch(console.error);
 ### Return type
 
 [**NotificationRecord**](NotificationRecord.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getNotificationSourceDetailNotificationSourceDetailPost
+
+> NotificationSourceDetail getNotificationSourceDetailNotificationSourceDetailPost(notificationSourceDetailRequest, authorization)
+
+Get Notification Source Detail
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { GetNotificationSourceDetailNotificationSourceDetailPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // NotificationSourceDetailRequest
+    notificationSourceDetailRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies GetNotificationSourceDetailNotificationSourceDetailPostRequest;
+
+  try {
+    const data = await api.getNotificationSourceDetailNotificationSourceDetailPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **notificationSourceDetailRequest** | [NotificationSourceDetailRequest](NotificationSourceDetailRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NotificationSourceDetail**](NotificationSourceDetail.md)
 
 ### Authorization
 

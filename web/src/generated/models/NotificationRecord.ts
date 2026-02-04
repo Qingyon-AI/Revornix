@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { UserPublicInfo } from './UserPublicInfo';
+import {
+    UserPublicInfoFromJSON,
+    UserPublicInfoFromJSONTyped,
+    UserPublicInfoToJSON,
+    UserPublicInfoToJSONTyped,
+} from './UserPublicInfo';
+
 /**
  * 
  * @export
@@ -57,6 +65,12 @@ export interface NotificationRecord {
     cover: string | null;
     /**
      * 
+     * @type {UserPublicInfo}
+     * @memberof NotificationRecord
+     */
+    creator: UserPublicInfo;
+    /**
+     * 
      * @type {Date}
      * @memberof NotificationRecord
      */
@@ -79,6 +93,7 @@ export function instanceOfNotificationRecord(value: object): value is Notificati
     if (!('read_at' in value) || value['read_at'] === undefined) return false;
     if (!('link' in value) || value['link'] === undefined) return false;
     if (!('cover' in value) || value['cover'] === undefined) return false;
+    if (!('creator' in value) || value['creator'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
@@ -100,6 +115,7 @@ export function NotificationRecordFromJSONTyped(json: any, ignoreDiscriminator: 
         'read_at': (json['read_at'] == null ? null : new Date(json['read_at'])),
         'link': json['link'],
         'cover': json['cover'],
+        'creator': UserPublicInfoFromJSON(json['creator']),
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
@@ -122,6 +138,7 @@ export function NotificationRecordToJSONTyped(value?: NotificationRecord | null,
         'read_at': value['read_at'] == null ? value['read_at'] : value['read_at'].toISOString(),
         'link': value['link'],
         'cover': value['cover'],
+        'creator': UserPublicInfoToJSON(value['creator']),
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
