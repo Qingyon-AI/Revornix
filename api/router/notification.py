@@ -644,11 +644,17 @@ def add_notification_task(
         )
 
     if add_notification_task_request.enable and add_notification_task_request.trigger_type == NotificationTriggerType.SCHEDULER:
+        db_notification_target = crud.notification.get_notification_target_by_id(
+            db=db,
+            notification_target_id=db_notification_task.notification_target_id
+        )
+        if db_notification_target is None:
+            raise schemas.error.CustomException(message="notification target not found", code=404)
         scheduler.add_job(
             func=send_notification_scheduler,
             trigger=CronTrigger.from_crontab(add_notification_task_request.trigger_scheduler_cron),
             args=[
-                db_notification_task.user_id,
+                db_notification_target.creator_id,
                 db_notification_task.id
             ],
             id=str(db_notification_task.id),
@@ -669,7 +675,7 @@ def get_notification_task(
     )
     if db_notification_task is None:
         raise schemas.error.CustomException(message="notification task not found", code=404)
-    if db_notification_task.user_id != user.id:
+    if db_notification_task.creator_id != user.id:
         raise schemas.error.CustomException(message="permission denied", code=403)
 
     res = schemas.notification.NotificationTask.model_validate(db_notification_task)
@@ -763,7 +769,7 @@ def update_notification_task(
     )
     if db_notification_task is None:
         raise schemas.error.CustomException(message="notification task not found", code=404)
-    if db_notification_task.user_id != user.id:
+    if db_notification_task.creator_id != user.id:
         raise schemas.error.CustomException(message="permission denied", code=403)
 
     if update_notification_task_request.title is not None:
@@ -862,11 +868,17 @@ def update_notification_task(
     if exist_job is not None:
         scheduler.remove_job(str(db_notification_task.id))
     if db_notification_task.enable and db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
+        db_notification_target = crud.notification.get_notification_target_by_id(
+            db=db,
+            notification_target_id=db_notification_task.notification_target_id
+        )
+        if db_notification_target is None:
+            raise schemas.error.CustomException(message="notification target not found", code=404)
         scheduler.add_job(
             func=send_notification_scheduler,
             trigger=CronTrigger.from_crontab(update_notification_task_request.trigger_scheduler_cron),
             args=[
-                db_notification_task.user_id,
+                db_notification_target.creator_id,
                 db_notification_task.id
             ],
             id=str(db_notification_task.id),
@@ -981,7 +993,7 @@ def search_notification_record(
     has_more = True
     next_start = None
     next_notification_record = None
-    db_notification_records = crud.notification.search_notification_records_for_user(
+    db_notification_records = crud.notification.search_notification_records_for_receiver(
         db=db,
         user_id=user.id,
         start=search_notification_record_request.start,
@@ -989,7 +1001,7 @@ def search_notification_record(
         keyword=search_notification_record_request.keyword
     )
     if len(db_notification_records) == search_notification_record_request.limit:
-        next_notification_record = crud.notification.search_next_notification_record_for_user(
+        next_notification_record = crud.notification.search_next_notification_record_for_receiver(
             db=db,
             user_id=user.id,
             notification_record=db_notification_records[-1]
@@ -998,7 +1010,7 @@ def search_notification_record(
         next_start = next_notification_record.id if next_notification_record is not None else None
     if len(db_notification_records) < search_notification_record_request.limit or len(db_notification_records) == 0:
         has_more = False
-    total = crud.notification.count_notification_records_for_user(
+    total = crud.notification.count_notification_records_for_receiver(
         db=db,
         user_id=user.id,
         keyword=search_notification_record_request.keyword
@@ -1036,23 +1048,34 @@ def get_notification_record_detail(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_record = crud.notification.get_notification_record_by_user_id_and_notification_record_id(
+    db_notification_record = crud.notification.get_notification_record_by_notification_record_id(
         db=db,
-        user_id=user.id,
         notification_record_id=notification_detail_request.notification_record_id
     )
     if db_notification_record is None:
         raise schemas.error.CustomException(message="notification record not found", code=404)
-    return schemas.notification.NotificationRecord.model_validate(db_notification_record)
+    db_notification_target = crud.notification.get_notification_target_by_id(
+        db=db,
+        notification_target_id=db_notification_record.notification_task.notification_target_id
+    )
+    if db_notification_target is None:
+        raise schemas.error.CustomException(message="notification target not found", code=404)
+    if db_notification_target.creator_id != user.id:
+        raise schemas.error.CustomException(message="permission denied", code=403)
+    res = schemas.notification.NotificationRecord.model_validate({
+        **db_notification_record.__dict__,
+        "creator": db_notification_target.creator
+    })
+    return res
 
 @notification_router.post('/record/read-all', response_model=schemas.common.NormalResponse)
 def read_all_notification_record(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    crud.notification.read_all_notification_records_for_user(
+    crud.notification.read_all_notification_records_for_receiver(
         db=db,
-        user_id=user.id
+        receiver_id=user.id
     )
     db.commit()
     return schemas.common.SuccessResponse()
@@ -1064,9 +1087,9 @@ def read_notification_record(
     user: models.user.User = Depends(get_current_user)
 ):
     if read_notification_request.status:
-        crud.notification.read_notification_records_by_notification_record_ids_for_user(
+        crud.notification.read_notification_records_by_notification_record_ids_for_receiver(
             db=db,
-            user_id=user.id,
+            receiver_id=user.id,
             notification_record_ids=read_notification_request.notification_record_ids
         )
     else:

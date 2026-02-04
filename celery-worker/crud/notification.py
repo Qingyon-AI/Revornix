@@ -269,7 +269,7 @@ def create_user_notification_target(
 
 def create_notification_record(
     db: Session,
-    user_id: int,
+    task_id: int,
     title: str,
     content: str | None = None,
     cover: str | None = None,
@@ -277,7 +277,7 @@ def create_notification_record(
 ):
     now = datetime.now(timezone.utc)
     notification = models.notification.NotificationRecord(
-        user_id=user_id,
+        task_id=task_id,
         title=title,
         content=content,
         cover=cover,
@@ -296,7 +296,7 @@ def get_usable_notification_sources_for_user(
     query = db.query(models.notification.NotificationSource)
     query = query.join(models.notification.NotificationSourceProvided)
     query = query.options(
-        joinedload(models.notification.NotificationSource.engine_provided)
+        joinedload(models.notification.NotificationSource.notification_source_provided)
     )
     query = query.join(models.notification.UserNotificationSource, models.notification.NotificationSource.id == models.notification.UserNotificationSource.notification_source_id)
     query = query.filter(
@@ -318,9 +318,9 @@ def get_usable_notification_targets_for_user(
     query = db.query(models.notification.NotificationTarget)
     query = query.join(models.notification.NotificationTargetProvided)
     query = query.options(
-        joinedload(models.notification.NotificationTarget.engine_provided)
+        joinedload(models.notification.NotificationTarget.notification_target_provided)
     )
-    query = query.join(models.notification.UserNotificationTarget, models.notification.NotificationTarget.id == models.notification.UserNotificationTarget.notification_source_id)
+    query = query.join(models.notification.UserNotificationTarget, models.notification.NotificationTarget.id == models.notification.UserNotificationTarget.notification_target_id)
     query = query.filter(
         models.notification.UserNotificationTarget.user_id == user_id,
         models.notification.UserNotificationTarget.delete_at.is_(None),
@@ -505,7 +505,7 @@ def get_notification_tasks_by_user_id_and_notification_trigger_event(
     query = query.join(models.notification.TriggerEvent,
                        models.notification.TriggerEvent.id == models.notification.NotificationTaskTriggerEvent.trigger_event_id)
     query = query.filter(
-        models.notification.NotificationTask.user_id == user_id,
+        models.notification.NotificationTask.creator_id == user_id,
         models.notification.NotificationTask.trigger_type == NotificationTriggerType.EVENT,
         models.notification.NotificationTask.delete_at.is_(None),
         models.notification.NotificationTaskTriggerEvent.delete_at.is_(None),
@@ -614,7 +614,7 @@ def get_notification_tasks_for_user(
 ):
     query = db.query(models.notification.NotificationTask)
     query = query.filter(
-        models.notification.NotificationTask.user_id == user_id,
+        models.notification.NotificationTask.creator_id == user_id,
         models.notification.NotificationTask.delete_at.is_(None)
     )
     query = query.order_by(models.notification.NotificationTask.id.desc())
@@ -628,7 +628,7 @@ def count_notification_tasks_for_user(
 ):
     query = db.query(models.notification.NotificationTask)
     query = query.filter(
-        models.notification.NotificationTask.user_id == user_id,
+        models.notification.NotificationTask.creator_id == user_id,
         models.notification.NotificationTask.delete_at.is_(None)
     )
     return query.count()
@@ -655,78 +655,19 @@ def get_notification_source_by_id(
     )
     return query.one_or_none()
 
-def get_notification_record_by_user_id_and_notification_record_id(
+def get_notification_record_by_notification_record_id(
     db: Session,
-    user_id: int,
     notification_record_id: int
 ):
     query = db.query(models.notification.NotificationRecord)
+    query = query.options(
+        joinedload(models.notification.NotificationRecord.notification_task)
+    )
     query = query.filter(
-        models.notification.NotificationRecord.user_id == user_id,
         models.notification.NotificationRecord.id == notification_record_id,
         models.notification.NotificationRecord.delete_at.is_(None)
     )
     return query.one_or_none()
-
-def search_next_notification_record_for_user(
-    db: Session,
-    user_id: int,
-    notification_record: models.notification.NotificationRecord,
-    keyword: str | None = None
-):
-    query = db.query(models.notification.NotificationRecord)
-
-    if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.notification.NotificationRecord.content.like(f"%{keyword}%"))
-
-    query = query.filter(models.notification.NotificationRecord.user_id == user_id,
-                         models.notification.NotificationRecord.delete_at.is_(None))
-
-    query = query.order_by(models.notification.NotificationRecord.id.desc())
-
-    query = query.filter(models.notification.NotificationRecord.id < notification_record.id)
-
-    return query.first()
-
-def count_notification_records_for_user(
-    db: Session,
-    user_id: int,
-    keyword: str | None = None
-):
-    query = db.query(models.notification.NotificationRecord)
-
-    if keyword is not None and len(keyword) > 0:
-        query = query.filter(or_(models.notification.NotificationRecord.content.like(f"%{keyword}%"),
-                                 models.notification.NotificationRecord.title.like(f"%{keyword}%")))
-
-    query = query.filter(models.notification.NotificationRecord.user_id == user_id,
-                         models.notification.NotificationRecord.delete_at.is_(None))
-
-    return query.count()
-
-def search_notification_records_for_user(
-    db: Session,
-    user_id: int,
-    start: int | None = None,
-    limit: int = 10,
-    keyword: str | None = None
-):
-    query = db.query(models.notification.NotificationRecord)
-
-    if keyword is not None and len(keyword) > 0:
-        query = query.filter(or_(models.notification.NotificationRecord.content.like(f"%{keyword}%"),
-                                 models.notification.NotificationRecord.title.like(f"%{keyword}%")))
-
-    query = query.filter(models.notification.NotificationRecord.user_id == user_id,
-                         models.notification.NotificationRecord.delete_at.is_(None))
-
-    query = query.order_by(models.notification.NotificationRecord.id.desc())
-
-    if start is not None:
-        query = query.filter(models.notification.NotificationRecord.id <= start)
-
-    query = query.limit(limit)
-    return query.all()
 
 def search_notification_sources_for_user(
     db: Session,
@@ -926,67 +867,6 @@ def count_all_notification_targets_for_user(
     query = query.order_by(models.notification.NotificationTarget.id.desc())
     return query.count()
 
-def read_all_notification_records_for_user(
-    db: Session,
-    user_id: int
-):
-    now = datetime.now(timezone.utc)
-    query = db.query(models.notification.NotificationRecord)
-    query = query.filter(models.notification.NotificationRecord.user_id == user_id)
-    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
-    db.flush()
-
-def read_notification_records_by_notification_record_ids_for_user(
-    db: Session,
-    user_id: int,
-    notification_record_ids: list[int]
-):
-    if not notification_record_ids:
-        return
-    now = datetime.now(timezone.utc)
-    query = db.query(models.notification.NotificationRecord)
-    query = query.filter(
-        models.notification.NotificationRecord.id.in_(notification_record_ids),
-        models.notification.NotificationRecord.user_id == user_id,
-        models.notification.NotificationRecord.delete_at.is_(None)
-    )
-    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
-    db.flush()
-
-def unread_notification_records_by_notification_record_ids_for_user(
-    db: Session,
-    user_id: int,
-    notification_record_ids: list[int]
-):
-    if not notification_record_ids:
-        return
-    now = datetime.now(timezone.utc)
-    query = db.query(models.notification.NotificationRecord)
-    query = query.filter(
-        models.notification.NotificationRecord.id.in_(notification_record_ids),
-        models.notification.NotificationRecord.user_id == user_id,
-        models.notification.NotificationRecord.delete_at.is_(None)
-    )
-    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
-    db.flush()
-
-def delete_notification_records_by_notification_record_ids(
-    db: Session,
-    user_id: int,
-    notification_record_ids: list[int]
-):
-    if not notification_record_ids:
-        return
-    now = datetime.now(timezone.utc)
-    query = db.query(models.notification.NotificationRecord)
-    query = query.filter(
-        models.notification.NotificationRecord.id.in_(notification_record_ids),
-        models.notification.NotificationRecord.user_id == user_id,
-        models.notification.NotificationRecord.delete_at.is_(None)
-    )
-    query.update({models.notification.NotificationRecord.delete_at: now}, synchronize_session=False)
-    db.flush()
-
 def delete_notification_tasks(
     db: Session,
     user_id: int,
@@ -998,7 +878,7 @@ def delete_notification_tasks(
     query = db.query(models.notification.NotificationTask)
     query = query.filter(
         models.notification.NotificationTask.id.in_(notification_task_ids),
-        models.notification.NotificationTask.user_id == user_id,
+        models.notification.NotificationTask.creator_id == user_id,
         models.notification.NotificationTask.delete_at.is_(None)
     )
     query.update({models.notification.NotificationTask.delete_at: now}, synchronize_session=False)
@@ -1015,7 +895,7 @@ def delete_notification_task_content_template_by_notification_task_id(
     query = query.join(models.notification.NotificationTask)
     query = query.filter(
         models.notification.NotificationTaskContentTemplate.notification_task_id == notification_task_id,
-        models.notification.NotificationTask.user_id == user_id,
+        models.notification.NotificationTask.creator_id == user_id,
         models.notification.NotificationTaskContentTemplate.delete_at.is_(None)
     )
     db_notification_task_content_template = query.one_or_none()
@@ -1033,10 +913,220 @@ def delete_notification_task_content_custom_by_notification_task_id(
     query = query.join(models.notification.NotificationTask)
     query = query.filter(
         models.notification.NotificationTaskContentCustom.notification_task_id == notification_task_id,
-        models.notification.NotificationTask.user_id == user_id,
+        models.notification.NotificationTask.creator_id == user_id,
         models.notification.NotificationTaskContentCustom.delete_at.is_(None)
     )
     db_notification_task_content_custom = query.one_or_none()
     if db_notification_task_content_custom is not None:
         db_notification_task_content_custom.delete_at = now
         db.flush()
+
+def search_notification_records_for_receiver(
+    db: Session,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None
+):
+    query = db.query(models.notification.NotificationRecord)
+    
+    query = query.join(
+        models.notification.NotificationTask,
+        models.notification.NotificationRecord.task_id == models.notification.NotificationTask.id
+    )
+    
+    query = query.join(
+        models.notification.NotificationTarget,
+        models.notification.NotificationTask.notification_target_id == models.notification.NotificationTarget.id
+    )
+
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(or_(models.notification.NotificationRecord.content.like(f"%{keyword}%"),
+                                 models.notification.NotificationRecord.title.like(f"%{keyword}%")))
+
+    query = query.filter(models.notification.NotificationRecord.delete_at.is_(None),
+                         models.notification.NotificationTarget.creator_id == user_id)
+
+    query = query.order_by(models.notification.NotificationRecord.id.desc())
+
+    if start is not None:
+        query = query.filter(models.notification.NotificationRecord.id <= start)
+
+    query = query.limit(limit)
+    return query.all()
+
+def search_next_notification_record_for_receiver(
+    db: Session,
+    user_id: int,
+    notification_record: models.notification.NotificationRecord,
+    keyword: str | None = None
+):
+    query = db.query(models.notification.NotificationRecord)
+    
+    query = query.join(
+        models.notification.NotificationTask,
+        models.notification.NotificationRecord.task_id == models.notification.NotificationTask.id
+    )
+    
+    query = query.join(
+        models.notification.NotificationTarget,
+        models.notification.NotificationTask.notification_target_id == models.notification.NotificationTarget.id
+    )
+
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.notification.NotificationRecord.content.like(f"%{keyword}%"))
+
+    query = query.filter(models.notification.NotificationRecord.delete_at.is_(None),
+                         models.notification.NotificationTarget.creator_id == user_id)
+
+    query = query.order_by(models.notification.NotificationRecord.id.desc())
+
+    query = query.filter(models.notification.NotificationRecord.id < notification_record.id)
+
+    return query.first()
+
+def count_notification_records_for_receiver(
+    db: Session,
+    user_id: int,
+    keyword: str | None = None
+):
+    query = db.query(models.notification.NotificationRecord)
+    
+    query = query.join(
+        models.notification.NotificationTask,
+        models.notification.NotificationRecord.task_id == models.notification.NotificationTask.id
+    )
+    
+    query = query.join(
+        models.notification.NotificationTarget,
+        models.notification.NotificationTask.notification_target_id == models.notification.NotificationTarget.id
+    )
+
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(or_(models.notification.NotificationRecord.content.like(f"%{keyword}%"),
+                                 models.notification.NotificationRecord.title.like(f"%{keyword}%")))
+
+    query = query.filter(models.notification.NotificationRecord.delete_at.is_(None),
+                         models.notification.NotificationTarget.creator_id == user_id)
+
+    return query.count()
+
+def read_all_notification_records_for_receiver(
+    db: Session,
+    receiver_id: int
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.notification.NotificationRecord)
+    
+    query = query.join(
+        models.notification.NotificationTask,
+        models.notification.NotificationRecord.task_id == models.notification.NotificationTask.id
+    )
+    
+    query = query.join(
+        models.notification.NotificationTarget,
+        models.notification.NotificationTask.notification_target_id == models.notification.NotificationTarget.id
+    )
+
+    query = query.filter(
+        models.notification.NotificationRecord.delete_at.is_(None),
+        models.notification.NotificationTarget.creator_id == receiver_id
+    )
+    
+    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
+    db.flush()
+
+def read_notification_records_by_notification_record_ids_for_receiver(
+    db: Session,
+    receiver_id: int,
+    notification_record_ids: list[int]
+):
+    if not notification_record_ids:
+        return
+
+    now = datetime.now(timezone.utc)
+    
+    query = db.query(models.notification.NotificationRecord)
+    
+    query = query.join(
+        models.notification.NotificationTask,
+        models.notification.NotificationRecord.task_id == models.notification.NotificationTask.id
+    )
+    
+    query = query.join(
+        models.notification.NotificationTarget,
+        models.notification.NotificationTask.notification_target_id == models.notification.NotificationTarget.id
+    )
+    
+    query = query.filter(
+        models.notification.NotificationRecord.id.in_(notification_record_ids),
+        models.notification.NotificationRecord.delete_at.is_(None),
+        models.notification.NotificationTarget.creator_id == receiver_id
+    )
+    
+    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
+
+    db.flush()
+
+def unread_notification_records_by_notification_record_ids_for_user(
+    db: Session,
+    user_id: int,
+    notification_record_ids: list[int]
+):
+    if not notification_record_ids:
+        return
+
+    now = datetime.now(timezone.utc)
+    
+    query = db.query(models.notification.NotificationRecord)
+    
+    query = query.join(
+        models.notification.NotificationTask,
+        models.notification.NotificationRecord.task_id == models.notification.NotificationTask.id
+    )
+    
+    query = query.join(
+        models.notification.NotificationTarget,
+        models.notification.NotificationTask.notification_target_id == models.notification.NotificationTarget.id
+    )
+    
+    query = query.filter(
+        models.notification.NotificationRecord.id.in_(notification_record_ids),
+        models.notification.NotificationRecord.delete_at.is_(None),
+        models.notification.NotificationTarget.creator_id == user_id
+    )
+    
+    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
+    
+    db.flush()
+
+def delete_notification_records_by_notification_record_ids(
+    db: Session,
+    user_id: int,
+    notification_record_ids: list[int]
+):
+    if not notification_record_ids:
+        return
+    
+    now = datetime.now(timezone.utc)
+    
+    query = db.query(models.notification.NotificationRecord)
+    
+    query = query.join(
+        models.notification.NotificationTask,
+        models.notification.NotificationRecord.task_id == models.notification.NotificationTask.id
+    )
+    
+    query = query.join(
+        models.notification.NotificationTarget,
+        models.notification.NotificationTask.notification_target_id == models.notification.NotificationTarget.id
+    )
+    query = query.filter(
+        models.notification.NotificationRecord.id.in_(notification_record_ids),
+        models.notification.NotificationRecord.delete_at.is_(None),
+        models.notification.NotificationTarget.creator_id == user_id
+    )
+    
+    query.update({models.notification.NotificationRecord.delete_at: now}, synchronize_session=False)
+    
+    db.flush()

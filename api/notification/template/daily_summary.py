@@ -25,12 +25,17 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
     ):
         if params is None:
             raise Exception("params is None")
-        db = session_scope()
-        user_id = cast(int, params.get('user_id'))
+        
+        receiver_id = cast(int, params.get('receiver_id'))
         date = cast(date_type, params.get('date'))
+        if receiver_id is None or date is None:
+            raise Exception("params is not valid")
+        
+        db = session_scope()
+         
         db_user = crud.user.get_user_by_id(
             db=db,
-            user_id=user_id
+            user_id=receiver_id
         )
         if db_user is None:
             raise Exception("The user who is about to send notification is not found")
@@ -39,7 +44,7 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
 
         db_section = crud.section.get_section_by_user_and_date(
             db=db,
-            user_id=user_id,
+            user_id=receiver_id,
             date=date
         )
         if db_section is None or db_section.md_file_name is None:
@@ -49,7 +54,7 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
             )
 
         remote_file_service = await FileSystemProxy.create(
-            user_id=user_id
+            user_id=receiver_id
         )
         markdown_content = await remote_file_service.get_file_content_by_file_path(
             file_path=db_section.md_file_name

@@ -1,13 +1,14 @@
+from typing import cast
+
 import crud
 import schemas
-from typing import cast
 from data.sql.base import session_scope
 from enums.section import UserSectionRole
 from protocol.notification_template import NotificationTemplate
 from common.file import get_remote_file_signed_url
 
 class RemovedFromSectionNotificationTemplate(NotificationTemplate):
-    
+
     def __init__(
         self
     ):
@@ -18,18 +19,24 @@ class RemovedFromSectionNotificationTemplate(NotificationTemplate):
             description="This is a user removed by the section participants notification template",
             description_zh="这是一个你被移出专栏的通知模板"
         )
-        
+
     async def generate(
         self,
         params: dict | None
     ):
         if params is None:
             raise Exception("params is None")
+        
         user_id = cast(int, params.get('user_id'))
         section_id = cast(int, params.get('section_id'))
+        
+        if user_id is None or section_id is None:
+            raise Exception("user_id or section_id is None")
+        
         db = session_scope()
+        
         db_section = crud.section.get_section_by_section_id(
-            db=db, 
+            db=db,
             section_id=section_id
         )
         if not db_section:
