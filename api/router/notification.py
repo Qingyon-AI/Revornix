@@ -1015,8 +1015,19 @@ def search_notification_record(
         user_id=user.id,
         keyword=search_notification_record_request.keyword
     )
+    def get_notificaiton_record_info(notification_record: models.notification.NotificationRecord):
+        db_notification_task = crud.notification.get_notification_task_by_notification_task_id(
+            db=db,
+            notification_task_id=notification_record.task_id
+        )
+        if db_notification_task is None:
+            raise schemas.error.CustomException(message="notification task not found", code=404)
+        return schemas.notification.NotificationRecord.model_validate({
+            **notification_record.__dict__,
+            "creator": db_notification_task.creator
+        })
     notification_records = [
-        schemas.notification.NotificationRecord.model_validate(db_notification_record)
+        get_notificaiton_record_info(db_notification_record)
         for db_notification_record in db_notification_records
     ]
     return schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationRecord](
