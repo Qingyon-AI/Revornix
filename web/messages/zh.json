@@ -458,7 +458,7 @@
     "search_note": "注意：向量化搜索结果可能不准确，请根据实际需求进行筛选",
     "notification_all_marked_read": "一键已读",
     "notification_all_marked_read_done": "已全部标记为已读",
-    "notification_system": "系统通知",
+    "notification_system": "通知",
     "notification_link": "链接",
     "notification_empty": "暂无通知",
     "notification_unread": "未读",
