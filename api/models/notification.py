@@ -120,7 +120,7 @@ class NotificationTask(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     notification_source_id: Mapped[int] = mapped_column(ForeignKey("notification_source.id"), index=True, nullable=False)
     notification_target_id: Mapped[int] = mapped_column(ForeignKey("notification_target.id"), index=True, nullable=False)
     content_type: Mapped[int] = mapped_column(Integer, index=True, comment='0: custom, 1: template', nullable=False)
@@ -129,6 +129,8 @@ class NotificationTask(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    
+    creator: Mapped[User] = relationship("User", backref="notification_tasks")
 
 
 class NotificationTaskTriggerScheduler(Base):
@@ -188,8 +190,7 @@ class NotificationRecord(Base):
     __tablename__ = "notification_record"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
-    creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    task_id: Mapped[int] = mapped_column(ForeignKey("notification_task.id"), index=True, nullable=False)
     cover: Mapped[str | None] = mapped_column(String(2000))
     link: Mapped[str | None] = mapped_column(String(2000))
     title: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
@@ -199,4 +200,4 @@ class NotificationRecord(Base):
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     
-    creator: Mapped["User"] = relationship("User", backref="created_notification_records")
+    notification_task: Mapped[NotificationTask] = relationship("NotificationTask", backref="records")

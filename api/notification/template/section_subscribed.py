@@ -27,9 +27,14 @@ class SectionSubscribedNotificationTemplate(NotificationTemplate):
     ):
         if params is None:
             raise Exception("params is None")
+        
         user_id = cast(int, params.get('user_id'))
         section_id = cast(int, params.get('section_id'))
+        if user_id is None or section_id is None:
+            raise Exception("user_id or section_id is None")
+        
         db = session_scope()
+        
         db_section = crud.section.get_section_by_section_id(
             db=db,
             section_id=section_id

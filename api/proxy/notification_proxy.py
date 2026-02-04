@@ -1,6 +1,5 @@
 import crud
 import json
-import schemas
 from common.logger import exception_logger
 from data.sql.base import session_scope
 from enums.notification import NotificationSourceProvided, NotificationTemplate

@@ -296,6 +296,7 @@ class NotificationRecord(BaseModel):
     read_at: datetime | None
     link: str | None
     cover: str | None
+    creator: UserPublicInfo
     create_time: datetime
     update_time: datetime | None
     @field_serializer("read_at")
@@ -330,6 +331,7 @@ class NotificationTriggerScheduler(BaseModel):
 
 class NotificationTask(BaseModel):
     id: int
+    creator_id: int
     title: str
     enable: bool
     content_type: int

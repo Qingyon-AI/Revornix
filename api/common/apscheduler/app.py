@@ -204,7 +204,6 @@ async def fetch_all_rss_sources_and_update():
         db.close()
 
 async def send_notification_scheduler(
-    creator_id: int,
     receiver_id: int,
     notification_task_id: int
 ):
@@ -232,7 +231,6 @@ async def send_notification_scheduler(
             generate_res = await NotificationProxy.create_message_using_template(
                 template_id=db_notification_task.notification_template_id,
                 params={
-                    "creator_id": creator_id,
                     "receiver_id": receiver_id,
                     "date": datetime.now().date(),
                 }
@@ -250,7 +248,7 @@ async def send_notification_scheduler(
             raise schemas.error.CustomException(message="notification source not found", code=500)
         
         notification_tool = NotificationProxy.create_notification_tool(
-            user_id=user_id,
+            user_id=db_notification_task.creator_id,
             notification_source_id=db_notification_task.notification_source_id,
             notification_target_id=db_notification_task.notification_target_id
         )
@@ -264,7 +262,7 @@ async def send_notification_scheduler(
         )
         crud.notification.create_notification_record(
             db=db,
-            user_id=user_id,
+            task_id=notification_task_id,
             title=title,
             content=content,
             link=link,
@@ -296,11 +294,17 @@ for db_notification_task in db_notification_tasks:
     )
     if db_notification_trigger_scheduler is None:
         continue
+    db_notification_target = crud.notification.get_notification_target_by_id(
+        db=db,
+        notification_target_id=db_notification_task.notification_target_id
+    )
+    if db_notification_target is None:
+        continue
     scheduler.add_job(
         func=send_notification_scheduler,
         trigger=CronTrigger.from_crontab(db_notification_trigger_scheduler.cron_expr),
         args=[
-            db_notification_task.user_id,
+            db_notification_target.creator_id,
             db_notification_task.id
         ],
         id=str(db_notification_task.id),
