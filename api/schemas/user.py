@@ -214,5 +214,6 @@ class UserPublicInfo(BaseModel):
     is_followed: bool | None = None
     fans: int | None = None
     follows: int | None = None
+
     class Config:
         from_attributes = True

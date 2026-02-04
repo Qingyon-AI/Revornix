@@ -23,7 +23,7 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from '@/components/ui/sidebar';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'nextjs-toploader/app';
 import { toast } from 'sonner';
 import { useUserContext } from '@/provider/user-provider';
@@ -45,6 +45,9 @@ export function NavUser() {
 	const { isMobile } = useSidebar();
 	const { mainUserInfo, logOut, paySystemUserInfo } = useUserContext();
 
+	const [isLoggingOut, setIsLoggingOut] = useState(false);
+	const logoutOnceRef = useRef(false);
+
 	/** -----------------------------
 	 * host（避免 render 阶段直接访问 window）
 	 * ----------------------------- */
@@ -57,9 +60,8 @@ export function NavUser() {
 	/** -----------------------------
 	 * WebSocket token
 	 * ----------------------------- */
-	const accessToken = useMemo(() => {
-		return Cookies.get('access_token');
-	}, []);
+	// Read cookie on render; logout/context changes will re-render and pick up the latest value.
+	const accessToken = Cookies.get('access_token');
 
 	const wsUrl = useMemo(() => {
 		return accessToken
@@ -128,22 +130,43 @@ export function NavUser() {
 	 * WebSocket lifecycle
 	 * ----------------------------- */
 	useEffect(() => {
-		if (mainUserInfo && wsUrl) {
+		if (!isLoggingOut && mainUserInfo && wsUrl) {
 			notificationWebsocket.connect();
 		}
 
 		return () => {
 			notificationWebsocket.disconnect();
 		};
-	}, [mainUserInfo, wsUrl]);
+	}, [mainUserInfo, wsUrl, isLoggingOut]);
 
 	/** -----------------------------
 	 * Logout
 	 * ----------------------------- */
 	const onLogout = async () => {
-		notificationWebsocket.disconnect();
-		logOut();
-		router.push('/login');
+		if (logoutOnceRef.current) return;
+		logoutOnceRef.current = true;
+		setIsLoggingOut(true);
+
+		try {
+			// 1) Stop realtime connections first
+			notificationWebsocket.disconnect();
+
+			// 2) Stop in-flight requests before we clear caches
+			await queryClient.cancelQueries();
+
+			// 3) Clear user state / tokens (if logOut is async, await it)
+			await Promise.resolve(logOut());
+
+			// 4) Clear cached user data to avoid flashing old UI
+			queryClient.clear();
+
+			// 5) Replace (not push) so back button won't return to authed pages
+			router.replace('/login');
+		} finally {
+			// allow retry if something throws
+			logoutOnceRef.current = false;
+			setIsLoggingOut(false);
+		}
 	};
 
 	if (!mainUserInfo) return null;

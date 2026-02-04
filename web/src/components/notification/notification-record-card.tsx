@@ -23,6 +23,7 @@ import { Separator } from '../ui/separator';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
+import { replacePath } from '@/lib/utils';
 
 const NotificationRecordCard = ({
 	notification,
@@ -97,7 +98,7 @@ const NotificationRecordCard = ({
 					<div className='flex-1 overflow-auto flex flex-col gap-2'>
 						{notification.cover && (
 							<img
-								src={notification.cover}
+								src={replacePath(notification.cover, notification.creator.id)}
 								alt='notification cover'
 								className='rounded aspect-video w-full object-cover'
 							/>
@@ -183,7 +184,7 @@ const NotificationRecordCard = ({
 						</div>
 						{notification.cover && (
 							<img
-								src={notification.cover}
+								src={replacePath(notification.cover, notification.creator.id)}
 								alt='notification cover'
 								className='rounded aspect-video w-40 object-cover my-1'
 							/>
