@@ -115,7 +115,7 @@ const NotificationRecordCard = ({
 						</Link>
 					)}
 					<Separator />
-					<DialogFooter className='flex !justify-between items-center'>
+					<DialogFooter className='flex justify-between! items-center'>
 						<div className='text-muted-foreground text-xs'>
 							{format(notification.create_time as Date, 'yyyy-MM-dd HH:mm:ss')}
 						</div>

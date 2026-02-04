@@ -332,7 +332,7 @@ class NotificationTask(BaseModel):
     id: int
     title: str
     enable: bool
-    notification_content_type: int
+    content_type: int
     trigger_type: int
     trigger_event: NotificationTriggerEvent | None = None
     trigger_scheduler: NotificationTriggerScheduler | None = None
@@ -364,7 +364,7 @@ class DeleteNotificationTaskRequest(BaseModel):
 class UpdateNotificationTaskRequest(BaseModel):
     notification_task_id: int
     title: str | None = None
-    notification_content_type: int | None = None
+    content_type: int | None = None
     enable: bool | None = None
     notification_template_id: int | None = None
     trigger_type: int | None = None
@@ -374,8 +374,8 @@ class UpdateNotificationTaskRequest(BaseModel):
     notification_content: str | None = None
     notification_link: str | None = None
     notification_cover: str | None = None
-    user_notification_source_id: int | None = None
-    user_notification_target_id: int | None = None
+    notification_source_id: int | None = None
+    notification_target_id: int | None = None
 
 class AddNotificationTaskRequest(BaseModel):
     notification_source_id: int
@@ -405,3 +405,9 @@ class NotificationTemplate(BaseModel):
 
 class NotificationTemplatesResponse(BaseModel):
     data: list[NotificationTemplate]
+
+class NotificationSourcesUsableResponse(BaseModel):
+    data: list[NotificationSource]
+
+class NotificationTargetsUsableResponse(BaseModel):
+    data: list[NotificationTarget]

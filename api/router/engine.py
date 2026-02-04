@@ -114,7 +114,7 @@ def search_usable_engine(
     """搜索当前所有我配置好的引擎 我自己的和我fork的
     """
     data = []
-    db_engines = crud.engine.get_engines_for_user(
+    db_engines = crud.engine.get_usable_engines_for_user(
         db=db,
         user_id=user.id,
         keyword=engine_search_request.keyword,

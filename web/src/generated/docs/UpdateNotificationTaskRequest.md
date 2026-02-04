@@ -8,7 +8,7 @@ Name | Type
 ------------ | -------------
 `notification_task_id` | number
 `title` | string
-`notification_content_type` | number
+`content_type` | number
 `enable` | boolean
 `notification_template_id` | number
 `trigger_type` | number
@@ -18,8 +18,8 @@ Name | Type
 `notification_content` | string
 `notification_link` | string
 `notification_cover` | string
-`user_notification_source_id` | number
-`user_notification_target_id` | number
+`notification_source_id` | number
+`notification_target_id` | number
 
 ## Example
 
@@ -30,7 +30,7 @@ import type { UpdateNotificationTaskRequest } from ''
 const example = {
   "notification_task_id": null,
   "title": null,
-  "notification_content_type": null,
+  "content_type": null,
   "enable": null,
   "notification_template_id": null,
   "trigger_type": null,
@@ -40,8 +40,8 @@ const example = {
   "notification_content": null,
   "notification_link": null,
   "notification_cover": null,
-  "user_notification_source_id": null,
-  "user_notification_target_id": null,
+  "notification_source_id": null,
+  "notification_target_id": null,
 } satisfies UpdateNotificationTaskRequest
 
 console.log(example)

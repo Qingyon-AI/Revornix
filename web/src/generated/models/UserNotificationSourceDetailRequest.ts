@@ -24,14 +24,14 @@ export interface UserNotificationSourceDetailRequest {
      * @type {number}
      * @memberof UserNotificationSourceDetailRequest
      */
-    user_notification_source_id: number;
+    notification_source_id: number;
 }
 
 /**
  * Check if a given object implements the UserNotificationSourceDetailRequest interface.
  */
 export function instanceOfUserNotificationSourceDetailRequest(value: object): value is UserNotificationSourceDetailRequest {
-    if (!('user_notification_source_id' in value) || value['user_notification_source_id'] === undefined) return false;
+    if (!('notification_source_id' in value) || value['notification_source_id'] === undefined) return false;
     return true;
 }
 
@@ -45,7 +45,7 @@ export function UserNotificationSourceDetailRequestFromJSONTyped(json: any, igno
     }
     return {
         
-        'user_notification_source_id': json['user_notification_source_id'],
+        'notification_source_id': json['notification_source_id'],
     };
 }
 
@@ -60,7 +60,7 @@ export function UserNotificationSourceDetailRequestToJSONTyped(value?: UserNotif
 
     return {
         
-        'user_notification_source_id': value['user_notification_source_id'],
+        'notification_source_id': value['notification_source_id'],
     };
 }
 

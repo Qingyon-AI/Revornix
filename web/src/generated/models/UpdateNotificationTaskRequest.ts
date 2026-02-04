@@ -36,7 +36,7 @@ export interface UpdateNotificationTaskRequest {
      * @type {number}
      * @memberof UpdateNotificationTaskRequest
      */
-    notification_content_type?: number | null;
+    content_type?: number | null;
     /**
      * 
      * @type {boolean}
@@ -96,13 +96,13 @@ export interface UpdateNotificationTaskRequest {
      * @type {number}
      * @memberof UpdateNotificationTaskRequest
      */
-    user_notification_source_id?: number | null;
+    notification_source_id?: number | null;
     /**
      * 
      * @type {number}
      * @memberof UpdateNotificationTaskRequest
      */
-    user_notification_target_id?: number | null;
+    notification_target_id?: number | null;
 }
 
 /**
@@ -125,7 +125,7 @@ export function UpdateNotificationTaskRequestFromJSONTyped(json: any, ignoreDisc
         
         'notification_task_id': json['notification_task_id'],
         'title': json['title'] == null ? undefined : json['title'],
-        'notification_content_type': json['notification_content_type'] == null ? undefined : json['notification_content_type'],
+        'content_type': json['content_type'] == null ? undefined : json['content_type'],
         'enable': json['enable'] == null ? undefined : json['enable'],
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
         'trigger_type': json['trigger_type'] == null ? undefined : json['trigger_type'],
@@ -135,8 +135,8 @@ export function UpdateNotificationTaskRequestFromJSONTyped(json: any, ignoreDisc
         'notification_content': json['notification_content'] == null ? undefined : json['notification_content'],
         'notification_link': json['notification_link'] == null ? undefined : json['notification_link'],
         'notification_cover': json['notification_cover'] == null ? undefined : json['notification_cover'],
-        'user_notification_source_id': json['user_notification_source_id'] == null ? undefined : json['user_notification_source_id'],
-        'user_notification_target_id': json['user_notification_target_id'] == null ? undefined : json['user_notification_target_id'],
+        'notification_source_id': json['notification_source_id'] == null ? undefined : json['notification_source_id'],
+        'notification_target_id': json['notification_target_id'] == null ? undefined : json['notification_target_id'],
     };
 }
 
@@ -153,7 +153,7 @@ export function UpdateNotificationTaskRequestToJSONTyped(value?: UpdateNotificat
         
         'notification_task_id': value['notification_task_id'],
         'title': value['title'],
-        'notification_content_type': value['notification_content_type'],
+        'content_type': value['content_type'],
         'enable': value['enable'],
         'notification_template_id': value['notification_template_id'],
         'trigger_type': value['trigger_type'],
@@ -163,8 +163,8 @@ export function UpdateNotificationTaskRequestToJSONTyped(value?: UpdateNotificat
         'notification_content': value['notification_content'],
         'notification_link': value['notification_link'],
         'notification_cover': value['notification_cover'],
-        'user_notification_source_id': value['user_notification_source_id'],
-        'user_notification_target_id': value['user_notification_target_id'],
+        'notification_source_id': value['notification_source_id'],
+        'notification_target_id': value['notification_target_id'],
     };
 }
 

@@ -9,7 +9,7 @@ Name | Type
 `id` | number
 `title` | string
 `enable` | boolean
-`notification_content_type` | number
+`content_type` | number
 `trigger_type` | number
 `trigger_event` | [NotificationTriggerEvent](NotificationTriggerEvent.md)
 `trigger_scheduler` | [NotificationTriggerScheduler](NotificationTriggerScheduler.md)
@@ -33,7 +33,7 @@ const example = {
   "id": null,
   "title": null,
   "enable": null,
-  "notification_content_type": null,
+  "content_type": null,
   "trigger_type": null,
   "trigger_event": null,
   "trigger_scheduler": null,

@@ -204,7 +204,8 @@ async def fetch_all_rss_sources_and_update():
         db.close()
 
 async def send_notification_scheduler(
-    user_id:int,
+    creator_id: int,
+    receiver_id: int,
     notification_task_id: int
 ):
     db = session_scope()
@@ -216,7 +217,7 @@ async def send_notification_scheduler(
         if db_notification_task is None:
             raise schemas.error.CustomException(message="notification task not found", code=500)
 
-        if db_notification_task.notification_content_type == NotificationContentType.CUSTOM:
+        if db_notification_task.content_type == NotificationContentType.CUSTOM:
             db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(
                 db=db,
                 notification_task_id=notification_task_id
@@ -225,16 +226,21 @@ async def send_notification_scheduler(
                 raise schemas.error.CustomException(message="notification content custom not found", code=500)
             title = db_notification_content_custom.title
             content = db_notification_content_custom.content
-        elif db_notification_task.notification_content_type == NotificationContentType.TEMPLATE:
+            link = db_notification_content_custom.link
+            cover = db_notification_content_custom.cover
+        elif db_notification_task.content_type == NotificationContentType.TEMPLATE:
             generate_res = await NotificationProxy.create_message_using_template(
                 template_id=db_notification_task.notification_template_id,
                 params={
-                    "user_id": user_id,
+                    "creator_id": creator_id,
+                    "receiver_id": receiver_id,
                     "date": datetime.now().date(),
                 }
             )
             title = generate_res.title
             content = generate_res.content
+            link = generate_res.link
+            cover = generate_res.cover
 
         db_notification_source = crud.notification.get_notification_source_by_id(
             db=db,
@@ -243,7 +249,6 @@ async def send_notification_scheduler(
         if db_notification_source is None:
             raise schemas.error.CustomException(message="notification source not found", code=500)
         
-        send_res = None
         notification_tool = NotificationProxy.create_notification_tool(
             user_id=user_id,
             notification_source_id=db_notification_task.notification_source_id,
@@ -251,20 +256,21 @@ async def send_notification_scheduler(
         )
         if content:
             content = markdown.markdown(content)
-        send_res = await notification_tool.send_notification(
+        await notification_tool.send_notification(
             title=title,
-            content=content
+            content=content,
+            link=link,
+            cover=cover
         )
-        if not send_res:
-            raise schemas.error.CustomException(message="send notification failed", code=500)
-        else:
-            crud.notification.create_notification_record(
-                db=db,
-                user_id=user_id,
-                title=title,
-                content=content
-            )
-            db.commit()
+        crud.notification.create_notification_record(
+            db=db,
+            user_id=user_id,
+            title=title,
+            content=content,
+            link=link,
+            cover=cover
+        )
+        db.commit()
     except Exception:
         db.rollback()
         raise

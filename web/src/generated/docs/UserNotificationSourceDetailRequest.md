@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`user_notification_source_id` | number
+`notification_source_id` | number
 
 ## Example
 
@@ -15,7 +15,7 @@ import type { UserNotificationSourceDetailRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "user_notification_source_id": null,
+  "notification_source_id": null,
 } satisfies UserNotificationSourceDetailRequest
 
 console.log(example)

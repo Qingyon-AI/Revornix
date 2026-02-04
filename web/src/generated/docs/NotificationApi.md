@@ -13,19 +13,21 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**deleteNotificationTaskNotificationTaskDeletePost**](NotificationApi.md#deletenotificationtasknotificationtaskdeletepost) | **POST** /notification/task/delete | Delete Notification Task |
 | [**forkNotificationSourceNotificationSourceForkPost**](NotificationApi.md#forknotificationsourcenotificationsourceforkpost) | **POST** /notification/source/fork | Fork Notification Source |
 | [**forkNotificationTargetNotificationTargetForkPost**](NotificationApi.md#forknotificationtargetnotificationtargetforkpost) | **POST** /notification/target/fork | Fork Notification Target |
-| [**getMineNotificationTargetNotificationTargetMinePost**](NotificationApi.md#getminenotificationtargetnotificationtargetminepost) | **POST** /notification/target/mine | Get Mine Notification Target |
 | [**getMineNotificationTaskNotificationTaskMinePost**](NotificationApi.md#getminenotificationtasknotificationtaskminepost) | **POST** /notification/task/mine | Get Mine Notification Task |
 | [**getNotificationDetailNotificationSourceDetailPost**](NotificationApi.md#getnotificationdetailnotificationsourcedetailpost) | **POST** /notification/source/detail | Get Notification Detail |
 | [**getNotificationRecordDetailNotificationRecordDetailPost**](NotificationApi.md#getnotificationrecorddetailnotificationrecorddetailpost) | **POST** /notification/record/detail | Get Notification Record Detail |
 | [**getNotificationSourceRelatedTaskNotificationSourceTaskPost**](NotificationApi.md#getnotificationsourcerelatedtasknotificationsourcetaskpost) | **POST** /notification/source/task | Get Notification Source Related Task |
-| [**getNotificationSourcesNotificationSourceMinePost**](NotificationApi.md#getnotificationsourcesnotificationsourceminepost) | **POST** /notification/source/mine | Get Notification Sources |
+| [**getNotificationSourcesNotificationSourceCommunityPost**](NotificationApi.md#getnotificationsourcesnotificationsourcecommunitypost) | **POST** /notification/source/community | Get Notification Sources |
 | [**getNotificationTargetDetailNotificationTargetDetailPost**](NotificationApi.md#getnotificationtargetdetailnotificationtargetdetailpost) | **POST** /notification/target/detail | Get Notification Target Detail |
+| [**getNotificationTargetNotificationTargetCommunityPost**](NotificationApi.md#getnotificationtargetnotificationtargetcommunitypost) | **POST** /notification/target/community | Get Notification Target |
 | [**getNotificationTargetRelatedTaskNotificationTargetTaskPost**](NotificationApi.md#getnotificationtargetrelatedtasknotificationtargettaskpost) | **POST** /notification/target/task | Get Notification Target Related Task |
 | [**getNotificationTaskNotificationTaskDetailPost**](NotificationApi.md#getnotificationtasknotificationtaskdetailpost) | **POST** /notification/task/detail | Get Notification Task |
 | [**getNotificationTemplatesNotificationTemplateAllPost**](NotificationApi.md#getnotificationtemplatesnotificationtemplateallpost) | **POST** /notification/template/all | Get Notification Templates |
 | [**getProvidedNotificationSourceNotificationSourceProvidedPost**](NotificationApi.md#getprovidednotificationsourcenotificationsourceprovidedpost) | **POST** /notification/source/provided | Get Provided Notification Source |
 | [**getProvidedNotificationTargetNotificationTargetProvidedPost**](NotificationApi.md#getprovidednotificationtargetnotificationtargetprovidedpost) | **POST** /notification/target/provided | Get Provided Notification Target |
 | [**getTriggerEventsNotificationTriggerEventAllPost**](NotificationApi.md#gettriggereventsnotificationtriggereventallpost) | **POST** /notification/trigger-event/all | Get Trigger Events |
+| [**getUsableNotificationSourceNotificationSourceUsablePost**](NotificationApi.md#getusablenotificationsourcenotificationsourceusablepost) | **POST** /notification/source/usable | Get Usable Notification Source |
+| [**getUsableNotificationTargetNotificationTargetUsablePost**](NotificationApi.md#getusablenotificationtargetnotificationtargetusablepost) | **POST** /notification/target/usable | Get Usable Notification Target |
 | [**readAllNotificationRecordNotificationRecordReadAllPost**](NotificationApi.md#readallnotificationrecordnotificationrecordreadallpost) | **POST** /notification/record/read-all | Read All Notification Record |
 | [**readNotificationRecordNotificationRecordReadPost**](NotificationApi.md#readnotificationrecordnotificationrecordreadpost) | **POST** /notification/record/read | Read Notification Record |
 | [**searchNotificationRecordNotificationRecordSearchPost**](NotificationApi.md#searchnotificationrecordnotificationrecordsearchpost) | **POST** /notification/record/search | Search Notification Record |
@@ -656,75 +658,6 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## getMineNotificationTargetNotificationTargetMinePost
-
-> InifiniteScrollPagnitionNotificationTarget getMineNotificationTargetNotificationTargetMinePost(searchNotificationTargetRequest, authorization)
-
-Get Mine Notification Target
-
-### Example
-
-```ts
-import {
-  Configuration,
-  NotificationApi,
-} from '';
-import type { GetMineNotificationTargetNotificationTargetMinePostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new NotificationApi();
-
-  const body = {
-    // SearchNotificationTargetRequest
-    searchNotificationTargetRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-  } satisfies GetMineNotificationTargetNotificationTargetMinePostRequest;
-
-  try {
-    const data = await api.getMineNotificationTargetNotificationTargetMinePost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **searchNotificationTargetRequest** | [SearchNotificationTargetRequest](SearchNotificationTargetRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**InifiniteScrollPagnitionNotificationTarget**](InifiniteScrollPagnitionNotificationTarget.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
 ## getMineNotificationTaskNotificationTaskMinePost
 
 > PaginationNotificationTask getMineNotificationTaskNotificationTaskMinePost(pageableRequest, authorization)
@@ -1001,9 +934,9 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## getNotificationSourcesNotificationSourceMinePost
+## getNotificationSourcesNotificationSourceCommunityPost
 
-> InifiniteScrollPagnitionNotificationSource getNotificationSourcesNotificationSourceMinePost(searchNotificationSourceRequest, authorization)
+> InifiniteScrollPagnitionNotificationSource getNotificationSourcesNotificationSourceCommunityPost(searchNotificationSourceRequest, authorization)
 
 Get Notification Sources
 
@@ -1014,7 +947,7 @@ import {
   Configuration,
   NotificationApi,
 } from '';
-import type { GetNotificationSourcesNotificationSourceMinePostRequest } from '';
+import type { GetNotificationSourcesNotificationSourceCommunityPostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -1025,10 +958,10 @@ async function example() {
     searchNotificationSourceRequest: ...,
     // string (optional)
     authorization: authorization_example,
-  } satisfies GetNotificationSourcesNotificationSourceMinePostRequest;
+  } satisfies GetNotificationSourcesNotificationSourceCommunityPostRequest;
 
   try {
-    const data = await api.getNotificationSourcesNotificationSourceMinePost(body);
+    const data = await api.getNotificationSourcesNotificationSourceCommunityPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -1119,6 +1052,75 @@ example().catch(console.error);
 ### Return type
 
 [**NotificationTargetDetail**](NotificationTargetDetail.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getNotificationTargetNotificationTargetCommunityPost
+
+> InifiniteScrollPagnitionNotificationTarget getNotificationTargetNotificationTargetCommunityPost(searchNotificationTargetRequest, authorization)
+
+Get Notification Target
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { GetNotificationTargetNotificationTargetCommunityPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // SearchNotificationTargetRequest
+    searchNotificationTargetRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies GetNotificationTargetNotificationTargetCommunityPostRequest;
+
+  try {
+    const data = await api.getNotificationTargetNotificationTargetCommunityPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **searchNotificationTargetRequest** | [SearchNotificationTargetRequest](SearchNotificationTargetRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**InifiniteScrollPagnitionNotificationTarget**](InifiniteScrollPagnitionNotificationTarget.md)
 
 ### Authorization
 
@@ -1521,6 +1523,138 @@ example().catch(console.error);
 ### Return type
 
 [**TriggerEventsResponse**](TriggerEventsResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getUsableNotificationSourceNotificationSourceUsablePost
+
+> NotificationSourcesUsableResponse getUsableNotificationSourceNotificationSourceUsablePost(authorization)
+
+Get Usable Notification Source
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { GetUsableNotificationSourceNotificationSourceUsablePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies GetUsableNotificationSourceNotificationSourceUsablePostRequest;
+
+  try {
+    const data = await api.getUsableNotificationSourceNotificationSourceUsablePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NotificationSourcesUsableResponse**](NotificationSourcesUsableResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getUsableNotificationTargetNotificationTargetUsablePost
+
+> NotificationTargetsUsableResponse getUsableNotificationTargetNotificationTargetUsablePost(authorization)
+
+Get Usable Notification Target
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { GetUsableNotificationTargetNotificationTargetUsablePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies GetUsableNotificationTargetNotificationTargetUsablePostRequest;
+
+  try {
+    const data = await api.getUsableNotificationTargetNotificationTargetUsablePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NotificationTargetsUsableResponse**](NotificationTargetsUsableResponse.md)
 
 ### Authorization
 

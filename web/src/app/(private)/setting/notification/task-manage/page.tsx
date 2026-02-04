@@ -71,7 +71,7 @@ const NotificationTaskManagePage = () => {
 			});
 
 			const previousData = queryClient.getQueryData<PaginationNotificationTask>(
-				['notification-task', pageNum, pageSize]
+				['notification-task', pageNum, pageSize],
 			);
 
 			// 直接进行乐观更新
@@ -84,10 +84,10 @@ const NotificationTaskManagePage = () => {
 						elements: old.elements.map((item) =>
 							item.id === variables.notification_task_id
 								? { ...item, enable: variables.enable! }
-								: item
+								: item,
 						),
 					};
-				}
+				},
 			);
 
 			return { previousData };
@@ -98,7 +98,7 @@ const NotificationTaskManagePage = () => {
 			if (context?.previousData) {
 				queryClient.setQueryData(
 					['notification-task', pageNum, pageSize],
-					context.previousData
+					context.previousData,
 				);
 			}
 		},
@@ -129,7 +129,7 @@ const NotificationTaskManagePage = () => {
 			},
 		},
 		{
-			accessorKey: 'user_notification_source',
+			accessorKey: 'notification_source',
 			header: () => {
 				return (
 					<div className='w-full'>
@@ -138,17 +138,17 @@ const NotificationTaskManagePage = () => {
 				);
 			},
 			cell: ({ row }) => {
-				const user_notification_source: NotificationSource | undefined =
-					row.getValue('user_notification_source');
+				const notification_source: NotificationSource | undefined =
+					row.getValue('notification_source');
 				return (
 					<div className='flex flex-row gap-2 items-center'>
-						{user_notification_source ? user_notification_source.title : 'N/A'}
+						{notification_source ? notification_source.title : 'N/A'}
 					</div>
 				);
 			},
 		},
 		{
-			accessorKey: 'user_notification_target',
+			accessorKey: 'notification_target',
 			header: () => {
 				return (
 					<div className='w-full'>
@@ -157,11 +157,11 @@ const NotificationTaskManagePage = () => {
 				);
 			},
 			cell: ({ row }) => {
-				const user_notification_target: NotificationTarget | undefined =
-					row.getValue('user_notification_target');
+				const notification_target: NotificationTarget | undefined =
+					row.getValue('notification_target');
 				return (
 					<div className='flex flex-row gap-2 items-center'>
-						{user_notification_target ? user_notification_target.title : 'N/A'}
+						{notification_target ? notification_target.title : 'N/A'}
 					</div>
 				);
 			},
@@ -184,7 +184,7 @@ const NotificationTaskManagePage = () => {
 			),
 		},
 		{
-			accessorKey: 'notification_content_type',
+			accessorKey: 'content_type',
 			header: () => {
 				return (
 					<div className='w-full'>
@@ -194,8 +194,7 @@ const NotificationTaskManagePage = () => {
 			},
 			cell: ({ row }) => (
 				<div className='flex flex-row gap-2 items-center'>
-					{row.getValue('notification_content_type') ===
-					NotificationContentType.CUSTOM
+					{row.getValue('content_type') === NotificationContentType.CUSTOM
 						? t('setting_notification_task_manage_form_content_type_custom')
 						: t('setting_notification_task_manage_form_content_type_template')}
 				</div>
@@ -263,8 +262,8 @@ const NotificationTaskManagePage = () => {
 													? null
 													: flexRender(
 															header.column.columnDef.header,
-															header.getContext()
-													  )}
+															header.getContext(),
+														)}
 											</TableHead>
 										);
 									})}
@@ -282,7 +281,7 @@ const NotificationTaskManagePage = () => {
 											<TableCell key={cell.id}>
 												{flexRender(
 													cell.column.columnDef.cell,
-													cell.getContext()
+													cell.getContext(),
 												)}
 											</TableCell>
 										))}
