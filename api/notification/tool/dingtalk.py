@@ -12,6 +12,13 @@ from protocol.notification_tool import NotificationToolProtocol
 
 
 class DingTalkNotificationTool(NotificationToolProtocol):
+    
+    def __init__(self):
+        super().__init__(
+            notification_tool_uuid="44e649be4483436ea6f9826551017945",
+            notification_tool_name="DingTalk Notification Tool",
+            notification_tool_name_zh="钉钉通知工具",
+        )
 
     def gen_sign(self, timestamp: str, secret: str) -> str:
         """
@@ -34,20 +41,21 @@ class DingTalkNotificationTool(NotificationToolProtocol):
         cover: str | None = None,
         link: str | None = None,
     ):
-        if self.source is None or self.target is None:
-            raise ValueError("The source or target of the notification is not set")
-
         target_config = self.get_target_config()
         if target_config is None:
             raise ValueError("The target config of the notification is not set")
 
         webhook_url = target_config.get("webhook_url")
+        sign = target_config.get("sign")
+        
+        if not webhook_url or not sign:
+            raise ValueError("The target config of the notification is not complete")
 
         # 必须使用毫秒级时间戳
         timestamp = str(int(time.time() * 1000))
 
         if target_config.get("sign"):
-            sign = self.gen_sign(timestamp, target_config.get("sign"))
+            sign = self.gen_sign(timestamp, sign)
             webhook_url = f"{webhook_url}&timestamp={timestamp}&sign={sign}"
 
         # 使用 dedent 去掉 Markdown 缩进

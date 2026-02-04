@@ -1,4 +1,6 @@
 import crud
+import json
+import schemas
 from common.logger import exception_logger
 from data.sql.base import session_scope
 from enums.notification import NotificationSourceProvided, NotificationTemplate
@@ -13,8 +15,12 @@ from notification.template.removed_from_section import RemovedFromSectionNotific
 from notification.template.section_commented import SectionCommentedNotificationTemplate
 from notification.template.section_updated import SectionUpdatedNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
+from common.encrypt import decrypt_notification_source_config, decrypt_notification_target_config
 
 class NotificationProxy:
+    
+    def __init__(self) -> None:
+        pass
 
     # =========================
     # Factory（唯一推荐入口）
@@ -66,8 +72,15 @@ class NotificationProxy:
             else:
                 raise Exception("Notification source not supported")
             
-            notification_tool.set_source(notification_source.id)
-            notification_tool.set_target(notification_target.id)
+            if notification_source.config_json is not None:
+                notification_tool.set_source_config(
+                    json.loads(decrypt_notification_source_config(notification_source.config_json))
+                )
+
+            if notification_target.config_json is not None:
+                notification_tool.set_target_config(
+                    json.loads(decrypt_notification_target_config(notification_target.config_json))
+                )
             
             return notification_tool
         except Exception as e:
@@ -110,3 +123,12 @@ class NotificationProxy:
                 raise Exception(f'Failed to generate the message using template {template_id}')
             
             return message
+    
+    async def send_notification(
+        self,
+        title: str,
+        content: str | None = None,
+        cover: str | None = None,
+        link: str | None = None
+    ):
+        ...

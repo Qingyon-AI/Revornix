@@ -15,6 +15,13 @@ from protocol.notification_tool import NotificationToolProtocol
 
 
 class FeishuNotificationTool(NotificationToolProtocol):
+    
+    def __init__(self):
+        super().__init__(
+            notification_tool_uuid="ecbf8d6f190a4ace9ec5672cdf646425",
+            notification_tool_name="Feishu Notification Tool",
+            notification_tool_name_zh="飞书通知工具",
+        )
 
     def upload_image(
         self,
@@ -87,20 +94,19 @@ class FeishuNotificationTool(NotificationToolProtocol):
         cover: str | None = None,
         link: str | None = None
     ):
-        if self.source is None or self.target is None:
-            raise ValueError("The source or target of the notification is not set")
-
         source_config = self.get_source_config()
         target_config = self.get_target_config()
         if source_config is None or target_config is None:
-            raise ValueError("The source or target config of the notification is not set")
+            raise Exception("The source or target config of the notification is not set")
 
         webhook_url = target_config.get('webhook_url')
+        sign = target_config.get('sign')
+        if not webhook_url or not sign:
+            raise Exception("The webhook_url or sign of the notification is not set")
+        
         timestamp = int(time.time())
-        sign = None
 
-        if target_config.get('sign') is not None:
-            sign = self.gen_sign(timestamp, target_config.get('sign'))
+        sign = self.gen_sign(timestamp, target_config.get('sign'))
 
         elements = [
             {

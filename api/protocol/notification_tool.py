@@ -1,52 +1,51 @@
-import crud
-import schemas
 import json
-from typing import Protocol
-from data.sql.base import session_scope
+from typing import Any
 
-class NotificationToolProtocol(Protocol):
-
-    source: schemas.notification.NotificationSource | None
-    target: schemas.notification.NotificationTarget | None
-
-    def set_source(
-        self, 
-        source_id: int
+class NotificationToolProtocol():
+    
+    def __init__(
+        self,
+        notification_tool_uuid: str,
+        notification_tool_name: str,
+        notification_tool_name_zh: str,
+        notification_tool_description: str | None = None,
+        notification_tool_description_zh: str | None = None,
+        notification_source_config: str | None = None,
+        notification_target_config: str | None = None
     ):
-        with session_scope() as db:
-            db_notification_source = crud.notification.get_notification_source_by_id(
-                db=db,
-                notification_source_id=source_id
-            )
-            if db_notification_source is None:
-                raise schemas.error.CustomException(message="notification source not found", code=404)
-            self.source = db_notification_source
+        self.notification_tool_uuid = notification_tool_uuid
+        self.notification_tool_name = notification_tool_name
+        self.notification_tool_name_zh = notification_tool_name_zh
+        self.notification_tool_description = notification_tool_description
+        self.notification_tool_description_zh = notification_tool_description_zh
+        self.notification_source_config = notification_source_config
+        self.notification_target_config = notification_target_config
+        
+    def set_source_config(
+        self, 
+        source_config: dict[str, Any]
+    ):
+        self.notification_source_config = json.dumps(source_config)
 
-    def set_target(self, target_id: int):
-        with session_scope() as db:
-            db_notification_target = crud.notification.get_notification_target_by_id(
-                db=db,
-                notification_target_id=target_id
-            )
-            if db_notification_target is None:
-                raise schemas.error.CustomException(message="notification target not found", code=404)
-            self.target = db_notification_target
+    def set_target_config(
+        self, 
+        target_config: dict[str, Any]
+    ):
+        self.notification_target_config = json.dumps(target_config)
 
-    def get_source_config(self):
-        config = None
-        if self.source is None:
-            raise Exception("notification source not found")
-        if self.source.config_json:
-            config = json.loads(self.source.config_json)
-        return config
+    def get_source_config(
+        self
+    ) -> dict[str, Any]:
+        if self.notification_source_config is None:
+            raise ValueError("Source config is not set")
+        return json.loads(self.notification_source_config)
 
-    def get_target_config(self):
-        config = None
-        if self.target is None:
-            raise Exception("notification target not found")
-        if self.target.config_json:
-            config = json.loads(self.target.config_json)
-        return config
+    def get_target_config(
+        self
+    ) -> dict[str, Any]:
+        if self.notification_target_config is None:
+            raise ValueError("Target config is not set")
+        return json.loads(self.notification_target_config)
 
     async def send_notification(
         self, 

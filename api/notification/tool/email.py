@@ -21,8 +21,12 @@ class EmailNotificationTool(NotificationToolProtocol):
     # 模板目录（相对项目根或配置路径）
     TEMPLATE_PATH = Path(__file__).parent / "email_templates"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__(
+            notification_tool_uuid="bf02b01a69f84778a49afaa93c092218",
+            notification_tool_name="Email Notification Tool",
+            notification_tool_name_zh="邮件通知工具",
+        )
         # 初始化 Jinja2 环境
         self._env = Environment(
             loader=FileSystemLoader(str(self.TEMPLATE_PATH)),
@@ -35,10 +39,7 @@ class EmailNotificationTool(NotificationToolProtocol):
         content: str | None = None,
         cover: str | None = None,
         link: str | None = None
-    ) -> bool:
-        if self.source is None or self.target is None:
-            raise ValueError("The source or target of the notification is not set")
-
+    ):
         source_config = self.get_source_config()
         target_config = self.get_target_config()
         if source_config is None or target_config is None:
@@ -49,16 +50,12 @@ class EmailNotificationTool(NotificationToolProtocol):
         username = source_config.get('username')
         password = source_config.get('password')
         sender_name = source_config.get('sender_name', username)
-        recipient = target_config.get('email')
+        if not smtp_host or not smtp_port or not username or not password or not sender_name:
+            raise Exception(f"[EmailNotify] SMTP config is not complete")
 
-        if not smtp_host or not smtp_port or not username or not password:
-            exception_logger.error(
-                f"[EmailNotify] SMTP config missing: host={smtp_host}, port={smtp_port}, username={username}"
-            )
-            return False
+        recipient = target_config.get('email')
         if not recipient:
-            exception_logger.error(f"[EmailNotify] Recipient email not set: target_config={target_config}")
-            return False
+            raise Exception(f"[EmailNotify] Email recipient not set: {recipient}")
 
         # 构建邮件
         msg = MIMEMultipart('related')
@@ -98,13 +95,12 @@ class EmailNotificationTool(NotificationToolProtocol):
                 with smtplib.SMTP_SSL(host=smtp_host, port=smtp_port, context=context, timeout=10) as server:
                     server.login(user=username, password=password)
                     server.sendmail(from_addr=username, to_addrs=[recipient], msg=msg.as_string())
-                return True
 
             return await asyncio.to_thread(_send)
 
         except smtplib.SMTPException as smtp_err:
             exception_logger.error(f"[EmailNotify] SMTP error: {smtp_err}", exc_info=True)
-            return False
+            raise
         except Exception as err:
             exception_logger.error(f"[EmailNotify] Unexpected error: {err}", exc_info=True)
-            return False
+            raise
