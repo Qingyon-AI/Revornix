@@ -244,6 +244,8 @@
     "setting_notification_target_manage_add_form_label": "Add Notification Target",
     "setting_notification_target_manage_update_form_label": "Edit Notification Target",
     "setting_notification_target_manage_form_desc": "Adding a target allows notifications to be received through various channels.",
+    "setting_notification_target_is_public": "Public",
+    "setting_notification_target_manage_form_is_public_tips": "Public notification targets can be used by all users, but others cannot view your engine configuration",
     "setting_notification_target_manage_form_title": "Target Name",
     "setting_notification_target_manage_form_title_placeholder": "Please enter the target name",
     "setting_notification_target_manage_form_description": "Target Description",
