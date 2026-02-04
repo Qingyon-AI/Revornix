@@ -1,18 +1,27 @@
-import hashlib
+import asyncio
 import base64
+import hashlib
 import hmac
-import httpx
-import time
 import io
 import json
-import asyncio
+import time
+
+import httpx
 import lark_oapi as lark
 from lark_oapi.api.im.v1 import CreateImageRequest, CreateImageRequestBody, CreateImageResponse
-from typing import Optional
-from protocol.notification_tool import NotificationToolProtocol
+
 from common.logger import exception_logger
+from protocol.notification_tool import NotificationToolProtocol
+
 
 class FeishuNotificationTool(NotificationToolProtocol):
+    
+    def __init__(self):
+        super().__init__(
+            notification_tool_uuid="ecbf8d6f190a4ace9ec5672cdf646425",
+            notification_tool_name="Feishu Notification Tool",
+            notification_tool_name_zh="飞书通知工具",
+        )
 
     def upload_image(
         self,
@@ -25,7 +34,7 @@ class FeishuNotificationTool(NotificationToolProtocol):
         app_secret = source_config.get("app_secret")
         if app_id is None or app_secret is None:
             raise ValueError("The app_id or app_secret of the notification is not set")
-        
+
         # 创建client
         client = lark.Client.builder() \
             .app_id(app_id=app_id) \
@@ -57,49 +66,47 @@ class FeishuNotificationTool(NotificationToolProtocol):
                 else:
                     lark.logger.error(
                         f"client.im.v1.image.create failed, code: {response.code}, msg: {response.msg}, log_id: {response.get_log_id()}, resp: \n{json.dumps(json.loads(response.raw.content), indent=4, ensure_ascii=False)}")
-            return
+            return None
 
         # 处理业务结果
         lark.logger.info(lark.JSON.marshal(response.data, indent=4))
-        
+
         if response.data is None:
             raise ValueError("response.data is None")
-        
+
         return response.data.image_key
-    
+
     def gen_sign(
         self,
         timestamp: int,
         secret
     ):
         # 拼接timestamp和secret
-        string_to_sign = '{}\n{}'.format(timestamp, secret)
+        string_to_sign = f'{timestamp}\n{secret}'
         hmac_code = hmac.new(string_to_sign.encode("utf-8"), digestmod=hashlib.sha256).digest()
         # 对结果进行base64处理
-        sign = base64.b64encode(hmac_code).decode('utf-8')
-        return sign
+        return base64.b64encode(hmac_code).decode('utf-8')
 
     async def send_notification(
         self,
         title: str,
-        content: Optional[str] = None,
-        cover: Optional[str] = None,
-        link: Optional[str] = None
+        content: str | None = None,
+        cover: str | None = None,
+        link: str | None = None
     ):
-        if self.source is None or self.target is None:
-            raise ValueError("The source or target of the notification is not set")
-
         source_config = self.get_source_config()
         target_config = self.get_target_config()
         if source_config is None or target_config is None:
-            raise ValueError("The source or target config of the notification is not set")
+            raise Exception("The source or target config of the notification is not set")
 
         webhook_url = target_config.get('webhook_url')
-        timestamp = int(time.time())
-        sign = None
+        sign = target_config.get('sign')
+        if not webhook_url or not sign:
+            raise Exception("The webhook_url or sign of the notification is not set")
         
-        if target_config.get('sign') is not None:
-            sign = self.gen_sign(timestamp, target_config.get('sign'))
+        timestamp = int(time.time())
+
+        sign = self.gen_sign(timestamp, target_config.get('sign'))
 
         elements = [
             {
@@ -194,6 +201,6 @@ class FeishuNotificationTool(NotificationToolProtocol):
                 res = await client.post(webhook_url, json=payload, headers=headers)
             if res.json().get('code') != 0:
                 exception_logger.error(f'Failed to send notification to Feishu: {res.json()}')
-            
+
         except Exception as e:
             exception_logger.error(f"Failed to send notification to Feishu: {e}")

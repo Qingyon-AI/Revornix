@@ -12,6 +12,13 @@ from protocol.notification_tool import NotificationToolProtocol
 APPLE_PUBLIC_KEYS_URL = "https://appleid.apple.com/auth/keys"
 
 class AppleNotificationTool(NotificationToolProtocol):
+    
+    def __init__(self):
+        super().__init__(
+            notification_tool_uuid="341d8be7bebd4630b1fae93c32c4a21c",
+            notification_tool_name="Apple Notification Tool",
+            notification_tool_name_zh="Apple通知工具",
+        )
 
     def _create_apns_headers(
         self,
@@ -137,17 +144,27 @@ class AppleNotificationTool(NotificationToolProtocol):
         cover: str | None = None,
         link: str | None = None
     ):
-        if self.source is None or self.target is None:
-            raise Exception("The source or target of the notification is not set")
         source_config = self.get_source_config()
         target_config = self.get_target_config()
         if source_config is None or target_config is None:
             raise Exception("The source or target config of the notification is not set")
+
+        team_id = source_config.get('team_id')
+        key_id = source_config.get('key_id')
+        private_key = source_config.get('private_key')
+        apns_topic = source_config.get('app_bundle_id')
+        if not team_id or not key_id or not private_key or not apns_topic:
+            raise Exception("The source config of the notification is not complete")
+        
+        device_token = target_config.get('device_token')
+        if device_token is None:
+            raise Exception("The target config of the notification is not complete")
+
         headers = self._create_apns_headers(
-            team_id=source_config.get('team_id'),
-            key_id=source_config.get('key_id'),
-            private_key=source_config.get('private_key'),
-            apns_topic=source_config.get('app_bundle_id')
+            team_id=team_id,
+            key_id=key_id,
+            private_key=private_key,
+            apns_topic=apns_topic
         )
         device_token = target_config.get('device_token')
         url = f'https://api.push.apple.com/3/device/{device_token}'

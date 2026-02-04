@@ -1,8 +1,16 @@
 import telegram
+
 from protocol.notification_tool import NotificationToolProtocol
 
 
 class TelegramNotificationTool(NotificationToolProtocol):
+    
+    def __init__(self):
+        super().__init__(
+            notification_tool_uuid="9abd6f1eced74095b2771a2f8edb650b",
+            notification_tool_name="Telegram Notification Tool",
+            notification_tool_name_zh="Telegram通知工具",
+        )
 
     def escape_v2_text(self, text: str) -> str:
         """
@@ -26,17 +34,19 @@ class TelegramNotificationTool(NotificationToolProtocol):
         cover: str | None = None,
         link: str | None = None
     ):
-        if self.source is None or self.target is None:
-            raise Exception("The source or target of the notification is not set")
-
         source_config = self.get_source_config()
         target_config = self.get_target_config()
-
         if source_config is None or target_config is None:
             raise Exception("The source or target config of the notification is not set")
 
-        chat_id = target_config.get("chat_id")
         bot_token = source_config.get("bot_token")
+        if not bot_token:
+            raise Exception("The bot_token of the notification is not set")
+        
+        chat_id = target_config.get("chat_id")
+        if not chat_id:
+            raise Exception("The chat_id of the notification is not set")
+        
         bot = telegram.Bot(token=bot_token)
 
         # ================== 构建 UI ==================
