@@ -12,6 +12,6 @@ class ErrorResponse(BaseModel):
     code: int | None = 400
 
 class NormalResponse(BaseModel):
-    success: bool = True
-    message: str = "Success"
-    code: int | None = None
+    success: bool
+    message: str
+    code: int

@@ -14,7 +14,7 @@ Name | Type
 `cover` | string
 `create_time` | Date
 `update_time` | Date
-`labels` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
+`labels` | [Array&lt;DocumentLabel&gt;](DocumentLabel.md)
 `creator` | [UserPublicInfo](UserPublicInfo.md)
 `sections` | [Array&lt;SchemasDocumentBaseSectionInfo&gt;](SchemasDocumentBaseSectionInfo.md)
 `users` | [Array&lt;UserPublicInfo&gt;](UserPublicInfo.md)

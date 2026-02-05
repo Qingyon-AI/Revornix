@@ -65,4 +65,4 @@ def delete_api_key(
         api_key_ids=api_keys_delete_request.api_key_ids
     )
     db.commit()
-    return schemas.common.NormalResponse()
+    return schemas.common.SuccessResponse()

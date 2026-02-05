@@ -28,8 +28,8 @@ import type {
   NormalResponse,
   SchemasDocumentCreateLabelResponse,
   SchemasDocumentLabelAddRequest,
-  SchemasDocumentLabelListResponse,
   SchemasSectionLabelDeleteRequest,
+  SchemasSectionLabelListResponse,
   SearchMineSectionsRequest,
   SearchPublicSectionsRequest,
   SearchSubscribedSectionRequest,
@@ -84,10 +84,10 @@ import {
     SchemasDocumentCreateLabelResponseToJSON,
     SchemasDocumentLabelAddRequestFromJSON,
     SchemasDocumentLabelAddRequestToJSON,
-    SchemasDocumentLabelListResponseFromJSON,
-    SchemasDocumentLabelListResponseToJSON,
     SchemasSectionLabelDeleteRequestFromJSON,
     SchemasSectionLabelDeleteRequestToJSON,
+    SchemasSectionLabelListResponseFromJSON,
+    SchemasSectionLabelListResponseToJSON,
     SearchMineSectionsRequestFromJSON,
     SearchMineSectionsRequestToJSON,
     SearchPublicSectionsRequestFromJSON,
@@ -885,7 +885,7 @@ export class SectionApi extends runtime.BaseAPI {
     /**
      * List Label
      */
-    async listLabelSectionLabelListPostRaw(requestParameters: ListLabelSectionLabelListPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasDocumentLabelListResponse>> {
+    async listLabelSectionLabelListPostRaw(requestParameters: ListLabelSectionLabelListPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasSectionLabelListResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -904,13 +904,13 @@ export class SectionApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => SchemasDocumentLabelListResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => SchemasSectionLabelListResponseFromJSON(jsonValue));
     }
 
     /**
      * List Label
      */
-    async listLabelSectionLabelListPost(requestParameters: ListLabelSectionLabelListPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasDocumentLabelListResponse> {
+    async listLabelSectionLabelListPost(requestParameters: ListLabelSectionLabelListPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasSectionLabelListResponse> {
         const response = await this.listLabelSectionLabelListPostRaw(requestParameters, initOverrides);
         return await response.value();
     }

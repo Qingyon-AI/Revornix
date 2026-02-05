@@ -13,8 +13,8 @@ Name | Type
 `cover` | string
 `description` | string
 `from_plat` | string
-`labels` | [Array&lt;SchemasSectionLabel&gt;](SchemasSectionLabel.md)
-`sections` | [Array&lt;SchemasSectionBaseSectionInfo&gt;](SchemasSectionBaseSectionInfo.md)
+`labels` | [Array&lt;SectionLabel&gt;](SectionLabel.md)
+`sections` | [Array&lt;SectionLabel&gt;](SectionLabel.md)
 `users` | [Array&lt;UserPublicInfo&gt;](UserPublicInfo.md)
 `create_time` | Date
 `update_time` | Date

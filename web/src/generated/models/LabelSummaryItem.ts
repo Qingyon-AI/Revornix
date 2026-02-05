@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { SchemasSectionLabel } from './SchemasSectionLabel';
+import type { DocumentLabel } from './DocumentLabel';
 import {
-    SchemasSectionLabelFromJSON,
-    SchemasSectionLabelFromJSONTyped,
-    SchemasSectionLabelToJSON,
-    SchemasSectionLabelToJSONTyped,
-} from './SchemasSectionLabel';
+    DocumentLabelFromJSON,
+    DocumentLabelFromJSONTyped,
+    DocumentLabelToJSON,
+    DocumentLabelToJSONTyped,
+} from './DocumentLabel';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface LabelSummaryItem {
     /**
      * 
-     * @type {SchemasSectionLabel}
+     * @type {DocumentLabel}
      * @memberof LabelSummaryItem
      */
-    label_info: SchemasSectionLabel;
+    label_info: DocumentLabel;
     /**
      * 
      * @type {number}
@@ -60,7 +60,7 @@ export function LabelSummaryItemFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'label_info': SchemasSectionLabelFromJSON(json['label_info']),
+        'label_info': DocumentLabelFromJSON(json['label_info']),
         'count': json['count'],
     };
 }
@@ -76,7 +76,7 @@ export function LabelSummaryItemToJSONTyped(value?: LabelSummaryItem | null, ign
 
     return {
         
-        'label_info': SchemasSectionLabelToJSON(value['label_info']),
+        'label_info': DocumentLabelToJSON(value['label_info']),
         'count': value['count'],
     };
 }

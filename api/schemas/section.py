@@ -191,7 +191,7 @@ class SearchPublicSectionsRequest(BaseModel):
     desc: bool = True
     label_ids: list[int] | None = None
 
-class Label(BaseModel):
+class SectionLabel(BaseModel):
     id: int
     name: str
     class Config:
@@ -202,7 +202,7 @@ class CreateLabelResponse(BaseModel):
     name: str
 
 class LabelListResponse(BaseModel):
-    data: list[Label]
+    data: list[SectionLabel]
 
 class LabelAddRequest(BaseModel):
     name: str
@@ -215,8 +215,8 @@ class SectionDocumentInfo(BaseModel):
     cover: str | None = None
     description: str | None = None
     from_plat: str | None = None
-    labels: list[Label] | None = None
-    sections: list[BaseSectionInfo] | None = None
+    labels: list[SectionLabel] | None = None
+    sections: list[SectionLabel] | None = None
     users: list[UserPublicInfo] | None = None
     create_time: datetime
     update_time: datetime | None = None
@@ -249,7 +249,7 @@ class SectionInfo(BaseModel):
     authority: int | None = None
     is_subscribed: bool | None = None
     md_file_name: str | None = None
-    labels: list[Label] | None = None
+    labels: list[SectionLabel] | None = None
     cover: str | None
     podcast_task: SectionPodcastTask | None = None
     process_task: SectionProcessTask | None = None

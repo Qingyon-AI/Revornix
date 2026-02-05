@@ -121,7 +121,7 @@ def section_document_request(
         if db_section_document is None:
             continue
         labels = [
-            schemas.section.Label(id=label.id, name=label.name)
+            schemas.section.SectionLabel(id=label.id, name=label.name)
             for label in labels_by_document_id.get(document.id, [])
         ]
         info = schemas.section.SectionDocumentInfo(
@@ -199,7 +199,7 @@ async def section_seo_detail_request(
         section_id=db_section.id
     )
     labels = [
-        schemas.section.Label(
+        schemas.section.SectionLabel(
             id=label.id,
             name=label.name
         ) for label in db_labels
@@ -600,7 +600,7 @@ def list_label(
         user_id=user.id
     )
     labels = [
-        schemas.section.Label(id=label.id, name=label.name) for label in db_labels
+        schemas.section.SectionLabel(id=label.id, name=label.name) for label in db_labels
     ]
     return schemas.section.LabelListResponse(data=labels)
 
@@ -661,7 +661,7 @@ async def get_my_subscribed_sections(
             user_id=user.id
         )
         labels = [
-            schemas.section.Label(id=label.id, name=label.name) for label in db_labels
+            schemas.section.SectionLabel(id=label.id, name=label.name) for label in db_labels
         ]
         return schemas.section.SectionInfo(
             **section.__dict__,
@@ -832,7 +832,7 @@ async def public_sections(
     sections = []
     for section in db_sections:
         labels = [
-            schemas.section.Label(id=label.id, name=label.name)
+            schemas.section.SectionLabel(id=label.id, name=label.name)
             for label in labels_by_section_id.get(section.id, [])
         ]
         res = schemas.section.SectionInfo.model_validate(section)
@@ -948,7 +948,7 @@ async def search_user_sections(
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
         res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
         res.labels = [
-            schemas.section.Label(id=label.id, name=label.name)
+            schemas.section.SectionLabel(id=label.id, name=label.name)
             for label in labels_by_section_id.get(section.id, [])
         ]
         sections.append(res)
@@ -1027,7 +1027,7 @@ async def search_mine_sections(
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
         res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
         res.labels = [
-            schemas.section.Label(id=label.id, name=label.name)
+            schemas.section.SectionLabel(id=label.id, name=label.name)
             for label in labels_by_section_id.get(section.id, [])
         ]
         sections.append(res)
@@ -1100,7 +1100,7 @@ async def get_section_detail(
         )
 
         labels = [
-            schemas.section.Label(id=db_label.id, name=db_label.name) for db_label in db_labels
+            schemas.section.SectionLabel(id=db_label.id, name=db_label.name) for db_label in db_labels
         ]
 
         res = schemas.section.SectionInfo(
@@ -1172,7 +1172,7 @@ async def get_section_detail(
                 section_id=section_detail_request.section_id
             )
             labels = [
-                schemas.section.Label(id=db_label.id, name=db_label.name) for db_label in db_labels
+                schemas.section.SectionLabel(id=db_label.id, name=db_label.name) for db_label in db_labels
             ]
 
             res = schemas.section.SectionInfo(

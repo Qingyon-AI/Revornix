@@ -61,6 +61,7 @@ docs/DocumentGraphGenerateRequest.md
 docs/DocumentGraphRequest.md
 docs/DocumentGraphTask.md
 docs/DocumentInfo.md
+docs/DocumentLabel.md
 docs/DocumentMarkdownConvertRequest.md
 docs/DocumentMonthSummaryResponse.md
 docs/DocumentNoteCreateRequest.md
@@ -204,8 +205,8 @@ docs/SchemasDocumentCreateLabelResponse.md
 docs/SchemasDocumentLabelAddRequest.md
 docs/SchemasDocumentLabelListResponse.md
 docs/SchemasSectionBaseSectionInfo.md
-docs/SchemasSectionLabel.md
 docs/SchemasSectionLabelDeleteRequest.md
+docs/SchemasSectionLabelListResponse.md
 docs/SearchAllMyDocumentsRequest.md
 docs/SearchApiKeysRequest.md
 docs/SearchDocumentNoteRequest.md
@@ -236,6 +237,7 @@ docs/SectionDocumentInfo.md
 docs/SectionDocumentRequest.md
 docs/SectionGraphRequest.md
 docs/SectionInfo.md
+docs/SectionLabel.md
 docs/SectionPodcastTask.md
 docs/SectionProcessTask.md
 docs/SectionPublishGetRequest.md
@@ -332,6 +334,7 @@ models/DocumentGraphGenerateRequest.ts
 models/DocumentGraphRequest.ts
 models/DocumentGraphTask.ts
 models/DocumentInfo.ts
+models/DocumentLabel.ts
 models/DocumentMarkdownConvertRequest.ts
 models/DocumentMonthSummaryResponse.ts
 models/DocumentNoteCreateRequest.ts
@@ -469,8 +472,8 @@ models/SchemasDocumentCreateLabelResponse.ts
 models/SchemasDocumentLabelAddRequest.ts
 models/SchemasDocumentLabelListResponse.ts
 models/SchemasSectionBaseSectionInfo.ts
-models/SchemasSectionLabel.ts
 models/SchemasSectionLabelDeleteRequest.ts
+models/SchemasSectionLabelListResponse.ts
 models/SearchAllMyDocumentsRequest.ts
 models/SearchApiKeysRequest.ts
 models/SearchDocumentNoteRequest.ts
@@ -500,6 +503,7 @@ models/SectionDocumentInfo.ts
 models/SectionDocumentRequest.ts
 models/SectionGraphRequest.ts
 models/SectionInfo.ts
+models/SectionLabel.ts
 models/SectionPodcastTask.ts
 models/SectionProcessTask.ts
 models/SectionPublishGetRequest.ts
