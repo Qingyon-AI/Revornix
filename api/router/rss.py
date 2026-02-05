@@ -73,7 +73,7 @@ def getRssServerDocument(
             document_id=db_document.id
         )
         labels = [
-            schemas.document.Label(
+            schemas.document.DocumentLabel(
                 id=db_label.id,
                 name=db_label.name
             ) for db_label in db_labels

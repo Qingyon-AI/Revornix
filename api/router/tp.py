@@ -128,7 +128,7 @@ def list_label(
         user_id=user.id
     )
     labels = [
-        schemas.document.Label.model_validate(db_label)
+        schemas.document.DocumentLabel.model_validate(db_label)
         for db_label in db_labels
     ]
     return schemas.document.LabelListResponse(data=labels)

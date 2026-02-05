@@ -59,7 +59,7 @@ def get_label_summary(
     for label, count in db_labels_summary:
         res.append(
             schemas.document.LabelSummaryItem(
-                label_info=schemas.document.Label(
+                label_info=schemas.document.DocumentLabel(
                     id=label.id,
                     name=label.name
                 ),
@@ -91,7 +91,7 @@ def list_label(
         user_id=user.id
     )
     labels = [
-        schemas.document.Label(id=label.id, name=label.name) for label in db_labels
+        schemas.document.DocumentLabel(id=label.id, name=label.name) for label in db_labels
     ]
     return schemas.document.LabelListResponse(data=labels)
 
@@ -788,7 +788,7 @@ def update_document(
     db.commit()
     if section_process_tasks is not None:
         section_process_tasks.apply_async()
-    return schemas.common.NormalResponse()
+    return schemas.common.SuccessResponse()
 
 async def get_document_infos(
     db: Session,
@@ -819,7 +819,7 @@ async def get_document_infos(
     for document in documents:
         info = schemas.document.DocumentInfo.model_validate(document)
         info.labels = [
-            schemas.document.Label(id=label.id, name=label.name)
+            schemas.document.DocumentLabel(id=label.id, name=label.name)
             for label in labels_by_document_id.get(document.id, [])
         ]
 
@@ -945,7 +945,7 @@ async def get_document_detail(
         document_id=document_detail_request.document_id
     )
     labels = [
-        schemas.document.Label(
+        schemas.document.DocumentLabel(
             id=label.id,
             name=label.name
         ) for label in db_labels

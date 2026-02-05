@@ -111,7 +111,7 @@ def update_notification_source(
         db_notification_source.is_public = update_notification_source_request.is_public
 
     db.commit()
-    return schemas.common.NormalResponse(message="success")
+    return schemas.common.SuccessResponse()
 
 @notification_router.post('/source/provided', response_model=schemas.notification.NotificationSourcesProvidedResponse)
 def get_provided_notification_source(
@@ -754,7 +754,7 @@ def delete_notification_task(
         if job_exist is not None:
             scheduler.remove_job(str(notification_task_id))
     db.commit()
-    return schemas.common.NormalResponse(message="success")
+    return schemas.common.SuccessResponse()
 
 @notification_router.post('/task/update', response_model=schemas.common.NormalResponse)
 def update_notification_task(

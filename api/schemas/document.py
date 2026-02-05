@@ -125,7 +125,7 @@ class ApiDocumentCreateRequest(BaseDocumentCreateRequest):
 class DocumentCreateResponse(BaseModel):
     document_id: int
 
-class Label(BaseModel):
+class DocumentLabel(BaseModel):
     id: int
     name: str
     class Config:
@@ -136,7 +136,7 @@ class CreateLabelResponse(BaseModel):
     name: str
 
 class LabelListResponse(BaseModel):
-    data: list[Label]
+    data: list[DocumentLabel]
 
 class LabelAddRequest(BaseModel):
     name: str
@@ -179,7 +179,7 @@ class DocumentInfo(BaseModel):
     update_time: datetime | None
     cover: str | None = None
     description: str | None = None
-    labels: list[Label] = []
+    labels: list[DocumentLabel] = []
     sections: list[BaseSectionInfo] = []
     users: list[UserPublicInfo] = []
     convert_task: DocumentConvertTask | None = None
@@ -232,7 +232,7 @@ class DocumentDetailResponse(BaseModel):
     cover: str | None = None
     create_time: datetime
     update_time: datetime | None
-    labels: list[Label] = []
+    labels: list[DocumentLabel] = []
     creator: UserPublicInfo
     sections: list[BaseSectionInfo] = []
     users: list[UserPublicInfo] = []
@@ -289,7 +289,7 @@ class VectorSearchResponse(BaseModel):
     documents: list[DocumentInfo]
 
 class LabelSummaryItem(BaseModel):
-    label_info: Label
+    label_info: DocumentLabel
     count: int
 
 class LabelSummaryResponse(BaseModel):

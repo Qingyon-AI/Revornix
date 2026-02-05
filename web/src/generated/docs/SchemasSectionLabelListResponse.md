@@ -1,24 +1,22 @@
 
-# LabelSummaryItem
+# SchemasSectionLabelListResponse
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`label_info` | [DocumentLabel](DocumentLabel.md)
-`count` | number
+`data` | [Array&lt;SectionLabel&gt;](SectionLabel.md)
 
 ## Example
 
 ```typescript
-import type { LabelSummaryItem } from ''
+import type { SchemasSectionLabelListResponse } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "label_info": null,
-  "count": null,
-} satisfies LabelSummaryItem
+  "data": null,
+} satisfies SchemasSectionLabelListResponse
 
 console.log(example)
 
@@ -27,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as LabelSummaryItem
+const exampleParsed = JSON.parse(exampleJSON) as SchemasSectionLabelListResponse
 console.log(exampleParsed)
 ```
 

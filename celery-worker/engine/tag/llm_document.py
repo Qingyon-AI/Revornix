@@ -22,7 +22,7 @@ class LLMDocumentTagEngine:
     async def generate_tags(
         self, 
         document_id: int
-    ) -> list[schemas.document.Label] | None:
+    ) -> list[schemas.document.DocumentLabel] | None:
         with session_scope() as db:
             db_user = crud.user.get_user_by_id(
                 db=db,
@@ -65,7 +65,7 @@ class LLMDocumentTagEngine:
                 user_id=self.user_id
             )
             tags = [
-                schemas.document.Label(id=x.id, name=x.name)
+                schemas.document.DocumentLabel(id=x.id, name=x.name)
                 for x in tags
             ]
         document_content = ''
@@ -113,7 +113,7 @@ class LLMDocumentTagEngine:
             if len(response.choices) > 0 and response.choices[0].message is not None and response.choices[0].message.content is not None:
                 res = json.loads(response.choices[0].message.content)
                 res = [
-                    schemas.document.Label(
+                    schemas.document.DocumentLabel(
                         id=x['id'], 
                         name=x['name']
                     )

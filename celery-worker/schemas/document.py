@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-class Label(BaseModel):
+class DocumentLabel(BaseModel):
     id: int
     name: str
     class Config:

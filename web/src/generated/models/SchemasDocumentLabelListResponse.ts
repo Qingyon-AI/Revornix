@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { SchemasSectionLabel } from './SchemasSectionLabel';
+import type { DocumentLabel } from './DocumentLabel';
 import {
-    SchemasSectionLabelFromJSON,
-    SchemasSectionLabelFromJSONTyped,
-    SchemasSectionLabelToJSON,
-    SchemasSectionLabelToJSONTyped,
-} from './SchemasSectionLabel';
+    DocumentLabelFromJSON,
+    DocumentLabelFromJSONTyped,
+    DocumentLabelToJSON,
+    DocumentLabelToJSONTyped,
+} from './DocumentLabel';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface SchemasDocumentLabelListResponse {
     /**
      * 
-     * @type {Array<SchemasSectionLabel>}
+     * @type {Array<DocumentLabel>}
      * @memberof SchemasDocumentLabelListResponse
      */
-    data: Array<SchemasSectionLabel>;
+    data: Array<DocumentLabel>;
 }
 
 /**
@@ -53,7 +53,7 @@ export function SchemasDocumentLabelListResponseFromJSONTyped(json: any, ignoreD
     }
     return {
         
-        'data': ((json['data'] as Array<any>).map(SchemasSectionLabelFromJSON)),
+        'data': ((json['data'] as Array<any>).map(DocumentLabelFromJSON)),
     };
 }
 
@@ -68,7 +68,7 @@ export function SchemasDocumentLabelListResponseToJSONTyped(value?: SchemasDocum
 
     return {
         
-        'data': ((value['data'] as Array<any>).map(SchemasSectionLabelToJSON)),
+        'data': ((value['data'] as Array<any>).map(DocumentLabelToJSON)),
     };
 }
 

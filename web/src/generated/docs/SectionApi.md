@@ -1001,7 +1001,7 @@ No authorization required
 
 ## listLabelSectionLabelListPost
 
-> SchemasDocumentLabelListResponse listLabelSectionLabelListPost(authorization)
+> SchemasSectionLabelListResponse listLabelSectionLabelListPost(authorization)
 
 List Label
 
@@ -1044,7 +1044,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**SchemasDocumentLabelListResponse**](SchemasDocumentLabelListResponse.md)
+[**SchemasSectionLabelListResponse**](SchemasSectionLabelListResponse.md)
 
 ### Authorization
 

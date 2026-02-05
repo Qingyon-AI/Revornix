@@ -1,9 +1,9 @@
-from schemas.document import Label
+from schemas.document import DocumentLabel
 
 
 def document_auto_tag_prompt(
     document_content: str,
-    tags: list[Label]
+    tags: list[DocumentLabel]
 ):
     return f"""
 You are a professional document classification and tagging assistant.

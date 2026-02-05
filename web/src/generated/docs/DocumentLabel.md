@@ -1,24 +1,24 @@
 
-# LabelSummaryItem
+# DocumentLabel
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`label_info` | [DocumentLabel](DocumentLabel.md)
-`count` | number
+`id` | number
+`name` | string
 
 ## Example
 
 ```typescript
-import type { LabelSummaryItem } from ''
+import type { DocumentLabel } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "label_info": null,
-  "count": null,
-} satisfies LabelSummaryItem
+  "id": null,
+  "name": null,
+} satisfies DocumentLabel
 
 console.log(example)
 
@@ -27,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as LabelSummaryItem
+const exampleParsed = JSON.parse(exampleJSON) as DocumentLabel
 console.log(exampleParsed)
 ```
 
