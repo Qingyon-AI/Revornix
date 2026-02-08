@@ -27,16 +27,16 @@ export interface PrePayProductRequestDTO {
     product_uuid: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof PrePayProductRequestDTO
      */
-    pay_way: number;
+    pay_way: PrePayProductRequestDTOPayWayEnum;
     /**
      * 
      * @type {string}
      * @memberof PrePayProductRequestDTO
      */
-    category: string;
+    category: PrePayProductRequestDTOCategoryEnum;
     /**
      * 
      * @type {string}
@@ -45,6 +45,26 @@ export interface PrePayProductRequestDTO {
     currency_code: PrePayProductRequestDTOCurrencyCodeEnum;
 }
 
+
+/**
+ * @export
+ */
+export const PrePayProductRequestDTOPayWayEnum = {
+    Wechat: 'WECHAT',
+    Alipay: 'ALIPAY',
+    Paypal: 'PAYPAL',
+    ApplePay: 'APPLE_PAY'
+} as const;
+export type PrePayProductRequestDTOPayWayEnum = typeof PrePayProductRequestDTOPayWayEnum[keyof typeof PrePayProductRequestDTOPayWayEnum];
+
+/**
+ * @export
+ */
+export const PrePayProductRequestDTOCategoryEnum = {
+    UserPlan: 'USER_PLAN',
+    Section: 'SECTION'
+} as const;
+export type PrePayProductRequestDTOCategoryEnum = typeof PrePayProductRequestDTOCategoryEnum[keyof typeof PrePayProductRequestDTOCategoryEnum];
 
 /**
  * @export

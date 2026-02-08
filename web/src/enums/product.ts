@@ -1,9 +1,3 @@
-export enum PayWay {
-    WECHAT = 0,
-    ALIPAY = 1,
-    PAYPAL = 2
-}
-
 export enum Plan {
     FREE = '213408a40f5f4cfdaeca8d4c28ccd822',
     PRO = 'a00a68fbfdbc4159a67610858b43e2e8',

@@ -57,6 +57,32 @@ export class OrderControllerApi extends runtime.BaseAPI {
 
     /**
      */
+    async alipayCallbackRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/order/callback/alipay`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async alipayCallback(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.alipayCallbackRaw(initOverrides);
+    }
+
+    /**
+     */
     async getOrderDetailRaw(requestParameters: GetOrderDetailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetOrderDetailResponseDTO>> {
         if (requestParameters['getOrderDetailRequestDTO'] == null) {
             throw new runtime.RequiredError(
@@ -201,6 +227,32 @@ export class OrderControllerApi extends runtime.BaseAPI {
     async paypalCallback(requestParameters: PaypalCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<object> {
         const response = await this.paypalCallbackRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     */
+    async weChatCallbackRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/order/callback/wechat`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async weChatCallback(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.weChatCallbackRaw(initOverrides);
     }
 
 }
