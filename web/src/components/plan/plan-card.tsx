@@ -32,11 +32,12 @@ import { useUserContext } from '@/provider/user-provider';
 import { useCountDown, useInterval } from 'ahooks';
 import { useGetSet } from 'react-use';
 import { useQuery } from '@tanstack/react-query';
-import { PayWay } from '@/enums/product';
 import { useLocale, useTranslations } from 'next-intl';
 import { cn, getPrice } from '@/lib/utils';
 import {
+	PrePayProductRequestDTOCategoryEnum,
 	PrePayProductRequestDTOCurrencyCodeEnum,
+	PrePayProductRequestDTOPayWayEnum,
 	PrePayProductResponseDTO,
 } from '@/generated-pay';
 import {
@@ -69,7 +70,7 @@ const PlanCard = ({
 
 	const [prepayBackData, setPrepayBackData] =
 		useState<PrePayProductResponseDTO>();
-	const [payWay, setPayWay] = useState<PayWay>();
+	const [payWay, setPayWay] = useState<PrePayProductRequestDTOPayWayEnum>();
 	const [orderNo, setOrderNo] = useGetSet<string | null>(null);
 	const [intervalTime, setIntervalTime] = useState<number>();
 	const [targetTime, setTargetTime] = useState<number>();
@@ -80,7 +81,7 @@ const PlanCard = ({
 
 	const [currencyCode, setCurrencyCode] =
 		useState<PrePayProductRequestDTOCurrencyCodeEnum>(
-			locale === 'zh' ? 'CNY' : 'USD'
+			locale === 'zh' ? 'CNY' : 'USD',
 		);
 	const [showPayDialog, setShowPayDialog] = useState(false);
 	const [showScanCode, setShowScanCode] = useState(false);
@@ -91,7 +92,7 @@ const PlanCard = ({
 		async () => {
 			if (!orderNo()) return;
 			const [res, err] = await utils.to(
-				getOrderStatus({ order_no: orderNo()! })
+				getOrderStatus({ order_no: orderNo()! }),
 			);
 			if (err) {
 				console.error(err);
@@ -112,7 +113,7 @@ const PlanCard = ({
 			}
 		},
 		intervalTime,
-		{ immediate: false }
+		{ immediate: false },
 	);
 
 	const { data: productDetail } = useQuery({
@@ -134,16 +135,19 @@ const PlanCard = ({
 		}
 	};
 
-	const handlePrePayProduct = async (product_uuid: string, pay_way: number) => {
+	const handlePrePayProduct = async (
+		product_uuid: string,
+		pay_way: PrePayProductRequestDTOPayWayEnum,
+	) => {
 		setPayWay(pay_way);
 		setShowScanCode(true);
 		const [res, err] = await utils.to(
 			prePayProduct({
 				product_uuid,
 				pay_way,
-				category: 'plan_subscribe',
+				category: PrePayProductRequestDTOCategoryEnum.UserPlan,
 				currency_code: currencyCode,
-			})
+			}),
 		);
 		if (err || !res) {
 			console.error(err);
@@ -154,13 +158,13 @@ const PlanCard = ({
 			return;
 		}
 		setOrderNo(res.out_trade_no);
-		if (pay_way === PayWay.WECHAT) {
+		if (pay_way === PrePayProductRequestDTOPayWayEnum.Wechat) {
 			const qrCodeImageData = await generateQrCode(res.code);
 			res.code = qrCodeImageData.url;
 			setPrepayBackData(res);
 			setTargetTime(Date.now() + 600000);
 			setIntervalTime(1000);
-		} else if (pay_way === PayWay.ALIPAY) {
+		} else if (pay_way === PrePayProductRequestDTOPayWayEnum.Alipay) {
 			setPrepayBackData(res);
 			await utils.sleep(100);
 			if (alipayIframeBox.current) {
@@ -168,7 +172,7 @@ const PlanCard = ({
 			}
 			setTargetTime(Date.now() + 600000);
 			setIntervalTime(1000);
-		} else if (pay_way === PayWay.PAYPAL) {
+		} else if (pay_way === PrePayProductRequestDTOPayWayEnum.Paypal) {
 			window.location.href = res.code;
 		}
 	};
@@ -200,14 +204,14 @@ const PlanCard = ({
 							</div>
 						)}
 						{currencyCode === 'CNY' &&
-							payWay == PayWay.WECHAT &&
+							payWay == PrePayProductRequestDTOPayWayEnum.Wechat &&
 							prepayBackData && (
 								<div className='size-[200px] relative rounded overflow-hidden shrink-0 mx-auto my-5'>
 									<Image src={prepayBackData?.code} alt='qr code' fill />
 								</div>
 							)}
 						{currencyCode === 'CNY' &&
-							payWay == PayWay.ALIPAY &&
+							payWay == PrePayProductRequestDTOPayWayEnum.Alipay &&
 							prepayBackData && (
 								<iframe
 									className='size-[200px] relative rounded overflow-hidden shrink-0 mx-auto my-5'
@@ -269,7 +273,10 @@ const PlanCard = ({
 							disabled={currencyCode !== 'CNY'}
 							onClick={() => {
 								if (productDetail?.id) {
-									handlePrePayProduct(productDetail.uuid, PayWay.WECHAT);
+									handlePrePayProduct(
+										productDetail.uuid,
+										PrePayProductRequestDTOPayWayEnum.Wechat,
+									);
 								}
 							}}>
 							{t('account_plan_pay_way_wechat')}
@@ -281,7 +288,10 @@ const PlanCard = ({
 							disabled={currencyCode !== 'CNY'}
 							onClick={() => {
 								if (productDetail?.id) {
-									handlePrePayProduct(productDetail.uuid, PayWay.ALIPAY);
+									handlePrePayProduct(
+										productDetail.uuid,
+										PrePayProductRequestDTOPayWayEnum.Alipay,
+									);
 								}
 							}}>
 							{t('account_plan_pay_way_alipay')}
@@ -292,7 +302,10 @@ const PlanCard = ({
 							disabled={currencyCode !== 'USD'}
 							onClick={() => {
 								if (productDetail?.id) {
-									handlePrePayProduct(productDetail.uuid, PayWay.PAYPAL);
+									handlePrePayProduct(
+										productDetail.uuid,
+										PrePayProductRequestDTOPayWayEnum.Paypal,
+									);
 								}
 							}}>
 							{t('account_plan_pay_way_paypal')}
@@ -312,7 +325,7 @@ const PlanCard = ({
 					'flex flex-col relative',
 					badge
 						? 'ring-2 ring-indigo-500 bg-white dark:bg-zinc-900 shadow-lg transition'
-						: ''
+						: '',
 				)}>
 				{badge && (
 					<div className='absolute -top-3 right-4 rounded-full bg-indigo-500 px-3 py-1 text-xs font-semibold text-white shadow'>
@@ -333,7 +346,7 @@ const PlanCard = ({
 									? `${
 											getPrice(productDetail?.prices, currencyCode)
 												?.currency_code
-									  } ${getPrice(productDetail?.prices, currencyCode)?.price}`
+										} ${getPrice(productDetail?.prices, currencyCode)?.price}`
 									: t('loading')}
 							</span>
 							<span>/{t('account_plan_month')}</span>
@@ -351,7 +364,7 @@ const PlanCard = ({
 									value={currencyCode}
 									onValueChange={(e) =>
 										setCurrencyCode(
-											e as PrePayProductRequestDTOCurrencyCodeEnum
+											e as PrePayProductRequestDTOCurrencyCodeEnum,
 										)
 									}>
 									<DropdownMenuRadioItem value='USD'>USD</DropdownMenuRadioItem>

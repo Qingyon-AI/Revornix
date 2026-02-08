@@ -7,7 +7,7 @@
 Name | Type
 ------------ | -------------
 `product_uuid` | string
-`pay_way` | number
+`pay_way` | string
 `category` | string
 `currency_code` | string
 

@@ -12,6 +12,7 @@ Name | Type
 `nickname` | string
 `lastLoginIp` | string
 `lastLoginTime` | Date
+`role` | number
 `slogan` | string
 `gender` | number
 `age` | number
@@ -40,6 +41,7 @@ const example = {
   "nickname": null,
   "lastLoginIp": null,
   "lastLoginTime": null,
+  "role": null,
   "slogan": null,
   "gender": null,
   "age": null,

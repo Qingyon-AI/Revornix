@@ -57,6 +57,12 @@ export interface User {
     lastLoginTime?: Date;
     /**
      * 
+     * @type {number}
+     * @memberof User
+     */
+    role?: number;
+    /**
+     * 
      * @type {string}
      * @memberof User
      */
@@ -167,6 +173,7 @@ export function UserFromJSONTyped(json: any, ignoreDiscriminator: boolean): User
         'nickname': json['nickname'],
         'lastLoginIp': json['lastLoginIp'] == null ? undefined : json['lastLoginIp'],
         'lastLoginTime': json['lastLoginTime'] == null ? undefined : (new Date(json['lastLoginTime'])),
+        'role': json['role'] == null ? undefined : json['role'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'gender': json['gender'] == null ? undefined : json['gender'],
         'age': json['age'] == null ? undefined : json['age'],
@@ -201,6 +208,7 @@ export function UserToJSONTyped(value?: User | null, ignoreDiscriminator: boolea
         'nickname': value['nickname'],
         'lastLoginIp': value['lastLoginIp'],
         'lastLoginTime': value['lastLoginTime'] == null ? value['lastLoginTime'] : value['lastLoginTime'].toISOString(),
+        'role': value['role'],
         'slogan': value['slogan'],
         'gender': value['gender'],
         'age': value['age'],
