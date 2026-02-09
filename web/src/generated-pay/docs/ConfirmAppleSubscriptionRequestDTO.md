@@ -1,32 +1,22 @@
 
-# PrePayProductResponseDTO
+# ConfirmAppleSubscriptionRequestDTO
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`out_trade_no` | string
-`code` | string
-`subscription_no` | string
-`product_name` | string
-`product_name_zh` | string
-`price` | [PriceItem](PriceItem.md)
+`original_transaction_id` | string
 
 ## Example
 
 ```typescript
-import type { PrePayProductResponseDTO } from ''
+import type { ConfirmAppleSubscriptionRequestDTO } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "out_trade_no": null,
-  "code": null,
-  "subscription_no": null,
-  "product_name": null,
-  "product_name_zh": null,
-  "price": null,
-} satisfies PrePayProductResponseDTO
+  "original_transaction_id": null,
+} satisfies ConfirmAppleSubscriptionRequestDTO
 
 console.log(example)
 
@@ -35,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as PrePayProductResponseDTO
+const exampleParsed = JSON.parse(exampleJSON) as ConfirmAppleSubscriptionRequestDTO
 console.log(exampleParsed)
 ```
 

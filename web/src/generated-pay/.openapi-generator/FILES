@@ -2,6 +2,7 @@ apis/BonusControllerApi.ts
 apis/CommonControllerApi.ts
 apis/OrderControllerApi.ts
 apis/ProductControllerApi.ts
+apis/SubscriptionControllerApi.ts
 apis/UserControllerApi.ts
 apis/index.ts
 docs/Ability.md
@@ -9,6 +10,8 @@ docs/BonusControllerApi.md
 docs/BonusWithdrawRequestDTO.md
 docs/CheckAbilityRequestDTO.md
 docs/CommonControllerApi.md
+docs/ConfirmAppleSubscriptionRequestDTO.md
+docs/ConfirmSubscriptionResponseDTO.md
 docs/GetOrderDetailByPaypalOrderRequestDTO.md
 docs/GetOrderDetailRequestDTO.md
 docs/GetOrderDetailResponseDTO.md
@@ -23,10 +26,15 @@ docs/OrderStatusResponseDTO.md
 docs/Plan.md
 docs/PrePayProductRequestDTO.md
 docs/PrePayProductResponseDTO.md
+docs/PrePaySubscriptionRequestDTO.md
+docs/PrePaySubscriptionResponseDTO.md
 docs/PriceItem.md
 docs/Product.md
 docs/ProductControllerApi.md
 docs/ProductResponseDTO.md
+docs/SubscriptionControllerApi.md
+docs/SubscriptionStatusRequestDTO.md
+docs/SubscriptionStatusResponseDTO.md
 docs/User.md
 docs/UserControllerApi.md
 docs/UserPlan.md
@@ -35,6 +43,8 @@ index.ts
 models/Ability.ts
 models/BonusWithdrawRequestDTO.ts
 models/CheckAbilityRequestDTO.ts
+models/ConfirmAppleSubscriptionRequestDTO.ts
+models/ConfirmSubscriptionResponseDTO.ts
 models/GetOrderDetailByPaypalOrderRequestDTO.ts
 models/GetOrderDetailRequestDTO.ts
 models/GetOrderDetailResponseDTO.ts
@@ -48,9 +58,13 @@ models/OrderStatusResponseDTO.ts
 models/Plan.ts
 models/PrePayProductRequestDTO.ts
 models/PrePayProductResponseDTO.ts
+models/PrePaySubscriptionRequestDTO.ts
+models/PrePaySubscriptionResponseDTO.ts
 models/PriceItem.ts
 models/Product.ts
 models/ProductResponseDTO.ts
+models/SubscriptionStatusRequestDTO.ts
+models/SubscriptionStatusResponseDTO.ts
 models/User.ts
 models/UserPlan.ts
 models/UserResponseDTO.ts

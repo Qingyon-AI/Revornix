@@ -1,32 +1,22 @@
 
-# PrePayProductResponseDTO
+# SubscriptionStatusRequestDTO
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`out_trade_no` | string
-`code` | string
 `subscription_no` | string
-`product_name` | string
-`product_name_zh` | string
-`price` | [PriceItem](PriceItem.md)
 
 ## Example
 
 ```typescript
-import type { PrePayProductResponseDTO } from ''
+import type { SubscriptionStatusRequestDTO } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "out_trade_no": null,
-  "code": null,
   "subscription_no": null,
-  "product_name": null,
-  "product_name_zh": null,
-  "price": null,
-} satisfies PrePayProductResponseDTO
+} satisfies SubscriptionStatusRequestDTO
 
 console.log(example)
 
@@ -35,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as PrePayProductResponseDTO
+const exampleParsed = JSON.parse(exampleJSON) as SubscriptionStatusRequestDTO
 console.log(exampleParsed)
 ```
 

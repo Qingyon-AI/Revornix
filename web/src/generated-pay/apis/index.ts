@@ -4,4 +4,5 @@ export * from './BonusControllerApi';
 export * from './CommonControllerApi';
 export * from './OrderControllerApi';
 export * from './ProductControllerApi';
+export * from './SubscriptionControllerApi';
 export * from './UserControllerApi';

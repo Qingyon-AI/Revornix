@@ -24,51 +24,52 @@ import {
 /**
  * 
  * @export
- * @interface PrePayProductResponseDTO
+ * @interface PrePaySubscriptionResponseDTO
  */
-export interface PrePayProductResponseDTO {
+export interface PrePaySubscriptionResponseDTO {
     /**
      * 
      * @type {string}
-     * @memberof PrePayProductResponseDTO
+     * @memberof PrePaySubscriptionResponseDTO
+     */
+    subscription_no: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PrePaySubscriptionResponseDTO
      */
     out_trade_no: string;
     /**
      * 
      * @type {string}
-     * @memberof PrePayProductResponseDTO
+     * @memberof PrePaySubscriptionResponseDTO
      */
     code: string;
     /**
      * 
      * @type {string}
-     * @memberof PrePayProductResponseDTO
-     */
-    subscription_no?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PrePayProductResponseDTO
+     * @memberof PrePaySubscriptionResponseDTO
      */
     product_name: string;
     /**
      * 
      * @type {string}
-     * @memberof PrePayProductResponseDTO
+     * @memberof PrePaySubscriptionResponseDTO
      */
     product_name_zh: string;
     /**
      * 
      * @type {PriceItem}
-     * @memberof PrePayProductResponseDTO
+     * @memberof PrePaySubscriptionResponseDTO
      */
     price: PriceItem;
 }
 
 /**
- * Check if a given object implements the PrePayProductResponseDTO interface.
+ * Check if a given object implements the PrePaySubscriptionResponseDTO interface.
  */
-export function instanceOfPrePayProductResponseDTO(value: object): value is PrePayProductResponseDTO {
+export function instanceOfPrePaySubscriptionResponseDTO(value: object): value is PrePaySubscriptionResponseDTO {
+    if (!('subscription_no' in value) || value['subscription_no'] === undefined) return false;
     if (!('out_trade_no' in value) || value['out_trade_no'] === undefined) return false;
     if (!('code' in value) || value['code'] === undefined) return false;
     if (!('product_name' in value) || value['product_name'] === undefined) return false;
@@ -77,39 +78,39 @@ export function instanceOfPrePayProductResponseDTO(value: object): value is PreP
     return true;
 }
 
-export function PrePayProductResponseDTOFromJSON(json: any): PrePayProductResponseDTO {
-    return PrePayProductResponseDTOFromJSONTyped(json, false);
+export function PrePaySubscriptionResponseDTOFromJSON(json: any): PrePaySubscriptionResponseDTO {
+    return PrePaySubscriptionResponseDTOFromJSONTyped(json, false);
 }
 
-export function PrePayProductResponseDTOFromJSONTyped(json: any, ignoreDiscriminator: boolean): PrePayProductResponseDTO {
+export function PrePaySubscriptionResponseDTOFromJSONTyped(json: any, ignoreDiscriminator: boolean): PrePaySubscriptionResponseDTO {
     if (json == null) {
         return json;
     }
     return {
         
+        'subscription_no': json['subscription_no'],
         'out_trade_no': json['out_trade_no'],
         'code': json['code'],
-        'subscription_no': json['subscription_no'] == null ? undefined : json['subscription_no'],
         'product_name': json['product_name'],
         'product_name_zh': json['product_name_zh'],
         'price': PriceItemFromJSON(json['price']),
     };
 }
 
-export function PrePayProductResponseDTOToJSON(json: any): PrePayProductResponseDTO {
-    return PrePayProductResponseDTOToJSONTyped(json, false);
+export function PrePaySubscriptionResponseDTOToJSON(json: any): PrePaySubscriptionResponseDTO {
+    return PrePaySubscriptionResponseDTOToJSONTyped(json, false);
 }
 
-export function PrePayProductResponseDTOToJSONTyped(value?: PrePayProductResponseDTO | null, ignoreDiscriminator: boolean = false): any {
+export function PrePaySubscriptionResponseDTOToJSONTyped(value?: PrePaySubscriptionResponseDTO | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
 
     return {
         
+        'subscription_no': value['subscription_no'],
         'out_trade_no': value['out_trade_no'],
         'code': value['code'],
-        'subscription_no': value['subscription_no'],
         'product_name': value['product_name'],
         'product_name_zh': value['product_name_zh'],
         'price': PriceItemToJSON(value['price']),
