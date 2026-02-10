@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, ConfigDict
 from datetime import datetime, timezone
 
 class EngineInfo(BaseModel):
@@ -8,8 +8,11 @@ class EngineInfo(BaseModel):
     description: str | None = None
     description_zh: str | None = None
     demo_config: str | None = None
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
         
 class UserEngineInfo(BaseModel):
     id: int
@@ -34,5 +37,8 @@ class UserEngineInfo(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )

@@ -1,7 +1,7 @@
 from datetime import date as date_type
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, ConfigDict
 
 from .task import (
     DocumentConvertTask,
@@ -48,8 +48,10 @@ class BaseSectionInfo(BaseModel):
     id: int
     title: str
     description: str | None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class SearchDocumentNoteRequest(BaseModel):
     document_id: int
@@ -88,8 +90,10 @@ class DocumentNoteInfo(BaseModel):
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class SummaryItem(BaseModel):
     date: date_type
@@ -128,8 +132,10 @@ class DocumentCreateResponse(BaseModel):
 class DocumentLabel(BaseModel):
     id: int
     name: str
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class CreateLabelResponse(BaseModel):
     id: int
@@ -204,8 +210,10 @@ class DocumentInfo(BaseModel):
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class WebsiteDocumentInfo(BaseModel):
     creator_id: int
@@ -264,8 +272,10 @@ class DocumentDetailResponse(BaseModel):
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class DocumentDeleteRequest(BaseModel):
     document_ids: list[int]

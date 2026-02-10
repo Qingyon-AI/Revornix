@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, ConfigDict
 
 from .user import UserPublicInfo
 
@@ -12,8 +12,11 @@ class EngineProvidedInfo(BaseModel):
     description: str | None = None
     description_zh: str | None = None
     demo_config: str | None = None
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class EngineProvidedSearchRequest(BaseModel):
     keyword: str
@@ -21,8 +24,11 @@ class EngineProvidedSearchRequest(BaseModel):
 
 class EngineProvidedSearchResponse(BaseModel):
     data: list[EngineProvidedInfo]
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class EngineCreateRequest(BaseModel):
     name: str
@@ -60,8 +66,10 @@ class EngineDetail(BaseModel):
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
         
 class EngineBaseInfo(BaseModel):
     id: int
@@ -88,8 +96,10 @@ class EngineBaseInfo(BaseModel):
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class EngineInfo(BaseModel):
     id: int
@@ -117,13 +127,18 @@ class EngineInfo(BaseModel):
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class UsableEnginesResponse(BaseModel):
     data: list[EngineInfo]
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class UsableEngineSearchRequest(BaseModel):
     keyword: str | None = None

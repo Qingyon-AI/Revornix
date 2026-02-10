@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, ConfigDict
 
 
 class GetRssServerDocumentRequest(BaseModel):
@@ -45,8 +45,11 @@ class RssSectionInfo(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class RssDocumentInfo(BaseModel):
     id: int
@@ -69,8 +72,11 @@ class RssDocumentInfo(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class RssServerInfo(BaseModel):
     id: int
@@ -83,8 +89,11 @@ class RssServerInfo(BaseModel):
     update_time: datetime | None
     documents: list[RssDocumentInfo] = []
     sections: list[RssSectionInfo] = []
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 
 class DeleteRssServerRequest(BaseModel):

@@ -1,24 +1,36 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class DocumentConvertTask(BaseModel):
     status: int
-    class Config:
-        from_attributes = True 
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
         
 class DocumentEmbeddingTask(BaseModel):
     status: int
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
         
 class DocumentGraphTask(BaseModel):
     status: int
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
         
 class DocumentProcessTask(BaseModel):
     status: int
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
         
 class DocumentOverrideProperty(BaseModel):
     title: str | None = None
@@ -27,5 +39,8 @@ class DocumentOverrideProperty(BaseModel):
 
 class SectionPodcastTask(BaseModel):
     status: int
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )

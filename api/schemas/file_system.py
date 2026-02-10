@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, ConfigDict
 
 class GenericFileSystemUploadResponse(BaseModel):
     file_path: str
@@ -41,8 +41,11 @@ class FileSystemInfo(BaseModel):
     description: str | None = None
     description_zh: str | None = None
     demo_config: str | None = None
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class UserFileSystemInfo(BaseModel):
     id: int
@@ -64,8 +67,11 @@ class UserFileSystemInfo(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class UserFileSystemDetail(BaseModel):
     id: int
@@ -88,16 +94,22 @@ class UserFileSystemDetail(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class FileSystemSearchRequest(BaseModel):
     keyword: str
 
 class ProvideFileSystemSearchResponse(BaseModel):
     data: list[FileSystemInfo]
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class MineFileSystemSearchResponse(BaseModel):
     data: list[UserFileSystemInfo]

@@ -1,9 +1,8 @@
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, Field, field_serializer, field_validator
+from pydantic import BaseModel, Field, field_serializer, field_validator, ConfigDict
 
 from enums.section import UserSectionRole
-from protocol.remote_file_service import RemoteFileServiceProtocol
 from schemas.task import SectionPodcastTask, SectionProcessTask
 from schemas.user import SectionUserPublicInfo, UserPublicInfo
 
@@ -67,8 +66,11 @@ class SectionPublishGetResponse(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class SectionRePublishRequest(BaseModel):
     section_id: int
@@ -135,8 +137,11 @@ class SectionCommentInfo(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class SectionCommentSearchRequest(BaseModel):
     section_id: int
@@ -171,8 +176,10 @@ class BaseSectionInfo(BaseModel):
     title: str
     description: str | None
     authority: int | None = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class AllMySectionsResponse(BaseModel):
     data: list[BaseSectionInfo]
@@ -194,8 +201,10 @@ class SearchPublicSectionsRequest(BaseModel):
 class SectionLabel(BaseModel):
     id: int
     name: str
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class CreateLabelResponse(BaseModel):
     id: int
@@ -232,8 +241,10 @@ class SectionDocumentInfo(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class SectionInfo(BaseModel):
     id: int
@@ -270,8 +281,10 @@ class SectionInfo(BaseModel):
             tzinfo=timezone.utc
         )
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class SectionDeleteRequest(BaseModel):
     section_id: int

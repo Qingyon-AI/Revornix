@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, ConfigDict
 
 from .user import UserPublicInfo
 
@@ -37,24 +37,33 @@ class NotificationTaskBaseInfo(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class GetNotificationTargetRelatedTaskRequest(BaseModel):
     notification_target_id: int
 
 class GetNotificationTargetRelatedTaskResponse(BaseModel):
     data: list[NotificationTaskBaseInfo]
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class GetNotificationSourceRelatedTaskRequest(BaseModel):
     notification_source_id: int
 
 class GetNotificationSourceRelatedTaskResponse(BaseModel):
     data: list[NotificationTaskBaseInfo]
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class TriggerEvent(BaseModel):
     id: int
@@ -75,13 +84,19 @@ class TriggerEvent(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class TriggerEventsResponse(BaseModel):
     data: list[TriggerEvent]
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class Message(BaseModel):
     title: str
@@ -109,8 +124,11 @@ class NotificationSourceProvided(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class NotificationTargetProvided(BaseModel):
     id: int
@@ -132,8 +150,11 @@ class NotificationTargetProvided(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class NotificationSource(BaseModel):
     id: int
@@ -155,8 +176,11 @@ class NotificationSource(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class NotificationSourceDetail(BaseModel):
     id: int
@@ -178,8 +202,11 @@ class NotificationSourceDetail(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class NotificationTarget(BaseModel):
     id: int
@@ -201,8 +228,11 @@ class NotificationTarget(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class NotificationTargetDetail(BaseModel):
     id: int
@@ -224,8 +254,11 @@ class NotificationTargetDetail(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class NotificationTargetsProvidedResponse(BaseModel):
     data: list[NotificationTargetProvided]
@@ -314,8 +347,11 @@ class NotificationRecord(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class DeleteNotificationRecordRequest(BaseModel):
     notification_record_ids: list[int]
@@ -357,8 +393,11 @@ class NotificationTask(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class DeleteNotificationTaskRequest(BaseModel):
     notification_task_ids: list[int]
@@ -402,8 +441,10 @@ class NotificationTemplate(BaseModel):
     description: str | None = None
     description_zh: str | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class NotificationTemplatesResponse(BaseModel):
     data: list[NotificationTemplate]

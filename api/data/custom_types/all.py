@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, ConfigDict
 
 
 class DocumentInfo(BaseModel):
@@ -20,8 +20,11 @@ class DocumentInfo(BaseModel):
         if v is not None and v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class ChunkInfo(BaseModel):
     id: str

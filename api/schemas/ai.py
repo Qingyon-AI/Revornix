@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, ConfigDict
 
 from .user import UserPublicInfo
 
@@ -42,8 +42,10 @@ class ModelProviderDetail(BaseModel):
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class ModelProvider(BaseModel):
     id: int
@@ -69,8 +71,10 @@ class ModelProvider(BaseModel):
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class Model(BaseModel):
     id: int
@@ -95,8 +99,10 @@ class Model(BaseModel):
             return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
         return v
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class ModelProviderCreateRequest(BaseModel):
     name: str
@@ -126,8 +132,10 @@ class ModelSearchRequest(BaseModel):
 
 class ModelSearchResponse(BaseModel):
     data: list[Model] | None = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class ModelProviderSearchRequest(BaseModel):
     keyword: str | None = None

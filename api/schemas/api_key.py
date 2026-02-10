@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ApiKeyCreateRequest(BaseModel):
@@ -24,5 +24,7 @@ class ApiKeyInfo(BaseModel):
     create_time: datetime
     last_used_time: datetime | None = None
 
-    class Config:
-        from_attrbutes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
