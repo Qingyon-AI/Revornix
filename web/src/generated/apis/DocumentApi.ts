@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  CreateLabelResponse,
   DocumentAiSummaryRequest,
   DocumentCreateRequest,
   DocumentCreateResponse,
@@ -33,13 +34,12 @@ import type {
   HTTPValidationError,
   InifiniteScrollPagnitionDocumentInfo,
   InifiniteScrollPagnitionDocumentNoteInfo,
+  LabelAddRequest,
+  LabelDeleteRequest,
   LabelSummaryResponse,
   NormalResponse,
   ReadRequest,
-  SchemasDocumentCreateLabelResponse,
-  SchemasDocumentLabelAddRequest,
   SchemasDocumentLabelListResponse,
-  SchemasSectionLabelDeleteRequest,
   SearchAllMyDocumentsRequest,
   SearchDocumentNoteRequest,
   SearchMyStarDocumentsRequest,
@@ -51,6 +51,8 @@ import type {
   VectorSearchResponse,
 } from '../models/index';
 import {
+    CreateLabelResponseFromJSON,
+    CreateLabelResponseToJSON,
     DocumentAiSummaryRequestFromJSON,
     DocumentAiSummaryRequestToJSON,
     DocumentCreateRequestFromJSON,
@@ -87,20 +89,18 @@ import {
     InifiniteScrollPagnitionDocumentInfoToJSON,
     InifiniteScrollPagnitionDocumentNoteInfoFromJSON,
     InifiniteScrollPagnitionDocumentNoteInfoToJSON,
+    LabelAddRequestFromJSON,
+    LabelAddRequestToJSON,
+    LabelDeleteRequestFromJSON,
+    LabelDeleteRequestToJSON,
     LabelSummaryResponseFromJSON,
     LabelSummaryResponseToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
     ReadRequestFromJSON,
     ReadRequestToJSON,
-    SchemasDocumentCreateLabelResponseFromJSON,
-    SchemasDocumentCreateLabelResponseToJSON,
-    SchemasDocumentLabelAddRequestFromJSON,
-    SchemasDocumentLabelAddRequestToJSON,
     SchemasDocumentLabelListResponseFromJSON,
     SchemasDocumentLabelListResponseToJSON,
-    SchemasSectionLabelDeleteRequestFromJSON,
-    SchemasSectionLabelDeleteRequestToJSON,
     SearchAllMyDocumentsRequestFromJSON,
     SearchAllMyDocumentsRequestToJSON,
     SearchDocumentNoteRequestFromJSON,
@@ -122,7 +122,7 @@ import {
 } from '../models/index';
 
 export interface AddLabelDocumentLabelCreatePostRequest {
-    schemasDocumentLabelAddRequest: SchemasDocumentLabelAddRequest;
+    labelAddRequest: LabelAddRequest;
     authorization?: string | null;
 }
 
@@ -152,7 +152,7 @@ export interface DeleteDocumentDocumentDeletePostRequest {
 }
 
 export interface DeleteLabelDocumentLabelDeletePostRequest {
-    schemasSectionLabelDeleteRequest: SchemasSectionLabelDeleteRequest;
+    labelDeleteRequest: LabelDeleteRequest;
     authorization?: string | null;
 }
 
@@ -251,11 +251,11 @@ export class DocumentApi extends runtime.BaseAPI {
     /**
      * Add Label
      */
-    async addLabelDocumentLabelCreatePostRaw(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasDocumentCreateLabelResponse>> {
-        if (requestParameters['schemasDocumentLabelAddRequest'] == null) {
+    async addLabelDocumentLabelCreatePostRaw(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
+        if (requestParameters['labelAddRequest'] == null) {
             throw new runtime.RequiredError(
-                'schemasDocumentLabelAddRequest',
-                'Required parameter "schemasDocumentLabelAddRequest" was null or undefined when calling addLabelDocumentLabelCreatePost().'
+                'labelAddRequest',
+                'Required parameter "labelAddRequest" was null or undefined when calling addLabelDocumentLabelCreatePost().'
             );
         }
 
@@ -277,16 +277,16 @@ export class DocumentApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: SchemasDocumentLabelAddRequestToJSON(requestParameters['schemasDocumentLabelAddRequest']),
+            body: LabelAddRequestToJSON(requestParameters['labelAddRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => SchemasDocumentCreateLabelResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CreateLabelResponseFromJSON(jsonValue));
     }
 
     /**
      * Add Label
      */
-    async addLabelDocumentLabelCreatePost(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasDocumentCreateLabelResponse> {
+    async addLabelDocumentLabelCreatePost(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateLabelResponse> {
         const response = await this.addLabelDocumentLabelCreatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -510,10 +510,10 @@ export class DocumentApi extends runtime.BaseAPI {
      * Delete Label
      */
     async deleteLabelDocumentLabelDeletePostRaw(requestParameters: DeleteLabelDocumentLabelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
-        if (requestParameters['schemasSectionLabelDeleteRequest'] == null) {
+        if (requestParameters['labelDeleteRequest'] == null) {
             throw new runtime.RequiredError(
-                'schemasSectionLabelDeleteRequest',
-                'Required parameter "schemasSectionLabelDeleteRequest" was null or undefined when calling deleteLabelDocumentLabelDeletePost().'
+                'labelDeleteRequest',
+                'Required parameter "labelDeleteRequest" was null or undefined when calling deleteLabelDocumentLabelDeletePost().'
             );
         }
 
@@ -535,7 +535,7 @@ export class DocumentApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: SchemasSectionLabelDeleteRequestToJSON(requestParameters['schemasSectionLabelDeleteRequest']),
+            body: LabelDeleteRequestToJSON(requestParameters['labelDeleteRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));

@@ -1,30 +1,22 @@
 
-# ValidationError
+# LabelAddRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`loc` | [Array&lt;LocationInner&gt;](LocationInner.md)
-`msg` | string
-`type` | string
-`input` | any
-`ctx` | object
+`name` | string
 
 ## Example
 
 ```typescript
-import type { ValidationError } from ''
+import type { LabelAddRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "loc": null,
-  "msg": null,
-  "type": null,
-  "input": null,
-  "ctx": null,
-} satisfies ValidationError
+  "name": null,
+} satisfies LabelAddRequest
 
 console.log(example)
 
@@ -33,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as ValidationError
+const exampleParsed = JSON.parse(exampleJSON) as LabelAddRequest
 console.log(exampleParsed)
 ```
 

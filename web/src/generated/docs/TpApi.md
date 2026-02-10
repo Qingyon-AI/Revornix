@@ -16,7 +16,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## addLabelTpSectionLabelCreatePost
 
-> SchemasDocumentCreateLabelResponse addLabelTpSectionLabelCreatePost(schemasDocumentLabelAddRequest, apiKey)
+> CreateLabelResponse addLabelTpSectionLabelCreatePost(labelAddRequest, apiKey)
 
 Add Label
 
@@ -34,8 +34,8 @@ async function example() {
   const api = new TpApi();
 
   const body = {
-    // SchemasDocumentLabelAddRequest
-    schemasDocumentLabelAddRequest: ...,
+    // LabelAddRequest
+    labelAddRequest: ...,
     // string (optional)
     apiKey: apiKey_example,
   } satisfies AddLabelTpSectionLabelCreatePostRequest;
@@ -57,12 +57,12 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **schemasDocumentLabelAddRequest** | [SchemasDocumentLabelAddRequest](SchemasDocumentLabelAddRequest.md) |  | |
+| **labelAddRequest** | [LabelAddRequest](LabelAddRequest.md) |  | |
 | **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-[**SchemasDocumentCreateLabelResponse**](SchemasDocumentCreateLabelResponse.md)
+[**CreateLabelResponse**](CreateLabelResponse.md)
 
 ### Authorization
 
@@ -85,7 +85,7 @@ No authorization required
 
 ## createDocumentLabelTpDocumentLabelCreatePost
 
-> SchemasDocumentCreateLabelResponse createDocumentLabelTpDocumentLabelCreatePost(schemasDocumentLabelAddRequest, apiKey)
+> CreateLabelResponse createDocumentLabelTpDocumentLabelCreatePost(labelAddRequest, apiKey)
 
 Create Document Label
 
@@ -103,8 +103,8 @@ async function example() {
   const api = new TpApi();
 
   const body = {
-    // SchemasDocumentLabelAddRequest
-    schemasDocumentLabelAddRequest: ...,
+    // LabelAddRequest
+    labelAddRequest: ...,
     // string (optional)
     apiKey: apiKey_example,
   } satisfies CreateDocumentLabelTpDocumentLabelCreatePostRequest;
@@ -126,12 +126,12 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **schemasDocumentLabelAddRequest** | [SchemasDocumentLabelAddRequest](SchemasDocumentLabelAddRequest.md) |  | |
+| **labelAddRequest** | [LabelAddRequest](LabelAddRequest.md) |  | |
 | **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-[**SchemasDocumentCreateLabelResponse**](SchemasDocumentCreateLabelResponse.md)
+[**CreateLabelResponse**](CreateLabelResponse.md)
 
 ### Authorization
 

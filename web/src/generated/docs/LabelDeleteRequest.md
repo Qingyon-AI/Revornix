@@ -1,30 +1,22 @@
 
-# ValidationError
+# LabelDeleteRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`loc` | [Array&lt;LocationInner&gt;](LocationInner.md)
-`msg` | string
-`type` | string
-`input` | any
-`ctx` | object
+`label_ids` | Array&lt;number&gt;
 
 ## Example
 
 ```typescript
-import type { ValidationError } from ''
+import type { LabelDeleteRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "loc": null,
-  "msg": null,
-  "type": null,
-  "input": null,
-  "ctx": null,
-} satisfies ValidationError
+  "label_ids": null,
+} satisfies LabelDeleteRequest
 
 console.log(example)
 
@@ -33,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as ValidationError
+const exampleParsed = JSON.parse(exampleJSON) as LabelDeleteRequest
 console.log(exampleParsed)
 ```
 

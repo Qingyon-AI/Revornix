@@ -24,25 +24,28 @@ export interface NormalResponse {
      * @type {boolean}
      * @memberof NormalResponse
      */
-    success?: boolean;
+    success: boolean;
     /**
      * 
      * @type {string}
      * @memberof NormalResponse
      */
-    message?: string;
+    message: string;
     /**
      * 
      * @type {number}
      * @memberof NormalResponse
      */
-    code?: number | null;
+    code: number;
 }
 
 /**
  * Check if a given object implements the NormalResponse interface.
  */
 export function instanceOfNormalResponse(value: object): value is NormalResponse {
+    if (!('success' in value) || value['success'] === undefined) return false;
+    if (!('message' in value) || value['message'] === undefined) return false;
+    if (!('code' in value) || value['code'] === undefined) return false;
     return true;
 }
 
@@ -56,9 +59,9 @@ export function NormalResponseFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'success': json['success'] == null ? undefined : json['success'],
-        'message': json['message'] == null ? undefined : json['message'],
-        'code': json['code'] == null ? undefined : json['code'],
+        'success': json['success'],
+        'message': json['message'],
+        'code': json['code'],
     };
 }
 

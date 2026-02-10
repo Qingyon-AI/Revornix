@@ -16,12 +16,12 @@
 import * as runtime from '../runtime';
 import type {
   AllMySectionsResponse,
+  CreateLabelResponse,
   DocumentCreateRequest,
   DocumentCreateResponse,
   HTTPValidationError,
+  LabelAddRequest,
   NormalResponse,
-  SchemasDocumentCreateLabelResponse,
-  SchemasDocumentLabelAddRequest,
   SchemasDocumentLabelListResponse,
   SectionCreateRequest,
   SectionCreateResponse,
@@ -29,18 +29,18 @@ import type {
 import {
     AllMySectionsResponseFromJSON,
     AllMySectionsResponseToJSON,
+    CreateLabelResponseFromJSON,
+    CreateLabelResponseToJSON,
     DocumentCreateRequestFromJSON,
     DocumentCreateRequestToJSON,
     DocumentCreateResponseFromJSON,
     DocumentCreateResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    LabelAddRequestFromJSON,
+    LabelAddRequestToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
-    SchemasDocumentCreateLabelResponseFromJSON,
-    SchemasDocumentCreateLabelResponseToJSON,
-    SchemasDocumentLabelAddRequestFromJSON,
-    SchemasDocumentLabelAddRequestToJSON,
     SchemasDocumentLabelListResponseFromJSON,
     SchemasDocumentLabelListResponseToJSON,
     SectionCreateRequestFromJSON,
@@ -50,12 +50,12 @@ import {
 } from '../models/index';
 
 export interface AddLabelTpSectionLabelCreatePostRequest {
-    schemasDocumentLabelAddRequest: SchemasDocumentLabelAddRequest;
+    labelAddRequest: LabelAddRequest;
     apiKey?: string | null;
 }
 
 export interface CreateDocumentLabelTpDocumentLabelCreatePostRequest {
-    schemasDocumentLabelAddRequest: SchemasDocumentLabelAddRequest;
+    labelAddRequest: LabelAddRequest;
     apiKey?: string | null;
 }
 
@@ -92,11 +92,11 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Add Label
      */
-    async addLabelTpSectionLabelCreatePostRaw(requestParameters: AddLabelTpSectionLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasDocumentCreateLabelResponse>> {
-        if (requestParameters['schemasDocumentLabelAddRequest'] == null) {
+    async addLabelTpSectionLabelCreatePostRaw(requestParameters: AddLabelTpSectionLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
+        if (requestParameters['labelAddRequest'] == null) {
             throw new runtime.RequiredError(
-                'schemasDocumentLabelAddRequest',
-                'Required parameter "schemasDocumentLabelAddRequest" was null or undefined when calling addLabelTpSectionLabelCreatePost().'
+                'labelAddRequest',
+                'Required parameter "labelAddRequest" was null or undefined when calling addLabelTpSectionLabelCreatePost().'
             );
         }
 
@@ -118,16 +118,16 @@ export class TpApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: SchemasDocumentLabelAddRequestToJSON(requestParameters['schemasDocumentLabelAddRequest']),
+            body: LabelAddRequestToJSON(requestParameters['labelAddRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => SchemasDocumentCreateLabelResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CreateLabelResponseFromJSON(jsonValue));
     }
 
     /**
      * Add Label
      */
-    async addLabelTpSectionLabelCreatePost(requestParameters: AddLabelTpSectionLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasDocumentCreateLabelResponse> {
+    async addLabelTpSectionLabelCreatePost(requestParameters: AddLabelTpSectionLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateLabelResponse> {
         const response = await this.addLabelTpSectionLabelCreatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -135,11 +135,11 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Create Document Label
      */
-    async createDocumentLabelTpDocumentLabelCreatePostRaw(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasDocumentCreateLabelResponse>> {
-        if (requestParameters['schemasDocumentLabelAddRequest'] == null) {
+    async createDocumentLabelTpDocumentLabelCreatePostRaw(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
+        if (requestParameters['labelAddRequest'] == null) {
             throw new runtime.RequiredError(
-                'schemasDocumentLabelAddRequest',
-                'Required parameter "schemasDocumentLabelAddRequest" was null or undefined when calling createDocumentLabelTpDocumentLabelCreatePost().'
+                'labelAddRequest',
+                'Required parameter "labelAddRequest" was null or undefined when calling createDocumentLabelTpDocumentLabelCreatePost().'
             );
         }
 
@@ -161,16 +161,16 @@ export class TpApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: SchemasDocumentLabelAddRequestToJSON(requestParameters['schemasDocumentLabelAddRequest']),
+            body: LabelAddRequestToJSON(requestParameters['labelAddRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => SchemasDocumentCreateLabelResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CreateLabelResponseFromJSON(jsonValue));
     }
 
     /**
      * Create Document Label
      */
-    async createDocumentLabelTpDocumentLabelCreatePost(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasDocumentCreateLabelResponse> {
+    async createDocumentLabelTpDocumentLabelCreatePost(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateLabelResponse> {
         const response = await this.createDocumentLabelTpDocumentLabelCreatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }

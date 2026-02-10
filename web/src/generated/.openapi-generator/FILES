@@ -33,6 +33,7 @@ docs/BindPhoneCodeVerifyRequest.md
 docs/ChatItem.md
 docs/ChatMessages.md
 docs/CommunityEngineSearchRequest.md
+docs/CreateLabelResponse.md
 docs/DaySectionRequest.md
 docs/DaySectionResponse.md
 docs/DefaultApi.md
@@ -129,6 +130,8 @@ docs/InifiniteScrollPagnitionSectionInfo.md
 docs/InifiniteScrollPagnitionSectionUserPublicInfo.md
 docs/InifiniteScrollPagnitionUserPublicInfo.md
 docs/InitialPasswordResponse.md
+docs/LabelAddRequest.md
+docs/LabelDeleteRequest.md
 docs/LabelSummaryItem.md
 docs/LabelSummaryResponse.md
 docs/LocationInner.md
@@ -201,11 +204,8 @@ docs/RssDocumentInfo.md
 docs/RssSectionInfo.md
 docs/RssServerInfo.md
 docs/SchemasDocumentBaseSectionInfo.md
-docs/SchemasDocumentCreateLabelResponse.md
-docs/SchemasDocumentLabelAddRequest.md
 docs/SchemasDocumentLabelListResponse.md
 docs/SchemasSectionBaseSectionInfo.md
-docs/SchemasSectionLabelDeleteRequest.md
 docs/SchemasSectionLabelListResponse.md
 docs/SearchAllMyDocumentsRequest.md
 docs/SearchApiKeysRequest.md
@@ -308,6 +308,7 @@ models/BindPhoneCodeVerifyRequest.ts
 models/ChatItem.ts
 models/ChatMessages.ts
 models/CommunityEngineSearchRequest.ts
+models/CreateLabelResponse.ts
 models/DaySectionRequest.ts
 models/DaySectionResponse.ts
 models/DefaultEngineUpdateRequest.ts
@@ -399,6 +400,8 @@ models/InifiniteScrollPagnitionSectionInfo.ts
 models/InifiniteScrollPagnitionSectionUserPublicInfo.ts
 models/InifiniteScrollPagnitionUserPublicInfo.ts
 models/InitialPasswordResponse.ts
+models/LabelAddRequest.ts
+models/LabelDeleteRequest.ts
 models/LabelSummaryItem.ts
 models/LabelSummaryResponse.ts
 models/LocationInner.ts
@@ -468,11 +471,8 @@ models/RssDocumentInfo.ts
 models/RssSectionInfo.ts
 models/RssServerInfo.ts
 models/SchemasDocumentBaseSectionInfo.ts
-models/SchemasDocumentCreateLabelResponse.ts
-models/SchemasDocumentLabelAddRequest.ts
 models/SchemasDocumentLabelListResponse.ts
 models/SchemasSectionBaseSectionInfo.ts
-models/SchemasSectionLabelDeleteRequest.ts
 models/SchemasSectionLabelListResponse.ts
 models/SearchAllMyDocumentsRequest.ts
 models/SearchApiKeysRequest.ts

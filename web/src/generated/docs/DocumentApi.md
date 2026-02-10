@@ -34,7 +34,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## addLabelDocumentLabelCreatePost
 
-> SchemasDocumentCreateLabelResponse addLabelDocumentLabelCreatePost(schemasDocumentLabelAddRequest, authorization)
+> CreateLabelResponse addLabelDocumentLabelCreatePost(labelAddRequest, authorization)
 
 Add Label
 
@@ -52,8 +52,8 @@ async function example() {
   const api = new DocumentApi();
 
   const body = {
-    // SchemasDocumentLabelAddRequest
-    schemasDocumentLabelAddRequest: ...,
+    // LabelAddRequest
+    labelAddRequest: ...,
     // string (optional)
     authorization: authorization_example,
   } satisfies AddLabelDocumentLabelCreatePostRequest;
@@ -75,12 +75,12 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **schemasDocumentLabelAddRequest** | [SchemasDocumentLabelAddRequest](SchemasDocumentLabelAddRequest.md) |  | |
+| **labelAddRequest** | [LabelAddRequest](LabelAddRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-[**SchemasDocumentCreateLabelResponse**](SchemasDocumentCreateLabelResponse.md)
+[**CreateLabelResponse**](CreateLabelResponse.md)
 
 ### Authorization
 
@@ -448,7 +448,7 @@ No authorization required
 
 ## deleteLabelDocumentLabelDeletePost
 
-> NormalResponse deleteLabelDocumentLabelDeletePost(schemasSectionLabelDeleteRequest, authorization)
+> NormalResponse deleteLabelDocumentLabelDeletePost(labelDeleteRequest, authorization)
 
 Delete Label
 
@@ -466,8 +466,8 @@ async function example() {
   const api = new DocumentApi();
 
   const body = {
-    // SchemasSectionLabelDeleteRequest
-    schemasSectionLabelDeleteRequest: ...,
+    // LabelDeleteRequest
+    labelDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
   } satisfies DeleteLabelDocumentLabelDeletePostRequest;
@@ -489,7 +489,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **schemasSectionLabelDeleteRequest** | [SchemasSectionLabelDeleteRequest](SchemasSectionLabelDeleteRequest.md) |  | |
+| **labelDeleteRequest** | [LabelDeleteRequest](LabelDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
