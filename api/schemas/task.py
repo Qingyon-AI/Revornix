@@ -1,7 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
 class DocumentTranscribeTask(BaseModel):
-    creator_id: int
     status: int
     transcribed_text: str | None
 
@@ -11,7 +10,6 @@ class DocumentTranscribeTask(BaseModel):
     )
 
 class DocumentConvertTask(BaseModel):
-    creator_id: int
     status: int
     md_file_name: str | None
 
@@ -21,7 +19,6 @@ class DocumentConvertTask(BaseModel):
     )
 
 class DocumentSummarizeTask(BaseModel):
-    creator_id: int
     status: int
     summary: str | None
 
@@ -31,7 +28,6 @@ class DocumentSummarizeTask(BaseModel):
     )
 
 class DocumentEmbeddingTask(BaseModel):
-    creator_id: int
     status: int
 
     model_config = ConfigDict(
@@ -40,7 +36,6 @@ class DocumentEmbeddingTask(BaseModel):
     )
 
 class DocumentGraphTask(BaseModel):
-    creator_id: int
     status: int
 
     model_config = ConfigDict(
@@ -49,7 +44,6 @@ class DocumentGraphTask(BaseModel):
     )
 
 class DocumentProcessTask(BaseModel):
-    creator_id: int
     status: int
 
     model_config = ConfigDict(
@@ -58,7 +52,6 @@ class DocumentProcessTask(BaseModel):
     )
 
 class DocumentPodcastTask(BaseModel):
-    creator_id: int
     status: int
     podcast_file_name: str | None
 
@@ -73,7 +66,6 @@ class DocumentOverrideProperty(BaseModel):
     cover: str | None = None
 
 class SectionPodcastTask(BaseModel):
-    creator_id: int
     status: int
     podcast_file_name: str | None
 

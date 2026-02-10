@@ -216,19 +216,15 @@ class DocumentInfo(BaseModel):
     )
 
 class WebsiteDocumentInfo(BaseModel):
-    creator_id: int
     url: str
 
 class FileDocumentInfo(BaseModel):
-    creator_id: int
     file_name: str
 
 class QuickNoteDocumentInfo(BaseModel):
-    creator_id: int
     content: str
 
 class AudioDocumentInfo(BaseModel):
-    creator_id: int
     audio_file_name: str
 
 class DocumentDetailResponse(BaseModel):

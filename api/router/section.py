@@ -225,7 +225,6 @@ async def section_seo_detail_request(
     )
     if db_section_podcast_task is not None:
         res.podcast_task = schemas.section.SectionPodcastTask(
-            creator_id=db_section_podcast_task.user_id,
             status=db_section_podcast_task.status,
             podcast_file_name=db_section_podcast_task.podcast_file_name
         )
@@ -1123,7 +1122,6 @@ async def get_section_detail(
         )
         if db_section_podcast_task is not None:
             res.podcast_task = schemas.section.SectionPodcastTask(
-                creator_id=db_section_podcast_task.user_id,
                 status=db_section_podcast_task.status,
                 podcast_file_name=db_section_podcast_task.podcast_file_name
             )
@@ -1195,7 +1193,6 @@ async def get_section_detail(
             )
             if db_section_podcast_task is not None:
                 res.podcast_task = schemas.section.SectionPodcastTask(
-                    creator_id=db_section_podcast_task.user_id,
                     status=db_section_podcast_task.status,
                     podcast_file_name=db_section_podcast_task.podcast_file_name
                 )

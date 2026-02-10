@@ -826,7 +826,6 @@ async def get_document_infos(
         convert_task = convert_task_by_document_id.get(document.id)
         if convert_task is not None:
             info.convert_task = schemas.task.DocumentConvertTask(
-                creator_id=document.creator_id,
                 status=convert_task.status,
                 md_file_name=convert_task.md_file_name,
             )
@@ -839,21 +838,18 @@ async def get_document_infos(
         embedding_task = embedding_task_by_document_id.get(document.id)
         if embedding_task is not None:
             info.embedding_task = schemas.task.DocumentEmbeddingTask(
-                creator_id=document.creator_id,
                 status=embedding_task.status,
             )
 
         graph_task = graph_task_by_document_id.get(document.id)
         if graph_task is not None:
             info.graph_task = schemas.task.DocumentGraphTask(
-                creator_id=document.creator_id,
                 status=graph_task.status,
             )
 
         podcast_task = podcast_task_by_document_id.get(document.id)
         if podcast_task is not None:
             info.podcast_task = schemas.task.DocumentPodcastTask(
-                creator_id=document.creator_id,
                 status=podcast_task.status,
                 podcast_file_name=podcast_task.podcast_file_name,
             )
@@ -866,7 +862,6 @@ async def get_document_infos(
         summarize_task = summarize_task_by_document_id.get(document.id)
         if summarize_task is not None:
             info.summarize_task = schemas.task.DocumentSummarizeTask(
-                creator_id=document.creator_id,
                 status=summarize_task.status,
                 summary=summarize_task.summary,
             )
@@ -874,7 +869,6 @@ async def get_document_infos(
         transcribe_task = transcribe_task_by_document_id.get(document.id)
         if transcribe_task is not None:
             info.transcribe_task = schemas.task.DocumentTranscribeTask(
-                creator_id=document.creator_id,
                 status=transcribe_task.status,
                 transcribed_text=transcribe_task.transcribed_text,
             )
@@ -882,7 +876,6 @@ async def get_document_infos(
         process_task = process_task_by_document_id.get(document.id)
         if process_task is not None:
             info.process_task = schemas.task.DocumentProcessTask(
-                creator_id=document.creator_id,
                 status=process_task.status,
             )
 
@@ -972,7 +965,6 @@ async def get_document_detail(
         )
         if website_document is not None:
             res.website_info = schemas.document.WebsiteDocumentInfo(
-                creator_id=document.creator_id,
                 url=website_document.url
             )
     elif document.category == DocumentCategory.FILE:
@@ -982,7 +974,6 @@ async def get_document_detail(
         )
         if file_document is not None:
             res.file_info = schemas.document.FileDocumentInfo(
-                creator_id=document.creator_id,
                 file_name=file_document.file_name
             )
             if res.file_info.file_name is not None:
@@ -997,7 +988,6 @@ async def get_document_detail(
         )
         if quick_note_document is not None:
             res.quick_note_info = schemas.document.QuickNoteDocumentInfo(
-                creator_id=document.creator_id,
                 content=quick_note_document.content
             )
     elif document.category == DocumentCategory.AUDIO:
@@ -1007,7 +997,6 @@ async def get_document_detail(
         )
         if audio_document is not None:
             res.audio_info = schemas.document.AudioDocumentInfo(
-                creator_id=document.creator_id,
                 audio_file_name=audio_document.audio_file_name
             )
             if res.audio_info.audio_file_name is not None:
@@ -1021,7 +1010,6 @@ async def get_document_detail(
     )
     if convert_task is not None:
         res.convert_task = schemas.document.DocumentConvertTask(
-            creator_id=convert_task.user_id,
             status=convert_task.status,
             md_file_name=convert_task.md_file_name
         )
@@ -1036,7 +1024,6 @@ async def get_document_detail(
     )
     if podcast_task is not None:
         res.podcast_task = schemas.document.DocumentPodcastTask(
-            creator_id=podcast_task.user_id,
             status=podcast_task.status,
             podcast_file_name=podcast_task.podcast_file_name
         )
@@ -1051,7 +1038,6 @@ async def get_document_detail(
     )
     if summarize_task is not None:
         res.summarize_task = schemas.document.DocumentSummarizeTask(
-            creator_id=summarize_task.user_id,
             status=summarize_task.status,
             summary=summarize_task.summary
         )
