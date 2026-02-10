@@ -62,9 +62,9 @@ const UserPlan = () => {
 			{paySystemUserInfo?.userPlan?.plan &&
 				paySystemUserInfo?.userPlan.plan.product?.uuid !== Plan.FREE && (
 					<div className='mx-5'>
-						{format(paySystemUserInfo?.userPlan.startTime, 'yyyy-MM-dd')}
+						{format(paySystemUserInfo?.userPlan.startTime, 'yyyy-MM-dd HH:mm')}
 						{' ~ '}
-						{format(paySystemUserInfo?.userPlan.expireTime, 'yyyy-MM-dd')}
+						{format(paySystemUserInfo?.userPlan.expireTime, 'yyyy-MM-dd HH:mm')}
 					</div>
 				)}
 		</div>
