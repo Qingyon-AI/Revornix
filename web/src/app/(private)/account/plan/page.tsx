@@ -209,12 +209,12 @@ const ProPage = async () => {
 					introduction_abilities={free_introduction_abilities}
 				/>
 				<PlanCard
-					product_uuid={'a00a68fbfdbc4159a67610858b43e2e8'}
+					product_uuid={'0a3e8009849f4e4383f19dc687c225ec'}
 					badge={t('account_plan_user_prefer')}
 					introduction_abilities={pro_introduction_abilities}
 				/>
 				<PlanCard
-					product_uuid={'c5d27327384543a8b952d3f52a2120f0'}
+					product_uuid={'372b0794e3b443b68a0db6a2e6d78f0a'}
 					introduction_abilities={max_introduction_abilities}
 				/>
 				<CustomPlan />
