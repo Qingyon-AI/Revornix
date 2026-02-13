@@ -39,6 +39,7 @@ import GithubIcon from '../icons/github-icon';
 import { GOOGLE_CLIENT_ID } from '@/config/google';
 import { GITHUB_CLIENT_ID } from '@/config/github';
 import WechatIcon from '../icons/wechat-icon';
+import { getSafeRedirectPage } from '@/lib/safe-redirect';
 
 const phoneFormSchema = z.object({
 	phone: z.string().min(2).max(50),
@@ -48,7 +49,7 @@ const phoneFormSchema = z.object({
 const PhoneLoginForm = () => {
 	const t = useTranslations();
 	const searchParams = useSearchParams();
-	const redirect_page = searchParams.get('redirect_to') || '/dashboard'; // 默认跳转到 dashboard
+	const redirect_page = getSafeRedirectPage(searchParams.get('redirect_to'));
 	const router = useRouter();
 	const { loginWay, setLoginWay } = useLoginProvider();
 	const { refreshMainUserInfo } = useUserContext();
@@ -96,12 +97,12 @@ const PhoneLoginForm = () => {
 			toast.error(err.message);
 			setSubmitLoading(false);
 		} else {
-			Cookies.set('access_token', res.access_token);
-			Cookies.set('refresh_token', res.refresh_token);
+			Cookies.set('access_token', res.access_token, { path: '/' });
+			Cookies.set('refresh_token', res.refresh_token, { path: '/' });
 			toast.success(t('seo_login_success'));
 			setSubmitLoading(false);
 			refreshMainUserInfo();
-			router.push(redirect_page);
+			router.replace(redirect_page);
 		}
 	};
 
@@ -115,6 +116,7 @@ const PhoneLoginForm = () => {
 		phoneForm.trigger('phone');
 		if (phoneForm.formState.errors.phone) {
 			toast.error(phoneForm.formState.errors.phone.message);
+			setSendingCode(false);
 			return;
 		}
 		const [res, err] = await utils.to(

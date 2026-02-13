@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server'
 
-const whitelist = ['/login', '/register', '/.well-known/apple-app-site-association']
+const whitelist = ['/login', '/login/', '/register', '/register/', '/.well-known/apple-app-site-association']
 
 const auth = (request: NextRequest) => {
     const { pathname } = request.nextUrl
@@ -18,9 +18,8 @@ export function proxy(request: NextRequest) {
     if (auth(request)) {
         return NextResponse.next()
     }
-    // 获取当前路径，并编码以防止 URL 解析问题
-    const originalPath = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search)
-    const loginUrl = new URL(`/login?redirect_to=${originalPath}`, request.url)
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirect_to', request.nextUrl.pathname + request.nextUrl.search)
     // Redirect to login page if not authenticated and the destination page is not the sign page
     return NextResponse.redirect(loginUrl)
 }

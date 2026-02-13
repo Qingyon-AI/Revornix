@@ -37,6 +37,7 @@ import { GOOGLE_CLIENT_ID } from '@/config/google';
 import { GITHUB_CLIENT_ID } from '@/config/github';
 import { useLoginProvider } from '@/provider/login-provider';
 import WechatIcon from '../icons/wechat-icon';
+import { getSafeRedirectPage } from '@/lib/safe-redirect';
 
 const EmailLoginForm = () => {
 	const t = useTranslations();
@@ -49,7 +50,7 @@ const EmailLoginForm = () => {
 	const { loginWay, setLoginWay } = useLoginProvider();
 
 	const searchParams = useSearchParams();
-	const redirect_page = searchParams.get('redirect_to') || '/dashboard';
+	const redirect_page = getSafeRedirectPage(searchParams.get('redirect_to'));
 	const [submitLoading, setSubmitLoading] = useState(false);
 	const router = useRouter();
 	const { refreshMainUserInfo } = useUserContext();
@@ -90,12 +91,12 @@ const EmailLoginForm = () => {
 			toast.error(err.message);
 			setSubmitLoading(false);
 		} else {
-			Cookies.set('access_token', res.access_token);
-			Cookies.set('refresh_token', res.refresh_token);
+			Cookies.set('access_token', res.access_token, { path: '/' });
+			Cookies.set('refresh_token', res.refresh_token, { path: '/' });
 			toast.success(t('seo_login_success'));
 			setSubmitLoading(false);
-			refreshMainUserInfo();
-			router.push(redirect_page);
+			void refreshMainUserInfo();
+			router.replace(redirect_page);
 		}
 	};
 
