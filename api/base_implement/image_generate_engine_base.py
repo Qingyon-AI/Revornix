@@ -5,7 +5,6 @@ from langfuse import propagate_attributes
 from langfuse.openai import OpenAI
 
 import crud
-from common.logger import exception_logger
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.sql.base import session_scope
 from prompts.section_image import IMAGE_PLANNER_SYSTEM, build_image_planner_user_prompt
