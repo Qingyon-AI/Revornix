@@ -11,12 +11,13 @@ from config.oauth2 import OAUTH_SECRET_KEY
 from config.base import OFFICIAL, UNION_PAY_URL_PREFIX
 from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
-from typing import Optional
 from config.langfuse import LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
 from common.logger import exception_logger
 
 if OAUTH_SECRET_KEY is None:
     raise Exception("OAUTH_SECRET_KEY is not set")
+if LANGFUSE_PUBLIC_KEY is None or LANGFUSE_SECRET_KEY is None:
+    raise Exception("LANGFUSE_PUBLIC_KEY or LANGFUSE_SECRET_KEY is not set")
 
 LANGFUSE_RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 LANGFUSE_MAX_RETRIES = 3
@@ -69,8 +70,8 @@ async def plan_ability_checked_in_func(
 async def list_traces(
     model_name: str,
     user_id: int,
-    start_time: Optional[datetime] = None,
-    end_time: Optional[datetime] = None,
+    start_time: datetime | None = None,
+    end_time: datetime | None = None,
     limit: int | None = None,
 ):
     """
