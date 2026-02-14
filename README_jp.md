@@ -126,6 +126,7 @@ pnpm start
 cd celery-worker
 conda create -n celery-worker python=3.11 -y
 pip install -r ./requirements.txt
+playwright install
 celery -A common.celery.app worker --pool=threads --concurrency=10 --loglevel=info -E
 ```
 
