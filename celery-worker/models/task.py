@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -16,10 +15,10 @@ class DocumentAudioTranscribeTask(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to transcribe, 1: transcribing, 2: transcribed successfully, 3: transcribe failed')
-    transcribed_text: Mapped[Optional[str]] = mapped_column(String(20000), comment='The transcribed text of the speech')
+    transcribed_text: Mapped[str | None] = mapped_column(String(20000), comment='The transcribed text of the speech')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class DocumentConvertToMdTask(Base):
@@ -28,10 +27,10 @@ class DocumentConvertToMdTask(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to transform, 1: transforming, 2: transformed successfully, 3: transform failed')
-    md_file_name: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the converted markdown file which you uploaded to the file system')
+    md_file_name: Mapped[str | None] = mapped_column(String(500), comment='The path of the converted markdown file which you uploaded to the file system')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
 
 
@@ -42,10 +41,10 @@ class DocumentSummarizeTask(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to summarized, 1: summarizing, 2: summarized successfully, 3: summarized failed')
-    summary: Mapped[Optional[str]] = mapped_column(String(5000), comment='The summary of the document')
+    summary: Mapped[str | None] = mapped_column(String(5000), comment='The summary of the document')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class DocumentEmbeddingTask(Base):
@@ -56,8 +55,8 @@ class DocumentEmbeddingTask(Base):
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to embed, 1: embedding, 2: embedded successfully, 3: embed failed')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class DocumentGraphTask(Base):
@@ -68,8 +67,8 @@ class DocumentGraphTask(Base):
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to generate graph, 1: generating graph, 2: graph generated successfully, 3: graph generation failed', )
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     
 
 class DocumentPodcastTask(Base):
@@ -79,10 +78,10 @@ class DocumentPodcastTask(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to generate podcast, 1: generating podcast, 2: podcast generated successfully, 3: podcast generation failed')
-    podcast_file_name: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the podcast file which you uploaded to the file system')
+    podcast_file_name: Mapped[str | None] = mapped_column(String(500), comment='The path of the podcast file which you uploaded to the file system')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class DocumentProcessTask(Base):
@@ -94,8 +93,8 @@ class DocumentProcessTask(Base):
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to process, 1: processing, 2: processed successfully, 3: process failed')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class SectionProcessTask(Base):
@@ -106,9 +105,9 @@ class SectionProcessTask(Base):
     section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to process, 1: processing, 2: processed successfully, 3: process failed')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    trigger_type: Mapped[Optional[int]] = mapped_column(Integer, nullable=False, comment='0: scheduler, 1: updated')
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    trigger_type: Mapped[int | None] = mapped_column(Integer, nullable=False, comment='0: scheduler, 1: updated')
 
 
 class SectionTriggerScheduler(Base):
@@ -117,7 +116,7 @@ class SectionTriggerScheduler(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     section_process_task_id: Mapped[int] = mapped_column(ForeignKey("section_process_task.id"), index=True, nullable=False)
     cron_expr: Mapped[str] = mapped_column(String(100), nullable=False)
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     
 
 class SectionPodcastTask(Base):
@@ -127,7 +126,7 @@ class SectionPodcastTask(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to generate podcast, 1: generating podcast, 2: podcast generated successfully, 3: podcast generation failed')
-    podcast_file_name: Mapped[Optional[str]] = mapped_column(String(500), comment='The path of the podcast file which you uploaded to the file system')
+    podcast_file_name: Mapped[str | None] = mapped_column(String(500), comment='The path of the podcast file which you uploaded to the file system')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -16,12 +15,12 @@ class FileSystem(Base):
     uuid: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     name_zh: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String(500))
-    description_zh: Mapped[Optional[str]] = mapped_column(String(500))
-    demo_config: Mapped[Optional[str]] = mapped_column(String(2000))
+    description: Mapped[str | None] = mapped_column(String(500))
+    description_zh: Mapped[str | None] = mapped_column(String(500))
+    demo_config: Mapped[str | None] = mapped_column(String(2000))
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class UserFileSystem(Base):
@@ -31,8 +30,8 @@ class UserFileSystem(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     file_system_id: Mapped[int] = mapped_column(ForeignKey("file_system.id"), index=True, nullable=False)
     title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String(2000))
-    config_json: Mapped[Optional[str]] = mapped_column(String(5000))
+    description: Mapped[str | None] = mapped_column(String(2000))
+    config_json: Mapped[str | None] = mapped_column(String(5000))
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    delete_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
