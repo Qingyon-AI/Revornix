@@ -6,7 +6,6 @@ import asyncio
 import ssl
 import os
 from pathlib import Path
-from typing import Optional
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
@@ -30,7 +29,7 @@ class RevornixSystemEmail:
         port: int = int(SMTP_PORT),
         username: str = SMTP_USERNAME,
         password: str = SMTP_PASSWORD,
-        sender_name: Optional[str] = "Revornix-No-Reply"
+        sender_name: str | None = "Revornix-No-Reply"
     ):
         self.host = host
         self.port = port
@@ -49,9 +48,9 @@ class RevornixSystemEmail:
         self,
         recipient: str,
         title: str,
-        content: Optional[str] = None,
-        cover: Optional[str] = None,
-        template: Optional[str] = "default.html"
+        content: str | None = None,
+        cover: str | None = None,
+        template: str | None = "default.html"
     ) -> bool:
 
         try:
