@@ -205,3 +205,77 @@ def sum_usage_details(items: list[dict[str, Any]]) -> dict[str, int]:
                 total[key] += value
 
     return dict(total)
+
+async def calc_token_usage(
+    trace_ids: list[str]
+):
+
+    if LANGFUSE_PUBLIC_KEY is None or LANGFUSE_SECRET_KEY is None:
+        raise RuntimeError("Missing LANGFUSE_PUBLIC_KEY or LANGFUSE_SECRET_KEY")
+
+    to_be_sumed = []
+
+    async with httpx.AsyncClient(
+        timeout=20
+    ) as client:
+        for trace_id in trace_ids:
+            resp = await client.get(
+                f"{LANGFUSE_BASE_URL}/api/public/traces/{trace_id}",
+                auth=(LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY),
+            )
+            resp.raise_for_status()
+            detail = resp.json()
+            observations = detail.get("observations", [])
+            for obs in observations:
+                if (
+                    obs["type"] == "GENERATION"
+                    and obs.get("usageDetails")
+                    and is_leaf_generation(obs, observations)
+                ):
+                    to_be_sumed.append(obs)
+
+    return sum_usage_details(to_be_sumed)
+
+async def get_user_token_usage(
+    *,
+    user_id: int,
+    model_name: str,
+    start_time: datetime | None = None,
+    end_time: datetime | None = None,
+    limit: int | None = None,
+):
+    traces = await list_traces(
+        model_name=model_name,
+        user_id=user_id,
+        start_time=start_time,
+        end_time=end_time,
+        limit=limit,
+    )
+
+    trace_ids = [t["id"] for t in traces]
+
+    if not trace_ids:
+        return None
+
+    usage = await calc_token_usage(trace_ids)
+    usage["trace_count"] = len(trace_ids)
+
+    return usage
+
+if __name__=='__main__':
+
+    import asyncio
+
+    async def main():
+        end_time = datetime.now(timezone.utc)
+        start_time = end_time - timedelta(days=7)
+        res = await get_user_token_usage(
+            user_id=1,
+            model_name="gpt-audio",
+            start_time=start_time,
+            end_time=end_time,
+        )
+        print(res)
+    asyncio.run(
+        main()
+    )
