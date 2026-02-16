@@ -26,13 +26,15 @@ from common.dependencies import (
 from common.encrypt import encrypt_api_key
 from common.interpret_event import EventInterpreter
 from common.jwt_utils import create_token
-from common.logger import exception_logger
+from common.logger import exception_logger, info_logger
+from common.usage_collector import UsageCollector
 from data.sql.base import session_scope
 from enums.ability import Ability
 from enums.mcp import MCPCategory
 from enums.model import UserModelProviderRole
 from proxy.ai_model_proxy import AIModelProxy
 from schemas.ai import ChatItem
+from typing import Any
 
 ai_router = APIRouter()
 
@@ -494,7 +496,9 @@ async def create_agent(
         llm = ChatOpenAI(
             model=model_configuration.model_name,
             api_key=api_key,
-            base_url=base_url
+            base_url=base_url,
+            # Ensure token usage is included in streaming events when provider supports it.
+            stream_usage=True,
         )
         return MCPAgent(llm=llm, client=mcp_client)
     except Exception as e:
@@ -509,6 +513,8 @@ async def stream_ops_with_agent(
     messages: list[ChatItem],
 ) -> AsyncGenerator[str, None]:
     interpreter = EventInterpreter()
+    usage_collector = UsageCollector()
+    chat_id = uuid4().hex
 
     try:
         # ==========================
@@ -523,8 +529,6 @@ async def stream_ops_with_agent(
             elif message.role == "assistant":
                 agent.add_to_history(AIMessage(content=message.content))
 
-        # 返回的消息的id
-        chat_id = uuid4().hex
         # ==========================
         # 2️⃣ 开始流式执行
         # ==========================
@@ -534,9 +538,23 @@ async def stream_ops_with_agent(
         ):
 
             async for raw_event in agent.stream_events(query=query):
+                raw_event_dict = dict(raw_event)
+                usage_collector.collect(raw_event_dict)
+                if raw_event_dict.get("event") == "on_chat_model_end":
+                    event_usage_snapshot = usage_collector.snapshot()
+                    if event_usage_snapshot is not None:
+                        info_logger.info(
+                            f"MCP usage at chat_model_end. user_id={user_id}, chat_id={chat_id}, usage={event_usage_snapshot}"
+                        )
+                    else:
+                        raw_data = raw_event_dict.get("data")
+                        data_keys = list(raw_data.keys()) if isinstance(raw_data, dict) else []
+                        info_logger.warning(
+                            f"No usage found at chat_model_end. user_id={user_id}, chat_id={chat_id}, data_keys={data_keys}"
+                        )
                 # 🔥 核心：解释 LangGraph / MCP 事件
                 for interpreted in interpreter.interpret(
-                    event=raw_event,
+                    event=raw_event_dict,
                     chat_id=chat_id
                 ):
                     if not interpreted:
@@ -549,29 +567,43 @@ async def stream_ops_with_agent(
         # 3️⃣ 错误事件
         # ==========================
         exception_logger.error(f"Failed to stream ops with agent: {e}")
+        usage_snapshot = usage_collector.snapshot()
+        payload: dict[str, Any] = {
+            "code": "SERVER_ERROR",
+            "message": str(e)
+        }
+        if usage_snapshot is not None:
+            payload["usage"] = usage_snapshot
         yield _sse(
             {
                 "chat_id": chat_id,
                 "type": "error",
                 "timestamp": time.time(),
                 "trace": {},
-                "payload": {
-                    "code": "SERVER_ERROR",
-                    "message": str(e)
-                },
+                "payload": payload,
             }
         )
 
     # ==========================
     # 4️⃣ 完成事件
     # ==========================
+    usage_snapshot = usage_collector.snapshot()
+    if usage_snapshot is not None:
+        info_logger.info(
+            f"MCP usage summary. user_id={user_id}, chat_id={chat_id}, usage={usage_snapshot}"
+        )
+
+    done_payload: dict[str, object] = {"success": True}
+    if usage_snapshot is not None:
+        done_payload["usage"] = usage_snapshot
+
     yield _sse(
         {
             "chat_id": chat_id,
             "type": "done",
             "timestamp": time.time(),
             "trace": {},
-            "payload": {"success": True},
+            "payload": done_payload,
         }
     )
 
