@@ -7,11 +7,13 @@ export type AIChatState = {
     currentSessionId: string | null;
     currentSession: () => SessionItem | null;
     sessions: SessionItem[];
+    ownerUserId: number | null;
     _hasHydrated: boolean;
 };
 
 export type AIChatAction = {
     setCurrentSessionId: (id: string | null) => void;
+    bindUserScope: (userId: number) => void;
     addSession: (chat: SessionItem) => void;
     deleteSession: (id: string) => void;
     setHasHydrated: (status: boolean) => void;
@@ -43,13 +45,13 @@ const storage: StateStorage = {
 }
 
 const phaseLabelMap: Record<AIPhase, (meta?: any) => string> = {
-    idle: () => '空闲',
-    thinking: () => '思考中…',
-    writing: () => '生成回答中',
-    tool: () => '调用工具',
-    tool_result: () => '工具返回',
-    done: () => '已完成',
-    error: (meta) => meta?.message ?? '发生错误',
+    idle: () => 'revornix_ai_phase_idle',
+    thinking: () => 'revornix_ai_phase_thinking',
+    writing: () => 'revornix_ai_phase_writing',
+    tool: () => 'revornix_ai_phase_tool',
+    tool_result: () => 'revornix_ai_phase_tool_result',
+    done: () => 'revornix_ai_phase_done',
+    error: (meta) => meta?.message ?? 'revornix_ai_phase_error',
 };
 
 function pushWorkflowStep(
@@ -83,12 +85,23 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                 _hasHydrated: false,
                 currentSessionId: null,
                 sessions: [],
+                ownerUserId: null,
                 currentSession: () => {
                     const currentSessionId = get().currentSessionId;
                     if (!currentSessionId) return null;
                     return get().sessions.find((session) => session.id === currentSessionId) || null;
                 },
                 setCurrentSessionId: (id) => set({ currentSessionId: id }),
+                bindUserScope: (userId: number) => set((state) => {
+                    if (state.ownerUserId === userId) {
+                        return state;
+                    }
+                    return {
+                        ownerUserId: userId,
+                        currentSessionId: null,
+                        sessions: [],
+                    };
+                }),
                 updateChatMessage: (chat_id: string, role: string, token: string) => {
                     return set((state) => {
                         const sessions = state.sessions.map(session => {
