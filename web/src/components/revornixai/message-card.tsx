@@ -15,11 +15,20 @@ import {
 	XCircleIcon,
 } from 'lucide-react';
 import { isEmpty } from 'lodash-es';
+import { useTranslations } from 'next-intl';
 import CustomMarkdown from '../ui/custom-markdown';
 
 const MessageCard = ({ message }: { message: Message }) => {
+	const t = useTranslations();
 	const ai_workflow = message.ai_workflow;
 	const ai_state = message.ai_state;
+	const resolvePhaseLabel = (label?: string) => {
+		if (!label) return '';
+		if (label.startsWith('revornix_ai_phase_') && t.has(label as any)) {
+			return t(label as any);
+		}
+		return label;
+	};
 	return (
 		<div
 			className={cn('flex flex-row gap-5', {
@@ -48,7 +57,7 @@ const MessageCard = ({ message }: { message: Message }) => {
 													<XCircleIcon size={12} />
 												)}
 												<AlertTitle className='font-bold text-primary'>
-													{ai_state?.label && ai_state.label}
+													{resolvePhaseLabel(ai_state?.label)}
 												</AlertTitle>
 											</div>
 										</AccordionTrigger>
@@ -84,7 +93,7 @@ const MessageCard = ({ message }: { message: Message }) => {
 																			{step.phase === 'error' && (
 																				<XCircleIcon size={12} />
 																			)}
-																			<span>{step.label}</span>
+																			<span>{resolvePhaseLabel(step.label)}</span>
 																		</div>
 
 																		{!isEmpty(step.meta) && (

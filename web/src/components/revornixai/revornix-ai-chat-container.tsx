@@ -8,13 +8,22 @@ import CreateSessionButton from './create-session-button';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import { useAiChatStore } from '@/store/ai-chat';
+import { useUserContext } from '@/provider/user-provider';
 
 const RevornixAI = () => {
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
+	const ownerUserId = useAiChatStore((s) => s.ownerUserId);
+	const bindUserScope = useAiChatStore((s) => s.bindUserScope);
 	const currentSession = useAiChatStore((s) => s.currentSession());
 
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const messageEndRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		if (!mainUserInfo?.id) return;
+		bindUserScope(mainUserInfo.id);
+	}, [mainUserInfo?.id, bindUserScope]);
 
 	const isAtBottom = () => {
 		const el = containerRef.current;
@@ -30,6 +39,10 @@ const RevornixAI = () => {
 			behavior: 'auto',
 		});
 	}, [currentSession?.messages?.at(-1)?.content]);
+
+	if (mainUserInfo?.id && ownerUserId !== mainUserInfo.id) {
+		return null;
+	}
 
 	return (
 		<>

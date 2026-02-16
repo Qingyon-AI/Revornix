@@ -134,20 +134,20 @@ const MessageSendForm = () => {
 			role: 'user',
 		};
 
+		const baseMessages = currentSession()?.messages ?? [];
+
 		// if there is no current session
 		if (!currentSession() && !sessions.length) {
 			const newSession = {
 				id: crypto.randomUUID(),
 				title: 'New Session',
-				messages: [newMessage],
+				messages: [],
 			};
 			addSession(newSession);
 			setCurrentSessionId(newSession.id);
 		}
 		// create a new array to update the state
 		updateChatMessage(newMessage.chat_id, 'user', newMessage.content);
-
-		const baseMessages = currentSession()?.messages ?? [];
 
 		const messagesToSend = [...baseMessages, newMessage];
 
