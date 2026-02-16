@@ -539,8 +539,8 @@ async def stream_ops_with_agent(
 
             async for raw_event in agent.stream_events(query=query):
                 raw_event_dict = dict(raw_event)
-                usage_collector.collect(raw_event_dict)
                 if raw_event_dict.get("event") == "on_chat_model_end":
+                    usage_collector.collect(raw_event_dict)
                     event_usage_snapshot = usage_collector.snapshot()
                     if event_usage_snapshot is not None:
                         info_logger.info(
