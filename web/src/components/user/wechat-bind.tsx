@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
 import { Button } from '@/components/ui/button';
@@ -9,11 +9,24 @@ import { unBindWeChat } from '@/service/user';
 import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import { getOrigin } from '@/lib/utils';
 
 const WeChatBind = () => {
 	const t = useTranslations();
 	const [unBindStatus, setUnBindStatus] = useState(false);
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
+
+	const wechatAuthUrl = useMemo(() => {
+		const origin = window.location.origin; // 这里一定有值（client）
+		const redirectUri = `${origin}/integrations/wechat/oauth/bind/callback`;
+
+		return `https://open.weixin.qq.com/connect/qrconnect?appid=${
+			process.env.NEXT_PUBLIC_WECHAT_APP_ID
+		}&redirect_uri=${encodeURIComponent(
+			redirectUri,
+		)}&response_type=code&scope=snsapi_login&state=${crypto.randomUUID()}#wechat_redirect`;
+	}, []);
+
 	const handleUnBindWeChat = async () => {
 		setUnBindStatus(true);
 		const [res, err] = await utils.to(unBindWeChat());
@@ -26,6 +39,9 @@ const WeChatBind = () => {
 		setUnBindStatus(false);
 		refreshMainUserInfo();
 	};
+
+	const redirectUri = `${getOrigin()}/integrations/wechat/oauth/bind/callback`;
+
 	return (
 		<div>
 			{mainUserInfo &&
@@ -48,12 +64,7 @@ const WeChatBind = () => {
 				)}
 
 			{mainUserInfo && !mainUserInfo.wechat_infos?.length && (
-				<Link
-					href={`https://open.weixin.qq.com/connect/qrconnect?appid=${
-						process.env.NEXT_PUBLIC_WECHAT_APP_ID
-					}&redirect_uri=${encodeURIComponent(
-						`https://app.revornix.com/integrations/wechat/oauth/bind/callback`
-					)}&response_type=code&scope=snsapi_login&state=ndkasnl#wechat_redirect`}>
+				<Link href={wechatAuthUrl}>
 					<Button type='button' variant={'outline'}>
 						{t('account_go_bind')}
 					</Button>

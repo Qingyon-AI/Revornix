@@ -43,6 +43,7 @@ from enums.user import WeChatUserSource
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from schemas.error import CustomException
 from common.file import get_remote_file_signed_url
+from fastapi import Request
 
 user_router = APIRouter()
 
@@ -920,21 +921,24 @@ def delete_user(
 
 @user_router.post("/create/google", response_model=schemas.user.TokenResponse)
 async def create_user_by_google(
+    request: Request,
     user: schemas.user.GoogleUserCreate,
     db: Session = Depends(get_db),
     deployed_by_official: bool = Depends(check_deployed_by_official),
-    ip: str | None = Depends(get_real_ip)
+    ip: str | None = Depends(get_real_ip),
 ):
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
     if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
         raise Exception("Google client id or secret is not set")
+    
+    redirect_uri = str(request.base_url) + "integrations/google/oauth2/create/callback"
     token = await asyncio.to_thread(
         get_google_token,
         google_client_id=GOOGLE_CLIENT_ID,
         google_client_secret=GOOGLE_CLIENT_SECRET,
         code=user.code,
-        redirect_uri='https://app.revornix.com/integrations/google/oauth2/create/callback',
+        redirect_uri=redirect_uri,
     )
     if token is None:
         raise Exception("something error while getting google account info")
@@ -1002,6 +1006,7 @@ async def create_user_by_google(
 
 @user_router.post("/bind/google", response_model=schemas.common.NormalResponse)
 def bind_google(
+    request: Request,
     bind_google: schemas.user.GoogleUserBind,
     user = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -1018,11 +1023,12 @@ def bind_google(
     if db_google_user_exist is not None:
         raise Exception("The account is already binded")
 
+    redirect_uri = str(request.base_url) + "integrations/google/oauth2/bind/callback"
     token = get_google_token(
         google_client_id=GOOGLE_CLIENT_ID,
         google_client_secret=GOOGLE_CLIENT_SECRET,
         code=bind_google.code,
-        redirect_uri='https://app.revornix.com/integrations/google/oauth2/bind/callback'
+        redirect_uri=redirect_uri
     )
     if token is None:
         raise Exception("Something is error while getting google account info")
@@ -1061,6 +1067,7 @@ def unbind_google(
 
 @user_router.post("/create/github", response_model=schemas.user.TokenResponse)
 async def create_user_by_github(
+    request: Request,
     user: schemas.user.GithubUserCreate,
     db: Session = Depends(get_db),
     deployed_by_official: bool = Depends(check_deployed_by_official),
@@ -1071,12 +1078,13 @@ async def create_user_by_github(
     if GITHUB_CLIENT_ID is None or GITHUB_CLIENT_SECRET is None:
         raise Exception("Github client id or secret is not set")
 
+    redirect_uri = str(request.base_url) + "integrations/github/oauth2/create/callback"
     token = await asyncio.to_thread(
         get_github_token,
         github_client_id=GITHUB_CLIENT_ID,
         github_client_secret=GITHUB_CLIENT_SECRET,
         code=user.code,
-        redirect_uri='https://app.revornix.com/integrations/github/oauth2/create/callback',
+        redirect_uri=redirect_uri,
     )
     if token is None:
         raise Exception("some thing is error while getting github account info")
@@ -1135,6 +1143,7 @@ async def create_user_by_github(
 
 @user_router.post("/bind/github", response_model=schemas.common.NormalResponse)
 def bind_github(
+    request: Request,
     bind_github: schemas.user.GithubUserBind,
     user = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -1151,11 +1160,12 @@ def bind_github(
     if db_github_user_exist is not None:
         raise Exception("The account has already been bound")
 
+    redirect_uri = str(request.base_url) + "integrations/github/oauth2/bind/callback"
     token = get_github_token(
         github_client_id=GITHUB_CLIENT_ID,
         github_client_secret=GITHUB_CLIENT_SECRET,
         code=bind_github.code,
-        redirect_uri='https://app.revornix.com/integrations/github/oauth2/bind/callback'
+        redirect_uri=redirect_uri
     )
     if token is None:
         raise Exception("some thing is error while getting github account info")

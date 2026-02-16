@@ -7,6 +7,11 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeStringify from 'rehype-stringify'
 import { PriceItem, PriceItemCurrencyCodeEnum } from "@/generated-pay"
 
+export function getOrigin() {
+  if (typeof window === 'undefined') return ''
+  return window.location.origin
+}
+
 export const diffValues = <T extends Record<string, any>>(
   current: T,
   initial: Partial<T>
