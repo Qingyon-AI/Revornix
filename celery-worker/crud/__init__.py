@@ -7,6 +7,7 @@ from . import engine
 from . import file_system
 from . import notification
 from . import api_key
+from . import usage
 
 __all__ = [
     "document",
@@ -18,4 +19,5 @@ __all__ = [
     "file_system",
     "notification",
     "api_key",
+    "usage",
 ]

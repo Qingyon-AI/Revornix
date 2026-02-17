@@ -14,12 +14,16 @@ from engine import (
     VolcSTTFastEngine
 )
 from common.encrypt import decrypt_engine_config
-from datetime import datetime, timedelta, timezone
-from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func, get_user_token_usage
+from common.dependencies import (
+    check_deployed_by_official_in_fuc,
+    get_user_plan_start_time_in_func,
+    plan_ability_checked_in_func,
+)
 from common.jwt_utils import create_token
 from enums.ability import Ability
 from enums.engine_enums import Engine, EngineProvided
 from enums.user import UserRole
+from common.usage_billing import get_monthly_used_points
 
 class EngineProxy:
 
@@ -70,45 +74,46 @@ class EngineProxy:
             # ---------- Official engine provider check ----------
             if db_user.role != UserRole.ADMIN and db_user.role != UserRole.ROOT:
                 ability = None
-                if db_engine.engine_provided.uuid == Engine.Official_Volc_TTS.meta.uuid:
+                access_token = None
+                plan_start_time = None
+                if db_engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
+                    access_token, _ = create_token(user=db_user)
+                    plan_start_time = await get_user_plan_start_time_in_func(
+                        authorization=f"Bearer {access_token}",
+                    )
                     ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value
-                    end_time = datetime.now(timezone.utc)
-                    start_time = end_time - timedelta(days=30)
-                    token_usage = await get_user_token_usage(
+                    token_total = get_monthly_used_points(
+                        db=db,
                         user_id=user_id,
-                        model_name='volc-podcast',
-                        start_time=start_time,
-                        end_time=end_time,
+                        resource_uuid=db_engine.uuid,
+                        cycle_anchor_at=plan_start_time,
                     )
-                    if token_usage is not None:
-                        token_total = token_usage.get('total')
-                        if token_total is not None:
-                            if token_total > 1_000_000:
-                                ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_MORE.value
-                            if token_total > 10_000_000:
-                                ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_NONE.value
+                    if token_total > 1_000_000:
+                        ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_MORE.value
+                    if token_total > 10_000_000:
+                        ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_NONE.value
 
-                elif db_engine.engine_provided.uuid == Engine.Official_Banana_Image.meta.uuid:
-                    ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value
-                    end_time = datetime.now(timezone.utc)
-                    start_time = end_time - timedelta(days=30)
-                    token_usage = await get_user_token_usage(
-                        user_id=user_id,
-                        model_name='gemini-3-pro-image-preview',
-                        start_time=start_time,
-                        end_time=end_time,
+                elif db_engine.uuid == Engine.Official_Banana_Image.meta.uuid:
+                    access_token, _ = create_token(user=db_user)
+                    plan_start_time = await get_user_plan_start_time_in_func(
+                        authorization=f"Bearer {access_token}",
                     )
-                    if token_usage is not None:
-                        token_total = token_usage.get('total')
-                        if token_total is not None:
-                            if token_total > 100_000:
-                                ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_MORE.value
-                            if token_total > 1000_000:
-                                ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_NONE.value
+                    ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value
+                    token_total = get_monthly_used_points(
+                        db=db,
+                        user_id=user_id,
+                        resource_uuid=db_engine.uuid,
+                        cycle_anchor_at=plan_start_time,
+                    )
+                    if token_total > 100_000:
+                        ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_MORE.value
+                    if token_total > 1000_000:
+                        ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_NONE.value
 
                 deployed_by_official = check_deployed_by_official_in_fuc()
                 if ability and deployed_by_official:
-                    access_token, _ = create_token(user=db_user)
+                    if access_token is None:
+                        access_token, _ = create_token(user=db_user)
                     authorized = await plan_ability_checked_in_func(
                         ability=ability,
                         authorization=f"Bearer {access_token}"
@@ -143,5 +148,6 @@ class EngineProxy:
             config_json = json.loads(engine_config)
             engine.set_engine_config(config_json)
         engine.set_user_id(user_id=user_id)
+        engine.set_resource_uuid(resource_uuid=db_engine.uuid)
 
         return engine

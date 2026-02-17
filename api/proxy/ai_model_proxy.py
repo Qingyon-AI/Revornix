@@ -5,12 +5,12 @@ import crud
 from data.sql.base import session_scope
 from common.encrypt import decrypt_api_key
 from common.logger import exception_logger
-from datetime import datetime, timezone, timedelta
 from enums.model import UserModelProviderRole, OfficialModelProvider
 from enums.ability import Ability
 from enums.user import UserRole
 from common.jwt_utils import create_token
-from common.dependencies import check_deployed_by_official_in_fuc, get_user_token_usage, plan_ability_checked_in_func
+from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func, get_user_plan_start_time_in_func
+from common.usage_billing import get_monthly_model_used_points
 
 # =========================
 # DTO
@@ -85,24 +85,22 @@ class AIModelProxy:
                 access_token, _ = create_token(user=db_user)
 
                 deployed_by_official = check_deployed_by_official_in_fuc()
+                plan_start_time = await get_user_plan_start_time_in_func(
+                    authorization=f"Bearer {access_token}",
+                )
                 
                 ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED.value
 
-                end_time = datetime.now(timezone.utc)
-                start_time = end_time - timedelta(days=30)
-                token_usage = await get_user_token_usage(
+                token_total = get_monthly_model_used_points(
+                    db=db,
                     user_id=user_id,
-                    model_name=db_model.name,
-                    start_time=start_time,
-                    end_time=end_time,
+                    model_id=db_model.id,
+                    cycle_anchor_at=plan_start_time,
                 )
-                if token_usage is not None:
-                    token_total = token_usage.get('total')
-                    if token_total is not None:
-                        if token_total > 1_000_000:
-                            ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_MORE.value
-                        if token_total > 10_000_000:
-                            ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_NONE.value
+                if token_total > 1_000_000:
+                    ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_MORE.value
+                if token_total > 10_000_000:
+                    ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_NONE.value
                 
                 # 权限校验（async）
                 auth_status = await plan_ability_checked_in_func(

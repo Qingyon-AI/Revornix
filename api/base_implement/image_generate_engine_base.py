@@ -7,6 +7,7 @@ from langfuse.openai import OpenAI
 import crud
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.sql.base import session_scope
+from common.usage_billing import persist_model_usage_from_completion
 from prompts.section_image import IMAGE_PLANNER_SYSTEM, build_image_planner_user_prompt
 from base_implement.engine_base import EngineBase
 from proxy.ai_model_proxy import AIModelProxy
@@ -76,6 +77,12 @@ class ImageGenerateEngineBase(EngineBase):
                 ],
                 temperature=0.3,
                 response_format={"type": "json_object"}
+            )
+            persist_model_usage_from_completion(
+                user_id=user_id,
+                model_id=db_user.default_document_reader_model_id,
+                completion=completion,
+                source="plan_images_with_llm",
             )
 
             resp_text = completion.choices[0].message.content

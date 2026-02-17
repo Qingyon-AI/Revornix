@@ -3,6 +3,7 @@ import re
 from langfuse import propagate_attributes
 from langfuse.openai import OpenAI
 
+from common.usage_billing import persist_engine_usage_from_completion
 from enums.engine_enums import EngineProvided, EngineCategory
 from base_implement.image_generate_engine_base import ImageGenerateEngineBase
 
@@ -88,6 +89,12 @@ class BananaImageGenerateEngine(ImageGenerateEngineBase):
                         "content": text
                     },
                 ]
+            )
+            persist_engine_usage_from_completion(
+                user_id=self.user_id,
+                resource_uuid=self.resource_uuid or self.engine_uuid,
+                completion=response,
+                source="banana_image_generate",
             )
             if len(response.choices) > 0 and response.choices[0].message is not None and response.choices[0].message.content is not None:
                 return response.choices[0].message.content

@@ -5,6 +5,7 @@ from langfuse.openai import OpenAI
 from pydantic import BaseModel
 
 from data.custom_types.all import *
+from common.usage_billing import persist_model_usage_from_completion
 from prompts.make_section_markdown import make_section_markdown_prompt
 from prompts.reducer_summary import reducer_summary_prompt
 from prompts.summary_content import summary_content_prompt
@@ -47,6 +48,12 @@ async def summary_content(
             ],
             temperature=0.3,
             response_format={"type": "json_object"}
+        )
+        persist_model_usage_from_completion(
+            user_id=user_id,
+            model_id=model_id,
+            completion=completion,
+            source="summary_content",
         )
         res_summary = completion.choices[0].message.content
         if res_summary is None:
@@ -98,6 +105,12 @@ async def reducer_summary(
             temperature=0.3,
             response_format={"type": "json_object"}
         )
+        persist_model_usage_from_completion(
+            user_id=user_id,
+            model_id=model_id,
+            completion=completion,
+            source="reducer_summary",
+        )
         res_summary = completion.choices[0].message.content
         if res_summary is None:
             raise Exception("No content returned for ai")
@@ -147,6 +160,12 @@ async def make_section_markdown(
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3
+        )
+        persist_model_usage_from_completion(
+            user_id=user_id,
+            model_id=model_id,
+            completion=completion,
+            source="make_section_markdown",
         )
         content = completion.choices[0].message.content
         if content is None:
