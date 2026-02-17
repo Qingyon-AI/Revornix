@@ -28,6 +28,7 @@ from common.interpret_event import EventInterpreter
 from common.jwt_utils import create_token
 from common.logger import exception_logger, info_logger
 from common.usage_collector import UsageCollector
+from common.usage_billing import persist_model_usage_from_snapshot
 from data.sql.base import session_scope
 from enums.ability import Ability
 from enums.mcp import MCPCategory
@@ -500,7 +501,7 @@ async def create_agent(
             # Ensure token usage is included in streaming events when provider supports it.
             stream_usage=True,
         )
-        return MCPAgent(llm=llm, client=mcp_client)
+        return MCPAgent(llm=llm, client=mcp_client), model_id
     except Exception as e:
         exception_logger.error(f"Failed to create agent: {e}")
         raise
@@ -509,6 +510,7 @@ async def create_agent(
 
 async def stream_ops_with_agent(
     user_id: int,
+    model_id: int,
     agent: MCPAgent,
     messages: list[ChatItem],
 ) -> AsyncGenerator[str, None]:
@@ -592,6 +594,13 @@ async def stream_ops_with_agent(
         info_logger.info(
             f"MCP usage summary. user_id={user_id}, chat_id={chat_id}, usage={usage_snapshot}"
         )
+        persist_model_usage_from_snapshot(
+            user_id=user_id,
+            model_id=model_id,
+            snapshot=usage_snapshot,
+            source="ask_ai_stream",
+            idempotency_key=f"ask_ai:{chat_id}",
+        )
 
     done_payload: dict[str, object] = {"success": True}
     if usage_snapshot is not None:
@@ -622,7 +631,7 @@ async def ask_ai(
     messages = chat_messages.messages
 
     try:
-        agent = await create_agent(
+        agent, model_id = await create_agent(
             user_id=user.id,
             enable_mcp=enable_mcp
         )
@@ -634,6 +643,7 @@ async def ask_ai(
     return StreamingResponse(
         stream_ops_with_agent(
             user_id=user.id,
+            model_id=model_id,
             agent=agent,
             messages=messages
         ),

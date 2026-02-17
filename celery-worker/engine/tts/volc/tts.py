@@ -9,6 +9,7 @@ from engine.tts.volc.protocol import start_connection, wait_for_event, start_ses
 from common.langfuse import langfuse
 from langfuse import propagate_attributes
 from common.logger import exception_logger
+from common.usage_billing import persist_engine_usage
 from base_implement.tts_engine_base import TTSEngineBase
 
 class VolcTTSEngine(TTSEngineBase):
@@ -35,6 +36,10 @@ class VolcTTSEngine(TTSEngineBase):
             raise Exception("The engine havn't been initialized yet.")
         if config.get('appid') is None or config.get('access_token') is None or config.get('base_url') is None:
             raise Exception("The user's configuration of this engine is not complete.")
+        
+        if self.user_id is None:
+            raise Exception("The user_id is not set.")
+
         final_audio_url: AnyUrl | None = None
         
         websocket = None
@@ -178,6 +183,16 @@ class VolcTTSEngine(TTSEngineBase):
                 finally:
                     if websocket:
                         await websocket.close()
+                if (
+                    token_usage_info.get("input_text_tokens", 0) > 0
+                    or token_usage_info.get("output_audio_tokens", 0) > 0
+                ):
+                    persist_engine_usage(
+                        user_id=self.user_id,
+                        resource_uuid=self.resource_uuid or self.engine_uuid,
+                        usage_details=token_usage_info,
+                        source="volc_tts_synthesize",
+                    )
                 if final_audio_url is not None:
                     return httpx.get(str(final_audio_url)).content
                 return None

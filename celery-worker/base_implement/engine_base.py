@@ -23,6 +23,7 @@ class EngineBase:
         self.engine_demo_config = engine_demo_config
         self.engine_config = engine_config
         self.user_id: int | None = None
+        self.resource_uuid: str | None = None
 
     def get_engine_config(self) -> dict[str, Any] | None:
         if self.engine_config is None:
@@ -34,3 +35,6 @@ class EngineBase:
 
     def set_user_id(self, user_id: int) -> None:
         self.user_id = user_id
+
+    def set_resource_uuid(self, resource_uuid: str) -> None:
+        self.resource_uuid = resource_uuid
