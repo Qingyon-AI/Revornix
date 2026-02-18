@@ -46,6 +46,7 @@ from models.section import *
 from models.task import *
 from models.model import *
 from models.user import *
+from models.usage import *
 
 target_metadata = Base.metadata # 设置创建模型的元类
 
