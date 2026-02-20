@@ -4,8 +4,10 @@ load_dotenv(override=True)
 import asyncio
 
 from celery import Celery
+from celery.signals import worker_ready
 
 from config.redis import REDIS_PORT, REDIS_URL
+from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_startup
 from workflow.document_embedding_workflow import run_document_embedding_workflow
 from workflow.document_graph_task_workflow import run_document_graph_task_workflow
 from workflow.document_podcast_workflow import run_document_podcast_workflow
@@ -23,6 +25,11 @@ celery_app = Celery(
     broker=f"redis://{REDIS_URL}:{REDIS_PORT}/0",
     backend=f"redis://{REDIS_URL}:{REDIS_PORT}/0",
 )
+
+
+@worker_ready.connect
+def initialize_bilibili_auth_when_worker_ready(**kwargs):
+    asyncio.run(initialize_bilibili_auth_on_startup())
 
 
 @celery_app.task

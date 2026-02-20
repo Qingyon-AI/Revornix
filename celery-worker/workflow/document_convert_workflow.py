@@ -170,6 +170,10 @@ async def _convert_document_content(
             web_info = await engine.analyse_website(
                 url=db_website_document.url
             )
+            web_info.content = await engine.enrich_website_content_with_video_subtitles(
+                url=db_website_document.url,
+                content=web_info.content
+            )
             ensure_document_active(db=db, document_id=document_id)
 
             db_document = crud.document.get_document_by_document_id(
