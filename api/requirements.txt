@@ -27,7 +27,6 @@ mineru==2.7.6
 boto3==1.42.49
 psycopg2-binary==2.9.11
 markdown==3.10.2
-feedparser==6.0.12
 jwcrypto==1.5.6
 torch==2.10.0
 mcp_use==1.6.0

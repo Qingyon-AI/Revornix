@@ -29,7 +29,6 @@ from router.file_system import file_system_router
 from router.graph import graph_router
 from router.mcp import mcp_router
 from router.notification import notification_router
-from router.rss import rss_router
 from router.section import section_router
 from router.tp import tp_router
 from router.user import user_router
@@ -105,7 +104,6 @@ app.include_router(tp_router, prefix="/tp", tags=["tp"])
 app.include_router(mcp_router, prefix="/mcp", tags=["mcp"])
 app.include_router(engine_router, prefix="/engine", tags=["engine"])
 app.include_router(file_system_router, prefix="/file-system", tags=["file-system"])
-app.include_router(rss_router, prefix="/rss", tags=["rss"])
 app.include_router(graph_router, prefix="/graph", tags=["graph"])
 
 # 挂载 MCP 应用：挂载路径 + MCP 内部路径组成最终调用地址，例如 /mcp-server/common/mcp/

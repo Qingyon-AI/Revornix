@@ -4,7 +4,6 @@ import {
 	Flame,
 	LayoutDashboard,
 	PlusCircle,
-	RssIcon,
 	ChartNetwork,
 	SatelliteDish,
 } from 'lucide-react';
@@ -81,16 +80,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 										<Flame />
 										<Link href={'/hot-search'} className='w-full'>
 											{t('sidebar_hot_search')}
-										</Link>
-									</div>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-							<SidebarMenuItem>
-								<SidebarMenuButton asChild>
-									<div className='w-full'>
-										<RssIcon />
-										<Link href={'/rss'} className='w-full'>
-											RSS
 										</Link>
 									</div>
 								</SidebarMenuButton>

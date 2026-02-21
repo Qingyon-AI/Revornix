@@ -257,9 +257,6 @@ importers:
       remark-rehype:
         specifier: ^11.1.2
         version: 11.1.2
-      rss-parser:
-        specifier: ^3.13.0
-        version: 3.13.0
       simple-icons:
         specifier: ^15.22.0
         version: 15.22.0
@@ -4432,9 +4429,6 @@ packages:
 
   roughjs@4.6.6:
     resolution: {integrity: sha512-ZUz/69+SYpFN/g/lUlo2FXcIjRkSu3nDarreVdGGndHEBJ6cXPdKguS8JGxwj5HA5xIbVKSmLgr5b3AWxtRfvQ==}
-
-  rss-parser@3.13.0:
-    resolution: {integrity: sha512-7jWUBV5yGN3rqMMj7CZufl/291QAhvrrGpDNE4k/02ZchL0npisiYYqULF71jCEKoIiHvK/Q2e6IkDwPziT7+w==}
 
   rtl-css-js@1.16.1:
     resolution: {integrity: sha512-lRQgou1mu19e+Ya0LsTvKrVJ5TYUbqCVPAiImX3UfLTenarvPUl1QFdvu5Z3PYmHT9RCcwIfbjRQBntExyj3Zg==}
@@ -10059,11 +10053,6 @@ snapshots:
       path-data-parser: 0.1.0
       points-on-curve: 0.2.0
       points-on-path: 0.2.1
-
-  rss-parser@3.13.0:
-    dependencies:
-      entities: 2.2.0
-      xml2js: 0.5.0
 
   rtl-css-js@1.16.1:
     dependencies:
