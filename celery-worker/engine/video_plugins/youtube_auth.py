@@ -35,6 +35,7 @@ class YouTubeCookieManager:
     _encryption_key_loaded: bool = False
     _encryption_key_cache: bytes | None = None
     _cookie_encrypt_aad: bytes = b"revornix:youtube:cookie:v1"
+    _startup_auth_enabled: bool = False
     _lock = threading.Lock()
 
     @classmethod
@@ -123,6 +124,19 @@ class YouTubeCookieManager:
 
         cls._encryption_key_cache = decoded
         return decoded
+
+    @classmethod
+    def _env_enabled(cls, key: str, default: bool) -> bool:
+        value = os.getenv(key)
+        if value is None:
+            return default
+
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "on", "y"}:
+            return True
+        if normalized in {"0", "false", "no", "off", "n"}:
+            return False
+        return default
 
     @classmethod
     def _encrypt_payload(cls, payload: Mapping[str, object]) -> EncryptedPayload | None:
@@ -355,6 +369,13 @@ class YouTubeCookieManager:
         with cls._lock:
             cls._is_storage_path_secure(cls._cookie_file(), create_parent=True)
             cls._get_encryption_key()
+            cls._startup_auth_enabled = cls._env_enabled("YOUTUBE_COOKIE_ON_STARTUP", False)
+            if not cls._startup_auth_enabled:
+                cls._cookie_text_cache = None
+                info_logger.info(
+                    "YouTube startup auth is disabled; subtitle fetch will run without YouTube cookies."
+                )
+                return
 
             imported_cookie_text, import_cookie_file = cls._read_cookie_text_from_import_file()
             if imported_cookie_text is not None:
@@ -376,6 +397,9 @@ class YouTubeCookieManager:
     @classmethod
     def get_cookie_text_for_ytdlp(cls) -> str | None:
         with cls._lock:
+            if not cls._startup_auth_enabled:
+                return None
+
             cookie_text = cls._cookie_text_cache or cls._load_cookie_text_from_disk()
             if not cookie_text:
                 return None
