@@ -130,52 +130,56 @@ class YouTubeSubtitlePlugin(VideoPlugin):
             attempt_plan = cls._build_attempt_plan_from_metadata(url=url, ydl_options_base=ydl_options_base)
             if not attempt_plan:
                 attempt_plan = cls._subtitle_attempt_plan()
+            last_generated_files: list[str] = []
             for subtitles_langs, writesubtitles, writeautomaticsub in attempt_plan:
-                cls._clear_downloaded_subtitle_files(temp_path)
-                attempt_options: dict[str, object] = dict(ydl_options_base)
-                attempt_options["subtitleslangs"] = subtitles_langs
-                attempt_options["writesubtitles"] = writesubtitles
-                attempt_options["writeautomaticsub"] = writeautomaticsub
+                with tempfile.TemporaryDirectory(dir=temp_dir, prefix="subtitle-attempt-") as attempt_dir_str:
+                    attempt_path = Path(attempt_dir_str)
+                    attempt_options: dict[str, object] = dict(ydl_options_base)
+                    attempt_options["subtitleslangs"] = subtitles_langs
+                    attempt_options["writesubtitles"] = writesubtitles
+                    attempt_options["writeautomaticsub"] = writeautomaticsub
+                    attempt_options["paths"] = {"home": str(attempt_path)}
 
-                result_code: int | None = None
-                try:
-                    with YoutubeDL(cast(Any, attempt_options)) as ydl:
-                        result_code = ydl.download([url])
-                except Exception as e:
-                    info_logger.info(
-                        "YouTube subtitle fetch attempt failed: "
-                        f"langs={subtitles_langs} auto={'on' if writeautomaticsub else 'off'} error={e}"
-                    )
-
-                subtitle_file = cls._pick_ytdlp_subtitle_file(temp_path)
-                if subtitle_file is None:
-                    if result_code not in (0, None):
+                    result_code: int | None = None
+                    try:
+                        with YoutubeDL(cast(Any, attempt_options)) as ydl:
+                            result_code = ydl.download([url])
+                    except Exception as e:
                         info_logger.info(
-                            "YouTube subtitle fetch attempt yielded no subtitle: "
-                            f"langs={subtitles_langs} auto={'on' if writeautomaticsub else 'off'} "
-                            f"exit_code={result_code}"
+                            "YouTube subtitle fetch attempt failed: "
+                            f"langs={subtitles_langs} auto={'on' if writeautomaticsub else 'off'} error={e}"
                         )
-                    continue
 
-                markdown = cls._build_markdown_from_subtitle_file(
-                    subtitle_file=subtitle_file,
-                    max_segments=max_segments,
-                    max_chars=max_chars,
-                )
-                if markdown is None:
-                    continue
+                    subtitle_file = cls._pick_ytdlp_subtitle_file(attempt_path)
+                    if subtitle_file is None:
+                        if result_code not in (0, None):
+                            info_logger.info(
+                                "YouTube subtitle fetch attempt yielded no subtitle: "
+                                f"langs={subtitles_langs} auto={'on' if writeautomaticsub else 'off'} "
+                                f"exit_code={result_code}"
+                            )
+                        last_generated_files = sorted(path.name for path in attempt_path.iterdir())
+                        continue
 
-                info_logger.info(
-                    "YouTube subtitle file selected: "
-                    f"file={subtitle_file.name} langs={subtitles_langs} auto={'on' if writeautomaticsub else 'off'}"
-                )
-                return markdown
+                    markdown = cls._build_markdown_from_subtitle_file(
+                        subtitle_file=subtitle_file,
+                        max_segments=max_segments,
+                        max_chars=max_chars,
+                    )
+                    if markdown is None:
+                        last_generated_files = sorted(path.name for path in attempt_path.iterdir())
+                        continue
 
-            generated_files = sorted(path.name for path in temp_path.iterdir())
-            if generated_files:
+                    info_logger.info(
+                        "YouTube subtitle file selected: "
+                        f"file={subtitle_file.name} langs={subtitles_langs} auto={'on' if writeautomaticsub else 'off'}"
+                    )
+                    return markdown
+
+            if last_generated_files:
                 info_logger.info(
                     "YouTube subtitle fetch failed: no supported subtitle files generated, "
-                    f"files={generated_files[:12]}"
+                    f"files={last_generated_files[:12]}"
                 )
             else:
                 info_logger.info("YouTube subtitle fetch failed: no subtitle files generated.")
@@ -251,15 +255,6 @@ class YouTubeSubtitlePlugin(VideoPlugin):
             return (4, 0, normalized)
 
         return sorted(languages, key=rank)[0]
-
-    @staticmethod
-    def _clear_downloaded_subtitle_files(temp_dir: Path) -> None:
-        for pattern in ("*.json3", "*.vtt", "*.srt"):
-            for subtitle_file in temp_dir.glob(pattern):
-                try:
-                    subtitle_file.unlink()
-                except OSError:
-                    continue
 
     @classmethod
     def _pick_ytdlp_subtitle_file(cls, temp_dir: Path) -> Path | None:
