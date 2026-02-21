@@ -21,12 +21,6 @@ import { mapValues } from '../runtime';
 export interface AudioDocumentInfo {
     /**
      * 
-     * @type {number}
-     * @memberof AudioDocumentInfo
-     */
-    creator_id: number;
-    /**
-     * 
      * @type {string}
      * @memberof AudioDocumentInfo
      */
@@ -37,7 +31,6 @@ export interface AudioDocumentInfo {
  * Check if a given object implements the AudioDocumentInfo interface.
  */
 export function instanceOfAudioDocumentInfo(value: object): value is AudioDocumentInfo {
-    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('audio_file_name' in value) || value['audio_file_name'] === undefined) return false;
     return true;
 }
@@ -52,7 +45,6 @@ export function AudioDocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'creator_id': json['creator_id'],
         'audio_file_name': json['audio_file_name'],
     };
 }
@@ -68,7 +60,6 @@ export function AudioDocumentInfoToJSONTyped(value?: AudioDocumentInfo | null, i
 
     return {
         
-        'creator_id': value['creator_id'],
         'audio_file_name': value['audio_file_name'],
     };
 }

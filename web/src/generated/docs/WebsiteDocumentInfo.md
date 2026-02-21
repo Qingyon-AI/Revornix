@@ -6,7 +6,6 @@
 
 Name | Type
 ------------ | -------------
-`creator_id` | number
 `url` | string
 
 ## Example
@@ -16,7 +15,6 @@ import type { WebsiteDocumentInfo } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "creator_id": null,
   "url": null,
 } satisfies WebsiteDocumentInfo
 

@@ -249,9 +249,9 @@ export interface UpdateDocumentDocumentUpdatePostRequest {
 export class DocumentApi extends runtime.BaseAPI {
 
     /**
-     * Add Label
+     * Creates request options for addLabelDocumentLabelCreatePost without sending the request
      */
-    async addLabelDocumentLabelCreatePostRaw(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
+    async addLabelDocumentLabelCreatePostRequestOpts(requestParameters: AddLabelDocumentLabelCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['labelAddRequest'] == null) {
             throw new runtime.RequiredError(
                 'labelAddRequest',
@@ -272,13 +272,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/label/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: LabelAddRequestToJSON(requestParameters['labelAddRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Add Label
+     */
+    async addLabelDocumentLabelCreatePostRaw(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
+        const requestOptions = await this.addLabelDocumentLabelCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => CreateLabelResponseFromJSON(jsonValue));
     }
@@ -292,9 +300,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create Ai Summary
+     * Creates request options for createAiSummaryDocumentAiSummaryPost without sending the request
      */
-    async createAiSummaryDocumentAiSummaryPostRaw(requestParameters: CreateAiSummaryDocumentAiSummaryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async createAiSummaryDocumentAiSummaryPostRequestOpts(requestParameters: CreateAiSummaryDocumentAiSummaryPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentAiSummaryRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentAiSummaryRequest',
@@ -315,13 +323,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/ai/summary`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentAiSummaryRequestToJSON(requestParameters['documentAiSummaryRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Ai Summary
+     */
+    async createAiSummaryDocumentAiSummaryPostRaw(requestParameters: CreateAiSummaryDocumentAiSummaryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createAiSummaryDocumentAiSummaryPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -335,9 +351,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create Document
+     * Creates request options for createDocumentDocumentCreatePost without sending the request
      */
-    async createDocumentDocumentCreatePostRaw(requestParameters: CreateDocumentDocumentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentCreateResponse>> {
+    async createDocumentDocumentCreatePostRequestOpts(requestParameters: CreateDocumentDocumentCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentCreateRequest',
@@ -358,13 +374,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentCreateRequestToJSON(requestParameters['documentCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Document
+     */
+    async createDocumentDocumentCreatePostRaw(requestParameters: CreateDocumentDocumentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentCreateResponse>> {
+        const requestOptions = await this.createDocumentDocumentCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => DocumentCreateResponseFromJSON(jsonValue));
     }
@@ -378,9 +402,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create Embedding
+     * Creates request options for createEmbeddingDocumentEmbeddingPost without sending the request
      */
-    async createEmbeddingDocumentEmbeddingPostRaw(requestParameters: CreateEmbeddingDocumentEmbeddingPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async createEmbeddingDocumentEmbeddingPostRequestOpts(requestParameters: CreateEmbeddingDocumentEmbeddingPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentEmbeddingRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentEmbeddingRequest',
@@ -401,13 +425,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/embedding`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentEmbeddingRequestToJSON(requestParameters['documentEmbeddingRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Embedding
+     */
+    async createEmbeddingDocumentEmbeddingPostRaw(requestParameters: CreateEmbeddingDocumentEmbeddingPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createEmbeddingDocumentEmbeddingPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -421,9 +453,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create Note
+     * Creates request options for createNoteDocumentNoteCreatePost without sending the request
      */
-    async createNoteDocumentNoteCreatePostRaw(requestParameters: CreateNoteDocumentNoteCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async createNoteDocumentNoteCreatePostRequestOpts(requestParameters: CreateNoteDocumentNoteCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentNoteCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentNoteCreateRequest',
@@ -444,13 +476,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/note/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentNoteCreateRequestToJSON(requestParameters['documentNoteCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Note
+     */
+    async createNoteDocumentNoteCreatePostRaw(requestParameters: CreateNoteDocumentNoteCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createNoteDocumentNoteCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -464,9 +504,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Document
+     * Creates request options for deleteDocumentDocumentDeletePost without sending the request
      */
-    async deleteDocumentDocumentDeletePostRaw(requestParameters: DeleteDocumentDocumentDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessResponse>> {
+    async deleteDocumentDocumentDeletePostRequestOpts(requestParameters: DeleteDocumentDocumentDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentDeleteRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentDeleteRequest',
@@ -487,13 +527,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentDeleteRequestToJSON(requestParameters['documentDeleteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Document
+     */
+    async deleteDocumentDocumentDeletePostRaw(requestParameters: DeleteDocumentDocumentDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessResponse>> {
+        const requestOptions = await this.deleteDocumentDocumentDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SuccessResponseFromJSON(jsonValue));
     }
@@ -507,9 +555,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Label
+     * Creates request options for deleteLabelDocumentLabelDeletePost without sending the request
      */
-    async deleteLabelDocumentLabelDeletePostRaw(requestParameters: DeleteLabelDocumentLabelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteLabelDocumentLabelDeletePostRequestOpts(requestParameters: DeleteLabelDocumentLabelDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['labelDeleteRequest'] == null) {
             throw new runtime.RequiredError(
                 'labelDeleteRequest',
@@ -530,13 +578,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/label/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: LabelDeleteRequestToJSON(requestParameters['labelDeleteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Label
+     */
+    async deleteLabelDocumentLabelDeletePostRaw(requestParameters: DeleteLabelDocumentLabelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteLabelDocumentLabelDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -550,9 +606,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Note
+     * Creates request options for deleteNoteDocumentNoteDeletePost without sending the request
      */
-    async deleteNoteDocumentNoteDeletePostRaw(requestParameters: DeleteNoteDocumentNoteDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteNoteDocumentNoteDeletePostRequestOpts(requestParameters: DeleteNoteDocumentNoteDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentNoteDeleteRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentNoteDeleteRequest',
@@ -573,13 +629,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/note/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentNoteDeleteRequestToJSON(requestParameters['documentNoteDeleteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Note
+     */
+    async deleteNoteDocumentNoteDeletePostRaw(requestParameters: DeleteNoteDocumentNoteDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteNoteDocumentNoteDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -593,9 +657,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Generate Graph
+     * Creates request options for generateGraphDocumentGraphGeneratePost without sending the request
      */
-    async generateGraphDocumentGraphGeneratePostRaw(requestParameters: GenerateGraphDocumentGraphGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async generateGraphDocumentGraphGeneratePostRequestOpts(requestParameters: GenerateGraphDocumentGraphGeneratePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentGraphGenerateRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentGraphGenerateRequest',
@@ -616,13 +680,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/graph/generate`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentGraphGenerateRequestToJSON(requestParameters['documentGraphGenerateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Generate Graph
+     */
+    async generateGraphDocumentGraphGeneratePostRaw(requestParameters: GenerateGraphDocumentGraphGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.generateGraphDocumentGraphGeneratePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -636,9 +708,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Generate Podcast
+     * Creates request options for generatePodcastDocumentPodcastGeneratePost without sending the request
      */
-    async generatePodcastDocumentPodcastGeneratePostRaw(requestParameters: GeneratePodcastDocumentPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async generatePodcastDocumentPodcastGeneratePostRequestOpts(requestParameters: GeneratePodcastDocumentPodcastGeneratePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['generateDocumentPodcastRequest'] == null) {
             throw new runtime.RequiredError(
                 'generateDocumentPodcastRequest',
@@ -659,13 +731,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/podcast/generate`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: GenerateDocumentPodcastRequestToJSON(requestParameters['generateDocumentPodcastRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Generate Podcast
+     */
+    async generatePodcastDocumentPodcastGeneratePostRaw(requestParameters: GeneratePodcastDocumentPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.generatePodcastDocumentPodcastGeneratePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -679,9 +759,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Document Detail
+     * Creates request options for getDocumentDetailDocumentDetailPost without sending the request
      */
-    async getDocumentDetailDocumentDetailPostRaw(requestParameters: GetDocumentDetailDocumentDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentDetailResponse>> {
+    async getDocumentDetailDocumentDetailPostRequestOpts(requestParameters: GetDocumentDetailDocumentDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentDetailRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentDetailRequest',
@@ -702,13 +782,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentDetailRequestToJSON(requestParameters['documentDetailRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Document Detail
+     */
+    async getDocumentDetailDocumentDetailPostRaw(requestParameters: GetDocumentDetailDocumentDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentDetailResponse>> {
+        const requestOptions = await this.getDocumentDetailDocumentDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => DocumentDetailResponseFromJSON(jsonValue));
     }
@@ -722,9 +810,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Label Summary
+     * Creates request options for getLabelSummaryDocumentLabelSummaryPost without sending the request
      */
-    async getLabelSummaryDocumentLabelSummaryPostRaw(requestParameters: GetLabelSummaryDocumentLabelSummaryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<LabelSummaryResponse>> {
+    async getLabelSummaryDocumentLabelSummaryPostRequestOpts(requestParameters: GetLabelSummaryDocumentLabelSummaryPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -736,12 +824,20 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/label/summary`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Label Summary
+     */
+    async getLabelSummaryDocumentLabelSummaryPostRaw(requestParameters: GetLabelSummaryDocumentLabelSummaryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<LabelSummaryResponse>> {
+        const requestOptions = await this.getLabelSummaryDocumentLabelSummaryPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => LabelSummaryResponseFromJSON(jsonValue));
     }
@@ -755,9 +851,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Month Summary
+     * Creates request options for getMonthSummaryDocumentMonthSummaryPost without sending the request
      */
-    async getMonthSummaryDocumentMonthSummaryPostRaw(requestParameters: GetMonthSummaryDocumentMonthSummaryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentMonthSummaryResponse>> {
+    async getMonthSummaryDocumentMonthSummaryPostRequestOpts(requestParameters: GetMonthSummaryDocumentMonthSummaryPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -769,12 +865,20 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/month/summary`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Month Summary
+     */
+    async getMonthSummaryDocumentMonthSummaryPostRaw(requestParameters: GetMonthSummaryDocumentMonthSummaryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentMonthSummaryResponse>> {
+        const requestOptions = await this.getMonthSummaryDocumentMonthSummaryPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => DocumentMonthSummaryResponseFromJSON(jsonValue));
     }
@@ -788,9 +892,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * List Label
+     * Creates request options for listLabelDocumentLabelListPost without sending the request
      */
-    async listLabelDocumentLabelListPostRaw(requestParameters: ListLabelDocumentLabelListPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasDocumentLabelListResponse>> {
+    async listLabelDocumentLabelListPostRequestOpts(requestParameters: ListLabelDocumentLabelListPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -802,12 +906,20 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/label/list`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * List Label
+     */
+    async listLabelDocumentLabelListPostRaw(requestParameters: ListLabelDocumentLabelListPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasDocumentLabelListResponse>> {
+        const requestOptions = await this.listLabelDocumentLabelListPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SchemasDocumentLabelListResponseFromJSON(jsonValue));
     }
@@ -821,9 +933,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Read Document
+     * Creates request options for readDocumentDocumentReadPost without sending the request
      */
-    async readDocumentDocumentReadPostRaw(requestParameters: ReadDocumentDocumentReadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessResponse>> {
+    async readDocumentDocumentReadPostRequestOpts(requestParameters: ReadDocumentDocumentReadPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['readRequest'] == null) {
             throw new runtime.RequiredError(
                 'readRequest',
@@ -844,13 +956,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/read`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ReadRequestToJSON(requestParameters['readRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Read Document
+     */
+    async readDocumentDocumentReadPostRaw(requestParameters: ReadDocumentDocumentReadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessResponse>> {
+        const requestOptions = await this.readDocumentDocumentReadPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SuccessResponseFromJSON(jsonValue));
     }
@@ -864,9 +984,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Recent Read Document
+     * Creates request options for recentReadDocumentDocumentRecentSearchPost without sending the request
      */
-    async recentReadDocumentDocumentRecentSearchPostRaw(requestParameters: RecentReadDocumentDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async recentReadDocumentDocumentRecentSearchPostRequestOpts(requestParameters: RecentReadDocumentDocumentRecentSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchRecentReadRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchRecentReadRequest',
@@ -887,13 +1007,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/recent/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchRecentReadRequestToJSON(requestParameters['searchRecentReadRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Recent Read Document
+     */
+    async recentReadDocumentDocumentRecentSearchPostRaw(requestParameters: RecentReadDocumentDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+        const requestOptions = await this.recentReadDocumentDocumentRecentSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
     }
@@ -907,9 +1035,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search All Mine Documents
+     * Creates request options for searchAllMineDocumentsDocumentSearchMinePost without sending the request
      */
-    async searchAllMineDocumentsDocumentSearchMinePostRaw(requestParameters: SearchAllMineDocumentsDocumentSearchMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async searchAllMineDocumentsDocumentSearchMinePostRequestOpts(requestParameters: SearchAllMineDocumentsDocumentSearchMinePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchAllMyDocumentsRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchAllMyDocumentsRequest',
@@ -930,13 +1058,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/search/mine`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchAllMyDocumentsRequestToJSON(requestParameters['searchAllMyDocumentsRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search All Mine Documents
+     */
+    async searchAllMineDocumentsDocumentSearchMinePostRaw(requestParameters: SearchAllMineDocumentsDocumentSearchMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+        const requestOptions = await this.searchAllMineDocumentsDocumentSearchMinePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
     }
@@ -950,9 +1086,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search Knowledge Vector
+     * Creates request options for searchKnowledgeVectorDocumentVectorSearchPost without sending the request
      */
-    async searchKnowledgeVectorDocumentVectorSearchPostRaw(requestParameters: SearchKnowledgeVectorDocumentVectorSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VectorSearchResponse>> {
+    async searchKnowledgeVectorDocumentVectorSearchPostRequestOpts(requestParameters: SearchKnowledgeVectorDocumentVectorSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['vectorSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'vectorSearchRequest',
@@ -973,13 +1109,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/vector/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: VectorSearchRequestToJSON(requestParameters['vectorSearchRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search Knowledge Vector
+     */
+    async searchKnowledgeVectorDocumentVectorSearchPostRaw(requestParameters: SearchKnowledgeVectorDocumentVectorSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VectorSearchResponse>> {
+        const requestOptions = await this.searchKnowledgeVectorDocumentVectorSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => VectorSearchResponseFromJSON(jsonValue));
     }
@@ -993,9 +1137,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search My Star Documents
+     * Creates request options for searchMyStarDocumentsDocumentStarSearchPost without sending the request
      */
-    async searchMyStarDocumentsDocumentStarSearchPostRaw(requestParameters: SearchMyStarDocumentsDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async searchMyStarDocumentsDocumentStarSearchPostRequestOpts(requestParameters: SearchMyStarDocumentsDocumentStarSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchMyStarDocumentsRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchMyStarDocumentsRequest',
@@ -1016,13 +1160,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/star/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchMyStarDocumentsRequestToJSON(requestParameters['searchMyStarDocumentsRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search My Star Documents
+     */
+    async searchMyStarDocumentsDocumentStarSearchPostRaw(requestParameters: SearchMyStarDocumentsDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+        const requestOptions = await this.searchMyStarDocumentsDocumentStarSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
     }
@@ -1036,9 +1188,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search Note
+     * Creates request options for searchNoteDocumentNoteSearchPost without sending the request
      */
-    async searchNoteDocumentNoteSearchPostRaw(requestParameters: SearchNoteDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentNoteInfo>> {
+    async searchNoteDocumentNoteSearchPostRequestOpts(requestParameters: SearchNoteDocumentNoteSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchDocumentNoteRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchDocumentNoteRequest',
@@ -1059,13 +1211,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/note/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchDocumentNoteRequestToJSON(requestParameters['searchDocumentNoteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search Note
+     */
+    async searchNoteDocumentNoteSearchPostRaw(requestParameters: SearchNoteDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentNoteInfo>> {
+        const requestOptions = await this.searchNoteDocumentNoteSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentNoteInfoFromJSON(jsonValue));
     }
@@ -1079,9 +1239,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search User Unread Documents
+     * Creates request options for searchUserUnreadDocumentsDocumentUnreadSearchPost without sending the request
      */
-    async searchUserUnreadDocumentsDocumentUnreadSearchPostRaw(requestParameters: SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async searchUserUnreadDocumentsDocumentUnreadSearchPostRequestOpts(requestParameters: SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchUnreadListRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchUnreadListRequest',
@@ -1102,13 +1262,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/unread/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchUnreadListRequestToJSON(requestParameters['searchUnreadListRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search User Unread Documents
+     */
+    async searchUserUnreadDocumentsDocumentUnreadSearchPostRaw(requestParameters: SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+        const requestOptions = await this.searchUserUnreadDocumentsDocumentUnreadSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
     }
@@ -1122,9 +1290,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Star Document
+     * Creates request options for starDocumentDocumentStarPost without sending the request
      */
-    async starDocumentDocumentStarPostRaw(requestParameters: StarDocumentDocumentStarPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessResponse>> {
+    async starDocumentDocumentStarPostRequestOpts(requestParameters: StarDocumentDocumentStarPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['starRequest'] == null) {
             throw new runtime.RequiredError(
                 'starRequest',
@@ -1145,13 +1313,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/star`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: StarRequestToJSON(requestParameters['starRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Star Document
+     */
+    async starDocumentDocumentStarPostRaw(requestParameters: StarDocumentDocumentStarPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessResponse>> {
+        const requestOptions = await this.starDocumentDocumentStarPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SuccessResponseFromJSON(jsonValue));
     }
@@ -1165,9 +1341,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Transcribe Audio Document
+     * Creates request options for transcribeAudioDocumentDocumentTranscribePost without sending the request
      */
-    async transcribeAudioDocumentDocumentTranscribePostRaw(requestParameters: TranscribeAudioDocumentDocumentTranscribePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async transcribeAudioDocumentDocumentTranscribePostRequestOpts(requestParameters: TranscribeAudioDocumentDocumentTranscribePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentTranscribeRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentTranscribeRequest',
@@ -1188,13 +1364,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/transcribe`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentTranscribeRequestToJSON(requestParameters['documentTranscribeRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Transcribe Audio Document
+     */
+    async transcribeAudioDocumentDocumentTranscribePostRaw(requestParameters: TranscribeAudioDocumentDocumentTranscribePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.transcribeAudioDocumentDocumentTranscribePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1208,9 +1392,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Transform Markdown
+     * Creates request options for transformMarkdownDocumentMarkdownTransformPost without sending the request
      */
-    async transformMarkdownDocumentMarkdownTransformPostRaw(requestParameters: TransformMarkdownDocumentMarkdownTransformPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async transformMarkdownDocumentMarkdownTransformPostRequestOpts(requestParameters: TransformMarkdownDocumentMarkdownTransformPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentMarkdownConvertRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentMarkdownConvertRequest',
@@ -1231,13 +1415,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/markdown/transform`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentMarkdownConvertRequestToJSON(requestParameters['documentMarkdownConvertRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Transform Markdown
+     */
+    async transformMarkdownDocumentMarkdownTransformPostRaw(requestParameters: TransformMarkdownDocumentMarkdownTransformPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.transformMarkdownDocumentMarkdownTransformPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1251,9 +1443,9 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Document
+     * Creates request options for updateDocumentDocumentUpdatePost without sending the request
      */
-    async updateDocumentDocumentUpdatePostRaw(requestParameters: UpdateDocumentDocumentUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateDocumentDocumentUpdatePostRequestOpts(requestParameters: UpdateDocumentDocumentUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentUpdateRequest',
@@ -1274,13 +1466,21 @@ export class DocumentApi extends runtime.BaseAPI {
 
         let urlPath = `/document/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentUpdateRequestToJSON(requestParameters['documentUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Document
+     */
+    async updateDocumentDocumentUpdatePostRaw(requestParameters: UpdateDocumentDocumentUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateDocumentDocumentUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }

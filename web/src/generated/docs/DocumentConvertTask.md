@@ -6,7 +6,6 @@
 
 Name | Type
 ------------ | -------------
-`creator_id` | number
 `status` | number
 `md_file_name` | string
 
@@ -17,7 +16,6 @@ import type { DocumentConvertTask } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "creator_id": null,
   "status": null,
   "md_file_name": null,
 } satisfies DocumentConvertTask

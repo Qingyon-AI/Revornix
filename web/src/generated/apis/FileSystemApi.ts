@@ -120,9 +120,9 @@ export interface UploadFileSystemFileSystemGenericS3UploadPostRequest {
 export class FileSystemApi extends runtime.BaseAPI {
 
     /**
-     * Delete User File System
+     * Creates request options for deleteUserFileSystemFileSystemUserFileSystemDeletePost without sending the request
      */
-    async deleteUserFileSystemFileSystemUserFileSystemDeletePostRaw(requestParameters: DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteUserFileSystemFileSystemUserFileSystemDeletePostRequestOpts(requestParameters: DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['userFileSystemDeleteRequest'] == null) {
             throw new runtime.RequiredError(
                 'userFileSystemDeleteRequest',
@@ -143,13 +143,21 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         let urlPath = `/file-system/user-file-system/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: UserFileSystemDeleteRequestToJSON(requestParameters['userFileSystemDeleteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete User File System
+     */
+    async deleteUserFileSystemFileSystemUserFileSystemDeletePostRaw(requestParameters: DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteUserFileSystemFileSystemUserFileSystemDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -163,9 +171,9 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get File System Info
+     * Creates request options for getFileSystemInfoFileSystemDetailPost without sending the request
      */
-    async getFileSystemInfoFileSystemDetailPostRaw(requestParameters: GetFileSystemInfoFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FileSystemInfo>> {
+    async getFileSystemInfoFileSystemDetailPostRequestOpts(requestParameters: GetFileSystemInfoFileSystemDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['fileSystemInfoRequest'] == null) {
             throw new runtime.RequiredError(
                 'fileSystemInfoRequest',
@@ -186,13 +194,21 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         let urlPath = `/file-system/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: FileSystemInfoRequestToJSON(requestParameters['fileSystemInfoRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get File System Info
+     */
+    async getFileSystemInfoFileSystemDetailPostRaw(requestParameters: GetFileSystemInfoFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FileSystemInfo>> {
+        const requestOptions = await this.getFileSystemInfoFileSystemDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => FileSystemInfoFromJSON(jsonValue));
     }
@@ -206,9 +222,9 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Presigned Url
+     * Creates request options for getPresignedUrlFileSystemPresignUploadUrlPost without sending the request
      */
-    async getPresignedUrlFileSystemPresignUploadUrlPostRaw(requestParameters: GetPresignedUrlFileSystemPresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PresignUploadURLResponse>> {
+    async getPresignedUrlFileSystemPresignUploadUrlPostRequestOpts(requestParameters: GetPresignedUrlFileSystemPresignUploadUrlPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['presignUploadURLRequest'] == null) {
             throw new runtime.RequiredError(
                 'presignUploadURLRequest',
@@ -229,13 +245,21 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         let urlPath = `/file-system/presign-upload-url`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: PresignUploadURLRequestToJSON(requestParameters['presignUploadURLRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Presigned Url
+     */
+    async getPresignedUrlFileSystemPresignUploadUrlPostRaw(requestParameters: GetPresignedUrlFileSystemPresignUploadUrlPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PresignUploadURLResponse>> {
+        const requestOptions = await this.getPresignedUrlFileSystemPresignUploadUrlPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => PresignUploadURLResponseFromJSON(jsonValue));
     }
@@ -249,9 +273,9 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get User File System Info
+     * Creates request options for getUserFileSystemInfoFileSystemUserFileSystemDetailPost without sending the request
      */
-    async getUserFileSystemInfoFileSystemUserFileSystemDetailPostRaw(requestParameters: GetUserFileSystemInfoFileSystemUserFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserFileSystemDetail>> {
+    async getUserFileSystemInfoFileSystemUserFileSystemDetailPostRequestOpts(requestParameters: GetUserFileSystemInfoFileSystemUserFileSystemDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['userFileSystemInfoRequest'] == null) {
             throw new runtime.RequiredError(
                 'userFileSystemInfoRequest',
@@ -272,13 +296,21 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         let urlPath = `/file-system/user-file-system/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: UserFileSystemInfoRequestToJSON(requestParameters['userFileSystemInfoRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get User File System Info
+     */
+    async getUserFileSystemInfoFileSystemUserFileSystemDetailPostRaw(requestParameters: GetUserFileSystemInfoFileSystemUserFileSystemDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserFileSystemDetail>> {
+        const requestOptions = await this.getUserFileSystemInfoFileSystemUserFileSystemDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => UserFileSystemDetailFromJSON(jsonValue));
     }
@@ -292,9 +324,9 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Install User File System
+     * Creates request options for installUserFileSystemFileSystemInstallPost without sending the request
      */
-    async installUserFileSystemFileSystemInstallPostRaw(requestParameters: InstallUserFileSystemFileSystemInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FileSystemInstallResponse>> {
+    async installUserFileSystemFileSystemInstallPostRequestOpts(requestParameters: InstallUserFileSystemFileSystemInstallPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['fileSystemInstallRequest'] == null) {
             throw new runtime.RequiredError(
                 'fileSystemInstallRequest',
@@ -315,13 +347,21 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         let urlPath = `/file-system/install`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: FileSystemInstallRequestToJSON(requestParameters['fileSystemInstallRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Install User File System
+     */
+    async installUserFileSystemFileSystemInstallPostRaw(requestParameters: InstallUserFileSystemFileSystemInstallPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FileSystemInstallResponse>> {
+        const requestOptions = await this.installUserFileSystemFileSystemInstallPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => FileSystemInstallResponseFromJSON(jsonValue));
     }
@@ -335,9 +375,9 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Provide File System
+     * Creates request options for provideFileSystemFileSystemProvidePost without sending the request
      */
-    async provideFileSystemFileSystemProvidePostRaw(requestParameters: ProvideFileSystemFileSystemProvidePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProvideFileSystemSearchResponse>> {
+    async provideFileSystemFileSystemProvidePostRequestOpts(requestParameters: ProvideFileSystemFileSystemProvidePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['fileSystemSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'fileSystemSearchRequest',
@@ -358,13 +398,21 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         let urlPath = `/file-system/provide`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: FileSystemSearchRequestToJSON(requestParameters['fileSystemSearchRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Provide File System
+     */
+    async provideFileSystemFileSystemProvidePostRaw(requestParameters: ProvideFileSystemFileSystemProvidePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProvideFileSystemSearchResponse>> {
+        const requestOptions = await this.provideFileSystemFileSystemProvidePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ProvideFileSystemSearchResponseFromJSON(jsonValue));
     }
@@ -378,9 +426,9 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search Mine File System
+     * Creates request options for searchMineFileSystemFileSystemMinePost without sending the request
      */
-    async searchMineFileSystemFileSystemMinePostRaw(requestParameters: SearchMineFileSystemFileSystemMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MineFileSystemSearchResponse>> {
+    async searchMineFileSystemFileSystemMinePostRequestOpts(requestParameters: SearchMineFileSystemFileSystemMinePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['fileSystemSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'fileSystemSearchRequest',
@@ -401,13 +449,21 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         let urlPath = `/file-system/mine`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: FileSystemSearchRequestToJSON(requestParameters['fileSystemSearchRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search Mine File System
+     */
+    async searchMineFileSystemFileSystemMinePostRaw(requestParameters: SearchMineFileSystemFileSystemMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MineFileSystemSearchResponse>> {
+        const requestOptions = await this.searchMineFileSystemFileSystemMinePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => MineFileSystemSearchResponseFromJSON(jsonValue));
     }
@@ -421,9 +477,9 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update File System
+     * Creates request options for updateFileSystemFileSystemUpdatePost without sending the request
      */
-    async updateFileSystemFileSystemUpdatePostRaw(requestParameters: UpdateFileSystemFileSystemUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateFileSystemFileSystemUpdatePostRequestOpts(requestParameters: UpdateFileSystemFileSystemUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['userFileSystemUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'userFileSystemUpdateRequest',
@@ -444,13 +500,21 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         let urlPath = `/file-system/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: UserFileSystemUpdateRequestToJSON(requestParameters['userFileSystemUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update File System
+     */
+    async updateFileSystemFileSystemUpdatePostRaw(requestParameters: UpdateFileSystemFileSystemUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateFileSystemFileSystemUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -464,9 +528,9 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Upload File System
+     * Creates request options for uploadFileSystemFileSystemGenericS3UploadPost without sending the request
      */
-    async uploadFileSystemFileSystemGenericS3UploadPostRaw(requestParameters: UploadFileSystemFileSystemGenericS3UploadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GenericFileSystemUploadResponse>> {
+    async uploadFileSystemFileSystemGenericS3UploadPostRequestOpts(requestParameters: UploadFileSystemFileSystemGenericS3UploadPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['file'] == null) {
             throw new runtime.RequiredError(
                 'file',
@@ -527,13 +591,21 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         let urlPath = `/file-system/generic-s3/upload`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: formParams,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Upload File System
+     */
+    async uploadFileSystemFileSystemGenericS3UploadPostRaw(requestParameters: UploadFileSystemFileSystemGenericS3UploadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GenericFileSystemUploadResponse>> {
+        const requestOptions = await this.uploadFileSystemFileSystemGenericS3UploadPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => GenericFileSystemUploadResponseFromJSON(jsonValue));
     }

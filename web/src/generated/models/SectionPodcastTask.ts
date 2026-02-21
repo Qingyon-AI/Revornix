@@ -24,12 +24,6 @@ export interface SectionPodcastTask {
      * @type {number}
      * @memberof SectionPodcastTask
      */
-    creator_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SectionPodcastTask
-     */
     status: number;
     /**
      * 
@@ -43,7 +37,6 @@ export interface SectionPodcastTask {
  * Check if a given object implements the SectionPodcastTask interface.
  */
 export function instanceOfSectionPodcastTask(value: object): value is SectionPodcastTask {
-    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('podcast_file_name' in value) || value['podcast_file_name'] === undefined) return false;
     return true;
@@ -59,7 +52,6 @@ export function SectionPodcastTaskFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'creator_id': json['creator_id'],
         'status': json['status'],
         'podcast_file_name': json['podcast_file_name'],
     };
@@ -76,7 +68,6 @@ export function SectionPodcastTaskToJSONTyped(value?: SectionPodcastTask | null,
 
     return {
         
-        'creator_id': value['creator_id'],
         'status': value['status'],
         'podcast_file_name': value['podcast_file_name'],
     };

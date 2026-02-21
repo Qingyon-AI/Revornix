@@ -6,7 +6,6 @@
 
 Name | Type
 ------------ | -------------
-`creator_id` | number
 `status` | number
 `transcribed_text` | string
 
@@ -17,7 +16,6 @@ import type { DocumentTranscribeTask } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "creator_id": null,
   "status": null,
   "transcribed_text": null,
 } satisfies DocumentTranscribeTask

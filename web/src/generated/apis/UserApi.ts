@@ -311,9 +311,9 @@ export interface UserInfoUserInfoPostRequest {
 export class UserApi extends runtime.BaseAPI {
 
     /**
-     * Bind Email Code
+     * Creates request options for bindEmailCodeUserBindEmailCodePost without sending the request
      */
-    async bindEmailCodeUserBindEmailCodePostRaw(requestParameters: BindEmailCodeUserBindEmailCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async bindEmailCodeUserBindEmailCodePostRequestOpts(requestParameters: BindEmailCodeUserBindEmailCodePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['bindEmailRequest'] == null) {
             throw new runtime.RequiredError(
                 'bindEmailRequest',
@@ -330,13 +330,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/bind/email/code`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: BindEmailRequestToJSON(requestParameters['bindEmailRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Bind Email Code
+     */
+    async bindEmailCodeUserBindEmailCodePostRaw(requestParameters: BindEmailCodeUserBindEmailCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.bindEmailCodeUserBindEmailCodePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -350,10 +358,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * This api is only available for local use, and is disabled in the official deployment version
-     * Bind Email
+     * Creates request options for bindEmailUserBindEmailPost without sending the request
      */
-    async bindEmailUserBindEmailPostRaw(requestParameters: BindEmailUserBindEmailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async bindEmailUserBindEmailPostRequestOpts(requestParameters: BindEmailUserBindEmailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['bindEmailVerifyRequest'] == null) {
             throw new runtime.RequiredError(
                 'bindEmailVerifyRequest',
@@ -374,13 +381,22 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/bind/email`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: BindEmailVerifyRequestToJSON(requestParameters['bindEmailVerifyRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * This api is only available for local use, and is disabled in the official deployment version
+     * Bind Email
+     */
+    async bindEmailUserBindEmailPostRaw(requestParameters: BindEmailUserBindEmailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.bindEmailUserBindEmailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -395,9 +411,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Bind Email Verify
+     * Creates request options for bindEmailVerifyUserBindEmailVerifyPost without sending the request
      */
-    async bindEmailVerifyUserBindEmailVerifyPostRaw(requestParameters: BindEmailVerifyUserBindEmailVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async bindEmailVerifyUserBindEmailVerifyPostRequestOpts(requestParameters: BindEmailVerifyUserBindEmailVerifyPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['bindEmailCodeVerifyRequest'] == null) {
             throw new runtime.RequiredError(
                 'bindEmailCodeVerifyRequest',
@@ -418,13 +434,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/bind/email/verify`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: BindEmailCodeVerifyRequestToJSON(requestParameters['bindEmailCodeVerifyRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Bind Email Verify
+     */
+    async bindEmailVerifyUserBindEmailVerifyPostRaw(requestParameters: BindEmailVerifyUserBindEmailVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.bindEmailVerifyUserBindEmailVerifyPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -438,9 +462,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Bind Github
+     * Creates request options for bindGithubUserBindGithubPost without sending the request
      */
-    async bindGithubUserBindGithubPostRaw(requestParameters: BindGithubUserBindGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async bindGithubUserBindGithubPostRequestOpts(requestParameters: BindGithubUserBindGithubPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['githubUserBind'] == null) {
             throw new runtime.RequiredError(
                 'githubUserBind',
@@ -461,13 +485,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/bind/github`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: GithubUserBindToJSON(requestParameters['githubUserBind']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Bind Github
+     */
+    async bindGithubUserBindGithubPostRaw(requestParameters: BindGithubUserBindGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.bindGithubUserBindGithubPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -481,9 +513,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Bind Google
+     * Creates request options for bindGoogleUserBindGooglePost without sending the request
      */
-    async bindGoogleUserBindGooglePostRaw(requestParameters: BindGoogleUserBindGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async bindGoogleUserBindGooglePostRequestOpts(requestParameters: BindGoogleUserBindGooglePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['googleUserBind'] == null) {
             throw new runtime.RequiredError(
                 'googleUserBind',
@@ -504,13 +536,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/bind/google`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: GoogleUserBindToJSON(requestParameters['googleUserBind']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Bind Google
+     */
+    async bindGoogleUserBindGooglePostRaw(requestParameters: BindGoogleUserBindGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.bindGoogleUserBindGooglePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -524,9 +564,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Bind Phone
+     * Creates request options for bindPhoneUserBindPhoneCodePost without sending the request
      */
-    async bindPhoneUserBindPhoneCodePostRaw(requestParameters: BindPhoneUserBindPhoneCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async bindPhoneUserBindPhoneCodePostRequestOpts(requestParameters: BindPhoneUserBindPhoneCodePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['bindPhoneCodeCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'bindPhoneCodeCreateRequest',
@@ -547,13 +587,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/bind/phone/code`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: BindPhoneCodeCreateRequestToJSON(requestParameters['bindPhoneCodeCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Bind Phone
+     */
+    async bindPhoneUserBindPhoneCodePostRaw(requestParameters: BindPhoneUserBindPhoneCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.bindPhoneUserBindPhoneCodePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -567,9 +615,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Bind Phone Verify
+     * Creates request options for bindPhoneVerifyUserBindPhoneVerifyPost without sending the request
      */
-    async bindPhoneVerifyUserBindPhoneVerifyPostRaw(requestParameters: BindPhoneVerifyUserBindPhoneVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async bindPhoneVerifyUserBindPhoneVerifyPostRequestOpts(requestParameters: BindPhoneVerifyUserBindPhoneVerifyPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['bindPhoneCodeVerifyRequest'] == null) {
             throw new runtime.RequiredError(
                 'bindPhoneCodeVerifyRequest',
@@ -590,13 +638,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/bind/phone/verify`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: BindPhoneCodeVerifyRequestToJSON(requestParameters['bindPhoneCodeVerifyRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Bind Phone Verify
+     */
+    async bindPhoneVerifyUserBindPhoneVerifyPostRaw(requestParameters: BindPhoneVerifyUserBindPhoneVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.bindPhoneVerifyUserBindPhoneVerifyPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -610,9 +666,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Bind Wechat
+     * Creates request options for bindWechatUserBindWechatWebPost without sending the request
      */
-    async bindWechatUserBindWechatWebPostRaw(requestParameters: BindWechatUserBindWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async bindWechatUserBindWechatWebPostRequestOpts(requestParameters: BindWechatUserBindWechatWebPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['weChatWebUserBindRequest'] == null) {
             throw new runtime.RequiredError(
                 'weChatWebUserBindRequest',
@@ -633,13 +689,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/bind/wechat/web`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: WeChatWebUserBindRequestToJSON(requestParameters['weChatWebUserBindRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Bind Wechat
+     */
+    async bindWechatUserBindWechatWebPostRaw(requestParameters: BindWechatUserBindWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.bindWechatUserBindWechatWebPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -653,9 +717,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create User By Email Code
+     * Creates request options for createUserByEmailCodeUserCreateEmailCodePost without sending the request
      */
-    async createUserByEmailCodeUserCreateEmailCodePostRaw(requestParameters: CreateUserByEmailCodeUserCreateEmailCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async createUserByEmailCodeUserCreateEmailCodePostRequestOpts(requestParameters: CreateUserByEmailCodeUserCreateEmailCodePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['emailCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'emailCreateRequest',
@@ -672,13 +736,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/create/email/code`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: EmailCreateRequestToJSON(requestParameters['emailCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create User By Email Code
+     */
+    async createUserByEmailCodeUserCreateEmailCodePostRaw(requestParameters: CreateUserByEmailCodeUserCreateEmailCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createUserByEmailCodeUserCreateEmailCodePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -692,10 +764,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * his api is only available for local use, and is disabled in the official deployment version
-     * Create User By Email
+     * Creates request options for createUserByEmailUserCreateEmailPost without sending the request
      */
-    async createUserByEmailUserCreateEmailPostRaw(requestParameters: CreateUserByEmailUserCreateEmailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserByEmailUserCreateEmailPostRequestOpts(requestParameters: CreateUserByEmailUserCreateEmailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['emailUserCreateVerifyRequest'] == null) {
             throw new runtime.RequiredError(
                 'emailUserCreateVerifyRequest',
@@ -716,13 +787,22 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/create/email`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: EmailUserCreateVerifyRequestToJSON(requestParameters['emailUserCreateVerifyRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * his api is only available for local use, and is disabled in the official deployment version
+     * Create User By Email
+     */
+    async createUserByEmailUserCreateEmailPostRaw(requestParameters: CreateUserByEmailUserCreateEmailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.createUserByEmailUserCreateEmailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
     }
@@ -737,9 +817,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create User By Email Verify
+     * Creates request options for createUserByEmailVerifyUserCreateEmailVerifyPost without sending the request
      */
-    async createUserByEmailVerifyUserCreateEmailVerifyPostRaw(requestParameters: CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserByEmailVerifyUserCreateEmailVerifyPostRequestOpts(requestParameters: CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['emailUserCreateCodeVerifyRequest'] == null) {
             throw new runtime.RequiredError(
                 'emailUserCreateCodeVerifyRequest',
@@ -760,13 +840,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/create/email/verify`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: EmailUserCreateCodeVerifyRequestToJSON(requestParameters['emailUserCreateCodeVerifyRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create User By Email Verify
+     */
+    async createUserByEmailVerifyUserCreateEmailVerifyPostRaw(requestParameters: CreateUserByEmailVerifyUserCreateEmailVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.createUserByEmailVerifyUserCreateEmailVerifyPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
     }
@@ -780,9 +868,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create User By Github
+     * Creates request options for createUserByGithubUserCreateGithubPost without sending the request
      */
-    async createUserByGithubUserCreateGithubPostRaw(requestParameters: CreateUserByGithubUserCreateGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserByGithubUserCreateGithubPostRequestOpts(requestParameters: CreateUserByGithubUserCreateGithubPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['githubUserCreate'] == null) {
             throw new runtime.RequiredError(
                 'githubUserCreate',
@@ -803,13 +891,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/create/github`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: GithubUserCreateToJSON(requestParameters['githubUserCreate']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create User By Github
+     */
+    async createUserByGithubUserCreateGithubPostRaw(requestParameters: CreateUserByGithubUserCreateGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.createUserByGithubUserCreateGithubPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
     }
@@ -823,9 +919,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create User By Google
+     * Creates request options for createUserByGoogleUserCreateGooglePost without sending the request
      */
-    async createUserByGoogleUserCreateGooglePostRaw(requestParameters: CreateUserByGoogleUserCreateGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserByGoogleUserCreateGooglePostRequestOpts(requestParameters: CreateUserByGoogleUserCreateGooglePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['googleUserCreate'] == null) {
             throw new runtime.RequiredError(
                 'googleUserCreate',
@@ -846,13 +942,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/create/google`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: GoogleUserCreateToJSON(requestParameters['googleUserCreate']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create User By Google
+     */
+    async createUserByGoogleUserCreateGooglePostRaw(requestParameters: CreateUserByGoogleUserCreateGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.createUserByGoogleUserCreateGooglePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
     }
@@ -866,9 +970,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create User By Sms Code
+     * Creates request options for createUserBySmsCodeUserCreateSmsCodePost without sending the request
      */
-    async createUserBySmsCodeUserCreateSmsCodePostRaw(requestParameters: CreateUserBySmsCodeUserCreateSmsCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async createUserBySmsCodeUserCreateSmsCodePostRequestOpts(requestParameters: CreateUserBySmsCodeUserCreateSmsCodePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['smsUserCodeCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'smsUserCodeCreateRequest',
@@ -885,13 +989,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/create/sms/code`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SmsUserCodeCreateRequestToJSON(requestParameters['smsUserCodeCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create User By Sms Code
+     */
+    async createUserBySmsCodeUserCreateSmsCodePostRaw(requestParameters: CreateUserBySmsCodeUserCreateSmsCodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createUserBySmsCodeUserCreateSmsCodePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -905,9 +1017,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create User By Sms Verify
+     * Creates request options for createUserBySmsVerifyUserCreateSmsVerifyPost without sending the request
      */
-    async createUserBySmsVerifyUserCreateSmsVerifyPostRaw(requestParameters: CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserBySmsVerifyUserCreateSmsVerifyPostRequestOpts(requestParameters: CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['smsUserCodeVerifyCreate'] == null) {
             throw new runtime.RequiredError(
                 'smsUserCodeVerifyCreate',
@@ -928,13 +1040,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/create/sms/verify`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SmsUserCodeVerifyCreateToJSON(requestParameters['smsUserCodeVerifyCreate']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create User By Sms Verify
+     */
+    async createUserBySmsVerifyUserCreateSmsVerifyPostRaw(requestParameters: CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.createUserBySmsVerifyUserCreateSmsVerifyPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
     }
@@ -948,9 +1068,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create User By Wechat Mini
+     * Creates request options for createUserByWechatMiniUserCreateWechatMiniPost without sending the request
      */
-    async createUserByWechatMiniUserCreateWechatMiniPostRaw(requestParameters: CreateUserByWechatMiniUserCreateWechatMiniPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserByWechatMiniUserCreateWechatMiniPostRequestOpts(requestParameters: CreateUserByWechatMiniUserCreateWechatMiniPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['weChatMiniUserCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'weChatMiniUserCreateRequest',
@@ -971,13 +1091,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/create/wechat/mini`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: WeChatMiniUserCreateRequestToJSON(requestParameters['weChatMiniUserCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create User By Wechat Mini
+     */
+    async createUserByWechatMiniUserCreateWechatMiniPostRaw(requestParameters: CreateUserByWechatMiniUserCreateWechatMiniPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.createUserByWechatMiniUserCreateWechatMiniPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
     }
@@ -991,9 +1119,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create User By Wechat Web
+     * Creates request options for createUserByWechatWebUserCreateWechatWebPost without sending the request
      */
-    async createUserByWechatWebUserCreateWechatWebPostRaw(requestParameters: CreateUserByWechatWebUserCreateWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserByWechatWebUserCreateWechatWebPostRequestOpts(requestParameters: CreateUserByWechatWebUserCreateWechatWebPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['weChatWebUserCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'weChatWebUserCreateRequest',
@@ -1014,13 +1142,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/create/wechat/web`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: WeChatWebUserCreateRequestToJSON(requestParameters['weChatWebUserCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create User By Wechat Web
+     */
+    async createUserByWechatWebUserCreateWechatWebPostRaw(requestParameters: CreateUserByWechatWebUserCreateWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.createUserByWechatWebUserCreateWechatWebPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
     }
@@ -1034,9 +1170,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete User
+     * Creates request options for deleteUserUserDeletePost without sending the request
      */
-    async deleteUserUserDeletePostRaw(requestParameters: DeleteUserUserDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteUserUserDeletePostRequestOpts(requestParameters: DeleteUserUserDeletePostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1048,12 +1184,20 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete User
+     */
+    async deleteUserUserDeletePostRaw(requestParameters: DeleteUserUserDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteUserUserDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1067,9 +1211,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Follow User
+     * Creates request options for followUserUserFollowPost without sending the request
      */
-    async followUserUserFollowPostRaw(requestParameters: FollowUserUserFollowPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async followUserUserFollowPostRequestOpts(requestParameters: FollowUserUserFollowPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['followUserRequest'] == null) {
             throw new runtime.RequiredError(
                 'followUserRequest',
@@ -1090,13 +1234,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/follow`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: FollowUserRequestToJSON(requestParameters['followUserRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Follow User
+     */
+    async followUserUserFollowPostRaw(requestParameters: FollowUserUserFollowPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.followUserUserFollowPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1110,9 +1262,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Initial See Password
+     * Creates request options for initialSeePasswordUserPasswordInitialSeePost without sending the request
      */
-    async initialSeePasswordUserPasswordInitialSeePostRaw(requestParameters: InitialSeePasswordUserPasswordInitialSeePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InitialPasswordResponse>> {
+    async initialSeePasswordUserPasswordInitialSeePostRequestOpts(requestParameters: InitialSeePasswordUserPasswordInitialSeePostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1124,12 +1276,20 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/password/initial-see`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Initial See Password
+     */
+    async initialSeePasswordUserPasswordInitialSeePostRaw(requestParameters: InitialSeePasswordUserPasswordInitialSeePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InitialPasswordResponse>> {
+        const requestOptions = await this.initialSeePasswordUserPasswordInitialSeePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InitialPasswordResponseFromJSON(jsonValue));
     }
@@ -1143,9 +1303,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Login
+     * Creates request options for loginUserLoginPost without sending the request
      */
-    async loginUserLoginPostRaw(requestParameters: LoginUserLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async loginUserLoginPostRequestOpts(requestParameters: LoginUserLoginPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['userLoginRequest'] == null) {
             throw new runtime.RequiredError(
                 'userLoginRequest',
@@ -1166,13 +1326,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/login`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: UserLoginRequestToJSON(requestParameters['userLoginRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Login
+     */
+    async loginUserLoginPostRaw(requestParameters: LoginUserLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.loginUserLoginPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
     }
@@ -1186,9 +1354,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * My Info
+     * Creates request options for myInfoUserMineInfoPost without sending the request
      */
-    async myInfoUserMineInfoPostRaw(requestParameters: MyInfoUserMineInfoPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PrivateUserInfo>> {
+    async myInfoUserMineInfoPostRequestOpts(requestParameters: MyInfoUserMineInfoPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1200,12 +1368,20 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/mine/info`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * My Info
+     */
+    async myInfoUserMineInfoPostRaw(requestParameters: MyInfoUserMineInfoPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PrivateUserInfo>> {
+        const requestOptions = await this.myInfoUserMineInfoPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => PrivateUserInfoFromJSON(jsonValue));
     }
@@ -1219,9 +1395,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search User Fans
+     * Creates request options for searchUserFansUserFansPost without sending the request
      */
-    async searchUserFansUserFansPostRaw(requestParameters: SearchUserFansUserFansPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionUserPublicInfo>> {
+    async searchUserFansUserFansPostRequestOpts(requestParameters: SearchUserFansUserFansPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchUserFansRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchUserFansRequest',
@@ -1242,13 +1418,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/fans`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchUserFansRequestToJSON(requestParameters['searchUserFansRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search User Fans
+     */
+    async searchUserFansUserFansPostRaw(requestParameters: SearchUserFansUserFansPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionUserPublicInfo>> {
+        const requestOptions = await this.searchUserFansUserFansPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionUserPublicInfoFromJSON(jsonValue));
     }
@@ -1262,9 +1446,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search User Follows
+     * Creates request options for searchUserFollowsUserFollowsPost without sending the request
      */
-    async searchUserFollowsUserFollowsPostRaw(requestParameters: SearchUserFollowsUserFollowsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionUserPublicInfo>> {
+    async searchUserFollowsUserFollowsPostRequestOpts(requestParameters: SearchUserFollowsUserFollowsPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchUserFollowsRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchUserFollowsRequest',
@@ -1285,13 +1469,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/follows`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchUserFollowsRequestToJSON(requestParameters['searchUserFollowsRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search User Follows
+     */
+    async searchUserFollowsUserFollowsPostRaw(requestParameters: SearchUserFollowsUserFollowsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionUserPublicInfo>> {
+        const requestOptions = await this.searchUserFollowsUserFollowsPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionUserPublicInfoFromJSON(jsonValue));
     }
@@ -1305,9 +1497,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search User
+     * Creates request options for searchUserUserSearchPost without sending the request
      */
-    async searchUserUserSearchPostRaw(requestParameters: SearchUserUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionUserPublicInfo>> {
+    async searchUserUserSearchPostRequestOpts(requestParameters: SearchUserUserSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchUserRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchUserRequest',
@@ -1328,13 +1520,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchUserRequestToJSON(requestParameters['searchUserRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search User
+     */
+    async searchUserUserSearchPostRaw(requestParameters: SearchUserUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionUserPublicInfo>> {
+        const requestOptions = await this.searchUserUserSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionUserPublicInfoFromJSON(jsonValue));
     }
@@ -1348,9 +1548,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Unbind Github
+     * Creates request options for unbindGithubUserUnbindGithubPost without sending the request
      */
-    async unbindGithubUserUnbindGithubPostRaw(requestParameters: UnbindGithubUserUnbindGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async unbindGithubUserUnbindGithubPostRequestOpts(requestParameters: UnbindGithubUserUnbindGithubPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1362,12 +1562,20 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/unbind/github`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Unbind Github
+     */
+    async unbindGithubUserUnbindGithubPostRaw(requestParameters: UnbindGithubUserUnbindGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.unbindGithubUserUnbindGithubPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1381,9 +1589,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Unbind Google
+     * Creates request options for unbindGoogleUserUnbindGooglePost without sending the request
      */
-    async unbindGoogleUserUnbindGooglePostRaw(requestParameters: UnbindGoogleUserUnbindGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async unbindGoogleUserUnbindGooglePostRequestOpts(requestParameters: UnbindGoogleUserUnbindGooglePostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1395,12 +1603,20 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/unbind/google`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Unbind Google
+     */
+    async unbindGoogleUserUnbindGooglePostRaw(requestParameters: UnbindGoogleUserUnbindGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.unbindGoogleUserUnbindGooglePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1414,9 +1630,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Unbind Phone
+     * Creates request options for unbindPhoneUserUnbindPhonePost without sending the request
      */
-    async unbindPhoneUserUnbindPhonePostRaw(requestParameters: UnbindPhoneUserUnbindPhonePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async unbindPhoneUserUnbindPhonePostRequestOpts(requestParameters: UnbindPhoneUserUnbindPhonePostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1428,12 +1644,20 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/unbind/phone`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Unbind Phone
+     */
+    async unbindPhoneUserUnbindPhonePostRaw(requestParameters: UnbindPhoneUserUnbindPhonePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.unbindPhoneUserUnbindPhonePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1447,9 +1671,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Unbind Wechat
+     * Creates request options for unbindWechatUserUnbindWechatPost without sending the request
      */
-    async unbindWechatUserUnbindWechatPostRaw(requestParameters: UnbindWechatUserUnbindWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async unbindWechatUserUnbindWechatPostRequestOpts(requestParameters: UnbindWechatUserUnbindWechatPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1461,12 +1685,20 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/unbind/wechat`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Unbind Wechat
+     */
+    async unbindWechatUserUnbindWechatPostRaw(requestParameters: UnbindWechatUserUnbindWechatPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.unbindWechatUserUnbindWechatPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1480,9 +1712,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Default Engine
+     * Creates request options for updateDefaultEngineUserDefaultEngineUpdatePost without sending the request
      */
-    async updateDefaultEngineUserDefaultEngineUpdatePostRaw(requestParameters: UpdateDefaultEngineUserDefaultEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateDefaultEngineUserDefaultEngineUpdatePostRequestOpts(requestParameters: UpdateDefaultEngineUserDefaultEngineUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['defaultEngineUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'defaultEngineUpdateRequest',
@@ -1503,13 +1735,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/default-engine/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DefaultEngineUpdateRequestToJSON(requestParameters['defaultEngineUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Default Engine
+     */
+    async updateDefaultEngineUserDefaultEngineUpdatePostRaw(requestParameters: UpdateDefaultEngineUserDefaultEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateDefaultEngineUserDefaultEngineUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1523,9 +1763,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Default File System
+     * Creates request options for updateDefaultFileSystemUserDefaultFileSystemUpdatePost without sending the request
      */
-    async updateDefaultFileSystemUserDefaultFileSystemUpdatePostRaw(requestParameters: UpdateDefaultFileSystemUserDefaultFileSystemUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateDefaultFileSystemUserDefaultFileSystemUpdatePostRequestOpts(requestParameters: UpdateDefaultFileSystemUserDefaultFileSystemUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['defaultFileSystemUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'defaultFileSystemUpdateRequest',
@@ -1546,13 +1786,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/default-file-system/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DefaultFileSystemUpdateRequestToJSON(requestParameters['defaultFileSystemUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Default File System
+     */
+    async updateDefaultFileSystemUserDefaultFileSystemUpdatePostRaw(requestParameters: UpdateDefaultFileSystemUserDefaultFileSystemUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateDefaultFileSystemUserDefaultFileSystemUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1566,9 +1814,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Default Model
+     * Creates request options for updateDefaultModelUserDefaultModelUpdatePost without sending the request
      */
-    async updateDefaultModelUserDefaultModelUpdatePostRaw(requestParameters: UpdateDefaultModelUserDefaultModelUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateDefaultModelUserDefaultModelUpdatePostRequestOpts(requestParameters: UpdateDefaultModelUserDefaultModelUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['defaultModelUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'defaultModelUpdateRequest',
@@ -1589,13 +1837,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/default-model/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DefaultModelUpdateRequestToJSON(requestParameters['defaultModelUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Default Model
+     */
+    async updateDefaultModelUserDefaultModelUpdatePostRaw(requestParameters: UpdateDefaultModelUserDefaultModelUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateDefaultModelUserDefaultModelUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1609,9 +1865,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update My Default Read Mark Reason
+     * Creates request options for updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost without sending the request
      */
-    async updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRaw(requestParameters: UpdateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequestOpts(requestParameters: UpdateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['defaultReadMarkReasonUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'defaultReadMarkReasonUpdateRequest',
@@ -1632,13 +1888,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/read-mark-reason/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DefaultReadMarkReasonUpdateRequestToJSON(requestParameters['defaultReadMarkReasonUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update My Default Read Mark Reason
+     */
+    async updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRaw(requestParameters: UpdateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1652,9 +1916,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update My Info
+     * Creates request options for updateMyInfoUserUpdatePost without sending the request
      */
-    async updateMyInfoUserUpdatePostRaw(requestParameters: UpdateMyInfoUserUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateMyInfoUserUpdatePostRequestOpts(requestParameters: UpdateMyInfoUserUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['userInfoUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'userInfoUpdateRequest',
@@ -1675,13 +1939,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: UserInfoUpdateRequestToJSON(requestParameters['userInfoUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update My Info
+     */
+    async updateMyInfoUserUpdatePostRaw(requestParameters: UpdateMyInfoUserUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateMyInfoUserUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1695,9 +1967,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Password
+     * Creates request options for updatePasswordUserPasswordUpdatePost without sending the request
      */
-    async updatePasswordUserPasswordUpdatePostRaw(requestParameters: UpdatePasswordUserPasswordUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updatePasswordUserPasswordUpdatePostRequestOpts(requestParameters: UpdatePasswordUserPasswordUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['passwordUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'passwordUpdateRequest',
@@ -1718,13 +1990,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/password/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: PasswordUpdateRequestToJSON(requestParameters['passwordUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Password
+     */
+    async updatePasswordUserPasswordUpdatePostRaw(requestParameters: UpdatePasswordUserPasswordUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updatePasswordUserPasswordUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1738,9 +2018,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Token
+     * Creates request options for updateTokenUserTokenUpdatePost without sending the request
      */
-    async updateTokenUserTokenUpdatePostRaw(requestParameters: UpdateTokenUserTokenUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async updateTokenUserTokenUpdatePostRequestOpts(requestParameters: UpdateTokenUserTokenUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['tokenUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'tokenUpdateRequest',
@@ -1761,13 +2041,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/token/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: TokenUpdateRequestToJSON(requestParameters['tokenUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Token
+     */
+    async updateTokenUserTokenUpdatePostRaw(requestParameters: UpdateTokenUserTokenUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.updateTokenUserTokenUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
     }
@@ -1781,9 +2069,9 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
-     * User Info
+     * Creates request options for userInfoUserInfoPost without sending the request
      */
-    async userInfoUserInfoPostRaw(requestParameters: UserInfoUserInfoPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserPublicInfo>> {
+    async userInfoUserInfoPostRequestOpts(requestParameters: UserInfoUserInfoPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['userInfoRequest'] == null) {
             throw new runtime.RequiredError(
                 'userInfoRequest',
@@ -1804,13 +2092,21 @@ export class UserApi extends runtime.BaseAPI {
 
         let urlPath = `/user/info`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: UserInfoRequestToJSON(requestParameters['userInfoRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * User Info
+     */
+    async userInfoUserInfoPostRaw(requestParameters: UserInfoUserInfoPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserPublicInfo>> {
+        const requestOptions = await this.userInfoUserInfoPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => UserPublicInfoFromJSON(jsonValue));
     }

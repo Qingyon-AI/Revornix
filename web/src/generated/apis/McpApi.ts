@@ -77,9 +77,9 @@ export interface UpdateServerMcpServerUpdatePostRequest {
 export class McpApi extends runtime.BaseAPI {
 
     /**
-     * Create Server
+     * Creates request options for createServerMcpServerCreatePost without sending the request
      */
-    async createServerMcpServerCreatePostRaw(requestParameters: CreateServerMcpServerCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async createServerMcpServerCreatePostRequestOpts(requestParameters: CreateServerMcpServerCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['mCPServerCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'mCPServerCreateRequest',
@@ -100,13 +100,21 @@ export class McpApi extends runtime.BaseAPI {
 
         let urlPath = `/mcp/server/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: MCPServerCreateRequestToJSON(requestParameters['mCPServerCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Server
+     */
+    async createServerMcpServerCreatePostRaw(requestParameters: CreateServerMcpServerCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createServerMcpServerCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -120,9 +128,9 @@ export class McpApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Server
+     * Creates request options for deleteServerMcpServerDeletePost without sending the request
      */
-    async deleteServerMcpServerDeletePostRaw(requestParameters: DeleteServerMcpServerDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteServerMcpServerDeletePostRequestOpts(requestParameters: DeleteServerMcpServerDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['mCPServerDeleteRequest'] == null) {
             throw new runtime.RequiredError(
                 'mCPServerDeleteRequest',
@@ -143,13 +151,21 @@ export class McpApi extends runtime.BaseAPI {
 
         let urlPath = `/mcp/server/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: MCPServerDeleteRequestToJSON(requestParameters['mCPServerDeleteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Server
+     */
+    async deleteServerMcpServerDeletePostRaw(requestParameters: DeleteServerMcpServerDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteServerMcpServerDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -163,9 +179,9 @@ export class McpApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Mcp Server Detail
+     * Creates request options for getMcpServerDetailMcpServerDetailPost without sending the request
      */
-    async getMcpServerDetailMcpServerDetailPostRaw(requestParameters: GetMcpServerDetailMcpServerDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MCPServerInfo>> {
+    async getMcpServerDetailMcpServerDetailPostRequestOpts(requestParameters: GetMcpServerDetailMcpServerDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['mCPServerDetailRequest'] == null) {
             throw new runtime.RequiredError(
                 'mCPServerDetailRequest',
@@ -186,13 +202,21 @@ export class McpApi extends runtime.BaseAPI {
 
         let urlPath = `/mcp/server/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: MCPServerDetailRequestToJSON(requestParameters['mCPServerDetailRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Mcp Server Detail
+     */
+    async getMcpServerDetailMcpServerDetailPostRaw(requestParameters: GetMcpServerDetailMcpServerDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MCPServerInfo>> {
+        const requestOptions = await this.getMcpServerDetailMcpServerDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => MCPServerInfoFromJSON(jsonValue));
     }
@@ -206,9 +230,9 @@ export class McpApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Mcp Server List
+     * Creates request options for getMcpServerListMcpServerSearchPost without sending the request
      */
-    async getMcpServerListMcpServerSearchPostRaw(requestParameters: GetMcpServerListMcpServerSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MCPServerSearchResponse>> {
+    async getMcpServerListMcpServerSearchPostRequestOpts(requestParameters: GetMcpServerListMcpServerSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['mCPServerSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'mCPServerSearchRequest',
@@ -229,13 +253,21 @@ export class McpApi extends runtime.BaseAPI {
 
         let urlPath = `/mcp/server/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: MCPServerSearchRequestToJSON(requestParameters['mCPServerSearchRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Mcp Server List
+     */
+    async getMcpServerListMcpServerSearchPostRaw(requestParameters: GetMcpServerListMcpServerSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MCPServerSearchResponse>> {
+        const requestOptions = await this.getMcpServerListMcpServerSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => MCPServerSearchResponseFromJSON(jsonValue));
     }
@@ -249,9 +281,9 @@ export class McpApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Server
+     * Creates request options for updateServerMcpServerUpdatePost without sending the request
      */
-    async updateServerMcpServerUpdatePostRaw(requestParameters: UpdateServerMcpServerUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateServerMcpServerUpdatePostRequestOpts(requestParameters: UpdateServerMcpServerUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['mCPServerUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'mCPServerUpdateRequest',
@@ -272,13 +304,21 @@ export class McpApi extends runtime.BaseAPI {
 
         let urlPath = `/mcp/server/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: MCPServerUpdateRequestToJSON(requestParameters['mCPServerUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Server
+     */
+    async updateServerMcpServerUpdatePostRaw(requestParameters: UpdateServerMcpServerUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateServerMcpServerUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }

@@ -291,9 +291,9 @@ export interface UpdateNotificationTaskNotificationTaskUpdatePostRequest {
 export class NotificationApi extends runtime.BaseAPI {
 
     /**
-     * Add Notification Source
+     * Creates request options for addNotificationSourceNotificationSourceAddPost without sending the request
      */
-    async addNotificationSourceNotificationSourceAddPostRaw(requestParameters: AddNotificationSourceNotificationSourceAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async addNotificationSourceNotificationSourceAddPostRequestOpts(requestParameters: AddNotificationSourceNotificationSourceAddPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['addNotificationSourceRequest'] == null) {
             throw new runtime.RequiredError(
                 'addNotificationSourceRequest',
@@ -314,13 +314,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/source/add`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: AddNotificationSourceRequestToJSON(requestParameters['addNotificationSourceRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Add Notification Source
+     */
+    async addNotificationSourceNotificationSourceAddPostRaw(requestParameters: AddNotificationSourceNotificationSourceAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.addNotificationSourceNotificationSourceAddPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -334,9 +342,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Add Notification Target
+     * Creates request options for addNotificationTargetNotificationTargetAddPost without sending the request
      */
-    async addNotificationTargetNotificationTargetAddPostRaw(requestParameters: AddNotificationTargetNotificationTargetAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async addNotificationTargetNotificationTargetAddPostRequestOpts(requestParameters: AddNotificationTargetNotificationTargetAddPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['addNotificationTargetRequest'] == null) {
             throw new runtime.RequiredError(
                 'addNotificationTargetRequest',
@@ -357,13 +365,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/target/add`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: AddNotificationTargetRequestToJSON(requestParameters['addNotificationTargetRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Add Notification Target
+     */
+    async addNotificationTargetNotificationTargetAddPostRaw(requestParameters: AddNotificationTargetNotificationTargetAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.addNotificationTargetNotificationTargetAddPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -377,9 +393,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Add Notification Task
+     * Creates request options for addNotificationTaskNotificationTaskAddPost without sending the request
      */
-    async addNotificationTaskNotificationTaskAddPostRaw(requestParameters: AddNotificationTaskNotificationTaskAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async addNotificationTaskNotificationTaskAddPostRequestOpts(requestParameters: AddNotificationTaskNotificationTaskAddPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['addNotificationTaskRequest'] == null) {
             throw new runtime.RequiredError(
                 'addNotificationTaskRequest',
@@ -400,13 +416,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/task/add`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: AddNotificationTaskRequestToJSON(requestParameters['addNotificationTaskRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Add Notification Task
+     */
+    async addNotificationTaskNotificationTaskAddPostRaw(requestParameters: AddNotificationTaskNotificationTaskAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.addNotificationTaskNotificationTaskAddPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -420,9 +444,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Notification Record
+     * Creates request options for deleteNotificationRecordNotificationRecordDeletePost without sending the request
      */
-    async deleteNotificationRecordNotificationRecordDeletePostRaw(requestParameters: DeleteNotificationRecordNotificationRecordDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteNotificationRecordNotificationRecordDeletePostRequestOpts(requestParameters: DeleteNotificationRecordNotificationRecordDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['deleteNotificationRecordRequest'] == null) {
             throw new runtime.RequiredError(
                 'deleteNotificationRecordRequest',
@@ -443,13 +467,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/record/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DeleteNotificationRecordRequestToJSON(requestParameters['deleteNotificationRecordRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Notification Record
+     */
+    async deleteNotificationRecordNotificationRecordDeletePostRaw(requestParameters: DeleteNotificationRecordNotificationRecordDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteNotificationRecordNotificationRecordDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -463,9 +495,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Notification Source
+     * Creates request options for deleteNotificationSourceNotificationSourceDeletePost without sending the request
      */
-    async deleteNotificationSourceNotificationSourceDeletePostRaw(requestParameters: DeleteNotificationSourceNotificationSourceDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteNotificationSourceNotificationSourceDeletePostRequestOpts(requestParameters: DeleteNotificationSourceNotificationSourceDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['deleteNotificationSourceRequest'] == null) {
             throw new runtime.RequiredError(
                 'deleteNotificationSourceRequest',
@@ -486,13 +518,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/source/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DeleteNotificationSourceRequestToJSON(requestParameters['deleteNotificationSourceRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Notification Source
+     */
+    async deleteNotificationSourceNotificationSourceDeletePostRaw(requestParameters: DeleteNotificationSourceNotificationSourceDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteNotificationSourceNotificationSourceDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -506,9 +546,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Notification Target
+     * Creates request options for deleteNotificationTargetNotificationTargetDeletePost without sending the request
      */
-    async deleteNotificationTargetNotificationTargetDeletePostRaw(requestParameters: DeleteNotificationTargetNotificationTargetDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteNotificationTargetNotificationTargetDeletePostRequestOpts(requestParameters: DeleteNotificationTargetNotificationTargetDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['deleteNotificationTargetRequest'] == null) {
             throw new runtime.RequiredError(
                 'deleteNotificationTargetRequest',
@@ -529,13 +569,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/target/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DeleteNotificationTargetRequestToJSON(requestParameters['deleteNotificationTargetRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Notification Target
+     */
+    async deleteNotificationTargetNotificationTargetDeletePostRaw(requestParameters: DeleteNotificationTargetNotificationTargetDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteNotificationTargetNotificationTargetDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -549,9 +597,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Notification Task
+     * Creates request options for deleteNotificationTaskNotificationTaskDeletePost without sending the request
      */
-    async deleteNotificationTaskNotificationTaskDeletePostRaw(requestParameters: DeleteNotificationTaskNotificationTaskDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteNotificationTaskNotificationTaskDeletePostRequestOpts(requestParameters: DeleteNotificationTaskNotificationTaskDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['deleteNotificationTaskRequest'] == null) {
             throw new runtime.RequiredError(
                 'deleteNotificationTaskRequest',
@@ -572,13 +620,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/task/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DeleteNotificationTaskRequestToJSON(requestParameters['deleteNotificationTaskRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Notification Task
+     */
+    async deleteNotificationTaskNotificationTaskDeletePostRaw(requestParameters: DeleteNotificationTaskNotificationTaskDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteNotificationTaskNotificationTaskDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -592,9 +648,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Fork Notification Source
+     * Creates request options for forkNotificationSourceNotificationSourceForkPost without sending the request
      */
-    async forkNotificationSourceNotificationSourceForkPostRaw(requestParameters: ForkNotificationSourceNotificationSourceForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async forkNotificationSourceNotificationSourceForkPostRequestOpts(requestParameters: ForkNotificationSourceNotificationSourceForkPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['notificationSourceForkRequest'] == null) {
             throw new runtime.RequiredError(
                 'notificationSourceForkRequest',
@@ -615,13 +671,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/source/fork`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: NotificationSourceForkRequestToJSON(requestParameters['notificationSourceForkRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Fork Notification Source
+     */
+    async forkNotificationSourceNotificationSourceForkPostRaw(requestParameters: ForkNotificationSourceNotificationSourceForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.forkNotificationSourceNotificationSourceForkPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -635,9 +699,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Fork Notification Target
+     * Creates request options for forkNotificationTargetNotificationTargetForkPost without sending the request
      */
-    async forkNotificationTargetNotificationTargetForkPostRaw(requestParameters: ForkNotificationTargetNotificationTargetForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async forkNotificationTargetNotificationTargetForkPostRequestOpts(requestParameters: ForkNotificationTargetNotificationTargetForkPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['notificationTargetForkRequest'] == null) {
             throw new runtime.RequiredError(
                 'notificationTargetForkRequest',
@@ -658,13 +722,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/target/fork`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: NotificationTargetForkRequestToJSON(requestParameters['notificationTargetForkRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Fork Notification Target
+     */
+    async forkNotificationTargetNotificationTargetForkPostRaw(requestParameters: ForkNotificationTargetNotificationTargetForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.forkNotificationTargetNotificationTargetForkPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -678,9 +750,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Mine Notification Task
+     * Creates request options for getMineNotificationTaskNotificationTaskMinePost without sending the request
      */
-    async getMineNotificationTaskNotificationTaskMinePostRaw(requestParameters: GetMineNotificationTaskNotificationTaskMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PaginationNotificationTask>> {
+    async getMineNotificationTaskNotificationTaskMinePostRequestOpts(requestParameters: GetMineNotificationTaskNotificationTaskMinePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['pageableRequest'] == null) {
             throw new runtime.RequiredError(
                 'pageableRequest',
@@ -701,13 +773,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/task/mine`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: PageableRequestToJSON(requestParameters['pageableRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Mine Notification Task
+     */
+    async getMineNotificationTaskNotificationTaskMinePostRaw(requestParameters: GetMineNotificationTaskNotificationTaskMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PaginationNotificationTask>> {
+        const requestOptions = await this.getMineNotificationTaskNotificationTaskMinePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => PaginationNotificationTaskFromJSON(jsonValue));
     }
@@ -721,9 +801,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Notification Record Detail
+     * Creates request options for getNotificationRecordDetailNotificationRecordDetailPost without sending the request
      */
-    async getNotificationRecordDetailNotificationRecordDetailPostRaw(requestParameters: GetNotificationRecordDetailNotificationRecordDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationRecord>> {
+    async getNotificationRecordDetailNotificationRecordDetailPostRequestOpts(requestParameters: GetNotificationRecordDetailNotificationRecordDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['notificationRecordDetailRequest'] == null) {
             throw new runtime.RequiredError(
                 'notificationRecordDetailRequest',
@@ -744,13 +824,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/record/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: NotificationRecordDetailRequestToJSON(requestParameters['notificationRecordDetailRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Notification Record Detail
+     */
+    async getNotificationRecordDetailNotificationRecordDetailPostRaw(requestParameters: GetNotificationRecordDetailNotificationRecordDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationRecord>> {
+        const requestOptions = await this.getNotificationRecordDetailNotificationRecordDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NotificationRecordFromJSON(jsonValue));
     }
@@ -764,9 +852,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Notification Source Detail
+     * Creates request options for getNotificationSourceDetailNotificationSourceDetailPost without sending the request
      */
-    async getNotificationSourceDetailNotificationSourceDetailPostRaw(requestParameters: GetNotificationSourceDetailNotificationSourceDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourceDetail>> {
+    async getNotificationSourceDetailNotificationSourceDetailPostRequestOpts(requestParameters: GetNotificationSourceDetailNotificationSourceDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['notificationSourceDetailRequest'] == null) {
             throw new runtime.RequiredError(
                 'notificationSourceDetailRequest',
@@ -787,13 +875,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/source/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: NotificationSourceDetailRequestToJSON(requestParameters['notificationSourceDetailRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Notification Source Detail
+     */
+    async getNotificationSourceDetailNotificationSourceDetailPostRaw(requestParameters: GetNotificationSourceDetailNotificationSourceDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourceDetail>> {
+        const requestOptions = await this.getNotificationSourceDetailNotificationSourceDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NotificationSourceDetailFromJSON(jsonValue));
     }
@@ -807,9 +903,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Notification Source Related Task
+     * Creates request options for getNotificationSourceRelatedTaskNotificationSourceTaskPost without sending the request
      */
-    async getNotificationSourceRelatedTaskNotificationSourceTaskPostRaw(requestParameters: GetNotificationSourceRelatedTaskNotificationSourceTaskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetNotificationSourceRelatedTaskResponse>> {
+    async getNotificationSourceRelatedTaskNotificationSourceTaskPostRequestOpts(requestParameters: GetNotificationSourceRelatedTaskNotificationSourceTaskPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['getNotificationSourceRelatedTaskRequest'] == null) {
             throw new runtime.RequiredError(
                 'getNotificationSourceRelatedTaskRequest',
@@ -830,13 +926,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/source/task`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: GetNotificationSourceRelatedTaskRequestToJSON(requestParameters['getNotificationSourceRelatedTaskRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Notification Source Related Task
+     */
+    async getNotificationSourceRelatedTaskNotificationSourceTaskPostRaw(requestParameters: GetNotificationSourceRelatedTaskNotificationSourceTaskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetNotificationSourceRelatedTaskResponse>> {
+        const requestOptions = await this.getNotificationSourceRelatedTaskNotificationSourceTaskPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => GetNotificationSourceRelatedTaskResponseFromJSON(jsonValue));
     }
@@ -850,9 +954,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Notification Sources
+     * Creates request options for getNotificationSourcesNotificationSourceCommunityPost without sending the request
      */
-    async getNotificationSourcesNotificationSourceCommunityPostRaw(requestParameters: GetNotificationSourcesNotificationSourceCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationSource>> {
+    async getNotificationSourcesNotificationSourceCommunityPostRequestOpts(requestParameters: GetNotificationSourcesNotificationSourceCommunityPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchNotificationSourceRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchNotificationSourceRequest',
@@ -873,13 +977,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/source/community`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchNotificationSourceRequestToJSON(requestParameters['searchNotificationSourceRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Notification Sources
+     */
+    async getNotificationSourcesNotificationSourceCommunityPostRaw(requestParameters: GetNotificationSourcesNotificationSourceCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationSource>> {
+        const requestOptions = await this.getNotificationSourcesNotificationSourceCommunityPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionNotificationSourceFromJSON(jsonValue));
     }
@@ -893,9 +1005,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Notification Target Detail
+     * Creates request options for getNotificationTargetDetailNotificationTargetDetailPost without sending the request
      */
-    async getNotificationTargetDetailNotificationTargetDetailPostRaw(requestParameters: GetNotificationTargetDetailNotificationTargetDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetDetail>> {
+    async getNotificationTargetDetailNotificationTargetDetailPostRequestOpts(requestParameters: GetNotificationTargetDetailNotificationTargetDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['notificationTargetDetailRequest'] == null) {
             throw new runtime.RequiredError(
                 'notificationTargetDetailRequest',
@@ -916,13 +1028,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/target/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: NotificationTargetDetailRequestToJSON(requestParameters['notificationTargetDetailRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Notification Target Detail
+     */
+    async getNotificationTargetDetailNotificationTargetDetailPostRaw(requestParameters: GetNotificationTargetDetailNotificationTargetDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetDetail>> {
+        const requestOptions = await this.getNotificationTargetDetailNotificationTargetDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTargetDetailFromJSON(jsonValue));
     }
@@ -936,9 +1056,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Notification Target
+     * Creates request options for getNotificationTargetNotificationTargetCommunityPost without sending the request
      */
-    async getNotificationTargetNotificationTargetCommunityPostRaw(requestParameters: GetNotificationTargetNotificationTargetCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationTarget>> {
+    async getNotificationTargetNotificationTargetCommunityPostRequestOpts(requestParameters: GetNotificationTargetNotificationTargetCommunityPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchNotificationTargetRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchNotificationTargetRequest',
@@ -959,13 +1079,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/target/community`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchNotificationTargetRequestToJSON(requestParameters['searchNotificationTargetRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Notification Target
+     */
+    async getNotificationTargetNotificationTargetCommunityPostRaw(requestParameters: GetNotificationTargetNotificationTargetCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationTarget>> {
+        const requestOptions = await this.getNotificationTargetNotificationTargetCommunityPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionNotificationTargetFromJSON(jsonValue));
     }
@@ -979,9 +1107,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Notification Target Related Task
+     * Creates request options for getNotificationTargetRelatedTaskNotificationTargetTaskPost without sending the request
      */
-    async getNotificationTargetRelatedTaskNotificationTargetTaskPostRaw(requestParameters: GetNotificationTargetRelatedTaskNotificationTargetTaskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetNotificationTargetRelatedTaskResponse>> {
+    async getNotificationTargetRelatedTaskNotificationTargetTaskPostRequestOpts(requestParameters: GetNotificationTargetRelatedTaskNotificationTargetTaskPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['getNotificationTargetRelatedTaskRequest'] == null) {
             throw new runtime.RequiredError(
                 'getNotificationTargetRelatedTaskRequest',
@@ -1002,13 +1130,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/target/task`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: GetNotificationTargetRelatedTaskRequestToJSON(requestParameters['getNotificationTargetRelatedTaskRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Notification Target Related Task
+     */
+    async getNotificationTargetRelatedTaskNotificationTargetTaskPostRaw(requestParameters: GetNotificationTargetRelatedTaskNotificationTargetTaskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetNotificationTargetRelatedTaskResponse>> {
+        const requestOptions = await this.getNotificationTargetRelatedTaskNotificationTargetTaskPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => GetNotificationTargetRelatedTaskResponseFromJSON(jsonValue));
     }
@@ -1022,9 +1158,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Notification Task
+     * Creates request options for getNotificationTaskNotificationTaskDetailPost without sending the request
      */
-    async getNotificationTaskNotificationTaskDetailPostRaw(requestParameters: GetNotificationTaskNotificationTaskDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTask>> {
+    async getNotificationTaskNotificationTaskDetailPostRequestOpts(requestParameters: GetNotificationTaskNotificationTaskDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['notificationTaskDetailRequest'] == null) {
             throw new runtime.RequiredError(
                 'notificationTaskDetailRequest',
@@ -1045,13 +1181,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/task/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: NotificationTaskDetailRequestToJSON(requestParameters['notificationTaskDetailRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Notification Task
+     */
+    async getNotificationTaskNotificationTaskDetailPostRaw(requestParameters: GetNotificationTaskNotificationTaskDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTask>> {
+        const requestOptions = await this.getNotificationTaskNotificationTaskDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTaskFromJSON(jsonValue));
     }
@@ -1065,9 +1209,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Notification Templates
+     * Creates request options for getNotificationTemplatesNotificationTemplateAllPost without sending the request
      */
-    async getNotificationTemplatesNotificationTemplateAllPostRaw(requestParameters: GetNotificationTemplatesNotificationTemplateAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTemplatesResponse>> {
+    async getNotificationTemplatesNotificationTemplateAllPostRequestOpts(requestParameters: GetNotificationTemplatesNotificationTemplateAllPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1079,12 +1223,20 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/template/all`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Notification Templates
+     */
+    async getNotificationTemplatesNotificationTemplateAllPostRaw(requestParameters: GetNotificationTemplatesNotificationTemplateAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTemplatesResponse>> {
+        const requestOptions = await this.getNotificationTemplatesNotificationTemplateAllPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTemplatesResponseFromJSON(jsonValue));
     }
@@ -1098,9 +1250,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Provided Notification Source
+     * Creates request options for getProvidedNotificationSourceNotificationSourceProvidedPost without sending the request
      */
-    async getProvidedNotificationSourceNotificationSourceProvidedPostRaw(requestParameters: GetProvidedNotificationSourceNotificationSourceProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourcesProvidedResponse>> {
+    async getProvidedNotificationSourceNotificationSourceProvidedPostRequestOpts(requestParameters: GetProvidedNotificationSourceNotificationSourceProvidedPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1112,12 +1264,20 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/source/provided`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Provided Notification Source
+     */
+    async getProvidedNotificationSourceNotificationSourceProvidedPostRaw(requestParameters: GetProvidedNotificationSourceNotificationSourceProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourcesProvidedResponse>> {
+        const requestOptions = await this.getProvidedNotificationSourceNotificationSourceProvidedPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NotificationSourcesProvidedResponseFromJSON(jsonValue));
     }
@@ -1131,9 +1291,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Provided Notification Target
+     * Creates request options for getProvidedNotificationTargetNotificationTargetProvidedPost without sending the request
      */
-    async getProvidedNotificationTargetNotificationTargetProvidedPostRaw(requestParameters: GetProvidedNotificationTargetNotificationTargetProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetsProvidedResponse>> {
+    async getProvidedNotificationTargetNotificationTargetProvidedPostRequestOpts(requestParameters: GetProvidedNotificationTargetNotificationTargetProvidedPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1145,12 +1305,20 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/target/provided`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Provided Notification Target
+     */
+    async getProvidedNotificationTargetNotificationTargetProvidedPostRaw(requestParameters: GetProvidedNotificationTargetNotificationTargetProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetsProvidedResponse>> {
+        const requestOptions = await this.getProvidedNotificationTargetNotificationTargetProvidedPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTargetsProvidedResponseFromJSON(jsonValue));
     }
@@ -1164,9 +1332,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Trigger Events
+     * Creates request options for getTriggerEventsNotificationTriggerEventAllPost without sending the request
      */
-    async getTriggerEventsNotificationTriggerEventAllPostRaw(requestParameters: GetTriggerEventsNotificationTriggerEventAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TriggerEventsResponse>> {
+    async getTriggerEventsNotificationTriggerEventAllPostRequestOpts(requestParameters: GetTriggerEventsNotificationTriggerEventAllPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1178,12 +1346,20 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/trigger-event/all`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Trigger Events
+     */
+    async getTriggerEventsNotificationTriggerEventAllPostRaw(requestParameters: GetTriggerEventsNotificationTriggerEventAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TriggerEventsResponse>> {
+        const requestOptions = await this.getTriggerEventsNotificationTriggerEventAllPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TriggerEventsResponseFromJSON(jsonValue));
     }
@@ -1197,9 +1373,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Usable Notification Source
+     * Creates request options for getUsableNotificationSourceNotificationSourceUsablePost without sending the request
      */
-    async getUsableNotificationSourceNotificationSourceUsablePostRaw(requestParameters: GetUsableNotificationSourceNotificationSourceUsablePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourcesUsableResponse>> {
+    async getUsableNotificationSourceNotificationSourceUsablePostRequestOpts(requestParameters: GetUsableNotificationSourceNotificationSourceUsablePostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1211,12 +1387,20 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/source/usable`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Usable Notification Source
+     */
+    async getUsableNotificationSourceNotificationSourceUsablePostRaw(requestParameters: GetUsableNotificationSourceNotificationSourceUsablePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationSourcesUsableResponse>> {
+        const requestOptions = await this.getUsableNotificationSourceNotificationSourceUsablePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NotificationSourcesUsableResponseFromJSON(jsonValue));
     }
@@ -1230,9 +1414,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Usable Notification Target
+     * Creates request options for getUsableNotificationTargetNotificationTargetUsablePost without sending the request
      */
-    async getUsableNotificationTargetNotificationTargetUsablePostRaw(requestParameters: GetUsableNotificationTargetNotificationTargetUsablePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetsUsableResponse>> {
+    async getUsableNotificationTargetNotificationTargetUsablePostRequestOpts(requestParameters: GetUsableNotificationTargetNotificationTargetUsablePostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1244,12 +1428,20 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/target/usable`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Usable Notification Target
+     */
+    async getUsableNotificationTargetNotificationTargetUsablePostRaw(requestParameters: GetUsableNotificationTargetNotificationTargetUsablePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetsUsableResponse>> {
+        const requestOptions = await this.getUsableNotificationTargetNotificationTargetUsablePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTargetsUsableResponseFromJSON(jsonValue));
     }
@@ -1263,9 +1455,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Read All Notification Record
+     * Creates request options for readAllNotificationRecordNotificationRecordReadAllPost without sending the request
      */
-    async readAllNotificationRecordNotificationRecordReadAllPostRaw(requestParameters: ReadAllNotificationRecordNotificationRecordReadAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async readAllNotificationRecordNotificationRecordReadAllPostRequestOpts(requestParameters: ReadAllNotificationRecordNotificationRecordReadAllPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1277,12 +1469,20 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/record/read-all`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Read All Notification Record
+     */
+    async readAllNotificationRecordNotificationRecordReadAllPostRaw(requestParameters: ReadAllNotificationRecordNotificationRecordReadAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.readAllNotificationRecordNotificationRecordReadAllPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1296,9 +1496,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Read Notification Record
+     * Creates request options for readNotificationRecordNotificationRecordReadPost without sending the request
      */
-    async readNotificationRecordNotificationRecordReadPostRaw(requestParameters: ReadNotificationRecordNotificationRecordReadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async readNotificationRecordNotificationRecordReadPostRequestOpts(requestParameters: ReadNotificationRecordNotificationRecordReadPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['readNotificationRecordRequest'] == null) {
             throw new runtime.RequiredError(
                 'readNotificationRecordRequest',
@@ -1319,13 +1519,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/record/read`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ReadNotificationRecordRequestToJSON(requestParameters['readNotificationRecordRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Read Notification Record
+     */
+    async readNotificationRecordNotificationRecordReadPostRaw(requestParameters: ReadNotificationRecordNotificationRecordReadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.readNotificationRecordNotificationRecordReadPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1339,9 +1547,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search Notification Record
+     * Creates request options for searchNotificationRecordNotificationRecordSearchPost without sending the request
      */
-    async searchNotificationRecordNotificationRecordSearchPostRaw(requestParameters: SearchNotificationRecordNotificationRecordSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationRecord>> {
+    async searchNotificationRecordNotificationRecordSearchPostRequestOpts(requestParameters: SearchNotificationRecordNotificationRecordSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchNotificationRecordRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchNotificationRecordRequest',
@@ -1362,13 +1570,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/record/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchNotificationRecordRequestToJSON(requestParameters['searchNotificationRecordRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search Notification Record
+     */
+    async searchNotificationRecordNotificationRecordSearchPostRaw(requestParameters: SearchNotificationRecordNotificationRecordSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationRecord>> {
+        const requestOptions = await this.searchNotificationRecordNotificationRecordSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionNotificationRecordFromJSON(jsonValue));
     }
@@ -1382,9 +1598,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Notification Source
+     * Creates request options for updateNotificationSourceNotificationSourceUpdatePost without sending the request
      */
-    async updateNotificationSourceNotificationSourceUpdatePostRaw(requestParameters: UpdateNotificationSourceNotificationSourceUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateNotificationSourceNotificationSourceUpdatePostRequestOpts(requestParameters: UpdateNotificationSourceNotificationSourceUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['updateNotificationSourceRequest'] == null) {
             throw new runtime.RequiredError(
                 'updateNotificationSourceRequest',
@@ -1405,13 +1621,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/source/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: UpdateNotificationSourceRequestToJSON(requestParameters['updateNotificationSourceRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Notification Source
+     */
+    async updateNotificationSourceNotificationSourceUpdatePostRaw(requestParameters: UpdateNotificationSourceNotificationSourceUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateNotificationSourceNotificationSourceUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1425,9 +1649,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Notification Target
+     * Creates request options for updateNotificationTargetNotificationTargetUpdatePost without sending the request
      */
-    async updateNotificationTargetNotificationTargetUpdatePostRaw(requestParameters: UpdateNotificationTargetNotificationTargetUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateNotificationTargetNotificationTargetUpdatePostRequestOpts(requestParameters: UpdateNotificationTargetNotificationTargetUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['updateNotificationTargetRequest'] == null) {
             throw new runtime.RequiredError(
                 'updateNotificationTargetRequest',
@@ -1448,13 +1672,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/target/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: UpdateNotificationTargetRequestToJSON(requestParameters['updateNotificationTargetRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Notification Target
+     */
+    async updateNotificationTargetNotificationTargetUpdatePostRaw(requestParameters: UpdateNotificationTargetNotificationTargetUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateNotificationTargetNotificationTargetUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1468,9 +1700,9 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Notification Task
+     * Creates request options for updateNotificationTaskNotificationTaskUpdatePost without sending the request
      */
-    async updateNotificationTaskNotificationTaskUpdatePostRaw(requestParameters: UpdateNotificationTaskNotificationTaskUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateNotificationTaskNotificationTaskUpdatePostRequestOpts(requestParameters: UpdateNotificationTaskNotificationTaskUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['updateNotificationTaskRequest'] == null) {
             throw new runtime.RequiredError(
                 'updateNotificationTaskRequest',
@@ -1491,13 +1723,21 @@ export class NotificationApi extends runtime.BaseAPI {
 
         let urlPath = `/notification/task/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: UpdateNotificationTaskRequestToJSON(requestParameters['updateNotificationTaskRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Notification Task
+     */
+    async updateNotificationTaskNotificationTaskUpdatePostRaw(requestParameters: UpdateNotificationTaskNotificationTaskUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateNotificationTaskNotificationTaskUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }

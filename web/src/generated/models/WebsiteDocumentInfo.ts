@@ -21,12 +21,6 @@ import { mapValues } from '../runtime';
 export interface WebsiteDocumentInfo {
     /**
      * 
-     * @type {number}
-     * @memberof WebsiteDocumentInfo
-     */
-    creator_id: number;
-    /**
-     * 
      * @type {string}
      * @memberof WebsiteDocumentInfo
      */
@@ -37,7 +31,6 @@ export interface WebsiteDocumentInfo {
  * Check if a given object implements the WebsiteDocumentInfo interface.
  */
 export function instanceOfWebsiteDocumentInfo(value: object): value is WebsiteDocumentInfo {
-    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('url' in value) || value['url'] === undefined) return false;
     return true;
 }
@@ -52,7 +45,6 @@ export function WebsiteDocumentInfoFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'creator_id': json['creator_id'],
         'url': json['url'],
     };
 }
@@ -68,7 +60,6 @@ export function WebsiteDocumentInfoToJSONTyped(value?: WebsiteDocumentInfo | nul
 
     return {
         
-        'creator_id': value['creator_id'],
         'url': value['url'],
     };
 }

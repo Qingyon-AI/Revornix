@@ -291,9 +291,9 @@ export interface UpdateSectionSectionUpdatePostRequest {
 export class SectionApi extends runtime.BaseAPI {
 
     /**
-     * Add Label
+     * Creates request options for addLabelSectionLabelCreatePost without sending the request
      */
-    async addLabelSectionLabelCreatePostRaw(requestParameters: AddLabelSectionLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
+    async addLabelSectionLabelCreatePostRequestOpts(requestParameters: AddLabelSectionLabelCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['labelAddRequest'] == null) {
             throw new runtime.RequiredError(
                 'labelAddRequest',
@@ -314,13 +314,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/label/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: LabelAddRequestToJSON(requestParameters['labelAddRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Add Label
+     */
+    async addLabelSectionLabelCreatePostRaw(requestParameters: AddLabelSectionLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
+        const requestOptions = await this.addLabelSectionLabelCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => CreateLabelResponseFromJSON(jsonValue));
     }
@@ -334,9 +342,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create Section Comment
+     * Creates request options for createSectionCommentSectionCommentCreatePost without sending the request
      */
-    async createSectionCommentSectionCommentCreatePostRaw(requestParameters: CreateSectionCommentSectionCommentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async createSectionCommentSectionCommentCreatePostRequestOpts(requestParameters: CreateSectionCommentSectionCommentCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionCommentCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionCommentCreateRequest',
@@ -357,13 +365,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/comment/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionCommentCreateRequestToJSON(requestParameters['sectionCommentCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Section Comment
+     */
+    async createSectionCommentSectionCommentCreatePostRaw(requestParameters: CreateSectionCommentSectionCommentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createSectionCommentSectionCommentCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -377,9 +393,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create Section
+     * Creates request options for createSectionSectionCreatePost without sending the request
      */
-    async createSectionSectionCreatePostRaw(requestParameters: CreateSectionSectionCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionCreateResponse>> {
+    async createSectionSectionCreatePostRequestOpts(requestParameters: CreateSectionSectionCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionCreateRequest',
@@ -400,13 +416,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionCreateRequestToJSON(requestParameters['sectionCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Section
+     */
+    async createSectionSectionCreatePostRaw(requestParameters: CreateSectionSectionCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionCreateResponse>> {
+        const requestOptions = await this.createSectionSectionCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SectionCreateResponseFromJSON(jsonValue));
     }
@@ -420,9 +444,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Label
+     * Creates request options for deleteLabelSectionLabelDeletePost without sending the request
      */
-    async deleteLabelSectionLabelDeletePostRaw(requestParameters: DeleteLabelSectionLabelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteLabelSectionLabelDeletePostRequestOpts(requestParameters: DeleteLabelSectionLabelDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['labelDeleteRequest'] == null) {
             throw new runtime.RequiredError(
                 'labelDeleteRequest',
@@ -443,13 +467,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/label/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: LabelDeleteRequestToJSON(requestParameters['labelDeleteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Label
+     */
+    async deleteLabelSectionLabelDeletePostRaw(requestParameters: DeleteLabelSectionLabelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteLabelSectionLabelDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -463,9 +495,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Section Comment
+     * Creates request options for deleteSectionCommentSectionCommentDeletePost without sending the request
      */
-    async deleteSectionCommentSectionCommentDeletePostRaw(requestParameters: DeleteSectionCommentSectionCommentDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteSectionCommentSectionCommentDeletePostRequestOpts(requestParameters: DeleteSectionCommentSectionCommentDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionCommentDeleteRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionCommentDeleteRequest',
@@ -486,13 +518,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/comment/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionCommentDeleteRequestToJSON(requestParameters['sectionCommentDeleteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Section Comment
+     */
+    async deleteSectionCommentSectionCommentDeletePostRaw(requestParameters: DeleteSectionCommentSectionCommentDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteSectionCommentSectionCommentDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -506,9 +546,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Section
+     * Creates request options for deleteSectionSectionDeletePost without sending the request
      */
-    async deleteSectionSectionDeletePostRaw(requestParameters: DeleteSectionSectionDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteSectionSectionDeletePostRequestOpts(requestParameters: DeleteSectionSectionDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionDeleteRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionDeleteRequest',
@@ -529,13 +569,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionDeleteRequestToJSON(requestParameters['sectionDeleteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Section
+     */
+    async deleteSectionSectionDeletePostRaw(requestParameters: DeleteSectionSectionDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteSectionSectionDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -549,9 +597,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Section User
+     * Creates request options for deleteSectionUserSectionUserDeletePost without sending the request
      */
-    async deleteSectionUserSectionUserDeletePostRaw(requestParameters: DeleteSectionUserSectionUserDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteSectionUserSectionUserDeletePostRequestOpts(requestParameters: DeleteSectionUserSectionUserDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionUserDeleteRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionUserDeleteRequest',
@@ -572,13 +620,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/user/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionUserDeleteRequestToJSON(requestParameters['sectionUserDeleteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Section User
+     */
+    async deleteSectionUserSectionUserDeletePostRaw(requestParameters: DeleteSectionUserSectionUserDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteSectionUserSectionUserDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -592,9 +648,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Generate Podcast
+     * Creates request options for generatePodcastSectionPodcastGeneratePost without sending the request
      */
-    async generatePodcastSectionPodcastGeneratePostRaw(requestParameters: GeneratePodcastSectionPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async generatePodcastSectionPodcastGeneratePostRequestOpts(requestParameters: GeneratePodcastSectionPodcastGeneratePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['generateSectionPodcastRequest'] == null) {
             throw new runtime.RequiredError(
                 'generateSectionPodcastRequest',
@@ -615,13 +671,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/podcast/generate`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: GenerateSectionPodcastRequestToJSON(requestParameters['generateSectionPodcastRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Generate Podcast
+     */
+    async generatePodcastSectionPodcastGeneratePostRaw(requestParameters: GeneratePodcastSectionPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.generatePodcastSectionPodcastGeneratePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -635,9 +699,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get All Mine Sections
+     * Creates request options for getAllMineSectionsSectionMineAllPost without sending the request
      */
-    async getAllMineSectionsSectionMineAllPostRaw(requestParameters: GetAllMineSectionsSectionMineAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AllMySectionsResponse>> {
+    async getAllMineSectionsSectionMineAllPostRequestOpts(requestParameters: GetAllMineSectionsSectionMineAllPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -649,12 +713,20 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/mine/all`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get All Mine Sections
+     */
+    async getAllMineSectionsSectionMineAllPostRaw(requestParameters: GetAllMineSectionsSectionMineAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AllMySectionsResponse>> {
+        const requestOptions = await this.getAllMineSectionsSectionMineAllPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => AllMySectionsResponseFromJSON(jsonValue));
     }
@@ -668,9 +740,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Date Section Info
+     * Creates request options for getDateSectionInfoSectionDatePost without sending the request
      */
-    async getDateSectionInfoSectionDatePostRaw(requestParameters: GetDateSectionInfoSectionDatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DaySectionResponse>> {
+    async getDateSectionInfoSectionDatePostRequestOpts(requestParameters: GetDateSectionInfoSectionDatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['daySectionRequest'] == null) {
             throw new runtime.RequiredError(
                 'daySectionRequest',
@@ -691,13 +763,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/date`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DaySectionRequestToJSON(requestParameters['daySectionRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Date Section Info
+     */
+    async getDateSectionInfoSectionDatePostRaw(requestParameters: GetDateSectionInfoSectionDatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DaySectionResponse>> {
+        const requestOptions = await this.getDateSectionInfoSectionDatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => DaySectionResponseFromJSON(jsonValue));
     }
@@ -711,9 +791,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Mine Section Role And Authority
+     * Creates request options for getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost without sending the request
      */
-    async getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRaw(requestParameters: GetMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionUserRoleAndAuthorityResponse>> {
+    async getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequestOpts(requestParameters: GetMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['mineSectionRoleAndAuthorityRequest'] == null) {
             throw new runtime.RequiredError(
                 'mineSectionRoleAndAuthorityRequest',
@@ -734,13 +814,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/mine/role-and-authority`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: MineSectionRoleAndAuthorityRequestToJSON(requestParameters['mineSectionRoleAndAuthorityRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Mine Section Role And Authority
+     */
+    async getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRaw(requestParameters: GetMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionUserRoleAndAuthorityResponse>> {
+        const requestOptions = await this.getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SectionUserRoleAndAuthorityResponseFromJSON(jsonValue));
     }
@@ -754,9 +842,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get My Subscribed Sections
+     * Creates request options for getMySubscribedSectionsSectionSubscribedPost without sending the request
      */
-    async getMySubscribedSectionsSectionSubscribedPostRaw(requestParameters: GetMySubscribedSectionsSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async getMySubscribedSectionsSectionSubscribedPostRequestOpts(requestParameters: GetMySubscribedSectionsSectionSubscribedPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchSubscribedSectionRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchSubscribedSectionRequest',
@@ -777,13 +865,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/subscribed`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchSubscribedSectionRequestToJSON(requestParameters['searchSubscribedSectionRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get My Subscribed Sections
+     */
+    async getMySubscribedSectionsSectionSubscribedPostRaw(requestParameters: GetMySubscribedSectionsSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+        const requestOptions = await this.getMySubscribedSectionsSectionSubscribedPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
     }
@@ -797,9 +893,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Section Detail
+     * Creates request options for getSectionDetailSectionDetailPost without sending the request
      */
-    async getSectionDetailSectionDetailPostRaw(requestParameters: GetSectionDetailSectionDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionInfo>> {
+    async getSectionDetailSectionDetailPostRequestOpts(requestParameters: GetSectionDetailSectionDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionDetailRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionDetailRequest',
@@ -820,13 +916,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionDetailRequestToJSON(requestParameters['sectionDetailRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Section Detail
+     */
+    async getSectionDetailSectionDetailPostRaw(requestParameters: GetSectionDetailSectionDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionInfo>> {
+        const requestOptions = await this.getSectionDetailSectionDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SectionInfoFromJSON(jsonValue));
     }
@@ -840,9 +944,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Section User Role And Authority
+     * Creates request options for getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost without sending the request
      */
-    async getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRaw(requestParameters: GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionUserRoleAndAuthorityResponse>> {
+    async getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequestOpts(requestParameters: GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionUserRoleAndAuthorityRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionUserRoleAndAuthorityRequest',
@@ -863,13 +967,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/user/role-and-authority`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionUserRoleAndAuthorityRequestToJSON(requestParameters['sectionUserRoleAndAuthorityRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Section User Role And Authority
+     */
+    async getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRaw(requestParameters: GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionUserRoleAndAuthorityResponse>> {
+        const requestOptions = await this.getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SectionUserRoleAndAuthorityResponseFromJSON(jsonValue));
     }
@@ -883,9 +995,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * List Label
+     * Creates request options for listLabelSectionLabelListPost without sending the request
      */
-    async listLabelSectionLabelListPostRaw(requestParameters: ListLabelSectionLabelListPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasSectionLabelListResponse>> {
+    async listLabelSectionLabelListPostRequestOpts(requestParameters: ListLabelSectionLabelListPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -897,12 +1009,20 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/label/list`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * List Label
+     */
+    async listLabelSectionLabelListPostRaw(requestParameters: ListLabelSectionLabelListPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasSectionLabelListResponse>> {
+        const requestOptions = await this.listLabelSectionLabelListPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SchemasSectionLabelListResponseFromJSON(jsonValue));
     }
@@ -916,9 +1036,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Public Sections
+     * Creates request options for publicSectionsSectionPublicSearchPost without sending the request
      */
-    async publicSectionsSectionPublicSearchPostRaw(requestParameters: PublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async publicSectionsSectionPublicSearchPostRequestOpts(requestParameters: PublicSectionsSectionPublicSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchPublicSectionsRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchPublicSectionsRequest',
@@ -939,13 +1059,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/public/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchPublicSectionsRequestToJSON(requestParameters['searchPublicSectionsRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Public Sections
+     */
+    async publicSectionsSectionPublicSearchPostRaw(requestParameters: PublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+        const requestOptions = await this.publicSectionsSectionPublicSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
     }
@@ -959,9 +1087,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search Mine Sections
+     * Creates request options for searchMineSectionsSectionMineSearchPost without sending the request
      */
-    async searchMineSectionsSectionMineSearchPostRaw(requestParameters: SearchMineSectionsSectionMineSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async searchMineSectionsSectionMineSearchPostRequestOpts(requestParameters: SearchMineSectionsSectionMineSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchMineSectionsRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchMineSectionsRequest',
@@ -982,13 +1110,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/mine/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchMineSectionsRequestToJSON(requestParameters['searchMineSectionsRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search Mine Sections
+     */
+    async searchMineSectionsSectionMineSearchPostRaw(requestParameters: SearchMineSectionsSectionMineSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+        const requestOptions = await this.searchMineSectionsSectionMineSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
     }
@@ -1002,9 +1138,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search Section Comment
+     * Creates request options for searchSectionCommentSectionCommentSearchPost without sending the request
      */
-    async searchSectionCommentSectionCommentSearchPostRaw(requestParameters: SearchSectionCommentSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionCommentInfo>> {
+    async searchSectionCommentSectionCommentSearchPostRequestOpts(requestParameters: SearchSectionCommentSectionCommentSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionCommentSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionCommentSearchRequest',
@@ -1025,13 +1161,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/comment/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionCommentSearchRequestToJSON(requestParameters['sectionCommentSearchRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search Section Comment
+     */
+    async searchSectionCommentSectionCommentSearchPostRaw(requestParameters: SearchSectionCommentSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionCommentInfo>> {
+        const requestOptions = await this.searchSectionCommentSectionCommentSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionCommentInfoFromJSON(jsonValue));
     }
@@ -1045,9 +1189,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search User Sections
+     * Creates request options for searchUserSectionsSectionUserSearchPost without sending the request
      */
-    async searchUserSectionsSectionUserSearchPostRaw(requestParameters: SearchUserSectionsSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async searchUserSectionsSectionUserSearchPostRequestOpts(requestParameters: SearchUserSectionsSectionUserSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchUserSectionsRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchUserSectionsRequest',
@@ -1068,13 +1212,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/user/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchUserSectionsRequestToJSON(requestParameters['searchUserSectionsRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search User Sections
+     */
+    async searchUserSectionsSectionUserSearchPostRaw(requestParameters: SearchUserSectionsSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+        const requestOptions = await this.searchUserSectionsSectionUserSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
     }
@@ -1088,9 +1240,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Section Document Request
+     * Creates request options for sectionDocumentRequestSectionDocumentsPost without sending the request
      */
-    async sectionDocumentRequestSectionDocumentsPostRaw(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionDocumentInfo>> {
+    async sectionDocumentRequestSectionDocumentsPostRequestOpts(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionDocumentRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionDocumentRequest',
@@ -1111,13 +1263,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/documents`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionDocumentRequestToJSON(requestParameters['sectionDocumentRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Section Document Request
+     */
+    async sectionDocumentRequestSectionDocumentsPostRaw(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionDocumentInfo>> {
+        const requestOptions = await this.sectionDocumentRequestSectionDocumentsPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionDocumentInfoFromJSON(jsonValue));
     }
@@ -1131,9 +1291,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Section Publish Get Request
+     * Creates request options for sectionPublishGetRequestSectionPublishGetPost without sending the request
      */
-    async sectionPublishGetRequestSectionPublishGetPostRaw(requestParameters: SectionPublishGetRequestSectionPublishGetPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionPublishGetResponse>> {
+    async sectionPublishGetRequestSectionPublishGetPostRequestOpts(requestParameters: SectionPublishGetRequestSectionPublishGetPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionPublishGetRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionPublishGetRequest',
@@ -1154,13 +1314,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/publish/get`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionPublishGetRequestToJSON(requestParameters['sectionPublishGetRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Section Publish Get Request
+     */
+    async sectionPublishGetRequestSectionPublishGetPostRaw(requestParameters: SectionPublishGetRequestSectionPublishGetPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionPublishGetResponse>> {
+        const requestOptions = await this.sectionPublishGetRequestSectionPublishGetPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SectionPublishGetResponseFromJSON(jsonValue));
     }
@@ -1174,9 +1342,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Section Publish Request
+     * Creates request options for sectionPublishRequestSectionPublishPost without sending the request
      */
-    async sectionPublishRequestSectionPublishPostRaw(requestParameters: SectionPublishRequestSectionPublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async sectionPublishRequestSectionPublishPostRequestOpts(requestParameters: SectionPublishRequestSectionPublishPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionPublishRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionPublishRequest',
@@ -1197,13 +1365,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/publish`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionPublishRequestToJSON(requestParameters['sectionPublishRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Section Publish Request
+     */
+    async sectionPublishRequestSectionPublishPostRaw(requestParameters: SectionPublishRequestSectionPublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.sectionPublishRequestSectionPublishPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1217,9 +1393,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Section Republish
+     * Creates request options for sectionRepublishSectionRepublishPost without sending the request
      */
-    async sectionRepublishSectionRepublishPostRaw(requestParameters: SectionRepublishSectionRepublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async sectionRepublishSectionRepublishPostRequestOpts(requestParameters: SectionRepublishSectionRepublishPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionRePublishRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionRePublishRequest',
@@ -1240,13 +1416,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/republish`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionRePublishRequestToJSON(requestParameters['sectionRePublishRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Section Republish
+     */
+    async sectionRepublishSectionRepublishPostRaw(requestParameters: SectionRepublishSectionRepublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.sectionRepublishSectionRepublishPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1260,9 +1444,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Section Seo Detail Request
+     * Creates request options for sectionSeoDetailRequestSectionDetailSeoPost without sending the request
      */
-    async sectionSeoDetailRequestSectionDetailSeoPostRaw(requestParameters: SectionSeoDetailRequestSectionDetailSeoPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionInfo>> {
+    async sectionSeoDetailRequestSectionDetailSeoPostRequestOpts(requestParameters: SectionSeoDetailRequestSectionDetailSeoPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionSeoDetailRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionSeoDetailRequest',
@@ -1283,13 +1467,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/detail/seo`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionSeoDetailRequestToJSON(requestParameters['sectionSeoDetailRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Section Seo Detail Request
+     */
+    async sectionSeoDetailRequestSectionDetailSeoPostRaw(requestParameters: SectionSeoDetailRequestSectionDetailSeoPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionInfo>> {
+        const requestOptions = await this.sectionSeoDetailRequestSectionDetailSeoPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SectionInfoFromJSON(jsonValue));
     }
@@ -1303,9 +1495,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Section User Add Request
+     * Creates request options for sectionUserAddRequestSectionUserAddPost without sending the request
      */
-    async sectionUserAddRequestSectionUserAddPostRaw(requestParameters: SectionUserAddRequestSectionUserAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async sectionUserAddRequestSectionUserAddPostRequestOpts(requestParameters: SectionUserAddRequestSectionUserAddPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionUserAddRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionUserAddRequest',
@@ -1326,13 +1518,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/user/add`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionUserAddRequestToJSON(requestParameters['sectionUserAddRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Section User Add Request
+     */
+    async sectionUserAddRequestSectionUserAddPostRaw(requestParameters: SectionUserAddRequestSectionUserAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.sectionUserAddRequestSectionUserAddPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1346,9 +1546,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Section User Modify Request
+     * Creates request options for sectionUserModifyRequestSectionUserModifyPost without sending the request
      */
-    async sectionUserModifyRequestSectionUserModifyPostRaw(requestParameters: SectionUserModifyRequestSectionUserModifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async sectionUserModifyRequestSectionUserModifyPostRequestOpts(requestParameters: SectionUserModifyRequestSectionUserModifyPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionUserModifyRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionUserModifyRequest',
@@ -1369,13 +1569,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/user/modify`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionUserModifyRequestToJSON(requestParameters['sectionUserModifyRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Section User Modify Request
+     */
+    async sectionUserModifyRequestSectionUserModifyPostRaw(requestParameters: SectionUserModifyRequestSectionUserModifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.sectionUserModifyRequestSectionUserModifyPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1389,9 +1597,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Section User Request
+     * Creates request options for sectionUserRequestSectionUserPost without sending the request
      */
-    async sectionUserRequestSectionUserPostRaw(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionUserPublicInfo>> {
+    async sectionUserRequestSectionUserPostRequestOpts(requestParameters: SectionUserRequestSectionUserPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionUserRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionUserRequest',
@@ -1412,13 +1620,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/user`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionUserRequestToJSON(requestParameters['sectionUserRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Section User Request
+     */
+    async sectionUserRequestSectionUserPostRaw(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionUserPublicInfo>> {
+        const requestOptions = await this.sectionUserRequestSectionUserPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionUserPublicInfoFromJSON(jsonValue));
     }
@@ -1432,9 +1648,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Subscribe Section
+     * Creates request options for subscribeSectionSectionSubscribePost without sending the request
      */
-    async subscribeSectionSectionSubscribePostRaw(requestParameters: SubscribeSectionSectionSubscribePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async subscribeSectionSectionSubscribePostRequestOpts(requestParameters: SubscribeSectionSectionSubscribePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionSubscribeRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionSubscribeRequest',
@@ -1455,13 +1671,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/subscribe`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionSubscribeRequestToJSON(requestParameters['sectionSubscribeRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Subscribe Section
+     */
+    async subscribeSectionSectionSubscribePostRaw(requestParameters: SubscribeSectionSectionSubscribePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.subscribeSectionSectionSubscribePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -1475,9 +1699,9 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Section
+     * Creates request options for updateSectionSectionUpdatePost without sending the request
      */
-    async updateSectionSectionUpdatePostRaw(requestParameters: UpdateSectionSectionUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateSectionSectionUpdatePostRequestOpts(requestParameters: UpdateSectionSectionUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionUpdateRequest',
@@ -1498,13 +1722,21 @@ export class SectionApi extends runtime.BaseAPI {
 
         let urlPath = `/section/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionUpdateRequestToJSON(requestParameters['sectionUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Section
+     */
+    async updateSectionSectionUpdatePostRaw(requestParameters: UpdateSectionSectionUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateSectionSectionUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }

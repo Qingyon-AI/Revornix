@@ -145,9 +145,9 @@ export interface UpdateAiModelProviderAiModelProviderUpdatePostRequest {
 export class AiApi extends runtime.BaseAPI {
 
     /**
-     * Ask Ai
+     * Creates request options for askAiAiAskPost without sending the request
      */
-    async askAiAiAskPostRaw(requestParameters: AskAiAiAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+    async askAiAiAskPostRequestOpts(requestParameters: AskAiAiAskPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['chatMessages'] == null) {
             throw new runtime.RequiredError(
                 'chatMessages',
@@ -168,13 +168,21 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/ask`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ChatMessagesToJSON(requestParameters['chatMessages']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Ask Ai
+     */
+    async askAiAiAskPostRaw(requestParameters: AskAiAiAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.askAiAiAskPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         if (this.isJsonMime(response.headers.get('content-type'))) {
             return new runtime.JSONApiResponse<any>(response);
@@ -192,9 +200,9 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create Model
+     * Creates request options for createModelAiModelCreatePost without sending the request
      */
-    async createModelAiModelCreatePostRaw(requestParameters: CreateModelAiModelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelCreateResponse>> {
+    async createModelAiModelCreatePostRequestOpts(requestParameters: CreateModelAiModelCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['modelCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelCreateRequest',
@@ -215,13 +223,21 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/model/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ModelCreateRequestToJSON(requestParameters['modelCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Model
+     */
+    async createModelAiModelCreatePostRaw(requestParameters: CreateModelAiModelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelCreateResponse>> {
+        const requestOptions = await this.createModelAiModelCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelCreateResponseFromJSON(jsonValue));
     }
@@ -235,9 +251,9 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create Model Provider
+     * Creates request options for createModelProviderAiModelProviderCreatePost without sending the request
      */
-    async createModelProviderAiModelProviderCreatePostRaw(requestParameters: CreateModelProviderAiModelProviderCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelProviderCreateResponse>> {
+    async createModelProviderAiModelProviderCreatePostRequestOpts(requestParameters: CreateModelProviderAiModelProviderCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['modelProviderCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelProviderCreateRequest',
@@ -258,13 +274,21 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/model-provider/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ModelProviderCreateRequestToJSON(requestParameters['modelProviderCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Model Provider
+     */
+    async createModelProviderAiModelProviderCreatePostRaw(requestParameters: CreateModelProviderAiModelProviderCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelProviderCreateResponse>> {
+        const requestOptions = await this.createModelProviderAiModelProviderCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelProviderCreateResponseFromJSON(jsonValue));
     }
@@ -278,9 +302,9 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Ai Model
+     * Creates request options for deleteAiModelAiModelDeletePost without sending the request
      */
-    async deleteAiModelAiModelDeletePostRaw(requestParameters: DeleteAiModelAiModelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteAiModelAiModelDeletePostRequestOpts(requestParameters: DeleteAiModelAiModelDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['deleteModelRequest'] == null) {
             throw new runtime.RequiredError(
                 'deleteModelRequest',
@@ -301,13 +325,21 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/model/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DeleteModelRequestToJSON(requestParameters['deleteModelRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Ai Model
+     */
+    async deleteAiModelAiModelDeletePostRaw(requestParameters: DeleteAiModelAiModelDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteAiModelAiModelDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -321,9 +353,9 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Ai Model Provider
+     * Creates request options for deleteAiModelProviderAiModelProviderDeletePost without sending the request
      */
-    async deleteAiModelProviderAiModelProviderDeletePostRaw(requestParameters: DeleteAiModelProviderAiModelProviderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteAiModelProviderAiModelProviderDeletePostRequestOpts(requestParameters: DeleteAiModelProviderAiModelProviderDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['deleteModelProviderRequest'] == null) {
             throw new runtime.RequiredError(
                 'deleteModelProviderRequest',
@@ -344,13 +376,21 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/model-provider/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DeleteModelProviderRequestToJSON(requestParameters['deleteModelProviderRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Ai Model Provider
+     */
+    async deleteAiModelProviderAiModelProviderDeletePostRaw(requestParameters: DeleteAiModelProviderAiModelProviderDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteAiModelProviderAiModelProviderDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -364,9 +404,9 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Fork Ai Model Provider
+     * Creates request options for forkAiModelProviderAiModelProviderForkPost without sending the request
      */
-    async forkAiModelProviderAiModelProviderForkPostRaw(requestParameters: ForkAiModelProviderAiModelProviderForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async forkAiModelProviderAiModelProviderForkPostRequestOpts(requestParameters: ForkAiModelProviderAiModelProviderForkPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['modelProviderForkRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelProviderForkRequest',
@@ -387,13 +427,21 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/model-provider/fork`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ModelProviderForkRequestToJSON(requestParameters['modelProviderForkRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Fork Ai Model Provider
+     */
+    async forkAiModelProviderAiModelProviderForkPostRaw(requestParameters: ForkAiModelProviderAiModelProviderForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.forkAiModelProviderAiModelProviderForkPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -407,9 +455,9 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Ai Model
+     * Creates request options for getAiModelAiModelDetailPost without sending the request
      */
-    async getAiModelAiModelDetailPostRaw(requestParameters: GetAiModelAiModelDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Model>> {
+    async getAiModelAiModelDetailPostRequestOpts(requestParameters: GetAiModelAiModelDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['modelRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelRequest',
@@ -430,13 +478,21 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/model/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ModelRequestToJSON(requestParameters['modelRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Ai Model
+     */
+    async getAiModelAiModelDetailPostRaw(requestParameters: GetAiModelAiModelDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Model>> {
+        const requestOptions = await this.getAiModelAiModelDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelFromJSON(jsonValue));
     }
@@ -450,9 +506,9 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Ai Model Provider
+     * Creates request options for getAiModelProviderAiModelProviderDetailPost without sending the request
      */
-    async getAiModelProviderAiModelProviderDetailPostRaw(requestParameters: GetAiModelProviderAiModelProviderDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelProviderDetail>> {
+    async getAiModelProviderAiModelProviderDetailPostRequestOpts(requestParameters: GetAiModelProviderAiModelProviderDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['modelProviderRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelProviderRequest',
@@ -473,13 +529,21 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/model-provider/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ModelProviderRequestToJSON(requestParameters['modelProviderRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Ai Model Provider
+     */
+    async getAiModelProviderAiModelProviderDetailPostRaw(requestParameters: GetAiModelProviderAiModelProviderDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelProviderDetail>> {
+        const requestOptions = await this.getAiModelProviderAiModelProviderDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelProviderDetailFromJSON(jsonValue));
     }
@@ -493,9 +557,9 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * List Ai Model
+     * Creates request options for listAiModelAiModelSearchPost without sending the request
      */
-    async listAiModelAiModelSearchPostRaw(requestParameters: ListAiModelAiModelSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelSearchResponse>> {
+    async listAiModelAiModelSearchPostRequestOpts(requestParameters: ListAiModelAiModelSearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['modelSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelSearchRequest',
@@ -516,13 +580,21 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/model/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ModelSearchRequestToJSON(requestParameters['modelSearchRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * List Ai Model
+     */
+    async listAiModelAiModelSearchPostRaw(requestParameters: ListAiModelAiModelSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelSearchResponse>> {
+        const requestOptions = await this.listAiModelAiModelSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelSearchResponseFromJSON(jsonValue));
     }
@@ -536,10 +608,9 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * 搜索当前所有我可以使用的模型供应商 包含我创建的和公开的
-     * List Ai Model Provider
+     * Creates request options for listAiModelProviderAiModelProviderCommunityPost without sending the request
      */
-    async listAiModelProviderAiModelProviderCommunityPostRaw(requestParameters: ListAiModelProviderAiModelProviderCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionModelProvider>> {
+    async listAiModelProviderAiModelProviderCommunityPostRequestOpts(requestParameters: ListAiModelProviderAiModelProviderCommunityPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['modelProviderSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelProviderSearchRequest',
@@ -560,13 +631,22 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/model-provider/community`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ModelProviderSearchRequestToJSON(requestParameters['modelProviderSearchRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * 搜索当前所有我可以使用的模型供应商 包含我创建的和公开的
+     * List Ai Model Provider
+     */
+    async listAiModelProviderAiModelProviderCommunityPostRaw(requestParameters: ListAiModelProviderAiModelProviderCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionModelProvider>> {
+        const requestOptions = await this.listAiModelProviderAiModelProviderCommunityPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionModelProviderFromJSON(jsonValue));
     }
@@ -581,9 +661,9 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Ai Model
+     * Creates request options for updateAiModelAiModelUpdatePost without sending the request
      */
-    async updateAiModelAiModelUpdatePostRaw(requestParameters: UpdateAiModelAiModelUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateAiModelAiModelUpdatePostRequestOpts(requestParameters: UpdateAiModelAiModelUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['modelUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelUpdateRequest',
@@ -604,13 +684,21 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/model/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ModelUpdateRequestToJSON(requestParameters['modelUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Ai Model
+     */
+    async updateAiModelAiModelUpdatePostRaw(requestParameters: UpdateAiModelAiModelUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateAiModelAiModelUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -624,9 +712,9 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Ai Model Provider
+     * Creates request options for updateAiModelProviderAiModelProviderUpdatePost without sending the request
      */
-    async updateAiModelProviderAiModelProviderUpdatePostRaw(requestParameters: UpdateAiModelProviderAiModelProviderUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateAiModelProviderAiModelProviderUpdatePostRequestOpts(requestParameters: UpdateAiModelProviderAiModelProviderUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['modelProviderUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'modelProviderUpdateRequest',
@@ -647,13 +735,21 @@ export class AiApi extends runtime.BaseAPI {
 
         let urlPath = `/ai/model-provider/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ModelProviderUpdateRequestToJSON(requestParameters['modelProviderUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Ai Model Provider
+     */
+    async updateAiModelProviderAiModelProviderUpdatePostRaw(requestParameters: UpdateAiModelProviderAiModelProviderUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateAiModelProviderAiModelProviderUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }

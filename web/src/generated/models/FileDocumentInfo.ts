@@ -21,12 +21,6 @@ import { mapValues } from '../runtime';
 export interface FileDocumentInfo {
     /**
      * 
-     * @type {number}
-     * @memberof FileDocumentInfo
-     */
-    creator_id: number;
-    /**
-     * 
      * @type {string}
      * @memberof FileDocumentInfo
      */
@@ -37,7 +31,6 @@ export interface FileDocumentInfo {
  * Check if a given object implements the FileDocumentInfo interface.
  */
 export function instanceOfFileDocumentInfo(value: object): value is FileDocumentInfo {
-    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('file_name' in value) || value['file_name'] === undefined) return false;
     return true;
 }
@@ -52,7 +45,6 @@ export function FileDocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'creator_id': json['creator_id'],
         'file_name': json['file_name'],
     };
 }
@@ -68,7 +60,6 @@ export function FileDocumentInfoToJSONTyped(value?: FileDocumentInfo | null, ign
 
     return {
         
-        'creator_id': value['creator_id'],
         'file_name': value['file_name'],
     };
 }
