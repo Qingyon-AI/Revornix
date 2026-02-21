@@ -63,7 +63,7 @@ cd Revornix
 ### Install and start the base services
 
 > [!NOTE]
-> If you haven’t installed postgres, redis, neo4j, minio, milvus, rsshub, or browserless, you need to install them manually and configure environment variables based on your needs. Refer to each service’s requirements and the [Revornix environment variables](https://revornix.com/docs/environment).
+> If you haven’t installed postgres, redis, neo4j, minio, or milvus, you need to install them manually and configure environment variables based on your needs. Refer to each service’s requirements and the [Revornix environment variables](https://revornix.com/docs/environment).
 > 
 > To avoid that busywork, we provide `docker-compose-local.yaml` and `.env.local.example`. You can use `docker-compose-local.yaml` to pull these services and `.env.local.example` as the environment configuration.
 
@@ -76,7 +76,7 @@ Copy the example file provided, then adjust fields as needed with the [Revornix 
 cp .env.local.example .env.local
 ```
 
-Start postgres, redis, neo4j, minio, milvus, rsshub, and browserless.
+Start postgres, redis, neo4j, minio, and milvus.
 
 ```shell
 docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d

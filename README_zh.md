@@ -63,7 +63,7 @@ cd Revornix
 ### 安装并且启动基础服务
 
 > [!NOTE]
-> 如果你没有安装postgres、redis、neo4j、minio、milvus、rsshub、browserless，那么你需要手动在本地安装这些服务，并根据实际需求设置各个服务的环境变量配置，具体参照各服务实际需求和[Revornix环境变量章节](https://revornix.com/docs/environment)。
+> 如果你没有安装postgres、redis、neo4j、minio、milvus，那么你需要手动在本地安装这些服务，并根据实际需求设置各个服务的环境变量配置，具体参照各服务实际需求和[Revornix环境变量章节](https://revornix.com/docs/environment)。
 > 
 > 考虑到这些属于比较麻烦且不重要的工作，我特地做了一套`docker-compose-local.yaml`和`.env.local.example`文件，你可以直接使用`docker-compose-local.yaml`这个文件下载这些服务，并使用`.env.local.example`的配置作为环境变量。
 
@@ -76,7 +76,7 @@ cd Revornix
 cp .env.local.example .env.local
 ```
 
-启动postgres、redis、neo4j、minio、milvus、rsshub、browserless服务。
+启动postgres、redis、neo4j、minio、milvus服务。
 
 ```shell
 docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d

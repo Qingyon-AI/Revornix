@@ -63,7 +63,7 @@ cd Revornix
 ### 基盤サービスをインストールして起動する
 
 > [!NOTE]
-> postgres、redis、neo4j、minio、milvus、rsshub、browserlessをまだインストールしていない場合は、ローカルに手動でインストールし、各サービスの要件と[Revornix環境変数](https://revornix.com/docs/environment)に沿って環境変数を設定する必要があります。
+> postgres、redis、neo4j、minio、milvusをまだインストールしていない場合は、ローカルに手動でインストールし、各サービスの要件と[Revornix環境変数](https://revornix.com/docs/environment)に沿って環境変数を設定する必要があります。
 > 
 > この面倒な作業を避けられるよう、`docker-compose-local.yaml`と`.env.local.example`を用意しています。`docker-compose-local.yaml`でこれらのサービスを取得し、`.env.local.example`の設定を環境変数として利用できます。
 
@@ -76,7 +76,7 @@ cd Revornix
 cp .env.local.example .env.local
 ```
 
-postgres、redis、neo4j、minio、milvus、rsshub、browserlessサービスを起動します。
+postgres、redis、neo4j、minio、milvusサービスを起動します。
 
 ```shell
 docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d

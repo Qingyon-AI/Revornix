@@ -104,11 +104,6 @@ const routers: RouteItem[] = [
 		path: '/hot-search',
 	},
 	{
-		title: 'RSS',
-		title_en: 'RSS',
-		path: '/rss',
-	},
-	{
 		title: '知识图谱',
 		title_en: 'Graph',
 		path: '/graph',
