@@ -24,12 +24,6 @@ export interface DocumentTranscribeTask {
      * @type {number}
      * @memberof DocumentTranscribeTask
      */
-    creator_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DocumentTranscribeTask
-     */
     status: number;
     /**
      * 
@@ -43,7 +37,6 @@ export interface DocumentTranscribeTask {
  * Check if a given object implements the DocumentTranscribeTask interface.
  */
 export function instanceOfDocumentTranscribeTask(value: object): value is DocumentTranscribeTask {
-    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('transcribed_text' in value) || value['transcribed_text'] === undefined) return false;
     return true;
@@ -59,7 +52,6 @@ export function DocumentTranscribeTaskFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
-        'creator_id': json['creator_id'],
         'status': json['status'],
         'transcribed_text': json['transcribed_text'],
     };
@@ -76,7 +68,6 @@ export function DocumentTranscribeTaskToJSONTyped(value?: DocumentTranscribeTask
 
     return {
         
-        'creator_id': value['creator_id'],
         'status': value['status'],
         'transcribed_text': value['transcribed_text'],
     };

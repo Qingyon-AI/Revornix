@@ -6,7 +6,6 @@
 
 Name | Type
 ------------ | -------------
-`creator_id` | number
 `audio_file_name` | string
 
 ## Example
@@ -16,7 +15,6 @@ import type { AudioDocumentInfo } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "creator_id": null,
   "audio_file_name": null,
 } satisfies AudioDocumentInfo
 

@@ -51,9 +51,9 @@ export interface SectionGraphGraphSectionPostRequest {
 export class GraphApi extends runtime.BaseAPI {
 
     /**
-     * Document Graph
+     * Creates request options for documentGraphGraphDocumentPost without sending the request
      */
-    async documentGraphGraphDocumentPostRaw(requestParameters: DocumentGraphGraphDocumentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GraphResponse>> {
+    async documentGraphGraphDocumentPostRequestOpts(requestParameters: DocumentGraphGraphDocumentPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentGraphRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentGraphRequest',
@@ -74,13 +74,21 @@ export class GraphApi extends runtime.BaseAPI {
 
         let urlPath = `/graph/document`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentGraphRequestToJSON(requestParameters['documentGraphRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Document Graph
+     */
+    async documentGraphGraphDocumentPostRaw(requestParameters: DocumentGraphGraphDocumentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GraphResponse>> {
+        const requestOptions = await this.documentGraphGraphDocumentPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => GraphResponseFromJSON(jsonValue));
     }
@@ -94,9 +102,9 @@ export class GraphApi extends runtime.BaseAPI {
     }
 
     /**
-     * Graph
+     * Creates request options for graphGraphSearchPost without sending the request
      */
-    async graphGraphSearchPostRaw(requestParameters: GraphGraphSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GraphResponse>> {
+    async graphGraphSearchPostRequestOpts(requestParameters: GraphGraphSearchPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -108,12 +116,20 @@ export class GraphApi extends runtime.BaseAPI {
 
         let urlPath = `/graph/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Graph
+     */
+    async graphGraphSearchPostRaw(requestParameters: GraphGraphSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GraphResponse>> {
+        const requestOptions = await this.graphGraphSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => GraphResponseFromJSON(jsonValue));
     }
@@ -127,9 +143,9 @@ export class GraphApi extends runtime.BaseAPI {
     }
 
     /**
-     * Section Graph
+     * Creates request options for sectionGraphGraphSectionPost without sending the request
      */
-    async sectionGraphGraphSectionPostRaw(requestParameters: SectionGraphGraphSectionPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GraphResponse>> {
+    async sectionGraphGraphSectionPostRequestOpts(requestParameters: SectionGraphGraphSectionPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionGraphRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionGraphRequest',
@@ -150,13 +166,21 @@ export class GraphApi extends runtime.BaseAPI {
 
         let urlPath = `/graph/section`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionGraphRequestToJSON(requestParameters['sectionGraphRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Section Graph
+     */
+    async sectionGraphGraphSectionPostRaw(requestParameters: SectionGraphGraphSectionPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GraphResponse>> {
+        const requestOptions = await this.sectionGraphGraphSectionPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => GraphResponseFromJSON(jsonValue));
     }

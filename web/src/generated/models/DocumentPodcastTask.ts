@@ -24,12 +24,6 @@ export interface DocumentPodcastTask {
      * @type {number}
      * @memberof DocumentPodcastTask
      */
-    creator_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DocumentPodcastTask
-     */
     status: number;
     /**
      * 
@@ -43,7 +37,6 @@ export interface DocumentPodcastTask {
  * Check if a given object implements the DocumentPodcastTask interface.
  */
 export function instanceOfDocumentPodcastTask(value: object): value is DocumentPodcastTask {
-    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('podcast_file_name' in value) || value['podcast_file_name'] === undefined) return false;
     return true;
@@ -59,7 +52,6 @@ export function DocumentPodcastTaskFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'creator_id': json['creator_id'],
         'status': json['status'],
         'podcast_file_name': json['podcast_file_name'],
     };
@@ -76,7 +68,6 @@ export function DocumentPodcastTaskToJSONTyped(value?: DocumentPodcastTask | nul
 
     return {
         
-        'creator_id': value['creator_id'],
         'status': value['status'],
         'podcast_file_name': value['podcast_file_name'],
     };

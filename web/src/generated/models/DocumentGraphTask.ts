@@ -24,12 +24,6 @@ export interface DocumentGraphTask {
      * @type {number}
      * @memberof DocumentGraphTask
      */
-    creator_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DocumentGraphTask
-     */
     status: number;
 }
 
@@ -37,7 +31,6 @@ export interface DocumentGraphTask {
  * Check if a given object implements the DocumentGraphTask interface.
  */
 export function instanceOfDocumentGraphTask(value: object): value is DocumentGraphTask {
-    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     return true;
 }
@@ -52,7 +45,6 @@ export function DocumentGraphTaskFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'creator_id': json['creator_id'],
         'status': json['status'],
     };
 }
@@ -68,7 +60,6 @@ export function DocumentGraphTaskToJSONTyped(value?: DocumentGraphTask | null, i
 
     return {
         
-        'creator_id': value['creator_id'],
         'status': value['status'],
     };
 }

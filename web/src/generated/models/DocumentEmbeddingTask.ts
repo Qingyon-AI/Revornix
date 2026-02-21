@@ -24,12 +24,6 @@ export interface DocumentEmbeddingTask {
      * @type {number}
      * @memberof DocumentEmbeddingTask
      */
-    creator_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DocumentEmbeddingTask
-     */
     status: number;
 }
 
@@ -37,7 +31,6 @@ export interface DocumentEmbeddingTask {
  * Check if a given object implements the DocumentEmbeddingTask interface.
  */
 export function instanceOfDocumentEmbeddingTask(value: object): value is DocumentEmbeddingTask {
-    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     return true;
 }
@@ -52,7 +45,6 @@ export function DocumentEmbeddingTaskFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'creator_id': json['creator_id'],
         'status': json['status'],
     };
 }
@@ -68,7 +60,6 @@ export function DocumentEmbeddingTaskToJSONTyped(value?: DocumentEmbeddingTask |
 
     return {
         
-        'creator_id': value['creator_id'],
         'status': value['status'],
     };
 }

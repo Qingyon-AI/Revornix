@@ -6,7 +6,6 @@
 
 Name | Type
 ------------ | -------------
-`creator_id` | number
 `status` | number
 `summary` | string
 
@@ -17,7 +16,6 @@ import type { DocumentSummarizeTask } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "creator_id": null,
   "status": null,
   "summary": null,
 } satisfies DocumentSummarizeTask

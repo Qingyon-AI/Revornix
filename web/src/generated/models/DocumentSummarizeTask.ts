@@ -24,12 +24,6 @@ export interface DocumentSummarizeTask {
      * @type {number}
      * @memberof DocumentSummarizeTask
      */
-    creator_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DocumentSummarizeTask
-     */
     status: number;
     /**
      * 
@@ -43,7 +37,6 @@ export interface DocumentSummarizeTask {
  * Check if a given object implements the DocumentSummarizeTask interface.
  */
 export function instanceOfDocumentSummarizeTask(value: object): value is DocumentSummarizeTask {
-    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('summary' in value) || value['summary'] === undefined) return false;
     return true;
@@ -59,7 +52,6 @@ export function DocumentSummarizeTaskFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'creator_id': json['creator_id'],
         'status': json['status'],
         'summary': json['summary'],
     };
@@ -76,7 +68,6 @@ export function DocumentSummarizeTaskToJSONTyped(value?: DocumentSummarizeTask |
 
     return {
         
-        'creator_id': value['creator_id'],
         'status': value['status'],
         'summary': value['summary'],
     };

@@ -107,10 +107,9 @@ export interface UpdateEngineEngineUpdatePostRequest {
 export class EngineApi extends runtime.BaseAPI {
 
     /**
-     * 创建引擎
-     * Create Engine
+     * Creates request options for createEngineEngineCreatePost without sending the request
      */
-    async createEngineEngineCreatePostRaw(requestParameters: CreateEngineEngineCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async createEngineEngineCreatePostRequestOpts(requestParameters: CreateEngineEngineCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['engineCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'engineCreateRequest',
@@ -131,13 +130,22 @@ export class EngineApi extends runtime.BaseAPI {
 
         let urlPath = `/engine/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: EngineCreateRequestToJSON(requestParameters['engineCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * 创建引擎
+     * Create Engine
+     */
+    async createEngineEngineCreatePostRaw(requestParameters: CreateEngineEngineCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createEngineEngineCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -152,9 +160,9 @@ export class EngineApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Engine
+     * Creates request options for deleteEngineEngineDeletePost without sending the request
      */
-    async deleteEngineEngineDeletePostRaw(requestParameters: DeleteEngineEngineDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteEngineEngineDeletePostRequestOpts(requestParameters: DeleteEngineEngineDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['engineDeleteRequest'] == null) {
             throw new runtime.RequiredError(
                 'engineDeleteRequest',
@@ -175,13 +183,21 @@ export class EngineApi extends runtime.BaseAPI {
 
         let urlPath = `/engine/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: EngineDeleteRequestToJSON(requestParameters['engineDeleteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Engine
+     */
+    async deleteEngineEngineDeletePostRaw(requestParameters: DeleteEngineEngineDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteEngineEngineDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -195,9 +211,9 @@ export class EngineApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get Engine Detail
+     * Creates request options for getEngineDetailEngineDetailPost without sending the request
      */
-    async getEngineDetailEngineDetailPostRaw(requestParameters: GetEngineDetailEngineDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineDetail>> {
+    async getEngineDetailEngineDetailPostRequestOpts(requestParameters: GetEngineDetailEngineDetailPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['engineDetailRequest'] == null) {
             throw new runtime.RequiredError(
                 'engineDetailRequest',
@@ -218,13 +234,21 @@ export class EngineApi extends runtime.BaseAPI {
 
         let urlPath = `/engine/detail`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: EngineDetailRequestToJSON(requestParameters['engineDetailRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get Engine Detail
+     */
+    async getEngineDetailEngineDetailPostRaw(requestParameters: GetEngineDetailEngineDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineDetail>> {
+        const requestOptions = await this.getEngineDetailEngineDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => EngineDetailFromJSON(jsonValue));
     }
@@ -238,9 +262,9 @@ export class EngineApi extends runtime.BaseAPI {
     }
 
     /**
-     * Install Engine
+     * Creates request options for installEngineEngineForkPost without sending the request
      */
-    async installEngineEngineForkPostRaw(requestParameters: InstallEngineEngineForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async installEngineEngineForkPostRequestOpts(requestParameters: InstallEngineEngineForkPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['engineForkRequest'] == null) {
             throw new runtime.RequiredError(
                 'engineForkRequest',
@@ -261,13 +285,21 @@ export class EngineApi extends runtime.BaseAPI {
 
         let urlPath = `/engine/fork`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: EngineForkRequestToJSON(requestParameters['engineForkRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Install Engine
+     */
+    async installEngineEngineForkPostRaw(requestParameters: InstallEngineEngineForkPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.installEngineEngineForkPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -281,9 +313,9 @@ export class EngineApi extends runtime.BaseAPI {
     }
 
     /**
-     * Provide Document Parse Engine
+     * Creates request options for provideDocumentParseEngineEngineProvidedPost without sending the request
      */
-    async provideDocumentParseEngineEngineProvidedPostRaw(requestParameters: ProvideDocumentParseEngineEngineProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineProvidedSearchResponse>> {
+    async provideDocumentParseEngineEngineProvidedPostRequestOpts(requestParameters: ProvideDocumentParseEngineEngineProvidedPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['engineProvidedSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'engineProvidedSearchRequest',
@@ -304,13 +336,21 @@ export class EngineApi extends runtime.BaseAPI {
 
         let urlPath = `/engine/provided`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: EngineProvidedSearchRequestToJSON(requestParameters['engineProvidedSearchRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Provide Document Parse Engine
+     */
+    async provideDocumentParseEngineEngineProvidedPostRaw(requestParameters: ProvideDocumentParseEngineEngineProvidedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EngineProvidedSearchResponse>> {
+        const requestOptions = await this.provideDocumentParseEngineEngineProvidedPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => EngineProvidedSearchResponseFromJSON(jsonValue));
     }
@@ -324,10 +364,9 @@ export class EngineApi extends runtime.BaseAPI {
     }
 
     /**
-     * 搜索当前所有我可以使用的引擎 包含我创建的和公开的
-     * Search Document Parse Engine
+     * Creates request options for searchDocumentParseEngineEngineCommunityPost without sending the request
      */
-    async searchDocumentParseEngineEngineCommunityPostRaw(requestParameters: SearchDocumentParseEngineEngineCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionEngineInfo>> {
+    async searchDocumentParseEngineEngineCommunityPostRequestOpts(requestParameters: SearchDocumentParseEngineEngineCommunityPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['communityEngineSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'communityEngineSearchRequest',
@@ -348,13 +387,22 @@ export class EngineApi extends runtime.BaseAPI {
 
         let urlPath = `/engine/community`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: CommunityEngineSearchRequestToJSON(requestParameters['communityEngineSearchRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * 搜索当前所有我可以使用的引擎 包含我创建的和公开的
+     * Search Document Parse Engine
+     */
+    async searchDocumentParseEngineEngineCommunityPostRaw(requestParameters: SearchDocumentParseEngineEngineCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionEngineInfo>> {
+        const requestOptions = await this.searchDocumentParseEngineEngineCommunityPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionEngineInfoFromJSON(jsonValue));
     }
@@ -369,10 +417,9 @@ export class EngineApi extends runtime.BaseAPI {
     }
 
     /**
-     * 搜索当前所有我配置好的引擎 我自己的和我fork的
-     * Search Usable Engine
+     * Creates request options for searchUsableEngineEngineUsablePost without sending the request
      */
-    async searchUsableEngineEngineUsablePostRaw(requestParameters: SearchUsableEngineEngineUsablePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsableEnginesResponse>> {
+    async searchUsableEngineEngineUsablePostRequestOpts(requestParameters: SearchUsableEngineEngineUsablePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['usableEngineSearchRequest'] == null) {
             throw new runtime.RequiredError(
                 'usableEngineSearchRequest',
@@ -393,13 +440,22 @@ export class EngineApi extends runtime.BaseAPI {
 
         let urlPath = `/engine/usable`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: UsableEngineSearchRequestToJSON(requestParameters['usableEngineSearchRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * 搜索当前所有我配置好的引擎 我自己的和我fork的
+     * Search Usable Engine
+     */
+    async searchUsableEngineEngineUsablePostRaw(requestParameters: SearchUsableEngineEngineUsablePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsableEnginesResponse>> {
+        const requestOptions = await this.searchUsableEngineEngineUsablePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => UsableEnginesResponseFromJSON(jsonValue));
     }
@@ -414,9 +470,9 @@ export class EngineApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update Engine
+     * Creates request options for updateEngineEngineUpdatePost without sending the request
      */
-    async updateEngineEngineUpdatePostRaw(requestParameters: UpdateEngineEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async updateEngineEngineUpdatePostRequestOpts(requestParameters: UpdateEngineEngineUpdatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['engineUpdateRequest'] == null) {
             throw new runtime.RequiredError(
                 'engineUpdateRequest',
@@ -437,13 +493,21 @@ export class EngineApi extends runtime.BaseAPI {
 
         let urlPath = `/engine/update`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: EngineUpdateRequestToJSON(requestParameters['engineUpdateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Update Engine
+     */
+    async updateEngineEngineUpdatePostRaw(requestParameters: UpdateEngineEngineUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateEngineEngineUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }

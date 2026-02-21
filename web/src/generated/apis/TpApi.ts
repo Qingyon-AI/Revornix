@@ -90,9 +90,9 @@ export interface UploadFileSystemTpFileUploadPostRequest {
 export class TpApi extends runtime.BaseAPI {
 
     /**
-     * Add Label
+     * Creates request options for addLabelTpSectionLabelCreatePost without sending the request
      */
-    async addLabelTpSectionLabelCreatePostRaw(requestParameters: AddLabelTpSectionLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
+    async addLabelTpSectionLabelCreatePostRequestOpts(requestParameters: AddLabelTpSectionLabelCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['labelAddRequest'] == null) {
             throw new runtime.RequiredError(
                 'labelAddRequest',
@@ -113,13 +113,21 @@ export class TpApi extends runtime.BaseAPI {
 
         let urlPath = `/tp/section/label/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: LabelAddRequestToJSON(requestParameters['labelAddRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Add Label
+     */
+    async addLabelTpSectionLabelCreatePostRaw(requestParameters: AddLabelTpSectionLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
+        const requestOptions = await this.addLabelTpSectionLabelCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => CreateLabelResponseFromJSON(jsonValue));
     }
@@ -133,9 +141,9 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create Document Label
+     * Creates request options for createDocumentLabelTpDocumentLabelCreatePost without sending the request
      */
-    async createDocumentLabelTpDocumentLabelCreatePostRaw(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
+    async createDocumentLabelTpDocumentLabelCreatePostRequestOpts(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['labelAddRequest'] == null) {
             throw new runtime.RequiredError(
                 'labelAddRequest',
@@ -156,13 +164,21 @@ export class TpApi extends runtime.BaseAPI {
 
         let urlPath = `/tp/document/label/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: LabelAddRequestToJSON(requestParameters['labelAddRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Document Label
+     */
+    async createDocumentLabelTpDocumentLabelCreatePostRaw(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateLabelResponse>> {
+        const requestOptions = await this.createDocumentLabelTpDocumentLabelCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => CreateLabelResponseFromJSON(jsonValue));
     }
@@ -176,9 +192,9 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create Document
+     * Creates request options for createDocumentTpDocumentCreatePost without sending the request
      */
-    async createDocumentTpDocumentCreatePostRaw(requestParameters: CreateDocumentTpDocumentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentCreateResponse>> {
+    async createDocumentTpDocumentCreatePostRequestOpts(requestParameters: CreateDocumentTpDocumentCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['documentCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'documentCreateRequest',
@@ -199,13 +215,21 @@ export class TpApi extends runtime.BaseAPI {
 
         let urlPath = `/tp/document/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: DocumentCreateRequestToJSON(requestParameters['documentCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Document
+     */
+    async createDocumentTpDocumentCreatePostRaw(requestParameters: CreateDocumentTpDocumentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentCreateResponse>> {
+        const requestOptions = await this.createDocumentTpDocumentCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => DocumentCreateResponseFromJSON(jsonValue));
     }
@@ -219,9 +243,9 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create Section
+     * Creates request options for createSectionTpSectionCreatePost without sending the request
      */
-    async createSectionTpSectionCreatePostRaw(requestParameters: CreateSectionTpSectionCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionCreateResponse>> {
+    async createSectionTpSectionCreatePostRequestOpts(requestParameters: CreateSectionTpSectionCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['sectionCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'sectionCreateRequest',
@@ -242,13 +266,21 @@ export class TpApi extends runtime.BaseAPI {
 
         let urlPath = `/tp/section/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SectionCreateRequestToJSON(requestParameters['sectionCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Section
+     */
+    async createSectionTpSectionCreatePostRaw(requestParameters: CreateSectionTpSectionCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionCreateResponse>> {
+        const requestOptions = await this.createSectionTpSectionCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SectionCreateResponseFromJSON(jsonValue));
     }
@@ -262,9 +294,9 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get All Mine Sections
+     * Creates request options for getAllMineSectionsTpSectionMineAllPost without sending the request
      */
-    async getAllMineSectionsTpSectionMineAllPostRaw(requestParameters: GetAllMineSectionsTpSectionMineAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AllMySectionsResponse>> {
+    async getAllMineSectionsTpSectionMineAllPostRequestOpts(requestParameters: GetAllMineSectionsTpSectionMineAllPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -276,12 +308,20 @@ export class TpApi extends runtime.BaseAPI {
 
         let urlPath = `/tp/section/mine/all`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Get All Mine Sections
+     */
+    async getAllMineSectionsTpSectionMineAllPostRaw(requestParameters: GetAllMineSectionsTpSectionMineAllPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AllMySectionsResponse>> {
+        const requestOptions = await this.getAllMineSectionsTpSectionMineAllPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => AllMySectionsResponseFromJSON(jsonValue));
     }
@@ -295,9 +335,9 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
-     * List Label
+     * Creates request options for listLabelTpDocumentLabelListPost without sending the request
      */
-    async listLabelTpDocumentLabelListPostRaw(requestParameters: ListLabelTpDocumentLabelListPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasDocumentLabelListResponse>> {
+    async listLabelTpDocumentLabelListPostRequestOpts(requestParameters: ListLabelTpDocumentLabelListPostRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -309,12 +349,20 @@ export class TpApi extends runtime.BaseAPI {
 
         let urlPath = `/tp/document/label/list`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * List Label
+     */
+    async listLabelTpDocumentLabelListPostRaw(requestParameters: ListLabelTpDocumentLabelListPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasDocumentLabelListResponse>> {
+        const requestOptions = await this.listLabelTpDocumentLabelListPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SchemasDocumentLabelListResponseFromJSON(jsonValue));
     }
@@ -328,9 +376,9 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
-     * Upload File System
+     * Creates request options for uploadFileSystemTpFileUploadPost without sending the request
      */
-    async uploadFileSystemTpFileUploadPostRaw(requestParameters: UploadFileSystemTpFileUploadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async uploadFileSystemTpFileUploadPostRequestOpts(requestParameters: UploadFileSystemTpFileUploadPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['file'] == null) {
             throw new runtime.RequiredError(
                 'file',
@@ -391,13 +439,21 @@ export class TpApi extends runtime.BaseAPI {
 
         let urlPath = `/tp/file/upload`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: formParams,
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Upload File System
+     */
+    async uploadFileSystemTpFileUploadPostRaw(requestParameters: UploadFileSystemTpFileUploadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.uploadFileSystemTpFileUploadPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }

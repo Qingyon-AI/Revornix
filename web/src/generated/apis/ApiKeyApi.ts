@@ -61,9 +61,9 @@ export interface SearchApiKeyApiKeySearchPostRequest {
 export class ApiKeyApi extends runtime.BaseAPI {
 
     /**
-     * Create Api Key
+     * Creates request options for createApiKeyApiKeyCreatePost without sending the request
      */
-    async createApiKeyApiKeyCreatePostRaw(requestParameters: CreateApiKeyApiKeyCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiKeyCreateResponse>> {
+    async createApiKeyApiKeyCreatePostRequestOpts(requestParameters: CreateApiKeyApiKeyCreatePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['apiKeyCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'apiKeyCreateRequest',
@@ -84,13 +84,21 @@ export class ApiKeyApi extends runtime.BaseAPI {
 
         let urlPath = `/api-key/create`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ApiKeyCreateRequestToJSON(requestParameters['apiKeyCreateRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Create Api Key
+     */
+    async createApiKeyApiKeyCreatePostRaw(requestParameters: CreateApiKeyApiKeyCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiKeyCreateResponse>> {
+        const requestOptions = await this.createApiKeyApiKeyCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ApiKeyCreateResponseFromJSON(jsonValue));
     }
@@ -104,9 +112,9 @@ export class ApiKeyApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete Api Key
+     * Creates request options for deleteApiKeyApiKeyDeletePost without sending the request
      */
-    async deleteApiKeyApiKeyDeletePostRaw(requestParameters: DeleteApiKeyApiKeyDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+    async deleteApiKeyApiKeyDeletePostRequestOpts(requestParameters: DeleteApiKeyApiKeyDeletePostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['apiKeysDeleteRequest'] == null) {
             throw new runtime.RequiredError(
                 'apiKeysDeleteRequest',
@@ -127,13 +135,21 @@ export class ApiKeyApi extends runtime.BaseAPI {
 
         let urlPath = `/api-key/delete`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ApiKeysDeleteRequestToJSON(requestParameters['apiKeysDeleteRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Delete Api Key
+     */
+    async deleteApiKeyApiKeyDeletePostRaw(requestParameters: DeleteApiKeyApiKeyDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteApiKeyApiKeyDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
@@ -147,9 +163,9 @@ export class ApiKeyApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search Api Key
+     * Creates request options for searchApiKeyApiKeySearchPost without sending the request
      */
-    async searchApiKeyApiKeySearchPostRaw(requestParameters: SearchApiKeyApiKeySearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PaginationApiKeyInfo>> {
+    async searchApiKeyApiKeySearchPostRequestOpts(requestParameters: SearchApiKeyApiKeySearchPostRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['searchApiKeysRequest'] == null) {
             throw new runtime.RequiredError(
                 'searchApiKeysRequest',
@@ -170,13 +186,21 @@ export class ApiKeyApi extends runtime.BaseAPI {
 
         let urlPath = `/api-key/search`;
 
-        const response = await this.request({
+        return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: SearchApiKeysRequestToJSON(requestParameters['searchApiKeysRequest']),
-        }, initOverrides);
+        };
+    }
+
+    /**
+     * Search Api Key
+     */
+    async searchApiKeyApiKeySearchPostRaw(requestParameters: SearchApiKeyApiKeySearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PaginationApiKeyInfo>> {
+        const requestOptions = await this.searchApiKeyApiKeySearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => PaginationApiKeyInfoFromJSON(jsonValue));
     }

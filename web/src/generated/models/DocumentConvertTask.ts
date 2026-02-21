@@ -24,12 +24,6 @@ export interface DocumentConvertTask {
      * @type {number}
      * @memberof DocumentConvertTask
      */
-    creator_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DocumentConvertTask
-     */
     status: number;
     /**
      * 
@@ -43,7 +37,6 @@ export interface DocumentConvertTask {
  * Check if a given object implements the DocumentConvertTask interface.
  */
 export function instanceOfDocumentConvertTask(value: object): value is DocumentConvertTask {
-    if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('md_file_name' in value) || value['md_file_name'] === undefined) return false;
     return true;
@@ -59,7 +52,6 @@ export function DocumentConvertTaskFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'creator_id': json['creator_id'],
         'status': json['status'],
         'md_file_name': json['md_file_name'],
     };
@@ -76,7 +68,6 @@ export function DocumentConvertTaskToJSONTyped(value?: DocumentConvertTask | nul
 
     return {
         
-        'creator_id': value['creator_id'],
         'status': value['status'],
         'md_file_name': value['md_file_name'],
     };

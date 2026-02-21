@@ -6,7 +6,6 @@
 
 Name | Type
 ------------ | -------------
-`creator_id` | number
 `status` | number
 
 ## Example
@@ -16,7 +15,6 @@ import type { DocumentProcessTask } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "creator_id": null,
   "status": null,
 } satisfies DocumentProcessTask
 
