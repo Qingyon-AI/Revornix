@@ -33,9 +33,11 @@ class MarkdownEngineBase(EngineBase):
     def get_video_plugin_group(self) -> VideoPluginGroup:
         if self._video_plugin_group is None:
             from engine.video_plugins.bilibili import BilibiliSubtitlePlugin
+            from engine.video_plugins.youtube import YouTubeSubtitlePlugin
             self._video_plugin_group = VideoPluginGroup(
                 plugins=[
                     BilibiliSubtitlePlugin(),
+                    YouTubeSubtitlePlugin(),
                 ]
             )
         return self._video_plugin_group
