@@ -18,6 +18,7 @@ from common.logger import exception_logger, info_logger
 from common.redis import redis_pool
 from config.sentry import API_SENTRY_DSN, API_SENTRY_ENABLE
 from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_startup
+from engine.video_plugins.youtube_auth import initialize_youtube_auth_on_startup
 from mcp_router.common import common_mcp_router
 from mcp_router.document import document_mcp_router
 from router.ai import ai_router
@@ -53,6 +54,7 @@ async def lifespan(app: FastAPI):
     # TODO: init the dataset and vector
     scheduler.start()
     await initialize_bilibili_auth_on_startup()
+    await initialize_youtube_auth_on_startup()
     async with AsyncExitStack() as stack:
         # ✅ 这些 session manager 会在 FastAPI 停止时统一退出
         # 将两个 MCP 应用的 lifespan 加入栈，ExitStack 会负责顺序启动和清理
