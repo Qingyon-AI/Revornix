@@ -1,7 +1,6 @@
 import io
-import os
 import shutil
-import uuid
+import tempfile
 from pathlib import Path
 
 import aiofiles
@@ -12,7 +11,6 @@ import crud
 from common.common import extract_title_and_summary, is_dir_empty
 from common.logger import exception_logger
 from common.mineru import parse_doc
-from config.base import BASE_DIR
 from data.sql.base import session_scope
 from enums.engine_enums import EngineProvided, EngineCategory
 from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
@@ -47,89 +45,87 @@ class MineruEngine(MarkdownEngineBase):
             if db_user.default_user_file_system is None:
                 raise Exception("The owner of the engine has not set a default file system yet.")
 
-            # temp dir
-            temp_dir = BASE_DIR / 'temp' / str(uuid.uuid4())
-            shot_pdf_path = temp_dir / "scene-snap.pdf"
-            md_output_dir = temp_dir / "scene-snap" / "auto"
-            os.makedirs(temp_dir, exist_ok=True)
+            with tempfile.TemporaryDirectory(prefix="revornix-mineru-website-") as temp_dir_str:
+                temp_dir = Path(temp_dir_str)
+                shot_pdf_path = temp_dir / "scene-snap.pdf"
+                md_output_dir = temp_dir / "scene-snap" / "auto"
 
-            # 1. Snapshot web page
-            async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=True)
-                page = await browser.new_page()
+                # 1. Snapshot web page
+                async with async_playwright() as p:
+                    browser = await p.chromium.launch(headless=True)
+                    page = await browser.new_page()
 
-                await page.goto(url, wait_until="domcontentloaded")
-                html_content = await page.content()
-                await page.pdf(path=shot_pdf_path)
-                await browser.close()
+                    await page.goto(url, wait_until="domcontentloaded")
+                    html_content = await page.content()
+                    await page.pdf(path=shot_pdf_path)
+                    await browser.close()
 
-            # 2. PDF -> Markdown
-            parse_doc([shot_pdf_path], output_dir=str(temp_dir))
+                # 2. PDF -> Markdown
+                parse_doc([shot_pdf_path], output_dir=str(temp_dir))
 
-            md_path = md_output_dir / "scene-snap.md"
-            async with aiofiles.open(md_path, encoding="utf-8") as f:
-                content = await f.read()
+                md_path = md_output_dir / "scene-snap.md"
+                async with aiofiles.open(md_path, encoding="utf-8") as f:
+                    content = await f.read()
 
-            # 3. Upload extracted images
-            images_dir = md_output_dir / "images"
-            if images_dir.exists() and images_dir.is_dir() and not is_dir_empty(images_dir):
-                remote_fs = await FileSystemProxy.create(user_id=self.user_id)
+                # 3. Upload extracted images
+                images_dir = md_output_dir / "images"
+                if images_dir.exists() and images_dir.is_dir() and not is_dir_empty(images_dir):
+                    remote_fs = await FileSystemProxy.create(user_id=self.user_id)
 
-                for img_file in images_dir.iterdir():
-                    async with aiofiles.open(img_file, "rb") as f:
-                        img_data = await f.read()
-                    await remote_fs.upload_file_to_path(
-                        file_path=f'images/{img_file.name}',
-                        file=io.BytesIO(img_data),
-                        content_type="image/png",
-                    )
+                    for img_file in images_dir.iterdir():
+                        async with aiofiles.open(img_file, "rb") as f:
+                            img_data = await f.read()
+                        await remote_fs.upload_file_to_path(
+                            file_path=f'images/{img_file.name}',
+                            file=io.BytesIO(img_data),
+                            content_type="image/png",
+                        )
 
-            # 4. Analyse HTML metadata
-            soup = BeautifulSoup(html_content, "html.parser")
+                # 4. Analyse HTML metadata
+                soup = BeautifulSoup(html_content, "html.parser")
 
-            # 标题提取：优先 og:title，其次 <title>
-            og_title_meta = soup.find("meta", property="og:title")
-            normal_title_tag = soup.title
+                # 标题提取：优先 og:title，其次 <title>
+                og_title_meta = soup.find("meta", property="og:title")
+                normal_title_tag = soup.title
 
-            title: str = "Unknown Title"
-            if og_title_meta is not None:
-                title = str(og_title_meta.get("content"))
-            if not title and normal_title_tag is not None:
-                # 有些页面 title 可能是 None
-                title = str(normal_title_tag.string.strip()) if normal_title_tag.string else "Unknown Title"
+                title: str = "Unknown Title"
+                if og_title_meta is not None:
+                    title = str(og_title_meta.get("content"))
+                if not title and normal_title_tag is not None:
+                    # 有些页面 title 可能是 None
+                    title = str(normal_title_tag.string.strip()) if normal_title_tag.string else "Unknown Title"
 
-            # 描述提取：优先 og:description，其次 meta[name=description]
-            og_description_meta = soup.find("meta", property="og:description")
-            normal_description_meta = soup.find("meta", attrs={"name": "description"})
+                # 描述提取：优先 og:description，其次 meta[name=description]
+                og_description_meta = soup.find("meta", property="og:description")
+                normal_description_meta = soup.find("meta", attrs={"name": "description"})
 
-            description: str | None = None
-            if og_description_meta is not None:
-                description = str(og_description_meta.get("content"))
-            if not description and normal_description_meta is not None:
-                description = str(normal_description_meta.get("content"))
+                description: str | None = None
+                if og_description_meta is not None:
+                    description = str(og_description_meta.get("content"))
+                if not description and normal_description_meta is not None:
+                    description = str(normal_description_meta.get("content"))
 
-            # 关键字提取
-            keywords_meta = soup.find("meta", attrs={"name": "keywords"})
-            keywords = str(keywords_meta.get("content")) if keywords_meta else None
+                # 关键字提取
+                keywords_meta = soup.find("meta", attrs={"name": "keywords"})
+                keywords = str(keywords_meta.get("content")) if keywords_meta else None
 
-            # 5. 封面图获取（可以考虑后续改造成复用当前 soup/HTML，避免再次 Playwright 打开）
-            cover = await self.get_website_cover_by_playwright(url)
+                # 5. 封面图获取（可以考虑后续改造成复用当前 soup/HTML，避免再次 Playwright 打开）
+                cover = await self.get_website_cover_by_playwright(url)
 
-            return WebsiteInfo(
-                url=url,
-                title=title,
-                description=description,
-                content=content,
-                cover=cover,
-                keywords=keywords
-            )
+                return WebsiteInfo(
+                    url=url,
+                    title=title,
+                    description=description,
+                    content=content,
+                    cover=cover,
+                    keywords=keywords
+                )
         except Exception as e:
             exception_logger.error(f"Error occurred while analysing website using MinerU: {e}")
             raise
 
         finally:
             db.close()
-            shutil.rmtree(temp_dir, ignore_errors=True)
 
     # -------------------------------
     # Analyse File
@@ -137,15 +133,6 @@ class MineruEngine(MarkdownEngineBase):
     async def analyse_file(self, file_path: str) -> FileInfo:
         if not self.user_id:
             raise Exception("Engine is not initialized. Please initialize first.")
-
-        temp_id = str(uuid.uuid4())
-        pathlib_file_path = Path(file_path)
-        suffix = pathlib_file_path.suffix
-
-        # temp paths
-        temp_file_path = BASE_DIR / "temp" / f"{temp_id}{suffix}"
-        md_output_dir = BASE_DIR / "temp" / temp_id / "auto"
-        os.makedirs(BASE_DIR / "temp", exist_ok=True)
 
         db = session_scope()
 
@@ -156,43 +143,47 @@ class MineruEngine(MarkdownEngineBase):
             if db_user.default_user_file_system is None:
                 raise Exception("The owner of the engine has not set a default file system yet.")
 
-            # 1. Copy to temp
-            shutil.copy(file_path, temp_file_path)
+            with tempfile.TemporaryDirectory(prefix="revornix-mineru-file-") as temp_dir_str:
+                temp_dir = Path(temp_dir_str)
+                source_path = Path(file_path)
+                temp_input_name = f"input{source_path.suffix}"
+                temp_file_path = temp_dir / temp_input_name
 
-            # 2. Convert via MinerU
-            parse_doc([temp_file_path], output_dir=str(BASE_DIR / "temp"))
+                # 1. Copy to temp
+                shutil.copy(file_path, temp_file_path)
 
-            md_path = md_output_dir / f"{temp_id}.md"
-            async with aiofiles.open(md_path, encoding="utf-8") as f:
-                content = await f.read()
+                # 2. Convert via MinerU
+                parse_doc([temp_file_path], output_dir=str(temp_dir))
 
-            # 3. Extract Title + Summary
-            title, description = extract_title_and_summary(content)
+                md_output_dir = temp_dir / temp_file_path.stem / "auto"
+                md_path = md_output_dir / f"{temp_file_path.stem}.md"
+                async with aiofiles.open(md_path, encoding="utf-8") as f:
+                    content = await f.read()
 
-            # 4. Upload images
-            images_dir = md_output_dir / "images"
-            if images_dir.exists() and images_dir.is_dir() and not is_dir_empty(images_dir):
-                remote_fs = await FileSystemProxy.create(user_id=self.user_id)
+                # 3. Extract Title + Summary
+                title, description = extract_title_and_summary(content)
 
-                for img_file in images_dir.iterdir():
-                    async with aiofiles.open(img_file, "rb") as f:
-                        img_data = await f.read()
-                    await remote_fs.upload_file_to_path(
-                        file_path=f"images/{img_file.name}",
-                        file=io.BytesIO(img_data),
-                        content_type="image/png",
-                    )
+                # 4. Upload images
+                images_dir = md_output_dir / "images"
+                if images_dir.exists() and images_dir.is_dir() and not is_dir_empty(images_dir):
+                    remote_fs = await FileSystemProxy.create(user_id=self.user_id)
 
-            return FileInfo(
-                title=title,
-                description=description,
-                content=content,
-            )
+                    for img_file in images_dir.iterdir():
+                        async with aiofiles.open(img_file, "rb") as f:
+                            img_data = await f.read()
+                        await remote_fs.upload_file_to_path(
+                            file_path=f"images/{img_file.name}",
+                            file=io.BytesIO(img_data),
+                            content_type="image/png",
+                        )
+
+                return FileInfo(
+                    title=title,
+                    description=description,
+                    content=content,
+                )
         except Exception as e:
             exception_logger.error(f"Error occurred while analysing file using MinerU: {e}")
             raise
         finally:
             db.close()
-            shutil.rmtree(BASE_DIR / "temp" / temp_id, ignore_errors=True)
-            if temp_file_path.exists():
-                temp_file_path.unlink(missing_ok=True)
