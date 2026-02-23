@@ -82,39 +82,6 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 										: t('document_category_others')}
 					</div>
 				</div>
-				{document.embedding_task && (
-					<div className='text-muted-foreground px-2 flex flex-row gap-1 items-center text-xs mt-auto mb-2'>
-						<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
-							{t('document_embedding_status') + ': '}
-							{document.embedding_task?.status ===
-							DocumentEmbeddingStatus.WAIT_TO
-								? t('document_embedding_status_todo')
-								: document.embedding_task?.status ===
-									  DocumentEmbeddingStatus.Embedding
-									? t('document_embedding_status_doing')
-									: document.embedding_task?.status ===
-										  DocumentEmbeddingStatus.SUCCESS
-										? t('document_embedding_status_success')
-										: t('document_embedding_status_failed')}
-						</div>
-					</div>
-				)}
-				{document.convert_task && (
-					<div className='text-muted-foreground px-2 flex flex-row gap-1 items-center text-xs mt-auto mb-2'>
-						<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
-							{t('document_md_status') + ': '}
-							{document.convert_task?.status === DocumentMdConvertStatus.WAIT_TO
-								? t('document_md_status_todo')
-								: document.convert_task?.status ===
-									  DocumentMdConvertStatus.CONVERTING
-									? t('document_md_status_doing')
-									: document.convert_task?.status ===
-										  DocumentMdConvertStatus.SUCCESS
-										? t('document_md_status_success')
-										: t('document_md_status_failed')}
-						</div>
-					</div>
-				)}
 				<div className='text-muted-foreground px-2 flex flex-row gap-1 items-center text-xs mt-auto'>
 					<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 						{t('document_last_update') + ': '}

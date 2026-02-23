@@ -138,14 +138,41 @@ const AudioDocumentDetail = ({
 						<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
 					</div>
 				)}
+			{document && !document.transcribe_task && (
+				<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
+					<p className='flex flex-row items-center'>
+						<span className='mr-1'>{t('document_transcribe_todo')}</span>
+						<Tooltip>
+							<TooltipTrigger>
+								<Info size={15} />
+							</TooltipTrigger>
+							<TooltipContent>
+								{t('document_transcribe_todo_tips')}
+							</TooltipContent>
+						</Tooltip>
+					</p>
+					<Button
+						variant={'link'}
+						className='h-fit p-0 text-xs'
+						disabled={markdownTransforming}
+						onClick={() => {
+							handleReTranscribeDocument();
+						}}>
+						{t('retry')}
+						{markdownTransforming && (
+							<Loader2 className='size-4 animate-spin' />
+						)}
+					</Button>
+					<Separator />
+					<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
+				</div>
+			)}
 			{document &&
 				document.transcribe_task?.status ===
 					DocumentTranscribeStatus.WAIT_TO && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
-							<span className='mr-1'>
-								{t('document_transcribe_todo')}
-							</span>
+							<span className='mr-1'>{t('document_transcribe_todo')}</span>
 							<Tooltip>
 								<TooltipTrigger>
 									<Info size={15} />
