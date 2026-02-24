@@ -75,7 +75,6 @@ class ImageGenerateEngineBase(EngineBase):
                     {"role": "system", "content": IMAGE_PLANNER_SYSTEM},
                     {"role": "user", "content": user_prompt},
                 ],
-                temperature=0.3,
                 response_format={"type": "json_object"}
             )
             persist_model_usage_from_completion(

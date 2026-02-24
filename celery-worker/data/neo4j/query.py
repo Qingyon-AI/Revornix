@@ -66,8 +66,7 @@ async def global_query(
         )
         resp = llm_client.chat.completions.create(
             model=model_configuration.model_name,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.0
+            messages=[{"role": "user", "content": prompt}]
         )
         output_text = resp.choices[0].message.content
         return output_text
@@ -107,8 +106,7 @@ async def naive_query(
         )
         resp = llm_client.chat.completions.create(
             model=model_configuration.model_name,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.0
+            messages=[{"role": "user", "content": prompt}]
         )
         output_text = resp.choices[0].message.content
         return output_text

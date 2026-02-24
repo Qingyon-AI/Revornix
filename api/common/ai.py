@@ -46,7 +46,6 @@ async def summary_content(
                 {"role": "system", "content": "You are an expert in summarizing document content."},
                 {"role": "user", "content": system_prompt}
             ],
-            temperature=0.3,
             response_format={"type": "json_object"}
         )
         persist_model_usage_from_completion(
@@ -102,7 +101,6 @@ async def reducer_summary(
                 {"role": "system", "content": "You are an expert in summarizing document content."},
                 {"role": "user", "content": system_prompt}
             ],
-            temperature=0.3,
             response_format={"type": "json_object"}
         )
         persist_model_usage_from_completion(
@@ -159,7 +157,6 @@ async def make_section_markdown(
                 {"role": "system", "content": "You are an expert in summarizing document content."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3
         )
         persist_model_usage_from_completion(
             user_id=user_id,

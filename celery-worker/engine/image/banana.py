@@ -75,7 +75,6 @@ class BananaImageGenerateEngine(ImageGenerateEngineBase):
             )
             response = llm_client.chat.completions.create(
                 model=model_name,
-                temperature=0.2,  # 降低发散
                 messages=[
                     {
                         "role": "system",

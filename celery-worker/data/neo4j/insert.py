@@ -150,25 +150,28 @@ def upsert_chunk_entity_relations(
     entities_info: list[EntityInfo] | None = None
 ):
     if entities_info:
-        pairs = {
-            (cid, e.id)
-            for e in entities_info
-            for cid in (e.chunks or [])
-        }
-        if not pairs:
+        mention_rows: dict[tuple[str, str], dict] = {}
+        for entity in entities_info:
+            for chunk_id in (entity.chunks or []):
+                key = (chunk_id, entity.id)
+                existing = mention_rows.get(key)
+                if existing is None:
+                    mention_rows[key] = {
+                        "chunk_id": chunk_id,
+                        "entity_id": entity.id,
+                    }
+
+        if not mention_rows:
             return
-        rows = [
-            {"chunk_id": chunk_id, "entity_id": entity_id}
-            for (chunk_id, entity_id) in pairs
-        ]
+
         cypher = """
         UNWIND $rows AS r
         MATCH (c:Chunk {id: r.chunk_id})
         MATCH (e:Entity {id: r.entity_id})
-        MERGE (c)-[:MENTIONS]->(e)
+        MERGE (c)-[m:MENTIONS]->(e)
         """
         with neo4j_driver.session() as session:
-            session.run(cypher, rows=rows)
+            session.run(cypher, rows=list(mention_rows.values()))
         return
     cypher = """
     MATCH (e:Entity)

@@ -16,6 +16,6 @@ def upsert_milvus(
             "text": c.text,
             "doc_id": c.doc_id,
             "creator_id": user_id,
-            "idx": c.idx
+            "idx": c.idx,
         }
         milvus_client.insert(collection_name=MILVUS_COLLECTION, data=row)

@@ -106,7 +106,6 @@ Return strict JSON only:
         resp = llm_client.chat.completions.create(
             model=llm_model,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
             response_format={"type": "json_object"},
             max_tokens=256,
         )
@@ -279,7 +278,6 @@ def extract_entities_relations(
         resp = llm_client.chat.completions.create(
             model=llm_model,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
             response_format={"type": "json_object"},
             max_tokens=8192,
         )
@@ -305,7 +303,6 @@ def extract_entities_relations(
                         "partial": True,  # kimi 专用
                     },
                 ],
-                temperature=0.0,
                 max_tokens=8192,
             )
 
@@ -327,15 +324,19 @@ def extract_entities_relations(
             data = {"entities": [], "relations": []}
 
     # === 结构化 ===
-    entities = [
-        EntityInfo(
-            id=e["id"],
-            text=e["text"],
-            chunks=[chunk.id],
-            entity_type=e["entity_type"],
+    entities: list[EntityInfo] = []
+    for e in data.get("entities", []):
+        entity_text = e.get("text")
+        if not isinstance(entity_text, str) or not entity_text.strip():
+            continue
+        entities.append(
+            EntityInfo(
+                id=e["id"],
+                text=entity_text,
+                chunks=[chunk.id],
+                entity_type=e["entity_type"],
+            )
         )
-        for e in data.get("entities", [])
-    ]
 
     relations = [
         RelationInfo(

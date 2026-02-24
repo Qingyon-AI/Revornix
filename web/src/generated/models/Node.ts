@@ -13,6 +13,32 @@
  */
 
 import { mapValues } from '../runtime';
+
+/**
+ * 
+ * @export
+ * @interface NodeSource
+ */
+export interface NodeSource {
+    /**
+     * 
+     * @type {number}
+     * @memberof NodeSource
+     */
+    doc_id: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof NodeSource
+     */
+    doc_title?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof NodeSource
+     */
+    chunk_id?: string | null;
+}
 /**
  * 
  * @export
@@ -37,6 +63,12 @@ export interface Node {
      * @memberof Node
      */
     degree: number;
+    /**
+     * 
+     * @type {Array<NodeSource>}
+     * @memberof Node
+     */
+    sources?: Array<NodeSource>;
 }
 
 /**
@@ -62,6 +94,11 @@ export function NodeFromJSONTyped(json: any, ignoreDiscriminator: boolean): Node
         'id': json['id'],
         'text': json['text'],
         'degree': json['degree'],
+        'sources': json['sources'] == null ? undefined : ((json['sources'] as Array<any>).map((item) => ({
+            doc_id: item['doc_id'],
+            doc_title: item['doc_title'] == null ? undefined : item['doc_title'],
+            chunk_id: item['chunk_id'] == null ? undefined : item['chunk_id'],
+        }))),
     };
 }
 
@@ -79,6 +116,12 @@ export function NodeToJSONTyped(value?: Node | null, ignoreDiscriminator: boolea
         'id': value['id'],
         'text': value['text'],
         'degree': value['degree'],
+        'sources': value['sources'] == null
+            ? undefined
+            : ((value['sources'] as Array<any>).map((item) => ({
+                'doc_id': item['doc_id'],
+                'doc_title': item['doc_title'],
+                'chunk_id': item['chunk_id'],
+            }))),
     };
 }
-

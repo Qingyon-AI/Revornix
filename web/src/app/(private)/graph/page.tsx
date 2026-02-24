@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import * as d3 from 'd3';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
 	Empty,
 	EmptyDescription,
@@ -14,12 +14,20 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import { TrashIcon } from 'lucide-react';
+import NodeSourceDialog from '@/components/graph/node-source-dialog';
+
+interface NodeSource {
+	doc_id: number;
+	doc_title?: string;
+	chunk_id?: string;
+}
 
 interface Node {
 	id: string;
 	label: string;
 	group: string;
 	degree?: number;
+	sources?: NodeSource[];
 	x?: number;
 	y?: number;
 	vx?: number;
@@ -58,6 +66,7 @@ const getColorVars = (theme: string) => {
 const GraphPage = () => {
 	const t = useTranslations();
 	const svgRef = useRef<SVGSVGElement | null>(null);
+	const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
 	const { resolvedTheme } = useTheme();
 
@@ -74,6 +83,12 @@ const GraphPage = () => {
 					group: '',
 					label: node.text,
 					degree: node.degree,
+					sources:
+						node.sources?.map((source) => ({
+							doc_id: source.doc_id,
+							doc_title: source.doc_title ?? undefined,
+							chunk_id: source.chunk_id ?? undefined,
+						})) ?? [],
 				};
 			}),
 			edges: data?.edges.map((edge) => {
@@ -209,6 +224,11 @@ const GraphPage = () => {
 				.join('circle')
 				.attr('r', (d) => radiusScale(d.degree ?? 1)) // ✅ 根据 degree 调整大小
 				.attr('fill', (d) => color(d.group))
+				.style('cursor', 'pointer')
+				.on('click', (_event, d) => {
+					highlightNode(d);
+					setSelectedNode(d);
+				})
 				.call(dragHandler(simulation));
 
 			const textElements = svg
@@ -296,6 +316,15 @@ const GraphPage = () => {
 							edge_count: data?.edges.length ?? 0,
 						})}
 					</div>
+					<NodeSourceDialog
+						node={selectedNode}
+						open={selectedNode !== null}
+						onOpenChange={(open) => {
+							if (!open) {
+								setSelectedNode(null);
+							}
+						}}
+					/>
 				</>
 			)}
 		</div>

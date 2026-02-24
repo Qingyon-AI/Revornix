@@ -46,7 +46,15 @@ def section_graph(
                 UNWIND $doc_ids AS doc_id
                 MATCH (d:Document {id: doc_id})
                 MATCH (d)-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
-                RETURN DISTINCT e.id AS id, e.text AS text, e.degree AS degree
+                WITH DISTINCT e, d, c, c.idx AS chunk_idx
+                ORDER BY coalesce(d.id, 2147483647), coalesce(chunk_idx, 2147483647), coalesce(c.id, "")
+                WITH e, collect({
+                    doc_id: d.id,
+                    doc_title: d.title,
+                    chunk_id: c.id
+                }) AS sources
+                RETURN e.id AS id, e.text AS text, coalesce(e.degree, 0) AS degree,
+                       sources AS sources
             """
             edge_query = """
                 UNWIND $doc_ids AS doc_id
@@ -66,7 +74,8 @@ def section_graph(
                     unique_nodes[node_id] = schemas.graph.Node(
                         id=node_id,
                         text=record.get("text", ""),
-                        degree=record.get("degree", 0)
+                        degree=record.get("degree", 0),
+                        sources=record.get("sources") or [],
                     )
             nodes = list(unique_nodes.values())
 
@@ -94,7 +103,15 @@ def section_graph(
                     UNWIND $doc_ids AS doc_id
                     MATCH (d:Document {id: doc_id})
                     MATCH (d)-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
-                    RETURN DISTINCT e.id AS id, e.text AS text, e.degree AS degree
+                    WITH DISTINCT e, d, c, c.idx AS chunk_idx
+                    ORDER BY coalesce(d.id, 2147483647), coalesce(chunk_idx, 2147483647), coalesce(c.id, "")
+                    WITH e, collect({
+                        doc_id: d.id,
+                        doc_title: d.title,
+                        chunk_id: c.id
+                    }) AS sources
+                    RETURN e.id AS id, e.text AS text, coalesce(e.degree, 0) AS degree,
+                           sources AS sources
                 """
                 edge_query = """
                     UNWIND $doc_ids AS doc_id
@@ -114,7 +131,8 @@ def section_graph(
                         unique_nodes[node_id] = schemas.graph.Node(
                             id=node_id,
                             text=record.get("text", ""),
-                            degree=record.get("degree", 0)
+                            degree=record.get("degree", 0),
+                            sources=record.get("sources") or [],
                         )
                 nodes = list(unique_nodes.values())
 
@@ -139,7 +157,15 @@ def document_graph(
         entity_query = """
             MATCH (d:Document {id: $doc_id})
             MATCH (d)-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
-            RETURN DISTINCT e.id AS id, e.text AS text, e.degree AS degree
+            WITH DISTINCT e, d, c, c.idx AS chunk_idx
+            ORDER BY coalesce(d.id, 2147483647), coalesce(chunk_idx, 2147483647), coalesce(c.id, "")
+            WITH e, collect({
+                doc_id: d.id,
+                doc_title: d.title,
+                chunk_id: c.id
+            }) AS sources
+            RETURN e.id AS id, e.text AS text, coalesce(e.degree, 0) AS degree,
+                   sources AS sources
         """
         edge_query = """
             MATCH (d:Document {id: $doc_id})
@@ -156,7 +182,8 @@ def document_graph(
             nodes.append(schemas.graph.Node(
                 id=record.get('id'),
                 text=record.get("text", "") or "",
-                degree=record.get("degree", 0)
+                degree=record.get("degree", 0),
+                sources=record.get("sources") or [],
             ))
 
         # 🔗 构造边
@@ -180,7 +207,15 @@ def graph(
             MATCH (d:Document)
             WHERE d.creator_id = $user_id
             MATCH (d)-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
-            RETURN DISTINCT e.id AS id, e.text AS text, e.degree AS degree
+            WITH DISTINCT e, d, c, c.idx AS chunk_idx
+            ORDER BY coalesce(d.id, 2147483647), coalesce(chunk_idx, 2147483647), coalesce(c.id, "")
+            WITH e, collect({
+                doc_id: d.id,
+                doc_title: d.title,
+                chunk_id: c.id
+            }) AS sources
+            RETURN e.id AS id, e.text AS text, coalesce(e.degree, 0) AS degree,
+                   sources AS sources
         """
         edge_query = """
             MATCH (d:Document)
@@ -198,7 +233,8 @@ def graph(
             nodes.append(schemas.graph.Node(
                 id=record.get('id'),
                 text=record.get("text", "") or "",
-                degree=record.get("degree", 0)
+                degree=record.get("degree", 0),
+                sources=record.get("sources") or [],
             ))
 
         # 🔗 构造边

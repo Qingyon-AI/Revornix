@@ -101,7 +101,6 @@ class LLMDocumentTagEngine:
             )
             response = llm_client.chat.completions.create(
                 model=model_configuration.model_name,
-                temperature=0.2,  # 降低发散
                 messages=[
                     {
                         "role": "user", 
