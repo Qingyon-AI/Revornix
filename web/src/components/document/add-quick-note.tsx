@@ -31,6 +31,7 @@ import MultipleSelector from '../ui/multiple-selector';
 import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip } from '../ui/tooltip';
 import { TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
+import CustomMarkdown from '../ui/custom-markdown';
 
 const AddQuickNote = () => {
 	const searchParams = useSearchParams();
@@ -69,6 +70,9 @@ const AddQuickNote = () => {
 		},
 	});
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
+	const [contentViewMode, setContentViewMode] = useState<'write' | 'preview'>(
+		'write'
+	);
 
 	const { data: labels } = useQuery({
 		queryKey: ['getDocumentLabels'],
@@ -133,19 +137,57 @@ const AddQuickNote = () => {
 				onOpenChange={setShowAddLabelDialog}
 			/>
 			<Form {...form}>
-				<form onSubmit={onSubmitMessageForm} className='flex flex-col h-full'>
-					<div className='flex flex-col w-full gap-5 flex-1 mb-5'>
+				<form
+					onSubmit={onSubmitMessageForm}
+					className='flex flex-col h-full min-h-0'>
+					<div className='flex flex-col w-full gap-5 flex-1 min-h-0'>
 						<FormField
 							control={form.control}
 							name='content'
 							render={({ field }) => {
 								return (
-									<FormItem className='w-full flex flex-col flex-1'>
-										<Textarea
-											{...field}
-											placeholder={t('document_create_note_placeholded')}
-											className='h-full'
-										/>
+									<FormItem className='w-full flex flex-col flex-1 min-h-0'>
+										<div className='relative flex-1 min-h-0'>
+											{contentViewMode === 'write' ? (
+												<>
+													<Textarea
+														{...field}
+														placeholder={t('document_create_note_placeholded')}
+														className='h-full min-h-0 resize-none rounded-md field-sizing-fixed pb-12'
+													/>
+													<Button
+														type='button'
+														size='sm'
+														variant='secondary'
+														className='absolute right-3 bottom-3'
+														onClick={() => setContentViewMode('preview')}>
+														{t('document_create_markdown_preview')}
+													</Button>
+												</>
+											) : (
+												<>
+													<div className='h-full min-h-0 overflow-auto rounded-md border border-input bg-muted/20 px-4 py-3 pb-12'>
+														<div className='prose prose-sm dark:prose-invert max-w-none'>
+															{field.value?.trim() ? (
+																<CustomMarkdown content={field.value} />
+															) : (
+																<p className='text-sm text-muted-foreground'>
+																	{t('document_create_markdown_preview_empty')}
+																</p>
+															)}
+														</div>
+													</div>
+													<Button
+														type='button'
+														size='sm'
+														variant='secondary'
+														className='absolute right-3 bottom-3'
+														onClick={() => setContentViewMode('write')}>
+														{t('document_create_markdown_write')}
+													</Button>
+												</>
+											)}
+										</div>
 										<FormMessage />
 									</FormItem>
 								);
@@ -342,7 +384,7 @@ const AddQuickNote = () => {
 					</div>
 					<Button
 						type='submit'
-						className='w-full'
+						className='w-full mt-5'
 						disabled={mutateCreateDocument.isPending || !form.watch('content')}>
 						{t('document_create_submit')}
 						{mutateCreateDocument.isPending && (
