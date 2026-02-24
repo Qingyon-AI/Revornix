@@ -22,11 +22,11 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.file_system_proxy import FileSystemProxy
 
-
 def make_chunk_id(
     doc_id: int,
     idx: int,
-text: str) -> str:
+    text: str,
+) -> str:
     h = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
     return f"DOC_{doc_id}_IDX_{idx}_H_{h}"
 
@@ -167,7 +167,6 @@ def extract_entities_relations(
         resp = llm_client.chat.completions.create(
             model=llm_model,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
             response_format={"type": "json_object"},
         )
         output_text = resp.choices[0].message.content
@@ -180,14 +179,19 @@ def extract_entities_relations(
                 exception_logger.error(f"Failed to decode JSON: {e}")
                 data = {"entities": [], "relations": []}
 
-        entities = [
-            EntityInfo(
-                id=e['id'],
-                text=e['text'],
-                chunks=[chunk.id],
-                entity_type=e['entity_type']
-            ) for e in data.get("entities", [])
-        ]
+        entities: list[EntityInfo] = []
+        for e in data.get("entities", []):
+            entity_text = e.get("text")
+            if not isinstance(entity_text, str) or not entity_text.strip():
+                continue
+            entities.append(
+                EntityInfo(
+                    id=e["id"],
+                    text=entity_text,
+                    chunks=[chunk.id],
+                    entity_type=e["entity_type"],
+                )
+            )
         relations = [
             RelationInfo(
                 src_node=r["src_entity_id"],

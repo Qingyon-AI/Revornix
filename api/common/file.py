@@ -122,7 +122,7 @@ def cleanup_temp_dir(
         for _, entry in remaining[:-max_entries]:
             _remove_path(entry)
 
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
+@retry(reraise=True, stop=stop_after_attempt(3), wait=wait_fixed(2))
 async def download_file_to_temp(url: str):
     temp_dir = BASE_DIR / "temp"
     temp_dir.mkdir(parents=True, exist_ok=True)

@@ -48,7 +48,13 @@ def naive_search(
         anns_field="embedding",
         limit=top_k,
         search_params=search_params,
-        output_fields=["id", "text", "doc_id", "idx", "creator_id"]
+        output_fields=[
+            "id",
+            "text",
+            "doc_id",
+            "idx",
+            "creator_id",
+        ]
     ))
     return _parse_results(results)
 
@@ -66,7 +72,13 @@ def full_text_search(user_id: int, search_text: str, top_k: int = 5) -> list[dic
         anns_field="sparse",
         limit=top_k,
         search_params=search_params,
-        output_fields=["id", "text", "doc_id", "idx", "creator_id"]
+        output_fields=[
+            "id",
+            "text",
+            "doc_id",
+            "idx",
+            "creator_id",
+        ]
     ))
     return _parse_results(results)
 
@@ -97,7 +109,13 @@ def hybrid_search(user_id: int, search_text: str, top_k: int = 5, alpha: float =
         reqs=[dense_req, sparse_req],
         ranker=WeightedRanker(alpha, 1 - alpha),
         limit=top_k,
-        output_fields=["id", "text", "doc_id", "idx", "creator_id"]
+        output_fields=[
+            "id",
+            "text",
+            "doc_id",
+            "idx",
+            "creator_id",
+        ]
     ))
 
     return _parse_results(results)
