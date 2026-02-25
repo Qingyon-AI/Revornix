@@ -783,7 +783,9 @@ def update_notification_task(
         )
         if db_origin_notification_task_trigger_scheduler is None:
             raise schemas.error.CustomException(message="notification task trigger scheduler not found", code=404)
-        scheduler.remove_job(str(update_notification_task_request.notification_task_id))
+        exist_job = scheduler.get_job(str(db_notification_task.id))
+        if exist_job is not None:
+            scheduler.remove_job(str(update_notification_task_request.notification_task_id))
 
     if update_notification_task_request.content_type is not None:
         db_notification_task.content_type = update_notification_task_request.content_type
