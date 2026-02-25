@@ -9,7 +9,7 @@ Name | Type
 `keyword` | string
 `start` | number
 `limit` | number
-`filter_category` | number
+`filter_category` | [EngineCategory](EngineCategory.md)
 
 ## Example
 

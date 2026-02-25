@@ -10,7 +10,7 @@ Name | Type
 `avatar` | string
 `nickname` | string
 `slogan` | string
-`authority` | number
+`authority` | [UserSectionAuthority](UserSectionAuthority.md)
 `role` | number
 `create_time` | Date
 `update_time` | Date

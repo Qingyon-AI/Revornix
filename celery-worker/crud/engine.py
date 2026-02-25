@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 from common.encrypt import encrypt_engine_config
 
 import models
+from enums.engine_enums import EngineCategory, UserEngineRole
 
 
 def create_engine_provided(
@@ -134,21 +135,22 @@ def get_user_engine_by_user_id_and_engine_id(
     db: Session,
     user_id: int,
     engine_id: int,
-    filter_role: int
+    filter_role: UserEngineRole | None = None
 ):
     query = db.query(models.engine.UserEngine)
     query = query.filter(
         models.engine.UserEngine.user_id == user_id,
         models.engine.UserEngine.engine_id == engine_id,
-        models.engine.UserEngine.delete_at.is_(None),
-        models.engine.UserEngine.role == filter_role
+        models.engine.UserEngine.delete_at.is_(None)
     )
+    if filter_role is not None:
+        query = query.filter(models.engine.UserEngine.role == filter_role.value)
     return query.one_or_none()
 
 def get_all_engines_provided(
     db: Session,
     keyword: str | None = None,
-    filter_category: int | None = None
+    filter_category: EngineCategory | None = None
 ):
     query = db.query(models.engine.EngineProvided)
     query = query.filter(models.engine.EngineProvided.delete_at.is_(None))
@@ -161,7 +163,7 @@ def get_all_engines_provided(
 def get_all_engines(
     db: Session,
     keyword: str | None = None,
-    filter_category: int | None = None
+    filter_category: EngineCategory | None = None
 ):
     query = db.query(models.engine.Engine)
     query = query.join(models.engine.EngineProvided)
@@ -179,7 +181,7 @@ def get_usable_engines_for_user(
     db: Session,
     user_id: int,
     keyword: str | None = None,
-    filter_category: int | None = None
+    filter_category: EngineCategory | None = None
 ):
     query = db.query(models.engine.Engine)
     query = query.join(models.engine.EngineProvided)

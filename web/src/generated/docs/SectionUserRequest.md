@@ -10,7 +10,7 @@ Name | Type
 `start` | number
 `limit` | number
 `keyword` | string
-`filter_roles` | Array&lt;number&gt;
+`filter_roles` | [Array&lt;UserSectionRole&gt;](UserSectionRole.md)
 
 ## Example
 

@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { UserSectionRole } from './UserSectionRole';
+import {
+    UserSectionRoleFromJSON,
+    UserSectionRoleFromJSONTyped,
+    UserSectionRoleToJSON,
+    UserSectionRoleToJSONTyped,
+} from './UserSectionRole';
+
 /**
  * 
  * @export
@@ -45,10 +53,10 @@ export interface SectionUserRequest {
     keyword?: string | null;
     /**
      * 
-     * @type {Array<number>}
+     * @type {Array<UserSectionRole>}
      * @memberof SectionUserRequest
      */
-    filter_roles?: Array<number> | null;
+    filter_roles?: Array<UserSectionRole> | null;
 }
 
 /**
@@ -73,7 +81,7 @@ export function SectionUserRequestFromJSONTyped(json: any, ignoreDiscriminator: 
         'start': json['start'] == null ? undefined : json['start'],
         'limit': json['limit'] == null ? undefined : json['limit'],
         'keyword': json['keyword'] == null ? undefined : json['keyword'],
-        'filter_roles': json['filter_roles'] == null ? undefined : json['filter_roles'],
+        'filter_roles': json['filter_roles'] == null ? undefined : ((json['filter_roles'] as Array<any>).map(UserSectionRoleFromJSON)),
     };
 }
 
@@ -92,7 +100,7 @@ export function SectionUserRequestToJSONTyped(value?: SectionUserRequest | null,
         'start': value['start'],
         'limit': value['limit'],
         'keyword': value['keyword'],
-        'filter_roles': value['filter_roles'],
+        'filter_roles': value['filter_roles'] == null ? undefined : ((value['filter_roles'] as Array<any>).map(UserSectionRoleToJSON)),
     };
 }
 

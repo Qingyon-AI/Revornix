@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from pydantic import BaseModel, field_serializer, ConfigDict
 
 from .user import UserPublicInfo
+from enums.engine_enums import EngineCategory
+
 
 class EngineProvidedInfo(BaseModel):
     id: int
@@ -20,7 +22,7 @@ class EngineProvidedInfo(BaseModel):
 
 class EngineProvidedSearchRequest(BaseModel):
     keyword: str
-    filter_category: int | None = None
+    filter_category: EngineCategory | None = None
 
 class EngineProvidedSearchResponse(BaseModel):
     data: list[EngineProvidedInfo]
@@ -142,13 +144,13 @@ class UsableEnginesResponse(BaseModel):
 
 class UsableEngineSearchRequest(BaseModel):
     keyword: str | None = None
-    filter_category: int | None = None
+    filter_category: EngineCategory | None = None
 
 class CommunityEngineSearchRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
     limit: int = 10
-    filter_category: int | None = None
+    filter_category: EngineCategory | None = None
 
 class EngineDeleteRequest(BaseModel):
     engine_id: int

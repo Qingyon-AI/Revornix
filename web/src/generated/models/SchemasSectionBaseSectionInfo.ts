@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { UserSectionAuthority } from './UserSectionAuthority';
+import {
+    UserSectionAuthorityFromJSON,
+    UserSectionAuthorityFromJSONTyped,
+    UserSectionAuthorityToJSON,
+    UserSectionAuthorityToJSONTyped,
+} from './UserSectionAuthority';
+
 /**
  * 
  * @export
@@ -39,11 +47,13 @@ export interface SchemasSectionBaseSectionInfo {
     description: string | null;
     /**
      * 
-     * @type {number}
+     * @type {UserSectionAuthority}
      * @memberof SchemasSectionBaseSectionInfo
      */
-    authority?: number | null;
+    authority?: UserSectionAuthority | null;
 }
+
+
 
 /**
  * Check if a given object implements the SchemasSectionBaseSectionInfo interface.
@@ -68,7 +78,7 @@ export function SchemasSectionBaseSectionInfoFromJSONTyped(json: any, ignoreDisc
         'id': json['id'],
         'title': json['title'],
         'description': json['description'],
-        'authority': json['authority'] == null ? undefined : json['authority'],
+        'authority': json['authority'] == null ? undefined : UserSectionAuthorityFromJSON(json['authority']),
     };
 }
 
@@ -86,7 +96,7 @@ export function SchemasSectionBaseSectionInfoToJSONTyped(value?: SchemasSectionB
         'id': value['id'],
         'title': value['title'],
         'description': value['description'],
-        'authority': value['authority'],
+        'authority': UserSectionAuthorityToJSON(value['authority']),
     };
 }
 

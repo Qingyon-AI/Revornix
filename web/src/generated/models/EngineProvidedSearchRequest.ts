@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { EngineCategory } from './EngineCategory';
+import {
+    EngineCategoryFromJSON,
+    EngineCategoryFromJSONTyped,
+    EngineCategoryToJSON,
+    EngineCategoryToJSONTyped,
+} from './EngineCategory';
+
 /**
  * 
  * @export
@@ -27,11 +35,13 @@ export interface EngineProvidedSearchRequest {
     keyword: string;
     /**
      * 
-     * @type {number}
+     * @type {EngineCategory}
      * @memberof EngineProvidedSearchRequest
      */
-    filter_category?: number | null;
+    filter_category?: EngineCategory | null;
 }
+
+
 
 /**
  * Check if a given object implements the EngineProvidedSearchRequest interface.
@@ -52,7 +62,7 @@ export function EngineProvidedSearchRequestFromJSONTyped(json: any, ignoreDiscri
     return {
         
         'keyword': json['keyword'],
-        'filter_category': json['filter_category'] == null ? undefined : json['filter_category'],
+        'filter_category': json['filter_category'] == null ? undefined : EngineCategoryFromJSON(json['filter_category']),
     };
 }
 
@@ -68,7 +78,7 @@ export function EngineProvidedSearchRequestToJSONTyped(value?: EngineProvidedSea
     return {
         
         'keyword': value['keyword'],
-        'filter_category': value['filter_category'],
+        'filter_category': EngineCategoryToJSON(value['filter_category']),
     };
 }
 

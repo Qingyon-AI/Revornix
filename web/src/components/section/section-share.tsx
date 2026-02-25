@@ -47,7 +47,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 	const formSchema = z.object({
 		user_id: z.number(),
 		section_id: z.number(),
-		authority: z.number(),
+		authority: z.union([z.literal(0), z.literal(1), z.literal(2)]),
 	});
 
 	const form = useForm({
@@ -276,7 +276,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 							return (
 								<Select
 									value={field.value.toString()}
-									onValueChange={(e) => field.onChange(Number(e))}>
+									onValueChange={(e) => field.onChange(Number(e) as 0 | 1 | 2)}>
 									<SelectTrigger>
 										<SelectValue
 											placeholder={t('section_share_user_authority')}

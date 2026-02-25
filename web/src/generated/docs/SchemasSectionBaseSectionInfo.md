@@ -9,7 +9,7 @@ Name | Type
 `id` | number
 `title` | string
 `description` | string
-`authority` | number
+`authority` | [UserSectionAuthority](UserSectionAuthority.md)
 
 ## Example
 

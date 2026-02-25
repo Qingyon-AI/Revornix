@@ -107,7 +107,7 @@ const SectionMemberItem = ({
 						mutateModifySectionUser.mutate({
 							section_id: section_id,
 							user_id: user.id,
-							authority: Number(e),
+							authority: Number(e) as 0 | 1 | 2,
 							role: UserSectionRole.MEMBER,
 						});
 					}}>

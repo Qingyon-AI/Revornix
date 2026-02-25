@@ -9,7 +9,7 @@ Name | Type
 `id` | string
 `text` | string
 `degree` | number
-`sources` | [Array<NodeSource>](NodeSource.md)
+`sources` | [Array&lt;NodeSource&gt;](NodeSource.md)
 
 ## Example
 
@@ -21,13 +21,7 @@ const example = {
   "id": null,
   "text": null,
   "degree": null,
-  "sources": [
-    {
-      "doc_id": 0,
-      "doc_title": "doc_title",
-      "chunk_id": "chunk_id"
-    }
-  ],
+  "sources": null,
 } satisfies Node
 
 console.log(example)
@@ -42,3 +36,5 @@ console.log(exampleParsed)
 ```
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+

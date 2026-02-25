@@ -6,7 +6,7 @@ from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, selectinload
 
 import models
-from enums.section import SectionDocumentIntegration, UserSectionRole
+from enums.section import SectionDocumentIntegration, UserSectionRole, UserSectionAuthority
 
 
 def create_publish_section(
@@ -56,7 +56,7 @@ def create_section_user(
     section_id: int,
     user_id: int,
     role: int,
-    authority: int,
+    authority: UserSectionAuthority,
     expire_time: datetime | None = None
 ):
     now = datetime.now(timezone.utc)
@@ -607,7 +607,7 @@ def count_documents_for_section_by_section_ids(
 def search_users_and_section_users_by_section_id(
     db: Session,
     section_id: int,
-    filter_roles: list[int] | None = None,
+    filter_roles: list[UserSectionRole] | None = None,
     start: int | None = None,
     limit: int = 10,
     keyword: str | None = None
@@ -634,7 +634,7 @@ def search_next_user_and_section_user_by_section_id(
     db: Session,
     section_id: int,
     user: models.user.User,
-    filter_roles: list[int] | None = None,
+    filter_roles: list[UserSectionRole] | None = None,
     keyword: str | None = None
 ):
     now = datetime.now(timezone.utc)
@@ -656,7 +656,7 @@ def search_next_user_and_section_user_by_section_id(
 def count_users_and_section_users_by_section_id(
     db: Session,
     section_id: int,
-    filter_roles: list[int] | None = None,
+    filter_roles: list[UserSectionRole] | None = None,
     keyword: str | None = None
 ):
     now = datetime.now(timezone.utc)
@@ -676,7 +676,7 @@ def count_users_and_section_users_by_section_id(
 def get_users_for_section_by_section_id(
     db: Session,
     section_id: int,
-    filter_roles: list[int] | None = None
+    filter_roles: list[UserSectionRole] | None = None
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User)
@@ -693,7 +693,7 @@ def get_users_for_section_by_section_id(
 def count_users_for_section_by_section_id(
     db: Session,
     section_id: int,
-    filter_roles: list[int] | None = None
+    filter_roles: list[UserSectionRole] | None = None
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User)
@@ -710,7 +710,7 @@ def count_users_for_section_by_section_id(
 def count_users_for_section_by_section_ids(
     db: Session,
     section_ids: list[int],
-    filter_roles: list[int] | None = None,
+    filter_roles: list[UserSectionRole] | None = None,
 ):
     if not section_ids:
         return {}
@@ -740,7 +740,7 @@ def get_section_user_by_section_id_and_user_id(
     db: Session,
     section_id: int,
     user_id: int,
-    filter_roles: list[int] | None = None
+    filter_roles: list[UserSectionRole] | None = None
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionUser)
@@ -757,7 +757,7 @@ def get_section_users_by_section_ids_and_user_id(
     db: Session,
     section_ids: list[int],
     user_id: int,
-    filter_roles: list[int] | None = None,
+    filter_roles: list[UserSectionRole] | None = None,
 ):
     if not section_ids:
         return []

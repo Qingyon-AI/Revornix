@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { EngineCategory } from './EngineCategory';
+import {
+    EngineCategoryFromJSON,
+    EngineCategoryFromJSONTyped,
+    EngineCategoryToJSON,
+    EngineCategoryToJSONTyped,
+} from './EngineCategory';
+
 /**
  * 
  * @export
@@ -27,11 +35,13 @@ export interface UsableEngineSearchRequest {
     keyword?: string | null;
     /**
      * 
-     * @type {number}
+     * @type {EngineCategory}
      * @memberof UsableEngineSearchRequest
      */
-    filter_category?: number | null;
+    filter_category?: EngineCategory | null;
 }
+
+
 
 /**
  * Check if a given object implements the UsableEngineSearchRequest interface.
@@ -51,7 +61,7 @@ export function UsableEngineSearchRequestFromJSONTyped(json: any, ignoreDiscrimi
     return {
         
         'keyword': json['keyword'] == null ? undefined : json['keyword'],
-        'filter_category': json['filter_category'] == null ? undefined : json['filter_category'],
+        'filter_category': json['filter_category'] == null ? undefined : EngineCategoryFromJSON(json['filter_category']),
     };
 }
 
@@ -67,7 +77,7 @@ export function UsableEngineSearchRequestToJSONTyped(value?: UsableEngineSearchR
     return {
         
         'keyword': value['keyword'],
-        'filter_category': value['filter_category'],
+        'filter_category': EngineCategoryToJSON(value['filter_category']),
     };
 }
 
