@@ -13,6 +13,21 @@
  */
 
 import { mapValues } from '../runtime';
+import type { UserSectionRole } from './UserSectionRole';
+import {
+    UserSectionRoleFromJSON,
+    UserSectionRoleFromJSONTyped,
+    UserSectionRoleToJSON,
+    UserSectionRoleToJSONTyped,
+} from './UserSectionRole';
+import type { UserSectionAuthority } from './UserSectionAuthority';
+import {
+    UserSectionAuthorityFromJSON,
+    UserSectionAuthorityFromJSONTyped,
+    UserSectionAuthorityToJSON,
+    UserSectionAuthorityToJSONTyped,
+} from './UserSectionAuthority';
+
 /**
  * 
  * @export
@@ -33,17 +48,19 @@ export interface SectionUserRoleAndAuthorityResponse {
     user_id: number;
     /**
      * 
-     * @type {number}
+     * @type {UserSectionRole}
      * @memberof SectionUserRoleAndAuthorityResponse
      */
-    role: number;
+    role: UserSectionRole;
     /**
      * 
-     * @type {number}
+     * @type {UserSectionAuthority}
      * @memberof SectionUserRoleAndAuthorityResponse
      */
-    authority: number;
+    authority: UserSectionAuthority;
 }
+
+
 
 /**
  * Check if a given object implements the SectionUserRoleAndAuthorityResponse interface.
@@ -68,8 +85,8 @@ export function SectionUserRoleAndAuthorityResponseFromJSONTyped(json: any, igno
         
         'section_id': json['section_id'],
         'user_id': json['user_id'],
-        'role': json['role'],
-        'authority': json['authority'],
+        'role': UserSectionRoleFromJSON(json['role']),
+        'authority': UserSectionAuthorityFromJSON(json['authority']),
     };
 }
 
@@ -86,8 +103,8 @@ export function SectionUserRoleAndAuthorityResponseToJSONTyped(value?: SectionUs
         
         'section_id': value['section_id'],
         'user_id': value['user_id'],
-        'role': value['role'],
-        'authority': value['authority'],
+        'role': UserSectionRoleToJSON(value['role']),
+        'authority': UserSectionAuthorityToJSON(value['authority']),
     };
 }
 

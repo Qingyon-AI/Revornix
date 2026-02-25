@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field, field_serializer, field_validator, ConfigDict
 
-from enums.section import UserSectionRole
+from enums.section import UserSectionRole, UserSectionAuthority
 from schemas.task import SectionPodcastTask, SectionProcessTask
 from schemas.user import SectionUserPublicInfo, UserPublicInfo
 
@@ -30,8 +30,8 @@ class SectionUserRoleAndAuthorityRequest(BaseModel):
 class SectionUserRoleAndAuthorityResponse(BaseModel):
     section_id: int
     user_id: int
-    role: int
-    authority: int
+    role: UserSectionRole
+    authority: UserSectionAuthority
 
 class GenerateSectionPodcastRequest(BaseModel):
     section_id: int
@@ -84,7 +84,7 @@ class SectionUserRequest(BaseModel):
     start: int | None = None
     limit: int = 10
     keyword: str | None = None
-    filter_roles: list[int] | None = None
+    filter_roles: list[UserSectionRole] | None = None
 
 class SectionUserResponse(BaseModel):
     users: list[SectionUserPublicInfo]
@@ -96,13 +96,13 @@ class SectionUserDeleteRequest(BaseModel):
 class SectionUserAddRequest(BaseModel):
     section_id: int
     user_id: int
-    authority: int
+    authority: UserSectionAuthority
 
 class SectionUserModifyRequest(BaseModel):
     section_id: int
     user_id: int
-    authority: int
-    role: int
+    authority: UserSectionAuthority
+    role: UserSectionRole
     @field_validator("role")
     def check_role_not_invalid(cls, v: int):
         if v == UserSectionRole.CREATOR:
@@ -175,7 +175,7 @@ class BaseSectionInfo(BaseModel):
     id: int
     title: str
     description: str | None
-    authority: int | None = None
+    authority: UserSectionAuthority | None = None
     model_config = ConfigDict(
         from_attributes=True,
         extra="ignore",
@@ -257,7 +257,7 @@ class SectionInfo(BaseModel):
     subscribers_count: int = 0
     create_time: datetime
     update_time: datetime | None = None
-    authority: int | None = None
+    authority: UserSectionAuthority | None = None
     is_subscribed: bool | None = None
     md_file_name: str | None = None
     labels: list[SectionLabel] | None = None

@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { UserSectionAuthority } from './UserSectionAuthority';
+import {
+    UserSectionAuthorityFromJSON,
+    UserSectionAuthorityFromJSONTyped,
+    UserSectionAuthorityToJSON,
+    UserSectionAuthorityToJSONTyped,
+} from './UserSectionAuthority';
+
 /**
  * 
  * @export
@@ -45,10 +53,10 @@ export interface SectionUserPublicInfo {
     slogan?: string | null;
     /**
      * 
-     * @type {number}
+     * @type {UserSectionAuthority}
      * @memberof SectionUserPublicInfo
      */
-    authority?: number | null;
+    authority?: UserSectionAuthority | null;
     /**
      * 
      * @type {number}
@@ -68,6 +76,8 @@ export interface SectionUserPublicInfo {
      */
     update_time: Date | null;
 }
+
+
 
 /**
  * Check if a given object implements the SectionUserPublicInfo interface.
@@ -95,7 +105,7 @@ export function SectionUserPublicInfoFromJSONTyped(json: any, ignoreDiscriminato
         'avatar': json['avatar'],
         'nickname': json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
-        'authority': json['authority'] == null ? undefined : json['authority'],
+        'authority': json['authority'] == null ? undefined : UserSectionAuthorityFromJSON(json['authority']),
         'role': json['role'] == null ? undefined : json['role'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
@@ -117,7 +127,7 @@ export function SectionUserPublicInfoToJSONTyped(value?: SectionUserPublicInfo |
         'avatar': value['avatar'],
         'nickname': value['nickname'],
         'slogan': value['slogan'],
-        'authority': value['authority'],
+        'authority': UserSectionAuthorityToJSON(value['authority']),
         'role': value['role'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),

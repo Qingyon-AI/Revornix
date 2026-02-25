@@ -16,7 +16,7 @@ Name | Type
 `subscribers_count` | number
 `create_time` | Date
 `update_time` | Date
-`authority` | number
+`authority` | [UserSectionAuthority](UserSectionAuthority.md)
 `is_subscribed` | boolean
 `md_file_name` | string
 `labels` | [Array&lt;SectionLabel&gt;](SectionLabel.md)

@@ -2,7 +2,7 @@ import models
 from datetime import datetime, timezone, date as date_type
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from enums.section import SectionDocumentIntegration
+from enums.section import SectionDocumentIntegration, UserSectionRole
 
 
 def create_or_update_section_document(
@@ -92,7 +92,7 @@ def get_section_user_by_section_id_and_user_id(
     db: Session, 
     section_id: int, 
     user_id: int,
-    filter_roles: list[int] | None = None
+    filter_roles: list[UserSectionRole] | None = None
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionUser)
@@ -108,7 +108,7 @@ def get_section_user_by_section_id_and_user_id(
 def get_users_for_section_by_section_id(
     db: Session,
     section_id: int,
-    filter_roles: list[int] | None = None
+    filter_roles: list[UserSectionRole] | None = None
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User)

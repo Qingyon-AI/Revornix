@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { EngineCategory } from './EngineCategory';
+import {
+    EngineCategoryFromJSON,
+    EngineCategoryFromJSONTyped,
+    EngineCategoryToJSON,
+    EngineCategoryToJSONTyped,
+} from './EngineCategory';
+
 /**
  * 
  * @export
@@ -39,11 +47,13 @@ export interface CommunityEngineSearchRequest {
     limit?: number;
     /**
      * 
-     * @type {number}
+     * @type {EngineCategory}
      * @memberof CommunityEngineSearchRequest
      */
-    filter_category?: number | null;
+    filter_category?: EngineCategory | null;
 }
+
+
 
 /**
  * Check if a given object implements the CommunityEngineSearchRequest interface.
@@ -65,7 +75,7 @@ export function CommunityEngineSearchRequestFromJSONTyped(json: any, ignoreDiscr
         'keyword': json['keyword'] == null ? undefined : json['keyword'],
         'start': json['start'] == null ? undefined : json['start'],
         'limit': json['limit'] == null ? undefined : json['limit'],
-        'filter_category': json['filter_category'] == null ? undefined : json['filter_category'],
+        'filter_category': json['filter_category'] == null ? undefined : EngineCategoryFromJSON(json['filter_category']),
     };
 }
 
@@ -83,7 +93,7 @@ export function CommunityEngineSearchRequestToJSONTyped(value?: CommunityEngineS
         'keyword': value['keyword'],
         'start': value['start'],
         'limit': value['limit'],
-        'filter_category': value['filter_category'],
+        'filter_category': EngineCategoryToJSON(value['filter_category']),
     };
 }
 

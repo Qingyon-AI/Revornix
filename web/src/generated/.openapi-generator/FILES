@@ -76,6 +76,7 @@ docs/EmailInfo.md
 docs/EmailUserCreateCodeVerifyRequest.md
 docs/EmailUserCreateVerifyRequest.md
 docs/EngineApi.md
+docs/EngineCategory.md
 docs/EngineCreateRequest.md
 docs/EngineDeleteRequest.md
 docs/EngineDetail.md
@@ -155,6 +156,7 @@ docs/ModelSearchRequest.md
 docs/ModelSearchResponse.md
 docs/ModelUpdateRequest.md
 docs/Node.md
+docs/NodeSource.md
 docs/NormalResponse.md
 docs/NotificationApi.md
 docs/NotificationRecord.md
@@ -267,6 +269,8 @@ docs/UserInfoRequest.md
 docs/UserInfoUpdateRequest.md
 docs/UserLoginRequest.md
 docs/UserPublicInfo.md
+docs/UserSectionAuthority.md
+docs/UserSectionRole.md
 docs/ValidationError.md
 docs/VectorSearchRequest.md
 docs/VectorSearchResponse.md
@@ -336,6 +340,7 @@ models/EmailCreateRequest.ts
 models/EmailInfo.ts
 models/EmailUserCreateCodeVerifyRequest.ts
 models/EmailUserCreateVerifyRequest.ts
+models/EngineCategory.ts
 models/EngineCreateRequest.ts
 models/EngineDeleteRequest.ts
 models/EngineDetail.ts
@@ -412,6 +417,7 @@ models/ModelSearchRequest.ts
 models/ModelSearchResponse.ts
 models/ModelUpdateRequest.ts
 models/Node.ts
+models/NodeSource.ts
 models/NormalResponse.ts
 models/NotificationRecord.ts
 models/NotificationRecordDetailRequest.ts
@@ -520,6 +526,8 @@ models/UserInfoRequest.ts
 models/UserInfoUpdateRequest.ts
 models/UserLoginRequest.ts
 models/UserPublicInfo.ts
+models/UserSectionAuthority.ts
+models/UserSectionRole.ts
 models/ValidationError.ts
 models/VectorSearchRequest.ts
 models/VectorSearchResponse.ts

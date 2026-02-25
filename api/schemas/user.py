@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from pydantic import BaseModel, field_serializer, field_validator, ConfigDict
+from enums.section import UserSectionRole, UserSectionAuthority
 
 
 class BindEmailRequest(BaseModel):
@@ -188,7 +189,7 @@ class SectionUserPublicInfo(BaseModel):
     avatar: str
     nickname: str
     slogan: str | None = None
-    authority: int | None = None
+    authority: UserSectionAuthority | None = None
     role: int | None = None
     create_time: datetime
     update_time: datetime | None

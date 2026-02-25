@@ -109,7 +109,7 @@ def create_user_document(
     db: Session,
     user_id: int,
     document_id: int,
-    authority: int
+    authority: UserDocumentAuthority
 ):
     now = datetime.now(timezone.utc)
     db_user_document = models.document.UserDocument(user_id=user_id,

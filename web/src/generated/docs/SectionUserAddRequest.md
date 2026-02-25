@@ -8,7 +8,7 @@ Name | Type
 ------------ | -------------
 `section_id` | number
 `user_id` | number
-`authority` | number
+`authority` | [UserSectionAuthority](UserSectionAuthority.md)
 
 ## Example
 

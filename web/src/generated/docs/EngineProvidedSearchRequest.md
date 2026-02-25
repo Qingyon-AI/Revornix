@@ -7,7 +7,7 @@
 Name | Type
 ------------ | -------------
 `keyword` | string
-`filter_category` | number
+`filter_category` | [EngineCategory](EngineCategory.md)
 
 ## Example
 

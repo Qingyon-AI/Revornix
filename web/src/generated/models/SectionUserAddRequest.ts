@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { UserSectionAuthority } from './UserSectionAuthority';
+import {
+    UserSectionAuthorityFromJSON,
+    UserSectionAuthorityFromJSONTyped,
+    UserSectionAuthorityToJSON,
+    UserSectionAuthorityToJSONTyped,
+} from './UserSectionAuthority';
+
 /**
  * 
  * @export
@@ -33,11 +41,13 @@ export interface SectionUserAddRequest {
     user_id: number;
     /**
      * 
-     * @type {number}
+     * @type {UserSectionAuthority}
      * @memberof SectionUserAddRequest
      */
-    authority: number;
+    authority: UserSectionAuthority;
 }
+
+
 
 /**
  * Check if a given object implements the SectionUserAddRequest interface.
@@ -61,7 +71,7 @@ export function SectionUserAddRequestFromJSONTyped(json: any, ignoreDiscriminato
         
         'section_id': json['section_id'],
         'user_id': json['user_id'],
-        'authority': json['authority'],
+        'authority': UserSectionAuthorityFromJSON(json['authority']),
     };
 }
 
@@ -78,7 +88,7 @@ export function SectionUserAddRequestToJSONTyped(value?: SectionUserAddRequest |
         
         'section_id': value['section_id'],
         'user_id': value['user_id'],
-        'authority': value['authority'],
+        'authority': UserSectionAuthorityToJSON(value['authority']),
     };
 }
 

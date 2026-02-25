@@ -86,7 +86,7 @@ def get_user_ai_model_provider_by_user_and_model_provider_id(
     db: Session,
     user_id: int,
     ai_model_provider_id: int,
-    filter_role: int
+    filter_role: UserModelProviderRole | None = None
 ):
     """
     Get a user AI model provider by user and model provider ID.

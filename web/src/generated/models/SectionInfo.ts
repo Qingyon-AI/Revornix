@@ -41,6 +41,13 @@ import {
     UserPublicInfoToJSON,
     UserPublicInfoToJSONTyped,
 } from './UserPublicInfo';
+import type { UserSectionAuthority } from './UserSectionAuthority';
+import {
+    UserSectionAuthorityFromJSON,
+    UserSectionAuthorityFromJSONTyped,
+    UserSectionAuthorityToJSON,
+    UserSectionAuthorityToJSONTyped,
+} from './UserSectionAuthority';
 
 /**
  * 
@@ -110,10 +117,10 @@ export interface SectionInfo {
     update_time?: Date | null;
     /**
      * 
-     * @type {number}
+     * @type {UserSectionAuthority}
      * @memberof SectionInfo
      */
-    authority?: number | null;
+    authority?: UserSectionAuthority | null;
     /**
      * 
      * @type {boolean}
@@ -164,6 +171,8 @@ export interface SectionInfo {
     process_task_trigger_scheduler?: string | null;
 }
 
+
+
 /**
  * Check if a given object implements the SectionInfo interface.
  */
@@ -199,7 +208,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'subscribers_count': json['subscribers_count'] == null ? undefined : json['subscribers_count'],
         'create_time': (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
-        'authority': json['authority'] == null ? undefined : json['authority'],
+        'authority': json['authority'] == null ? undefined : UserSectionAuthorityFromJSON(json['authority']),
         'is_subscribed': json['is_subscribed'] == null ? undefined : json['is_subscribed'],
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SectionLabelFromJSON)),
@@ -232,7 +241,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'subscribers_count': value['subscribers_count'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
-        'authority': value['authority'],
+        'authority': UserSectionAuthorityToJSON(value['authority']),
         'is_subscribed': value['is_subscribed'],
         'md_file_name': value['md_file_name'],
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SectionLabelToJSON)),

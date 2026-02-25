@@ -1,28 +1,20 @@
 
-# SectionUserModifyRequest
+# EngineCategory
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`section_id` | number
-`user_id` | number
-`authority` | [UserSectionAuthority](UserSectionAuthority.md)
-`role` | [UserSectionRole](UserSectionRole.md)
 
 ## Example
 
 ```typescript
-import type { SectionUserModifyRequest } from ''
+import type { EngineCategory } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "section_id": null,
-  "user_id": null,
-  "authority": null,
-  "role": null,
-} satisfies SectionUserModifyRequest
+} satisfies EngineCategory
 
 console.log(example)
 
@@ -31,7 +23,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as SectionUserModifyRequest
+const exampleParsed = JSON.parse(exampleJSON) as EngineCategory
 console.log(exampleParsed)
 ```
 

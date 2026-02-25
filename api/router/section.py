@@ -250,7 +250,7 @@ async def section_seo_detail_request(
             user_id=user.id
         )
         if db_section_user is not None:
-            res.authority = db_section_user.authority
+            res.authority = UserSectionAuthority(db_section_user.authority)
 
     return res
 
@@ -359,8 +359,8 @@ def get_mine_section_role_and_authority(
     return schemas.section.SectionUserRoleAndAuthorityResponse(
         section_id=section_user_get_request.section_id,
         user_id=user.id,
-        role=db_section_user.role,
-        authority=db_section_user.authority
+        role=UserSectionRole(db_section_user.role),
+        authority=UserSectionAuthority(db_section_user.authority)
     )
 
 @section_router.post('/user/role-and-authority', response_model=schemas.section.SectionUserRoleAndAuthorityResponse)
@@ -379,8 +379,8 @@ def get_section_user_role_and_authority(
     return schemas.section.SectionUserRoleAndAuthorityResponse(
         section_id=section_user_get_request.section_id,
         user_id=section_user_get_request.user_id,
-        role=db_section_user.role,
-        authority=db_section_user.authority
+        role=UserSectionRole(db_section_user.role),
+        authority=UserSectionAuthority(db_section_user.authority)
     )
 
 @section_router.post('/user', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionUserPublicInfo])
@@ -666,7 +666,7 @@ async def get_my_subscribed_sections(
             **section.__dict__,
             creator=section.creator,
             labels=labels,
-            authority=db_user_section.authority if db_user_section else None,
+            authority=UserSectionAuthority(db_user_section.authority) if db_user_section else None,
             documents_count=documents_count,
             subscribers_count=subscribers_count
         )
@@ -844,7 +844,7 @@ async def public_sections(
         res.labels = labels
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
         res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
-        res.authority = authority_by_section_id.get(section.id)
+        res.authority = UserSectionAuthority(authority_by_section_id.get(section.id))
         sections.append(res)
 
     if len(db_sections) < search_public_sections_request.limit or len(db_sections) == 0:
@@ -893,7 +893,7 @@ def get_all_mine_sections(
     for db_section in db_sections:
         section = schemas.section.BaseSectionInfo(
             **db_section.__dict__,
-            authority=authority_by_section_id.get(db_section.id)
+            authority=UserSectionAuthority(authority_by_section_id.get(db_section.id))
         )
         sections.append(section)
     return schemas.section.AllMySectionsResponse(data=sections)
@@ -943,7 +943,7 @@ async def search_user_sections(
                 file_name=section.md_file_name
             )
         res.creator = section.creator
-        res.authority = authority_by_section_id.get(section.id)
+        res.authority = UserSectionAuthority(authority_by_section_id.get(section.id))
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
         res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
         res.labels = [
@@ -1022,7 +1022,7 @@ async def search_mine_sections(
                 file_name=res.md_file_name
             )
         res.creator = section.creator
-        res.authority = authority_by_section_id.get(section.id)
+        res.authority = UserSectionAuthority(authority_by_section_id.get(section.id))
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
         res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
         res.labels = [
@@ -1147,7 +1147,7 @@ async def get_section_detail(
                 user_id=user.id
             )
             if db_section_user is not None:
-                res.authority = db_section_user.authority
+                res.authority = UserSectionAuthority(db_section_user.authority)
                 if db_section_user.role == UserSectionRole.SUBSCRIBER:
                     res.is_subscribed = True
     else:
@@ -1218,7 +1218,7 @@ async def get_section_detail(
             )
 
             if db_section_user is not None:
-                res.authority = db_section_user.authority
+                res.authority = UserSectionAuthority(db_section_user.authority)
                 if db_section_user.role == UserSectionRole.SUBSCRIBER:
                     res.is_subscribed = True
     db_section_process_trigger_type = crud.task.get_section_process_task_by_section_id(
