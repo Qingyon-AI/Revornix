@@ -153,6 +153,8 @@ export * from './NotificationTargetDetail';
 export * from './NotificationTargetDetailRequest';
 export * from './NotificationTargetForkRequest';
 export * from './NotificationTargetProvided';
+export * from './NotificationTargetRequestVerify';
+export * from './NotificationTargetRequestVerifySend';
 export * from './NotificationTargetsProvidedResponse';
 export * from './NotificationTargetsUsableResponse';
 export * from './NotificationTask';

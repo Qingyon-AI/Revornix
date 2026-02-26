@@ -28,6 +28,8 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**getTriggerEventsNotificationTriggerEventAllPost**](NotificationApi.md#gettriggereventsnotificationtriggereventallpost) | **POST** /notification/trigger-event/all | Get Trigger Events |
 | [**getUsableNotificationSourceNotificationSourceUsablePost**](NotificationApi.md#getusablenotificationsourcenotificationsourceusablepost) | **POST** /notification/source/usable | Get Usable Notification Source |
 | [**getUsableNotificationTargetNotificationTargetUsablePost**](NotificationApi.md#getusablenotificationtargetnotificationtargetusablepost) | **POST** /notification/target/usable | Get Usable Notification Target |
+| [**notificationTargetVerifyNotificationTargetVerifyPost**](NotificationApi.md#notificationtargetverifynotificationtargetverifypost) | **POST** /notification/target/verify | Notification Target Verify |
+| [**notificationTargetVerifySendNotificationTargetVerifySendPost**](NotificationApi.md#notificationtargetverifysendnotificationtargetverifysendpost) | **POST** /notification/target/verify/send | Notification Target Verify Send |
 | [**readAllNotificationRecordNotificationRecordReadAllPost**](NotificationApi.md#readallnotificationrecordnotificationrecordreadallpost) | **POST** /notification/record/read-all | Read All Notification Record |
 | [**readNotificationRecordNotificationRecordReadPost**](NotificationApi.md#readnotificationrecordnotificationrecordreadpost) | **POST** /notification/record/read | Read Notification Record |
 | [**searchNotificationRecordNotificationRecordSearchPost**](NotificationApi.md#searchnotificationrecordnotificationrecordsearchpost) | **POST** /notification/record/search | Search Notification Record |
@@ -1663,6 +1665,144 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## notificationTargetVerifyNotificationTargetVerifyPost
+
+> NotificationTargetDetail notificationTargetVerifyNotificationTargetVerifyPost(notificationTargetRequestVerify, authorization)
+
+Notification Target Verify
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { NotificationTargetVerifyNotificationTargetVerifyPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // NotificationTargetRequestVerify
+    notificationTargetRequestVerify: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies NotificationTargetVerifyNotificationTargetVerifyPostRequest;
+
+  try {
+    const data = await api.notificationTargetVerifyNotificationTargetVerifyPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **notificationTargetRequestVerify** | [NotificationTargetRequestVerify](NotificationTargetRequestVerify.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NotificationTargetDetail**](NotificationTargetDetail.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## notificationTargetVerifySendNotificationTargetVerifySendPost
+
+> NotificationTargetDetail notificationTargetVerifySendNotificationTargetVerifySendPost(notificationTargetRequestVerifySend, authorization)
+
+Notification Target Verify Send
+
+### Example
+
+```ts
+import {
+  Configuration,
+  NotificationApi,
+} from '';
+import type { NotificationTargetVerifySendNotificationTargetVerifySendPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new NotificationApi();
+
+  const body = {
+    // NotificationTargetRequestVerifySend
+    notificationTargetRequestVerifySend: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies NotificationTargetVerifySendNotificationTargetVerifySendPostRequest;
+
+  try {
+    const data = await api.notificationTargetVerifySendNotificationTargetVerifySendPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **notificationTargetRequestVerifySend** | [NotificationTargetRequestVerifySend](NotificationTargetRequestVerifySend.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NotificationTargetDetail**](NotificationTargetDetail.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 

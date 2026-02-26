@@ -389,7 +389,7 @@ async def create_user_by_email_code(
     else:
         code = "".join(random.sample(string.ascii_letters + string.digits, 6))
         await cache.set(
-            name=email_create_request.email,
+            name=f'user-create-by-email-{email_create_request.email}',
             value=code,
             ex=600
         )
@@ -407,7 +407,6 @@ async def create_user_by_email_verify(
     email_user_create_verify_request: schemas.user.EmailUserCreateCodeVerifyRequest,
     db: Session = Depends(get_db),
     cache: Redis = Depends(get_cache),
-    deployed_by_official: bool = Depends(check_deployed_by_official),
     ip: str | None = Depends(get_real_ip)
 ):
     if crud.user.get_user_by_email(
@@ -415,10 +414,14 @@ async def create_user_by_email_verify(
         email=email_user_create_verify_request.email
     ):
         raise Exception("The email is already exists")
-    code = await cache.get(email_user_create_verify_request.email)
+    code = await cache.get(
+        name=f'user-create-by-email-{email_user_create_verify_request.email}'
+    )
     if code != email_user_create_verify_request.code or code is None:
         raise Exception("Code is wrong")
-    await cache.delete(email_user_create_verify_request.email)
+    await cache.delete(
+        f'user-create-by-email-{email_user_create_verify_request.email}'
+    )
     db_user = crud.user.create_base_user(
         db=db,
         nickname=email_user_create_verify_request.email,
@@ -546,7 +549,8 @@ def update_password(
 async def bind_email_code(
     bind_email_request: schemas.user.BindEmailRequest,
     cache: Redis = Depends(get_cache),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
 ):
     email_exist = crud.user.get_email_user_by_email(
         db=db,
@@ -556,7 +560,7 @@ async def bind_email_code(
         raise Exception('The email is already exists')
     code = "".join(random.sample(string.ascii_letters + string.digits, 6))
     await cache.set(
-        name=bind_email_request.email,
+        name=f'{user.id}-user-bind-email-{bind_email_request.email}',
         value=code,
         ex=600
     )
@@ -575,10 +579,14 @@ async def bind_email_verify(
     cache: Redis = Depends(get_cache),
     db: Session = Depends(get_db)
 ):
-    code = await cache.get(bind_email_verify_request.email)
+    code = await cache.get(
+        name=f'{user.id}-user-bind-email-{bind_email_verify_request.email}'
+    )
     if code is None or code != bind_email_verify_request.code:
         raise Exception("Code is wrong.")
-    await cache.delete(bind_email_verify_request.email)
+    await cache.delete(
+        f'{user.id}-user-bind-email-{bind_email_verify_request.email}'
+    )
     crud.user.create_email_user(
         db=db,
         user_id=user.id,
@@ -1208,7 +1216,11 @@ async def create_user_by_sms_code(
     cache: Redis = Depends(get_cache)
 ):
     code = "".join(random.sample(string.digits, 6))
-    await cache.set(sms_user_code_create_request.phone, code, 600)
+    await cache.set(
+        name=f'user-create-sms-{sms_user_code_create_request.phone}',
+        value=code, 
+        ex=600
+    )
 
     def _send_sms():
         sms_client = TencentSms.get_official_sms_client()
@@ -1226,15 +1238,18 @@ async def create_user_by_sms_verify(
     sms_user_code_verify_request: schemas.user.SmsUserCodeVerifyCreate,
     db: Session = Depends(get_db),
     cache: Redis = Depends(get_cache),
-    deployed_by_official: bool = Depends(check_deployed_by_official),
     ip: str | None = Depends(get_real_ip)
 ):
-    code = await cache.get(sms_user_code_verify_request.phone)
+    code = await cache.get(
+        name=f'user-create-sms-{sms_user_code_verify_request.phone}'
+    )
     if code is None:
         raise Exception("The code is expired")
     if code != sms_user_code_verify_request.code:
         raise Exception("The code is wrong")
-    await cache.delete(sms_user_code_verify_request.phone)
+    await cache.delete(
+        f'user-create-sms-{sms_user_code_verify_request.phone}'
+    )
     phone_user_exist = crud.user.get_phone_user_by_phone(
         db=db,
         phone=sms_user_code_verify_request.phone
@@ -1314,7 +1329,11 @@ async def bind_phone(
 
     await asyncio.to_thread(_send_sms)
 
-    await cache.set(bind_phone_code_create_request.phone, code, 600)
+    await cache.set(
+        name=f'user-bind-sms-{bind_phone_code_create_request.phone}',
+        value=code, 
+        ex=600
+    )
     return schemas.common.SuccessResponse()
 
 @user_router.post('/bind/phone/verify', response_model=schemas.common.NormalResponse)
@@ -1324,12 +1343,16 @@ async def bind_phone_verify(
     cache: Redis = Depends(get_cache),
     db: Session = Depends(get_db)
 ):
-    code = await cache.get(bind_phone_code_verify_request.phone)
+    code = await cache.get(
+        name=f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
+    )
     if code is None:
         raise Exception('The code is expired')
     if code != bind_phone_code_verify_request.code:
         raise Exception('The code is wrong')
-    await cache.delete(bind_phone_code_verify_request.phone)
+    await cache.delete(
+        f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
+    )
     crud.user.create_phone_user(
         db=db,
         user_id=user.id,

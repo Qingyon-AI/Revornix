@@ -173,6 +173,8 @@ docs/NotificationTargetDetail.md
 docs/NotificationTargetDetailRequest.md
 docs/NotificationTargetForkRequest.md
 docs/NotificationTargetProvided.md
+docs/NotificationTargetRequestVerify.md
+docs/NotificationTargetRequestVerifySend.md
 docs/NotificationTargetsProvidedResponse.md
 docs/NotificationTargetsUsableResponse.md
 docs/NotificationTask.md
@@ -433,6 +435,8 @@ models/NotificationTargetDetail.ts
 models/NotificationTargetDetailRequest.ts
 models/NotificationTargetForkRequest.ts
 models/NotificationTargetProvided.ts
+models/NotificationTargetRequestVerify.ts
+models/NotificationTargetRequestVerifySend.ts
 models/NotificationTargetsProvidedResponse.ts
 models/NotificationTargetsUsableResponse.ts
 models/NotificationTask.ts

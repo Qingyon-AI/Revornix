@@ -451,7 +451,7 @@ const UpdateNotificationTarget = ({
 								<ShieldAlert className='size-4' />
 								<AlertTitle>
 									{t(
-										'setting_notification_source_manage_form_config_json_demo',
+										'setting_notification_target_manage_forbidden',
 									)}
 								</AlertTitle>
 							</Alert>

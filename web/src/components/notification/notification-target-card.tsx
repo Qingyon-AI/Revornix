@@ -35,6 +35,7 @@ import { NotificationTarget } from '@/generated';
 import { replacePath } from '@/lib/utils';
 import { format } from 'date-fns';
 import UpdateNotificationTarget from './update-notification-target';
+import NotificationTargetVerify from './notification-target-verify';
 
 const NotificationTargetCard = ({
 	notification_target,
@@ -132,18 +133,31 @@ const NotificationTargetCard = ({
 				</CardTitle>
 				<CardDescription className='flex flex-col flex-1'>
 					<span className='mb-2'>{notification_target.description}</span>
-					{notification_target.is_public && (
-						<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
-							<div className='h-1.5 w-1.5 rounded-full bg-amber-500 mr-1' />{' '}
-							Public
-						</Badge>
-					)}
+					<div className='flex flex-row items-center gap-1'>
+						{notification_target.is_public && (
+							<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
+								<div className='h-1.5 w-1.5 rounded-full bg-amber-500 mr-1' />{' '}
+								Public
+							</Badge>
+						)}
+						{notification_target.is_verified && (
+							<Badge className='bg-green-600/10 dark:bg-green-600/20 hover:bg-green-600/10 text-green-500 shadow-none rounded-full'>
+								<div className='h-1.5 w-1.5 rounded-full bg-green-500 mr-1' />{' '}
+								Verified
+							</Badge>
+						)}
+					</div>
 				</CardDescription>
 			</CardHeader>
 			<CardContent className='relative gap-2 flex flex-row items-center justify-end'>
 				<UpdateNotificationTarget
 					notification_target_id={notification_target.id}
 				/>
+				{!notification_target.is_verified && isMineNotificationTarget && (
+					<NotificationTargetVerify
+						notification_target_id={notification_target.id}
+					/>
+				)}
 				{!isMineNotificationTarget && (
 					<>
 						{!notification_target.is_forked && (

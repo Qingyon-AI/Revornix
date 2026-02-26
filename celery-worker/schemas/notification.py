@@ -217,6 +217,7 @@ class NotificationTarget(BaseModel):
     update_time: datetime | None
     creator: UserPublicInfo
     is_forked: bool | None = None
+    is_verified: bool
     is_public: bool
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
@@ -241,8 +242,9 @@ class NotificationTargetDetail(BaseModel):
     description: str | None
     create_time: datetime
     update_time: datetime | None
-    config_json: str | None
+    config_json: str | None = None
     creator: UserPublicInfo
+    is_verified: bool
     is_public: bool
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
