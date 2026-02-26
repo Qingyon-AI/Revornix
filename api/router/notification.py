@@ -7,12 +7,17 @@ from sqlalchemy.orm import Session
 import crud
 import models
 import schemas
+import string
+import random
 from common.apscheduler.app import scheduler, send_notification_scheduler
 from common.dependencies import decode_jwt_token, get_current_user, get_db
 from common.logger import exception_logger, info_logger
 from common.websocket import notificationManager
-from enums.notification import NotificationContentType, NotificationTriggerType, UserNotificationSourceRole, UserNotificationTargetRole
+from enums.notification import NotificationContentType, NotificationTriggerType, UserNotificationSourceRole, UserNotificationTargetRole, NotificationSourceProvided, NotificationTargetProvided
 from common.encrypt import encrypt_notification_source_config, encrypt_notification_target_config, decrypt_notification_source_config, decrypt_notification_target_config
+from common.system_email.email import RevornixSystemEmail
+from common.dependencies import get_cache
+from redis import Redis
 
 notification_router = APIRouter()
 
@@ -388,6 +393,74 @@ def add_notification_target(
         role=UserNotificationTargetRole.CREATOR
     )
     db.commit()
+    return schemas.common.SuccessResponse()
+
+@notification_router.post('/target/verify/send', response_model=schemas.common.NormalResponse)
+async def notification_target_verify_send(
+    verify_notification_target_request: schemas.notification.NotificationTargetRequestVerifySend,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user),
+    cache: Redis = Depends(get_cache)
+):
+    db_notification_target_provided = crud.notification.get_notification_target_provided_by_id(
+        db=db,
+        id=verify_notification_target_request.notification_target_provided_id
+    )
+    if db_notification_target_provided is None:
+        raise schemas.error.CustomException(message="notification target provided not found", code=404)
+    if db_notification_target_provided.uuid == NotificationTargetProvided.EMAIL.meta.uuid:
+        target_email = verify_notification_target_request.email
+        if not target_email:
+            raise schemas.error.CustomException(message="email should not be empty", code=400)
+        code = "".join(random.sample(string.ascii_letters + string.digits, 6))
+        await cache.set(
+            name=f'{user.id}-user-notification-target-add-{target_email}',
+            value=code,
+            ex=600
+        )
+        mail = RevornixSystemEmail()
+        await mail.send(
+            recipient=target_email,
+            title="Revornix通知终端邮件绑定",
+            content=f"欢迎使用Revornix, 您的通知终端邮件绑定验证码为{code}, 有效期10分钟。",
+            template='register.html'
+        )
+        return schemas.common.SuccessResponse(message="The code has been sent.")
+
+@notification_router.post('/target/verify', response_model=schemas.common.NormalResponse)
+async def notification_target_verify(
+    verify_notification_target_request: schemas.notification.NotificationTargetRequestVerify,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user),
+    cache: Redis = Depends(get_cache)
+):
+    db_notification_target_provided = crud.notification.get_notification_target_provided_by_id(
+        db=db,
+        id=verify_notification_target_request.notification_target_provided_id
+    )
+    if db_notification_target_provided is None:
+        raise schemas.error.CustomException(message="notification target provided not found", code=404)
+    db_notification_target = crud.notification.get_notification_target_by_id(
+        db=db,
+        notification_target_id=verify_notification_target_request.notification_target_id
+    )
+    if db_notification_target is None:
+        raise schemas.error.CustomException(message="notification target not found", code=404)
+    if db_notification_target_provided.uuid == NotificationTargetProvided.EMAIL.meta.uuid:
+        target_email = verify_notification_target_request.email
+        if not target_email:
+            raise schemas.error.CustomException(message="email should not be empty", code=400)
+        cached_code = await cache.get(
+            name=f'{user.id}-user-notification-target-add-{target_email}',
+        )
+        code = verify_notification_target_request.code
+        if cached_code != code:
+            raise schemas.error.CustomException(message="The code is incorrect", code=400)
+        cache.delete(
+            f'{user.id}-user-notification-target-add-{target_email}',
+        )
+        db_notification_target.is_verified = True
+        db.commit()
     return schemas.common.SuccessResponse()
 
 @notification_router.post('/target/update', response_model=schemas.common.NormalResponse)

@@ -132,6 +132,7 @@ import {
 
 export interface BindEmailCodeUserBindEmailCodePostRequest {
     bindEmailRequest: BindEmailRequest;
+    authorization?: string | null;
 }
 
 export interface BindEmailUserBindEmailPostRequest {
@@ -326,6 +327,10 @@ export class UserApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
 
 
         let urlPath = `/user/bind/email/code`;

@@ -46,7 +46,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## bindEmailCodeUserBindEmailCodePost
 
-> NormalResponse bindEmailCodeUserBindEmailCodePost(bindEmailRequest)
+> NormalResponse bindEmailCodeUserBindEmailCodePost(bindEmailRequest, authorization)
 
 Bind Email Code
 
@@ -66,6 +66,8 @@ async function example() {
   const body = {
     // BindEmailRequest
     bindEmailRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
   } satisfies BindEmailCodeUserBindEmailCodePostRequest;
 
   try {
@@ -86,6 +88,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **bindEmailRequest** | [BindEmailRequest](BindEmailRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

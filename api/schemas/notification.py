@@ -4,6 +4,21 @@ from pydantic import BaseModel, field_serializer, ConfigDict
 
 from .user import UserPublicInfo
 
+class NotificationTargetRequestVerifySend(BaseModel):
+    notification_target_provided_id: int
+    notification_target_id: int
+    email: str | None = None
+    phone: str | None = None
+    qr_code: str | None = None
+
+class NotificationTargetRequestVerify(BaseModel):
+    notification_target_provided_id: int
+    notification_target_id: int
+    email: str | None = None
+    phone: str | None = None
+    code: str | None = None
+    device_token: str | None = None
+
 class NotificationSourceForkRequest(BaseModel):
     notification_source_id: int
     status: bool
@@ -217,6 +232,7 @@ class NotificationTarget(BaseModel):
     update_time: datetime | None
     creator: UserPublicInfo
     is_forked: bool | None = None
+    is_verified: bool
     is_public: bool
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
@@ -241,8 +257,9 @@ class NotificationTargetDetail(BaseModel):
     description: str | None
     create_time: datetime
     update_time: datetime | None
-    config_json: str | None
+    config_json: str | None = None
     creator: UserPublicInfo
+    is_verified: bool
     is_public: bool
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):

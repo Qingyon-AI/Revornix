@@ -211,6 +211,7 @@
     "setting_notification_target_manage": "Notification Target Management",
     "setting_notification_target_fork": "Fork",
     "setting_notification_target_unfork": "UnFork",
+    "setting_notification_target_verify": "Verify",
     "setting_notification_target_manage_delete_alert": "Are you sure you want to delete? Once deleted, all related notifications will not be sent.",
     "setting_notification_target_manage_delete_success": "Deleted successfully",
     "setting_notification_target_related_tasks": "Notification Tasks Associated with This Target",

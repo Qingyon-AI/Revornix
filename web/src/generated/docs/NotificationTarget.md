@@ -14,6 +14,7 @@ Name | Type
 `update_time` | Date
 `creator` | [UserPublicInfo](UserPublicInfo.md)
 `is_forked` | boolean
+`is_verified` | boolean
 `is_public` | boolean
 
 ## Example
@@ -31,6 +32,7 @@ const example = {
   "update_time": null,
   "creator": null,
   "is_forked": null,
+  "is_verified": null,
   "is_public": null,
 } satisfies NotificationTarget
 
