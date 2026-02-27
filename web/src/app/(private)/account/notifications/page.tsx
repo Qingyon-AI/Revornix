@@ -26,12 +26,18 @@ import {
 	NotificationRecord,
 } from '@/generated';
 import { mapInfiniteQueryElements } from '@/lib/infinite-query-cache';
+import { useUserContext } from '@/provider/user-provider';
 
 const NotificationsPage = () => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
+	const { mainUserInfo } = useUserContext();
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
+	const searchMyNotificationsQueryKey = [
+		'searchMyNotifications',
+		mainUserInfo?.id,
+	] as const;
 
 	const {
 		data,
@@ -42,7 +48,8 @@ const NotificationsPage = () => {
 		isError,
 		hasNextPage,
 	} = useInfiniteQuery({
-		queryKey: ['searchMyNotifications', keyword],
+		enabled: !!mainUserInfo?.id,
+		queryKey: [...searchMyNotificationsQueryKey, keyword],
 		queryFn: (pageParam) =>
 			searchNotificationRecords({ ...pageParam.pageParam }),
 		initialPageParam: {
@@ -67,7 +74,7 @@ const NotificationsPage = () => {
 			mapInfiniteQueryElements<
 				InifiniteScrollPagnitionNotificationRecord,
 				NotificationRecord
-			>(queryClient, ['searchMyNotifications'], (item) => {
+			>(queryClient, searchMyNotificationsQueryKey, (item) => {
 				if (item.read_at) return item;
 				return {
 					...item,
@@ -85,7 +92,7 @@ const NotificationsPage = () => {
 
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
-	}, [inView]);
+	}, [inView, isFetching, hasNextPage, fetchNextPage]);
 	return (
 		<div className='pb-5 px-5 w-full flex-1 overflow-auto'>
 			<Tabs defaultValue='systemAlert' className='h-full flex flex-col'>

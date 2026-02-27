@@ -143,7 +143,7 @@ const WebsiteDocumentDetail = ({
 	useEffect(() => {
 		if (!markdownRendered || !inView) return;
 		onFinishRead && onFinishRead();
-	}, [inView]);
+	}, [inView, markdownRendered, onFinishRead]);
 
 	return (
 		<div className={cn('h-full w-full relative', className)}>

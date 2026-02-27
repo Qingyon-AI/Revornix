@@ -90,7 +90,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
-	}, [inView]);
+	}, [inView, isFetching, hasNextPage, fetchNextPage]);
 
 	return (
 		<>

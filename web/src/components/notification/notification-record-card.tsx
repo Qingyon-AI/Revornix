@@ -30,6 +30,7 @@ import {
 	filterInfiniteQueryElements,
 	mapInfiniteQueryElements,
 } from '@/lib/infinite-query-cache';
+import { useUserContext } from '@/provider/user-provider';
 
 const NotificationRecordCard = ({
 	notification,
@@ -39,6 +40,11 @@ const NotificationRecordCard = ({
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const router = useRouter();
+	const { mainUserInfo } = useUserContext();
+	const searchMyNotificationsQueryKey = [
+		'searchMyNotifications',
+		mainUserInfo?.id,
+	] as const;
 	const mutateRead = useMutation({
 		mutationKey: ['readNotification', notification.id],
 		mutationFn: readNotificationRecords,
@@ -46,13 +52,13 @@ const NotificationRecordCard = ({
 			const previousNotifications = queryClient.getQueriesData<
 				InfiniteData<InifiniteScrollPagnitionNotificationRecord>
 			>({
-				queryKey: ['searchMyNotifications'],
+				queryKey: searchMyNotificationsQueryKey,
 			});
 
 			mapInfiniteQueryElements<
 				InifiniteScrollPagnitionNotificationRecord,
 				NotificationRecord
-			>(queryClient, ['searchMyNotifications'], (item) => {
+			>(queryClient, searchMyNotificationsQueryKey, (item) => {
 				if (item.id !== notification.id) return item;
 				return {
 					...item,
@@ -85,7 +91,11 @@ const NotificationRecordCard = ({
 			filterInfiniteQueryElements<
 				InifiniteScrollPagnitionNotificationRecord,
 				NotificationRecord
-			>(queryClient, ['searchMyNotifications'], (item) => item.id !== deletedId);
+			>(
+				queryClient,
+				searchMyNotificationsQueryKey,
+				(item) => item.id !== deletedId,
+			);
 			setShowNotification(false);
 		},
 		onError: (error) => {

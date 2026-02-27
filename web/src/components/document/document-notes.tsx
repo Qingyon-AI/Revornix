@@ -51,7 +51,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
-	}, [inView]);
+	}, [inView, isFetching, hasNextPage, fetchNextPage]);
 
 	return (
 		<div className='h-full flex flex-col overflow-auto px-5'>
