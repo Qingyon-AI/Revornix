@@ -180,11 +180,11 @@ const AddAudio = () => {
 		return { file, fileName };
 	};
 
-	const handleUploadAudioFile = async () => {
-		if (!audioResult) {
-			toast.error('No audio result found');
-			throw new Error('No audio result found');
-		}
+		const handleUploadAudioFile = async () => {
+			if (!audioResult) {
+				toast.error(t('error_audio_result_not_found'));
+				throw new Error(t('error_audio_result_not_found'));
+			}
 
 		const cachedFilePath = lastUploadedRef.current?.filePath;
 		const cachedSourceUrl = lastUploadedRef.current?.sourceUrl;
@@ -200,10 +200,10 @@ const AddAudio = () => {
 			crypto.randomUUID(),
 		);
 
-		if (!mainUserInfo?.default_user_file_system) {
-			toast.error('No user default file system found');
-			throw new Error('No user default file system found');
-		}
+			if (!mainUserInfo?.default_user_file_system) {
+				toast.error(t('error_default_file_system_not_found'));
+				throw new Error(t('error_default_file_system_not_found'));
+			}
 
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 

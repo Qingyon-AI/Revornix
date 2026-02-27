@@ -56,12 +56,12 @@ const FileUpload = ({
 
 	const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
-		if (!file) return;
+			if (!file) return;
 
-		if (!mainUserInfo?.default_user_file_system) {
-			toast.error('No user default file system found');
-			return;
-		}
+			if (!mainUserInfo?.default_user_file_system) {
+				toast.error(t('error_default_file_system_not_found'));
+				return;
+			}
 
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 

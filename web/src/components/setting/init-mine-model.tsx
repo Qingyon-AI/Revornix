@@ -57,12 +57,12 @@ const InitMineModel = () => {
 			if (!(hasCustomProvider || hasProviderId)) {
 				ctx.addIssue({
 					code: z.ZodIssueCode.custom,
-					message: t('init_mine_model_form_need'),
+					message: t('init_mine_model_form_needed'),
 					path: ['model_provider_id'],
 				});
 				ctx.addIssue({
 					code: z.ZodIssueCode.custom,
-					message: t('init_mine_model_form_need'),
+					message: t('init_mine_model_form_needed'),
 					path: ['model_provider_name'],
 				});
 				ctx.addIssue({
@@ -285,38 +285,42 @@ const InitMineModel = () => {
 										</FormItem>
 									)}
 								/>
-								<FormField
-									control={form.control}
-									name='model_provider_api_key'
-									render={({ field }) => (
-										<FormItem>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>API Key</FormLabel>
-												<Input
-													type='password'
-													className='col-span-9'
-													placeholder='API Key'
-													{...field}
-												/>
-											</div>
-											<FormMessage />
+									<FormField
+										control={form.control}
+										name='model_provider_api_key'
+										render={({ field }) => (
+											<FormItem>
+												<div className='grid grid-cols-12 gap-2'>
+													<FormLabel className='col-span-3'>
+														{t('setting_model_provider_api_key')}
+													</FormLabel>
+													<Input
+														type='password'
+														className='col-span-9'
+														placeholder={t('setting_model_provider_api_key_placeholder')}
+														{...field}
+													/>
+												</div>
+												<FormMessage />
 										</FormItem>
 									)}
 								/>
-								<FormField
-									control={form.control}
-									name='model_provider_base_url'
-									render={({ field }) => (
-										<FormItem>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>Base Url</FormLabel>
-												<Input
-													className='col-span-9'
-													placeholder='Base Url'
-													{...field}
-												/>
-											</div>
-											<FormMessage />
+									<FormField
+										control={form.control}
+										name='model_provider_base_url'
+										render={({ field }) => (
+											<FormItem>
+												<div className='grid grid-cols-12 gap-2'>
+													<FormLabel className='col-span-3'>
+														{t('setting_model_provider_base_url')}
+													</FormLabel>
+													<Input
+														className='col-span-9'
+														placeholder={t('setting_model_provider_base_url_placeholder')}
+														{...field}
+													/>
+												</div>
+												<FormMessage />
 										</FormItem>
 									)}
 								/>

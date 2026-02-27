@@ -40,10 +40,10 @@ const NicknameUpdate = () => {
 		mutationFn: async (newUserInfo: UserInfoUpdateRequest) => {
 			return updateUserInfo(newUserInfo);
 		},
-		onSuccess: () => {
-			refreshMainUserInfo();
-			toast.success('Name updated successfully');
-		},
+			onSuccess: () => {
+				refreshMainUserInfo();
+				toast.success(t('account_nickname_update_success'));
+			},
 		onError: (error) => {
 			toast.error(error.message);
 		},

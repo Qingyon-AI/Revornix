@@ -100,21 +100,21 @@ const FileDocumentDetail = ({
 	};
 
 	const onGetMarkdown = async () => {
-		if (
-			!document ||
-			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
-			!mainUserInfo
-		)
-			return;
-		if (!mainUserInfo?.default_user_file_system) {
-			toast.error('No user default file system found');
-			return;
-		}
-		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
-		try {
-			if (!document.convert_task?.md_file_name) {
-				throw new Error('No md file name found');
+			if (
+				!document ||
+				document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
+				!mainUserInfo
+			)
+				return;
+			if (!mainUserInfo?.default_user_file_system) {
+				toast.error(t('error_default_file_system_not_found'));
+				return;
 			}
+			const fileService = new FileService(userFileSystemDetail?.file_system_id!);
+			try {
+				if (!document.convert_task?.md_file_name) {
+					throw new Error(t('document_markdown_file_missing'));
+				}
 			let [res, err] = await utils.to(
 				fileService.getFileContent(document.convert_task?.md_file_name),
 			);

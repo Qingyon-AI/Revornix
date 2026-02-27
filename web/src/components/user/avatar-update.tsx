@@ -46,24 +46,24 @@ const AvatarUpdate = () => {
 		fileInput.current?.click();
 	};
 
-	const onUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
-		if (!mainUserInfo?.default_user_file_system) {
-			toast.error('No user default file system found');
-			return;
-		}
+		const onUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+			const file = e.target.files?.[0];
+			if (!file) return;
+			if (!mainUserInfo?.default_user_file_system) {
+				toast.error(t('error_default_file_system_not_found'));
+				return;
+			}
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		setUploadingStatus(true);
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();
 		const fileName = `images/${name}.${suffix}`;
-		const [res, err] = await utils.to(fileService.uploadFile(fileName, file));
-		if (err) {
-			toast.error('Failed to upload the image');
-			setUploadingStatus(false);
-			return;
-		}
+			const [res, err] = await utils.to(fileService.uploadFile(fileName, file));
+			if (err) {
+				toast.error(t('error_upload_image_failed'));
+				setUploadingStatus(false);
+				return;
+			}
 		await mutationUpdateUserInfo.mutateAsync({
 			avatar: fileName,
 		});

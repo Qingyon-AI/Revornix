@@ -13,12 +13,12 @@ const HotSearchErrorCard = () => {
 				<Button size={'icon'} variant={'outline'} disabled>
 					<Expand size={4} className='text-muted-foreground' />
 				</Button>
-			</CardHeader>
-			<CardContent className='flex-1 flex flex-col justify-center items-center gap-2 text-muted-foreground text-xs'>
-				<div>Oops</div>
-				<div>{t('hot_search_error_description')}</div>
-			</CardContent>
-		</Card>
+				</CardHeader>
+				<CardContent className='flex-1 flex flex-col justify-center items-center gap-2 text-muted-foreground text-xs'>
+					<div>{t('something_wrong')}</div>
+					<div>{t('hot_search_error_description')}</div>
+				</CardContent>
+			</Card>
 	);
 };
 
