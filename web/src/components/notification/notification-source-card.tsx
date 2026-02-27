@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import UpdateNotificationSource from '@/components/notification/update-notification-source';
 import { useMemo, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { InfiniteData, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -32,9 +32,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
 import { replacePath } from '@/lib/utils';
 import { format } from 'date-fns';
-import { NotificationSource } from '@/generated';
+import {
+	InifiniteScrollPagnitionNotificationSource,
+	NotificationSource,
+} from '@/generated';
 import { Badge } from '../ui/badge';
 import { useUserContext } from '@/provider/user-provider';
+import {
+	filterInfiniteQueryElements,
+	mapInfiniteQueryElements,
+} from '@/lib/infinite-query-cache';
 
 const NotificationSourceCard = ({
 	notification_source,
@@ -49,31 +56,62 @@ const NotificationSourceCard = ({
 
 	const muteDeleteNotificationSource = useMutation({
 		mutationFn: deleteNotificationSource,
+		onMutate() {
+			const previousSources = queryClient.getQueriesData<
+				InfiniteData<InifiniteScrollPagnitionNotificationSource>
+			>({
+				queryKey: ['searchNotificationSources'],
+			});
+			filterInfiniteQueryElements<
+				InifiniteScrollPagnitionNotificationSource,
+				NotificationSource
+			>(queryClient, ['searchNotificationSources'], (item) => {
+				return item.id !== notification_source.id;
+			});
+
+			return { previousSources };
+		},
 		onError(error, variables, context) {
+			context?.previousSources?.forEach(([queryKey, snapshot]) => {
+				queryClient.setQueryData(queryKey, snapshot);
+			});
 			toast.error(error.message);
 		},
 		onSuccess(data, variables, context) {
 			toast.success(t('setting_notification_source_manage_delete_success'));
-			queryClient.invalidateQueries({
-				predicate(query) {
-					return query.queryKey.includes('searchNotificationSources');
-				},
-			});
+			setShowDeleteDialog(false);
 		},
 	});
 
 	const mutateForkNotificationSource = useMutation({
 		mutationFn: forkNotificationSource,
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				predicate(query) {
-					return query.queryKey.includes('searchNotificationSources');
-				},
+		onMutate(variables) {
+			const previousSources = queryClient.getQueriesData<
+				InfiniteData<InifiniteScrollPagnitionNotificationSource>
+			>({
+				queryKey: ['searchNotificationSources'],
 			});
+
+			mapInfiniteQueryElements<
+				InifiniteScrollPagnitionNotificationSource,
+				NotificationSource
+			>(queryClient, ['searchNotificationSources'], (item) => {
+				if (item.id !== notification_source.id) return item;
+				return {
+					...item,
+					is_forked: variables.status,
+				};
+			});
+
+			return { previousSources };
+		},
+		onSuccess: () => {
 			refreshMainUserInfo();
 		},
-		onError(error, variables, onMutateResult, context) {
-			console.error(error);
+		onError(error, variables, context) {
+			context?.previousSources?.forEach(([queryKey, snapshot]) => {
+				queryClient.setQueryData(queryKey, snapshot);
+			});
 			toast.error(error.message);
 		},
 	});

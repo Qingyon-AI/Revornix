@@ -20,13 +20,16 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import { TrashIcon } from 'lucide-react';
+import { useUserContext } from '@/provider/user-provider';
 
 const UnReadDocumentBox = () => {
 	const router = useRouter();
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
 	const { data: unReadDocuments, isFetching: isFetchingUnReadDocuments } =
 		useQuery({
-			queryKey: ['searchUserUnreadDocument'],
+			enabled: !!mainUserInfo?.id,
+			queryKey: ['searchUserUnreadDocument', mainUserInfo?.id],
 			queryFn: () => searchUserUnreadDocument({ limit: 10, keyword: '' }),
 		});
 	return (

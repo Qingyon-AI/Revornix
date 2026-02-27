@@ -39,9 +39,11 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import Link from 'next/link';
+import { useUserContext } from '@/provider/user-provider';
 
 const StarDocumentPage = () => {
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
 	const [keyword, setKeyword] = useState('');
 	const [desc, setDesc] = useState(true);
 	const [labelIds, setLabelIds] = useState<number[]>();
@@ -54,7 +56,8 @@ const StarDocumentPage = () => {
 		fetchNextPage,
 		hasNextPage,
 	} = useInfiniteQuery({
-		queryKey: ['searchMyStarDocument', keyword, desc, labelIds],
+		enabled: !!mainUserInfo?.id,
+		queryKey: ['searchMyStarDocument', mainUserInfo?.id, keyword, desc, labelIds],
 		queryFn: (pageParam) => searchUserStarDocument({ ...pageParam.pageParam }),
 		initialPageParam: {
 			limit: 10,

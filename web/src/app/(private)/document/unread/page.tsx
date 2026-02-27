@@ -39,9 +39,11 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import Link from 'next/link';
+import { useUserContext } from '@/provider/user-provider';
 
 const UnReadDocumentPage = () => {
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
 	const [keyword, setKeyword] = useState('');
 	const [desc, setDesc] = useState(true);
 	const [labelIds, setLabelIds] = useState<number[]>();
@@ -54,7 +56,8 @@ const UnReadDocumentPage = () => {
 		fetchNextPage,
 		hasNextPage,
 	} = useInfiniteQuery({
-		queryKey: ['searchUserUnreadDocument', keyword, desc, labelIds],
+		enabled: !!mainUserInfo?.id,
+		queryKey: ['searchUserUnreadDocument', mainUserInfo?.id, keyword, desc, labelIds],
 		queryFn: (pageParam) =>
 			searchUserUnreadDocument({ ...pageParam.pageParam }),
 		initialPageParam: {

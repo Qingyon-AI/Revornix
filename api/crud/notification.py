@@ -1011,12 +1011,12 @@ def count_notification_records_for_receiver(
 
     return query.count()
 
-def read_all_notification_records_for_receiver(
+def _query_accessible_notification_record_ids_for_receiver(
     db: Session,
-    receiver_id: int
+    receiver_id: int,
+    notification_record_ids: list[int] | None = None
 ):
-    now = datetime.now(timezone.utc)
-    query = db.query(models.notification.NotificationRecord)
+    query = db.query(models.notification.NotificationRecord.id)
     
     query = query.join(
         models.notification.NotificationTask,
@@ -1027,13 +1027,32 @@ def read_all_notification_records_for_receiver(
         models.notification.NotificationTarget,
         models.notification.NotificationTask.notification_target_id == models.notification.NotificationTarget.id
     )
-
+    
     query = query.filter(
         models.notification.NotificationRecord.delete_at.is_(None),
         models.notification.NotificationTarget.creator_id == receiver_id
     )
     
-    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
+    if notification_record_ids is not None and len(notification_record_ids) > 0:
+        query = query.filter(
+            models.notification.NotificationRecord.id.in_(notification_record_ids)
+        )
+
+    return query
+
+def read_all_notification_records_for_receiver(
+    db: Session,
+    receiver_id: int
+):
+    now = datetime.now(timezone.utc)
+    accessible_record_ids = _query_accessible_notification_record_ids_for_receiver(
+        db=db,
+        receiver_id=receiver_id,
+    )
+
+    db.query(models.notification.NotificationRecord).filter(
+        models.notification.NotificationRecord.id.in_(accessible_record_ids)
+    ).update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
     db.flush()
 
 def read_notification_records_by_notification_record_ids_for_receiver(
@@ -1045,26 +1064,15 @@ def read_notification_records_by_notification_record_ids_for_receiver(
         return
 
     now = datetime.now(timezone.utc)
-    
-    query = db.query(models.notification.NotificationRecord)
-    
-    query = query.join(
-        models.notification.NotificationTask,
-        models.notification.NotificationRecord.task_id == models.notification.NotificationTask.id
+    accessible_record_ids = _query_accessible_notification_record_ids_for_receiver(
+        db=db,
+        receiver_id=receiver_id,
+        notification_record_ids=notification_record_ids
     )
-    
-    query = query.join(
-        models.notification.NotificationTarget,
-        models.notification.NotificationTask.notification_target_id == models.notification.NotificationTarget.id
-    )
-    
-    query = query.filter(
-        models.notification.NotificationRecord.id.in_(notification_record_ids),
-        models.notification.NotificationRecord.delete_at.is_(None),
-        models.notification.NotificationTarget.creator_id == receiver_id
-    )
-    
-    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
+
+    db.query(models.notification.NotificationRecord).filter(
+        models.notification.NotificationRecord.id.in_(accessible_record_ids)
+    ).update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
 
     db.flush()
 
@@ -1076,27 +1084,15 @@ def unread_notification_records_by_notification_record_ids_for_user(
     if not notification_record_ids:
         return
 
-    now = datetime.now(timezone.utc)
-    
-    query = db.query(models.notification.NotificationRecord)
-    
-    query = query.join(
-        models.notification.NotificationTask,
-        models.notification.NotificationRecord.task_id == models.notification.NotificationTask.id
+    accessible_record_ids = _query_accessible_notification_record_ids_for_receiver(
+        db=db,
+        receiver_id=user_id,
+        notification_record_ids=notification_record_ids
     )
-    
-    query = query.join(
-        models.notification.NotificationTarget,
-        models.notification.NotificationTask.notification_target_id == models.notification.NotificationTarget.id
-    )
-    
-    query = query.filter(
-        models.notification.NotificationRecord.id.in_(notification_record_ids),
-        models.notification.NotificationRecord.delete_at.is_(None),
-        models.notification.NotificationTarget.creator_id == user_id
-    )
-    
-    query.update({models.notification.NotificationRecord.read_at: now}, synchronize_session=False)
+
+    db.query(models.notification.NotificationRecord).filter(
+        models.notification.NotificationRecord.id.in_(accessible_record_ids)
+    ).update({models.notification.NotificationRecord.read_at: None}, synchronize_session=False)
     
     db.flush()
 
@@ -1109,24 +1105,14 @@ def delete_notification_records_by_notification_record_ids(
         return
     
     now = datetime.now(timezone.utc)
-    
-    query = db.query(models.notification.NotificationRecord)
-    
-    query = query.join(
-        models.notification.NotificationTask,
-        models.notification.NotificationRecord.task_id == models.notification.NotificationTask.id
+    accessible_record_ids = _query_accessible_notification_record_ids_for_receiver(
+        db=db,
+        receiver_id=user_id,
+        notification_record_ids=notification_record_ids
     )
-    
-    query = query.join(
-        models.notification.NotificationTarget,
-        models.notification.NotificationTask.notification_target_id == models.notification.NotificationTarget.id
-    )
-    query = query.filter(
-        models.notification.NotificationRecord.id.in_(notification_record_ids),
-        models.notification.NotificationRecord.delete_at.is_(None),
-        models.notification.NotificationTarget.creator_id == user_id
-    )
-    
-    query.update({models.notification.NotificationRecord.delete_at: now}, synchronize_session=False)
+
+    db.query(models.notification.NotificationRecord).filter(
+        models.notification.NotificationRecord.id.in_(accessible_record_ids)
+    ).update({models.notification.NotificationRecord.delete_at: now}, synchronize_session=False)
     
     db.flush()

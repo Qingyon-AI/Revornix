@@ -21,6 +21,11 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
+import {
+	InifiniteScrollPagnitionNotificationRecord,
+	NotificationRecord,
+} from '@/generated';
+import { mapInfiniteQueryElements } from '@/lib/infinite-query-cache';
 
 const NotificationsPage = () => {
 	const t = useTranslations();
@@ -59,8 +64,15 @@ const NotificationsPage = () => {
 		mutationFn: readAllNotificationRecords,
 		onSuccess: () => {
 			toast.success(t('notification_all_marked_read_done'));
-			queryClient.invalidateQueries({
-				queryKey: ['searchMyNotifications', keyword],
+			mapInfiniteQueryElements<
+				InifiniteScrollPagnitionNotificationRecord,
+				NotificationRecord
+			>(queryClient, ['searchMyNotifications'], (item) => {
+				if (item.read_at) return item;
+				return {
+					...item,
+					read_at: new Date(),
+				};
 			});
 		},
 		onError: (err) => {

@@ -20,7 +20,7 @@ import {
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useMemo, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { InfiniteData, useMutation } from '@tanstack/react-query';
 import {
 	deleteNotificationTarget,
 	forkNotificationTarget,
@@ -31,11 +31,18 @@ import { useRouter } from 'nextjs-toploader/app';
 import { useUserContext } from '@/provider/user-provider';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { NotificationTarget } from '@/generated';
+import {
+	InifiniteScrollPagnitionNotificationTarget,
+	NotificationTarget,
+} from '@/generated';
 import { replacePath } from '@/lib/utils';
 import { format } from 'date-fns';
 import UpdateNotificationTarget from './update-notification-target';
 import NotificationTargetVerify from './notification-target-verify';
+import {
+	filterInfiniteQueryElements,
+	mapInfiniteQueryElements,
+} from '@/lib/infinite-query-cache';
 
 const NotificationTargetCard = ({
 	notification_target,
@@ -51,30 +58,63 @@ const NotificationTargetCard = ({
 
 	const muteDeleteNotificationTarget = useMutation({
 		mutationFn: deleteNotificationTarget,
+		onMutate() {
+			const previousTargets = queryClient.getQueriesData<
+				InfiniteData<InifiniteScrollPagnitionNotificationTarget>
+			>({
+				queryKey: ['searchNotificationTargets'],
+			});
+
+			filterInfiniteQueryElements<
+				InifiniteScrollPagnitionNotificationTarget,
+				NotificationTarget
+			>(queryClient, ['searchNotificationTargets'], (item) => {
+				return item.id !== notification_target.id;
+			});
+
+			return { previousTargets };
+		},
 		onError(error, variables, context) {
+			context?.previousTargets?.forEach(([queryKey, snapshot]) => {
+				queryClient.setQueryData(queryKey, snapshot);
+			});
 			toast.error(error.message);
 		},
 		onSuccess(data, variables, context) {
 			toast.success(t('setting_notification_target_manage_delete_success'));
-			queryClient.invalidateQueries({
-				queryKey: ['searchNotificationTargets'],
-			});
 			setShowDeleteDialog(false);
 		},
 	});
 
 	const mutateForkNotificationTarget = useMutation({
 		mutationFn: forkNotificationTarget,
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				predicate(query) {
-					return query.queryKey.includes('searchNotificationTargets');
-				},
+		onMutate(variables) {
+			const previousTargets = queryClient.getQueriesData<
+				InfiniteData<InifiniteScrollPagnitionNotificationTarget>
+			>({
+				queryKey: ['searchNotificationTargets'],
 			});
+
+			mapInfiniteQueryElements<
+				InifiniteScrollPagnitionNotificationTarget,
+				NotificationTarget
+			>(queryClient, ['searchNotificationTargets'], (item) => {
+				if (item.id !== notification_target.id) return item;
+				return {
+					...item,
+					is_forked: variables.status,
+				};
+			});
+
+			return { previousTargets };
+		},
+		onSuccess: () => {
 			refreshMainUserInfo();
 		},
-		onError(error, variables, onMutateResult, context) {
-			console.error(error);
+		onError(error, variables, context) {
+			context?.previousTargets?.forEach(([queryKey, snapshot]) => {
+				queryClient.setQueryData(queryKey, snapshot);
+			});
 			toast.error(error.message);
 		},
 	});

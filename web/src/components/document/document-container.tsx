@@ -9,7 +9,11 @@ import FileDocumentDetail from './file-document-detail';
 import QuickDocumentDetail from './quick-note-document-detail';
 import { useUserContext } from '@/provider/user-provider';
 import { getQueryClient } from '@/lib/get-query-client';
-import { DocumentDetailResponse } from '@/generated';
+import {
+	DocumentDetailResponse,
+	DocumentInfo as DocumentListItem,
+	InifiniteScrollPagnitionDocumentInfo,
+} from '@/generated';
 import { useEffect } from 'react';
 import { DocumentCategory } from '@/enums/document';
 import DocumentGraph from './document-graph';
@@ -28,11 +32,20 @@ import { useTranslations } from 'next-intl';
 import AudioDocumentDetail from './audio-document-detail';
 import DocumentPodcast from './document-podcast';
 import DocumentAudio from './document-audio';
+import { filterInfiniteQueryElements } from '@/lib/infinite-query-cache';
 
 const DocumentContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
+	const userUnreadDocumentQueryKey = [
+		'searchUserUnreadDocument',
+		mainUserInfo?.id,
+	] as const;
+	const userRecentReadDocumentQueryKey = [
+		'searchUserRecentReadDocument',
+		mainUserInfo?.id,
+	] as const;
 
 	const {
 		data: document,
@@ -72,14 +85,18 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					context.previousDocument,
 				);
 		},
-		onSettled: () => {
+		onSuccess: () => {
+			filterInfiniteQueryElements<
+				InifiniteScrollPagnitionDocumentInfo,
+				DocumentListItem
+			>(queryClient, userUnreadDocumentQueryKey, (item) => item.id !== id);
 			queryClient.invalidateQueries({
-				predicate: (query) =>
-					query.queryKey.includes('searchUserUnreadDocument'),
+				queryKey: userUnreadDocumentQueryKey,
+				exact: true,
 			});
 			queryClient.invalidateQueries({
-				predicate: (query) =>
-					query.queryKey.includes('searchUserRecentReadDocument'),
+				queryKey: userRecentReadDocumentQueryKey,
+				exact: true,
 			});
 		},
 	});

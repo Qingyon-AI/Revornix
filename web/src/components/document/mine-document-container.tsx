@@ -39,9 +39,11 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import Link from 'next/link';
+import { useUserContext } from '@/provider/user-provider';
 
 const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
 	const [desc, setDesc] = useState(true);
@@ -54,7 +56,8 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 		fetchNextPage,
 		hasNextPage,
 	} = useInfiniteQuery({
-		queryKey: ['searchMyDocument', keyword, desc, labelIds],
+		enabled: !!mainUserInfo?.id,
+		queryKey: ['searchMyDocument', mainUserInfo?.id, keyword, desc, labelIds],
 		queryFn: (pageParam) => searchAllMyDocument({ ...pageParam.pageParam }),
 		initialPageParam: {
 			limit: 10,

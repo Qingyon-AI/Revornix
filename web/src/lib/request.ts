@@ -5,7 +5,10 @@ import Cookies from 'js-cookie'
 import { toast } from 'sonner';
 import { utils } from '@kinda/utils';
 
-type SubscriberCallback = () => void;
+type Subscriber = {
+    resolve: () => void;
+    reject: (error: ErrorResponse) => void;
+};
 
 interface RequestOptions {
     method?: 'POST' | 'GET';
@@ -14,77 +17,104 @@ interface RequestOptions {
     formData?: FormData;
 }
 
+type ErrorResponse = {
+    success: boolean
+    message: string
+    code: number
+}
+
 // 防止多次请求token获取接口（限制三次，三次以后直接显示账号信息错误）
+const MAX_REFRESH_TOKEN_RETRY_TIMES = 3;
 let refreshTokenTimes = 0;
 // 被拦截的请求数组
-let subscribers: SubscriberCallback[] = [];
+let subscribers: Subscriber[] = [];
 // 刷新状态锁
 let isRefreshing = false;
 
+const createAuthExpiredError = (message: string): ErrorResponse => ({
+    success: false,
+    message,
+    code: 401,
+});
+
+const handleAuthExpired = (
+    message: string = '用户登陆状态已过期，请重新登陆',
+) => {
+    isRefreshing = false;
+    toast.error(message);
+    Cookies.remove('access_token');
+    Cookies.remove('refresh_token');
+    setTimeout(() => {
+        window.location.reload()
+    }, 500);
+}
 
 // 处理被缓存的请求
 function onAccessTokenFetched() {
-    subscribers.forEach((callback) => {
-        callback();
+    subscribers.forEach(({ resolve }) => {
+        resolve();
     });
-    // 处理完后清空缓存请求数组
     subscribers = [];
-    refreshTokenTimes = 0; // 重置重试次数
+    refreshTokenTimes = 0;
+}
+
+function onAccessTokenRefreshFailed(error: ErrorResponse) {
+    subscribers.forEach(({ reject }) => {
+        reject(error);
+    });
+    subscribers = [];
+    refreshTokenTimes = 0;
 }
 
 async function refreshToken() {
-    if (refreshTokenTimes >= 3) {
-        toast.error('用户登陆状态已过期，请重新登陆')
-        Cookies.remove('access_token');
-        Cookies.remove('refresh_token');
-        setTimeout(() => {
-            window.location.reload()
-        }, 500)
-        return;
-    }
-    refreshTokenTimes++;
-    const refresh_token = Cookies.get('refresh_token');
-    if (!refresh_token) {
-        console.error('Cannot find refresh_token in local cookie')
-        Cookies.remove('access_token');
-        window.location.reload()
-        return;
-    };
-    const [res, err] = await utils.to(updateToken(refresh_token));
-    if (err) {
+    while (refreshTokenTimes < MAX_REFRESH_TOKEN_RETRY_TIMES) {
+        refreshTokenTimes++;
+        const refresh_token = Cookies.get('refresh_token');
+        if (!refresh_token) {
+            console.error('Cannot find refresh_token in local cookie')
+            const authExpiredError = createAuthExpiredError('用户登陆状态已过期，请重新登陆');
+            onAccessTokenRefreshFailed(authExpiredError);
+            handleAuthExpired(authExpiredError.message);
+            return;
+        };
+        const [res] = await utils.to(updateToken(refresh_token));
+        if (res) {
+            Cookies.set('access_token', res.access_token);
+            Cookies.set('refresh_token', res.refresh_token);
+            isRefreshing = false;
+            onAccessTokenFetched();
+            return;
+        }
         console.error(`Token refresh attempt #${refreshTokenTimes}. Refresh failed. Maximum of three attempts allowed; exceeding this limit will force a logout.`)
-        isRefreshing = false;
-        refreshToken();
     }
-    if (res) {
-        Cookies.set('access_token', res.access_token);
-        Cookies.set('refresh_token', res.refresh_token);
-        isRefreshing = false;
-        onAccessTokenFetched();
-    }
+
+    const authExpiredError = createAuthExpiredError('用户登陆状态已过期，请重新登陆');
+    onAccessTokenRefreshFailed(authExpiredError);
+    handleAuthExpired(authExpiredError.message);
 }
 
 // 将请求缓存到请求数组中
-const addSubscriber = (callback: SubscriberCallback) => {
-    subscribers.push(callback)
+const addSubscriber = (subscriber: Subscriber) => {
+    subscribers.push(subscriber)
 }
 
 const checkTokenRefreshStatus = <T>(url: string, initialOptions?: RequestOptions): Promise<T> => {
-    // 无论是否正在刷新，都将当前请求加入队列
-    const retryOriginalRequest = new Promise<T>((resolve) => {
-        addSubscriber(() => {
-            resolve(request<T>(url, initialOptions));
+    const retryOriginalRequest = new Promise<T>((resolve, reject) => {
+        addSubscriber({
+            resolve: () => {
+                resolve(request<T>(url, initialOptions));
+            },
+            reject,
         });
     });
 
     if (!isRefreshing) {
-        // 首次触发刷新，开始刷新流程
         isRefreshing = true;
         refreshToken();
     }
 
     return retryOriginalRequest;
-};
+}
 
 export const request = <T>(url: string, initialOptions?: RequestOptions): Promise<T> => {
     const headers = new Headers();
@@ -143,7 +173,7 @@ export const request = <T>(url: string, initialOptions?: RequestOptions): Promis
             // Token 过期：尝试刷新
             if (response.status === 401) {
                 const retryPromise = checkTokenRefreshStatus<T>(url, initialOptions);
-                return retryPromise && retryPromise.then(resolve);
+                return retryPromise && retryPromise.then(resolve).catch(reject);
             }
 
             // 其他错误：返回规范化错误对象
@@ -163,12 +193,6 @@ async function parseResponse<T>(response: Response): Promise<T> {
         : response.text() as Promise<T>;
 }
 
-type ErrorResponse = {
-    success: boolean
-    message: string
-    code: number
-}
-
 async function parseError(response: Response): Promise<ErrorResponse> {
     const contentType = response.headers.get('Content-Type');
     const errorData = contentType?.includes('application/json')
@@ -177,7 +201,10 @@ async function parseError(response: Response): Promise<ErrorResponse> {
     // 返回规范化的 ErrorResponse 对象
     return {
         success: false,
-        message: errorData.message || "Unknown error occurred",
+        message:
+            typeof errorData === 'string'
+                ? errorData
+                : errorData.message || "Unknown error occurred",
         code: response.status
     };
 }

@@ -1,7 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
-import { SectionUserPublicInfo } from '@/generated';
-import { useMutation } from '@tanstack/react-query';
+import {
+	InifiniteScrollPagnitionSectionUserPublicInfo,
+	SectionUserPublicInfo,
+} from '@/generated';
+import { InfiniteData, useMutation } from '@tanstack/react-query';
 import { deleteSectionUser } from '@/service/section';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
@@ -18,6 +21,7 @@ import {
 } from '../ui/dialog';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { filterInfiniteQueryElements } from '@/lib/infinite-query-cache';
 
 const SectionSubscriberItem = ({
 	user,
@@ -34,19 +38,30 @@ const SectionSubscriberItem = ({
 
 	const mutateDeleteSectionUser = useMutation({
 		mutationFn: deleteSectionUser,
+		onMutate() {
+			const previousSubscribers = queryClient.getQueriesData<
+				InfiniteData<InifiniteScrollPagnitionSectionUserPublicInfo>
+			>({
+				queryKey: ['getSectionSubscriber', section_id],
+			});
+
+			filterInfiniteQueryElements<
+				InifiniteScrollPagnitionSectionUserPublicInfo,
+				SectionUserPublicInfo
+			>(queryClient, ['getSectionSubscriber', section_id], (item) => {
+				return item.id !== user.id;
+			});
+
+			return { previousSubscribers };
+		},
 		onError(error, variables, context) {
 			console.error(error, variables, context);
 			toast.error(error.message);
+			context?.previousSubscribers?.forEach(([queryKey, snapshot]) => {
+				queryClient.setQueryData(queryKey, snapshot);
+			});
 		},
 		onSuccess(data, variables, onMutateResult, context) {
-			queryClient.invalidateQueries({
-				predicate(query) {
-					return (
-						query.queryKey[0] === 'getSectionSubscriber' &&
-						query.queryKey[1] === section_id
-					);
-				},
-			});
 			setShowDeleteDialog(false);
 		},
 	});

@@ -60,7 +60,7 @@ const DocumentCommentForm = ({
 		onSuccess(data, variables, context) {
 			setNoteSubmitting(false);
 			queryClient.invalidateQueries({
-				queryKey: ['searchDocumentNotes', commentSearchKeyword],
+				queryKey: ['searchDocumentNotes', documentId, commentSearchKeyword],
 			});
 			toast.success(t('document_note_submit_success'));
 			form.reset();

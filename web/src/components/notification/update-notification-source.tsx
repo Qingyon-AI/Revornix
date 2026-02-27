@@ -53,6 +53,12 @@ import { useUserContext } from '@/provider/user-provider';
 import { Switch } from '../ui/switch';
 import { Separator } from '../ui/separator';
 import { Alert, AlertTitle } from '../ui/alert';
+import {
+	InifiniteScrollPagnitionNotificationSource,
+	NotificationSource,
+	NotificationSourceDetail,
+} from '@/generated';
+import { mapInfiniteQueryElements } from '@/lib/infinite-query-cache';
 
 const UpdateNotificationSource = ({
 	notification_source_id,
@@ -109,9 +115,51 @@ const UpdateNotificationSource = ({
 	const mutateUpdateNotificationSource = useMutation({
 		mutationFn: updateNotificationSource,
 		onSuccess(data, variables, context) {
-			queryClient.invalidateQueries({
-				queryKey: ['searchNotificationSources'],
+			mapInfiniteQueryElements<
+				InifiniteScrollPagnitionNotificationSource,
+				NotificationSource
+			>(queryClient, ['searchNotificationSources'], (item) => {
+				if (item.id !== notification_source_id) return item;
+				return {
+					...item,
+					title:
+						typeof variables.title === 'string' ? variables.title : item.title,
+					description:
+						variables.description === undefined
+							? item.description
+							: variables.description,
+					is_public:
+						typeof variables.is_public === 'boolean'
+							? variables.is_public
+							: item.is_public,
+					update_time: new Date(),
+				};
 			});
+
+			queryClient.setQueryData<NotificationSourceDetail>(
+				['notification-source-detail', notification_source_id],
+				(old) => {
+					if (!old) return old;
+					return {
+						...old,
+						title:
+							typeof variables.title === 'string' ? variables.title : old.title,
+						description:
+							variables.description === undefined
+								? old.description
+								: variables.description,
+						config_json:
+							variables.config_json === undefined
+								? old.config_json
+								: variables.config_json,
+						is_public:
+							typeof variables.is_public === 'boolean'
+								? variables.is_public
+								: old.is_public,
+						update_time: new Date(),
+					};
+				},
+			);
 			queryClient.invalidateQueries({
 				queryKey: ['notification-source-detail', notification_source_id],
 			});

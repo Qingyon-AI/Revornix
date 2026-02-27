@@ -26,7 +26,7 @@ const UserFollows = () => {
 		hasNextPage,
 	} = useInfiniteQuery({
 		enabled: !!mainUserInfo?.id,
-		queryKey: ['getUserFollows', keyword, mainUserInfo?.id],
+		queryKey: ['getUserFollows', mainUserInfo?.id, keyword],
 		// @ts-expect-error
 		queryFn: (pageParam) => getUserFollows({ ...pageParam.pageParam }),
 		initialPageParam: {

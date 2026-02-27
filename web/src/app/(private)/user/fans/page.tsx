@@ -26,7 +26,7 @@ const UserFans = () => {
 		hasNextPage,
 	} = useInfiniteQuery({
 		enabled: !!mainUserInfo?.id,
-		queryKey: ['getUserFans', keyword, mainUserInfo?.id],
+		queryKey: ['getUserFans', mainUserInfo?.id, keyword],
 		queryFn: (pageParam) => {
 			// @ts-expect-error
 			return getUserFans({ ...pageParam.pageParam });

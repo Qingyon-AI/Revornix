@@ -20,13 +20,16 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import { TrashIcon } from 'lucide-react';
+import { useUserContext } from '@/provider/user-provider';
 
 const StarDocumentBox = () => {
 	const t = useTranslations();
 	const router = useRouter();
+	const { mainUserInfo } = useUserContext();
 	const { data: starDocuments, isFetching: isFetchingStarDocuments } = useQuery(
 		{
-			queryKey: ['searchMyStarDocument'],
+			enabled: !!mainUserInfo?.id,
+			queryKey: ['searchMyStarDocument', mainUserInfo?.id],
 			queryFn: () => searchUserStarDocument({ limit: 10, keyword: '' }),
 		}
 	);

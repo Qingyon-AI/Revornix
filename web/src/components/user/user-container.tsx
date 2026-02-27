@@ -1,7 +1,12 @@
 'use client';
 
 import { followUser, getUserInfo } from '@/service/user';
-import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import {
+	InfiniteData,
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+} from '@tanstack/react-query';
 import { Separator } from '../ui/separator';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -11,18 +16,27 @@ import SectionCardSkeleton from '../section/section-card-skeleton';
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
-import { cloneDeep } from 'lodash-es';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import {
+	InifiniteScrollPagnitionUserPublicInfo,
+	UserPublicInfo,
+} from '@/generated';
+import {
+	filterInfiniteQueryElements,
+	mapInfiniteQueryElements,
+} from '@/lib/infinite-query-cache';
 
 const UserContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
-	const { refreshMainUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
+	const userFollowsQueryKey = ['getUserFollows', mainUserInfo?.id] as const;
+	const userFansQueryKey = ['getUserFans', mainUserInfo?.id] as const;
 
 	const { data: userInfo, isFetching: isFetchingUserInfo } = useQuery({
 		queryKey: ['userInfo', id],
@@ -63,34 +77,83 @@ const UserContainer = ({ id }: { id: number }) => {
 			if (!userInfo) return;
 			return followUser({
 				to_user_id: id,
-				status: userInfo.is_followed!,
+				status: userInfo.is_followed ? false : true,
 			});
 		},
 		onMutate(variables) {
-			const prevUserInfo = cloneDeep(userInfo);
-			if (!userInfo) {
-				return;
+			if (!userInfo) return;
+
+			const previousUserInfo = queryClient.getQueryData<UserPublicInfo>([
+				'userInfo',
+				id,
+			]);
+			const previousUserFollows = queryClient.getQueriesData<
+				InfiniteData<InifiniteScrollPagnitionUserPublicInfo>
+			>({
+				queryKey: userFollowsQueryKey,
+			});
+			const previousUserFans = queryClient.getQueriesData<
+				InfiniteData<InifiniteScrollPagnitionUserPublicInfo>
+			>({
+				queryKey: userFansQueryKey,
+			});
+
+			const isFollowed = !!userInfo.is_followed;
+			const nextFollowStatus = !isFollowed;
+
+			queryClient.setQueryData<UserPublicInfo>(['userInfo', id], (old) => {
+				if (!old) return old;
+				return {
+					...old,
+					is_followed: nextFollowStatus,
+					fans: Math.max(0, (old.fans ?? 0) + (nextFollowStatus ? 1 : -1)),
+				};
+			});
+
+			if (!nextFollowStatus) {
+				filterInfiniteQueryElements<
+					InifiniteScrollPagnitionUserPublicInfo,
+					UserPublicInfo
+				>(queryClient, userFollowsQueryKey, (item) => item.id !== id);
+			} else {
+				mapInfiniteQueryElements<
+					InifiniteScrollPagnitionUserPublicInfo,
+					UserPublicInfo
+				>(queryClient, userFollowsQueryKey, (item) => {
+					if (item.id !== id) return item;
+					return {
+						...item,
+						is_followed: true,
+					};
+				});
 			}
-			userInfo.is_followed = !userInfo.is_followed;
-			return { prevUserInfo };
+
+			mapInfiniteQueryElements<
+				InifiniteScrollPagnitionUserPublicInfo,
+				UserPublicInfo
+			>(queryClient, userFansQueryKey, (item) => {
+				if (item.id !== id) return item;
+				return {
+					...item,
+					is_followed: nextFollowStatus,
+				};
+			});
+
+			return { previousUserInfo, previousUserFollows, previousUserFans };
 		},
 		onError(error, variables, context) {
 			toast.error(`${error.message}`);
-			// Revert to the previous value
-			if (userInfo && context?.prevUserInfo) {
-				userInfo.is_followed = context.prevUserInfo.is_followed;
+			if (context?.previousUserInfo) {
+				queryClient.setQueryData(['userInfo', id], context.previousUserInfo);
 			}
+			context?.previousUserFollows?.forEach(([queryKey, snapshot]) => {
+				queryClient.setQueryData(queryKey, snapshot);
+			});
+			context?.previousUserFans?.forEach(([queryKey, snapshot]) => {
+				queryClient.setQueryData(queryKey, snapshot);
+			});
 		},
 		onSuccess(data, variables, context) {
-			queryClient.invalidateQueries({
-				predicate(query) {
-					return (
-						query.queryKey.includes('getUserFollows') ||
-						query.queryKey.includes('getUserFans') ||
-						query.queryKey.includes('userInfo')
-					);
-				},
-			});
 			refreshMainUserInfo();
 		},
 	});
@@ -99,7 +162,7 @@ const UserContainer = ({ id }: { id: number }) => {
 
 	useEffect(() => {
 		inView && !isFetchingSections && hasNextPage && fetchNextPage();
-	}, [inView]);
+	}, [inView, isFetchingSections, hasNextPage, fetchNextPage]);
 
 	return (
 		<div className='px-5 pb-5'>

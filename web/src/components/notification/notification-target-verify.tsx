@@ -41,7 +41,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { NotificationTargetProvidedUUID } from '@/enums/notification';
 import { Input } from '../ui/input';
 import { useCountDown } from 'ahooks';
-import { utils } from '@kinda/utils';
+import {
+	InifiniteScrollPagnitionNotificationTarget,
+	NotificationTarget,
+	NotificationTargetDetail,
+} from '@/generated';
+import { mapInfiniteQueryElements } from '@/lib/infinite-query-cache';
 
 const NotificationTargetVerify = ({
 	notification_target_id,
@@ -96,12 +101,26 @@ const NotificationTargetVerify = ({
 		onSuccess: () => {
 			setTargetDate(Date.now() + 60000);
 			toast.success(t('notification_target_verify_success'));
-			queryClient.invalidateQueries({
-				queryKey: ['searchNotificationTargets'],
+			mapInfiniteQueryElements<
+				InifiniteScrollPagnitionNotificationTarget,
+				NotificationTarget
+			>(queryClient, ['searchNotificationTargets'], (item) => {
+				if (item.id !== notification_target_id) return item;
+				return {
+					...item,
+					is_verified: true,
+				};
 			});
-			queryClient.invalidateQueries({
-				queryKey: ['notification-target-detail', notification_target_id],
-			});
+			queryClient.setQueryData<NotificationTargetDetail>(
+				['notification-target-detail', notification_target_id],
+				(old) => {
+					if (!old) return old;
+					return {
+						...old,
+						is_verified: true,
+					};
+				},
+			);
 			setShowVerifyDialog(false);
 		},
 		onError(error, variables, onMutateResult, context) {
