@@ -97,7 +97,7 @@ const SubscribedSectionPage = () => {
 
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
-	}, [inView]);
+	}, [inView, isFetching, hasNextPage, fetchNextPage]);
 	return (
 		<>
 			<Separator className='mb-5' />

@@ -300,7 +300,7 @@ const DocumentOperate = ({
 		},
 	});
 
-		const mutateStar = useMutation({
+	const mutateStar = useMutation({
 		mutationFn: () =>
 			starDocument({ document_id: id, status: !data?.is_star! }),
 		onMutate: async () => {
@@ -326,23 +326,23 @@ const DocumentOperate = ({
 					context.previousDocument
 				);
 		},
-			onSuccess: () => {
-				const currentDocument = queryClient.getQueryData<DocumentDetailResponse>([
-					'getDocumentDetail',
-					id,
-				]);
-				if (!currentDocument?.is_star) {
-					filterInfiniteQueryElements<
-						InifiniteScrollPagnitionDocumentInfo,
-						DocumentInfo
-					>(queryClient, userMyStarDocumentQueryKey, (item) => item.id !== id);
-				}
-				queryClient.invalidateQueries({
-					queryKey: userMyStarDocumentQueryKey,
-				});
-				invalidateDocumentSummaryQueries();
-			},
-		});
+		onSuccess: () => {
+			const currentDocument = queryClient.getQueryData<DocumentDetailResponse>([
+				'getDocumentDetail',
+				id,
+			]);
+			if (!currentDocument?.is_star) {
+				filterInfiniteQueryElements<
+					InifiniteScrollPagnitionDocumentInfo,
+					DocumentInfo
+				>(queryClient, userMyStarDocumentQueryKey, (item) => item.id !== id);
+			}
+			queryClient.invalidateQueries({
+				queryKey: userMyStarDocumentQueryKey,
+			});
+			invalidateDocumentSummaryQueries();
+		},
+	});
 
 	const mutateDelete = useMutation({
 		mutationKey: ['deleteDocument', id],

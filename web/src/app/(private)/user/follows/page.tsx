@@ -49,7 +49,7 @@ const UserFollows = () => {
 
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
-	}, [inView]);
+	}, [inView, isFetching, hasNextPage, fetchNextPage]);
 	return (
 		<div className='px-5 pb-5 w-full flex-1 overflow-auto'>
 			{isError && (

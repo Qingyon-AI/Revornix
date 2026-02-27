@@ -110,7 +110,7 @@ export function NavUser() {
 
 				// 刷新通知列表
 				queryClient.invalidateQueries({
-					queryKey: ['searchMyNotifications', ''],
+					queryKey: ['searchMyNotifications', mainUserInfo?.id],
 				});
 			} catch (err) {
 				console.error('Invalid websocket message:', e.data, err);
