@@ -12,7 +12,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { InfiniteData, useMutation } from '@tanstack/react-query';
+import { InfiniteData, QueryKey, useMutation } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import {
@@ -26,6 +26,10 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { replacePath } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
+import {
+	filterInfiniteQueryElements,
+	mapInfiniteQueryElements,
+} from '@/lib/infinite-query-cache';
 
 const NotificationRecordCard = ({
 	notification,
@@ -39,16 +43,27 @@ const NotificationRecordCard = ({
 		mutationKey: ['readNotification', notification.id],
 		mutationFn: readNotificationRecords,
 		onMutate: async (variables) => {
-			if (variables.status) {
-				notification.read_at = new Date();
-			} else {
-				notification.read_at = null;
-			}
-			const prevNotification = notification;
-			return { prevNotification };
+			const previousNotifications = queryClient.getQueriesData<
+				InfiniteData<InifiniteScrollPagnitionNotificationRecord>
+			>({
+				queryKey: ['searchMyNotifications'],
+			});
+
+			mapInfiniteQueryElements<
+				InifiniteScrollPagnitionNotificationRecord,
+				NotificationRecord
+			>(queryClient, ['searchMyNotifications'], (item) => {
+				if (item.id !== notification.id) return item;
+				return {
+					...item,
+					read_at: variables.status ? new Date() : null,
+				};
+			});
+
+			return { previousNotifications };
 		},
-		onSuccess: (data) => {
-			if (notification.read_at) {
+		onSuccess: (_, variables) => {
+			if (variables.status) {
 				toast.success(t('notification_marked_as_read'));
 			} else {
 				toast.success(t('notification_marked_as_unread'));
@@ -56,33 +71,21 @@ const NotificationRecordCard = ({
 			setShowNotification(false);
 		},
 		onError: (error, variables, context) => {
-			if (!notification || !context?.prevNotification) return;
-			notification = context?.prevNotification;
+			context?.previousNotifications?.forEach(([queryKey, snapshot]) => {
+				queryClient.setQueryData(queryKey as QueryKey, snapshot);
+			});
 			toast.error(error.message);
 		},
 	});
 	const mutateDelete = useMutation({
 		mutationKey: ['deleteNotification', notification.id],
 		mutationFn: deleteNotificationRecords,
-		onSuccess: (_, variables) => {
-			// variables 通常是你 deleteNotificationRecords 的参数
+		onSuccess: () => {
 			const deletedId = notification.id;
-
-			queryClient.setQueryData<
-				InfiniteData<InifiniteScrollPagnitionNotificationRecord>
-			>(['searchMyNotifications', ''], (oldData) => {
-				if (!oldData) return oldData;
-
-				return {
-					...oldData,
-					pages: oldData.pages.map((page) => ({
-						...page,
-						elements: page.elements.filter((item) => {
-							return item.id !== deletedId;
-						}),
-					})),
-				};
-			});
+			filterInfiniteQueryElements<
+				InifiniteScrollPagnitionNotificationRecord,
+				NotificationRecord
+			>(queryClient, ['searchMyNotifications'], (item) => item.id !== deletedId);
 			setShowNotification(false);
 		},
 		onError: (error) => {

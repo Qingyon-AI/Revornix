@@ -6,8 +6,10 @@ import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import DocumentCardSkeleton from './document-card-skeleton';
 import DocumentCard from './document-card';
+import { useUserContext } from '@/provider/user-provider';
 
 const DocumentCardList = () => {
+	const { mainUserInfo } = useUserContext();
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
 	const {
@@ -18,7 +20,8 @@ const DocumentCardList = () => {
 		fetchNextPage,
 		hasNextPage,
 	} = useInfiniteQuery({
-		queryKey: ['searchUserRecentReadDocument', keyword],
+		enabled: !!mainUserInfo?.id,
+		queryKey: ['searchUserRecentReadDocument', mainUserInfo?.id, keyword],
 		queryFn: (pageParam) =>
 			searchUserRecentReadDocument({ ...pageParam.pageParam }),
 		initialPageParam: {
@@ -39,7 +42,7 @@ const DocumentCardList = () => {
 
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
-	}, [inView]);
+	}, [inView, isFetching, hasNextPage, fetchNextPage]);
 
 	return (
 		<>

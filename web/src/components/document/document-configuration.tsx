@@ -38,6 +38,7 @@ import { Skeleton } from '../ui/skeleton';
 import { cn } from '@/lib/utils';
 import AddDocumentLabelDialog from './add-document-label-dialog';
 import { getAllMineSections } from '@/service/section';
+import { useUserContext } from '@/provider/user-provider';
 
 const DocumentConfiguration = ({
 	document_id,
@@ -47,6 +48,7 @@ const DocumentConfiguration = ({
 	className?: string;
 }) => {
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
 
 	const updateFormSchema = z.object({
 		document_id: z.number().int(),
@@ -135,7 +137,21 @@ const DocumentConfiguration = ({
 		}
 		toast.success(t('document_update_success'));
 		setUpdating(false);
-		queryClient.invalidateQueries({ queryKey: ['getDocumentetail', id] });
+		queryClient.invalidateQueries({
+			queryKey: ['getDocumentDetail', id],
+			exact: true,
+		});
+		const documentListQueryKeys = [
+			'searchMyDocument',
+			'searchMyStarDocument',
+			'searchUserUnreadDocument',
+			'searchUserRecentReadDocument',
+		] as const;
+		documentListQueryKeys.forEach((queryKey) => {
+			queryClient.invalidateQueries({
+				queryKey: [queryKey, mainUserInfo?.id],
+			});
+		});
 	};
 
 	const onFormValidateError = (errors: any) => {

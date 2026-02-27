@@ -20,15 +20,18 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import { TrashIcon } from 'lucide-react';
+import { useUserContext } from '@/provider/user-provider';
 
 const RecentReadDocumentBox = () => {
 	const t = useTranslations();
 	const router = useRouter();
+	const { mainUserInfo } = useUserContext();
 	const {
 		data: recentReadDocuments,
 		isFetching: isFetchingRecentReadDocuments,
 	} = useQuery({
-		queryKey: ['searchUserRecentReadDocument'],
+		enabled: !!mainUserInfo?.id,
+		queryKey: ['searchUserRecentReadDocument', mainUserInfo?.id],
 		queryFn: () => searchUserRecentReadDocument({ limit: 10, keyword: '' }),
 	});
 	return (

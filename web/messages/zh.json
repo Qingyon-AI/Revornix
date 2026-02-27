@@ -919,6 +919,7 @@
     "fans_empty": "你还没有粉丝哦，快去发布一些专栏增加人气吧",
     "user_slogan_empty": "该用户暂无签名",
     "user_cancel_follow": "取消关注",
+    "user_cancel_follow_confirm_alert": "确认取消关注吗？一旦取消关注，对方的新专栏更新将无法通知到你。",
     "user_follow": "关注",
     "user_sections_empty": "该用户暂无专栏",
     "seo_login_email_format_error": "邮箱格式错误",

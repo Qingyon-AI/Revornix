@@ -844,7 +844,8 @@ async def public_sections(
         res.labels = labels
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
         res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
-        res.authority = UserSectionAuthority(authority_by_section_id.get(section.id))
+        if authority_by_section_id.get(section.id) is not None:
+            res.authority = UserSectionAuthority(authority_by_section_id.get(section.id))
         sections.append(res)
 
     if len(db_sections) < search_public_sections_request.limit or len(db_sections) == 0:
@@ -943,7 +944,8 @@ async def search_user_sections(
                 file_name=section.md_file_name
             )
         res.creator = section.creator
-        res.authority = UserSectionAuthority(authority_by_section_id.get(section.id))
+        if authority_by_section_id.get(section.id) is not None:
+            res.authority = UserSectionAuthority(authority_by_section_id.get(section.id))
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
         res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
         res.labels = [
@@ -1022,7 +1024,8 @@ async def search_mine_sections(
                 file_name=res.md_file_name
             )
         res.creator = section.creator
-        res.authority = UserSectionAuthority(authority_by_section_id.get(section.id))
+        if authority_by_section_id.get(section.id) is not None:
+            res.authority = UserSectionAuthority(authority_by_section_id.get(section.id))
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
         res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
         res.labels = [

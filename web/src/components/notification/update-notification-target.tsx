@@ -53,6 +53,12 @@ import { Spinner } from '../ui/spinner';
 import { Separator } from '../ui/separator';
 import { Alert, AlertTitle } from '../ui/alert';
 import { Switch } from '../ui/switch';
+import {
+	InifiniteScrollPagnitionNotificationTarget,
+	NotificationTarget,
+	NotificationTargetDetail,
+} from '@/generated';
+import { mapInfiniteQueryElements } from '@/lib/infinite-query-cache';
 
 const UpdateNotificationTarget = ({
 	notification_target_id,
@@ -109,9 +115,51 @@ const UpdateNotificationTarget = ({
 	const mutateUpdateNotificationTarget = useMutation({
 		mutationFn: updateNotificationTarget,
 		onSuccess(data, variables, context) {
-			queryClient.invalidateQueries({
-				queryKey: ['searchNotificationTargets'],
+			mapInfiniteQueryElements<
+				InifiniteScrollPagnitionNotificationTarget,
+				NotificationTarget
+			>(queryClient, ['searchNotificationTargets'], (item) => {
+				if (item.id !== notification_target_id) return item;
+				return {
+					...item,
+					title:
+						typeof variables.title === 'string' ? variables.title : item.title,
+					description:
+						variables.description === undefined
+							? item.description
+							: variables.description,
+					is_public:
+						typeof variables.is_public === 'boolean'
+							? variables.is_public
+							: item.is_public,
+					update_time: new Date(),
+				};
 			});
+
+			queryClient.setQueryData<NotificationTargetDetail>(
+				['notification-target-detail', notification_target_id],
+				(old) => {
+					if (!old) return old;
+					return {
+						...old,
+						title:
+							typeof variables.title === 'string' ? variables.title : old.title,
+						description:
+							variables.description === undefined
+								? old.description
+								: variables.description,
+						config_json:
+							variables.config_json === undefined
+								? old.config_json
+								: variables.config_json,
+						is_public:
+							typeof variables.is_public === 'boolean'
+								? variables.is_public
+								: old.is_public,
+						update_time: new Date(),
+					};
+				},
+			);
 			queryClient.invalidateQueries({
 				queryKey: ['notification-target-detail', notification_target_id],
 			});

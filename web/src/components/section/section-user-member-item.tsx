@@ -10,11 +10,13 @@ import {
 } from '../ui/select';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
-import { SectionUserPublicInfo } from '@/generated';
-import { useMutation } from '@tanstack/react-query';
+import {
+	InifiniteScrollPagnitionSectionUserPublicInfo,
+	SectionUserPublicInfo,
+} from '@/generated';
+import { InfiniteData, useMutation } from '@tanstack/react-query';
 import { deleteSectionUser, modifySectionUser } from '@/service/section';
 import { toast } from 'sonner';
-import { cloneDeep } from 'lodash-es';
 import { Button } from '../ui/button';
 import { Loader2, XCircleIcon } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -28,6 +30,10 @@ import {
 	DialogTrigger,
 } from '../ui/dialog';
 import { useState } from 'react';
+import {
+	filterInfiniteQueryElements,
+	mapInfiniteQueryElements,
+} from '@/lib/infinite-query-cache';
 
 const SectionMemberItem = ({
 	user,
@@ -45,34 +51,60 @@ const SectionMemberItem = ({
 	const mutateModifySectionUser = useMutation({
 		mutationFn: modifySectionUser,
 		onMutate(variables) {
-			const prevUser = cloneDeep(user);
-			user.authority = variables.authority;
-			return { prevUser };
+			const previousMembers = queryClient.getQueriesData<
+				InfiniteData<InifiniteScrollPagnitionSectionUserPublicInfo>
+			>({
+				queryKey: ['getSectionMembers', section_id],
+			});
+
+			mapInfiniteQueryElements<
+				InifiniteScrollPagnitionSectionUserPublicInfo,
+				SectionUserPublicInfo
+			>(queryClient, ['getSectionMembers', section_id], (item) => {
+				if (item.id !== user.id) return item;
+				return {
+					...item,
+					authority: variables.authority,
+				};
+			});
+
+			return { previousMembers };
 		},
 		onError(error, variables, context) {
 			console.error(error, variables, context);
 			toast.error(error.message);
-			if (user && context?.prevUser) {
-				user = context?.prevUser;
-			}
+			context?.previousMembers?.forEach(([queryKey, snapshot]) => {
+				queryClient.setQueryData(queryKey, snapshot);
+			});
 		},
 	});
 
 	const mutateDeleteSectionUser = useMutation({
 		mutationFn: deleteSectionUser,
+		onMutate() {
+			const previousMembers = queryClient.getQueriesData<
+				InfiniteData<InifiniteScrollPagnitionSectionUserPublicInfo>
+			>({
+				queryKey: ['getSectionMembers', section_id],
+			});
+
+			filterInfiniteQueryElements<
+				InifiniteScrollPagnitionSectionUserPublicInfo,
+				SectionUserPublicInfo
+			>(queryClient, ['getSectionMembers', section_id], (item) => {
+				return item.id !== user.id;
+			});
+
+			return { previousMembers };
+		},
 		onError(error, variables, context) {
 			console.error(error, variables, context);
 			toast.error(error.message);
+			context?.previousMembers?.forEach(([queryKey, snapshot]) => {
+				queryClient.setQueryData(queryKey, snapshot);
+			});
 		},
 		onSuccess(data, variables, onMutateResult, context) {
-			queryClient.invalidateQueries({
-				predicate(query) {
-					return (
-						query.queryKey[0] === 'getSectionMembers' &&
-						query.queryKey[1] === section_id
-					);
-				},
-			});
 			setShowDeleteDialog(false);
 		},
 	});
@@ -114,7 +146,7 @@ const SectionMemberItem = ({
 					<SelectTrigger
 						className='h-6 px-2 text-xs w-[140px] shrink-0'
 						size={'sm'}>
-						<SelectValue placeholder='请设置该用户的权限' />
+						<SelectValue placeholder='Authority' />
 					</SelectTrigger>
 					<SelectContent className='text-xs'>
 						<SelectGroup>

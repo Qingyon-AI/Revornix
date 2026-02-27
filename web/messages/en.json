@@ -918,6 +918,7 @@
     "fans_empty": "You don't have any fans yet. Start publishing sections to attract attention!",
     "user_slogan_empty": "This user has no signature yet",
     "user_cancel_follow": "Unfollow",
+    "user_cancel_follow_confirm_alert": "Are you sure you want to unfollow? After unfollowing, you will no longer receive updates from this user's new sections.",
     "user_follow": "Follow",
     "user_sections_empty": "This user has no sections",
     "seo_login_email_format_error": "Invalid email format",

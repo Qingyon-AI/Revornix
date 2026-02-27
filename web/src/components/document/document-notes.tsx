@@ -29,7 +29,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 	const { data, isFetchingNextPage, isFetching, fetchNextPage, hasNextPage } =
 		useInfiniteQuery({
 			enabled: !!document,
-			queryKey: ['searchDocumentNotes', keyword],
+			queryKey: ['searchDocumentNotes', id, keyword],
 			queryFn: (pageParam) => searchDocumentNotes({ ...pageParam.pageParam }),
 			initialPageParam: {
 				limit: 10,
