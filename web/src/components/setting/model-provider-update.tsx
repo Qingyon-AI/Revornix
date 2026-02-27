@@ -264,44 +264,48 @@ const ModelProviderUpdate = ({
 							{mainUserInfo &&
 								mainUserInfo.id === modelProvider?.creator.id && (
 									<>
-										<FormField
-											control={form.control}
-											name='api_key'
-											render={({ field }) => (
-												<FormItem>
-													<div className='grid grid-cols-12 gap-2'>
-														<FormLabel className='col-span-3'>
-															API Key
-														</FormLabel>
-														<Input
-															type='password'
-															className='col-span-9'
-															placeholder='API Key'
-															{...field}
-															value={field.value ?? ''}
-															disabled={!authorized}
-														/>
+											<FormField
+												control={form.control}
+												name='api_key'
+												render={({ field }) => (
+													<FormItem>
+														<div className='grid grid-cols-12 gap-2'>
+															<FormLabel className='col-span-3'>
+																{t('setting_model_provider_api_key')}
+															</FormLabel>
+															<Input
+																type='password'
+																className='col-span-9'
+																placeholder={t(
+																	'setting_model_provider_api_key_placeholder',
+																)}
+																{...field}
+																value={field.value ?? ''}
+																disabled={!authorized}
+															/>
 													</div>
 													<FormMessage />
 												</FormItem>
 											)}
 										/>
-										<FormField
-											control={form.control}
-											name='base_url'
-											render={({ field }) => (
-												<FormItem>
-													<div className='grid grid-cols-12 gap-2'>
-														<FormLabel className='col-span-3'>
-															Base Url
-														</FormLabel>
-														<Input
-															className='col-span-9'
-															placeholder='Base Url'
-															{...field}
-															value={field.value ?? ''}
-															disabled={!authorized}
-														/>
+											<FormField
+												control={form.control}
+												name='base_url'
+												render={({ field }) => (
+													<FormItem>
+														<div className='grid grid-cols-12 gap-2'>
+															<FormLabel className='col-span-3'>
+																{t('setting_model_provider_base_url')}
+															</FormLabel>
+															<Input
+																className='col-span-9'
+																placeholder={t(
+																	'setting_model_provider_base_url_placeholder',
+																)}
+																{...field}
+																value={field.value ?? ''}
+																disabled={!authorized}
+															/>
 													</div>
 													<FormMessage />
 												</FormItem>

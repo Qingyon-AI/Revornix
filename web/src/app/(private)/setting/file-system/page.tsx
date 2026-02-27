@@ -33,11 +33,11 @@ const FileSystemPage = () => {
 				</AlertDescription>
 			</Alert>
 			{isFetching && !mineFileSystems && <Skeleton className='w-full h-52' />}
-			{isError && (
-				<div className='w-full h-full flex justify-center items-center'>
-					<p className='text-muted-foreground text-xs'>something wrong</p>
-				</div>
-			)}
+				{isError && (
+					<div className='w-full h-full flex justify-center items-center'>
+						<p className='text-muted-foreground text-xs'>{t('something_wrong')}</p>
+					</div>
+				)}
 			{isSuccess && (
 				<div className='grid grid-cols-1 md:grid-cols-4 gap-5'>
 					{mineFileSystems?.data?.map((file_system, index) => {

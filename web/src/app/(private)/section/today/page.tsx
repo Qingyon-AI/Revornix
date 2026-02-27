@@ -67,12 +67,12 @@ const SectionDetailPage = () => {
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
 	const [markdown, setMarkdown] = useState<string>();
 
-	const onGetMarkdown = async () => {
-		if (!section || !section.md_file_name || !mainUserInfo) return;
-		if (!mainUserInfo.default_user_file_system) {
-			toast.error('No default file system found');
-			return;
-		}
+		const onGetMarkdown = async () => {
+			if (!section || !section.md_file_name || !mainUserInfo) return;
+			if (!mainUserInfo.default_user_file_system) {
+				toast.error(t('error_default_file_system_not_found'));
+				return;
+			}
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
 			const [res, err] = await utils.to(

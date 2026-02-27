@@ -55,7 +55,7 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 	const mutateDeleteEngine = useMutation({
 		mutationFn: deleteEngine,
 		onSuccess: () => {
-			toast.success(t('setting_engine_page_mine_engine_delete_success'));
+			toast.success(t('setting_engine_delete_success'));
 			queryClient.invalidateQueries({
 				predicate(query) {
 					return query.queryKey.includes('searchCommunityEngines');

@@ -88,7 +88,7 @@ const PhoneBind = () => {
 
 	const onFormValidateError = (errors: any) => {
 		console.error(errors);
-		toast.error(t('form_validate_error'));
+		toast.error(t('form_validate_failed'));
 	};
 
 	const onSendCode = () => {
