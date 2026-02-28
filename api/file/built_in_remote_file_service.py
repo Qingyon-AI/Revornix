@@ -136,12 +136,24 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     async def init_client(
         self,
     ):
+        def _ensure_bucket():
+            if self.bucket is not None:
+                return self.bucket
+            if self.user_id is None:
+                raise Exception("User ID is not specified for built-in file service")
+            with session_scope() as db:
+                db_user = crud.user.get_user_by_id(
+                    db=db,
+                    user_id=self.user_id
+                )
+                if db_user is None:
+                    raise Exception("User not found")
+                self.bucket = db_user.uuid
+            return self.bucket
+
         def _init():
             deployed_by_official = check_deployed_by_official_in_fuc()
             try:
-                if self.user_id is None:
-                    raise Exception("User ID is not specified for built-in file service")
-                
                 file_service_config = self.get_config()
                 if file_service_config is None:
                     raise Exception("File service config is not specified")
@@ -185,17 +197,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                     verify=deployed_by_official
                 )
                 self.s3_client = s3
-                
-                # 再在“需要 DB 的瞬间”打开 session，并立刻关闭
-                with session_scope() as db:
-                    db_user = crud.user.get_user_by_id(
-                        db=db, 
-                        user_id=self.user_id
-                    )
-                    if db_user is None:
-                        raise Exception("User not found")
-                    self.bucket = db_user.uuid
-                
+                _ensure_bucket()
                 self.ensure_bucket_exists()
             except Exception as e:
                 exception_logger.error(f"Init User File System Error: {e}")

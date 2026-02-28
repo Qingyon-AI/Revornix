@@ -47,6 +47,48 @@ from fastapi import Request
 
 user_router = APIRouter()
 
+
+def _cleanup_user_bucket_sync(file_service: BuiltInRemoteFileService) -> None:
+    if file_service.s3_client is None or file_service.bucket is None:
+        return
+    try:
+        file_service.empty_bucket()
+    except Exception as cleanup_error:
+        exception_logger.error(
+            f"Failed to empty user bucket during cleanup: {cleanup_error}"
+        )
+    try:
+        file_service.delete_bucket()
+    except Exception as cleanup_error:
+        exception_logger.error(
+            f"Failed to delete user bucket during cleanup: {cleanup_error}"
+        )
+
+
+async def _init_user_bucket(db_user: models.user.User) -> BuiltInRemoteFileService:
+    file_service = BuiltInRemoteFileService()
+    file_service.user_id = db_user.id
+    file_service.bucket = db_user.uuid
+    try:
+        await file_service.init_client()
+    except Exception:
+        await asyncio.to_thread(_cleanup_user_bucket_sync, file_service)
+        raise
+    return file_service
+
+
+async def _commit_with_bucket_cleanup(
+    db: Session,
+    file_service: BuiltInRemoteFileService | None = None
+) -> None:
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        if file_service is not None:
+            await asyncio.to_thread(_cleanup_user_bucket_sync, file_service)
+        raise
+
 @user_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
 async def search_user(
     search_user_request: schemas.user.SearchUserRequest,
@@ -452,11 +494,8 @@ async def create_user_by_email_verify(
         description="The default file system for the user"
     )
     db_user.default_user_file_system = db_user_file_system.id
-    # create the minio file bucket for the user because it's the default file system
-    file_service = BuiltInRemoteFileService()
-    file_service.user_id = db_user.id
-    await file_service.init_client()
-    db.commit()
+    file_service = await _init_user_bucket(db_user=db_user)
+    await _commit_with_bucket_cleanup(db=db, file_service=file_service)
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
         raise CustomException(message='The token is not created.')
@@ -508,11 +547,8 @@ async def create_user_by_email(
         description="The default file system for the user"
     )
     db_user.default_user_file_system = db_user_file_system.id
-    # create the minio file bucket for the user because it's the default file system
-    file_service = BuiltInRemoteFileService()
-    file_service.user_id = db_user.id
-    await file_service.init_client()
-    db.commit()
+    file_service = await _init_user_bucket(db_user=db_user)
+    await _commit_with_bucket_cleanup(db=db, file_service=file_service)
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
         raise CustomException(message='The token is not created.')
@@ -1003,11 +1039,8 @@ async def create_user_by_google(
         description="The default file system for the user"
     )
     db_user.default_user_file_system = db_user_file_system.id
-    # create the minio file bucket for the user because it's the default file system
-    file_service = BuiltInRemoteFileService()
-    file_service.user_id = db_user.id
-    await file_service.init_client()
-    db.commit()
+    file_service = await _init_user_bucket(db_user=db_user)
+    await _commit_with_bucket_cleanup(db=db, file_service=file_service)
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
         access_token=access_token,
@@ -1145,11 +1178,8 @@ async def create_user_by_github(
         description="The default file system for the user"
     )
     db_user.default_user_file_system = db_user_file_system.id
-    # create the minio file bucket for the user because it's the default file system
-    file_service = BuiltInRemoteFileService()
-    file_service.user_id = db_user.id
-    await file_service.init_client()
-    db.commit()
+    file_service = await _init_user_bucket(db_user=db_user)
+    await _commit_with_bucket_cleanup(db=db, file_service=file_service)
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
 
@@ -1298,11 +1328,8 @@ async def create_user_by_sms_verify(
             description="The default file system for the user"
         )
         db_user.default_user_file_system = db_user_file_system.id
-        # create the minio file bucket for the user because it's the default file system
-        file_service = BuiltInRemoteFileService()
-        file_service.user_id = db_user.id
-        await file_service.init_client()
-        db.commit()
+        file_service = await _init_user_bucket(db_user=db_user)
+        await _commit_with_bucket_cleanup(db=db, file_service=file_service)
         access_token, refresh_token = create_token(db_user)
         return schemas.user.TokenResponse(
             access_token=access_token,
@@ -1419,6 +1446,7 @@ async def create_user_by_wechat_mini(
         db=db,
         wechat_user_union_id=union_id
     )
+    bucket_file_service: BuiltInRemoteFileService | None = None
 
     if len(db_exist_wechat_user_by_union_id) == 0:
         nickname = f'Revornix User {uuid4().hex[:8]}'
@@ -1453,10 +1481,7 @@ async def create_user_by_wechat_mini(
             description="The default file system for the user"
         )
         db_user.default_user_file_system = db_user_file_system.id
-        # create the minio file bucket for the user because it's the default file system
-        file_service = BuiltInRemoteFileService()
-        file_service.user_id = db_user.id
-        await file_service.init_client()
+        bucket_file_service = await _init_user_bucket(db_user=db_user)
     else:
         # TODO 优化一下微信用户的机制 现在的处理总感觉有些问题
         # 如果union_id已经存在 说明该用户已通过别的微信渠道注册过, 不需要新建文件系统等机制 仅仅再创建一个微信用户身份即可
@@ -1474,7 +1499,7 @@ async def create_user_by_wechat_mini(
             wechat_user_union_id=union_id,
             wechat_user_name=db_user.nickname
         )
-    db.commit()
+    await _commit_with_bucket_cleanup(db=db, file_service=bucket_file_service)
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
         access_token=access_token,
@@ -1519,6 +1544,7 @@ async def create_user_by_wechat_web(
         db=db,
         wechat_user_union_id=union_id
     )
+    bucket_file_service: BuiltInRemoteFileService | None = None
     if len(db_exist_wechat_user_by_union_id) == 0:
         # get the wechat user info
         response_user_info = await asyncio.to_thread(
@@ -1558,10 +1584,7 @@ async def create_user_by_wechat_web(
             description="The default file system for the user"
         )
         db_user.default_user_file_system = db_user_file_system.id
-        # create the minio file bucket for the user because it's the default file system
-        file_service = BuiltInRemoteFileService()
-        file_service.user_id = db_user.id
-        await file_service.init_client()
+        bucket_file_service = await _init_user_bucket(db_user=db_user)
     else:
         db_user = crud.user.get_user_by_id(
             db=db,
@@ -1577,7 +1600,7 @@ async def create_user_by_wechat_web(
             wechat_user_union_id=union_id,
             wechat_user_name=db_user.nickname
         )
-    db.commit()
+    await _commit_with_bucket_cleanup(db=db, file_service=bucket_file_service)
     access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
         access_token=access_token,
