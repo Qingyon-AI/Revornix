@@ -454,6 +454,7 @@ async def create_user_by_email_verify(
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
     file_service = BuiltInRemoteFileService()
+    file_service.user_id = db_user.id
     await file_service.init_client()
     db.commit()
     access_token, refresh_token = create_token(db_user)
@@ -509,6 +510,7 @@ async def create_user_by_email(
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
     file_service = BuiltInRemoteFileService()
+    file_service.user_id = db_user.id
     await file_service.init_client()
     db.commit()
     access_token, refresh_token = create_token(db_user)
@@ -1003,6 +1005,7 @@ async def create_user_by_google(
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
     file_service = BuiltInRemoteFileService()
+    file_service.user_id = db_user.id
     await file_service.init_client()
     db.commit()
     access_token, refresh_token = create_token(db_user)
@@ -1144,6 +1147,7 @@ async def create_user_by_github(
     db_user.default_user_file_system = db_user_file_system.id
     # create the minio file bucket for the user because it's the default file system
     file_service = BuiltInRemoteFileService()
+    file_service.user_id = db_user.id
     await file_service.init_client()
     db.commit()
     access_token, refresh_token = create_token(db_user)
@@ -1296,6 +1300,7 @@ async def create_user_by_sms_verify(
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
         file_service = BuiltInRemoteFileService()
+        file_service.user_id = db_user.id
         await file_service.init_client()
         db.commit()
         access_token, refresh_token = create_token(db_user)
@@ -1450,6 +1455,7 @@ async def create_user_by_wechat_mini(
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
         file_service = BuiltInRemoteFileService()
+        file_service.user_id = db_user.id
         await file_service.init_client()
     else:
         # TODO 优化一下微信用户的机制 现在的处理总感觉有些问题
@@ -1554,6 +1560,7 @@ async def create_user_by_wechat_web(
         db_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
         file_service = BuiltInRemoteFileService()
+        file_service.user_id = db_user.id
         await file_service.init_client()
     else:
         db_user = crud.user.get_user_by_id(

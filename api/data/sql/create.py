@@ -171,6 +171,7 @@ async def seed_database(db: Session):
         db_root_user.default_user_file_system = db_user_file_system.id
         # create the minio file bucket for the user because it's the default file system
         file_service = BuiltInRemoteFileService()
+        file_service.user_id = db_root_user.id
         await file_service.init_client()
         # 这里不要 commit，统一由外层 commit（更安全）
         db.flush()

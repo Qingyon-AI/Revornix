@@ -23,7 +23,7 @@ notification_router = APIRouter()
 
 # 仅仅是前端用来接收消息的
 @notification_router.websocket("/ws")
-async def websocket_ask(
+async def websocket_connect(
     websocket: WebSocket,
     db: Session = Depends(get_db)
 ):
