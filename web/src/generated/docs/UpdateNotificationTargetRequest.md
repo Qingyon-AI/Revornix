@@ -9,8 +9,11 @@ Name | Type
 `notification_target_id` | number
 `title` | string
 `description` | string
-`config_json` | string
 `is_public` | boolean
+`email_target_form` | [EmailTargetForm](EmailTargetForm.md)
+`ios_target_form` | [IOSTargetForm](IOSTargetForm.md)
+`feishu_target_form` | [FeiShuTargetForm](FeiShuTargetForm.md)
+`dingtalk_target_form` | [DingTalkTargetForm](DingTalkTargetForm.md)
 
 ## Example
 
@@ -22,8 +25,11 @@ const example = {
   "notification_target_id": null,
   "title": null,
   "description": null,
-  "config_json": null,
   "is_public": null,
+  "email_target_form": null,
+  "ios_target_form": null,
+  "feishu_target_form": null,
+  "dingtalk_target_form": null,
 } satisfies UpdateNotificationTargetRequest
 
 console.log(example)

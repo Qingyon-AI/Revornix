@@ -39,8 +39,13 @@ import {
 } from '../ui/select';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Loader2, PlusCircleIcon } from 'lucide-react';
-import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
+import { NotificationTargetProvidedUUID } from '@/enums/notification';
+import EmailNotificationTarget from './email-notification-target';
+import IOSNotificationTarget from './ios-notification-target';
+import FeishuNotificationTarget from './feishu-notification-target';
+import DingTalkNotificationTarget from './dingtalk-notification-target';
+import TelegramNotificationTarget from './telegram-notification-target';
 
 const AddNotificationTarget = () => {
 	const locale = useLocale();
@@ -50,23 +55,58 @@ const AddNotificationTarget = () => {
 		title: z.string(),
 		notification_target_provided_id: z.number(),
 		description: z.string().optional(),
-		config_json: z.string().optional(),
 		is_public: z.boolean(),
+		email_target_form: z
+			.object({
+				email: z.string().email(),
+				code: z.string(),
+			})
+			.optional(),
+		ios_target_form: z
+			.object({
+				device_token: z.string(),
+			})
+			.optional(),
+		feishu_target_form: z
+			.object({
+				webhook_url: z.string(),
+				sign: z.string(),
+			})
+			.optional(),
+		dingtalk_target_form: z
+			.object({
+				webhook_url: z.string(),
+				sign: z.string(),
+			})
+			.optional(),
+		telegram_target_form: z
+			.object({
+				chat_id: z.string(),
+			})
+			.optional(),
+	});
+
+	type AddNotificationTargetFormValues = z.infer<typeof formSchema>;
+
+	const defaultFormValues: Pick<
+		AddNotificationTargetFormValues,
+		'title' | 'description' | 'is_public'
+	> = {
+		title: '',
+		description: '',
+		is_public: false,
+	};
+
+	const form = useForm<AddNotificationTargetFormValues>({
+		resolver: zodResolver(formSchema),
+		defaultValues: defaultFormValues,
+		shouldUnregister: true,
 	});
 
 	const [showAddDialog, setShowAddDialog] = useState(false);
-	const form = useForm({
-		resolver: zodResolver(formSchema),
-		defaultValues: {
-			title: '',
-			description: '',
-			config_json: '',
-			is_public: false,
-		},
-	});
 
-	const { data: notificationTargets } = useQuery({
-		queryKey: ['searchNotificationTargets'],
+	const { data: providedNotificationTargets } = useQuery({
+		queryKey: ['searchProvidedNotificationTargets'],
 		queryFn: getProvidedNotificationTargets,
 	});
 
@@ -116,7 +156,14 @@ const AddNotificationTarget = () => {
 				{t('setting_notification_target_manage_add_form_label')}
 				<PlusCircleIcon />
 			</Button>
-			<Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+			<Dialog
+				open={showAddDialog}
+				onOpenChange={(open) => {
+					setShowAddDialog(open);
+					if (!open) {
+						form.reset(defaultFormValues);
+					}
+				}}>
 				<DialogContent>
 					<DialogTitle>
 						{t('setting_notification_target_manage_add_form_label')}
@@ -158,17 +205,19 @@ const AddNotificationTarget = () => {
 														</SelectTrigger>
 														<SelectContent className='w-full'>
 															<SelectGroup>
-																{notificationTargets?.data.map((item) => {
-																	return (
-																		<SelectItem
-																			key={item.id}
-																			value={String(item.id)}>
-																			{locale === 'zh'
-																				? item.name_zh
-																				: item.name}
-																		</SelectItem>
-																	);
-																})}
+																{providedNotificationTargets?.data.map(
+																	(item) => {
+																		return (
+																			<SelectItem
+																				key={item.id}
+																				value={String(item.id)}>
+																				{locale === 'zh'
+																					? item.name_zh
+																					: item.name}
+																			</SelectItem>
+																		);
+																	},
+																)}
 															</SelectGroup>
 														</SelectContent>
 													</Select>
@@ -228,54 +277,47 @@ const AddNotificationTarget = () => {
 									);
 								}}
 							/>
-							{notificationTargets?.data.find((item) => {
+							{providedNotificationTargets?.data.find((item) => {
 								return (
 									item.id === form.watch('notification_target_provided_id')
 								);
-							})?.demo_config && (
-								<>
-									<FormField
-										name='config_json'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<div className='grid grid-cols-12 gap-2'>
-														<FormLabel className='col-span-3'>
-															{t(
-																'setting_notification_target_manage_form_config_json',
-															)}
-														</FormLabel>
-														<Textarea
-															placeholder={t(
-																'setting_notification_target_manage_form_config_json_placeholder',
-															)}
-															className='font-mono break-all col-span-9'
-															{...field}
-															value={field.value ?? ''}
-														/>
-													</div>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-									<div className='grid grid-cols-12 gap-2'>
-										<FormLabel className='col-span-3'>
-											{t('setting_notification_target_manage_form_config_demo')}
-										</FormLabel>
-										<div className='p-5 rounded bg-muted font-mono text-sm break-all col-span-9'>
-											{
-												notificationTargets?.data.find((item) => {
-													return (
-														item.id ===
-														form.watch('notification_target_provided_id')
-													);
-												})?.demo_config
-											}
-										</div>
-									</div>
-								</>
+							})?.uuid === NotificationTargetProvidedUUID.EMAIL && (
+								<EmailNotificationTarget />
+							)}
+							{providedNotificationTargets?.data.find((item) => {
+								return (
+									item.id === form.watch('notification_target_provided_id')
+								);
+							})?.uuid === NotificationTargetProvidedUUID.APPLE && (
+								<IOSNotificationTarget env='prod' />
+							)}
+							{providedNotificationTargets?.data.find((item) => {
+								return (
+									item.id === form.watch('notification_target_provided_id')
+								);
+							})?.uuid === NotificationTargetProvidedUUID.APPLE_SANDBOX && (
+								<IOSNotificationTarget env='sandbox' />
+							)}
+							{providedNotificationTargets?.data.find((item) => {
+								return (
+									item.id === form.watch('notification_target_provided_id')
+								);
+							})?.uuid === NotificationTargetProvidedUUID.FEISHU && (
+								<FeishuNotificationTarget />
+							)}
+							{providedNotificationTargets?.data.find((item) => {
+								return (
+									item.id === form.watch('notification_target_provided_id')
+								);
+							})?.uuid === NotificationTargetProvidedUUID.DINGTALK && (
+								<DingTalkNotificationTarget />
+							)}
+							{providedNotificationTargets?.data.find((item) => {
+								return (
+									item.id === form.watch('notification_target_provided_id')
+								);
+							})?.uuid === NotificationTargetProvidedUUID.TELEGRAM && (
+								<TelegramNotificationTarget />
 							)}
 							<FormField
 								name='is_public'

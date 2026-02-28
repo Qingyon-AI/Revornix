@@ -13,6 +13,35 @@
  */
 
 import { mapValues } from '../runtime';
+import type { IOSTargetForm } from './IOSTargetForm';
+import {
+    IOSTargetFormFromJSON,
+    IOSTargetFormFromJSONTyped,
+    IOSTargetFormToJSON,
+    IOSTargetFormToJSONTyped,
+} from './IOSTargetForm';
+import type { FeiShuTargetForm } from './FeiShuTargetForm';
+import {
+    FeiShuTargetFormFromJSON,
+    FeiShuTargetFormFromJSONTyped,
+    FeiShuTargetFormToJSON,
+    FeiShuTargetFormToJSONTyped,
+} from './FeiShuTargetForm';
+import type { EmailTargetForm } from './EmailTargetForm';
+import {
+    EmailTargetFormFromJSON,
+    EmailTargetFormFromJSONTyped,
+    EmailTargetFormToJSON,
+    EmailTargetFormToJSONTyped,
+} from './EmailTargetForm';
+import type { DingTalkTargetForm } from './DingTalkTargetForm';
+import {
+    DingTalkTargetFormFromJSON,
+    DingTalkTargetFormFromJSONTyped,
+    DingTalkTargetFormToJSON,
+    DingTalkTargetFormToJSONTyped,
+} from './DingTalkTargetForm';
+
 /**
  * 
  * @export
@@ -45,10 +74,28 @@ export interface AddNotificationTargetRequest {
     description?: string | null;
     /**
      * 
-     * @type {string}
+     * @type {EmailTargetForm}
      * @memberof AddNotificationTargetRequest
      */
-    config_json?: string | null;
+    email_target_form?: EmailTargetForm | null;
+    /**
+     * 
+     * @type {IOSTargetForm}
+     * @memberof AddNotificationTargetRequest
+     */
+    ios_target_form?: IOSTargetForm | null;
+    /**
+     * 
+     * @type {FeiShuTargetForm}
+     * @memberof AddNotificationTargetRequest
+     */
+    feishu_target_form?: FeiShuTargetForm | null;
+    /**
+     * 
+     * @type {DingTalkTargetForm}
+     * @memberof AddNotificationTargetRequest
+     */
+    dingtalk_target_form?: DingTalkTargetForm | null;
 }
 
 /**
@@ -75,7 +122,10 @@ export function AddNotificationTargetRequestFromJSONTyped(json: any, ignoreDiscr
         'title': json['title'],
         'is_public': json['is_public'],
         'description': json['description'] == null ? undefined : json['description'],
-        'config_json': json['config_json'] == null ? undefined : json['config_json'],
+        'email_target_form': json['email_target_form'] == null ? undefined : EmailTargetFormFromJSON(json['email_target_form']),
+        'ios_target_form': json['ios_target_form'] == null ? undefined : IOSTargetFormFromJSON(json['ios_target_form']),
+        'feishu_target_form': json['feishu_target_form'] == null ? undefined : FeiShuTargetFormFromJSON(json['feishu_target_form']),
+        'dingtalk_target_form': json['dingtalk_target_form'] == null ? undefined : DingTalkTargetFormFromJSON(json['dingtalk_target_form']),
     };
 }
 
@@ -94,7 +144,10 @@ export function AddNotificationTargetRequestToJSONTyped(value?: AddNotificationT
         'title': value['title'],
         'is_public': value['is_public'],
         'description': value['description'],
-        'config_json': value['config_json'],
+        'email_target_form': EmailTargetFormToJSON(value['email_target_form']),
+        'ios_target_form': IOSTargetFormToJSON(value['ios_target_form']),
+        'feishu_target_form': FeiShuTargetFormToJSON(value['feishu_target_form']),
+        'dingtalk_target_form': DingTalkTargetFormToJSON(value['dingtalk_target_form']),
     };
 }
 

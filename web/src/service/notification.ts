@@ -1,5 +1,5 @@
 import notificationApi from '@/api/notification'
-import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, UpdateNotificationSourceRequest, AddNotificationTargetRequest, UpdateNotificationTargetRequest, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, PaginationNotificationTask, PageableRequest, TriggerEventsResponse, GetNotificationSourceRelatedTaskResponse, GetNotificationTargetRelatedTaskResponse, GetNotificationTargetRelatedTaskRequest, GetNotificationSourceRelatedTaskRequest, SearchNotificationSourceRequest, InifiniteScrollPagnitionNotificationSource, NotificationSourceForkRequest, NotificationTargetForkRequest, DeleteNotificationSourceRequest, NotificationSourceDetailRequest, NotificationSourceDetail, DeleteNotificationTargetRequest, NotificationTargetDetailRequest, SearchNotificationTargetRequest, InifiniteScrollPagnitionNotificationTarget, NotificationTargetsProvidedResponse, NotificationSourcesProvidedResponse, NotificationTargetDetail, NotificationSourcesUsableResponse, NotificationTargetsUsableResponse, NotificationTargetRequestVerifySend, NotificationTargetRequestVerify } from '@/generated';
+import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, UpdateNotificationSourceRequest, AddNotificationTargetRequest, UpdateNotificationTargetRequest, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, PaginationNotificationTask, PageableRequest, TriggerEventsResponse, GetNotificationSourceRelatedTaskResponse, GetNotificationTargetRelatedTaskResponse, GetNotificationTargetRelatedTaskRequest, GetNotificationSourceRelatedTaskRequest, SearchNotificationSourceRequest, InifiniteScrollPagnitionNotificationSource, NotificationSourceForkRequest, NotificationTargetForkRequest, DeleteNotificationSourceRequest, NotificationSourceDetailRequest, NotificationSourceDetail, DeleteNotificationTargetRequest, NotificationTargetDetailRequest, SearchNotificationTargetRequest, InifiniteScrollPagnitionNotificationTarget, NotificationTargetsProvidedResponse, NotificationSourcesProvidedResponse, NotificationTargetDetail, NotificationSourcesUsableResponse, NotificationTargetsUsableResponse, EmailTargetSendCodeRequest } from '@/generated';
 import { request } from '@/lib/request';
 
 export const forkNotificationSource = async (data: NotificationSourceForkRequest): Promise<NormalResponse> => {
@@ -8,14 +8,8 @@ export const forkNotificationSource = async (data: NotificationSourceForkRequest
     })
 }
 
-export const verifyNotificationTargetSend = async (data: NotificationTargetRequestVerifySend): Promise<NormalResponse> => {
-    return await request(notificationApi.verifyNotificationTargetSend, {
-        data
-    })
-}
-
-export const verifyNotificationTarget = async (data: NotificationTargetRequestVerify): Promise<NormalResponse> => {
-    return await request(notificationApi.verifyNotificationTarget, {
+export const sendEmailNotificationTargetCode = async (data: EmailTargetSendCodeRequest): Promise<NormalResponse> => {
+    return await request(notificationApi.sendEmailNotificationTargetCode, {
         data
     })
 }

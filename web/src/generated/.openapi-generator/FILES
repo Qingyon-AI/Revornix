@@ -44,6 +44,7 @@ docs/DeleteNotificationRecordRequest.md
 docs/DeleteNotificationSourceRequest.md
 docs/DeleteNotificationTargetRequest.md
 docs/DeleteNotificationTaskRequest.md
+docs/DingTalkTargetForm.md
 docs/DocumentAiSummaryRequest.md
 docs/DocumentApi.md
 docs/DocumentConvertTask.md
@@ -73,6 +74,8 @@ docs/DocumentUpdateRequest.md
 docs/Edge.md
 docs/EmailCreateRequest.md
 docs/EmailInfo.md
+docs/EmailTargetForm.md
+docs/EmailTargetSendCodeRequest.md
 docs/EmailUserCreateCodeVerifyRequest.md
 docs/EmailUserCreateVerifyRequest.md
 docs/EngineApi.md
@@ -87,6 +90,7 @@ docs/EngineProvidedInfo.md
 docs/EngineProvidedSearchRequest.md
 docs/EngineProvidedSearchResponse.md
 docs/EngineUpdateRequest.md
+docs/FeiShuTargetForm.md
 docs/FileDocumentInfo.md
 docs/FileSystemApi.md
 docs/FileSystemInfo.md
@@ -111,6 +115,8 @@ docs/GoogleUserCreate.md
 docs/GraphApi.md
 docs/GraphResponse.md
 docs/HTTPValidationError.md
+docs/IOSTargetChangeCodeStatusRequest.md
+docs/IOSTargetForm.md
 docs/InifiniteScrollPagnitionDocumentInfo.md
 docs/InifiniteScrollPagnitionDocumentNoteInfo.md
 docs/InifiniteScrollPagnitionEngineInfo.md
@@ -173,8 +179,6 @@ docs/NotificationTargetDetail.md
 docs/NotificationTargetDetailRequest.md
 docs/NotificationTargetForkRequest.md
 docs/NotificationTargetProvided.md
-docs/NotificationTargetRequestVerify.md
-docs/NotificationTargetRequestVerifySend.md
 docs/NotificationTargetsProvidedResponse.md
 docs/NotificationTargetsUsableResponse.md
 docs/NotificationTask.md
@@ -312,6 +316,7 @@ models/DeleteNotificationRecordRequest.ts
 models/DeleteNotificationSourceRequest.ts
 models/DeleteNotificationTargetRequest.ts
 models/DeleteNotificationTaskRequest.ts
+models/DingTalkTargetForm.ts
 models/DocumentAiSummaryRequest.ts
 models/DocumentConvertTask.ts
 models/DocumentCreateRequest.ts
@@ -340,6 +345,8 @@ models/DocumentUpdateRequest.ts
 models/Edge.ts
 models/EmailCreateRequest.ts
 models/EmailInfo.ts
+models/EmailTargetForm.ts
+models/EmailTargetSendCodeRequest.ts
 models/EmailUserCreateCodeVerifyRequest.ts
 models/EmailUserCreateVerifyRequest.ts
 models/EngineCategory.ts
@@ -353,6 +360,7 @@ models/EngineProvidedInfo.ts
 models/EngineProvidedSearchRequest.ts
 models/EngineProvidedSearchResponse.ts
 models/EngineUpdateRequest.ts
+models/FeiShuTargetForm.ts
 models/FileDocumentInfo.ts
 models/FileSystemInfo.ts
 models/FileSystemInfoRequest.ts
@@ -375,6 +383,8 @@ models/GoogleUserBind.ts
 models/GoogleUserCreate.ts
 models/GraphResponse.ts
 models/HTTPValidationError.ts
+models/IOSTargetChangeCodeStatusRequest.ts
+models/IOSTargetForm.ts
 models/InifiniteScrollPagnitionDocumentInfo.ts
 models/InifiniteScrollPagnitionDocumentNoteInfo.ts
 models/InifiniteScrollPagnitionEngineInfo.ts
@@ -435,8 +445,6 @@ models/NotificationTargetDetail.ts
 models/NotificationTargetDetailRequest.ts
 models/NotificationTargetForkRequest.ts
 models/NotificationTargetProvided.ts
-models/NotificationTargetRequestVerify.ts
-models/NotificationTargetRequestVerifySend.ts
 models/NotificationTargetsProvidedResponse.ts
 models/NotificationTargetsUsableResponse.ts
 models/NotificationTask.ts
