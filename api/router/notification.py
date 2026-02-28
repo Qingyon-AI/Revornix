@@ -421,8 +421,8 @@ async def notification_target_verify_send(
         mail = RevornixSystemEmail()
         await mail.send(
             recipient=target_email,
-            title="Revornix通知终端邮件绑定",
-            content=f"欢迎使用Revornix, 您的通知终端邮件绑定验证码为{code}, 有效期10分钟。",
+            title="Revornix notification endpoint email binding.",
+            content=f"Welcome to Revornix. Your verification code for binding the notification endpoint email is {code}. The code is valid for 10 minutes.",
             template='register.html'
         )
         return schemas.common.SuccessResponse(message="The code has been sent.")

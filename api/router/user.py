@@ -396,8 +396,8 @@ async def create_user_by_email_code(
         mail = RevornixSystemEmail()
         await mail.send(
             recipient=email_create_request.email,
-            title="Revornix注册验证码",
-            content=f"欢迎使用Revornix, 您的验证码为{code}, 有效期10分钟。",
+            title="Revornix registration verification code",
+            content=f"Welcome to Revornix. Your verification code is {code}. It is valid for 10 minutes.",
             template='register.html'
         )
         return schemas.common.SuccessResponse(message="The code has been sent.")
@@ -567,8 +567,8 @@ async def bind_email_code(
     mail = RevornixSystemEmail()
     await mail.send(
         recipient=bind_email_request.email,
-        title="Revornix邮箱绑定",
-        content=f"你正在绑定邮箱, 验证码是 {code}"
+        title="Revornix email binding",
+        content=f"You are binding your email address. Your verification code is {code}."
     )
     return schemas.common.SuccessResponse(message='The code has been sent.')
 
