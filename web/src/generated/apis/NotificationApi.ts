@@ -22,11 +22,13 @@ import type {
   DeleteNotificationSourceRequest,
   DeleteNotificationTargetRequest,
   DeleteNotificationTaskRequest,
+  EmailTargetSendCodeRequest,
   GetNotificationSourceRelatedTaskRequest,
   GetNotificationSourceRelatedTaskResponse,
   GetNotificationTargetRelatedTaskRequest,
   GetNotificationTargetRelatedTaskResponse,
   HTTPValidationError,
+  IOSTargetChangeCodeStatusRequest,
   InifiniteScrollPagnitionNotificationRecord,
   InifiniteScrollPagnitionNotificationSource,
   InifiniteScrollPagnitionNotificationTarget,
@@ -41,8 +43,6 @@ import type {
   NotificationTargetDetail,
   NotificationTargetDetailRequest,
   NotificationTargetForkRequest,
-  NotificationTargetRequestVerify,
-  NotificationTargetRequestVerifySend,
   NotificationTargetsProvidedResponse,
   NotificationTargetsUsableResponse,
   NotificationTask,
@@ -74,6 +74,8 @@ import {
     DeleteNotificationTargetRequestToJSON,
     DeleteNotificationTaskRequestFromJSON,
     DeleteNotificationTaskRequestToJSON,
+    EmailTargetSendCodeRequestFromJSON,
+    EmailTargetSendCodeRequestToJSON,
     GetNotificationSourceRelatedTaskRequestFromJSON,
     GetNotificationSourceRelatedTaskRequestToJSON,
     GetNotificationSourceRelatedTaskResponseFromJSON,
@@ -84,6 +86,8 @@ import {
     GetNotificationTargetRelatedTaskResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    IOSTargetChangeCodeStatusRequestFromJSON,
+    IOSTargetChangeCodeStatusRequestToJSON,
     InifiniteScrollPagnitionNotificationRecordFromJSON,
     InifiniteScrollPagnitionNotificationRecordToJSON,
     InifiniteScrollPagnitionNotificationSourceFromJSON,
@@ -112,10 +116,6 @@ import {
     NotificationTargetDetailRequestToJSON,
     NotificationTargetForkRequestFromJSON,
     NotificationTargetForkRequestToJSON,
-    NotificationTargetRequestVerifyFromJSON,
-    NotificationTargetRequestVerifyToJSON,
-    NotificationTargetRequestVerifySendFromJSON,
-    NotificationTargetRequestVerifySendToJSON,
     NotificationTargetsProvidedResponseFromJSON,
     NotificationTargetsProvidedResponseToJSON,
     NotificationTargetsUsableResponseFromJSON,
@@ -262,13 +262,13 @@ export interface GetUsableNotificationTargetNotificationTargetUsablePostRequest 
     authorization?: string | null;
 }
 
-export interface NotificationTargetVerifyNotificationTargetVerifyPostRequest {
-    notificationTargetRequestVerify: NotificationTargetRequestVerify;
+export interface NotificationEmailTargetSendNotificationTargetEmailSendPostRequest {
+    emailTargetSendCodeRequest: EmailTargetSendCodeRequest;
     authorization?: string | null;
 }
 
-export interface NotificationTargetVerifySendNotificationTargetVerifySendPostRequest {
-    notificationTargetRequestVerifySend: NotificationTargetRequestVerifySend;
+export interface NotificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPostRequest {
+    iOSTargetChangeCodeStatusRequest: IOSTargetChangeCodeStatusRequest;
     authorization?: string | null;
 }
 
@@ -1471,13 +1471,13 @@ export class NotificationApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for notificationTargetVerifyNotificationTargetVerifyPost without sending the request
+     * Creates request options for notificationEmailTargetSendNotificationTargetEmailSendPost without sending the request
      */
-    async notificationTargetVerifyNotificationTargetVerifyPostRequestOpts(requestParameters: NotificationTargetVerifyNotificationTargetVerifyPostRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['notificationTargetRequestVerify'] == null) {
+    async notificationEmailTargetSendNotificationTargetEmailSendPostRequestOpts(requestParameters: NotificationEmailTargetSendNotificationTargetEmailSendPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['emailTargetSendCodeRequest'] == null) {
             throw new runtime.RequiredError(
-                'notificationTargetRequestVerify',
-                'Required parameter "notificationTargetRequestVerify" was null or undefined when calling notificationTargetVerifyNotificationTargetVerifyPost().'
+                'emailTargetSendCodeRequest',
+                'Required parameter "emailTargetSendCodeRequest" was null or undefined when calling notificationEmailTargetSendNotificationTargetEmailSendPost().'
             );
         }
 
@@ -1492,43 +1492,43 @@ export class NotificationApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/notification/target/verify`;
+        let urlPath = `/notification/target/email/send`;
 
         return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: NotificationTargetRequestVerifyToJSON(requestParameters['notificationTargetRequestVerify']),
+            body: EmailTargetSendCodeRequestToJSON(requestParameters['emailTargetSendCodeRequest']),
         };
     }
 
     /**
-     * Notification Target Verify
+     * Notification Email Target Send
      */
-    async notificationTargetVerifyNotificationTargetVerifyPostRaw(requestParameters: NotificationTargetVerifyNotificationTargetVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetDetail>> {
-        const requestOptions = await this.notificationTargetVerifyNotificationTargetVerifyPostRequestOpts(requestParameters);
+    async notificationEmailTargetSendNotificationTargetEmailSendPostRaw(requestParameters: NotificationEmailTargetSendNotificationTargetEmailSendPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.notificationEmailTargetSendNotificationTargetEmailSendPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTargetDetailFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
 
     /**
-     * Notification Target Verify
+     * Notification Email Target Send
      */
-    async notificationTargetVerifyNotificationTargetVerifyPost(requestParameters: NotificationTargetVerifyNotificationTargetVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTargetDetail> {
-        const response = await this.notificationTargetVerifyNotificationTargetVerifyPostRaw(requestParameters, initOverrides);
+    async notificationEmailTargetSendNotificationTargetEmailSendPost(requestParameters: NotificationEmailTargetSendNotificationTargetEmailSendPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.notificationEmailTargetSendNotificationTargetEmailSendPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
-     * Creates request options for notificationTargetVerifySendNotificationTargetVerifySendPost without sending the request
+     * Creates request options for notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPost without sending the request
      */
-    async notificationTargetVerifySendNotificationTargetVerifySendPostRequestOpts(requestParameters: NotificationTargetVerifySendNotificationTargetVerifySendPostRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['notificationTargetRequestVerifySend'] == null) {
+    async notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPostRequestOpts(requestParameters: NotificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['iOSTargetChangeCodeStatusRequest'] == null) {
             throw new runtime.RequiredError(
-                'notificationTargetRequestVerifySend',
-                'Required parameter "notificationTargetRequestVerifySend" was null or undefined when calling notificationTargetVerifySendNotificationTargetVerifySendPost().'
+                'iOSTargetChangeCodeStatusRequest',
+                'Required parameter "iOSTargetChangeCodeStatusRequest" was null or undefined when calling notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPost().'
             );
         }
 
@@ -1543,32 +1543,32 @@ export class NotificationApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/notification/target/verify/send`;
+        let urlPath = `/notification/target/ios/code/status`;
 
         return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: NotificationTargetRequestVerifySendToJSON(requestParameters['notificationTargetRequestVerifySend']),
+            body: IOSTargetChangeCodeStatusRequestToJSON(requestParameters['iOSTargetChangeCodeStatusRequest']),
         };
     }
 
     /**
-     * Notification Target Verify Send
+     * Notification Ios Target Change Code Status
      */
-    async notificationTargetVerifySendNotificationTargetVerifySendPostRaw(requestParameters: NotificationTargetVerifySendNotificationTargetVerifySendPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationTargetDetail>> {
-        const requestOptions = await this.notificationTargetVerifySendNotificationTargetVerifySendPostRequestOpts(requestParameters);
+    async notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPostRaw(requestParameters: NotificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationTargetDetailFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
     }
 
     /**
-     * Notification Target Verify Send
+     * Notification Ios Target Change Code Status
      */
-    async notificationTargetVerifySendNotificationTargetVerifySendPost(requestParameters: NotificationTargetVerifySendNotificationTargetVerifySendPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationTargetDetail> {
-        const response = await this.notificationTargetVerifySendNotificationTargetVerifySendPostRaw(requestParameters, initOverrides);
+    async notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPost(requestParameters: NotificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

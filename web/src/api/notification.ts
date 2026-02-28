@@ -32,6 +32,5 @@ export default {
     getNotificationTargetRelatedTasks: API_PREFIX + '/notification/target/task',
     forkNotificationSource: API_PREFIX + '/notification/source/fork',
     forkNotificationTarget: API_PREFIX + '/notification/target/fork',
-    verifyNotificationTargetSend: API_PREFIX + '/notification/target/verify/send',
-    verifyNotificationTarget: API_PREFIX + '/notification/target/verify'
+    sendEmailNotificationTargetCode: API_PREFIX + '/notification/target/email/send',
 } 

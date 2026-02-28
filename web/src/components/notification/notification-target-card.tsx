@@ -38,7 +38,6 @@ import {
 import { replacePath } from '@/lib/utils';
 import { format } from 'date-fns';
 import UpdateNotificationTarget from './update-notification-target';
-import NotificationTargetVerify from './notification-target-verify';
 import {
 	filterInfiniteQueryElements,
 	mapInfiniteQueryElements,
@@ -180,12 +179,6 @@ const NotificationTargetCard = ({
 								Public
 							</Badge>
 						)}
-						{notification_target.is_verified && (
-							<Badge className='bg-green-600/10 dark:bg-green-600/20 hover:bg-green-600/10 text-green-500 shadow-none rounded-full'>
-								<div className='h-1.5 w-1.5 rounded-full bg-green-500 mr-1' />{' '}
-								Verified
-							</Badge>
-						)}
 					</div>
 				</CardDescription>
 			</CardHeader>
@@ -193,11 +186,6 @@ const NotificationTargetCard = ({
 				<UpdateNotificationTarget
 					notification_target_id={notification_target.id}
 				/>
-				{!notification_target.is_verified && isMineNotificationTarget && (
-					<NotificationTargetVerify
-						notification_target_id={notification_target.id}
-					/>
-				)}
 				{!isMineNotificationTarget && (
 					<>
 						{!notification_target.is_forked && (

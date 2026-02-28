@@ -29,5 +29,3 @@ class ConnectionManager:
         return len(self.connections)
 
 notificationManager = ConnectionManager()
-chatManager = ConnectionManager()
-aiManager = ConnectionManager()

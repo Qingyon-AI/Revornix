@@ -1,23 +1,17 @@
 from datetime import datetime, timezone
+from typing import Literal
 
 from pydantic import BaseModel, field_serializer, ConfigDict
 
 from .user import UserPublicInfo
 
-class NotificationTargetRequestVerifySend(BaseModel):
-    notification_target_provided_id: int
-    notification_target_id: int
-    email: str | None = None
-    phone: str | None = None
-    qr_code: str | None = None
-
-class NotificationTargetRequestVerify(BaseModel):
-    notification_target_provided_id: int
-    notification_target_id: int
-    email: str | None = None
-    phone: str | None = None
-    code: str | None = None
+class IOSTargetChangeCodeStatusRequest(BaseModel):
+    code_uuid: str
+    status: Literal["scanned", "confirm", "canceled"]
     device_token: str | None = None
+
+class EmailTargetSendCodeRequest(BaseModel):
+    email: str | None = None
 
 class NotificationSourceForkRequest(BaseModel):
     notification_source_id: int
@@ -232,7 +226,6 @@ class NotificationTarget(BaseModel):
     update_time: datetime | None
     creator: UserPublicInfo
     is_forked: bool | None = None
-    is_verified: bool
     is_public: bool
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
@@ -259,7 +252,6 @@ class NotificationTargetDetail(BaseModel):
     update_time: datetime | None
     config_json: str | None = None
     creator: UserPublicInfo
-    is_verified: bool
     is_public: bool
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
@@ -292,13 +284,34 @@ class NotificationTargetsResponse(BaseModel):
 class NotificationSourcesProvidedResponse(BaseModel):
     data: list[NotificationSourceProvided]
 
+class EmailTargetForm(BaseModel):
+    email: str
+    code: str
+
+class IOSTargetForm(BaseModel):
+    device_token: str
+
+class FeiShuTargetForm(BaseModel):
+    webhook_url: str
+    sign: str
+
+class DingTalkTargetForm(BaseModel):
+    webhook_url: str
+    sign: str
+
+class TelegramTargetForm(BaseModel):
+    chat_id: str
 
 class AddNotificationTargetRequest(BaseModel):
     notification_target_provided_id: int
     title: str
     is_public: bool
     description: str | None = None
-    config_json: str | None = None
+    email_target_form: EmailTargetForm | None = None
+    ios_target_form: IOSTargetForm | None = None
+    feishu_target_form: FeiShuTargetForm | None = None
+    dingtalk_target_form: DingTalkTargetForm | None = None
+    telegram_target_form: TelegramTargetForm | None = None
 
 class AddNotificationSourceRequest(BaseModel):
     notification_source_provided_id: int
@@ -318,8 +331,12 @@ class UpdateNotificationTargetRequest(BaseModel):
     notification_target_id: int
     title: str | None = None
     description: str | None = None
-    config_json: str | None = None
     is_public: bool | None = None
+    email_target_form: EmailTargetForm | None = None
+    ios_target_form: IOSTargetForm | None = None
+    feishu_target_form: FeiShuTargetForm | None = None
+    dingtalk_target_form: DingTalkTargetForm | None = None
+    telegram_target_form: TelegramTargetForm | None = None
 
 class DeleteNotificationTargetRequest(BaseModel):
     notification_target_ids: list[int]

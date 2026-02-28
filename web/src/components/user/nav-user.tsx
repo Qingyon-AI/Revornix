@@ -37,6 +37,7 @@ import { Badge } from '../ui/badge';
 import { cn, isAllowedDeployHost, replacePath } from '@/lib/utils';
 import { UserRole } from '@/enums/user';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useNotificationWSStore } from '@/store/notification-ws';
 
 export function NavUser() {
 	const t = useTranslations();
@@ -47,6 +48,12 @@ export function NavUser() {
 
 	const [isLoggingOut, setIsLoggingOut] = useState(false);
 	const logoutOnceRef = useRef(false);
+	const upsertIOSBindEvent = useNotificationWSStore(
+		(state) => state.upsertIOSBindEvent,
+	);
+	const clearIOSBindEvents = useNotificationWSStore(
+		(state) => state.clearIOSBindEvents,
+	);
 
 	/** -----------------------------
 	 * host（避免 render 阶段直接访问 window）
@@ -65,7 +72,7 @@ export function NavUser() {
 
 	const wsUrl = useMemo(() => {
 		return accessToken
-			? `${NOTIFICATION_WS_API_PREFIX}?access_token=${accessToken}`
+			? `${NOTIFICATION_WS_API_PREFIX}?access_token=${accessToken}&from_plat=web`
 			: '';
 	}, [accessToken]);
 
@@ -78,6 +85,16 @@ export function NavUser() {
 		onMessage: (e) => {
 			try {
 				const message = JSON.parse(e.data);
+
+				if (message?.code_uuid && message?.status) {
+					upsertIOSBindEvent({
+						code_uuid: message.code_uuid,
+						status: message.status,
+						device_token: message.device_token,
+					});
+					return;
+				}
+
 				const notification = message?.notification;
 				if (!notification) return;
 
@@ -156,6 +173,7 @@ export function NavUser() {
 
 			// 3) Clear user state / tokens (if logOut is async, await it)
 			await Promise.resolve(logOut());
+			clearIOSBindEvents();
 
 			// 4) Clear cached user data to avoid flashing old UI
 			queryClient.clear();

@@ -16,6 +16,7 @@ import schemas
 from common.apscheduler.app import scheduler
 from common.logger import exception_logger, info_logger
 from common.redis import redis_pool
+from common.websocket import notificationManager
 from config.sentry import API_SENTRY_DSN, API_SENTRY_ENABLE
 from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_startup
 from engine.video_plugins.youtube_auth import initialize_youtube_auth_on_startup
@@ -63,6 +64,7 @@ async def lifespan(app: FastAPI):
         yield  # FastAPI 启动后开始处理请求
         info_logger.info("🛑 FastAPI shutting down...")
         await app.state.redis.close()
+        await notificationManager.close_cache()
         info_logger.info("✅ Redis connection closed.")
 
 app = FastAPI(

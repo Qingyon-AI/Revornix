@@ -194,7 +194,7 @@ const EmailBindCloud = () => {
 													onClick={onSendCode}
 													disabled={!!countdown || codeSending}>
 													{!countdown && t('seo_register_form_email_code_send')}
-													{!!countdown && `${Math.round(countdown / 1000)}`}
+													{!!countdown && `${Math.round(countdown / 1000)}s`}
 													{codeSending && (
 														<Loader2 className='size-4 animate-spin' />
 													)}

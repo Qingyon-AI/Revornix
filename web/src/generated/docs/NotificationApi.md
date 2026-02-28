@@ -28,8 +28,8 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**getTriggerEventsNotificationTriggerEventAllPost**](NotificationApi.md#gettriggereventsnotificationtriggereventallpost) | **POST** /notification/trigger-event/all | Get Trigger Events |
 | [**getUsableNotificationSourceNotificationSourceUsablePost**](NotificationApi.md#getusablenotificationsourcenotificationsourceusablepost) | **POST** /notification/source/usable | Get Usable Notification Source |
 | [**getUsableNotificationTargetNotificationTargetUsablePost**](NotificationApi.md#getusablenotificationtargetnotificationtargetusablepost) | **POST** /notification/target/usable | Get Usable Notification Target |
-| [**notificationTargetVerifyNotificationTargetVerifyPost**](NotificationApi.md#notificationtargetverifynotificationtargetverifypost) | **POST** /notification/target/verify | Notification Target Verify |
-| [**notificationTargetVerifySendNotificationTargetVerifySendPost**](NotificationApi.md#notificationtargetverifysendnotificationtargetverifysendpost) | **POST** /notification/target/verify/send | Notification Target Verify Send |
+| [**notificationEmailTargetSendNotificationTargetEmailSendPost**](NotificationApi.md#notificationemailtargetsendnotificationtargetemailsendpost) | **POST** /notification/target/email/send | Notification Email Target Send |
+| [**notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPost**](NotificationApi.md#notificationiostargetchangecodestatusnotificationtargetioscodestatuspost) | **POST** /notification/target/ios/code/status | Notification Ios Target Change Code Status |
 | [**readAllNotificationRecordNotificationRecordReadAllPost**](NotificationApi.md#readallnotificationrecordnotificationrecordreadallpost) | **POST** /notification/record/read-all | Read All Notification Record |
 | [**readNotificationRecordNotificationRecordReadPost**](NotificationApi.md#readnotificationrecordnotificationrecordreadpost) | **POST** /notification/record/read | Read Notification Record |
 | [**searchNotificationRecordNotificationRecordSearchPost**](NotificationApi.md#searchnotificationrecordnotificationrecordsearchpost) | **POST** /notification/record/search | Search Notification Record |
@@ -1677,11 +1677,11 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## notificationTargetVerifyNotificationTargetVerifyPost
+## notificationEmailTargetSendNotificationTargetEmailSendPost
 
-> NotificationTargetDetail notificationTargetVerifyNotificationTargetVerifyPost(notificationTargetRequestVerify, authorization)
+> NormalResponse notificationEmailTargetSendNotificationTargetEmailSendPost(emailTargetSendCodeRequest, authorization)
 
-Notification Target Verify
+Notification Email Target Send
 
 ### Example
 
@@ -1690,21 +1690,21 @@ import {
   Configuration,
   NotificationApi,
 } from '';
-import type { NotificationTargetVerifyNotificationTargetVerifyPostRequest } from '';
+import type { NotificationEmailTargetSendNotificationTargetEmailSendPostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const api = new NotificationApi();
 
   const body = {
-    // NotificationTargetRequestVerify
-    notificationTargetRequestVerify: ...,
+    // EmailTargetSendCodeRequest
+    emailTargetSendCodeRequest: ...,
     // string (optional)
     authorization: authorization_example,
-  } satisfies NotificationTargetVerifyNotificationTargetVerifyPostRequest;
+  } satisfies NotificationEmailTargetSendNotificationTargetEmailSendPostRequest;
 
   try {
-    const data = await api.notificationTargetVerifyNotificationTargetVerifyPost(body);
+    const data = await api.notificationEmailTargetSendNotificationTargetEmailSendPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -1720,12 +1720,12 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **notificationTargetRequestVerify** | [NotificationTargetRequestVerify](NotificationTargetRequestVerify.md) |  | |
+| **emailTargetSendCodeRequest** | [EmailTargetSendCodeRequest](EmailTargetSendCodeRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-[**NotificationTargetDetail**](NotificationTargetDetail.md)
+[**NormalResponse**](NormalResponse.md)
 
 ### Authorization
 
@@ -1746,11 +1746,11 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## notificationTargetVerifySendNotificationTargetVerifySendPost
+## notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPost
 
-> NotificationTargetDetail notificationTargetVerifySendNotificationTargetVerifySendPost(notificationTargetRequestVerifySend, authorization)
+> NormalResponse notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPost(iOSTargetChangeCodeStatusRequest, authorization)
 
-Notification Target Verify Send
+Notification Ios Target Change Code Status
 
 ### Example
 
@@ -1759,21 +1759,21 @@ import {
   Configuration,
   NotificationApi,
 } from '';
-import type { NotificationTargetVerifySendNotificationTargetVerifySendPostRequest } from '';
+import type { NotificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const api = new NotificationApi();
 
   const body = {
-    // NotificationTargetRequestVerifySend
-    notificationTargetRequestVerifySend: ...,
+    // IOSTargetChangeCodeStatusRequest
+    iOSTargetChangeCodeStatusRequest: ...,
     // string (optional)
     authorization: authorization_example,
-  } satisfies NotificationTargetVerifySendNotificationTargetVerifySendPostRequest;
+  } satisfies NotificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPostRequest;
 
   try {
-    const data = await api.notificationTargetVerifySendNotificationTargetVerifySendPost(body);
+    const data = await api.notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -1789,12 +1789,12 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **notificationTargetRequestVerifySend** | [NotificationTargetRequestVerifySend](NotificationTargetRequestVerifySend.md) |  | |
+| **iOSTargetChangeCodeStatusRequest** | [IOSTargetChangeCodeStatusRequest](IOSTargetChangeCodeStatusRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-[**NotificationTargetDetail**](NotificationTargetDetail.md)
+[**NormalResponse**](NormalResponse.md)
 
 ### Authorization
 

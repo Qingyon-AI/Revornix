@@ -87,12 +87,6 @@ export interface NotificationTargetDetail {
      * @type {boolean}
      * @memberof NotificationTargetDetail
      */
-    is_verified: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof NotificationTargetDetail
-     */
     is_public: boolean;
 }
 
@@ -107,7 +101,6 @@ export function instanceOfNotificationTargetDetail(value: object): value is Noti
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     if (!('creator' in value) || value['creator'] === undefined) return false;
-    if (!('is_verified' in value) || value['is_verified'] === undefined) return false;
     if (!('is_public' in value) || value['is_public'] === undefined) return false;
     return true;
 }
@@ -130,7 +123,6 @@ export function NotificationTargetDetailFromJSONTyped(json: any, ignoreDiscrimin
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
         'creator': UserPublicInfoFromJSON(json['creator']),
-        'is_verified': json['is_verified'],
         'is_public': json['is_public'],
     };
 }
@@ -154,7 +146,6 @@ export function NotificationTargetDetailToJSONTyped(value?: NotificationTargetDe
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'config_json': value['config_json'],
         'creator': UserPublicInfoToJSON(value['creator']),
-        'is_verified': value['is_verified'],
         'is_public': value['is_public'],
     };
 }

@@ -40,9 +40,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
-import { Textarea } from '../ui/textarea';
 import { useUserContext } from '@/provider/user-provider';
-import { diffValues } from '@/lib/utils';
 import {
 	Empty,
 	EmptyDescription,
@@ -56,9 +54,13 @@ import { Switch } from '../ui/switch';
 import {
 	InifiniteScrollPagnitionNotificationTarget,
 	NotificationTarget,
-	NotificationTargetDetail,
 } from '@/generated';
 import { mapInfiniteQueryElements } from '@/lib/infinite-query-cache';
+import { NotificationTargetProvidedUUID } from '@/enums/notification';
+import EmailNotificationTarget from './email-notification-target';
+import IOSNotificationTarget from './ios-notification-target';
+import FeishuNotificationTarget from './feishu-notification-target';
+import DingTalkNotificationTarget from './dingtalk-notification-target';
 
 const UpdateNotificationTarget = ({
 	notification_target_id,
@@ -81,8 +83,30 @@ const UpdateNotificationTarget = ({
 		notification_target_id: z.number(),
 		title: z.string(),
 		description: z.string().optional().nullable(),
-		config_json: z.string().optional().nullable(),
 		is_public: z.boolean().optional(),
+		email_target_form: z
+			.object({
+				email: z.string().email(),
+				code: z.string(),
+			})
+			.optional(),
+		ios_target_form: z
+			.object({
+				device_token: z.string(),
+			})
+			.optional(),
+		feishu_target_form: z
+			.object({
+				webhook_url: z.string(),
+				sign: z.string(),
+			})
+			.optional(),
+		dingtalk_target_form: z
+			.object({
+				webhook_url: z.string(),
+				sign: z.string(),
+			})
+			.optional(),
 	});
 
 	const form = useForm({
@@ -91,7 +115,6 @@ const UpdateNotificationTarget = ({
 			notification_target_id: notification_target_id,
 			title: '',
 			description: '',
-			config_json: '',
 		},
 	});
 
@@ -107,8 +130,8 @@ const UpdateNotificationTarget = ({
 		enabled: showUpdateDialog,
 	});
 
-	const { data: notificationTargets } = useQuery({
-		queryKey: ['provided-notification-target'],
+	const { data: providedNotificationTargets } = useQuery({
+		queryKey: ['searchProvidedNotificationTargets'],
 		queryFn: getProvidedNotificationTargets,
 	});
 
@@ -136,30 +159,6 @@ const UpdateNotificationTarget = ({
 				};
 			});
 
-			queryClient.setQueryData<NotificationTargetDetail>(
-				['notification-target-detail', notification_target_id],
-				(old) => {
-					if (!old) return old;
-					return {
-						...old,
-						title:
-							typeof variables.title === 'string' ? variables.title : old.title,
-						description:
-							variables.description === undefined
-								? old.description
-								: variables.description,
-						config_json:
-							variables.config_json === undefined
-								? old.config_json
-								: variables.config_json,
-						is_public:
-							typeof variables.is_public === 'boolean'
-								? variables.is_public
-								: old.is_public,
-						update_time: new Date(),
-					};
-				},
-			);
 			queryClient.invalidateQueries({
 				queryKey: ['notification-target-detail', notification_target_id],
 			});
@@ -184,19 +183,74 @@ const UpdateNotificationTarget = ({
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		if (!initialValuesRef.current) return;
+		const initialValues = initialValuesRef.current;
+		const payload: Parameters<typeof updateNotificationTarget>[0] = {
+			notification_target_id: notification_target_id,
+		};
 
-		const patch = diffValues(values, initialValuesRef.current);
+		if (values.title !== initialValues.title) {
+			payload.title = values.title;
+		}
+		if (values.description !== initialValues.description) {
+			payload.description = values.description;
+		}
+		if (values.is_public !== initialValues.is_public) {
+			payload.is_public = values.is_public;
+		}
 
-		// 如果啥都没改
-		if (Object.keys(patch).length === 0) {
+		const currentTargetProvidedUuid =
+			providedNotificationTargets?.data.find((item) => {
+				return item.id === notificationTargetProvidedId;
+			})?.uuid ?? data?.notification_target_provided.uuid;
+
+		const isChanged = (currentValue: unknown, initialValue: unknown) => {
+			return JSON.stringify(currentValue ?? null) !== JSON.stringify(initialValue ?? null);
+		};
+
+		switch (currentTargetProvidedUuid) {
+			case NotificationTargetProvidedUUID.EMAIL:
+				if (
+					values.email_target_form &&
+					isChanged(values.email_target_form, initialValues.email_target_form)
+				) {
+					payload.email_target_form = values.email_target_form;
+				}
+				break;
+			case NotificationTargetProvidedUUID.APPLE:
+			case NotificationTargetProvidedUUID.APPLE_SANDBOX:
+				if (
+					values.ios_target_form &&
+					isChanged(values.ios_target_form, initialValues.ios_target_form)
+				) {
+					payload.ios_target_form = values.ios_target_form;
+				}
+				break;
+			case NotificationTargetProvidedUUID.FEISHU:
+				if (
+					values.feishu_target_form &&
+					isChanged(values.feishu_target_form, initialValues.feishu_target_form)
+				) {
+					payload.feishu_target_form = values.feishu_target_form;
+				}
+				break;
+			case NotificationTargetProvidedUUID.DINGTALK:
+				if (
+					values.dingtalk_target_form &&
+					isChanged(values.dingtalk_target_form, initialValues.dingtalk_target_form)
+				) {
+					payload.dingtalk_target_form = values.dingtalk_target_form;
+				}
+				break;
+			default:
+				break;
+		}
+
+		// 仅 notification_target_id 说明无任何改动
+		if (Object.keys(payload).length === 1) {
 			toast.info(t('form_no_change'));
 			return;
 		}
-
-		mutateUpdateNotificationTarget.mutate({
-			...values,
-			notification_target_id: notification_target_id,
-		});
+		mutateUpdateNotificationTarget.mutate(payload);
 	};
 
 	const onFormValidateError = (error: any) => {
@@ -212,11 +266,54 @@ const UpdateNotificationTarget = ({
 			notification_target_id,
 			title: data.title,
 			description: data.description,
-			config_json: data.config_json,
 			is_public: data.is_public,
 		};
 
+		const cfg = JSON.parse(data.config_json ?? '{}');
+
 		setNotificationTargetProvidedId(data.notification_target_provided.id);
+
+		switch (
+			providedNotificationTargets?.data.find((item) => {
+				return item.id === data.notification_target_provided.id;
+			})?.uuid
+		) {
+			case NotificationTargetProvidedUUID.EMAIL:
+				initialFormValues.email_target_form = {
+					email: cfg.email ?? '',
+					code: '',
+				};
+				break;
+
+			case NotificationTargetProvidedUUID.APPLE_SANDBOX:
+				initialFormValues.ios_target_form = {
+					device_token: cfg.device_token ?? '',
+				};
+				break;
+
+			case NotificationTargetProvidedUUID.APPLE:
+				initialFormValues.ios_target_form = {
+					device_token: cfg.device_token ?? '',
+				};
+				break;
+
+			case NotificationTargetProvidedUUID.FEISHU:
+				initialFormValues.feishu_target_form = {
+					webhook_url: cfg.webhook_url ?? '',
+					sign: cfg.sign ?? '',
+				};
+				break;
+
+			case NotificationTargetProvidedUUID.DINGTALK:
+				initialFormValues.dingtalk_target_form = {
+					webhook_url: cfg.webhook_url ?? '',
+					sign: cfg.sign ?? '',
+				};
+				break;
+
+			default:
+				break;
+		}
 
 		form.reset(initialFormValues);
 		initialValuesRef.current = initialFormValues; // ✅ 存表单结构
@@ -293,17 +390,19 @@ const UpdateNotificationTarget = ({
 															</SelectTrigger>
 															<SelectContent className='w-full'>
 																<SelectGroup>
-																	{notificationTargets?.data.map((item) => {
-																		return (
-																			<SelectItem
-																				key={item.id}
-																				value={String(item.id)}>
-																				{locale === 'zh'
-																					? item.name_zh
-																					: item.name}
-																			</SelectItem>
-																		);
-																	})}
+																	{providedNotificationTargets?.data.map(
+																		(item) => {
+																			return (
+																				<SelectItem
+																					key={item.id}
+																					value={String(item.id)}>
+																					{locale === 'zh'
+																						? item.name_zh
+																						: item.name}
+																				</SelectItem>
+																			);
+																		},
+																	)}
 																</SelectGroup>
 															</SelectContent>
 														</Select>
@@ -314,55 +413,6 @@ const UpdateNotificationTarget = ({
 										);
 									}}
 								/>
-								{notificationTargets?.data.find((item) => {
-									return item.id === form.watch('notification_target_id');
-								})?.demo_config && (
-									<>
-										<FormField
-											name='config_json'
-											control={form.control}
-											render={({ field }) => {
-												return (
-													<FormItem>
-														<div className='grid grid-cols-12 gap-2'>
-															<FormLabel className='col-span-3'>
-																{t(
-																	'setting_notification_target_manage_form_config_json',
-																)}
-															</FormLabel>
-															<Textarea
-																disabled={!authorized}
-																placeholder={t(
-																	'setting_notification_target_manage_form_config_json_placeholder',
-																)}
-																className='font-mono break-all col-span-9'
-																{...field}
-																value={field.value ?? ''}
-															/>
-														</div>
-														<FormMessage />
-													</FormItem>
-												);
-											}}
-										/>
-										<div className='grid grid-cols-12 gap-2'>
-											<FormLabel className='col-span-3'>
-												{t(
-													'setting_notification_target_manage_form_config_demo',
-												)}
-											</FormLabel>
-											<div className='p-5 rounded bg-muted font-mono text-sm break-all col-span-9'>
-												{
-													notificationTargets?.data.find((item) => {
-														return (
-															item.id === form.watch('notification_target_id')
-														);
-													})?.demo_config
-												}
-											</div>
-										</div>
-									</>
-								)}
 								<FormField
 									name='title'
 									control={form.control}
@@ -416,48 +466,33 @@ const UpdateNotificationTarget = ({
 								/>
 								{authorized && (
 									<>
-										{data.notification_target_provided.demo_config && (
-											<>
-												<FormField
-													name='config_json'
-													control={form.control}
-													render={({ field }) => {
-														return (
-															<FormItem>
-																<div className='grid grid-cols-12 gap-2'>
-																	<FormLabel className='col-span-3'>
-																		{t(
-																			'setting_notification_source_manage_form_config_json',
-																		)}
-																	</FormLabel>
-																	<div className='col-span-9'>
-																		<Textarea
-																			disabled={!authorized}
-																			placeholder={t(
-																				'setting_notification_source_manage_form_config_json_placeholder',
-																			)}
-																			className='font-mono break-all'
-																			{...field}
-																			value={field.value ?? ''}
-																		/>
-																	</div>
-																</div>
-																<FormMessage />
-															</FormItem>
-														);
-													}}
+											{providedNotificationTargets?.data.find((item) => {
+												return item.id === notificationTargetProvidedId;
+											})?.uuid === NotificationTargetProvidedUUID.EMAIL && (
+												<EmailNotificationTarget
+													useEmailDirtyForCodeField
 												/>
-												<div className='grid grid-cols-12 gap-2'>
-													<FormLabel className='col-span-3'>
-														{t(
-															'setting_notification_source_manage_form_config_json_demo',
-														)}
-													</FormLabel>
-													<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
-														{data.notification_target_provided.demo_config}
-													</div>
-												</div>
-											</>
+											)}
+										{providedNotificationTargets?.data.find((item) => {
+											return item.id === notificationTargetProvidedId;
+										})?.uuid === NotificationTargetProvidedUUID.APPLE && (
+											<IOSNotificationTarget env='prod' />
+										)}
+										{providedNotificationTargets?.data.find((item) => {
+											return item.id === notificationTargetProvidedId;
+										})?.uuid ===
+											NotificationTargetProvidedUUID.APPLE_SANDBOX && (
+											<IOSNotificationTarget env='sandbox' />
+										)}
+										{providedNotificationTargets?.data.find((item) => {
+											return item.id === notificationTargetProvidedId;
+										})?.uuid === NotificationTargetProvidedUUID.FEISHU && (
+											<FeishuNotificationTarget />
+										)}
+										{providedNotificationTargets?.data.find((item) => {
+											return item.id === notificationTargetProvidedId;
+										})?.uuid === NotificationTargetProvidedUUID.DINGTALK && (
+											<DingTalkNotificationTarget />
 										)}
 										<FormField
 											name='is_public'
@@ -498,9 +533,7 @@ const UpdateNotificationTarget = ({
 							<Alert className='bg-amber-600/10 dark:bg-amber-600/15 text-amber-500 border-amber-500/50 dark:border-amber-600/50'>
 								<ShieldAlert className='size-4' />
 								<AlertTitle>
-									{t(
-										'setting_notification_target_manage_forbidden',
-									)}
+									{t('setting_notification_target_manage_forbidden')}
 								</AlertTitle>
 							</Alert>
 						)}

@@ -14,7 +14,6 @@ Name | Type
 `update_time` | Date
 `config_json` | string
 `creator` | [UserPublicInfo](UserPublicInfo.md)
-`is_verified` | boolean
 `is_public` | boolean
 
 ## Example
@@ -32,7 +31,6 @@ const example = {
   "update_time": null,
   "config_json": null,
   "creator": null,
-  "is_verified": null,
   "is_public": null,
 } satisfies NotificationTargetDetail
 
