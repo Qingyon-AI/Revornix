@@ -1,7 +1,7 @@
 import random
 import string
-from uuid import uuid4
 from datetime import datetime, timezone
+from uuid import uuid4
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -343,7 +343,7 @@ def count_user_fans(
 def count_user_fans_by_user_ids(
     db: Session,
     user_ids: list[int],
-):
+) -> dict[int, int]:
     if not user_ids:
         return {}
     query = db.query(models.user.FollowUser.to_user_id, func.count(models.user.FollowUser.id))
@@ -354,16 +354,18 @@ def count_user_fans_by_user_ids(
         models.user.User.delete_at.is_(None),
     )
     query = query.group_by(models.user.FollowUser.to_user_id)
-    return {user_id: count for user_id, count in query.all()}
+    rows = query.all()
+    return {int(to_user_id): int(count) for to_user_id, count in rows}
 
 def search_next_user_fan(
     db: Session,
+    user_id: int,
     user: models.user.User,
     keyword: str | None = None
 ):
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.from_user_id == models.user.User.id)
-    query = query.filter(models.user.FollowUser.to_user_id == user,
+    query = query.filter(models.user.FollowUser.to_user_id == user_id,
                          models.user.FollowUser.delete_at.is_(None),
                          models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
@@ -409,7 +411,7 @@ def count_user_follows(
 def count_user_follows_by_user_ids(
     db: Session,
     user_ids: list[int],
-):
+) -> dict[int, int]:
     if not user_ids:
         return {}
     query = db.query(models.user.FollowUser.from_user_id, func.count(models.user.FollowUser.id))
@@ -420,7 +422,8 @@ def count_user_follows_by_user_ids(
         models.user.User.delete_at.is_(None),
     )
     query = query.group_by(models.user.FollowUser.from_user_id)
-    return {user_id: count for user_id, count in query.all()}
+    rows = query.all()
+    return {int(from_user_id): int(count) for from_user_id, count in rows}
 
 def get_user_follows_by_from_user_id_and_to_user_ids(
     db: Session,
@@ -439,12 +442,13 @@ def get_user_follows_by_from_user_id_and_to_user_ids(
 
 def search_next_user_follow(
     db: Session,
+    user_id: int,
     user: models.user.User,
     keyword: str | None = None
 ):
     query = db.query(models.user.User)
     query = query.join(models.user.FollowUser, models.user.FollowUser.to_user_id == models.user.User.id)
-    query = query.filter(models.user.FollowUser.from_user_id == user,
+    query = query.filter(models.user.FollowUser.from_user_id == user_id,
                          models.user.FollowUser.delete_at.is_(None),
                          models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
@@ -550,13 +554,18 @@ def get_google_user_by_google_id(
 def get_user_follow_by_to_user_id_and_from_user_id(
     db: Session,
     to_user_id: int,
-    from_user_id: int
+    from_user_id: int,
+    include_deleted: bool = False,
 ):
     query = db.query(models.user.FollowUser)
-    query = query.filter(models.user.FollowUser.to_user_id == to_user_id,
-                         models.user.FollowUser.from_user_id == from_user_id,
-                         models.user.FollowUser.delete_at.is_(None))
-    return query.one_or_none()
+    query = query.filter(
+        models.user.FollowUser.to_user_id == to_user_id,
+        models.user.FollowUser.from_user_id == from_user_id,
+    )
+    if not include_deleted:
+        query = query.filter(models.user.FollowUser.delete_at.is_(None))
+    query = query.order_by(models.user.FollowUser.id.desc())
+    return query.first()
 
 def get_user_by_id(
     db: Session,
@@ -633,17 +642,16 @@ def update_user_follow_by_to_user_id_and_from_user_id(
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.FollowUser)
-    query = query.filter(models.user.FollowUser.from_user_id == from_user_id,
-                         models.user.FollowUser.to_user_id == to_user_id,
-                         models.user.FollowUser.delete_at.is_(None))
-    db_user_follow = query.one_or_none()
+    query = query.filter(
+        models.user.FollowUser.from_user_id == from_user_id,
+        models.user.FollowUser.to_user_id == to_user_id,
+    )
+    query = query.order_by(models.user.FollowUser.id.desc())
+    db_user_follow = query.first()
     if db_user_follow is None:
         raise Exception("Can't find the user follow info based on the from_user_id and to_user_id you provided.")
-    else:
-        if status == True:
-            db_user_follow.delete_at = None
-        else:
-            db_user_follow.delete_at = now
+    db_user_follow.delete_at = None if status else now
+    db_user_follow.update_time = now
     db.flush()
     return db_user_follow
 

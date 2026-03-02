@@ -1,0 +1,168 @@
+import asyncio
+import random
+import string
+from datetime import datetime, timezone
+from uuid import uuid4
+
+from fastapi import APIRouter, Depends
+from redis import Redis
+from sqlalchemy.orm import Session
+
+import crud
+import schemas
+from common.dependencies import get_cache, get_current_user, get_db, get_real_ip
+from common.jwt_utils import create_token
+from common.sms.tencent_sms import TencentSms
+from router.user_shared import commit_with_bucket_cleanup, setup_default_file_system_for_user
+from schemas.error import CustomException
+
+user_auth_phone_router = APIRouter()
+
+@user_auth_phone_router.post('/create/sms/code', response_model=schemas.common.NormalResponse)
+async def create_user_by_sms_code(
+    sms_user_code_create_request: schemas.user.SmsUserCodeCreateRequest,
+    cache: Redis = Depends(get_cache)
+):
+    code = "".join(random.sample(string.digits, 6))
+    await cache.set(
+        name=f'user-create-sms-{sms_user_code_create_request.phone}',
+        value=code,
+        ex=600
+    )
+
+    def _send_sms():
+        sms_client = TencentSms.get_official_sms_client()
+        sms_client.send_register_msg(
+            phone_numbers=[sms_user_code_create_request.phone],
+            code=code
+        )
+
+    await asyncio.to_thread(_send_sms)
+
+    return schemas.common.SuccessResponse()
+
+@user_auth_phone_router.post('/create/sms/verify', response_model=schemas.user.TokenResponse)
+async def create_user_by_sms_verify(
+    sms_user_code_verify_request: schemas.user.SmsUserCodeVerifyCreate,
+    db: Session = Depends(get_db),
+    cache: Redis = Depends(get_cache),
+    ip: str | None = Depends(get_real_ip)
+):
+    code = await cache.get(
+        name=f'user-create-sms-{sms_user_code_verify_request.phone}'
+    )
+    if code is None:
+        raise CustomException(message="The code is expired", code=400)
+    if code != sms_user_code_verify_request.code:
+        raise CustomException(message="The code is wrong", code=400)
+    await cache.delete(
+        f'user-create-sms-{sms_user_code_verify_request.phone}'
+    )
+    phone_user_exist = crud.user.get_phone_user_by_phone(
+        db=db,
+        phone=sms_user_code_verify_request.phone
+    )
+    if phone_user_exist is not None:
+        db_user = crud.user.get_user_by_id(
+            db=db,
+            user_id=phone_user_exist.user_id
+        )
+        access_token, refresh_token = create_token(db_user)
+        return schemas.user.TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_in=3600
+        )
+    else:
+        db_user = crud.user.create_base_user(
+            db=db,
+            nickname=f'Revornix User {uuid4().hex[:8]}',
+            avatar="files/default_avatar.png"
+        )
+        db_user.last_login_ip = ip
+        db_user.last_login_time = datetime.now(timezone.utc)
+
+        crud.user.create_phone_user(
+            db=db,
+            user_id=db_user.id,
+            phone=sms_user_code_verify_request.phone
+        )
+        file_service = await setup_default_file_system_for_user(
+            db=db,
+            db_user=db_user,
+        )
+        await commit_with_bucket_cleanup(db=db, file_service=file_service)
+        access_token, refresh_token = create_token(db_user)
+        return schemas.user.TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_in=3600
+        )
+
+@user_auth_phone_router.post('/bind/phone/code', response_model=schemas.common.NormalResponse)
+async def bind_phone(
+    bind_phone_code_create_request: schemas.user.BindPhoneCodeCreateRequest,
+    user = Depends(get_current_user),
+    cache: Redis = Depends(get_cache),
+    db: Session = Depends(get_db)
+):
+    phone_exist = crud.user.get_phone_user_by_phone(
+        db=db,
+        phone=bind_phone_code_create_request.phone
+    )
+    if phone_exist:
+        raise CustomException(message='The phone number is already registered', code=400)
+    code = "".join(random.sample(string.digits, 6))
+
+    def _send_sms():
+        sms_client = TencentSms.get_official_sms_client()
+        sms_client.send_register_msg(
+            phone_numbers=[bind_phone_code_create_request.phone],
+            code=code
+        )
+
+    await asyncio.to_thread(_send_sms)
+
+    await cache.set(
+        name=f'{user.id}-user-bind-sms-{bind_phone_code_create_request.phone}',
+        value=code,
+        ex=600
+    )
+    return schemas.common.SuccessResponse()
+
+@user_auth_phone_router.post('/bind/phone/verify', response_model=schemas.common.NormalResponse)
+async def bind_phone_verify(
+    bind_phone_code_verify_request: schemas.user.BindPhoneCodeVerifyRequest,
+    user = Depends(get_current_user),
+    cache: Redis = Depends(get_cache),
+    db: Session = Depends(get_db)
+):
+    code = await cache.get(
+        name=f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
+    )
+    if code is None:
+        raise CustomException(message='The code is expired', code=400)
+    if code != bind_phone_code_verify_request.code:
+        raise CustomException(message='The code is wrong', code=400)
+    await cache.delete(
+        f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
+    )
+    crud.user.create_phone_user(
+        db=db,
+        user_id=user.id,
+        phone=bind_phone_code_verify_request.phone
+    )
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+@user_auth_phone_router.post('/unbind/phone', response_model=schemas.common.NormalResponse)
+def unbind_phone(
+    user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    crud.user.delete_phone_user_by_user_id(
+        db=db,
+        user_id=user.id
+    )
+    db.commit()
+    return schemas.common.SuccessResponse()
