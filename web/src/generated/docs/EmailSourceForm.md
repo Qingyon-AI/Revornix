@@ -1,36 +1,28 @@
 
-# NotificationSourceProvided
+# EmailSourceForm
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`id` | number
-`uuid` | string
-`name` | string
-`name_zh` | string
-`description` | string
-`description_zh` | string
-`create_time` | Date
-`update_time` | Date
+`host` | string
+`port` | number
+`username` | string
+`password` | string
 
 ## Example
 
 ```typescript
-import type { NotificationSourceProvided } from ''
+import type { EmailSourceForm } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": null,
-  "uuid": null,
-  "name": null,
-  "name_zh": null,
-  "description": null,
-  "description_zh": null,
-  "create_time": null,
-  "update_time": null,
-} satisfies NotificationSourceProvided
+  "host": null,
+  "port": null,
+  "username": null,
+  "password": null,
+} satisfies EmailSourceForm
 
 console.log(example)
 
@@ -39,7 +31,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as NotificationSourceProvided
+const exampleParsed = JSON.parse(exampleJSON) as EmailSourceForm
 console.log(exampleParsed)
 ```
 

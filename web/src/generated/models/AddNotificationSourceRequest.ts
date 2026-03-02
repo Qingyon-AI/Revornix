@@ -13,6 +13,35 @@
  */
 
 import { mapValues } from '../runtime';
+import type { FeiShuSourceForm } from './FeiShuSourceForm';
+import {
+    FeiShuSourceFormFromJSON,
+    FeiShuSourceFormFromJSONTyped,
+    FeiShuSourceFormToJSON,
+    FeiShuSourceFormToJSONTyped,
+} from './FeiShuSourceForm';
+import type { EmailSourceForm } from './EmailSourceForm';
+import {
+    EmailSourceFormFromJSON,
+    EmailSourceFormFromJSONTyped,
+    EmailSourceFormToJSON,
+    EmailSourceFormToJSONTyped,
+} from './EmailSourceForm';
+import type { IOSSourceForm } from './IOSSourceForm';
+import {
+    IOSSourceFormFromJSON,
+    IOSSourceFormFromJSONTyped,
+    IOSSourceFormToJSON,
+    IOSSourceFormToJSONTyped,
+} from './IOSSourceForm';
+import type { TelegramSourceForm } from './TelegramSourceForm';
+import {
+    TelegramSourceFormFromJSON,
+    TelegramSourceFormFromJSONTyped,
+    TelegramSourceFormToJSON,
+    TelegramSourceFormToJSONTyped,
+} from './TelegramSourceForm';
+
 /**
  * 
  * @export
@@ -45,10 +74,28 @@ export interface AddNotificationSourceRequest {
     description?: string | null;
     /**
      * 
-     * @type {string}
+     * @type {EmailSourceForm}
      * @memberof AddNotificationSourceRequest
      */
-    config_json?: string | null;
+    email_source_form?: EmailSourceForm | null;
+    /**
+     * 
+     * @type {IOSSourceForm}
+     * @memberof AddNotificationSourceRequest
+     */
+    ios_source_form?: IOSSourceForm | null;
+    /**
+     * 
+     * @type {FeiShuSourceForm}
+     * @memberof AddNotificationSourceRequest
+     */
+    feishu_source_form?: FeiShuSourceForm | null;
+    /**
+     * 
+     * @type {TelegramSourceForm}
+     * @memberof AddNotificationSourceRequest
+     */
+    telegram_source_form?: TelegramSourceForm | null;
 }
 
 /**
@@ -75,7 +122,10 @@ export function AddNotificationSourceRequestFromJSONTyped(json: any, ignoreDiscr
         'title': json['title'],
         'is_public': json['is_public'],
         'description': json['description'] == null ? undefined : json['description'],
-        'config_json': json['config_json'] == null ? undefined : json['config_json'],
+        'email_source_form': json['email_source_form'] == null ? undefined : EmailSourceFormFromJSON(json['email_source_form']),
+        'ios_source_form': json['ios_source_form'] == null ? undefined : IOSSourceFormFromJSON(json['ios_source_form']),
+        'feishu_source_form': json['feishu_source_form'] == null ? undefined : FeiShuSourceFormFromJSON(json['feishu_source_form']),
+        'telegram_source_form': json['telegram_source_form'] == null ? undefined : TelegramSourceFormFromJSON(json['telegram_source_form']),
     };
 }
 
@@ -94,7 +144,10 @@ export function AddNotificationSourceRequestToJSONTyped(value?: AddNotificationS
         'title': value['title'],
         'is_public': value['is_public'],
         'description': value['description'],
-        'config_json': value['config_json'],
+        'email_source_form': EmailSourceFormToJSON(value['email_source_form']),
+        'ios_source_form': IOSSourceFormToJSON(value['ios_source_form']),
+        'feishu_source_form': FeiShuSourceFormToJSON(value['feishu_source_form']),
+        'telegram_source_form': TelegramSourceFormToJSON(value['telegram_source_form']),
     };
 }
 

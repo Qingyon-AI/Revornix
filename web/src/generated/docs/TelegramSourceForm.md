@@ -1,36 +1,22 @@
 
-# NotificationSourceProvided
+# TelegramSourceForm
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`id` | number
-`uuid` | string
-`name` | string
-`name_zh` | string
-`description` | string
-`description_zh` | string
-`create_time` | Date
-`update_time` | Date
+`bot_token` | string
 
 ## Example
 
 ```typescript
-import type { NotificationSourceProvided } from ''
+import type { TelegramSourceForm } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": null,
-  "uuid": null,
-  "name": null,
-  "name_zh": null,
-  "description": null,
-  "description_zh": null,
-  "create_time": null,
-  "update_time": null,
-} satisfies NotificationSourceProvided
+  "bot_token": null,
+} satisfies TelegramSourceForm
 
 console.log(example)
 
@@ -39,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as NotificationSourceProvided
+const exampleParsed = JSON.parse(exampleJSON) as TelegramSourceForm
 console.log(exampleParsed)
 ```
 

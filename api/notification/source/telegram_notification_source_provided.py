@@ -14,8 +14,5 @@ class TelegramNotificationSourceProvided(NotificationSourceProvidedProtocol):
             name='Telegram Source',
             name_zh='Telegram源',
             description='The source of notification based on telegram',
-            description_zh='基于Telegram的通知源',
-            demo_config=json.dumps({
-                'bot_token': '123456789:ABC-DEF1234ghIkl-zyx57W2v1u123ew11(This is not a real bot token)'
-            })
+            description_zh='基于Telegram的通知源'
         )

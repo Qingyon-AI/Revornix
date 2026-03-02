@@ -56,9 +56,13 @@ import { Alert, AlertTitle } from '../ui/alert';
 import {
 	InifiniteScrollPagnitionNotificationSource,
 	NotificationSource,
-	NotificationSourceDetail,
 } from '@/generated';
 import { mapInfiniteQueryElements } from '@/lib/infinite-query-cache';
+import { NotificationSourceProvidedUUID } from '@/enums/notification';
+import EmailNotificationSource from './email-notification-source';
+import IOSNotificationSource from './ios-notification-source';
+import FeiShuNotificationSource from './feishu-notification-source';
+import TelegramNotificationSource from './telegram-notification-source';
 
 const UpdateNotificationSource = ({
 	notification_source_id,
@@ -81,21 +85,50 @@ const UpdateNotificationSource = ({
 		notification_source_id: z.number(),
 		title: z.string(),
 		description: z.string().optional().nullable(),
-		config_json: z.string().optional().nullable(),
 		is_public: z.boolean().optional(),
+			email_source_form: z
+				.object({
+					host: z.string(),
+					port: z.coerce.number().int().min(1).max(65535),
+					username: z.string(),
+					password: z.string(),
+				})
+				.optional(),
+		ios_source_form: z
+			.object({
+				team_id: z.string(),
+				key_id: z.string(),
+				private_key: z.string(),
+				apns_topic: z.string(),
+			})
+			.optional(),
+		feishu_source_form: z
+			.object({
+				app_id: z.string(),
+				app_secret: z.string(),
+			})
+			.optional(),
+		telegram_source_form: z
+			.object({
+				bot_token: z.string(),
+			})
+			.optional(),
 	});
 
-	const form = useForm({
+	type UpdateNotificationSourceFormValues = z.infer<typeof formSchema>;
+
+	const form = useForm<UpdateNotificationSourceFormValues>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			notification_source_id: notification_source_id,
 			title: '',
 			description: '',
-			config_json: '',
 		},
 	});
 
-	const initialValuesRef = useRef<z.infer<typeof formSchema> | null>(null);
+	const initialValuesRef = useRef<UpdateNotificationSourceFormValues | null>(
+		null,
+	);
 
 	const { data, isFetching, isError, error, isSuccess, refetch } = useQuery({
 		queryKey: ['notification-source-detail', notification_source_id],
@@ -107,8 +140,8 @@ const UpdateNotificationSource = ({
 		enabled: showUpdateDialog,
 	});
 
-	const { data: notificationSources } = useQuery({
-		queryKey: ['provided-notification-source'],
+	const { data: providedNotificationSources } = useQuery({
+		queryKey: ['searchProvidedNotificationSources'],
 		queryFn: getProvidedNotificationSources,
 	});
 
@@ -136,30 +169,6 @@ const UpdateNotificationSource = ({
 				};
 			});
 
-			queryClient.setQueryData<NotificationSourceDetail>(
-				['notification-source-detail', notification_source_id],
-				(old) => {
-					if (!old) return old;
-					return {
-						...old,
-						title:
-							typeof variables.title === 'string' ? variables.title : old.title,
-						description:
-							variables.description === undefined
-								? old.description
-								: variables.description,
-						config_json:
-							variables.config_json === undefined
-								? old.config_json
-								: variables.config_json,
-						is_public:
-							typeof variables.is_public === 'boolean'
-								? variables.is_public
-								: old.is_public,
-						update_time: new Date(),
-					};
-				},
-			);
 			queryClient.invalidateQueries({
 				queryKey: ['notification-source-detail', notification_source_id],
 			});
@@ -184,19 +193,82 @@ const UpdateNotificationSource = ({
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		if (!initialValuesRef.current) return;
+		const initialValues = initialValuesRef.current;
+		const payload: Parameters<typeof updateNotificationSource>[0] = {
+			notification_source_id: notification_source_id,
+		};
 
-		const patch = diffValues(values, initialValuesRef.current);
+		if (values.title !== initialValues.title) {
+			payload.title = values.title;
+		}
+		if (values.description !== initialValues.description) {
+			payload.description = values.description;
+		}
+		if (values.is_public !== initialValues.is_public) {
+			payload.is_public = values.is_public;
+		}
 
-		// 如果啥都没改
-		if (Object.keys(patch).length === 0) {
+		const currentTargetProvidedUuid =
+			providedNotificationSources?.data.find((item) => {
+				return item.id === notificationSourceProvidedId;
+			})?.uuid ?? data?.notification_source_provided.uuid;
+
+		const isChanged = (currentValue: unknown, initialValue: unknown) => {
+			return (
+				JSON.stringify(currentValue ?? null) !==
+				JSON.stringify(initialValue ?? null)
+			);
+		};
+
+		switch (currentTargetProvidedUuid) {
+			case NotificationSourceProvidedUUID.EMAIL:
+				if (
+					values.email_source_form &&
+					isChanged(values.email_source_form, initialValues.email_source_form)
+				) {
+					payload.email_source_form = values.email_source_form;
+				}
+				break;
+			case NotificationSourceProvidedUUID.APPLE:
+			case NotificationSourceProvidedUUID.APPLE_SANDBOX:
+				if (
+					values.ios_source_form &&
+					isChanged(values.ios_source_form, initialValues.ios_source_form)
+				) {
+					payload.ios_source_form = values.ios_source_form;
+				}
+				break;
+			case NotificationSourceProvidedUUID.FEISHU:
+				if (
+					values.feishu_source_form &&
+					isChanged(values.feishu_source_form, initialValues.feishu_source_form)
+				) {
+					payload.feishu_source_form = values.feishu_source_form;
+				}
+				break;
+			case NotificationSourceProvidedUUID.DINGTALK:
+				break;
+			case NotificationSourceProvidedUUID.TELEGRAM:
+				if (
+					values.telegram_source_form &&
+					isChanged(
+						values.telegram_source_form,
+						initialValues.telegram_source_form,
+					)
+				) {
+					payload.telegram_source_form = values.telegram_source_form;
+				}
+				break;
+			default:
+				break;
+		}
+
+		// 仅 notification_target_id 说明无任何改动
+		if (Object.keys(payload).length === 1) {
 			toast.info(t('form_no_change'));
 			return;
 		}
-
-		mutateUpdateNotificationSource.mutate({
-			...values,
-			notification_source_id: notification_source_id,
-		});
+		mutateUpdateNotificationSource.mutate(payload);
 	};
 
 	const onFormValidateError = (error: any) => {
@@ -212,11 +284,64 @@ const UpdateNotificationSource = ({
 			notification_source_id,
 			title: data.title,
 			description: data.description,
-			config_json: data.config_json,
 			is_public: data.is_public,
 		};
 
+		const cfg = JSON.parse(data.config_json ?? '{}');
+
 		setNotificationSourceProvidedId(data.notification_source_provided.id);
+
+		switch (
+			providedNotificationSources?.data.find((item) => {
+				return item.id === data.notification_source_provided.id;
+			})?.uuid
+		) {
+			case NotificationSourceProvidedUUID.EMAIL:
+				initialFormValues.email_source_form = {
+					host: cfg.host ?? '',
+					port: cfg.port ?? 0,
+					username: cfg.username ?? '',
+					password: cfg.password ?? '',
+				};
+				break;
+
+			case NotificationSourceProvidedUUID.APPLE_SANDBOX:
+				initialFormValues.ios_source_form = {
+					team_id: cfg.team_id ?? '',
+					key_id: cfg.key_id ?? '',
+					private_key: cfg.private_key ?? '',
+					apns_topic: cfg.apns_topic ?? '',
+				};
+				break;
+
+			case NotificationSourceProvidedUUID.APPLE:
+				initialFormValues.ios_source_form = {
+					team_id: cfg.team_id ?? '',
+					key_id: cfg.key_id ?? '',
+					private_key: cfg.private_key ?? '',
+					apns_topic: cfg.apns_topic ?? '',
+				};
+				break;
+
+			case NotificationSourceProvidedUUID.FEISHU:
+				initialFormValues.feishu_source_form = {
+					app_id: cfg.app_id ?? '',
+					app_secret: cfg.app_secret ?? '',
+				};
+				break;
+
+			case NotificationSourceProvidedUUID.DINGTALK:
+				break;
+
+			case NotificationSourceProvidedUUID.TELEGRAM:
+				initialFormValues.telegram_source_form = {
+					bot_token: cfg.bot_token ?? '',
+				};
+				break;
+
+			default:
+				break;
+		}
 
 		form.reset(initialFormValues);
 		initialValuesRef.current = initialFormValues; // ✅ 存表单结构
@@ -293,17 +418,19 @@ const UpdateNotificationSource = ({
 															</SelectTrigger>
 															<SelectContent className='w-full'>
 																<SelectGroup>
-																	{notificationSources?.data.map((item) => {
-																		return (
-																			<SelectItem
-																				key={item.id}
-																				value={String(item.id)}>
-																				{locale === 'zh'
-																					? item.name_zh
-																					: item.name}
-																			</SelectItem>
-																		);
-																	})}
+																	{providedNotificationSources?.data.map(
+																		(item) => {
+																			return (
+																				<SelectItem
+																					key={item.id}
+																					value={String(item.id)}>
+																					{locale === 'zh'
+																						? item.name_zh
+																						: item.name}
+																				</SelectItem>
+																			);
+																		},
+																	)}
 																</SelectGroup>
 															</SelectContent>
 														</Select>
@@ -368,48 +495,31 @@ const UpdateNotificationSource = ({
 
 								{authorized && (
 									<>
-										{data.notification_source_provided.demo_config && (
-											<>
-												<FormField
-													name='config_json'
-													control={form.control}
-													render={({ field }) => {
-														return (
-															<FormItem>
-																<div className='grid grid-cols-12 gap-2'>
-																	<FormLabel className='col-span-3'>
-																		{t(
-																			'setting_notification_source_manage_form_config_json',
-																		)}
-																	</FormLabel>
-																	<div className='col-span-9'>
-																		<Textarea
-																			disabled={!authorized}
-																			placeholder={t(
-																				'setting_notification_source_manage_form_config_json_placeholder',
-																			)}
-																			className='font-mono break-all'
-																			{...field}
-																			value={field.value ?? ''}
-																		/>
-																	</div>
-																</div>
-																<FormMessage />
-															</FormItem>
-														);
-													}}
-												/>
-												<div className='grid grid-cols-12 gap-2'>
-													<FormLabel className='col-span-3'>
-														{t(
-															'setting_notification_source_manage_form_config_json_demo',
-														)}
-													</FormLabel>
-													<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
-														{data.notification_source_provided.demo_config}
-													</div>
-												</div>
-											</>
+										{providedNotificationSources?.data.find((item) => {
+											return item.id === notificationSourceProvidedId;
+										})?.uuid === NotificationSourceProvidedUUID.EMAIL && (
+											<EmailNotificationSource />
+										)}
+										{providedNotificationSources?.data.find((item) => {
+											return item.id === notificationSourceProvidedId;
+										})?.uuid === NotificationSourceProvidedUUID.APPLE && (
+											<IOSNotificationSource env={'prod'} />
+										)}
+										{providedNotificationSources?.data.find((item) => {
+											return item.id === notificationSourceProvidedId;
+										})?.uuid ===
+											NotificationSourceProvidedUUID.APPLE_SANDBOX && (
+											<IOSNotificationSource env={'sandbox'} />
+										)}
+										{providedNotificationSources?.data.find((item) => {
+											return item.id === notificationSourceProvidedId;
+										})?.uuid === NotificationSourceProvidedUUID.FEISHU && (
+											<FeiShuNotificationSource />
+										)}
+										{providedNotificationSources?.data.find((item) => {
+											return item.id === notificationSourceProvidedId;
+										})?.uuid === NotificationSourceProvidedUUID.TELEGRAM && (
+											<TelegramNotificationSource />
 										)}
 										<FormField
 											name='is_public'

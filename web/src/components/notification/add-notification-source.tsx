@@ -43,32 +43,72 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Textarea } from '../ui/textarea';
 import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
+import { NotificationSourceProvidedUUID } from '@/enums/notification';
+import EmailNotificationSource from './email-notification-source';
+import IOSNotificationSource from './ios-notification-source';
+import FeiShuNotificationSource from './feishu-notification-source';
+import TelegramNotificationSource from './telegram-notification-source';
 
 const AddNotificationSource = () => {
 	const locale = useLocale();
 	const t = useTranslations();
 	const queryClient = getQueryClient();
+
 	const formSchema = z.object({
 		title: z.string(),
 		notification_source_provided_id: z.number(),
 		description: z.string().optional(),
-		config_json: z.string().optional(),
 		is_public: z.boolean(),
+			email_source_form: z
+				.object({
+					host: z.string(),
+					port: z.coerce.number().int().min(1).max(65535),
+					username: z.string(),
+					password: z.string(),
+				})
+				.optional(),
+		ios_source_form: z
+			.object({
+				team_id: z.string(),
+				key_id: z.string(),
+				private_key: z.string(),
+				apns_topic: z.string(),
+			})
+			.optional(),
+		feishu_source_form: z
+			.object({
+				app_id: z.string(),
+				app_secret: z.string(),
+			})
+			.optional(),
+		telegram_source_form: z
+			.object({
+				bot_token: z.string(),
+			})
+			.optional(),
+	});
+
+	type AddNotificationSourceFormValues = z.infer<typeof formSchema>;
+
+	const defaultFormValues: Pick<
+		AddNotificationSourceFormValues,
+		'title' | 'description' | 'is_public'
+	> = {
+		title: '',
+		description: '',
+		is_public: false,
+	};
+
+	const form = useForm<AddNotificationSourceFormValues>({
+		resolver: zodResolver(formSchema),
+		defaultValues: defaultFormValues,
+		shouldUnregister: true,
 	});
 
 	const [showAddDialog, setShowAddDialog] = useState(false);
-	const form = useForm({
-		resolver: zodResolver(formSchema),
-		defaultValues: {
-			title: '',
-			description: '',
-			config_json: '',
-			is_public: false,
-		},
-	});
 
-	const { data: notificationSources } = useQuery({
-		queryKey: ['provided-notification-source'],
+	const { data: providedNotificationSources } = useQuery({
+		queryKey: ['searchProvidedNotificationSources'],
 		queryFn: getProvidedNotificationSources,
 	});
 
@@ -162,17 +202,19 @@ const AddNotificationSource = () => {
 														</SelectTrigger>
 														<SelectContent className='w-full'>
 															<SelectGroup>
-																{notificationSources?.data.map((item) => {
-																	return (
-																		<SelectItem
-																			key={item.id}
-																			value={String(item.id)}>
-																			{locale === 'zh'
-																				? item.name_zh
-																				: item.name}
-																		</SelectItem>
-																	);
-																})}
+																{providedNotificationSources?.data.map(
+																	(item) => {
+																		return (
+																			<SelectItem
+																				key={item.id}
+																				value={String(item.id)}>
+																				{locale === 'zh'
+																					? item.name_zh
+																					: item.name}
+																			</SelectItem>
+																		);
+																	},
+																)}
 															</SelectGroup>
 														</SelectContent>
 													</Select>
@@ -232,56 +274,40 @@ const AddNotificationSource = () => {
 									);
 								}}
 							/>
-							{notificationSources?.data.find((item) => {
+							{providedNotificationSources?.data.find((item) => {
 								return (
 									item.id === form.watch('notification_source_provided_id')
 								);
-							})?.demo_config && (
-								<>
-									<FormField
-										name='config_json'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<div className='grid grid-cols-12 gap-2'>
-														<FormLabel className='col-span-3'>
-															{t(
-																'setting_notification_source_manage_form_config_json',
-															)}
-														</FormLabel>
-														<Textarea
-															placeholder={t(
-																'setting_notification_source_manage_form_config_json_placeholder',
-															)}
-															className='font-mono break-all col-span-9'
-															{...field}
-															value={field.value ?? ''}
-														/>
-													</div>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-									<div className='grid grid-cols-12 gap-2'>
-										<FormLabel className='col-span-3'>
-											{t(
-												'setting_notification_source_manage_form_config_json_demo',
-											)}
-										</FormLabel>
-										<div className='p-5 rounded bg-muted font-mono text-sm break-all col-span-9'>
-											{
-												notificationSources?.data.find((item) => {
-													return (
-														item.id ===
-														form.watch('notification_source_provided_id')
-													);
-												})?.demo_config
-											}
-										</div>
-									</div>
-								</>
+							})?.uuid === NotificationSourceProvidedUUID.EMAIL && (
+								<EmailNotificationSource />
+							)}
+							{providedNotificationSources?.data.find((item) => {
+								return (
+									item.id === form.watch('notification_source_provided_id')
+								);
+							})?.uuid === NotificationSourceProvidedUUID.APPLE && (
+								<IOSNotificationSource env={'prod'} />
+							)}
+							{providedNotificationSources?.data.find((item) => {
+								return (
+									item.id === form.watch('notification_source_provided_id')
+								);
+							})?.uuid === NotificationSourceProvidedUUID.APPLE_SANDBOX && (
+								<IOSNotificationSource env={'sandbox'} />
+							)}
+							{providedNotificationSources?.data.find((item) => {
+								return (
+									item.id === form.watch('notification_source_provided_id')
+								);
+							})?.uuid === NotificationSourceProvidedUUID.FEISHU && (
+								<FeiShuNotificationSource />
+							)}
+							{providedNotificationSources?.data.find((item) => {
+								return (
+									item.id === form.watch('notification_source_provided_id')
+								);
+							})?.uuid === NotificationSourceProvidedUUID.TELEGRAM && (
+								<TelegramNotificationSource />
 							)}
 							<FormField
 								name='is_public'

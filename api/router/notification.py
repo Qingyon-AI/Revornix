@@ -75,6 +75,53 @@ def add_notification_source(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
+    db_notification_source_provided = crud.notification.get_notification_source_provided_by_id(
+        db=db,
+        id=add_notification_source_request.notification_source_provided_id
+    )
+    if db_notification_source_provided is None:
+        raise schemas.error.CustomException(message="notification source provided not found", code=400)
+    
+    config_json = None
+    
+    if db_notification_source_provided.uuid == NotificationSourceProvided.EMAIL.meta.uuid:
+        if add_notification_source_request.email_source_form is None:
+            raise schemas.error.CustomException(message="email config should not be empty", code=400)
+        config_json = json.dumps({
+            "host": add_notification_source_request.email_source_form.host,
+            "port": add_notification_source_request.email_source_form.port,
+            "username": add_notification_source_request.email_source_form.username,
+            "password": add_notification_source_request.email_source_form.password,
+        })
+
+    if db_notification_source_provided.uuid == NotificationSourceProvided.APPLE.meta.uuid or db_notification_source_provided.uuid == NotificationSourceProvided.APPLE_SANDBOX.meta.uuid:
+        if add_notification_source_request.ios_source_form is None:
+            raise schemas.error.CustomException(message="ios config should not be empty", code=400)
+        config_json = json.dumps({
+            "team_id": add_notification_source_request.ios_source_form.team_id,
+            "key_id": add_notification_source_request.ios_source_form.key_id,
+            "private_key": add_notification_source_request.ios_source_form.private_key,
+            "apns_topic": add_notification_source_request.ios_source_form.apns_topic
+        })
+    
+    if db_notification_source_provided.uuid == NotificationSourceProvided.FEISHU.meta.uuid:
+        if add_notification_source_request.feishu_source_form is None:
+            raise schemas.error.CustomException(message="feishu config should not be empty", code=400)
+        config_json = json.dumps({
+            "app_id": add_notification_source_request.feishu_source_form.app_id,
+            "app_secret": add_notification_source_request.feishu_source_form.app_secret
+        })
+
+    if db_notification_source_provided.uuid == NotificationSourceProvided.DINGTALK.meta.uuid:
+        pass
+    
+    if db_notification_source_provided.uuid == NotificationSourceProvided.TELEGRAM.meta.uuid:
+        if add_notification_source_request.telegram_source_form is None:
+            raise schemas.error.CustomException(message="telegram config should not be empty", code=400)
+        config_json = json.dumps({
+            "bot_token": add_notification_source_request.telegram_source_form.bot_token,
+        })
+
     db_notification_source = crud.notification.create_notification_source(
         db=db,
         notification_source_provided_id=add_notification_source_request.notification_source_provided_id,
@@ -83,8 +130,10 @@ def add_notification_source(
         description=add_notification_source_request.description,
         is_public=add_notification_source_request.is_public
     )
-    if add_notification_source_request.config_json is not None:
-        db_notification_source.config_json = encrypt_notification_source_config(add_notification_source_request.config_json)
+    
+    if config_json is not None:
+        db_notification_source.config_json = encrypt_notification_source_config(config_json)
+
     crud.notification.create_user_notification_source(
         db=db,
         user_id=user.id,
@@ -92,6 +141,7 @@ def add_notification_source(
         role=UserNotificationSourceRole.CREATOR
     )
     db.commit()
+    
     return schemas.common.SuccessResponse()
 
 @notification_router.post("/source/update", response_model=schemas.common.NormalResponse)
@@ -114,10 +164,51 @@ def update_notification_source(
         db_notification_source.title = update_notification_source_request.title
     if update_notification_source_request.description is not None:
         db_notification_source.description = update_notification_source_request.description
-    if update_notification_source_request.config_json is not None:
-        db_notification_source.config_json = encrypt_notification_source_config(update_notification_source_request.config_json)
     if update_notification_source_request.is_public is not None:
         db_notification_source.is_public = update_notification_source_request.is_public
+
+    config_json = None
+    
+    if db_notification_source.notification_source_provided.uuid == NotificationTargetProvided.EMAIL.meta.uuid:
+        if update_notification_source_request.email_source_form is None:
+            raise schemas.error.CustomException(message="email config should not be empty", code=400)
+        config_json = json.dumps({
+            "host": update_notification_source_request.email_source_form.host,
+            "port": update_notification_source_request.email_source_form.port,
+            "username": update_notification_source_request.email_source_form.username,
+            "password": update_notification_source_request.email_source_form.password,
+        })
+
+    if db_notification_source.notification_source_provided.uuid == NotificationTargetProvided.APPLE.meta.uuid or db_notification_source.notification_source_provided.uuid == NotificationTargetProvided.APPLE_SANDBOX.meta.uuid:
+        if update_notification_source_request.ios_source_form is None:
+            raise schemas.error.CustomException(message="ios config should not be empty", code=400)
+        config_json = json.dumps({
+            "team_id": update_notification_source_request.ios_source_form.team_id,
+            "key_id": update_notification_source_request.ios_source_form.key_id,
+            "private_key": update_notification_source_request.ios_source_form.private_key,
+            "apns_topic": update_notification_source_request.ios_source_form.apns_topic
+        })
+    
+    if db_notification_source.notification_source_provided.uuid == NotificationTargetProvided.FEISHU.meta.uuid:
+        if update_notification_source_request.feishu_source_form is None:
+            raise schemas.error.CustomException(message="feishu config should not be empty", code=400)
+        config_json = json.dumps({
+            "app_id": update_notification_source_request.feishu_source_form.app_id,
+            "app_secret": update_notification_source_request.feishu_source_form.app_secret
+        })
+
+    if db_notification_source.notification_source_provided.uuid == NotificationTargetProvided.DINGTALK.meta.uuid:
+        pass
+    
+    if db_notification_source.notification_source_provided.uuid == NotificationTargetProvided.TELEGRAM.meta.uuid:
+        if update_notification_source_request.telegram_source_form is None:
+            raise schemas.error.CustomException(message="telegram config should not be empty", code=400)
+        config_json = json.dumps({
+            "bot_token": update_notification_source_request.telegram_source_form.bot_token,
+        })
+        
+    if config_json is not None:
+        db_notification_source.config_json = encrypt_notification_target_config(config_json)
 
     db.commit()
     return schemas.common.SuccessResponse()
@@ -438,7 +529,6 @@ async def add_notification_target(
     
     config_json = None
 
-    # 邮件类型通知终端
     if db_notification_target_provided.uuid == NotificationTargetProvided.EMAIL.meta.uuid:
         if add_notification_target_request.email_target_form is None:
             raise schemas.error.CustomException(message="email config should not be empty", code=400)
