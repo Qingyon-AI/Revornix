@@ -206,8 +206,7 @@ def create_notification_target_provided(
     name: str,
     name_zh: str,
     description: str | None = None,
-    description_zh: str | None = None,
-    demo_config: str | None = None
+    description_zh: str | None = None
 ):
     now = datetime.now(timezone.utc)
     notification_target = models.notification.NotificationTargetProvided(
@@ -216,8 +215,7 @@ def create_notification_target_provided(
         name_zh=name_zh,
         description=description,
         description_zh=description_zh,
-        create_time=now,
-        demo_config=demo_config
+        create_time=now
     )
     db.add(notification_target)
     db.flush()

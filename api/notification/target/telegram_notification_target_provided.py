@@ -13,8 +13,5 @@ class TelegramNotificationTargetProvided(NotificationTargetProvidedProtocol):
             name='Telegram Target',
             name_zh='Telegram目标',
             description='The target of notification based on telegram',
-            description_zh='基于Telegram的通知目标',
-            demo_config=json.dumps({
-                'chat_id': "1234567890"
-            })
+            description_zh='基于Telegram的通知目标'
         )

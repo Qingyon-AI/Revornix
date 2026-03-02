@@ -185,7 +185,7 @@ const ModelProviderUpdate = ({
 					{t('setting_model_provider_configure')}
 				</Button>
 			</DialogTrigger>
-			<DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+				<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{modelProvider?.name}</DialogTitle>
 					<DialogDescription className='break-all'>

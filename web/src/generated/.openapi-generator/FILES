@@ -255,6 +255,7 @@ docs/SmsUserCodeVerifyCreate.md
 docs/StarRequest.md
 docs/SuccessResponse.md
 docs/SummaryItem.md
+docs/TelegramTargetForm.md
 docs/TokenResponse.md
 docs/TokenUpdateRequest.md
 docs/TpApi.md
@@ -520,6 +521,7 @@ models/SmsUserCodeVerifyCreate.ts
 models/StarRequest.ts
 models/SuccessResponse.ts
 models/SummaryItem.ts
+models/TelegramTargetForm.ts
 models/TokenResponse.ts
 models/TokenUpdateRequest.ts
 models/TriggerEvent.ts

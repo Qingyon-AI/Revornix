@@ -176,7 +176,7 @@ const DocumentConfiguration = ({
 					<Pencil />
 				</Button>
 			</SheetTrigger>
-			<SheetContent onOpenAutoFocus={(e) => e.preventDefault()}>
+			<SheetContent>
 				<SheetHeader>
 					<SheetTitle>{t('document_configuration_title')}</SheetTitle>
 					<SheetDescription>

@@ -221,8 +221,7 @@ const UpdateNotificationTask = ({
 					setShowUpdateDialog(e);
 				}}>
 				<DialogContent
-					className='flex flex-col max-h-[80vh]'
-					onOpenAutoFocus={(e) => e.preventDefault()}>
+					className='flex flex-col max-h-[80vh]'>
 					<DialogTitle>
 						{t('setting_notification_task_manage_update_label')}
 					</DialogTitle>

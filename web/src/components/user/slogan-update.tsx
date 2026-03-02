@@ -108,8 +108,7 @@ const SloganUpdate = () => {
 				open={showSloganUpdateFormDialog}
 				onOpenChange={setShowSloganUpdateFormDialog}>
 				<DialogContent
-					className='sm:max-w-md'
-					onOpenAutoFocus={(e) => e.preventDefault()}>
+					className='sm:max-w-md'>
 					<DialogHeader>
 						<DialogTitle>{t('account_slogan_update')}</DialogTitle>
 					</DialogHeader>

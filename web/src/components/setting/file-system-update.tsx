@@ -182,7 +182,6 @@ const FileSystemUpdate = ({
 				<Button className='text-xs shadow-none'>{t('config')}</Button>
 			</DialogTrigger>
 			<DialogContent
-				onOpenAutoFocus={(e) => e.preventDefault()}
 				className='max-h-[80vh] overflow-auto flex flex-col'>
 				<DialogHeader>
 					<DialogTitle>{t('config')}</DialogTitle>

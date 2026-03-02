@@ -234,6 +234,7 @@ export * from './SmsUserCodeVerifyCreate';
 export * from './StarRequest';
 export * from './SuccessResponse';
 export * from './SummaryItem';
+export * from './TelegramTargetForm';
 export * from './TokenResponse';
 export * from './TokenUpdateRequest';
 export * from './TriggerEvent';

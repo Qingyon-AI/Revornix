@@ -11,8 +11,5 @@ class EmailNotificationTarget(NotificationTargetProvidedProtocol):
             name='Email Target',
             name_zh='邮件目标',
             description='The notification target which can be sent email',
-            description_zh='可以被邮件服务器发送邮件的消息目标',
-            demo_config=json.dumps({
-                'email': 'your_email@example.com',
-            }) 
+            description_zh='可以被邮件服务器发送邮件的消息目标'
         )
