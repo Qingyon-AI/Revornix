@@ -195,7 +195,7 @@ const SectionOperateConfiguration = ({
 					{t('section_configuration_label')}
 				</Button>
 			</SheetTrigger>
-			<SheetContent onOpenAutoFocus={(e) => e.preventDefault()}>
+			<SheetContent>
 				<SheetHeader>
 					<SheetTitle>{t('section_configuration_label')}</SheetTitle>
 					<SheetDescription>{t('section_form_description')}</SheetDescription>

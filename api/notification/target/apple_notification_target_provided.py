@@ -13,8 +13,5 @@ class AppleNotificationTargetProvided(NotificationTargetProvidedProtocol):
             name='Apple APNS Target',
             name_zh='Apple APNS目标',
             description='The notification target which can be sent by Apple APNS',
-            description_zh='Apple APNS可推送的目标',
-            demo_config=json.dumps({
-                'device_token': 'your_device_token',
-            })
+            description_zh='Apple APNS可推送的目标'
         )

@@ -137,8 +137,7 @@ const EngineAddButton = () => {
 				</Button>
 			</DialogTrigger>
 			<DialogContent
-				className='max-h-[80vh] flex flex-col'
-				onOpenAutoFocus={(e) => e.preventDefault()}>
+				className='max-h-[80vh] flex flex-col'>
 				<DialogHeader>
 					<DialogTitle>{t('setting_engine_page_engine_add_title')}</DialogTitle>
 					<DialogDescription>

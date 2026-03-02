@@ -27,6 +27,13 @@ import {
     FeiShuTargetFormToJSON,
     FeiShuTargetFormToJSONTyped,
 } from './FeiShuTargetForm';
+import type { TelegramTargetForm } from './TelegramTargetForm';
+import {
+    TelegramTargetFormFromJSON,
+    TelegramTargetFormFromJSONTyped,
+    TelegramTargetFormToJSON,
+    TelegramTargetFormToJSONTyped,
+} from './TelegramTargetForm';
 import type { EmailTargetForm } from './EmailTargetForm';
 import {
     EmailTargetFormFromJSON,
@@ -96,6 +103,12 @@ export interface UpdateNotificationTargetRequest {
      * @memberof UpdateNotificationTargetRequest
      */
     dingtalk_target_form?: DingTalkTargetForm | null;
+    /**
+     * 
+     * @type {TelegramTargetForm}
+     * @memberof UpdateNotificationTargetRequest
+     */
+    telegram_target_form?: TelegramTargetForm | null;
 }
 
 /**
@@ -124,6 +137,7 @@ export function UpdateNotificationTargetRequestFromJSONTyped(json: any, ignoreDi
         'ios_target_form': json['ios_target_form'] == null ? undefined : IOSTargetFormFromJSON(json['ios_target_form']),
         'feishu_target_form': json['feishu_target_form'] == null ? undefined : FeiShuTargetFormFromJSON(json['feishu_target_form']),
         'dingtalk_target_form': json['dingtalk_target_form'] == null ? undefined : DingTalkTargetFormFromJSON(json['dingtalk_target_form']),
+        'telegram_target_form': json['telegram_target_form'] == null ? undefined : TelegramTargetFormFromJSON(json['telegram_target_form']),
     };
 }
 
@@ -146,6 +160,7 @@ export function UpdateNotificationTargetRequestToJSONTyped(value?: UpdateNotific
         'ios_target_form': IOSTargetFormToJSON(value['ios_target_form']),
         'feishu_target_form': FeiShuTargetFormToJSON(value['feishu_target_form']),
         'dingtalk_target_form': DingTalkTargetFormToJSON(value['dingtalk_target_form']),
+        'telegram_target_form': TelegramTargetFormToJSON(value['telegram_target_form']),
     };
 }
 

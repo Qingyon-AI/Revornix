@@ -106,7 +106,7 @@ const ModelProviderAddButton = () => {
 						<PlusCircleIcon />
 					</Button>
 				</DialogTrigger>
-				<DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>{t('setting_model_provider_add')}</DialogTitle>
 						<DialogDescription>

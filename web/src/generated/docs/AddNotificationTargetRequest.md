@@ -14,6 +14,7 @@ Name | Type
 `ios_target_form` | [IOSTargetForm](IOSTargetForm.md)
 `feishu_target_form` | [FeiShuTargetForm](FeiShuTargetForm.md)
 `dingtalk_target_form` | [DingTalkTargetForm](DingTalkTargetForm.md)
+`telegram_target_form` | [TelegramTargetForm](TelegramTargetForm.md)
 
 ## Example
 
@@ -30,6 +31,7 @@ const example = {
   "ios_target_form": null,
   "feishu_target_form": null,
   "dingtalk_target_form": null,
+  "telegram_target_form": null,
 } satisfies AddNotificationTargetRequest
 
 console.log(example)

@@ -283,8 +283,7 @@ async def seed_database(db: Session):
                 name=notification_target_provided.name,
                 name_zh=notification_target_provided.name_zh,
                 description=notification_target_provided.description,
-                description_zh=notification_target_provided.description_zh,
-                demo_config=notification_target_provided.demo_config,
+                description_zh=notification_target_provided.description_zh
             )
 
 

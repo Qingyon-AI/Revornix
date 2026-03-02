@@ -116,8 +116,7 @@ const MineFileSystemAddCard = ({}: {}) => {
 				open={showMineFileSystemAddDialog}
 				onOpenChange={setShowMineFileSystemAddDialog}>
 				<DialogContent
-					className='max-h-[80vh] overflow-auto flex flex-col'
-					onOpenAutoFocus={(e) => e.preventDefault()}>
+					className='max-h-[80vh] overflow-auto flex flex-col'>
 					<DialogHeader>
 						<DialogTitle>
 							{t('setting_file_system_page_file_system_add_title')}

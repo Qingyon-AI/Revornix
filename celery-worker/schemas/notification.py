@@ -139,7 +139,6 @@ class NotificationTargetProvided(BaseModel):
     description_zh: str | None
     create_time: datetime
     update_time: datetime | None
-    demo_config: str | None
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:
