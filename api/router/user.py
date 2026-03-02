@@ -1,13 +1,9 @@
 import asyncio
-import os
 import random
 import string
 from datetime import datetime, timezone
-from uuid import uuid4
 
 from fastapi import APIRouter, Depends
-from google.auth.transport import requests
-from google.oauth2 import id_token
 from jwt.exceptions import ExpiredSignatureError
 from redis import Redis
 from sqlalchemy.orm import Session
@@ -17,7 +13,6 @@ import models
 import schemas
 from common.celery.app import start_trigger_user_notification_event
 from common.dependencies import (
-    check_deployed_by_official,
     decode_jwt_token,
     get_cache,
     get_current_user,
@@ -25,69 +20,39 @@ from common.dependencies import (
     get_real_ip,
     reject_if_official,
 )
+from common.file import get_remote_file_signed_url
 from common.hash import verify_password
 from common.jwt_utils import create_token
 from common.logger import exception_logger
-from common.sms.tencent_sms import TencentSms
 from common.system_email.email import RevornixSystemEmail
-from common.tp_auth.github_utils import get_github_token, get_github_userInfo
-from common.tp_auth.google_utils import get_google_token
-from common.tp_auth.wechat_utils import get_mini_wechat_tokens, get_web_user_info, get_web_wechat_tokens
 from data.milvus.delete import delete_documents_from_milvus
 from data.neo4j.delete import delete_documents_and_related_from_neo4j
 from enums.document import DocumentCategory
-from enums.file import RemoteFileService
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole
-from enums.user import WeChatUserSource
-from file.built_in_remote_file_service import BuiltInRemoteFileService
+from router.user_shared import commit_with_bucket_cleanup, setup_default_file_system_for_user
 from schemas.error import CustomException
-from common.file import get_remote_file_signed_url
-from fastapi import Request
 
 user_router = APIRouter()
 
 
-def _cleanup_user_bucket_sync(file_service: BuiltInRemoteFileService) -> None:
-    if file_service.s3_client is None or file_service.bucket is None:
-        return
-    try:
-        file_service.empty_bucket()
-    except Exception as cleanup_error:
-        exception_logger.error(
-            f"Failed to empty user bucket during cleanup: {cleanup_error}"
-        )
-    try:
-        file_service.delete_bucket()
-    except Exception as cleanup_error:
-        exception_logger.error(
-            f"Failed to delete user bucket during cleanup: {cleanup_error}"
-        )
-
-
-async def _init_user_bucket(db_user: models.user.User) -> BuiltInRemoteFileService:
-    file_service = BuiltInRemoteFileService()
-    file_service.user_id = db_user.id
-    file_service.bucket = db_user.uuid
-    try:
-        await file_service.init_client()
-    except Exception:
-        await asyncio.to_thread(_cleanup_user_bucket_sync, file_service)
-        raise
-    return file_service
-
-
-async def _commit_with_bucket_cleanup(
-    db: Session,
-    file_service: BuiltInRemoteFileService | None = None
+async def _batch_sign_user_avatars(
+    users: list[schemas.user.UserPublicInfo],
 ) -> None:
-    try:
-        db.commit()
-    except Exception:
-        db.rollback()
-        if file_service is not None:
-            await asyncio.to_thread(_cleanup_user_bucket_sync, file_service)
-        raise
+    users_need_sign = [item for item in users if item.avatar is not None]
+    if len(users_need_sign) == 0:
+        return
+    signed_avatar_urls = await asyncio.gather(
+        *[
+            get_remote_file_signed_url(
+                user_id=item.id,
+                file_name=item.avatar,
+            )
+            for item in users_need_sign
+        ]
+    )
+    for item, signed_avatar_url in zip(users_need_sign, signed_avatar_urls, strict=False):
+        item.avatar = signed_avatar_url
 
 @user_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
 async def search_user(
@@ -171,16 +136,12 @@ async def search_user(
 
     for db_user in db_users:
         user_item = schemas.user.UserPublicInfo.model_validate(db_user)
-        if user_item.avatar is not None:
-            user_item.avatar = await get_remote_file_signed_url(
-                user_id=user_item.id,
-                file_name=user_item.avatar,
-            )
         user_item.fans = fans_by_user_id.get(db_user.id, 0)
         user_item.follows = follows_by_user_id.get(db_user.id, 0)
         if db_user.id in followed_user_ids:
             user_item.is_followed = True
         users.append(user_item)
+    await _batch_sign_user_avatars(users=users)
 
     has_more = db_next_user is not None
     next_start = db_next_user.id if db_next_user is not None else None
@@ -240,7 +201,7 @@ def update_default_model(
 @user_router.post('/fans', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
 async def search_user_fans(
     search_user_fans_request: schemas.user.SearchUserFansRequest,
-    user: models.user.User = Depends(get_current_user),
+    _current_user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     has_more = True
@@ -248,7 +209,7 @@ async def search_user_fans(
     next_user = None
     users = crud.user.search_user_fans(
         db=db,
-        user_id=user.id,
+        user_id=search_user_fans_request.user_id,
         start=search_user_fans_request.start,
         limit=search_user_fans_request.limit,
         keyword=search_user_fans_request.keyword
@@ -258,6 +219,7 @@ async def search_user_fans(
     if len(users) == search_user_fans_request.limit:
         next_user = crud.user.search_next_user_fan(
             db=db,
+            user_id=search_user_fans_request.user_id,
             user=users[-1],
             keyword=search_user_fans_request.keyword
         )
@@ -274,13 +236,10 @@ async def search_user_fans(
     follows_by_user_id = crud.user.count_user_follows_by_user_ids(db=db, user_ids=user_ids)
     for item in users:
         element = schemas.user.UserPublicInfo.model_validate(item)
-        element.avatar = await get_remote_file_signed_url(
-            user_id=element.id,
-            file_name=element.avatar,
-        )
         element.fans = fans_by_user_id.get(item.id, 0)
         element.follows = follows_by_user_id.get(item.id, 0)
         elements.append(element)
+    await _batch_sign_user_avatars(users=elements)
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,
         elements=elements,
@@ -293,7 +252,7 @@ async def search_user_fans(
 @user_router.post('/follows', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
 async def search_user_follows(
     search_user_follows_request: schemas.user.SearchUserFollowsRequest,
-    user: models.user.User = Depends(get_current_user),
+    _current_user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     has_more = True
@@ -301,7 +260,7 @@ async def search_user_follows(
     next_user = None
     users = crud.user.search_user_follows(
         db=db,
-        user_id=user.id,
+        user_id=search_user_follows_request.user_id,
         start=search_user_follows_request.start,
         limit=search_user_follows_request.limit,
         keyword=search_user_follows_request.keyword
@@ -311,6 +270,7 @@ async def search_user_follows(
     if len(users) == search_user_follows_request.limit:
         next_user = crud.user.search_next_user_follow(
             db=db,
+            user_id=search_user_follows_request.user_id,
             user=users[-1],
             keyword=search_user_follows_request.keyword
         )
@@ -327,14 +287,10 @@ async def search_user_follows(
     follows_by_user_id = crud.user.count_user_follows_by_user_ids(db=db, user_ids=user_ids)
     for item in users:
         element = schemas.user.UserPublicInfo.model_validate(item)
-        if element.avatar is not None:
-            element.avatar = await get_remote_file_signed_url(
-                user_id=element.id,
-                file_name=element.avatar,
-            )
         element.fans = fans_by_user_id.get(item.id, 0)
         element.follows = follows_by_user_id.get(item.id, 0)
         elements.append(element)
+    await _batch_sign_user_avatars(users=elements)
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,
         elements=elements,
@@ -361,21 +317,25 @@ def follow_user(
     db_user_followed = crud.user.get_user_follow_by_to_user_id_and_from_user_id(
         db=db,
         to_user_id=follow_user_request.to_user_id,
-        from_user_id=user.id
+        from_user_id=user.id,
+        include_deleted=True,
     )
-    if db_user_followed is None and follow_user_request.status:
-        crud.user.create_follow_user_record(
-            db=db,
-            to_user_id=follow_user_request.to_user_id,
-            from_user_id=user.id
-        )
-    if db_user_followed is not None and not follow_user_request.status:
-        crud.user.update_user_follow_by_to_user_id_and_from_user_id(
-            db=db,
-            to_user_id=follow_user_request.to_user_id,
-            from_user_id=user.id,
-            status=follow_user_request.status
-        )
+    if db_user_followed is None:
+        if follow_user_request.status:
+            crud.user.create_follow_user_record(
+                db=db,
+                to_user_id=follow_user_request.to_user_id,
+                from_user_id=user.id,
+            )
+    else:
+        is_following = db_user_followed.delete_at is None
+        if is_following != follow_user_request.status:
+            crud.user.update_user_follow_by_to_user_id_and_from_user_id(
+                db=db,
+                to_user_id=follow_user_request.to_user_id,
+                from_user_id=user.id,
+                status=follow_user_request.status,
+            )
 
     db.commit()
     return schemas.common.SuccessResponse()
@@ -455,12 +415,12 @@ async def create_user_by_email_verify(
         db=db,
         email=email_user_create_verify_request.email
     ):
-        raise Exception("The email is already exists")
+        raise CustomException(message="The email is already exists", code=400)
     code = await cache.get(
         name=f'user-create-by-email-{email_user_create_verify_request.email}'
     )
     if code != email_user_create_verify_request.code or code is None:
-        raise Exception("Code is wrong")
+        raise CustomException(message="Code is wrong", code=400)
     await cache.delete(
         f'user-create-by-email-{email_user_create_verify_request.email}'
     )
@@ -479,23 +439,11 @@ async def create_user_by_email_verify(
         password=email_user_create_verify_request.password,
         nickname=email_user_create_verify_request.email
     )
-    # init the default file system for the user
-    db_file_system = crud.file_system.get_file_system_by_uuid(
+    file_service = await setup_default_file_system_for_user(
         db=db,
-        uuid=RemoteFileService.Built_In.meta.id
+        db_user=db_user,
     )
-    if db_file_system is None:
-        raise CustomException('The Built-In File System is Not Found', 404)
-    db_user_file_system = crud.file_system.create_user_file_system(
-        db=db,
-        file_system_id=db_file_system.id,
-        user_id=db_user.id,
-        title="Default Minio File System",
-        description="The default file system for the user"
-    )
-    db_user.default_user_file_system = db_user_file_system.id
-    file_service = await _init_user_bucket(db_user=db_user)
-    await _commit_with_bucket_cleanup(db=db, file_service=file_service)
+    await commit_with_bucket_cleanup(db=db, file_service=file_service)
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
         raise CustomException(message='The token is not created.')
@@ -516,7 +464,7 @@ async def create_user_by_email(
         db=db,
         email=email_user_create_verify_request.email
     ):
-        raise Exception("The email is already exists")
+        raise CustomException(message="The email is already exists", code=400)
     db_user = crud.user.create_base_user(
         db=db,
         nickname=email_user_create_verify_request.email,
@@ -532,23 +480,11 @@ async def create_user_by_email(
         password=email_user_create_verify_request.password,
         nickname=email_user_create_verify_request.email
     )
-    # init the default file system for the user
-    db_file_system = crud.file_system.get_file_system_by_uuid(
+    file_service = await setup_default_file_system_for_user(
         db=db,
-        uuid=RemoteFileService.Built_In.meta.id
+        db_user=db_user,
     )
-    if db_file_system is None:
-        raise CustomException('The Built-In File System is Not Found', 404)
-    db_user_file_system = crud.file_system.create_user_file_system(
-        db=db,
-        file_system_id=db_file_system.id,
-        user_id=db_user.id,
-        title="Default Minio File System",
-        description="The default file system for the user"
-    )
-    db_user.default_user_file_system = db_user_file_system.id
-    file_service = await _init_user_bucket(db_user=db_user)
-    await _commit_with_bucket_cleanup(db=db, file_service=file_service)
+    await commit_with_bucket_cleanup(db=db, file_service=file_service)
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
         raise CustomException(message='The token is not created.')
@@ -595,7 +531,7 @@ async def bind_email_code(
         email=bind_email_request.email
     )
     if email_exist:
-        raise Exception('The email is already exists')
+        raise CustomException(message='The email is already exists', code=400)
     code = "".join(random.sample(string.ascii_letters + string.digits, 6))
     await cache.set(
         name=f'{user.id}-user-bind-email-{bind_email_request.email}',
@@ -621,7 +557,7 @@ async def bind_email_verify(
         name=f'{user.id}-user-bind-email-{bind_email_verify_request.email}'
     )
     if code is None or code != bind_email_verify_request.code:
-        raise Exception("Code is wrong.")
+        raise CustomException(message="Code is wrong.", code=400)
     await cache.delete(
         f'{user.id}-user-bind-email-{bind_email_verify_request.email}'
     )
@@ -727,7 +663,7 @@ async def my_info(
             user_id=user.id,
             file_name=res.avatar
         )
-        
+
     email_user = crud.user.get_email_user_by_user_id(
         db=db,
         user_id=user.id
@@ -793,7 +729,7 @@ def login(
         email=user_login_request.email
     )
     if user is None:
-        raise Exception("The email is not registered yet")
+        raise CustomException(message="The email is not registered yet", code=404)
     if user.is_forbidden:
         raise schemas.error.CustomException(message="The user is forbidden", code=403)
     email_user = crud.user.get_email_user_by_user_id(
@@ -801,12 +737,12 @@ def login(
         user_id=user.id
     )
     if email_user is None:
-        raise Exception("The email is not registered yet")
+        raise CustomException(message="The email is not registered yet", code=404)
     if not user or not verify_password(
         stored_password=email_user.hashed_password,
         provided_password=user_login_request.password
     ):
-        raise Exception("Email or password is incorrect")
+        raise CustomException(message="Email or password is incorrect", code=401)
     user.last_login_ip = ip
     user.last_login_time = datetime.now(timezone.utc)
     db.commit()
@@ -827,16 +763,16 @@ def update_token(
         payload = decode_jwt_token(token=token_update_request.refresh_token)
     except ExpiredSignatureError as e:
         exception_logger.error(f"Decode refresh token error: {e}")
-        return Exception("Refresh token is expired, please login again.")
+        raise CustomException(message="Refresh token is expired, please login again.", code=401) from e
     user_uuid: str | None = payload.get("sub")
     if user_uuid is None:
-        raise Exception("Refresh token is invalid")
+        raise CustomException(message="Refresh token is invalid", code=401)
     user = crud.user.get_user_by_uuid(
         db=db,
         uuid=user_uuid
     )
     if user is None:
-        raise Exception("The user for this refresh_token is not exist")
+        raise CustomException(message="The user for this refresh_token is not exist", code=401)
     user.last_login_ip = ip
     user.last_login_time = datetime.now(timezone.utc)
     db.commit()
@@ -852,6 +788,8 @@ def delete_user(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    removed_from_section_notifications_to_send: list[tuple[int, int]] = []
+
     crud.user.delete_user_by_user_id(
         db=db,
         user_id=user.id
@@ -899,22 +837,46 @@ def delete_user(
         db=db,
         document_ids=document_ids
     )
-    for db_document in db_documents:
-        if db_document.category == DocumentCategory.FILE:
-            crud.document.delete_file_documents_by_document_ids(
-                db=db,
-                document_ids=document_ids
-            )
-        elif db_document.category == DocumentCategory.WEBSITE:
-            crud.document.delete_website_documents_by_document_ids(
-                db=db,
-                document_ids=document_ids
-            )
-        elif db_document.category == DocumentCategory.QUICK_NOTE:
-            crud.document.delete_quick_note_documents_by_document_ids(
-                db=db,
-                document_ids=document_ids
-            )
+    file_document_ids = [
+        db_document.id
+        for db_document in db_documents
+        if db_document.category == DocumentCategory.FILE
+    ]
+    website_document_ids = [
+        db_document.id
+        for db_document in db_documents
+        if db_document.category == DocumentCategory.WEBSITE
+    ]
+    quick_note_document_ids = [
+        db_document.id
+        for db_document in db_documents
+        if db_document.category == DocumentCategory.QUICK_NOTE
+    ]
+    audio_document_ids = [
+        db_document.id
+        for db_document in db_documents
+        if db_document.category == DocumentCategory.AUDIO
+    ]
+    if file_document_ids:
+        crud.document.delete_file_documents_by_document_ids(
+            db=db,
+            document_ids=file_document_ids
+        )
+    if website_document_ids:
+        crud.document.delete_website_documents_by_document_ids(
+            db=db,
+            document_ids=website_document_ids
+        )
+    if quick_note_document_ids:
+        crud.document.delete_quick_note_documents_by_document_ids(
+            db=db,
+            document_ids=quick_note_document_ids
+        )
+    if audio_document_ids:
+        crud.document.delete_audio_documents_by_document_ids(
+            db=db,
+            document_ids=audio_document_ids
+        )
     delete_documents_and_related_from_neo4j(
         doc_ids=document_ids
     )
@@ -926,6 +888,11 @@ def delete_user(
         user_id=user.id
     )
     for db_section in db_sections:
+        db_users = crud.section.get_users_for_section_by_section_id(
+            db=db,
+            section_id=db_section.id,
+            filter_roles=[UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER]
+        )
         crud.section.delete_section_users_by_section_id(
             db=db,
             section_id=db_section.id
@@ -946,719 +913,18 @@ def delete_user(
             db=db,
             section_id=db_section.id
         )
-        db_users = crud.section.get_users_for_section_by_section_id(
-            db=db,
-            section_id=db_section.id,
-            filter_roles=[UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER]
-        )
         for db_user in db_users:
             if db_user.id != user.id:
-                start_trigger_user_notification_event.delay(
-                    user_id=db_user.id,
-                    trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value,
-                    params={
-                        "section_id": db_section.id,
-                        "user_id": db_user.id
-                    }
-                )
+                removed_from_section_notifications_to_send.append((db_user.id, db_section.id))
 
     db.commit()
+    for target_user_id, section_id in removed_from_section_notifications_to_send:
+        start_trigger_user_notification_event.delay(
+            user_id=target_user_id,
+            trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value,
+            params={
+                "section_id": section_id,
+                "user_id": target_user_id
+            }
+        )
     return schemas.common.SuccessResponse(message="The user is deleted successfully.")
-
-@user_router.post("/create/google", response_model=schemas.user.TokenResponse)
-async def create_user_by_google(
-    request: Request,
-    user: schemas.user.GoogleUserCreate,
-    db: Session = Depends(get_db),
-    deployed_by_official: bool = Depends(check_deployed_by_official),
-    ip: str | None = Depends(get_real_ip),
-):
-    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
-    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
-    if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
-        raise Exception("Google client id or secret is not set")
-    
-    redirect_uri = str(request.base_url) + "integrations/google/oauth2/create/callback"
-    token = await asyncio.to_thread(
-        get_google_token,
-        google_client_id=GOOGLE_CLIENT_ID,
-        google_client_secret=GOOGLE_CLIENT_SECRET,
-        code=user.code,
-        redirect_uri=redirect_uri,
-    )
-    if token is None:
-        raise Exception("something error while getting google account info")
-
-    idinfo = await asyncio.to_thread(
-        id_token.verify_oauth2_token,
-        token.get('id_token'),
-        requests.Request(),
-        os.environ.get('GOOGLE_CLIENT_ID'),
-    )
-    db_google_user_exist = crud.user.get_google_user_by_google_id(
-        db=db,
-        google_user_id=idinfo.get('sub')
-    )
-    if db_google_user_exist is not None:
-        db_user = crud.user.get_user_by_id(
-            db=db,
-            user_id=db_google_user_exist.user_id
-        )
-        access_token, refresh_token = create_token(db_user)
-        return schemas.user.TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=3600
-        )
-    db_user = crud.user.create_base_user(
-        db=db,
-        avatar="files/default_avatar.png",
-        nickname=idinfo.get('name')
-    )
-    db_user.last_login_ip = ip
-    db_user.last_login_time = datetime.now(timezone.utc)
-
-    crud.user.create_google_user(
-        db=db,
-        user_id=db_user.id,
-        google_user_id=idinfo.get('sub'),
-        google_user_name=idinfo.get('name')
-    )
-    # init the default file system for the user
-    db_file_system = crud.file_system.get_file_system_by_uuid(
-        db=db,
-        uuid=RemoteFileService.Built_In.meta.id
-    )
-    if db_file_system is None:
-        raise CustomException('The Built-In File System is Not Found', 404)
-    db_user_file_system = crud.file_system.create_user_file_system(
-        db=db,
-        file_system_id=db_file_system.id,
-        user_id=db_user.id,
-        title="Default Minio File System",
-        description="The default file system for the user"
-    )
-    db_user.default_user_file_system = db_user_file_system.id
-    file_service = await _init_user_bucket(db_user=db_user)
-    await _commit_with_bucket_cleanup(db=db, file_service=file_service)
-    access_token, refresh_token = create_token(db_user)
-    return schemas.user.TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_in=3600
-    )
-
-@user_router.post("/bind/google", response_model=schemas.common.NormalResponse)
-def bind_google(
-    request: Request,
-    bind_google: schemas.user.GoogleUserBind,
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
-    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
-    if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
-        raise Exception("Google client id or secret is not set")
-
-    db_google_user_exist = crud.user.get_google_user_by_user_id(
-        db=db,
-        user_id=user.id
-    )
-    if db_google_user_exist is not None:
-        raise Exception("The account is already binded")
-
-    redirect_uri = str(request.base_url) + "integrations/google/oauth2/bind/callback"
-    token = get_google_token(
-        google_client_id=GOOGLE_CLIENT_ID,
-        google_client_secret=GOOGLE_CLIENT_SECRET,
-        code=bind_google.code,
-        redirect_uri=redirect_uri
-    )
-    if token is None:
-        raise Exception("Something is error while getting google account info")
-
-    idinfo = id_token.verify_oauth2_token(token.get('id_token'),
-                                          requests.Request(),
-                                          os.environ.get('GOOGLE_CLIENT_ID'))
-
-    db_google_exist = crud.user.get_google_user_by_google_id(
-        db=db,
-        google_user_id=idinfo.get('sub')
-    )
-    if db_google_exist is not None:
-        raise Exception("The google account is already be binded")
-
-    crud.user.create_google_user(
-        db=db,
-        user_id=user.id,
-        google_user_id=idinfo.get('sub')
-    )
-
-    db.commit()
-    return schemas.common.SuccessResponse()
-
-@user_router.post('/unbind/google', response_model=schemas.common.NormalResponse)
-def unbind_google(
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    crud.user.delete_google_user_by_user_id(
-        db=db,
-        user_id=user.id
-    )
-    db.commit()
-    return schemas.common.SuccessResponse(message="The google account is unbinded successfully.")
-
-@user_router.post("/create/github", response_model=schemas.user.TokenResponse)
-async def create_user_by_github(
-    request: Request,
-    user: schemas.user.GithubUserCreate,
-    db: Session = Depends(get_db),
-    deployed_by_official: bool = Depends(check_deployed_by_official),
-    ip: str | None = Depends(get_real_ip)
-):
-    GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
-    GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')
-    if GITHUB_CLIENT_ID is None or GITHUB_CLIENT_SECRET is None:
-        raise Exception("Github client id or secret is not set")
-
-    redirect_uri = str(request.base_url) + "integrations/github/oauth2/create/callback"
-    token = await asyncio.to_thread(
-        get_github_token,
-        github_client_id=GITHUB_CLIENT_ID,
-        github_client_secret=GITHUB_CLIENT_SECRET,
-        code=user.code,
-        redirect_uri=redirect_uri,
-    )
-    if token is None:
-        raise Exception("some thing is error while getting github account info")
-    github_user_info = await asyncio.to_thread(get_github_userInfo, token=token.get('access_token'))
-    db_exist_github_user = crud.user.get_github_user_by_github_user_id(
-        db=db,
-        github_user_id=str(github_user_info.get('id'))
-    )
-    if db_exist_github_user is not None:
-        db_user = crud.user.get_user_by_id(
-            db=db,
-            user_id=db_exist_github_user.user_id
-        )
-        access_token, refresh_token = create_token(db_user)
-        return schemas.user.TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=3600
-        )
-    db_user = crud.user.create_base_user(
-        db=db,
-        nickname=github_user_info.get('login'),
-        avatar="files/default_avatar.png"
-    )
-    db_user.last_login_ip = ip
-    db_user.last_login_time = datetime.now(timezone.utc)
-
-    crud.user.create_github_user(
-        db=db,
-        user_id=db_user.id,
-        github_user_id=str(github_user_info.get('id')),
-        github_user_name=github_user_info.get('login')
-    )
-
-    # init the default file system for the user
-    db_file_system = crud.file_system.get_file_system_by_uuid(
-        db=db,
-        uuid=RemoteFileService.Built_In.meta.id
-    )
-    if db_file_system is None:
-        raise CustomException('The Built-In File System is Not Found', 404)
-    db_user_file_system = crud.file_system.create_user_file_system(
-        db=db,
-        file_system_id=db_file_system.id,
-        user_id=db_user.id,
-        title="Default Minio File System",
-        description="The default file system for the user"
-    )
-    db_user.default_user_file_system = db_user_file_system.id
-    file_service = await _init_user_bucket(db_user=db_user)
-    await _commit_with_bucket_cleanup(db=db, file_service=file_service)
-    access_token, refresh_token = create_token(db_user)
-    return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
-
-@user_router.post("/bind/github", response_model=schemas.common.NormalResponse)
-def bind_github(
-    request: Request,
-    bind_github: schemas.user.GithubUserBind,
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
-    GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')
-    if GITHUB_CLIENT_ID is None or GITHUB_CLIENT_SECRET is None:
-        raise Exception("Github client id or secret is not set")
-
-    db_github_user_exist = crud.user.get_github_user_by_user_id(
-        db=db,
-        user_id=user.id
-    )
-    if db_github_user_exist is not None:
-        raise Exception("The account has already been bound")
-
-    redirect_uri = str(request.base_url) + "integrations/github/oauth2/bind/callback"
-    token = get_github_token(
-        github_client_id=GITHUB_CLIENT_ID,
-        github_client_secret=GITHUB_CLIENT_SECRET,
-        code=bind_github.code,
-        redirect_uri=redirect_uri
-    )
-    if token is None:
-        raise Exception("some thing is error while getting github account info")
-    github_user_info = get_github_userInfo(
-        token=token.get('access_token')
-    )
-
-    db_github_exist = crud.user.get_github_user_by_github_user_id(
-        db=db,
-        github_user_id=str(github_user_info.get('id'))
-    )
-    if db_github_exist is not None:
-        raise Exception("The github account has been bound by other user")
-
-    crud.user.create_github_user(
-        db=db,
-        user_id=user.id,
-        github_user_id=str(github_user_info.get('id')),
-        github_user_name=github_user_info.get('login')
-    )
-
-    db.commit()
-    return schemas.common.SuccessResponse()
-
-@user_router.post('/unbind/github', response_model=schemas.common.NormalResponse)
-def unbind_github(
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    crud.user.delete_github_user_by_user_id(
-        db=db,
-        user_id=user.id
-    )
-    db.commit()
-    return schemas.common.SuccessResponse(message="The github account is unbinded successfully.")
-
-@user_router.post('/create/sms/code', response_model=schemas.common.NormalResponse)
-async def create_user_by_sms_code(
-    sms_user_code_create_request: schemas.user.SmsUserCodeCreateRequest,
-    cache: Redis = Depends(get_cache)
-):
-    code = "".join(random.sample(string.digits, 6))
-    await cache.set(
-        name=f'user-create-sms-{sms_user_code_create_request.phone}',
-        value=code, 
-        ex=600
-    )
-
-    def _send_sms():
-        sms_client = TencentSms.get_official_sms_client()
-        sms_client.send_register_msg(
-            phone_numbers=[sms_user_code_create_request.phone],
-            code=code
-        )
-
-    await asyncio.to_thread(_send_sms)
-
-    return schemas.common.SuccessResponse()
-
-@user_router.post('/create/sms/verify', response_model=schemas.user.TokenResponse)
-async def create_user_by_sms_verify(
-    sms_user_code_verify_request: schemas.user.SmsUserCodeVerifyCreate,
-    db: Session = Depends(get_db),
-    cache: Redis = Depends(get_cache),
-    ip: str | None = Depends(get_real_ip)
-):
-    code = await cache.get(
-        name=f'user-create-sms-{sms_user_code_verify_request.phone}'
-    )
-    if code is None:
-        raise Exception("The code is expired")
-    if code != sms_user_code_verify_request.code:
-        raise Exception("The code is wrong")
-    await cache.delete(
-        f'user-create-sms-{sms_user_code_verify_request.phone}'
-    )
-    phone_user_exist = crud.user.get_phone_user_by_phone(
-        db=db,
-        phone=sms_user_code_verify_request.phone
-    )
-    if phone_user_exist is not None:
-        db_user = crud.user.get_user_by_id(
-            db=db,
-            user_id=phone_user_exist.user_id
-        )
-        access_token, refresh_token = create_token(db_user)
-        return schemas.user.TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=3600
-        )
-    else:
-        db_user = crud.user.create_base_user(
-            db=db,
-            nickname=f'Revornix User {uuid4().hex[:8]}',
-            avatar="files/default_avatar.png"
-        )
-        db_user.last_login_ip = ip
-        db_user.last_login_time = datetime.now(timezone.utc)
-
-        crud.user.create_phone_user(
-            db=db,
-            user_id=db_user.id,
-            phone=sms_user_code_verify_request.phone
-        )
-        # init the default file system for the user
-        db_file_system = crud.file_system.get_file_system_by_uuid(
-            db=db,
-            uuid=RemoteFileService.Built_In.meta.id
-        )
-        if db_file_system is None:
-            raise CustomException('The Built-In File System is Not Found', 404)
-        db_user_file_system = crud.file_system.create_user_file_system(
-            db=db,
-            file_system_id=db_file_system.id,
-            user_id=db_user.id,
-            title="Default Minio File System",
-            description="The default file system for the user"
-        )
-        db_user.default_user_file_system = db_user_file_system.id
-        file_service = await _init_user_bucket(db_user=db_user)
-        await _commit_with_bucket_cleanup(db=db, file_service=file_service)
-        access_token, refresh_token = create_token(db_user)
-        return schemas.user.TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=3600
-        )
-
-@user_router.post('/bind/phone/code', response_model=schemas.common.NormalResponse)
-async def bind_phone(
-    bind_phone_code_create_request: schemas.user.BindPhoneCodeCreateRequest,
-    user = Depends(get_current_user),
-    cache: Redis = Depends(get_cache),
-    db: Session = Depends(get_db)
-):
-    phone_exist = crud.user.get_phone_user_by_phone(
-        db=db,
-        phone=bind_phone_code_create_request.phone
-    )
-    if phone_exist:
-        raise Exception('The phone number is already registered')
-    code = "".join(random.sample(string.digits, 6))
-
-    def _send_sms():
-        sms_client = TencentSms.get_official_sms_client()
-        sms_client.send_register_msg(
-            phone_numbers=[bind_phone_code_create_request.phone],
-            code=code
-        )
-
-    await asyncio.to_thread(_send_sms)
-
-    await cache.set(
-        name=f'user-bind-sms-{bind_phone_code_create_request.phone}',
-        value=code, 
-        ex=600
-    )
-    return schemas.common.SuccessResponse()
-
-@user_router.post('/bind/phone/verify', response_model=schemas.common.NormalResponse)
-async def bind_phone_verify(
-    bind_phone_code_verify_request: schemas.user.BindPhoneCodeVerifyRequest,
-    user = Depends(get_current_user),
-    cache: Redis = Depends(get_cache),
-    db: Session = Depends(get_db)
-):
-    code = await cache.get(
-        name=f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
-    )
-    if code is None:
-        raise Exception('The code is expired')
-    if code != bind_phone_code_verify_request.code:
-        raise Exception('The code is wrong')
-    await cache.delete(
-        f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
-    )
-    crud.user.create_phone_user(
-        db=db,
-        user_id=user.id,
-        phone=bind_phone_code_verify_request.phone
-    )
-    db.commit()
-    return schemas.common.SuccessResponse()
-
-@user_router.post('/unbind/phone', response_model=schemas.common.NormalResponse)
-def unbind_phone(
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    crud.user.delete_phone_user_by_user_id(
-        db=db,
-        user_id=user.id
-    )
-    db.commit()
-    return schemas.common.SuccessResponse()
-
-@user_router.post('/create/wechat/mini', response_model=schemas.user.TokenResponse)
-async def create_user_by_wechat_mini(
-    wechat_mini_user_create_request: schemas.user.WeChatMiniUserCreateRequest,
-    db: Session = Depends(get_db),
-    deployed_by_official: bool = Depends(check_deployed_by_official),
-    ip: str | None = Depends(get_real_ip)
-):
-    WECHAT_MINI_APP_ID = os.environ.get('WECHAT_MINI_APP_ID')
-    WECHAT_MINI_APP_SECRET = os.environ.get('WECHAT_MINI_APP_SECRET')
-    if WECHAT_MINI_APP_ID is None or WECHAT_MINI_APP_SECRET is None:
-        raise CustomException('WeChat Mini Program Not Configured', 500)
-
-    code = wechat_mini_user_create_request.code
-    response_tokens = await asyncio.to_thread(get_mini_wechat_tokens, WECHAT_MINI_APP_ID, WECHAT_MINI_APP_SECRET, code)
-    openid = response_tokens.openid
-    union_id = response_tokens.unionid
-    if openid is None or union_id is None:
-        raise CustomException('WeChat Login Failed', 403)
-
-    # 如果openid都已经存在了 那就说明这个用户在这个平台已经注册过了 直接返回token
-    db_exist_wechat_user_by_open_id = crud.user.get_wechat_user_by_wechat_open_id(
-        db=db,
-        wechat_user_open_id=openid
-    )
-    if db_exist_wechat_user_by_open_id is not None:
-        db_user = crud.user.get_user_by_id(
-            db=db,
-            user_id=db_exist_wechat_user_by_open_id.user_id
-        )
-        access_token, refresh_token = create_token(db_user)
-        return schemas.user.TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=3600
-        )
-
-    # 微信创建方式 同一union_id只能创建一个用户
-    db_exist_wechat_user_by_union_id = crud.user.get_wechat_user_by_wechat_union_id(
-        db=db,
-        wechat_user_union_id=union_id
-    )
-    bucket_file_service: BuiltInRemoteFileService | None = None
-
-    if len(db_exist_wechat_user_by_union_id) == 0:
-        nickname = f'Revornix User {uuid4().hex[:8]}'
-        db_user = crud.user.create_base_user(
-            db=db,
-            avatar="files/default_avatar.png",
-            nickname=nickname
-        )
-        db_user.last_login_ip = ip
-        db_user.last_login_time = datetime.now(timezone.utc)
-
-        crud.user.create_wechat_user(
-            db=db,
-            user_id=db_user.id,
-            wechat_platform=WeChatUserSource.REVORNIX_MINI_PROGRAM,
-            wechat_user_open_id=openid,
-            wechat_user_union_id=union_id,
-            wechat_user_name=nickname
-        )
-        # init the default file system for the user
-        db_file_system = crud.file_system.get_file_system_by_uuid(
-            db=db,
-            uuid=RemoteFileService.Built_In.meta.id
-        )
-        if db_file_system is None:
-            raise CustomException('The Built-In File System is Not Found', 404)
-        db_user_file_system = crud.file_system.create_user_file_system(
-            db=db,
-            file_system_id=db_file_system.id,
-            user_id=db_user.id,
-            title="Default Minio File System",
-            description="The default file system for the user"
-        )
-        db_user.default_user_file_system = db_user_file_system.id
-        bucket_file_service = await _init_user_bucket(db_user=db_user)
-    else:
-        # TODO 优化一下微信用户的机制 现在的处理总感觉有些问题
-        # 如果union_id已经存在 说明该用户已通过别的微信渠道注册过, 不需要新建文件系统等机制 仅仅再创建一个微信用户身份即可
-        db_user = crud.user.get_user_by_id(
-            db=db,
-            user_id=db_exist_wechat_user_by_union_id[0].user_id
-        )
-        if db_user is None:
-            raise CustomException('The Wechat User is Not Found by the exist info', 404)
-        crud.user.create_wechat_user(
-            db=db,
-            user_id=db_user.id,
-            wechat_platform=WeChatUserSource.REVORNIX_MINI_PROGRAM,
-            wechat_user_open_id=openid,
-            wechat_user_union_id=union_id,
-            wechat_user_name=db_user.nickname
-        )
-    await _commit_with_bucket_cleanup(db=db, file_service=bucket_file_service)
-    access_token, refresh_token = create_token(db_user)
-    return schemas.user.TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_in=3600
-    )
-
-@user_router.post("/create/wechat/web", response_model=schemas.user.TokenResponse)
-async def create_user_by_wechat_web(
-    wechat_web_user_create_request: schemas.user.WeChatWebUserCreateRequest,
-    db: Session = Depends(get_db),
-    deployed_by_official: bool = Depends(check_deployed_by_official),
-    ip: str | None = Depends(get_real_ip)
-):
-    WECHAT_WEB_APP_ID = os.environ.get('WECHAT_WEB_APP_ID')
-    WECHAT_WEB_APP_SECRET = os.environ.get('WECHAT_WEB_APP_SECRET')
-    if WECHAT_WEB_APP_ID is None or WECHAT_WEB_APP_SECRET is None:
-        raise CustomException('WeChat Web Not Configured', 500)
-
-    code = wechat_web_user_create_request.code
-    response_tokens = await asyncio.to_thread(get_web_wechat_tokens, WECHAT_WEB_APP_ID, WECHAT_WEB_APP_SECRET, code)
-    access_token = response_tokens.access_token
-
-    openid = response_tokens.openid
-    union_id = response_tokens.unionid
-    if access_token is None or openid is None or union_id is None:
-        raise CustomException('WeChat Login Failed', 403)
-
-    db_exist_wechat_user_by_openid = crud.user.get_wechat_user_by_wechat_open_id(
-        db=db,
-        wechat_user_open_id=openid
-    )
-    if db_exist_wechat_user_by_openid is not None:
-        db_user = crud.user.get_user_by_id(
-            db=db,
-            user_id=db_exist_wechat_user_by_openid.user_id
-        )
-        access_token, refresh_token = create_token(db_user)
-        return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
-
-    db_exist_wechat_user_by_union_id = crud.user.get_wechat_user_by_wechat_union_id(
-        db=db,
-        wechat_user_union_id=union_id
-    )
-    bucket_file_service: BuiltInRemoteFileService | None = None
-    if len(db_exist_wechat_user_by_union_id) == 0:
-        # get the wechat user info
-        response_user_info = await asyncio.to_thread(
-            get_web_user_info,
-            access_token=access_token,
-            openid=openid,
-        )
-        nickname = response_user_info.get('nickname')
-        db_user = crud.user.create_base_user(
-            db=db,
-            avatar="files/default_avatar.png",
-            nickname=nickname
-        )
-        db_user.last_login_ip = ip
-        db_user.last_login_time = datetime.now(timezone.utc)
-
-        crud.user.create_wechat_user(
-            db=db,
-            user_id=db_user.id,
-            wechat_platform=WeChatUserSource.REVORNIX_WEB_APP,
-            wechat_user_open_id=openid,
-            wechat_user_union_id=union_id,
-            wechat_user_name=nickname
-        )
-        # init the default file system for the user
-        db_file_system = crud.file_system.get_file_system_by_uuid(
-            db=db,
-            uuid=RemoteFileService.Built_In.meta.id
-        )
-        if db_file_system is None:
-            raise CustomException('The Built-In File System is Not Found', 404)
-        db_user_file_system = crud.file_system.create_user_file_system(
-            db=db,
-            file_system_id=db_file_system.id,
-            user_id=db_user.id,
-            title="Default Minio File System",
-            description="The default file system for the user"
-        )
-        db_user.default_user_file_system = db_user_file_system.id
-        bucket_file_service = await _init_user_bucket(db_user=db_user)
-    else:
-        db_user = crud.user.get_user_by_id(
-            db=db,
-            user_id=db_exist_wechat_user_by_union_id[0].user_id
-        )
-        if db_user is None:
-            raise CustomException('The Wechat User is Not Found by the exist info', 404)
-        crud.user.create_wechat_user(
-            db=db,
-            user_id=db_user.id,
-            wechat_platform=WeChatUserSource.REVORNIX_MINI_PROGRAM,
-            wechat_user_open_id=openid,
-            wechat_user_union_id=union_id,
-            wechat_user_name=db_user.nickname
-        )
-    await _commit_with_bucket_cleanup(db=db, file_service=bucket_file_service)
-    access_token, refresh_token = create_token(db_user)
-    return schemas.user.TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_in=3600
-    )
-
-@user_router.post("/bind/wechat/web", response_model=schemas.common.NormalResponse)
-def bind_wechat(
-    wechat_user_bind_request: schemas.user.WeChatWebUserBindRequest,
-    user: models.user.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    WECHAT_WEB_APP_ID = os.environ.get('WECHAT_WEB_APP_ID')
-    WECHAT_WEB_APP_SECRET = os.environ.get('WECHAT_WEB_APP_SECRET')
-    if WECHAT_WEB_APP_ID is None or WECHAT_WEB_APP_SECRET is None:
-        raise CustomException('WeChat Web Not Configured', 500)
-    db_wechat_user_exist = crud.user.get_wechat_user_by_user_id(
-        db=db,
-        user_id=user.id,
-        filter_wechat_platform=WeChatUserSource.REVORNIX_WEB_APP
-    )
-    if len(db_wechat_user_exist) > 0:
-        raise CustomException(message="This wechat account is alread be bounded", code=403)
-    code = wechat_user_bind_request.code
-    response_tokens = get_web_wechat_tokens(WECHAT_WEB_APP_ID, WECHAT_WEB_APP_SECRET, code)
-    access_token = response_tokens.access_token
-    openid = response_tokens.openid
-    if access_token is None or openid is None:
-        raise CustomException(message='WeChat Login Failed', code=400)
-    union_id = response_tokens.unionid
-    response_user_info = get_web_user_info(access_token, openid)
-    nickname = response_user_info.get('nickname')
-    db_github_exist = crud.user.get_wechat_user_by_wechat_open_id(
-        db=db,
-        wechat_user_open_id=openid
-    )
-    if db_github_exist is not None:
-        raise Exception("The wechat account has been bound by other user")
-    crud.user.create_wechat_user(
-        db=db,
-        user_id=user.id,
-        wechat_platform=WeChatUserSource.REVORNIX_WEB_APP,
-        wechat_user_open_id=openid,
-        wechat_user_union_id=union_id,
-        wechat_user_name=nickname
-    )
-    db.commit()
-    return schemas.common.SuccessResponse()
-
-@user_router.post('/unbind/wechat', response_model=schemas.common.NormalResponse)
-def unbind_wechat(
-    user: models.user.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    crud.user.delete_wechat_user_by_user_id(
-        db=db,
-        user_id=user.id
-    )
-    db.commit()
-    return schemas.common.SuccessResponse()
