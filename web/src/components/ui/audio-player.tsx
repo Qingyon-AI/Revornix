@@ -97,15 +97,11 @@ export default function AudioPlayer({
 	return (
 		<div className='flex items-center gap-4'>
 			{/* 封面 */}
-			<div className='relative flex-shrink-0 p-3 rounded-md ring-1 ring-inset dark:ring-white/10 ring-black/10 '>
-				<img
-					src={cover}
-					alt={title}
-					width={60}
-					height={60}
-					className='object-cover'
-				/>
-			</div>
+			<img
+				src={cover}
+				alt={title}
+				className='object-cover size-20 flex-shrink-0 rounded-md ring-1 ring-inset dark:ring-white/10 ring-black/10'
+			/>
 
 			{/* 播放器主体 */}
 			<div className='flex flex-col flex-1 min-w-0'>
