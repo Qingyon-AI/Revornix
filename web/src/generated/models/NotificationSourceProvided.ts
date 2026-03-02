@@ -67,12 +67,6 @@ export interface NotificationSourceProvided {
      * @memberof NotificationSourceProvided
      */
     update_time: Date | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof NotificationSourceProvided
-     */
-    demo_config: string | null;
 }
 
 /**
@@ -87,7 +81,6 @@ export function instanceOfNotificationSourceProvided(value: object): value is No
     if (!('description_zh' in value) || value['description_zh'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
-    if (!('demo_config' in value) || value['demo_config'] === undefined) return false;
     return true;
 }
 
@@ -109,7 +102,6 @@ export function NotificationSourceProvidedFromJSONTyped(json: any, ignoreDiscrim
         'description_zh': json['description_zh'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
-        'demo_config': json['demo_config'],
     };
 }
 
@@ -132,7 +124,6 @@ export function NotificationSourceProvidedToJSONTyped(value?: NotificationSource
         'description_zh': value['description_zh'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
-        'demo_config': value['demo_config'],
     };
 }
 

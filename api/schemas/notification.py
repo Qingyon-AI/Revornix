@@ -122,7 +122,6 @@ class NotificationSourceProvided(BaseModel):
     description_zh: str | None
     create_time: datetime
     update_time: datetime | None
-    demo_config: str | None
     @field_serializer("create_time")
     def serializer_create_time(self, v: datetime):
         if v is not None and v.tzinfo is None:
@@ -312,19 +311,44 @@ class AddNotificationTargetRequest(BaseModel):
     dingtalk_target_form: DingTalkTargetForm | None = None
     telegram_target_form: TelegramTargetForm | None = None
 
+class EmailSourceForm(BaseModel):
+    host: str
+    port: int
+    username: str
+    password: str
+
+class IOSSourceForm(BaseModel):
+    team_id: str
+    key_id: str
+    private_key: str
+    apns_topic: str
+
+class FeiShuSourceForm(BaseModel):
+    app_id: str
+    app_secret: str
+
+class TelegramSourceForm(BaseModel):
+    bot_token: str
+
 class AddNotificationSourceRequest(BaseModel):
     notification_source_provided_id: int
     title: str
     is_public: bool
     description: str | None = None
-    config_json: str | None = None
+    email_source_form: EmailSourceForm | None = None
+    ios_source_form: IOSSourceForm | None = None
+    feishu_source_form: FeiShuSourceForm | None = None
+    telegram_source_form: TelegramSourceForm | None = None
 
 class UpdateNotificationSourceRequest(BaseModel):
     notification_source_id: int
     title: str | None = None
     description: str | None = None
     is_public: bool | None = None
-    config_json: str | None = None
+    email_source_form: EmailSourceForm | None = None
+    ios_source_form: IOSSourceForm | None = None
+    feishu_source_form: FeiShuSourceForm | None = None
+    telegram_source_form: TelegramSourceForm | None = None
 
 class UpdateNotificationTargetRequest(BaseModel):
     notification_target_id: int

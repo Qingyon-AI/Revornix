@@ -13,11 +13,5 @@ class EmailNotificationSourceProvided(NotificationSourceProvidedProtocol):
             name='Email Source',
             name_zh='邮件源',
             description='The source of notification based on third-party email server',
-            description_zh='基于第三方邮件服务器来发送消息的消息源',
-            demo_config=json.dumps({
-                'host': 'smtp.example.com',
-                'port': 587,
-                'username': 'your_email@example.com',
-                'password': 'your_password'
-            })
+            description_zh='基于第三方邮件服务器来发送消息的消息源'
         )

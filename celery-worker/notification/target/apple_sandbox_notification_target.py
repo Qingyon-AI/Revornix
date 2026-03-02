@@ -11,8 +11,5 @@ class AppleSandBoxNotificationTarget(NotificationTargetProvidedProtocol):
             name='Apple APNS Target (SandBox)',
             name_zh='Apple APNS目标（沙箱）',
             description='The notification target which can be sent by Apple APNS (SandBox)',
-            description_zh='Apple APNS可推送的目标（沙箱）',
-            demo_config=json.dumps({
-                'device_token': 'your_device_token',
-            })
+            description_zh='Apple APNS可推送的目标（沙箱）'
         )

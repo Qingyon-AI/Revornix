@@ -107,9 +107,16 @@ const UpdateNotificationTarget = ({
 				sign: z.string(),
 			})
 			.optional(),
+		telegram_target_form: z
+			.object({
+				chat_id: z.string(),
+			})
+			.optional(),
 	});
 
-	const form = useForm({
+	type UpdateNotificationTargetFormValues = z.infer<typeof formSchema>;
+
+	const form = useForm<UpdateNotificationTargetFormValues>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			notification_target_id: notification_target_id,
@@ -118,7 +125,9 @@ const UpdateNotificationTarget = ({
 		},
 	});
 
-	const initialValuesRef = useRef<z.infer<typeof formSchema> | null>(null);
+	const initialValuesRef = useRef<UpdateNotificationTargetFormValues | null>(
+		null,
+	);
 
 	const { data, isFetching, isError, error, isSuccess, refetch } = useQuery({
 		queryKey: ['notification-target-detail', notification_target_id],
@@ -204,7 +213,10 @@ const UpdateNotificationTarget = ({
 			})?.uuid ?? data?.notification_target_provided.uuid;
 
 		const isChanged = (currentValue: unknown, initialValue: unknown) => {
-			return JSON.stringify(currentValue ?? null) !== JSON.stringify(initialValue ?? null);
+			return (
+				JSON.stringify(currentValue ?? null) !==
+				JSON.stringify(initialValue ?? null)
+			);
 		};
 
 		switch (currentTargetProvidedUuid) {
@@ -236,9 +248,23 @@ const UpdateNotificationTarget = ({
 			case NotificationTargetProvidedUUID.DINGTALK:
 				if (
 					values.dingtalk_target_form &&
-					isChanged(values.dingtalk_target_form, initialValues.dingtalk_target_form)
+					isChanged(
+						values.dingtalk_target_form,
+						initialValues.dingtalk_target_form,
+					)
 				) {
 					payload.dingtalk_target_form = values.dingtalk_target_form;
+				}
+				break;
+			case NotificationTargetProvidedUUID.TELEGRAM:
+				if (
+					values.telegram_target_form &&
+					isChanged(
+						values.telegram_target_form,
+						initialValues.telegram_target_form,
+					)
+				) {
+					payload.telegram_target_form = values.telegram_target_form;
 				}
 				break;
 			default:
@@ -308,6 +334,12 @@ const UpdateNotificationTarget = ({
 				initialFormValues.dingtalk_target_form = {
 					webhook_url: cfg.webhook_url ?? '',
 					sign: cfg.sign ?? '',
+				};
+				break;
+
+			case NotificationTargetProvidedUUID.TELEGRAM:
+				initialFormValues.telegram_target_form = {
+					chat_id: cfg.chat_id ?? '',
 				};
 				break;
 
@@ -466,13 +498,11 @@ const UpdateNotificationTarget = ({
 								/>
 								{authorized && (
 									<>
-											{providedNotificationTargets?.data.find((item) => {
-												return item.id === notificationTargetProvidedId;
-											})?.uuid === NotificationTargetProvidedUUID.EMAIL && (
-												<EmailNotificationTarget
-													useEmailDirtyForCodeField
-												/>
-											)}
+										{providedNotificationTargets?.data.find((item) => {
+											return item.id === notificationTargetProvidedId;
+										})?.uuid === NotificationTargetProvidedUUID.EMAIL && (
+											<EmailNotificationTarget useEmailDirtyForCodeField />
+										)}
 										{providedNotificationTargets?.data.find((item) => {
 											return item.id === notificationTargetProvidedId;
 										})?.uuid === NotificationTargetProvidedUUID.APPLE && (

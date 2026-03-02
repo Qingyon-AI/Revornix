@@ -10,7 +10,10 @@ Name | Type
 `title` | string
 `description` | string
 `is_public` | boolean
-`config_json` | string
+`email_source_form` | [EmailSourceForm](EmailSourceForm.md)
+`ios_source_form` | [IOSSourceForm](IOSSourceForm.md)
+`feishu_source_form` | [FeiShuSourceForm](FeiShuSourceForm.md)
+`telegram_source_form` | [TelegramSourceForm](TelegramSourceForm.md)
 
 ## Example
 
@@ -23,7 +26,10 @@ const example = {
   "title": null,
   "description": null,
   "is_public": null,
-  "config_json": null,
+  "email_source_form": null,
+  "ios_source_form": null,
+  "feishu_source_form": null,
+  "telegram_source_form": null,
 } satisfies UpdateNotificationSourceRequest
 
 console.log(example)
