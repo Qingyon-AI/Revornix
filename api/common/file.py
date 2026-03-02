@@ -11,32 +11,36 @@ import httpx
 from pydantic import BaseModel
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from data.sql.base import session_scope
-from common.logger import info_logger, exception_logger
+from common.logger import exception_logger, info_logger
 from config.base import BASE_DIR
 from proxy.file_system_proxy import FileSystemProxy
 
+
+def _is_within_directory(base_dir: Path, target_path: Path) -> bool:
+    try:
+        target_path.relative_to(base_dir)
+    except ValueError:
+        return False
+    return True
+
+
 async def get_remote_file_signed_url(
     user_id: int,
-    file_name: str
+    file_name: str,
 ):
-    """获取远程文件系统中的文件的公网访问URL
-    """
+    """Get a signed public URL for a file in the remote filesystem."""
 
-    db = session_scope()
     try:
         file_service = await FileSystemProxy.create(
             user_id=user_id,
         )
         if file_service is None:
-            raise Exception("Failed to get the file_service")
-        
+            raise RuntimeError("Failed to get the file_service")
+
         return file_service.presign_get_url(file_name)
     except Exception as e:
         exception_logger.error(f"There is something wrong while getting the remote file signed url: {e}")
         raise
-    finally:
-        db.close()
 
 def resolve_filename_and_suffix(
     *,
@@ -47,12 +51,12 @@ def resolve_filename_and_suffix(
     """
     根据 response 和 url 智能解析文件名与后缀
 
-    返回：
+    返回:
         (file_name, suffix)
 
     keep_origin_name:
         - True  : 尽量保留原始文件名
-        - False : 使用 UUID，仅保留后缀（推荐用于 temp 目录）
+        - False : 使用 UUID, 仅保留后缀(推荐用于 temp 目录)
     """
 
     def filename_from_content_disposition() -> str | None:
@@ -68,15 +72,15 @@ def resolve_filename_and_suffix(
         or None
     )
 
-    # 1️⃣ 尝试从原始文件名拿后缀
+    # 1. 尝试从原始文件名拿后缀
     suffix = Path(origin_name).suffix if origin_name else ""
 
-    # 2️⃣ URL / CD 都没有后缀 → Content-Type
+    # 2. URL / CD 都没有后缀 -> Content-Type
     if not suffix:
         content_type = response.headers.get("content-type", "").split(";")[0]
         suffix = mimetypes.guess_extension(content_type) or ""
 
-    # 3️⃣ 生成最终文件名
+    # 3. 生成最终文件名
     if keep_origin_name and origin_name:
         file_name = origin_name
     else:
@@ -100,7 +104,7 @@ def _remove_path(path: Path) -> None:
 def cleanup_temp_dir(
     *,
     max_age_seconds: int = 24 * 60 * 60,
-    max_entries: int = 1000
+    max_entries: int = 1000,
 ) -> None:
     temp_dir = BASE_DIR / "temp"
     if not temp_dir.exists():
@@ -156,7 +160,13 @@ def extract_files_to_temp_from_zip(file_path: str):
     temp_dir.mkdir(parents=True, exist_ok=True)
     cleanup_temp_dir()
     extracted_dir = temp_dir / uuid.uuid4().hex
-    # 解压文件到指定文件夹
+
+    # Validate all zip entries before extraction to avoid zip-slip path traversal.
+    base_dir = extracted_dir.resolve()
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
+        for member in zip_ref.infolist():
+            member_path = (extracted_dir / member.filename).resolve()
+            if not _is_within_directory(base_dir, member_path):
+                raise ValueError(f"Unsafe zip file path detected: {member.filename}")
         zip_ref.extractall(str(extracted_dir))
     return extracted_dir

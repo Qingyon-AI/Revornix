@@ -33,6 +33,7 @@ from router.notification import notification_router
 from router.section import section_router
 from router.tp import tp_router
 from router.user import user_router
+from router.user_auth import user_auth_router
 
 common_mcp_app = common_mcp_router.http_app()
 document_mcp_app = document_mcp_router.http_app()
@@ -40,6 +41,7 @@ document_mcp_app = document_mcp_router.http_app()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    redis_conn = None
     try:
         if API_SENTRY_ENABLE == "True":
             import sentry_sdk
@@ -47,39 +49,40 @@ async def lifespan(app: FastAPI):
                 dsn=API_SENTRY_DSN,
                 send_default_pii=True,
             )
-        app.state.redis = await redis_pool()
+        redis_conn = await redis_pool()
+        app.state.redis = redis_conn
     except Exception as e:
-        exception_logger.exception("❌ Redis Init Failed: ", e)
+        exception_logger.exception(f"Redis init failed: {e}")
         raise
-    # TODO: init the dataset and vector
-    scheduler.start()
-    await initialize_bilibili_auth_on_startup()
-    await initialize_youtube_auth_on_startup()
-    async with AsyncExitStack() as stack:
-        # ✅ 这些 session manager 会在 FastAPI 停止时统一退出
-        # 将两个 MCP 应用的 lifespan 加入栈，ExitStack 会负责顺序启动和清理
-        await stack.enter_async_context(common_mcp_app.lifespan(app))
-        await stack.enter_async_context(document_mcp_app.lifespan(app))
-        info_logger.info("✅ FastAPI lifespan started.")
-        yield  # FastAPI 启动后开始处理请求
-        info_logger.info("🛑 FastAPI shutting down...")
-        await app.state.redis.close()
+    try:
+        if not scheduler.running:
+            scheduler.start()
+        await initialize_bilibili_auth_on_startup()
+        await initialize_youtube_auth_on_startup()
+        async with AsyncExitStack() as stack:
+            # 这些 session manager 会在 FastAPI 停止时统一退出
+            # 将两个 MCP 应用的 lifespan 加入栈，ExitStack 会负责顺序启动和清理
+            await stack.enter_async_context(common_mcp_app.lifespan(app))
+            await stack.enter_async_context(document_mcp_app.lifespan(app))
+            info_logger.info("FastAPI lifespan started.")
+            yield
+    finally:
+        info_logger.info("FastAPI shutting down...")
+        if scheduler.running:
+            scheduler.shutdown(wait=False)
+        if redis_conn is not None:
+            await redis_conn.close()
+            info_logger.info("Redis connection closed.")
         await notificationManager.close_cache()
-        info_logger.info("✅ Redis connection closed.")
 
 app = FastAPI(
         title="Revornix Main Backend",
-        version="0.5.1",
+        version="0.6.4",
         contact={
             "name": "Kinda Hall",
             "url": "https://alndaly.github.io",
             "email": "1142704468@qq.com",
         },
-        servers=[
-            {
-                "url": "/api/main-service"
-            },
-        ],
         openapi_url="/openapi.json",
         lifespan=lifespan
     )
@@ -97,6 +100,7 @@ app.add_middleware(
 )
 
 app.include_router(user_router, prefix="/user", tags=["user"])
+app.include_router(user_auth_router, prefix="/user", tags=["user"])
 app.include_router(document_router, prefix="/document", tags=["document"])
 app.include_router(ai_router, prefix="/ai", tags=["ai"])
 app.include_router(notification_router, prefix="/notification", tags=["notification"])
@@ -134,7 +138,7 @@ async def add_process_time_header(request: Request, call_next):
 
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exc: Exception):
-    exception_logger.error(f"记载报错，涉及请求{request}，错误{exc}")
+    exception_logger.error(f"记载报错, 涉及请求{request}, 错误{exc}")
     res = schemas.common.ErrorResponse(message=str(exc))
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -146,7 +150,7 @@ async def unicorn_exception_handler(request: Request, exc: Exception):
 
 @app.exception_handler(schemas.error.CustomException)
 async def unicorn_custom_exception_handler(request: Request, exc: schemas.error.CustomException):
-    exception_logger.error(f"记载报错，涉及请求{request}，错误{exc}")
+    exception_logger.error(f"记载报错, 涉及请求{request}, 错误{exc}")
     res = schemas.common.ErrorResponse(message=str(exc), code=exc.code)
     return JSONResponse(
         status_code=exc.code,

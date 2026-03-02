@@ -5,7 +5,13 @@ from sqlalchemy import Date, cast, func, or_
 from sqlalchemy.orm import Session, selectinload
 
 import models
+from crud import document_delete_subtypes as _document_delete_subtypes
 from enums.document import DocumentCategory, UserDocumentAuthority
+
+delete_quick_note_documents_by_document_ids = _document_delete_subtypes.delete_quick_note_documents_by_document_ids
+delete_website_documents_by_document_ids = _document_delete_subtypes.delete_website_documents_by_document_ids
+delete_audio_documents_by_document_ids = _document_delete_subtypes.delete_audio_documents_by_document_ids
+delete_file_documents_by_document_ids = _document_delete_subtypes.delete_file_documents_by_document_ids
 
 
 def create_document_note(
@@ -664,7 +670,7 @@ def search_user_unread_documents(
     query = query.filter(models.document.UserDocument.user_id == user_id,
                          models.document.Document.delete_at.is_(None))
     # 过滤没有对应的ReadDocument记录的文档
-    query = query.filter(or_(models.document.ReadDocument.delete_at != None,
+    query = query.filter(or_(models.document.ReadDocument.delete_at.is_not(None),
                              models.document.ReadDocument.id.is_(None)))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
@@ -703,7 +709,7 @@ def search_next_user_unread_document(
     query = query.filter(models.document.UserDocument.user_id == user_id,
                          models.document.Document.delete_at.is_(None))
     # 过滤没有对应的ReadDocument记录的文档
-    query = query.filter(or_(models.document.ReadDocument.delete_at != None,
+    query = query.filter(or_(models.document.ReadDocument.delete_at.is_not(None),
                              models.document.ReadDocument.id.is_(None)))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
@@ -734,7 +740,7 @@ def count_user_unread_documents(
     query = query.filter(models.document.UserDocument.user_id == user_id,
                          models.document.Document.delete_at.is_(None))
     # 过滤没有对应的ReadDocument记录的文档
-    query = query.filter(or_(models.document.ReadDocument.delete_at != None,
+    query = query.filter(or_(models.document.ReadDocument.delete_at.is_not(None),
                              models.document.ReadDocument.id.is_(None)))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
@@ -971,6 +977,7 @@ def unstar_document_by_document_id(
         db_exist_star_document.delete_at = now
         db.flush()
         return db_exist_star_document
+    return None
 
 def read_document_by_document_id(
     db: Session,
@@ -1009,6 +1016,7 @@ def unread_document_by_document_id(
         db_exist_read_document.delete_at = now
         db.flush()
         return db_exist_read_document
+    return None
 
 def delete_labels_by_label_ids(
     db: Session,
@@ -1062,7 +1070,7 @@ def delete_user_documents_by_document_ids(
                 models.document.UserDocument.authority == UserDocumentAuthority.OWNER) \
         .all()
 
-    ids_to_update = [id[0] for id in db_document_ids]
+    ids_to_update = [document_id[0] for document_id in db_document_ids]
 
     db.query(models.document.Document)\
         .filter(models.document.Document.id.in_(ids_to_update),
@@ -1138,50 +1146,6 @@ def delete_document_notes_by_user_id_and_note_ids(
                          models.document.DocumentNote.user_id == user_id,
                          models.document.DocumentNote.delete_at.is_(None))
     query = query.update({models.document.DocumentNote.delete_at: now})
-    db.flush()
-
-def delete_quick_note_documents_by_document_ids(
-    db: Session,
-    document_ids: list[int]
-):
-    now = datetime.now(timezone.utc)
-    query = db.query(models.document.QuickNoteDocument)
-    query = query.filter(models.document.QuickNoteDocument.document_id.in_(document_ids),
-                         models.document.QuickNoteDocument.delete_at.is_(None))
-    query = query.update({models.document.QuickNoteDocument.delete_at: now})
-    db.flush()
-
-def delete_website_documents_by_document_ids(
-    db: Session,
-    document_ids: list[int]
-):
-    now = datetime.now(timezone.utc)
-    query = db.query(models.document.WebsiteDocument)
-    query = query.filter(models.document.WebsiteDocument.document_id.in_(document_ids),
-                         models.document.WebsiteDocument.delete_at.is_(None))
-    query = query.update({models.document.WebsiteDocument.delete_at: now})
-    db.flush()
-
-def delete_audio_documents_by_document_ids(
-    db: Session,
-    document_ids: list[int]
-):
-    now = datetime.now(timezone.utc)
-    query = db.query(models.document.AudioDocument)
-    query = query.filter(models.document.AudioDocument.document_id.in_(document_ids),
-                         models.document.AudioDocument.delete_at.is_(None))
-    query = query.update({models.document.AudioDocument.delete_at: now})
-    db.flush()
-
-def delete_file_documents_by_document_ids(
-    db: Session,
-    document_ids: list[int]
-):
-    now = datetime.now(timezone.utc)
-    query = db.query(models.document.FileDocument)
-    query = query.filter(models.document.FileDocument.document_id.in_(document_ids),
-                         models.document.FileDocument.delete_at.is_(None))
-    query = query.update({models.document.FileDocument.delete_at: now})
     db.flush()
 
 def delete_website_document_by_website_document_ids(
