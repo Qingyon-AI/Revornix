@@ -6,6 +6,7 @@ import asyncio
 from celery import Celery
 from celery.signals import worker_ready
 
+from common.logger import exception_logger
 from config.redis import REDIS_PORT, REDIS_URL
 from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_startup
 from engine.video_plugins.youtube_auth import initialize_youtube_auth_on_startup
@@ -28,10 +29,20 @@ celery_app = Celery(
 )
 
 
+def _run(coro):
+    return asyncio.run(coro)
+
+
 @worker_ready.connect
 def initialize_bilibili_auth_when_worker_ready(**kwargs):
-    asyncio.run(initialize_bilibili_auth_on_startup())
-    asyncio.run(initialize_youtube_auth_on_startup())
+    try:
+        _run(initialize_bilibili_auth_on_startup())
+    except Exception as e:
+        exception_logger.error(f"Failed to initialize bilibili auth on worker startup: {e}")
+    try:
+        _run(initialize_youtube_auth_on_startup())
+    except Exception as e:
+        exception_logger.error(f"Failed to initialize youtube auth on worker startup: {e}")
 
 
 @celery_app.task
@@ -44,7 +55,7 @@ def start_process_document(
     auto_tag: bool = False,
     override: dict | None = None,
 ):
-    asyncio.run(
+    _run(
         run_document_process_workflow(
             document_id=document_id,
             user_id=user_id,
@@ -63,7 +74,7 @@ def start_process_section(
     user_id: int,
     auto_podcast: bool = False,
 ):
-    asyncio.run(
+    _run(
         run_section_process_workflow(
             section_id=section_id,
             user_id=user_id,
@@ -77,7 +88,7 @@ def start_process_document_embedding(
     document_id: int,
     user_id: int,
 ):
-    asyncio.run(
+    _run(
         run_document_embedding_workflow(
             document_id=document_id,
             user_id=user_id,
@@ -90,7 +101,7 @@ def start_process_document_graph(
     document_id: int,
     user_id: int,
 ):
-    asyncio.run(
+    _run(
         run_document_graph_task_workflow(
             document_id=document_id,
             user_id=user_id,
@@ -103,7 +114,7 @@ def start_process_document_summarize(
     document_id: int,
     user_id: int,
 ):
-    asyncio.run(
+    _run(
         run_document_summarize_workflow(
             document_id=document_id,
             user_id=user_id,
@@ -115,7 +126,7 @@ def start_process_document_transcribe(
     document_id: int,
     user_id: int,
 ):
-    asyncio.run(
+    _run(
         run_document_transcribe_workflow(
             document_id=document_id,
             user_id=user_id,
@@ -127,7 +138,7 @@ def start_process_document_podcast(
     document_id: int,
     user_id: int,
 ):
-    asyncio.run(
+    _run(
         run_document_podcast_workflow(
             document_id=document_id,
             user_id=user_id,
@@ -140,7 +151,7 @@ def update_document_process_status(
     document_id: int,
     status: int,
 ):
-    asyncio.run(
+    _run(
         run_document_process_status_workflow(
             document_id=document_id,
             status=status,
@@ -153,7 +164,7 @@ def start_process_section_podcast(
     section_id: int,
     user_id: int,
 ):
-    asyncio.run(
+    _run(
         run_section_podcast_workflow(
             section_id=section_id,
             user_id=user_id,
@@ -166,7 +177,7 @@ def update_section_process_status(
     section_id: int,
     status: int,
 ):
-    asyncio.run(
+    _run(
         run_section_process_status_workflow(
             section_id=section_id,
             status=status,
@@ -180,7 +191,7 @@ def start_trigger_user_notification_event(
     trigger_event_uuid: str,
     params: dict | None = None,
 ):
-    asyncio.run(
+    _run(
         run_notification_event_workflow(
             user_id=user_id,
             trigger_event_uuid=trigger_event_uuid,
@@ -190,7 +201,7 @@ def start_trigger_user_notification_event(
 
 
 if __name__ == "__main__":
-    asyncio.run(
+    _run(
         run_section_process_workflow(
             section_id=1,
             user_id=1,
