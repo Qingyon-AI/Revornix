@@ -51,16 +51,24 @@ async def plan_ability_checked_in_func(
         headers.update({
             'Authorization': f'{authorization}'
         })
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f'{UNION_PAY_URL_PREFIX}/user/ability/check',
-            headers=headers,
-            json={
-                "ability": ability
-            }
-        )
-        if not response.is_success:
-            return False
+    try:
+        timeout = httpx.Timeout(10.0, connect=5.0)
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.post(
+                f'{UNION_PAY_URL_PREFIX}/user/ability/check',
+                headers=headers,
+                json={
+                    "ability": ability
+                }
+            )
+            if not response.is_success:
+                exception_logger.warning(
+                    f"plan ability check failed: status={response.status_code}, ability={ability}"
+                )
+                return False
+    except Exception as e:
+        exception_logger.warning(f"plan ability check request failed: ability={ability}, error={e}")
+        return False
     return True
 
 
@@ -107,7 +115,8 @@ async def get_user_plan_start_time_in_func(
             headers["Authorization"] = f"Bearer {authorization}"
 
     try:
-        async with httpx.AsyncClient() as client:
+        timeout = httpx.Timeout(10.0, connect=5.0)
+        async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
                 f"{UNION_PAY_URL_PREFIX}/user/info",
                 headers=headers,
@@ -118,15 +127,17 @@ async def get_user_plan_start_time_in_func(
                 )
                 return None
             payload = response.json()
+            if not isinstance(payload, dict):
+                exception_logger.warning("Unexpected user plan response payload type")
+                return None
     except Exception as e:
         exception_logger.warning(f"Failed to request user plan info: {e}")
         return None
 
     user_plan = None
-    if isinstance(payload, dict):
-        user_plan = payload.get("userPlan")
-        if user_plan is None:
-            user_plan = payload.get("user_plan")
+    user_plan = payload.get("userPlan")
+    if user_plan is None:
+        user_plan = payload.get("user_plan")
 
     if not isinstance(user_plan, dict):
         return None

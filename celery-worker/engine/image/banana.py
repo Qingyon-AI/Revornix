@@ -51,7 +51,7 @@ class BananaImageGenerateEngine(ImageGenerateEngineBase):
         
     def generate_image(
         self, 
-        text: str
+        prompt: str
     ) -> str | None:
         config = self.get_engine_config()
         if config is None:
@@ -82,7 +82,7 @@ class BananaImageGenerateEngine(ImageGenerateEngineBase):
                     },
                     {
                         "role": "user", 
-                        "content": text
+                        "content": prompt
                     },   
                 ]
             )

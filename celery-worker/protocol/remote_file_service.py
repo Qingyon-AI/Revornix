@@ -40,7 +40,7 @@ class RemoteFileServiceProtocol():
     async def get_file_content_by_file_path(
         self, 
         file_path: str
-    ) -> dict:
+    ) -> str | bytes:
         raise NotImplementedError("Method not implemented")
     
     async def upload_file_to_path(

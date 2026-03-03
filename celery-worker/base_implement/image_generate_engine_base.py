@@ -19,7 +19,7 @@ class ImageGenerateEngineBase(EngineBase):
     def generate_image(
         self,
         prompt: str
-    ) -> str:
+    ) -> str | None:
         raise NotImplementedError("Method not implemented")
 
     @staticmethod

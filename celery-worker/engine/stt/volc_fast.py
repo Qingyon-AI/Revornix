@@ -47,7 +47,7 @@ class VolcSTTFastEngine(STTEngineBase):
             encoded = base64.b64encode(binary) # bytes
             return encoded.decode("utf-8")     # str
 
-    async def transcribe_audio(self, audio_file_name: str):
+    async def transcribe_audio(self, audio_file_name: str) -> str:
         """音频转文本
 
         Args:
@@ -118,6 +118,7 @@ class VolcSTTFastEngine(STTEngineBase):
                     return payload["result"]["text"]
                 else:
                     raise Exception("Volc Standard STT query response is not valid JSON")
+            raise Exception("Volc Fast STT response does not contain transcription text")
 
 async def main():
     engine = VolcSTTFastEngine()

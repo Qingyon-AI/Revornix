@@ -1,15 +1,16 @@
 import json
 from typing import Any, IO
 
-class RemoteFileServiceProtocol():
 
+class RemoteFileServiceProtocol():
+    
     def __init__(
-        self,
+        self, 
         file_service_uuid: str,
-        file_service_name: str,
-        file_service_name_zh: str,
-        file_service_description: str | None = None,
-        file_service_description_zh: str | None = None,
+        file_service_name: str, 
+        file_service_name_zh: str, 
+        file_service_description: str | None = None, 
+        file_service_description_zh: str | None = None, 
         file_service_demo_config: str | None = None,
         file_service_config: str | None = None,
         user_id: int | None = None
@@ -22,7 +23,7 @@ class RemoteFileServiceProtocol():
         self.file_service_demo_config = file_service_demo_config
         self.file_service_config = file_service_config
         self.user_id = user_id
-    
+        
     def set_config(self, config: dict[str, Any]) -> None:
         self.file_service_config = json.dumps(config)
     
@@ -30,37 +31,37 @@ class RemoteFileServiceProtocol():
         if self.file_service_config is None:
             return None
         return json.loads(self.file_service_config)
-
+        
     async def init_client(
         self
     ) -> None:
         raise NotImplementedError("Method not implemented")
-
+    
     async def get_file_content_by_file_path(
-        self,
+        self, 
         file_path: str
-    ) -> dict:
+    ) -> str | bytes:
         raise NotImplementedError("Method not implemented")
-
+    
     async def upload_file_to_path(
-        self,
-        file_path: str,
+        self, 
+        file_path: str, 
         file: IO[bytes],
         content_type: str | None = None
     ) -> dict:
         raise NotImplementedError("Method not implemented")
-
+    
     async def upload_raw_content_to_path(
-        self,
-        file_path: str,
-        content: bytes | str,
+        self, 
+        file_path: str, 
+        content: bytes | str, 
         content_type: str | None = None
     ) -> dict:
         raise NotImplementedError("Method not implemented")
-
+    
     async def delete_file(
-        self,
-        file_path: str
+        self, 
+        file_path
     ) -> dict:
         raise NotImplementedError("Method not implemented")
 

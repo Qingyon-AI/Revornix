@@ -30,7 +30,7 @@ class VolcTTSEngine(TTSEngineBase):
     async def synthesize(
         self, 
         text: str
-    ):
+    ) -> bytes:
         config = self.get_engine_config()
         if config is None:
             raise Exception("The engine havn't been initialized yet.")
@@ -194,5 +194,8 @@ class VolcTTSEngine(TTSEngineBase):
                         source="volc_tts_synthesize",
                     )
                 if final_audio_url is not None:
-                    return httpx.get(str(final_audio_url)).content
-                return None
+                    async with httpx.AsyncClient() as client:
+                        response = await client.get(str(final_audio_url))
+                        response.raise_for_status()
+                        return response.content
+                raise Exception("Volc TTS did not return a final audio url")
