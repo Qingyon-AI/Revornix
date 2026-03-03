@@ -36,7 +36,7 @@ async def _update_document_status(
             db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while updating the document status: {e}")
-        raise e
+        raise
     finally:
         db.close()
 
