@@ -208,7 +208,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     async def get_file_content_by_file_path(
         self,
         file_path: str
-    ):
+    ) -> str | bytes:
         def _get():
             if self.s3_client is None:
                 raise Exception("The user's file system has not been initialized")

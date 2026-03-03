@@ -1,33 +1,21 @@
-import json
-import time
 import uuid
-
-import httpx
+import time
+import json
 import websockets
-from langfuse import propagate_attributes
+import httpx
+from enums.engine_enums import EngineProvided, EngineCategory
 from pydantic import AnyUrl
-
+from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
 from common.langfuse import langfuse
+from langfuse import propagate_attributes
 from common.logger import exception_logger
 from common.usage_billing import persist_engine_usage
-from engine.tts.volc.protocol import (
-    EventType,
-    MsgType,
-    finish_connection,
-    finish_session,
-    receive_message,
-    start_connection,
-    start_session,
-    wait_for_event,
-)
-from enums.engine_enums import EngineProvided, EngineCategory
 from base_implement.tts_engine_base import TTSEngineBase
-
 
 class VolcTTSEngine(TTSEngineBase):
     """此引擎使用的是字节跳动的播客TTS引擎，具体文档参照https://www.volcengine.com/docs/6561/1668014
     """
-
+    
     def __init__(self):
         super().__init__(
             engine_uuid=EngineProvided.Volc_TTS.meta.uuid,
@@ -38,11 +26,11 @@ class VolcTTSEngine(TTSEngineBase):
             engine_description_zh="豆包播客，基于字节跳动的豆包大模型的播客生成引擎。",
             engine_demo_config='{"appid":"","access_token":"","base_url":""}'
         )
-
+        
     async def synthesize(
-        self,
+        self, 
         text: str
-    ):
+    ) -> bytes:
         config = self.get_engine_config()
         if config is None:
             raise Exception("The engine havn't been initialized yet.")
@@ -53,9 +41,9 @@ class VolcTTSEngine(TTSEngineBase):
             raise Exception("The user_id is not set.")
 
         final_audio_url: AnyUrl | None = None
-
+        
         websocket = None
-
+        
         headers = {
             "X-Api-App-Id": config.get('appid'),
             "X-Api-App-Key": "aGjiRDfUWi",
@@ -63,7 +51,7 @@ class VolcTTSEngine(TTSEngineBase):
             "X-Api-Resource-Id": 'volc.service_type.10050',
             "X-Api-Connect-Id": str(uuid.uuid4()),
         }
-
+        
         is_podcast_round_end = False  # 标志当前轮是否结束
         last_round_id = -1  # 上一轮的轮次ID
         task_id = ""  # 任务ID
@@ -206,5 +194,8 @@ class VolcTTSEngine(TTSEngineBase):
                         source="volc_tts_synthesize",
                     )
                 if final_audio_url is not None:
-                    return httpx.get(str(final_audio_url)).content
-                return None
+                    async with httpx.AsyncClient() as client:
+                        response = await client.get(str(final_audio_url))
+                        response.raise_for_status()
+                        return response.content
+                raise Exception("Volc TTS did not return a final audio url")

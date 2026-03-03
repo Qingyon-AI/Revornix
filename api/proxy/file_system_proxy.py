@@ -8,6 +8,7 @@ from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 from enums.file import RemoteFileService
 from common.encrypt import decrypt_file_system_config
 from common.logger import exception_logger
+from protocol.remote_file_service import RemoteFileServiceProtocol
 
 class FileSystemProxy:
     # =========================
@@ -18,7 +19,7 @@ class FileSystemProxy:
         cls,
         *,
         user_id: int
-    ):
+    ) -> RemoteFileServiceProtocol:
         db = session_scope()
         try:
             db_user = crud.user.get_user_by_id(
@@ -74,6 +75,6 @@ class FileSystemProxy:
             return remote_file_service
         except Exception as e:
             exception_logger.error(f'''Failed to create file system proxy: {e}''')
-            raise e
+            raise
         finally:
             db.close()

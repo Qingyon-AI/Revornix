@@ -22,7 +22,7 @@ class OpenAIAudioEngine(TTSEngineBase):
     async def synthesize(
         self, 
         text: str
-    ):
+    ) -> bytes:
         config = self.get_engine_config()
         if config is None:
             raise Exception("The engine havn't been initialized yet.")

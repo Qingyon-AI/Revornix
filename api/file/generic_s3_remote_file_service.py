@@ -2,7 +2,9 @@ import asyncio
 from typing import Any
 
 import boto3
+import schemas
 from botocore.config import Config
+from datetime import datetime, timedelta, timezone
 
 from common.logger import exception_logger, info_logger
 from enums.file import RemoteFileService
@@ -38,6 +40,38 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
             ClientMethod="get_object",
             Params={"Bucket": self.bucket, "Key": file_path},
             ExpiresIn=expires_seconds,
+        )
+    
+    def presign_put_url(
+        self,
+        file_path: str,
+        content_type: str | None = None,
+        expires_in: int = 3600
+    ):
+        if self.s3_client is None:
+            raise Exception("S3 client not specified")
+        if self.bucket is None:
+            raise Exception("Bucket not specified")
+        now = datetime.now(timezone.utc)
+        expiration = now + timedelta(seconds=expires_in)
+        response = self.s3_client.generate_presigned_post(
+            Bucket=self.bucket,
+            Key=file_path,
+            Fields={
+                "Content-Type": content_type
+            },
+            Conditions=[
+                {"Content-Type": content_type},
+                {"bucket": self.bucket},
+                ["eq", "$key", file_path]
+            ],
+            ExpiresIn=expires_in,
+        )
+        return schemas.file_system.PresignUploadURLResponse(
+            upload_url=response.get("url"),
+            fields=response.get("fields"),
+            file_path=file_path,
+            expiration=expiration
         )
 
     async def init_client(
@@ -133,7 +167,7 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
     async def get_file_content_by_file_path(
         self,
         file_path: str
-    ):
+    ) -> str | bytes:
         def _get():
             if self.s3_client is None:
                 raise Exception("The user's file system has not been initialized")
