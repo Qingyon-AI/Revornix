@@ -32,42 +32,56 @@ class RemovedFromSectionNotificationTemplate(NotificationTemplate):
         
         if user_id is None or section_id is None:
             raise Exception("user_id or section_id is None")
-        
-        db = session_scope()
-        
-        db_section = crud.section.get_section_by_section_id(
-            db=db,
-            section_id=section_id
-        )
-        if not db_section:
-            raise Exception("section not found")
-        db_user_section = crud.section.get_section_user_by_section_id_and_user_id(
-            db=db,
-            user_id=user_id,
-            section_id=section_id
-        )
-        if not db_user_section:
-            raise Exception("user not in section")
-        db.close()
+
+        section_title = "this section"
+        section_cover = None
+        section_creator_id = None
+        section_role = None
+
+        with session_scope() as db:
+            db_section = crud.section.get_section_by_section_id(
+                db=db,
+                section_id=section_id
+            )
+            if db_section is not None:
+                section_title = db_section.title
+                section_cover = db_section.cover
+                section_creator_id = db_section.creator_id
+
+            db_user_section = crud.section.get_section_user_by_section_id_and_user_id(
+                db=db,
+                user_id=user_id,
+                section_id=section_id
+            )
+            if db_user_section is not None:
+                section_role = db_user_section.role
+
         cover = None
-        if db_section.cover is not None:
-            cover = await get_remote_file_signed_url(
-                user_id=db_section.creator_id,
-                file_name=db_section.cover
-            )
-        if db_user_section.role == UserSectionRole.MEMBER:
+        if section_cover is not None and section_creator_id is not None:
+            try:
+                cover = await get_remote_file_signed_url(
+                    user_id=section_creator_id,
+                    file_name=section_cover
+                )
+            except Exception:
+                cover = None
+        if section_role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
                 title="You are removed from Section",
-                content=f"您已经从专栏{db_section.title}被移出，后续将无法参与该专栏的协作和收到更新通知，如有异议，请联系专栏所有者",
+                content=f"You have been removed from section {section_title}. You will no longer be able to collaborate on this section or receive update notifications. If you have any questions, please contact the section owner.",
                 link=f'/section/detail/{section_id}',
                 cover=cover
             )
-        elif db_user_section.role == UserSectionRole.SUBSCRIBER:
+        elif section_role == UserSectionRole.SUBSCRIBER:
             return schemas.notification.Message(
                 title="You are removed from Section",
-                content=f"您已经从专栏{db_section.title}被移出，后续将无法收到该专栏的更新通知，如有异议，请联系专栏所有者",
+                content=f"You have been removed from section {section_title}. You will no longer receive update notifications for this section. If you have any questions, please contact the section owner.",
                 link=f'/section/detail/{section_id}',
                 cover=cover
             )
-        else:
-            raise Exception("invalid user section role")
+        return schemas.notification.Message(
+            title="You are removed from Section",
+            content=f"You have been removed from section {section_title}. If you have any questions, please contact the section owner.",
+            link=f'/section/detail/{section_id}',
+            cover=cover
+        )

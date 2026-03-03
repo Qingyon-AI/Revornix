@@ -32,39 +32,44 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
         section_id = cast(int, params.get('section_id'))
         if user_id is None or section_id is None:
             raise Exception("user_id or section_id is None")
-        db = session_scope()
-        
-        db_section = crud.section.get_section_by_section_id(
-            db=db,
-            section_id=section_id
-        )
-        if not db_section:
-            raise Exception("section not found")
-        db_user_section = crud.section.get_section_user_by_section_id_and_user_id(
-            db=db,
-            user_id=user_id,
-            section_id=section_id
-        )
-        if not db_user_section:
-            raise Exception("user not in section")
-        db.close()
-        cover = None
-        if db_section.cover is not None:
-            cover = await get_remote_file_signed_url(
-                user_id=db_section.creator_id,
-                file_name=db_section.cover
+
+        with session_scope() as db:
+            db_section = crud.section.get_section_by_section_id(
+                db=db,
+                section_id=section_id
             )
-        if db_user_section.role == UserSectionRole.MEMBER:
+            if not db_section:
+                raise Exception("section not found")
+            db_user_section = crud.section.get_section_user_by_section_id_and_user_id(
+                db=db,
+                user_id=user_id,
+                section_id=section_id
+            )
+            if not db_user_section:
+                raise Exception("user not in section")
+
+            section_title = db_section.title
+            section_cover = db_section.cover
+            section_creator_id = db_section.creator_id
+            section_role = db_user_section.role
+
+        cover = None
+        if section_cover is not None:
+            cover = await get_remote_file_signed_url(
+                user_id=section_creator_id,
+                file_name=section_cover
+            )
+        if section_role == UserSectionRole.MEMBER:
             return schemas.notification.Message(
                 title="Section Updated",
-                content=f"你参与的专栏{db_section.title}有了新的更新，点击前往查看",
+                content=f"Section {section_title} that you participate in has been updated. Click to view.",
                 link=f'/section/detail/{section_id}',
                 cover=cover
             )
-        elif db_user_section.role == UserSectionRole.SUBSCRIBER:
+        elif section_role == UserSectionRole.SUBSCRIBER:
             return schemas.notification.Message(
                 title="Section Updated",
-                content=f"你订阅的专栏{db_section.title}有了新的更新，点击前往查看",
+                content=f"Section {section_title} that you subscribed to has been updated. Click to view.",
                 link=f'/section/detail/{section_id}',
                 cover=cover
             )

@@ -30,36 +30,39 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
         date = cast(date_type, params.get('date'))
         if receiver_id is None or date is None:
             raise Exception("params is not valid")
-        
-        db = session_scope()
-         
-        db_user = crud.user.get_user_by_id(
-            db=db,
-            user_id=receiver_id
-        )
-        if db_user is None:
-            raise Exception("The user who is about to send notification is not found")
-        if db_user.default_user_file_system is None:
-            raise Exception("The user who is about to send notification havn't set default user file system")
 
-        db_section = crud.section.get_section_by_user_and_date(
-            db=db,
-            user_id=receiver_id,
-            date=date
-        )
-        if db_section is None or db_section.md_file_name is None:
-            return schemas.notification.Message(
-                title=f"Daily Summary Of {date.isoformat()}",
-                content="No Summary Today For Now"
+        section_md_file_name: str | None = None
+        with session_scope() as db:
+            db_user = crud.user.get_user_by_id(
+                db=db,
+                user_id=receiver_id
             )
+            if db_user is None:
+                raise Exception("The user who is about to send notification is not found")
+            if db_user.default_user_file_system is None:
+                raise Exception("The user who is about to send notification havn't set default user file system")
+
+            db_section = crud.section.get_section_by_user_and_date(
+                db=db,
+                user_id=receiver_id,
+                date=date
+            )
+            if db_section is None or db_section.md_file_name is None:
+                return schemas.notification.Message(
+                    title=f"Daily Summary Of {date.isoformat()}",
+                    content="No Summary Today For Now"
+                )
+            section_md_file_name = db_section.md_file_name
 
         remote_file_service = await FileSystemProxy.create(
             user_id=receiver_id
         )
-        markdown_content = await remote_file_service.get_file_content_by_file_path(
-            file_path=db_section.md_file_name
+        if section_md_file_name is None:
+            raise Exception("The section markdown file is missing")
+        raw_markdown = await remote_file_service.get_file_content_by_file_path(
+            file_path=section_md_file_name
         )
-        db.close()
+        markdown_content = raw_markdown.decode("utf-8") if isinstance(raw_markdown, bytes) else raw_markdown
         return schemas.notification.Message(
             title=f"Daily Summary Of {date.isoformat()}",
             content=markdown_content,
