@@ -1,10 +1,7 @@
 import inspect
 import json
 from langfuse import propagate_attributes
-try:
-    from langfuse.openai import AsyncOpenAI
-except ImportError:  # pragma: no cover
-    from openai import AsyncOpenAI
+from langfuse.openai import AsyncOpenAI
 from prompts.summary_content import summary_content_prompt
 from prompts.reducer_summary import reducer_summary_prompt
 from prompts.make_section_markdown import make_section_markdown_prompt

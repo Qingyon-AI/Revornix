@@ -1,16 +1,22 @@
+import time
 from typing import TypedDict
 
 import crud
 from langgraph.graph import StateGraph, END
 
 from common.ai import reducer_summary, summary_content
-from common.logger import exception_logger
+from common.logger import exception_logger, info_logger
 from common.document_guard import ensure_document_active
-from data.common import extract_entities_relations, get_extract_llm_client, stream_chunk_document
+from data.common import (
+    close_extract_llm_client,
+    extract_entities_relations,
+    get_extract_llm_client,
+    stream_chunk_document,
+)
 from data.sql.base import session_scope
 from enums.document import DocumentSummarizeStatus
 from proxy.ai_model_proxy import AIModelProxy
-from workflow.timing import add_timed_node, ainvoke_with_timing
+from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
 
 
 class DocumentSummarizeState(TypedDict, total=False):
@@ -103,26 +109,59 @@ async def _summarize_document(
         user_id=user_id
     )
     final_summary_info = None
-    async for chunk_info in stream_chunk_document(doc_id=document_id):
-        sub_entities, sub_relations = extract_entities_relations(
-            user_id=user_id,
-            llm_client=llm_client,
-            llm_model=llm_model,
-            chunk=chunk_info
+    chunk_count = 0
+    extract_elapsed_ms = 0.0
+    summary_elapsed_ms = 0.0
+    reduce_elapsed_ms = 0.0
+    reduce_count = 0
+    try:
+        with timed_stage(
+            workflow_name=WORKFLOW_NAME,
+            node_name="summarize_document",
+            stage_name="summarize_chunks",
+            context={
+                "document_id": document_id,
+                "user_id": user_id,
+            },
+        ):
+            async for chunk_info in stream_chunk_document(doc_id=document_id):
+                chunk_count += 1
+                extract_start = time.perf_counter()
+                sub_entities, sub_relations = await extract_entities_relations(
+                    user_id=user_id,
+                    llm_client=llm_client,
+                    llm_model=llm_model,
+                    chunk=chunk_info
+                )
+                extract_elapsed_ms += (time.perf_counter() - extract_start) * 1000
+
+                summary_start = time.perf_counter()
+                chunk_info.summary = (await summary_content(
+                    user_id=user_id,
+                    model_id=model_id,
+                    content=chunk_info.text
+                )).summary
+                summary_elapsed_ms += (time.perf_counter() - summary_start) * 1000
+
+                reduce_start = time.perf_counter()
+                final_summary_info = await reducer_summary(
+                    user_id=user_id,
+                    model_id=model_id,
+                    current_summary=final_summary_info.summary if final_summary_info is not None else None,
+                    new_summary_to_append=chunk_info.summary,
+                    new_entities=sub_entities,
+                    new_relations=sub_relations
+                )
+                reduce_elapsed_ms += (time.perf_counter() - reduce_start) * 1000
+                reduce_count += 1
+        info_logger.info(
+            f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=summarize_document, "
+            f"stage=summarize_chunks, chunks={chunk_count}, reduce_count={reduce_count}, "
+            f"extract_elapsed_ms={extract_elapsed_ms:.2f}, "
+            f"summary_elapsed_ms={summary_elapsed_ms:.2f}, reduce_elapsed_ms={reduce_elapsed_ms:.2f}"
         )
-        chunk_info.summary = (await summary_content(
-            user_id=user_id,
-            model_id=model_id,
-            content=chunk_info.text
-        )).summary
-        final_summary_info = await reducer_summary(
-            user_id=user_id,
-            model_id=model_id,
-            current_summary=final_summary_info.summary if final_summary_info is not None else None,
-            new_summary_to_append=chunk_info.summary,
-            new_entities=sub_entities,
-            new_relations=sub_relations
-        )
+    finally:
+        await close_extract_llm_client(llm_client)
     if final_summary_info is not None:
         state["summary"] = final_summary_info.summary
         state["title"] = final_summary_info.title
@@ -140,29 +179,40 @@ async def _mark_summarize_success(
     if document_id is None:
         raise Exception("Document summarize workflow missing document_id")
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-        db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
-            db=db,
-            document_id=document_id
-        )
-        db_document = crud.document.get_document_by_document_id(
-            db=db,
-            document_id=document_id
-        )
-        if db_summarize_task is not None:
-            db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
-            if summary is not None:
-                db_summarize_task.summary = summary
-        if db_document is not None:
-            if title is not None:
-                db_document.title = title
-            if description is not None:
-                db_document.title = description
-        db.commit()
-    finally:
-        db.close()
+    with timed_stage(
+        workflow_name=WORKFLOW_NAME,
+        node_name="mark_summarize_success",
+        stage_name="persist_summarize_result",
+        context={
+            "document_id": document_id,
+            "has_summary": summary is not None,
+            "has_title": title is not None,
+            "has_description": description is not None,
+        },
+    ):
+        db = session_scope()
+        try:
+            ensure_document_active(db=db, document_id=document_id)
+            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            db_document = crud.document.get_document_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_summarize_task is not None:
+                db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+                if summary is not None:
+                    db_summarize_task.summary = summary
+            if db_document is not None:
+                if title is not None:
+                    db_document.title = title
+                if description is not None:
+                    db_document.description = description
+            db.commit()
+        finally:
+            db.close()
     return state
 
 

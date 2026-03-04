@@ -1,3 +1,4 @@
+import time
 from typing import TypedDict
 
 import crud
@@ -5,9 +6,10 @@ from langgraph.graph import StateGraph, END
 
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from common.jwt_utils import create_token
-from common.logger import exception_logger
+from common.logger import exception_logger, info_logger
 from common.document_guard import ensure_document_active
 from data.common import (
+    close_extract_llm_client,
     stream_chunk_document,
     extract_entities_relations,
     get_extract_llm_client,
@@ -31,7 +33,7 @@ from data.sql.base import session_scope
 from enums.ability import Ability
 from enums.document import DocumentGraphStatus
 from proxy.ai_model_proxy import AIModelProxy
-from workflow.timing import add_timed_node, ainvoke_with_timing
+from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
 
 
 class DocumentGraphState(TypedDict, total=False):
@@ -149,36 +151,68 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
     )
     existing_entities_index: dict[tuple[str, str], list[dict]] = {}
     embedding_engine = get_embedding_engine()
-    async for chunk_info in stream_chunk_document(doc_id=document_id):
-        sub_entities, sub_relations = extract_entities_relations(
-            user_id=user_id,
-            llm_client=llm_client,
-            llm_model=llm_model,
-            chunk=chunk_info
+    chunk_count = 0
+    extracted_entities_count = 0
+    extracted_relations_count = 0
+    dedupe_elapsed_ms = 0.0
+    upsert_elapsed_ms = 0.0
+    try:
+        with timed_stage(
+            workflow_name=WORKFLOW_NAME,
+            node_name="extract_chunks",
+            stage_name="extract_and_upsert_chunks",
+            context={
+                "document_id": document_id,
+                "user_id": user_id,
+            },
+        ):
+            async for chunk_info in stream_chunk_document(doc_id=document_id):
+                chunk_count += 1
+                sub_entities, sub_relations = await extract_entities_relations(
+                    user_id=user_id,
+                    llm_client=llm_client,
+                    llm_model=llm_model,
+                    chunk=chunk_info
+                )
+                if sub_entities:
+                    keys = list({(e.entity_type, e.text) for e in sub_entities})
+                    missing_keys = [k for k in keys if k not in existing_entities_index]
+                    if missing_keys:
+                        existing_entities_index.update(get_entities_by_text_and_type(missing_keys))
+                    dedupe_start = time.perf_counter()
+                    sub_entities, sub_relations = await resolve_entities_with_semantic_dedupe(
+                        entities=sub_entities,
+                        relations=sub_relations,
+                        chunk_text=chunk_info.text,
+                        existing_entities_index=existing_entities_index,
+                        embedding_engine=embedding_engine,
+                        llm_client=llm_client,
+                        llm_model=llm_model,
+                    )
+                    dedupe_elapsed_ms += (time.perf_counter() - dedupe_start) * 1000
+
+                extracted_entities_count += len(sub_entities)
+                extracted_relations_count += len(sub_relations)
+
+                upsert_start = time.perf_counter()
+                upsert_chunks_neo4j(
+                    chunks_info=[chunk_info]
+                )
+                if sub_entities:
+                    upsert_entities_neo4j(sub_entities)
+                if sub_relations:
+                    upsert_relations_neo4j(sub_relations)
+                if sub_entities:
+                    upsert_chunk_entity_relations(sub_entities)
+                upsert_elapsed_ms += (time.perf_counter() - upsert_start) * 1000
+        info_logger.info(
+            f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=extract_chunks, "
+            f"stage=extract_and_upsert_chunks, chunks={chunk_count}, "
+            f"entities={extracted_entities_count}, relations={extracted_relations_count}, "
+            f"dedupe_elapsed_ms={dedupe_elapsed_ms:.2f}, upsert_elapsed_ms={upsert_elapsed_ms:.2f}"
         )
-        if sub_entities:
-            keys = list({(e.entity_type, e.text) for e in sub_entities})
-            missing_keys = [k for k in keys if k not in existing_entities_index]
-            if missing_keys:
-                existing_entities_index.update(get_entities_by_text_and_type(missing_keys))
-            sub_entities, sub_relations = resolve_entities_with_semantic_dedupe(
-                entities=sub_entities,
-                relations=sub_relations,
-                chunk_text=chunk_info.text,
-                existing_entities_index=existing_entities_index,
-                embedding_engine=embedding_engine,
-                llm_client=llm_client,
-                llm_model=llm_model,
-            )
-        upsert_chunks_neo4j(
-            chunks_info=[chunk_info]
-        )
-        if sub_entities:
-            upsert_entities_neo4j(sub_entities)
-        if sub_relations:
-            upsert_relations_neo4j(sub_relations)
-        if sub_entities:
-            upsert_chunk_entity_relations(sub_entities)
+    finally:
+        await close_extract_llm_client(llm_client)
 
     return state
 
@@ -206,14 +240,38 @@ def _persist_graph(state: DocumentGraphState) -> DocumentGraphState:
     finally:
         db.close()
 
-    upsert_doc_neo4j(
-        docs_info=[doc_info]
-    )
-    upsert_doc_chunk_relations()
-    upsert_chunk_entity_relations()
-    create_communities_from_chunks()
-    create_community_nodes_and_relationships_with_size()
-    annotate_node_degrees()
+    with timed_stage(
+        workflow_name=WORKFLOW_NAME,
+        node_name="persist_graph",
+        stage_name="upsert_doc",
+        context={"document_id": document_id},
+    ):
+        upsert_doc_neo4j(
+            docs_info=[doc_info]
+        )
+    with timed_stage(
+        workflow_name=WORKFLOW_NAME,
+        node_name="persist_graph",
+        stage_name="upsert_doc_chunk_relations",
+        context={"document_id": document_id},
+    ):
+        upsert_doc_chunk_relations()
+    with timed_stage(
+        workflow_name=WORKFLOW_NAME,
+        node_name="persist_graph",
+        stage_name="upsert_chunk_entity_relations",
+        context={"document_id": document_id},
+    ):
+        upsert_chunk_entity_relations()
+    with timed_stage(
+        workflow_name=WORKFLOW_NAME,
+        node_name="persist_graph",
+        stage_name="build_communities",
+        context={"document_id": document_id},
+    ):
+        create_communities_from_chunks()
+        create_community_nodes_and_relationships_with_size()
+        annotate_node_degrees()
     return state
 
 

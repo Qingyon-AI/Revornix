@@ -1,12 +1,13 @@
-import asyncio
 import json
+import inspect
 
 from langfuse import propagate_attributes
-from langfuse.openai import OpenAI
+from langfuse.openai import AsyncOpenAI
 
 import crud
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.sql.base import session_scope
+from common.logger import exception_logger
 from common.usage_billing import persist_model_usage_from_completion
 from prompts.section_image import IMAGE_PLANNER_SYSTEM, build_image_planner_user_prompt
 from base_implement.engine_base import EngineBase
@@ -21,6 +22,33 @@ class ImageGenerateEngineBase(EngineBase):
         prompt: str
     ) -> str | None:
         raise NotImplementedError("Method not implemented")
+
+    @staticmethod
+    async def _safe_close_async_client(client: AsyncOpenAI) -> None:
+        close_fn = getattr(client, "close", None)
+        if callable(close_fn):
+            try:
+                result = close_fn()
+                if inspect.isawaitable(result):
+                    await result
+            except RuntimeError as e:
+                if "Event loop is closed" not in str(e):
+                    exception_logger.warning(f"Failed to close async llm client: {e}")
+            except Exception as e:
+                exception_logger.warning(f"Failed to close async llm client: {e}")
+            return
+
+        aclose_fn = getattr(client, "aclose", None)
+        if callable(aclose_fn):
+            try:
+                result = aclose_fn()
+                if inspect.isawaitable(result):
+                    await result
+            except RuntimeError as e:
+                if "Event loop is closed" not in str(e):
+                    exception_logger.warning(f"Failed to aclose async llm client: {e}")
+            except Exception as e:
+                exception_logger.warning(f"Failed to aclose async llm client: {e}")
 
     @staticmethod
     async def plan_images_with_llm(
@@ -64,36 +92,38 @@ class ImageGenerateEngineBase(EngineBase):
             user_id=str(user_id),
             tags=[f'model:{model_conf.model_name}']
         ):
-            client = OpenAI(
+            client = AsyncOpenAI(
                 api_key=model_conf.api_key,
                 base_url=model_conf.base_url,
             )
-            completion = await asyncio.to_thread(
-                client.chat.completions.create,
-                model=model_conf.model_name,
-                messages=[
-                    {"role": "system", "content": IMAGE_PLANNER_SYSTEM},
-                    {"role": "user", "content": user_prompt},
-                ],
-                response_format={"type": "json_object"}
-            )
-            persist_model_usage_from_completion(
-                user_id=user_id,
-                model_id=db_user.default_document_reader_model_id,
-                completion=completion,
-                source="plan_images_with_llm",
-            )
+            try:
+                completion = await client.chat.completions.create(
+                    model=model_conf.model_name,
+                    messages=[
+                        {"role": "system", "content": IMAGE_PLANNER_SYSTEM},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    response_format={"type": "json_object"}
+                )
+                persist_model_usage_from_completion(
+                    user_id=user_id,
+                    model_id=db_user.default_document_reader_model_id,
+                    completion=completion,
+                    source="plan_images_with_llm",
+                )
 
-            resp_text = completion.choices[0].message.content
-            if not resp_text:
-                raise RuntimeError("Image planner returned empty response")
+                resp_text = completion.choices[0].message.content
+                if not resp_text:
+                    raise RuntimeError("Image planner returned empty response")
 
-            data = json.loads(resp_text)
+                data = json.loads(resp_text)
 
-            plans = data.get("plans") or []
-            plans = plans[:6]
+                plans = data.get("plans") or []
+                plans = plans[:6]
 
-            return ImagePlanResult(
-                markdown_with_markers=data["markdown_with_markers"],
-                plans=[ImagePlan(**p) for p in plans],
-            )
+                return ImagePlanResult(
+                    markdown_with_markers=data["markdown_with_markers"],
+                    plans=[ImagePlan(**p) for p in plans],
+                )
+            finally:
+                await ImageGenerateEngineBase._safe_close_async_client(client)

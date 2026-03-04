@@ -1,19 +1,22 @@
-import io
 import asyncio
-import crud
-from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo, FileInfo
-from enums.engine_enums import EngineProvided, EngineCategory
-from common.common import extract_title_and_summary
+import io
+
 from bs4 import BeautifulSoup
-from markitdown import MarkItDown
-from data.sql.base import session_scope
-from proxy.ai_model_proxy import AIModelProxy
-from langfuse.openai import OpenAI
 from langfuse import propagate_attributes
+from langfuse.openai import OpenAI
+from markitdown import MarkItDown
 from playwright.async_api import async_playwright
 
+import crud
+from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
+from common.common import extract_title_and_summary
+from data.sql.base import session_scope
+from enums.engine_enums import EngineCategory, EngineProvided
+from proxy.ai_model_proxy import AIModelProxy
+
+
 class MarkitdownEngine(MarkdownEngineBase):
-    
+
     def __init__(self):
         super().__init__(
             engine_uuid=EngineProvided.MarkitDown.meta.uuid,
@@ -24,7 +27,7 @@ class MarkitdownEngine(MarkdownEngineBase):
             engine_description_zh="Markitdown 是一个将文件转换为 Markdown 的工具。",
             engine_demo_config='{"openai_api_key": "sk-proj-******"}'
         )
-    
+
     async def analyse_website(
         self,
         url: str
@@ -62,14 +65,14 @@ class MarkitdownEngine(MarkdownEngineBase):
             raise Exception("The user does not exist.")
         if not db_user.default_document_reader_model_id:
             raise Exception("The user does not have a default document reader model.")
-        
+
         model_configuration = (await AIModelProxy.create(
             user_id=self.user_id,
             model_id=db_user.default_document_reader_model_id
         )).get_configuration()
-        
+
         db.close()
-        
+
         with propagate_attributes(
             user_id=str(self.user_id),
             tags=[f'model:{model_configuration.model_name}']
@@ -123,9 +126,9 @@ class MarkitdownEngine(MarkdownEngineBase):
                 cover=cover,
                 keywords=keywords
             )
-            
+
     async def analyse_file(
-        self, 
+        self,
         file_path: str
     ):
         db = session_scope()
@@ -135,7 +138,7 @@ class MarkitdownEngine(MarkdownEngineBase):
         api_key = engine_config.get("openai_api_key")
         if api_key is None:
             raise Exception("There is something wrong with the user's configuration of the markitdown engine")
-        
+
         if not self.user_id:
             raise Exception("The user_id is not set.")
         db_user = crud.user.get_user_by_id(
@@ -146,13 +149,14 @@ class MarkitdownEngine(MarkdownEngineBase):
             raise Exception("The user does not exist.")
         if not db_user.default_document_reader_model_id:
             raise Exception("The user does not have a default document reader model.")
-        
+
         model_configuration = (await AIModelProxy.create(
             user_id=self.user_id,
             model_id=db_user.default_document_reader_model_id
         )).get_configuration()
-        
+
         db.close()
+
         with propagate_attributes(
             user_id=str(self.user_id),
             tags=[f'model:{model_configuration.model_name}']
@@ -161,10 +165,10 @@ class MarkitdownEngine(MarkdownEngineBase):
                 api_key=api_key
             )
             md = MarkItDown(llm_client=llm_client, llm_model=model_configuration.model_name)
-            result = md.convert(file_path)
-            
+            result = await asyncio.to_thread(md.convert, file_path)
+
             title, description = extract_title_and_summary(result.text_content)
-            
+
             return FileInfo(
                 title=title,
                 description=description,

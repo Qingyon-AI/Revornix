@@ -4,10 +4,7 @@ import json
 from langfuse import propagate_attributes
 from pydantic import BaseModel
 
-try:
-    from langfuse.openai import AsyncOpenAI
-except ImportError:  # pragma: no cover
-    from openai import AsyncOpenAI
+from langfuse.openai import AsyncOpenAI
 
 from common.logger import exception_logger
 from common.usage_billing import persist_model_usage_from_completion

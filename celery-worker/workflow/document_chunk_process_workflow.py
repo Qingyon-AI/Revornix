@@ -1,4 +1,5 @@
 import asyncio
+import time
 from dataclasses import dataclass
 from typing import TypedDict
 
@@ -13,13 +14,14 @@ from common.ai import (
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from common.embedding_utils import extract_single_embedding_vector
 from common.jwt_utils import create_token
-from common.logger import exception_logger
+from common.logger import exception_logger, info_logger
 from common.document_guard import ensure_document_active
 from data.common import (
+    close_extract_llm_client,
     extract_entities_relations,
     get_extract_llm_client,
-    stream_chunk_document,
     resolve_entities_with_semantic_dedupe,
+    stream_chunk_document,
 )
 from data.custom_types.all import ChunkInfo, DocumentInfo, EntityInfo, RelationInfo
 from data.milvus.insert import upsert_milvus
@@ -44,7 +46,7 @@ from enums.document import (
     DocumentSummarizeStatus,
 )
 from proxy.ai_model_proxy import AIModelProxy
-from workflow.timing import add_timed_node, ainvoke_with_timing
+from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
 
 
 class DocumentChunkProcessState(TypedDict, total=False):
@@ -78,12 +80,18 @@ def _flush_chunk_upserts(
     if not chunks_info:
         return
 
+    start = time.perf_counter()
     upsert_milvus(
         user_id=user_id,
         chunks_info=chunks_info,
     )
     upsert_chunks_neo4j(
         chunks_info=chunks_info,
+    )
+    elapsed_ms = (time.perf_counter() - start) * 1000
+    info_logger.info(
+        f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, node=process_document_chunks, "
+        f"stage=flush_chunk_upserts, elapsed_ms={elapsed_ms:.2f}, batch_size={len(chunks_info)}"
     )
 
 
@@ -138,8 +146,7 @@ async def _preprocess_chunk(
     )
     chunk_info.embedding = extract_single_embedding_vector(embedding_raw)
 
-    sub_entities, sub_relations = await asyncio.to_thread(
-        extract_entities_relations,
+    sub_entities, sub_relations = await extract_entities_relations(
         user_id,
         llm_client,
         llm_model,
@@ -331,11 +338,23 @@ async def _process_document_chunks(
     pending_tasks: set[asyncio.Task[ChunkPreprocessResult]] = set()
     ready_results: dict[int, ChunkPreprocessResult] = {}
     next_chunk_idx = 0
+    processed_chunks = 0
+    extracted_entities_total = 0
+    extracted_relations_total = 0
+    dedupe_elapsed_ms = 0.0
+    summary_reduce_elapsed_ms = 0.0
+    summary_reduce_batches = 0
 
     async def _consume_preprocessed_result(
         result: ChunkPreprocessResult,
     ) -> None:
         nonlocal final_summary_info
+        nonlocal processed_chunks
+        nonlocal extracted_entities_total
+        nonlocal extracted_relations_total
+        nonlocal dedupe_elapsed_ms
+        nonlocal summary_reduce_elapsed_ms
+        nonlocal summary_reduce_batches
         sub_entities = result.sub_entities
         sub_relations = result.sub_relations
         chunk_info = result.chunk_info
@@ -345,7 +364,8 @@ async def _process_document_chunks(
             missing_keys = [k for k in keys if k not in existing_entities_index]
             if missing_keys:
                 existing_entities_index.update(get_entities_by_text_and_type(missing_keys))
-            sub_entities, sub_relations = resolve_entities_with_semantic_dedupe(
+            dedupe_start = time.perf_counter()
+            sub_entities, sub_relations = await resolve_entities_with_semantic_dedupe(
                 entities=sub_entities,
                 relations=sub_relations,
                 chunk_text=chunk_info.text,
@@ -354,9 +374,13 @@ async def _process_document_chunks(
                 llm_client=llm_client,
                 llm_model=llm_model,
             )
+            dedupe_elapsed_ms += (time.perf_counter() - dedupe_start) * 1000
 
         entities.extend(sub_entities)
         relations.extend(sub_relations)
+        processed_chunks += 1
+        extracted_entities_total += len(sub_entities)
+        extracted_relations_total += len(sub_relations)
 
         chunk_upsert_batch.append(chunk_info)
         if len(chunk_upsert_batch) >= CHUNK_UPSERT_BATCH_SIZE:
@@ -379,78 +403,103 @@ async def _process_document_chunks(
         if len(summary_reduce_buffer) < SUMMARY_REDUCE_BATCH_SIZE:
             return
 
+        summary_reduce_start = time.perf_counter()
         final_summary_info = await _reduce_summary_batch(
             user_id=user_id,
             model_id=model_id,
             current_summary_info=final_summary_info,
             reduce_items=summary_reduce_buffer,
         )
+        summary_reduce_elapsed_ms += (time.perf_counter() - summary_reduce_start) * 1000
+        summary_reduce_batches += 1
         summary_reduce_buffer.clear()
 
     # 4) 任务进行
     try:
-        async def _run_preprocess(
-            chunk_info: ChunkInfo,
-        ) -> ChunkPreprocessResult:
-            async with preprocess_semaphore:
-                return await _preprocess_chunk(
+        with timed_stage(
+            workflow_name=WORKFLOW_NAME,
+            node_name="process_document_chunks",
+            stage_name="chunk_preprocess_pipeline",
+            context={
+                "document_id": document_id,
+                "user_id": user_id,
+                "auto_summary": auto_summary,
+            },
+        ):
+            async def _run_preprocess(
+                chunk_info: ChunkInfo,
+            ) -> ChunkPreprocessResult:
+                async with preprocess_semaphore:
+                    return await _preprocess_chunk(
+                        user_id=user_id,
+                        model_id=model_id,
+                        llm_model=llm_model,
+                        llm_client=llm_client,
+                        embedding_engine=embedding_engine,
+                        chunk_info=chunk_info,
+                    )
+
+            async for chunk_info in stream_chunk_document(doc_id=document_id):
+                pending_tasks.add(asyncio.create_task(_run_preprocess(chunk_info)))
+                if len(pending_tasks) < CHUNK_PREPROCESS_CONCURRENCY:
+                    continue
+
+                done, pending_tasks = await asyncio.wait(
+                    pending_tasks,
+                    return_when=asyncio.FIRST_COMPLETED,
+                )
+                for done_task in done:
+                    result = done_task.result()
+                    ready_results[result.chunk_info.idx] = result
+
+                while next_chunk_idx in ready_results:
+                    await _consume_preprocessed_result(ready_results.pop(next_chunk_idx))
+                    next_chunk_idx += 1
+
+            while pending_tasks:
+                done, pending_tasks = await asyncio.wait(
+                    pending_tasks,
+                    return_when=asyncio.FIRST_COMPLETED,
+                )
+                for done_task in done:
+                    result = done_task.result()
+                    ready_results[result.chunk_info.idx] = result
+
+                while next_chunk_idx in ready_results:
+                    await _consume_preprocessed_result(ready_results.pop(next_chunk_idx))
+                    next_chunk_idx += 1
+
+            if ready_results:
+                for idx in sorted(ready_results):
+                    await _consume_preprocessed_result(ready_results[idx])
+
+            if chunk_upsert_batch:
+                _flush_chunk_upserts(
+                    user_id=user_id,
+                    chunks_info=chunk_upsert_batch,
+                )
+                chunk_upsert_batch.clear()
+
+            if auto_summary and summary_reduce_buffer:
+                summary_reduce_start = time.perf_counter()
+                final_summary_info = await _reduce_summary_batch(
                     user_id=user_id,
                     model_id=model_id,
-                    llm_model=llm_model,
-                    llm_client=llm_client,
-                    embedding_engine=embedding_engine,
-                    chunk_info=chunk_info,
+                    current_summary_info=final_summary_info,
+                    reduce_items=summary_reduce_buffer,
                 )
+                summary_reduce_elapsed_ms += (time.perf_counter() - summary_reduce_start) * 1000
+                summary_reduce_batches += 1
+                summary_reduce_buffer.clear()
 
-        async for chunk_info in stream_chunk_document(doc_id=document_id):
-            pending_tasks.add(asyncio.create_task(_run_preprocess(chunk_info)))
-            if len(pending_tasks) < CHUNK_PREPROCESS_CONCURRENCY:
-                continue
-
-            done, pending_tasks = await asyncio.wait(
-                pending_tasks,
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-            for done_task in done:
-                result = done_task.result()
-                ready_results[result.chunk_info.idx] = result
-
-            while next_chunk_idx in ready_results:
-                await _consume_preprocessed_result(ready_results.pop(next_chunk_idx))
-                next_chunk_idx += 1
-
-        while pending_tasks:
-            done, pending_tasks = await asyncio.wait(
-                pending_tasks,
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-            for done_task in done:
-                result = done_task.result()
-                ready_results[result.chunk_info.idx] = result
-
-            while next_chunk_idx in ready_results:
-                await _consume_preprocessed_result(ready_results.pop(next_chunk_idx))
-                next_chunk_idx += 1
-
-        if ready_results:
-            for idx in sorted(ready_results):
-                await _consume_preprocessed_result(ready_results[idx])
-
-        if chunk_upsert_batch:
-            _flush_chunk_upserts(
-                user_id=user_id,
-                chunks_info=chunk_upsert_batch,
-            )
-            chunk_upsert_batch.clear()
-
-        if auto_summary and summary_reduce_buffer:
-            final_summary_info = await _reduce_summary_batch(
-                user_id=user_id,
-                model_id=model_id,
-                current_summary_info=final_summary_info,
-                reduce_items=summary_reduce_buffer,
-            )
-            summary_reduce_buffer.clear()
+        info_logger.info(
+            f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=process_document_chunks, "
+            f"stage=chunk_preprocess_pipeline, chunks={processed_chunks}, "
+            f"entities={extracted_entities_total}, relations={extracted_relations_total}, "
+            f"summary_reduce_batches={summary_reduce_batches}, "
+            f"summary_reduce_elapsed_ms={summary_reduce_elapsed_ms:.2f}, "
+            f"dedupe_elapsed_ms={dedupe_elapsed_ms:.2f}"
+        )
     except Exception as e:
         for pending_task in pending_tasks:
             pending_task.cancel()
@@ -465,112 +514,194 @@ async def _process_document_chunks(
         except Exception as status_error:
             exception_logger.error(f"Failed to update chunk-related task status: {status_error}")
         raise
+    finally:
+        await close_extract_llm_client(llm_client)
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
-            db=db,
-            document_id=document_id
-        )
-        if db_embedding_task is not None:
-            db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
-        if auto_summary:
-            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+    with timed_stage(
+        workflow_name=WORKFLOW_NAME,
+        node_name="process_document_chunks",
+        stage_name="persist_chunk_task_status",
+        context={
+            "document_id": document_id,
+            "auto_summary": auto_summary,
+            "has_summary": final_summary_info is not None,
+        },
+    ):
+        db = session_scope()
+        try:
+            ensure_document_active(db=db, document_id=document_id)
+            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
                 db=db,
                 document_id=document_id
             )
-            if db_summarize_task is not None:
-                db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
-                if final_summary_info is not None:
-                    db_summarize_task.summary = final_summary_info.summary
-            if final_summary_info is not None:
-                db_document = crud.document.get_document_by_document_id(
+            if db_embedding_task is not None:
+                db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+            if auto_summary:
+                db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
                     db=db,
                     document_id=document_id
                 )
-                if db_document is not None:
-                    db_document.title = final_summary_info.title
-                    db_document.description = final_summary_info.description
-        db.commit()
-    except Exception:
-        try:
-            _mark_chunk_related_tasks_failed(
-                document_id=document_id,
-                auto_summary=auto_summary
-            )
-        except Exception as status_error:
-            exception_logger.error(f"Failed to update chunk-related task status: {status_error}")
-        raise
-    finally:
-        db.close()
+                if db_summarize_task is not None:
+                    db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+                    if final_summary_info is not None:
+                        db_summarize_task.summary = final_summary_info.summary
+                if final_summary_info is not None:
+                    db_document = crud.document.get_document_by_document_id(
+                        db=db,
+                        document_id=document_id
+                    )
+                    if db_document is not None:
+                        db_document.title = final_summary_info.title
+                        db_document.description = final_summary_info.description
+            db.commit()
+        except Exception:
+            try:
+                _mark_chunk_related_tasks_failed(
+                    document_id=document_id,
+                    auto_summary=auto_summary
+                )
+            except Exception as status_error:
+                exception_logger.error(f"Failed to update chunk-related task status: {status_error}")
+            raise
+        finally:
+            db.close()
 
     # 5) 图谱构建
     deployed_by_official = check_deployed_by_official_in_fuc()
     access_token: str | None = None
     doc_info: DocumentInfo | None = None
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-        db_document = crud.document.get_document_by_document_id(
-            db=db,
-            document_id=document_id
-        )
-        if db_document is None:
-            raise Exception("The document you want to process is not found")
-
-        db_user = crud.user.get_user_by_id(
-            db=db,
-            user_id=user_id
-        )
-        if db_user is None:
-            raise Exception("The user which you want to process document is not found")
-
-        if deployed_by_official:
-            access_token, _ = create_token(
-                user=db_user
+    with timed_stage(
+        workflow_name=WORKFLOW_NAME,
+        node_name="process_document_chunks",
+        stage_name="load_graph_context",
+        context={
+            "document_id": document_id,
+            "user_id": user_id,
+            "deployed_by_official": deployed_by_official,
+        },
+    ):
+        db = session_scope()
+        try:
+            ensure_document_active(db=db, document_id=document_id)
+            db_document = crud.document.get_document_by_document_id(
+                db=db,
+                document_id=document_id
             )
+            if db_document is None:
+                raise Exception("The document you want to process is not found")
 
-        doc_info = DocumentInfo(
-            id=db_document.id,
-            title=db_document.title,
-            description=db_document.description,
-            creator_id=db_document.creator_id,
-            update_time=db_document.update_time,
-            create_time=db_document.create_time
-        )
-    finally:
-        db.close()
+            db_user = crud.user.get_user_by_id(
+                db=db,
+                user_id=user_id
+            )
+            if db_user is None:
+                raise Exception("The user which you want to process document is not found")
+
+            if deployed_by_official:
+                access_token, _ = create_token(
+                    user=db_user
+                )
+
+            doc_info = DocumentInfo(
+                id=db_document.id,
+                title=db_document.title,
+                description=db_document.description,
+                creator_id=db_document.creator_id,
+                update_time=db_document.update_time,
+                create_time=db_document.create_time
+            )
+        finally:
+            db.close()
 
     auth_status = True
     if deployed_by_official:
         if access_token is None:
             raise Exception("Failed to create access token for graph permission check")
-        auth_status = await plan_ability_checked_in_func(
-            ability=Ability.KNOWLEDGE_GRAPH.value,
-            authorization=f"Bearer {access_token}"
-        )
+        with timed_stage(
+            workflow_name=WORKFLOW_NAME,
+            node_name="process_document_chunks",
+            stage_name="check_graph_permission",
+            context={
+                "document_id": document_id,
+                "ability": Ability.KNOWLEDGE_GRAPH.value,
+            },
+        ):
+            auth_status = await plan_ability_checked_in_func(
+                ability=Ability.KNOWLEDGE_GRAPH.value,
+                authorization=f"Bearer {access_token}"
+            )
 
     try:
         if deployed_by_official and not auth_status:
             raise Exception("User does not have permission to build graph")
         if doc_info is None:
             raise Exception("The document info for graph build is missing")
-        upsert_doc_neo4j(
-            docs_info=[doc_info]
-        )
-        upsert_doc_chunk_relations()
-        upsert_entities_neo4j(entities)
-        upsert_relations_neo4j(relations)
-        upsert_chunk_entity_relations(entities)
-        create_communities_from_chunks()
-        create_community_nodes_and_relationships_with_size()
-        annotate_node_degrees()
-        _set_graph_task_status(
-            document_id=document_id,
-            status=DocumentGraphStatus.SUCCESS,
-            check_document_active=True,
-        )
+        with timed_stage(
+            workflow_name=WORKFLOW_NAME,
+            node_name="process_document_chunks",
+            stage_name="graph_upsert_doc",
+            context={"document_id": document_id},
+        ):
+            upsert_doc_neo4j(
+                docs_info=[doc_info]
+            )
+        with timed_stage(
+            workflow_name=WORKFLOW_NAME,
+            node_name="process_document_chunks",
+            stage_name="graph_upsert_doc_chunk_relations",
+            context={"document_id": document_id},
+        ):
+            upsert_doc_chunk_relations()
+        with timed_stage(
+            workflow_name=WORKFLOW_NAME,
+            node_name="process_document_chunks",
+            stage_name="graph_upsert_entities",
+            context={
+                "document_id": document_id,
+                "entities_count": len(entities),
+            },
+        ):
+            upsert_entities_neo4j(entities)
+        with timed_stage(
+            workflow_name=WORKFLOW_NAME,
+            node_name="process_document_chunks",
+            stage_name="graph_upsert_relations",
+            context={
+                "document_id": document_id,
+                "relations_count": len(relations),
+            },
+        ):
+            upsert_relations_neo4j(relations)
+        with timed_stage(
+            workflow_name=WORKFLOW_NAME,
+            node_name="process_document_chunks",
+            stage_name="graph_upsert_chunk_entity_relations",
+            context={
+                "document_id": document_id,
+                "entities_count": len(entities),
+            },
+        ):
+            upsert_chunk_entity_relations(entities)
+        with timed_stage(
+            workflow_name=WORKFLOW_NAME,
+            node_name="process_document_chunks",
+            stage_name="graph_build_communities",
+            context={"document_id": document_id},
+        ):
+            create_communities_from_chunks()
+            create_community_nodes_and_relationships_with_size()
+            annotate_node_degrees()
+        with timed_stage(
+            workflow_name=WORKFLOW_NAME,
+            node_name="process_document_chunks",
+            stage_name="mark_graph_success",
+            context={"document_id": document_id},
+        ):
+            _set_graph_task_status(
+                document_id=document_id,
+                status=DocumentGraphStatus.SUCCESS,
+                check_document_active=True,
+            )
     except Exception as e:
         exception_logger.error(f"Something is error while graphing document info: {e}")
         try:
