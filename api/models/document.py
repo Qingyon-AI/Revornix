@@ -74,7 +74,7 @@ class Document(Base):
     from_plat: Mapped[str] = mapped_column(String(100), nullable=False)
     title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(String(1000))
-    cover: Mapped[str | None] = mapped_column(String(500))
+    cover: Mapped[str | None] = mapped_column(Text())
     category: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: file, 1: website, 2: quick-note, 3: audio')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
