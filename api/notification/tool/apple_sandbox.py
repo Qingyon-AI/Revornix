@@ -149,7 +149,7 @@ class AppleSandboxNotificationTool(NotificationToolProtocol):
         team_id = source_config.get('team_id')
         key_id = source_config.get('key_id')
         private_key = source_config.get('private_key')
-        apns_topic = source_config.get('app_bundle_id')
+        apns_topic = source_config.get('apns_topic')
         if not team_id or not key_id or not private_key or not apns_topic:
             raise Exception("The source config of the notification is not complete")
         

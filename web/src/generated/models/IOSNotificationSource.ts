@@ -48,7 +48,7 @@ export interface IOSNotificationSource {
      * @type {string}
      * @memberof IOSNotificationSource
      */
-    app_bundle_id: string;
+    apns_topic: string;
 }
 
 /**
@@ -59,7 +59,7 @@ export function instanceOfIOSNotificationSource(value: object): value is IOSNoti
     if (!('key_id' in value) || value['key_id'] === undefined) return false;
     if (!('team_id' in value) || value['team_id'] === undefined) return false;
     if (!('private_key' in value) || value['private_key'] === undefined) return false;
-    if (!('app_bundle_id' in value) || value['app_bundle_id'] === undefined) return false;
+    if (!('apns_topic' in value) || value['apns_topic'] === undefined) return false;
     return true;
 }
 
@@ -77,7 +77,7 @@ export function IOSNotificationSourceFromJSONTyped(json: any, ignoreDiscriminato
         'key_id': json['key_id'],
         'team_id': json['team_id'],
         'private_key': json['private_key'],
-        'app_bundle_id': json['app_bundle_id'],
+        'apns_topic': json['apns_topic'],
     };
 }
 
@@ -96,7 +96,7 @@ export function IOSNotificationSourceToJSONTyped(value?: IOSNotificationSource |
         'key_id': value['key_id'],
         'team_id': value['team_id'],
         'private_key': value['private_key'],
-        'app_bundle_id': value['app_bundle_id'],
+        'apns_topic': value['apns_topic'],
     };
 }
 
