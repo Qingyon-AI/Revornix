@@ -4,6 +4,7 @@ import uuid
 
 import httpx
 import jwt
+import re, textwrap
 from jwcrypto import jwk
 
 from common.logger import exception_logger
@@ -19,12 +20,22 @@ class AppleSandboxNotificationTool(NotificationToolProtocol):
             notification_tool_name="Apple SandBox Notification Tool",
             notification_tool_name_zh="Apple沙箱通知工具（沙箱）",
         )
+    
+    def _normalize_pem(self, pem_str: str) -> bytes:
+        pem_str = pem_str.strip()
+        m = re.search(r"-----BEGIN ([A-Z ]+)-----\s*(.*?)\s*-----END \1-----", pem_str, flags=re.DOTALL)
+        if not m:
+            raise ValueError("Not a valid PEM block")
+        label = m.group(1)
+        body = re.sub(r"\s+", "", m.group(2))
+        wrapped = "\n".join(textwrap.wrap(body, 64))
+        return f"-----BEGIN {label}-----\n{wrapped}\n-----END {label}-----\n".encode()
 
     def _create_apns_headers(
         self,
         team_id: str,
         key_id: str,
-        private_key: str,
+        private_key: str | bytes,
         apns_topic: str
     ):
         """
