@@ -742,7 +742,9 @@ def login(
         stored_password=email_user.hashed_password,
         provided_password=user_login_request.password
     ):
-        raise CustomException(message="Email or password is incorrect", code=401)
+        # Login endpoint should not return 401, otherwise frontend global 401
+        # interceptor may trigger meaningless refresh-token loops.
+        raise CustomException(message="Email or password is incorrect", code=400)
     user.last_login_ip = ip
     user.last_login_time = datetime.now(timezone.utc)
     db.commit()
@@ -763,16 +765,17 @@ def update_token(
         payload = decode_jwt_token(token=token_update_request.refresh_token)
     except ExpiredSignatureError as e:
         exception_logger.error(f"Decode refresh token error: {e}")
-        raise CustomException(message="Refresh token is expired, please login again.", code=401) from e
+        # Refresh endpoint should not return 401 to avoid refresh-loop in frontend.
+        raise CustomException(message="Refresh token is expired, please login again.", code=403) from e
     user_uuid: str | None = payload.get("sub")
     if user_uuid is None:
-        raise CustomException(message="Refresh token is invalid", code=401)
+        raise CustomException(message="Refresh token is invalid", code=403)
     user = crud.user.get_user_by_uuid(
         db=db,
         uuid=user_uuid
     )
     if user is None:
-        raise CustomException(message="The user for this refresh_token is not exist", code=401)
+        raise CustomException(message="The user for this refresh_token is not exist", code=403)
     user.last_login_ip = ip
     user.last_login_time = datetime.now(timezone.utc)
     db.commit()
