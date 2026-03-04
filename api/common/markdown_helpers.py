@@ -15,12 +15,34 @@ def _coerce_markdown_text(content: str | bytes, *, source: str) -> str:
     raise Exception(f"Unexpected markdown content type from {source}: {type(content).__name__}")
 
 
+def _is_remote_file_missing_error(error: Exception) -> bool:
+    response = getattr(error, "response", None)
+    if isinstance(response, dict):
+        error_payload = response.get("Error", {})
+        if isinstance(error_payload, dict):
+            code = error_payload.get("Code")
+            if isinstance(code, str) and code in {"NoSuchKey", "NoSuchObject", "NotFound", "404"}:
+                return True
+
+        metadata = response.get("ResponseMetadata", {})
+        if isinstance(metadata, dict) and metadata.get("HTTPStatusCode") == 404:
+            return True
+
+    message = str(error).lower()
+    return (
+        "nosuchkey" in message
+        or "no such key" in message
+        or "specified key does not exist" in message
+    )
+
+
 async def get_markdown_content_by_section_id(
     *,
     section_id: int,
     user_id: int,
     remote_file_service: RemoteFileServiceProtocol | None = None,
-):
+    allow_missing: bool = False,
+) -> str | None:
     section_md_file_name: str | None = None
     try:
         db = session_scope()
@@ -62,6 +84,12 @@ async def get_markdown_content_by_section_id(
         )
         return markdown_content
     except Exception as e:
+        if allow_missing and _is_remote_file_missing_error(e):
+            exception_logger.warning(
+                f"Section markdown file is missing, section={section_id}, user={user_id}, "
+                f"file={section_md_file_name}"
+            )
+            return None
         exception_logger.error(f"Something is error while getting the section: {e}, parameter: {section_id}, {user_id}")
         raise
 

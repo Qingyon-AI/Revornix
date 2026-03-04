@@ -301,6 +301,7 @@ async def _build_section_content(
                 section_id=section_id,
                 user_id=user_id,
                 remote_file_service=remote_file_service,
+                allow_missing=True,
             )
         except Exception as e:
             exception_logger.warning(
