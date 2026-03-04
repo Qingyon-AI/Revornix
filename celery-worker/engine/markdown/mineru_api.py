@@ -7,11 +7,11 @@ import aiofiles
 import time
 import io
 import os
+import tempfile
+import zipfile
 from pathlib import Path
 from typing import Tuple, Any
 
-from common.file import download_file_to_temp, extract_files_to_temp_from_zip
-from config.base import BASE_DIR
 from common.common import extract_title_and_summary
 from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo, FileInfo
 from enums.engine_enums import EngineProvided, EngineCategory
@@ -19,6 +19,24 @@ from playwright.async_api import async_playwright
 from data.sql.base import session_scope
 from common.logger import info_logger, exception_logger
 from proxy.file_system_proxy import FileSystemProxy
+
+
+def _is_within_directory(base_dir: Path, target_path: Path) -> bool:
+    try:
+        target_path.relative_to(base_dir)
+    except ValueError:
+        return False
+    return True
+
+
+def _safe_extract_zip(zip_file_path: Path, extracted_dir: Path) -> None:
+    base_dir = extracted_dir.resolve()
+    with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
+        for member in zip_ref.infolist():
+            member_path = (extracted_dir / member.filename).resolve()
+            if not _is_within_directory(base_dir, member_path):
+                raise ValueError(f"Unsafe zip file path detected: {member.filename}")
+        zip_ref.extractall(str(extracted_dir))
 
 
 class MineruApiEngine(MarkdownEngineBase):
@@ -209,67 +227,80 @@ class MineruApiEngine(MarkdownEngineBase):
             # 4) Process results
             final_data: list[Tuple[str, str, str]] = []
 
-            for item in extract_result:
-                state = item.get("state")
+            async with httpx.AsyncClient(proxy=None, trust_env=False, timeout=60) as download_client:
+                for item in extract_result:
+                    state = item.get("state")
 
-                if state == "failed":
-                    raise Exception(f"MinerU extraction failed: {item.get('err_msg')}; item={item}")
+                    if state == "failed":
+                        raise Exception(f"MinerU extraction failed: {item.get('err_msg')}; item={item}")
 
-                if state != "done":
-                    # In theory we should never reach here because poll_result waits terminal,
-                    # but keep it defensive.
-                    continue
+                    if state != "done":
+                        # In theory we should never reach here because poll_result waits terminal,
+                        # but keep it defensive.
+                        continue
 
-                full_zip_url = item.get("full_zip_url")
-                if not full_zip_url:
-                    raise Exception(f"MinerU returned done but missing full_zip_url: item={item}")
+                    full_zip_url = item.get("full_zip_url")
+                    if not full_zip_url:
+                        raise Exception(f"MinerU returned done but missing full_zip_url: item={item}")
 
-                # Download zip -> extract to temp dir
-                download_res = await download_file_to_temp(full_zip_url)
-                extracted_dir = extract_files_to_temp_from_zip(download_res.file_path)
+                    # Download zip -> extract in an isolated temporary directory.
+                    with tempfile.TemporaryDirectory(prefix="revornix-mineru-api-result-") as temp_dir_str:
+                        temp_dir = Path(temp_dir_str)
+                        downloaded_zip_path = temp_dir / "mineru_result.zip"
 
-                # Read full.md (validate existence)
-                md_path = extracted_dir / "full.md"
-                if not md_path.exists():
-                    # Sometimes folder structure differs; help diagnose by listing.
-                    try:
-                        files = [str(p.relative_to(extracted_dir)) for p in extracted_dir.rglob("*")][:50]
-                    except Exception:
-                        files = []
-                    raise Exception(f"full.md not found in extracted zip; extracted_dir={extracted_dir}, sample_files={files}")
+                        async with download_client.stream("GET", full_zip_url) as download_resp:
+                            download_resp.raise_for_status()
+                            with downloaded_zip_path.open("wb") as downloaded_zip_file:
+                                async for chunk in download_resp.aiter_bytes():
+                                    if chunk:
+                                        downloaded_zip_file.write(chunk)
 
-                async with aiofiles.open(md_path, "r", encoding="utf-8") as f:
-                    content = await f.read()
+                        extracted_dir = temp_dir / "extracted"
+                        extracted_dir.mkdir(parents=True, exist_ok=True)
+                        _safe_extract_zip(downloaded_zip_path, extracted_dir)
 
-                if not content.strip():
-                    raise Exception(f"Extracted full.md is empty; extracted_dir={extracted_dir}")
+                        # Read full.md (validate existence)
+                        md_path = extracted_dir / "full.md"
+                        if not md_path.exists():
+                            # Sometimes folder structure differs; help diagnose by listing.
+                            try:
+                                files = [str(p.relative_to(extracted_dir)) for p in extracted_dir.rglob("*")][:50]
+                            except Exception:
+                                files = []
+                            raise Exception(f"full.md not found in extracted zip; extracted_dir={extracted_dir}, sample_files={files}")
 
-                title, summary = extract_title_and_summary(content)
+                        async with aiofiles.open(md_path, "r", encoding="utf-8") as f:
+                            content = await f.read()
 
-                # Upload image assets (optional)
-                images_dir = extracted_dir / "images"
-                if images_dir.exists() and images_dir.is_dir():
-                    remote_file_service = await FileSystemProxy.create(
-                        user_id=user_id
-                    )
+                        if not content.strip():
+                            raise Exception(f"Extracted full.md is empty; extracted_dir={extracted_dir}")
 
-                    async def upload_img(p: Path) -> None:
-                        if not p.is_file():
-                            return
-                        async with aiofiles.open(p, "rb") as f:
-                            data = await f.read()
-                        if not data:
-                            return
-                        # Ideally detect mime by extension; keep your original default.
-                        await remote_file_service.upload_file_to_path(
-                            file_path=f"images/{p.name}",
-                            file=io.BytesIO(data),
-                            content_type="image/png",
-                        )
+                        title, summary = extract_title_and_summary(content)
 
-                    await asyncio.gather(*(upload_img(img) for img in images_dir.iterdir()))
+                        # Upload image assets (optional)
+                        images_dir = extracted_dir / "images"
+                        if images_dir.exists() and images_dir.is_dir():
+                            remote_file_service = await FileSystemProxy.create(
+                                user_id=user_id
+                            )
 
-                final_data.append((title, summary, content))
+                            async def upload_img(p: Path) -> None:
+                                if not p.is_file():
+                                    return
+                                async with aiofiles.open(p, "rb") as f:
+                                    data = await f.read()
+                                if not data:
+                                    return
+                                # Ideally detect mime by extension; keep your original default.
+                                await remote_file_service.upload_file_to_path(
+                                    file_path=f"images/{p.name}",
+                                    file=io.BytesIO(data),
+                                    content_type="image/png",
+                                )
+
+                            await asyncio.gather(*(upload_img(img) for img in images_dir.iterdir()))
+
+                        final_data.append((title, summary, content))
 
             # IMPORTANT: if all were done but we still got nothing, that's an internal inconsistency.
             if not final_data:
@@ -284,20 +315,17 @@ class MineruApiEngine(MarkdownEngineBase):
             db.close()
 
     async def analyse_website(self, url: str) -> WebsiteInfo:
-        temp_dir_name = f"{uuid.uuid4()}"
-        temp_dir = BASE_DIR / "temp" / temp_dir_name
-        temp_dir.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="revornix-mineru-api-website-") as temp_dir_str:
+            temp_shot_pdf_path = Path(temp_dir_str) / "scene-snap.pdf"
 
-        temp_shot_pdf_path = temp_dir / "scene-snap.pdf"
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(headless=True)
+                page = await browser.new_page()
+                await page.goto(url)
+                await page.pdf(path=str(temp_shot_pdf_path))
+                await browser.close()
 
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            page = await browser.new_page()
-            await page.goto(url)
-            await page.pdf(path=str(temp_shot_pdf_path))
-            await browser.close()
-
-        results = await self._extract_files([str(temp_shot_pdf_path)])
+            results = await self._extract_files([str(temp_shot_pdf_path)])
 
         if not results:
             raise Exception("No results returned from file extraction")
