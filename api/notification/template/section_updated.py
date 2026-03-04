@@ -28,10 +28,11 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
         if params is None:
             raise Exception("params is None")
         
-        user_id = cast(int, params.get('user_id'))
+        receiver_id = cast(int, params.get('receiver_id'))
         section_id = cast(int, params.get('section_id'))
-        if user_id is None or section_id is None:
-            raise Exception("user_id or section_id is None")
+
+        if receiver_id is None or section_id is None:
+            raise Exception(f"receiver_id or section_id is None, params: {params.items()}")
 
         with session_scope() as db:
             db_section = crud.section.get_section_by_section_id(
@@ -42,7 +43,7 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
                 raise Exception("section not found")
             db_user_section = crud.section.get_section_user_by_section_id_and_user_id(
                 db=db,
-                user_id=user_id,
+                user_id=receiver_id,
                 section_id=section_id
             )
             if not db_user_section:
