@@ -1,9 +1,15 @@
+import asyncio
+from dataclasses import dataclass
 from typing import TypedDict
 
 import crud
 from langgraph.graph import StateGraph, END
 
-from common.ai import reducer_summary, summary_content
+from common.ai import (
+    SummaryResultWithTitleAndDescription,
+    reducer_summary,
+    summary_content,
+)
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from common.embedding_utils import extract_single_embedding_vector
 from common.jwt_utils import create_token
@@ -15,7 +21,7 @@ from data.common import (
     stream_chunk_document,
     resolve_entities_with_semantic_dedupe,
 )
-from data.custom_types.all import DocumentInfo, EntityInfo, RelationInfo
+from data.custom_types.all import ChunkInfo, DocumentInfo, EntityInfo, RelationInfo
 from data.milvus.insert import upsert_milvus
 from data.neo4j.insert import (
     annotate_node_degrees,
@@ -46,6 +52,107 @@ class DocumentChunkProcessState(TypedDict, total=False):
     auto_summary: bool
     model_id: int
     llm_model_name: str
+
+
+CHUNK_PREPROCESS_CONCURRENCY = 4
+CHUNK_UPSERT_BATCH_SIZE = 24
+SUMMARY_REDUCE_BATCH_SIZE = 6
+
+
+@dataclass
+class ChunkPreprocessResult:
+    chunk_info: ChunkInfo
+    sub_entities: list[EntityInfo]
+    sub_relations: list[RelationInfo]
+
+
+def _flush_chunk_upserts(
+    *,
+    user_id: int,
+    chunks_info: list[ChunkInfo],
+) -> None:
+    if not chunks_info:
+        return
+
+    upsert_milvus(
+        user_id=user_id,
+        chunks_info=chunks_info,
+    )
+    upsert_chunks_neo4j(
+        chunks_info=chunks_info,
+    )
+
+
+async def _reduce_summary_batch(
+    *,
+    user_id: int,
+    model_id: int,
+    current_summary_info: SummaryResultWithTitleAndDescription | None,
+    reduce_items: list[tuple[str, list[EntityInfo], list[RelationInfo]]],
+) -> SummaryResultWithTitleAndDescription | None:
+    merged_summaries = [item[0] for item in reduce_items if item[0].strip()]
+    if not merged_summaries:
+        return current_summary_info
+
+    merged_entities = [
+        entity
+        for _, entities, _ in reduce_items
+        for entity in entities
+    ]
+    merged_relations = [
+        relation
+        for _, _, relations in reduce_items
+        for relation in relations
+    ]
+
+    return await reducer_summary(
+        user_id=user_id,
+        model_id=model_id,
+        current_summary=(
+            current_summary_info.summary
+            if current_summary_info is not None
+            else None
+        ),
+        new_summary_to_append="\n\n".join(merged_summaries),
+        new_entities=merged_entities,
+        new_relations=merged_relations,
+    )
+
+
+async def _preprocess_chunk(
+    *,
+    user_id: int,
+    model_id: int,
+    llm_model: str,
+    llm_client,
+    embedding_engine,
+    chunk_info: ChunkInfo,
+) -> ChunkPreprocessResult:
+    embedding_raw = await asyncio.to_thread(
+        embedding_engine.embed,
+        [chunk_info.text],
+    )
+    chunk_info.embedding = extract_single_embedding_vector(embedding_raw)
+
+    sub_entities, sub_relations = await asyncio.to_thread(
+        extract_entities_relations,
+        user_id,
+        llm_client,
+        llm_model,
+        chunk_info,
+    )
+
+    chunk_info.summary = (await summary_content(
+        user_id=user_id,
+        model_id=model_id,
+        content=chunk_info.text,
+    )).summary
+
+    return ChunkPreprocessResult(
+        chunk_info=chunk_info,
+        sub_entities=sub_entities,
+        sub_relations=sub_relations,
+    )
 
 
 def _mark_chunk_related_tasks_failed(
@@ -213,57 +320,138 @@ async def _process_document_chunks(
     entities: list[EntityInfo] = []
     relations: list[RelationInfo] = []
     existing_entities_index: dict[tuple[str, str], list[dict]] = {}
-    final_summary_info = None
+    final_summary_info: SummaryResultWithTitleAndDescription | None = None
+    chunk_upsert_batch: list[ChunkInfo] = []
+    summary_reduce_buffer: list[tuple[str, list[EntityInfo], list[RelationInfo]]] = []
+    preprocess_semaphore = asyncio.Semaphore(CHUNK_PREPROCESS_CONCURRENCY)
+    pending_tasks: set[asyncio.Task[ChunkPreprocessResult]] = set()
+    ready_results: dict[int, ChunkPreprocessResult] = {}
+    next_chunk_idx = 0
+
+    async def _consume_preprocessed_result(
+        result: ChunkPreprocessResult,
+    ) -> None:
+        nonlocal final_summary_info
+        sub_entities = result.sub_entities
+        sub_relations = result.sub_relations
+        chunk_info = result.chunk_info
+
+        if sub_entities:
+            keys = list({(e.entity_type, e.text) for e in sub_entities})
+            missing_keys = [k for k in keys if k not in existing_entities_index]
+            if missing_keys:
+                existing_entities_index.update(get_entities_by_text_and_type(missing_keys))
+            sub_entities, sub_relations = resolve_entities_with_semantic_dedupe(
+                entities=sub_entities,
+                relations=sub_relations,
+                chunk_text=chunk_info.text,
+                existing_entities_index=existing_entities_index,
+                embedding_engine=embedding_engine,
+                llm_client=llm_client,
+                llm_model=llm_model,
+            )
+
+        entities.extend(sub_entities)
+        relations.extend(sub_relations)
+
+        chunk_upsert_batch.append(chunk_info)
+        if len(chunk_upsert_batch) >= CHUNK_UPSERT_BATCH_SIZE:
+            _flush_chunk_upserts(
+                user_id=user_id,
+                chunks_info=chunk_upsert_batch,
+            )
+            chunk_upsert_batch.clear()
+
+        if not auto_summary:
+            return
+
+        summary_reduce_buffer.append(
+            (
+                chunk_info.summary or "",
+                sub_entities,
+                sub_relations,
+            )
+        )
+        if len(summary_reduce_buffer) < SUMMARY_REDUCE_BATCH_SIZE:
+            return
+
+        final_summary_info = await _reduce_summary_batch(
+            user_id=user_id,
+            model_id=model_id,
+            current_summary_info=final_summary_info,
+            reduce_items=summary_reduce_buffer,
+        )
+        summary_reduce_buffer.clear()
 
     # 4) 任务进行
     try:
-        async for chunk_info in stream_chunk_document(doc_id=document_id):
-            embedding_raw = embedding_engine.embed([chunk_info.text])
-            chunk_info.embedding = extract_single_embedding_vector(embedding_raw)
-            sub_entities, sub_relations = extract_entities_relations(
-                user_id=user_id,
-                llm_client=llm_client,
-                llm_model=llm_model,
-                chunk=chunk_info
-            )
-            if sub_entities:
-                keys = list({(e.entity_type, e.text) for e in sub_entities})
-                missing_keys = [k for k in keys if k not in existing_entities_index]
-                if missing_keys:
-                    existing_entities_index.update(get_entities_by_text_and_type(missing_keys))
-                sub_entities, sub_relations = resolve_entities_with_semantic_dedupe(
-                    entities=sub_entities,
-                    relations=sub_relations,
-                    chunk_text=chunk_info.text,
-                    existing_entities_index=existing_entities_index,
-                    embedding_engine=embedding_engine,
-                    llm_client=llm_client,
-                    llm_model=llm_model,
-                )
-            entities.extend(sub_entities)
-            relations.extend(sub_relations)
-            chunk_info.summary = (await summary_content(
-                user_id=user_id,
-                model_id=model_id,
-                content=chunk_info.text
-            )).summary
-            if auto_summary:
-                final_summary_info = await reducer_summary(
+        async def _run_preprocess(
+            chunk_info: ChunkInfo,
+        ) -> ChunkPreprocessResult:
+            async with preprocess_semaphore:
+                return await _preprocess_chunk(
                     user_id=user_id,
                     model_id=model_id,
-                    current_summary=final_summary_info.summary if final_summary_info is not None else None,
-                    new_summary_to_append=chunk_info.summary,
-                    new_entities=sub_entities,
-                    new_relations=sub_relations
+                    llm_model=llm_model,
+                    llm_client=llm_client,
+                    embedding_engine=embedding_engine,
+                    chunk_info=chunk_info,
                 )
-            upsert_milvus(
+
+        async for chunk_info in stream_chunk_document(doc_id=document_id):
+            pending_tasks.add(asyncio.create_task(_run_preprocess(chunk_info)))
+            if len(pending_tasks) < CHUNK_PREPROCESS_CONCURRENCY:
+                continue
+
+            done, pending_tasks = await asyncio.wait(
+                pending_tasks,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            for done_task in done:
+                result = done_task.result()
+                ready_results[result.chunk_info.idx] = result
+
+            while next_chunk_idx in ready_results:
+                await _consume_preprocessed_result(ready_results.pop(next_chunk_idx))
+                next_chunk_idx += 1
+
+        while pending_tasks:
+            done, pending_tasks = await asyncio.wait(
+                pending_tasks,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            for done_task in done:
+                result = done_task.result()
+                ready_results[result.chunk_info.idx] = result
+
+            while next_chunk_idx in ready_results:
+                await _consume_preprocessed_result(ready_results.pop(next_chunk_idx))
+                next_chunk_idx += 1
+
+        if ready_results:
+            for idx in sorted(ready_results):
+                await _consume_preprocessed_result(ready_results[idx])
+
+        if chunk_upsert_batch:
+            _flush_chunk_upserts(
                 user_id=user_id,
-                chunks_info=[chunk_info]
+                chunks_info=chunk_upsert_batch,
             )
-            upsert_chunks_neo4j(
-                chunks_info=[chunk_info]
+            chunk_upsert_batch.clear()
+
+        if auto_summary and summary_reduce_buffer:
+            final_summary_info = await _reduce_summary_batch(
+                user_id=user_id,
+                model_id=model_id,
+                current_summary_info=final_summary_info,
+                reduce_items=summary_reduce_buffer,
             )
+            summary_reduce_buffer.clear()
     except Exception as e:
+        for pending_task in pending_tasks:
+            pending_task.cancel()
+        if pending_tasks:
+            await asyncio.gather(*pending_tasks, return_exceptions=True)
         exception_logger.error(f"Something is error while embedding document info: {e}")
         try:
             _mark_chunk_related_tasks_failed(

@@ -1,6 +1,9 @@
 import json
-from langfuse.openai import OpenAI
 from langfuse import propagate_attributes
+try:
+    from langfuse.openai import AsyncOpenAI
+except ImportError:  # pragma: no cover
+    from openai import AsyncOpenAI
 from prompts.summary_content import summary_content_prompt
 from prompts.reducer_summary import reducer_summary_prompt
 from prompts.make_section_markdown import make_section_markdown_prompt
@@ -41,11 +44,11 @@ async def make_section_markdown(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
     ):
-        client = OpenAI(
+        client = AsyncOpenAI(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url,
         )
-        completion = client.chat.completions.create(
+        completion = await client.chat.completions.create(
             model=model_configuration.model_name,
             messages=[
                 {"role": "system", "content": "You are an expert in summarizing document content."},
@@ -79,17 +82,17 @@ async def summary_content(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
     ):
-        client = OpenAI(
+        client = AsyncOpenAI(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url,
         )
-        completion = client.chat.completions.create(
+        completion = await client.chat.completions.create(
             model=model_configuration.model_name,
             messages=[
                 {"role": "system", "content": "You are an expert in summarizing document content."},
                 {"role": "user", "content": system_prompt}
             ],
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
         persist_model_usage_from_completion(
             user_id=user_id,
@@ -134,17 +137,17 @@ async def reducer_summary(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
     ):
-        client = OpenAI(
+        client = AsyncOpenAI(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url,
         )
-        completion = client.chat.completions.create(
+        completion = await client.chat.completions.create(
             model=model_configuration.model_name,
             messages=[
                 {"role": "system", "content": "You are an expert in summarizing document content."},
                 {"role": "user", "content": system_prompt}
             ],
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
         persist_model_usage_from_completion(
             user_id=user_id,

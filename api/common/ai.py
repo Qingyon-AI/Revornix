@@ -1,11 +1,15 @@
 import json
 
 from langfuse import propagate_attributes
-from langfuse.openai import OpenAI
 from pydantic import BaseModel
 
-from data.custom_types.all import *
+try:
+    from langfuse.openai import AsyncOpenAI
+except ImportError:  # pragma: no cover
+    from openai import AsyncOpenAI
+
 from common.usage_billing import persist_model_usage_from_completion
+from data.custom_types.all import EntityInfo, RelationInfo
 from prompts.make_section_markdown import make_section_markdown_prompt
 from prompts.reducer_summary import reducer_summary_prompt
 from prompts.summary_content import summary_content_prompt
@@ -36,11 +40,11 @@ async def summary_content(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
     ):
-        client = OpenAI(
+        client = AsyncOpenAI(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url,
         )
-        completion = client.chat.completions.create(
+        completion = await client.chat.completions.create(
             model=model_configuration.model_name,
             messages=[
                 {"role": "system", "content": "You are an expert in summarizing document content."},
@@ -91,11 +95,11 @@ async def reducer_summary(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
     ):
-        client = OpenAI(
+        client = AsyncOpenAI(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url,
         )
-        completion = client.chat.completions.create(
+        completion = await client.chat.completions.create(
             model=model_configuration.model_name,
             messages=[
                 {"role": "system", "content": "You are an expert in summarizing document content."},
@@ -147,11 +151,11 @@ async def make_section_markdown(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
     ):
-        client = OpenAI(
+        client = AsyncOpenAI(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url,
         )
-        completion = client.chat.completions.create(
+        completion = await client.chat.completions.create(
             model=model_configuration.model_name,
             messages=[
                 {"role": "system", "content": "You are an expert in summarizing document content."},
