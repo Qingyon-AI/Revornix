@@ -71,7 +71,7 @@ async def lifespan(app: FastAPI):
         if scheduler.running:
             scheduler.shutdown(wait=False)
         if redis_conn is not None:
-            await redis_conn.close()
+            await redis_conn.aclose()
             info_logger.info("Redis connection closed.")
         await notificationManager.close_cache()
 

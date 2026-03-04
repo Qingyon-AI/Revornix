@@ -41,7 +41,7 @@ Your task is to produce a **high-quality, visually enriched, structured Markdown
 
 ---
 
-# ➕ New Content to Integrate and Analyze
+# + New Content to Integrate and Analyze
 {new_markdown_contents_to_append}
 
 ---
@@ -66,10 +66,10 @@ You must generate a **new, refined, and expanded Markdown report** following the
 ## 1. Required Structure
 Your output **must** include the following sections:
 
-1. **Executive Summary**  
-2. **Key Insights**  
-3. **Detailed Analysis**  
-4. **Knowledge Graph Interpretation**  
+1. **Executive Summary**
+2. **Key Insights**
+3. **Detailed Analysis**
+4. **Knowledge Graph Interpretation**
 5. **Conclusion & Recommendations**
 
 ## 2. Visual & Rich-Content Requirements (Mandatory)
@@ -89,6 +89,11 @@ graph LR
 (no hallucination or invented facts)
 - Rewrite, reorganize, and enhance clarity while keeping the meaning accurate
 - Use a professional and analytical tone
+- If "Current Section Content" exists, treat it as baseline context that must be preserved;
+  do not drop existing document analyses, only refine and extend them with the new content
+- "Current Section Content" may contain helper blocks such as
+  "Context Memory", "Section Head Snapshot", or "Section Tail Snapshot";
+  treat them as references only and DO NOT output these helper headings verbatim
 - Output pure Markdown only, with no additional explanations
 
 ⬇️ Please output the final Markdown report now.

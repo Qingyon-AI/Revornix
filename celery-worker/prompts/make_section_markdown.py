@@ -88,6 +88,11 @@ graph LR
 (no hallucination or invented facts)
 - Rewrite, reorganize, and enhance clarity while keeping the meaning accurate
 - Use a professional and analytical tone
+- If "Current Section Content" exists, treat it as baseline context that must be preserved;
+  do not drop existing document analyses, only refine and extend them with the new content
+- "Current Section Content" may contain helper blocks such as
+  "Context Memory", "Section Head Snapshot", or "Section Tail Snapshot";
+  treat them as references only and DO NOT output these helper headings verbatim
 - Output pure Markdown only, with no additional explanations
 
 ⬇️ Please output the final Markdown report now.
