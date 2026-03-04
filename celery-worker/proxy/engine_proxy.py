@@ -1,7 +1,14 @@
 import crud
 import json
+from typing import TypeVar
+
+from base_implement.engine_base import EngineBase
+from base_implement.image_generate_engine_base import ImageGenerateEngineBase
+from base_implement.markdown_engine_base import MarkdownEngineBase
+from base_implement.stt_engine_base import STTEngineBase
+from base_implement.tts_engine_base import TTSEngineBase
 from data.sql.base import session_scope
-from enums.model import UserModelProviderRole
+from enums.engine_enums import UserEngineRole
 from engine import (
     BananaImageGenerateEngine,
     JinaEngine,
@@ -25,6 +32,9 @@ from enums.engine_enums import Engine, EngineProvided
 from enums.user import UserRole
 from common.usage_billing import get_monthly_used_points
 
+T_Engine = TypeVar("T_Engine", bound=EngineBase)
+
+
 class EngineProxy:
 
     # =========================
@@ -36,13 +46,21 @@ class EngineProxy:
         *,
         user_id: int,
         engine_id: int,
-    ):
+    ) -> EngineBase:
         """
         async factory
         - 允许 await
         - 允许 HTTP / 权限校验
         - __init__ 只做纯赋值
         """
+
+        engine_provided_uuid: str | None = None
+        engine_uuid: str | None = None
+        engine_config_json: str | None = None
+
+        official_ability_base: str | None = None
+        official_resource_uuid: str | None = None
+        official_access_token: str | None = None
 
         # ---------- DB（同步世界） ----------
         with session_scope() as db:
@@ -65,7 +83,7 @@ class EngineProxy:
                 db=db,
                 user_id=user_id,
                 engine_id=db_engine.id,
-                filter_role=UserModelProviderRole.FORKER
+                filter_role=UserEngineRole.FORKER
             )
             # 如果公开但是没有fork 阻止 同时提醒fork
             if db_engine.creator_id != db_user.id and db_engine.is_public and db_user_engine is None:
@@ -73,81 +91,151 @@ class EngineProxy:
         
             # ---------- Official engine provider check ----------
             if db_user.role != UserRole.ADMIN and db_user.role != UserRole.ROOT:
-                ability = None
-                access_token = None
-                plan_start_time = None
                 if db_engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
-                    access_token, _ = create_token(user=db_user)
-                    plan_start_time = await get_user_plan_start_time_in_func(
-                        authorization=f"Bearer {access_token}",
-                    )
-                    ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value
-                    token_total = get_monthly_used_points(
-                        db=db,
-                        user_id=user_id,
-                        resource_uuid=db_engine.uuid,
-                        cycle_anchor_at=plan_start_time,
-                    )
-                    if token_total > 1_000_000:
-                        ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_MORE.value
-                    if token_total > 10_000_000:
-                        ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_NONE.value
-
+                    official_ability_base = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value
+                    official_resource_uuid = db_engine.uuid
+                    official_access_token, _ = create_token(user=db_user)
                 elif db_engine.uuid == Engine.Official_Banana_Image.meta.uuid:
-                    access_token, _ = create_token(user=db_user)
-                    plan_start_time = await get_user_plan_start_time_in_func(
-                        authorization=f"Bearer {access_token}",
-                    )
-                    ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value
-                    token_total = get_monthly_used_points(
-                        db=db,
-                        user_id=user_id,
-                        resource_uuid=db_engine.uuid,
-                        cycle_anchor_at=plan_start_time,
-                    )
-                    if token_total > 100_000:
-                        ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_MORE.value
-                    if token_total > 1000_000:
-                        ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_NONE.value
+                    official_ability_base = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value
+                    official_resource_uuid = db_engine.uuid
+                    official_access_token, _ = create_token(user=db_user)
 
-                deployed_by_official = check_deployed_by_official_in_fuc()
-                if ability and deployed_by_official:
-                    if access_token is None:
-                        access_token, _ = create_token(user=db_user)
-                    authorized = await plan_ability_checked_in_func(
-                        ability=ability,
-                        authorization=f"Bearer {access_token}"
-                    )
-                    if not authorized:
-                        raise PermissionError("plan ability denied")
+            engine_provided_uuid = db_engine.engine_provided.uuid
+            engine_uuid = db_engine.uuid
+            engine_config_json = db_engine.config_json
 
-        engine = None
-        if db_engine.engine_provided.uuid == EngineProvided.Volc_TTS.meta.uuid:
+        deployed_by_official = check_deployed_by_official_in_fuc()
+        if deployed_by_official and official_ability_base and official_resource_uuid:
+            if official_access_token is None:
+                raise Exception("Failed to create access token for official engine ability check")
+            authorization = f"Bearer {official_access_token}"
+            plan_start_time = await get_user_plan_start_time_in_func(
+                authorization=authorization,
+            )
+            with session_scope() as db:
+                token_total = get_monthly_used_points(
+                    db=db,
+                    user_id=user_id,
+                    resource_uuid=official_resource_uuid,
+                    cycle_anchor_at=plan_start_time,
+                )
+
+            ability = official_ability_base
+            if official_ability_base == Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value:
+                if token_total > 1_000_000:
+                    ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_MORE.value
+                if token_total > 10_000_000:
+                    ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_NONE.value
+            elif official_ability_base == Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value:
+                if token_total > 100_000:
+                    ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_MORE.value
+                if token_total > 1000_000:
+                    ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_NONE.value
+
+            authorized = await plan_ability_checked_in_func(
+                ability=ability,
+                authorization=authorization
+            )
+            if not authorized:
+                raise PermissionError("plan ability denied")
+
+        if engine_provided_uuid is None or engine_uuid is None:
+            raise Exception("The engine metadata is missing")
+
+        engine: EngineBase | None = None
+        if engine_provided_uuid == EngineProvided.Volc_TTS.meta.uuid:
             engine = VolcTTSEngine()
-        elif db_engine.engine_provided.uuid == EngineProvided.Banana_Image.meta.uuid:
+        elif engine_provided_uuid == EngineProvided.Banana_Image.meta.uuid:
             engine = BananaImageGenerateEngine()
-        elif db_engine.engine_provided.uuid == EngineProvided.Jina.meta.uuid:
+        elif engine_provided_uuid == EngineProvided.Jina.meta.uuid:
             engine = JinaEngine()
-        elif db_engine.engine_provided.uuid == EngineProvided.MarkitDown.meta.uuid:
+        elif engine_provided_uuid == EngineProvided.MarkitDown.meta.uuid:
             engine = MarkitdownEngine()
-        elif db_engine.engine_provided.uuid == EngineProvided.MinerU.meta.uuid:
+        elif engine_provided_uuid == EngineProvided.MinerU.meta.uuid:
             engine = MineruEngine()
-        elif db_engine.engine_provided.uuid == EngineProvided.MinerU_API.meta.uuid:
+        elif engine_provided_uuid == EngineProvided.MinerU_API.meta.uuid:
             engine = MineruApiEngine()
-        elif db_engine.engine_provided.uuid == EngineProvided.OpenAI_TTS.meta.uuid:
+        elif engine_provided_uuid == EngineProvided.OpenAI_TTS.meta.uuid:
             engine = OpenAIAudioEngine()
-        elif db_engine.engine_provided.uuid == EngineProvided.Volc_STT_Standard.meta.uuid:
+        elif engine_provided_uuid == EngineProvided.Volc_STT_Standard.meta.uuid:
             engine = VolcSTTStandardEngine()
-        elif db_engine.engine_provided.uuid == EngineProvided.Volc_STT_Fast.meta.uuid:
+        elif engine_provided_uuid == EngineProvided.Volc_STT_Fast.meta.uuid:
             engine = VolcSTTFastEngine()
         else:
             raise Exception("Unknown engine provided")
 
-        if db_engine.config_json:
-            engine_config = decrypt_engine_config(db_engine.config_json)
+        if engine_config_json:
+            engine_config = decrypt_engine_config(engine_config_json)
             config_json = json.loads(engine_config)
             engine.set_engine_config(config_json)
         engine.set_user_id(user_id=user_id)
-        engine.set_resource_uuid(resource_uuid=db_engine.uuid)
+        engine.set_resource_uuid(resource_uuid=engine_uuid)
 
         return engine
+
+    @staticmethod
+    def _ensure_engine_type(
+        *,
+        engine: EngineBase,
+        expected_type: type[T_Engine],
+        expected_name: str,
+    ) -> T_Engine:
+        if not isinstance(engine, expected_type):
+            raise Exception(f"The selected engine is not a {expected_name} engine")
+        return engine
+
+    @classmethod
+    async def create_markdown_engine(
+        cls,
+        *,
+        user_id: int,
+        engine_id: int,
+    ) -> MarkdownEngineBase:
+        engine = await cls.create(user_id=user_id, engine_id=engine_id)
+        return cls._ensure_engine_type(
+            engine=engine,
+            expected_type=MarkdownEngineBase,
+            expected_name="markdown convert",
+        )
+
+    @classmethod
+    async def create_tts_engine(
+        cls,
+        *,
+        user_id: int,
+        engine_id: int,
+    ) -> TTSEngineBase:
+        engine = await cls.create(user_id=user_id, engine_id=engine_id)
+        return cls._ensure_engine_type(
+            engine=engine,
+            expected_type=TTSEngineBase,
+            expected_name="tts",
+        )
+
+    @classmethod
+    async def create_stt_engine(
+        cls,
+        *,
+        user_id: int,
+        engine_id: int,
+    ) -> STTEngineBase:
+        engine = await cls.create(user_id=user_id, engine_id=engine_id)
+        return cls._ensure_engine_type(
+            engine=engine,
+            expected_type=STTEngineBase,
+            expected_name="stt",
+        )
+
+    @classmethod
+    async def create_image_generate_engine(
+        cls,
+        *,
+        user_id: int,
+        engine_id: int,
+    ) -> ImageGenerateEngineBase:
+        engine = await cls.create(user_id=user_id, engine_id=engine_id)
+        return cls._ensure_engine_type(
+            engine=engine,
+            expected_type=ImageGenerateEngineBase,
+            expected_name="image generate",
+        )
