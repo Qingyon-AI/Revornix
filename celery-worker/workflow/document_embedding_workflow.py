@@ -11,11 +11,15 @@ from data.milvus.insert import upsert_milvus
 from data.sql.base import session_scope
 from engine.embedding.factory import get_embedding_engine
 from enums.document import DocumentEmbeddingStatus
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentEmbeddingState(TypedDict, total=False):
     document_id: int
     user_id: int
+
+
+WORKFLOW_NAME = "document_embedding"
 
 
 # 建议从 64 起步，根据吞吐/内存/接口限制调整
@@ -155,9 +159,24 @@ async def _mark_embedding_success(
 
 def _build_workflow():
     workflow = StateGraph(DocumentEmbeddingState)
-    workflow.add_node("init_embedding_task", _init_embedding_task)
-    workflow.add_node("embed_document", _embed_document)
-    workflow.add_node("mark_embedding_success", _mark_embedding_success)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="init_embedding_task",
+        node_func=_init_embedding_task,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="embed_document",
+        node_func=_embed_document,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="mark_embedding_success",
+        node_func=_mark_embedding_success,
+    )
     workflow.set_entry_point("init_embedding_task")
     workflow.add_edge("init_embedding_task", "embed_document")
     workflow.add_edge("embed_document", "mark_embedding_success")
@@ -182,11 +201,13 @@ async def run_document_embedding_workflow(
 ) -> None:
     workflow = get_document_embedding_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "document_id": document_id,
                 "user_id": user_id,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while embedding document info: {e}", exc_info=True)

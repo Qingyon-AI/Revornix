@@ -11,6 +11,7 @@ from enums.document import DocumentPodcastStatus, DocumentCategory
 from common.markdown_helpers import get_markdown_content_by_document_id
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentPodcastState(TypedDict, total=False):
@@ -19,6 +20,9 @@ class DocumentPodcastState(TypedDict, total=False):
     engine_id: int
     podcast_file_name: str
     skip_processing: bool
+
+
+WORKFLOW_NAME = "document_podcast"
 
 
 async def _init_podcast_task(
@@ -153,9 +157,24 @@ async def _mark_podcast_success(
 
 def _build_workflow():
     workflow = StateGraph(DocumentPodcastState)
-    workflow.add_node("init_podcast_task", _init_podcast_task)
-    workflow.add_node("generate_document_podcast", _generate_document_podcast)
-    workflow.add_node("mark_podcast_success", _mark_podcast_success)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="init_podcast_task",
+        node_func=_init_podcast_task,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="generate_document_podcast",
+        node_func=_generate_document_podcast,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="mark_podcast_success",
+        node_func=_mark_podcast_success,
+    )
     workflow.set_entry_point("init_podcast_task")
     workflow.add_edge("init_podcast_task", "generate_document_podcast")
     workflow.add_edge("generate_document_podcast", "mark_podcast_success")
@@ -180,11 +199,13 @@ async def run_document_podcast_workflow(
 ) -> None:
     workflow = get_document_podcast_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "document_id": document_id,
                 "user_id": user_id,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai podcast: {e}")

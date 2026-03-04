@@ -44,6 +44,7 @@ from enums.document import (
     DocumentSummarizeStatus,
 )
 from proxy.ai_model_proxy import AIModelProxy
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentChunkProcessState(TypedDict, total=False):
@@ -52,6 +53,9 @@ class DocumentChunkProcessState(TypedDict, total=False):
     auto_summary: bool
     model_id: int
     llm_model_name: str
+
+
+WORKFLOW_NAME = "document_chunk_process"
 
 
 CHUNK_PREPROCESS_CONCURRENCY = 4
@@ -583,9 +587,24 @@ async def _process_document_chunks(
 
 def _build_workflow():
     workflow = StateGraph(DocumentChunkProcessState)
-    workflow.add_node("init_chunk_tasks", _init_chunk_tasks)
-    workflow.add_node("prepare_chunk_context", _prepare_chunk_context)
-    workflow.add_node("process_document_chunks", _process_document_chunks)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="init_chunk_tasks",
+        node_func=_init_chunk_tasks,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="prepare_chunk_context",
+        node_func=_prepare_chunk_context,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="process_document_chunks",
+        node_func=_process_document_chunks,
+    )
     workflow.set_entry_point("init_chunk_tasks")
     workflow.add_edge("init_chunk_tasks", "prepare_chunk_context")
     workflow.add_edge("prepare_chunk_context", "process_document_chunks")
@@ -611,12 +630,14 @@ async def run_document_chunk_process_workflow(
 ) -> None:
     workflow = get_document_chunk_process_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "document_id": document_id,
                 "user_id": user_id,
                 "auto_summary": auto_summary,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while processing document chunks: {e}")

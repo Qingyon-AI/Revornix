@@ -23,6 +23,7 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 from workflow.section_podcast_workflow import run_section_podcast_workflow
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class SectionProcessState(TypedDict, total=False):
@@ -35,6 +36,9 @@ class SectionProcessState(TypedDict, total=False):
     default_document_reader_model_id: int | None
     auto_illustration: bool
     default_image_generate_engine_id: int | None
+
+
+WORKFLOW_NAME = "section_process"
 
 
 ENTITY_QUERY = """
@@ -484,9 +488,24 @@ async def _maybe_podcast(
 
 def _build_workflow():
     workflow = StateGraph(SectionProcessState)
-    workflow.add_node("load_context", _load_context)
-    workflow.add_node("build_section_content", _build_section_content)
-    workflow.add_node("maybe_podcast", _maybe_podcast)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="load_context",
+        node_func=_load_context,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="build_section_content",
+        node_func=_build_section_content,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="maybe_podcast",
+        node_func=_maybe_podcast,
+    )
 
     workflow.set_entry_point("load_context")
     workflow.add_edge("load_context", "build_section_content")
@@ -513,12 +532,14 @@ async def run_section_process_workflow(
 ) -> None:
     workflow = get_section_process_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "section_id": section_id,
                 "user_id": user_id,
                 "auto_podcast": auto_podcast
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Error processing section {section_id}: {e}")

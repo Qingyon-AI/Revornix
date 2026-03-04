@@ -1,3 +1,4 @@
+import inspect
 import json
 
 from langfuse import propagate_attributes
@@ -8,6 +9,7 @@ try:
 except ImportError:  # pragma: no cover
     from openai import AsyncOpenAI
 
+from common.logger import exception_logger
 from common.usage_billing import persist_model_usage_from_completion
 from data.custom_types.all import EntityInfo, RelationInfo
 from prompts.make_section_markdown import make_section_markdown_prompt
@@ -23,6 +25,33 @@ class SummaryResultWithTitleAndDescription(BaseModel):
     title: str
     description: str
     summary: str
+
+
+async def _safe_close_async_client(client: AsyncOpenAI) -> None:
+    close_fn = getattr(client, "close", None)
+    if callable(close_fn):
+        try:
+            result = close_fn()
+            if inspect.isawaitable(result):
+                await result
+        except RuntimeError as e:
+            if "Event loop is closed" not in str(e):
+                exception_logger.warning(f"Failed to close async llm client: {e}")
+        except Exception as e:
+            exception_logger.warning(f"Failed to close async llm client: {e}")
+        return
+
+    aclose_fn = getattr(client, "aclose", None)
+    if callable(aclose_fn):
+        try:
+            result = aclose_fn()
+            if inspect.isawaitable(result):
+                await result
+        except RuntimeError as e:
+            if "Event loop is closed" not in str(e):
+                exception_logger.warning(f"Failed to aclose async llm client: {e}")
+        except Exception as e:
+            exception_logger.warning(f"Failed to aclose async llm client: {e}")
 
 async def summary_content(
     user_id: int,
@@ -44,32 +73,35 @@ async def summary_content(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url,
         )
-        completion = await client.chat.completions.create(
-            model=model_configuration.model_name,
-            messages=[
-                {"role": "system", "content": "You are an expert in summarizing document content."},
-                {"role": "user", "content": system_prompt}
-            ],
-            response_format={"type": "json_object"}
-        )
-        persist_model_usage_from_completion(
-            user_id=user_id,
-            model_id=model_id,
-            completion=completion,
-            source="summary_content",
-        )
-        res_summary = completion.choices[0].message.content
-        if res_summary is None:
-            raise Exception("No content returned for ai")
-        res_summary = json.loads(res_summary)
-        title = res_summary.get('title')
-        description = res_summary.get('description')
-        summary = res_summary.get('summary')
-        return SummaryResultWithTitleAndDescription(
-            title=title,
-            description=description,
-            summary=summary
-        )
+        try:
+            completion = await client.chat.completions.create(
+                model=model_configuration.model_name,
+                messages=[
+                    {"role": "system", "content": "You are an expert in summarizing document content."},
+                    {"role": "user", "content": system_prompt}
+                ],
+                response_format={"type": "json_object"}
+            )
+            persist_model_usage_from_completion(
+                user_id=user_id,
+                model_id=model_id,
+                completion=completion,
+                source="summary_content",
+            )
+            res_summary = completion.choices[0].message.content
+            if res_summary is None:
+                raise Exception("No content returned for ai")
+            res_summary = json.loads(res_summary)
+            title = res_summary.get('title')
+            description = res_summary.get('description')
+            summary = res_summary.get('summary')
+            return SummaryResultWithTitleAndDescription(
+                title=title,
+                description=description,
+                summary=summary
+            )
+        finally:
+            await _safe_close_async_client(client)
 
 async def reducer_summary(
     user_id: int,
@@ -99,32 +131,35 @@ async def reducer_summary(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url,
         )
-        completion = await client.chat.completions.create(
-            model=model_configuration.model_name,
-            messages=[
-                {"role": "system", "content": "You are an expert in summarizing document content."},
-                {"role": "user", "content": system_prompt}
-            ],
-            response_format={"type": "json_object"}
-        )
-        persist_model_usage_from_completion(
-            user_id=user_id,
-            model_id=model_id,
-            completion=completion,
-            source="reducer_summary",
-        )
-        res_summary = completion.choices[0].message.content
-        if res_summary is None:
-            raise Exception("No content returned for ai")
-        res_summary = json.loads(res_summary)
-        title = res_summary.get('title')
-        description = res_summary.get('description')
-        summary = res_summary.get('summary')
-        return SummaryResultWithTitleAndDescription(
-            title=title,
-            description=description,
-            summary=summary
-        )
+        try:
+            completion = await client.chat.completions.create(
+                model=model_configuration.model_name,
+                messages=[
+                    {"role": "system", "content": "You are an expert in summarizing document content."},
+                    {"role": "user", "content": system_prompt}
+                ],
+                response_format={"type": "json_object"}
+            )
+            persist_model_usage_from_completion(
+                user_id=user_id,
+                model_id=model_id,
+                completion=completion,
+                source="reducer_summary",
+            )
+            res_summary = completion.choices[0].message.content
+            if res_summary is None:
+                raise Exception("No content returned for ai")
+            res_summary = json.loads(res_summary)
+            title = res_summary.get('title')
+            description = res_summary.get('description')
+            summary = res_summary.get('summary')
+            return SummaryResultWithTitleAndDescription(
+                title=title,
+                description=description,
+                summary=summary
+            )
+        finally:
+            await _safe_close_async_client(client)
 
 
 async def make_section_markdown(
@@ -155,20 +190,23 @@ async def make_section_markdown(
             api_key=model_configuration.api_key,
             base_url=model_configuration.base_url,
         )
-        completion = await client.chat.completions.create(
-            model=model_configuration.model_name,
-            messages=[
-                {"role": "system", "content": "You are an expert in summarizing document content."},
-                {"role": "user", "content": prompt}
-            ],
-        )
-        persist_model_usage_from_completion(
-            user_id=user_id,
-            model_id=model_id,
-            completion=completion,
-            source="make_section_markdown",
-        )
-        content = completion.choices[0].message.content
-        if content is None:
-            raise Exception("No content returned for ai")
-        return content
+        try:
+            completion = await client.chat.completions.create(
+                model=model_configuration.model_name,
+                messages=[
+                    {"role": "system", "content": "You are an expert in summarizing document content."},
+                    {"role": "user", "content": prompt}
+                ],
+            )
+            persist_model_usage_from_completion(
+                user_id=user_id,
+                model_id=model_id,
+                completion=completion,
+                source="make_section_markdown",
+            )
+            content = completion.choices[0].message.content
+            if content is None:
+                raise Exception("No content returned for ai")
+            return content
+        finally:
+            await _safe_close_async_client(client)

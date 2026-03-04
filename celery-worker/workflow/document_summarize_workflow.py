@@ -10,6 +10,7 @@ from data.common import extract_entities_relations, get_extract_llm_client, stre
 from data.sql.base import session_scope
 from enums.document import DocumentSummarizeStatus
 from proxy.ai_model_proxy import AIModelProxy
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentSummarizeState(TypedDict, total=False):
@@ -20,6 +21,9 @@ class DocumentSummarizeState(TypedDict, total=False):
     summary: str
     title: str
     description: str
+
+
+WORKFLOW_NAME = "document_summarize"
 
 
 async def _init_summarize_task(
@@ -164,10 +168,30 @@ async def _mark_summarize_success(
 
 def _build_workflow():
     workflow = StateGraph(DocumentSummarizeState)
-    workflow.add_node("init_summarize_task", _init_summarize_task)
-    workflow.add_node("prepare_summarize_context", _prepare_summarize_context)
-    workflow.add_node("summarize_document", _summarize_document)
-    workflow.add_node("mark_summarize_success", _mark_summarize_success)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="init_summarize_task",
+        node_func=_init_summarize_task,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="prepare_summarize_context",
+        node_func=_prepare_summarize_context,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="summarize_document",
+        node_func=_summarize_document,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="mark_summarize_success",
+        node_func=_mark_summarize_success,
+    )
     workflow.set_entry_point("init_summarize_task")
     workflow.add_edge("init_summarize_task", "prepare_summarize_context")
     workflow.add_edge("prepare_summarize_context", "summarize_document")
@@ -193,11 +217,13 @@ async def run_document_summarize_workflow(
 ) -> None:
     workflow = get_document_summarize_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "document_id": document_id,
                 "user_id": user_id,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai summary: {e}")

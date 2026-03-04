@@ -12,6 +12,7 @@ from data.sql.base import session_scope
 from enums.document import DocumentCategory, DocumentMdConvertStatus
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentConvertState(TypedDict, total=False):
@@ -21,6 +22,9 @@ class DocumentConvertState(TypedDict, total=False):
     engine_id: int
     md_file_name: str | None
     skip_processing: bool
+
+
+WORKFLOW_NAME = "document_convert"
 
 
 async def _init_convert_task(
@@ -244,9 +248,24 @@ async def _mark_convert_success(
 
 def _build_workflow():
     workflow = StateGraph(DocumentConvertState)
-    workflow.add_node("init_convert_task", _init_convert_task)
-    workflow.add_node("convert_document", _convert_document_content)
-    workflow.add_node("mark_convert_success", _mark_convert_success)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="init_convert_task",
+        node_func=_init_convert_task,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="convert_document",
+        node_func=_convert_document_content,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="mark_convert_success",
+        node_func=_mark_convert_success,
+    )
     workflow.set_entry_point("init_convert_task")
     workflow.add_edge("init_convert_task", "convert_document")
     workflow.add_edge("convert_document", "mark_convert_success")
@@ -271,11 +290,13 @@ async def run_document_convert_workflow(
 ) -> None:
     workflow = get_document_convert_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "document_id": document_id,
                 "user_id": user_id,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while converting the document to markdown: {e}")
