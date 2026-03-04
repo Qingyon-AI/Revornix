@@ -10,7 +10,7 @@ Name | Type
 `key_id` | string
 `team_id` | string
 `private_key` | string
-`app_bundle_id` | string
+`apns_topic` | string
 
 ## Example
 
@@ -23,7 +23,7 @@ const example = {
   "key_id": null,
   "team_id": null,
   "private_key": null,
-  "app_bundle_id": null,
+  "apns_topic": null,
 } satisfies IOSNotificationSource
 
 console.log(example)
