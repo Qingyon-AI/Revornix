@@ -103,6 +103,7 @@ class NotificationProxy:
             if db_notification_template is None:
                 raise Exception("Notification template not found")
             template_uuid = db_notification_template.uuid
+            print(1111, template_uuid)
 
         if template_uuid == NotificationTemplate.DAILY_SUMMARY.meta.uuid:
             notification_template = DailySummaryNotificationTemplate()

@@ -56,7 +56,7 @@ async def send_notification_scheduler(
             if db_notification_content_template is None:
                 raise schemas.error.CustomException(message="notification content template not found", code=500)
             generate_res = await NotificationProxy.create_message_using_template(
-                template_id=db_notification_content_template.id,
+                template_id=db_notification_content_template.notification_template_id,
                 params={
                     "receiver_id": receiver_id,
                     "date": datetime.now().date(),
