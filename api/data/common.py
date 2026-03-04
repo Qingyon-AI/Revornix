@@ -2,11 +2,12 @@ import crud
 import json
 import hashlib
 import asyncio
+import inspect
 import time
 import torch
 import models
 from typing import cast
-from langfuse.openai import OpenAI
+from langfuse.openai import AsyncOpenAI
 from common.logger import exception_logger
 from langfuse import propagate_attributes
 from enums.document import DocumentMdConvertStatus, DocumentAudioTranscribeStatus
@@ -22,6 +23,38 @@ from sqlalchemy.orm import Session
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.file_system_proxy import FileSystemProxy
+
+
+async def _safe_close_async_client(client: AsyncOpenAI) -> None:
+    close_fn = getattr(client, "close", None)
+    if callable(close_fn):
+        try:
+            result = close_fn()
+            if inspect.isawaitable(result):
+                await result
+        except RuntimeError as e:
+            if "Event loop is closed" not in str(e):
+                exception_logger.warning(f"Failed to close async llm client: {e}")
+        except Exception as e:
+            exception_logger.warning(f"Failed to close async llm client: {e}")
+        return
+
+    aclose_fn = getattr(client, "aclose", None)
+    if callable(aclose_fn):
+        try:
+            result = aclose_fn()
+            if inspect.isawaitable(result):
+                await result
+        except RuntimeError as e:
+            if "Event loop is closed" not in str(e):
+                exception_logger.warning(f"Failed to aclose async llm client: {e}")
+        except Exception as e:
+            exception_logger.warning(f"Failed to aclose async llm client: {e}")
+
+
+async def close_extract_llm_client(llm_client: AsyncOpenAI) -> None:
+    await _safe_close_async_client(llm_client)
+
 
 def make_chunk_id(
     doc_id: int, 
@@ -79,9 +112,9 @@ def _cosine_similarity(a: list[float], b: list[float]) -> float:
             return -1.0
         return dot / ((norm_a ** 0.5) * (norm_b ** 0.5))
 
-def _llm_semantic_match(
+async def _llm_semantic_match(
     *,
-    llm_client: OpenAI,
+    llm_client: AsyncOpenAI,
     llm_model: str,
     entity_text: str,
     entity_type: str,
@@ -103,7 +136,7 @@ Return strict JSON only:
 {{"same": true}} or {{"same": false}}
 """
     try:
-        resp = llm_client.chat.completions.create(
+        resp = await llm_client.chat.completions.create(
             model=llm_model,
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
@@ -254,9 +287,9 @@ async def _load_markdown_content(
 # ----------------------------
 # 调用 LLM 抽取实体和关系
 # ----------------------------
-def extract_entities_relations(
+async def extract_entities_relations(
     user_id: int,
-    llm_client: OpenAI,
+    llm_client: AsyncOpenAI,
     llm_model: str,
     chunk: ChunkInfo,
     max_continue_rounds: int = 8,   # 防止死循环
@@ -275,7 +308,7 @@ def extract_entities_relations(
         tags=[f"model:{llm_model}"]
     ):
         # 第一轮
-        resp = llm_client.chat.completions.create(
+        resp = await llm_client.chat.completions.create(
             model=llm_model,
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
@@ -293,7 +326,7 @@ def extract_entities_relations(
         ):
             rounds += 1
 
-            resp = llm_client.chat.completions.create(
+            resp = await llm_client.chat.completions.create(
                 model=llm_model,
                 messages=[
                     {"role": "user", "content": prompt},
@@ -424,14 +457,14 @@ def filter_entities_relations_by_context_consistency(
     ]
     return filtered_entities, filtered_relations
 
-def resolve_entities_with_semantic_dedupe(
+async def resolve_entities_with_semantic_dedupe(
     *,
     entities: list[EntityInfo],
     relations: list[RelationInfo],
     chunk_text: str,
     existing_entities_index: dict[tuple[str, str], list[dict]],
     embedding_engine,
-    llm_client: OpenAI,
+    llm_client: AsyncOpenAI,
     llm_model: str,
     similarity_high: float = 0.85,
     similarity_low: float = 0.7,
@@ -448,7 +481,7 @@ def resolve_entities_with_semantic_dedupe(
         max_batch = 10
         for i in range(0, len(context_samples), max_batch):
             batch = context_samples[i:i + max_batch]
-            batch_vecs = embedding_engine.embed(batch)
+            batch_vecs = await asyncio.to_thread(embedding_engine.embed, batch)
             if hasattr(batch_vecs, "tolist"):
                 batch_vecs = batch_vecs.tolist()
             embeddings.extend(list(batch_vecs))
@@ -480,7 +513,7 @@ def resolve_entities_with_semantic_dedupe(
         elif best_candidate and best_sim >= similarity_low:
             c_sample = best_candidate.get("context_sample") or ""
             if c_sample:
-                same = _llm_semantic_match(
+                same = await _llm_semantic_match(
                     llm_client=llm_client,
                     llm_model=llm_model,
                     entity_text=e.text,
@@ -498,7 +531,7 @@ def resolve_entities_with_semantic_dedupe(
                     best_candidate = c
                     break
             if c_sample:
-                same = _llm_semantic_match(
+                same = await _llm_semantic_match(
                     llm_client=llm_client,
                     llm_model=llm_model,
                     entity_text=e.text,
@@ -575,25 +608,27 @@ def resolve_entities_with_semantic_dedupe(
 
 async def get_extract_llm_client(
     user_id: int
-) -> OpenAI:
+) -> AsyncOpenAI:
     db = session_scope()
-    db_user = crud.user.get_user_by_id(
-        db=db, 
-        user_id=user_id
-    )
-    if db_user is None:
-        raise Exception("User not found")
-    if db_user.default_document_reader_model_id is None:
-        raise Exception("Default document reader model id not found")
-    
-    model_configuration = (await AIModelProxy.create(
-        user_id=user_id,
-        model_id=db_user.default_document_reader_model_id
-    )).get_configuration()
-    
-    llm_client = OpenAI(
-        api_key=model_configuration.api_key,
-        base_url=model_configuration.base_url,
-    )
-    db.close()
-    return llm_client
+    try:
+        db_user = crud.user.get_user_by_id(
+            db=db, 
+            user_id=user_id
+        )
+        if db_user is None:
+            raise Exception("User not found")
+        if db_user.default_document_reader_model_id is None:
+            raise Exception("Default document reader model id not found")
+
+        model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=db_user.default_document_reader_model_id
+        )).get_configuration()
+
+        llm_client = AsyncOpenAI(
+            api_key=model_configuration.api_key,
+            base_url=model_configuration.base_url,
+        )
+        return llm_client
+    finally:
+        db.close()

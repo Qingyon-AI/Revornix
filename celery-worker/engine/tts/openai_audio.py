@@ -1,8 +1,41 @@
+import inspect
+
 from base_implement.tts_engine_base import TTSEngineBase
-from enums.engine_enums import EngineProvided, EngineCategory
-from langfuse.openai import OpenAI
 from langfuse import propagate_attributes
+
+from langfuse.openai import AsyncOpenAI
+
+from common.logger import exception_logger
+from enums.engine_enums import EngineCategory, EngineProvided
 from prompts.podcast_generation import podcast_generation_prompt
+
+
+async def _safe_close_async_client(client: AsyncOpenAI) -> None:
+    close_fn = getattr(client, "close", None)
+    if callable(close_fn):
+        try:
+            result = close_fn()
+            if inspect.isawaitable(result):
+                await result
+        except RuntimeError as e:
+            if "Event loop is closed" not in str(e):
+                exception_logger.warning(f"Failed to close async llm client: {e}")
+        except Exception as e:
+            exception_logger.warning(f"Failed to close async llm client: {e}")
+        return
+
+    aclose_fn = getattr(client, "aclose", None)
+    if callable(aclose_fn):
+        try:
+            result = aclose_fn()
+            if inspect.isawaitable(result):
+                await result
+        except RuntimeError as e:
+            if "Event loop is closed" not in str(e):
+                exception_logger.warning(f"Failed to aclose async llm client: {e}")
+        except Exception as e:
+            exception_logger.warning(f"Failed to aclose async llm client: {e}")
+
 
 class OpenAIAudioEngine(TTSEngineBase):
     """此引擎使用的是openai的tts接口
@@ -40,23 +73,26 @@ class OpenAIAudioEngine(TTSEngineBase):
             user_id=str(self.user_id),
             tags=[f'model:{model_name}']
         ):  
-            llm_client = OpenAI(
+            llm_client = AsyncOpenAI(
                 base_url=base_url,
                 api_key=api_key
             )
-            completion = llm_client.chat.completions.create(
-                model=model_name,
-                modalities=["text", "audio"],
-                audio={"voice": "alloy", "format": "mp3"},
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f'{podcast_generation_prompt(text)}'
-                    }
-                ]
-            )
-            audio = completion.choices[0].message.audio
-            if audio is None:
-                raise Exception("The audio is None.")
-            # Langfuse会将audio.data包装成LangfuseMedia，从中获取音频bytes需要通过_content_bytes
-            return audio.data._content_bytes
+            try:
+                completion = await llm_client.chat.completions.create(
+                    model=model_name,
+                    modalities=["text", "audio"],
+                    audio={"voice": "alloy", "format": "mp3"},
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": f'{podcast_generation_prompt(text)}'
+                        }
+                    ]
+                )
+                audio = completion.choices[0].message.audio
+                if audio is None:
+                    raise Exception("The audio is None.")
+                # Langfuse会将audio.data包装成LangfuseMedia，从中获取音频bytes需要通过_content_bytes
+                return audio.data._content_bytes
+            finally:
+                await _safe_close_async_client(llm_client)

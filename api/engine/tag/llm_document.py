@@ -1,12 +1,45 @@
+import json
+import inspect
+
 import crud
 import schemas
-import json
-from data.sql.base import session_scope
-from langfuse.openai import OpenAI
 from langfuse import propagate_attributes
+
+from langfuse.openai import AsyncOpenAI
+
+from common.logger import exception_logger
 from prompts.document_auto_tag import document_auto_tag_prompt
 from common.markdown_helpers import get_markdown_content_by_document_id
+from data.sql.base import session_scope
 from proxy.ai_model_proxy import AIModelProxy
+
+
+async def _safe_close_async_client(client: AsyncOpenAI) -> None:
+    close_fn = getattr(client, "close", None)
+    if callable(close_fn):
+        try:
+            result = close_fn()
+            if inspect.isawaitable(result):
+                await result
+        except RuntimeError as e:
+            if "Event loop is closed" not in str(e):
+                exception_logger.warning(f"Failed to close async llm client: {e}")
+        except Exception as e:
+            exception_logger.warning(f"Failed to close async llm client: {e}")
+        return
+
+    aclose_fn = getattr(client, "aclose", None)
+    if callable(aclose_fn):
+        try:
+            result = aclose_fn()
+            if inspect.isawaitable(result):
+                await result
+        except RuntimeError as e:
+            if "Event loop is closed" not in str(e):
+                exception_logger.warning(f"Failed to aclose async llm client: {e}")
+        except Exception as e:
+            exception_logger.warning(f"Failed to aclose async llm client: {e}")
+
 
 class LLMDocumentTagEngine:
     
@@ -71,31 +104,34 @@ class LLMDocumentTagEngine:
             user_id=str(self.user_id),
             tags=[f'model:{model_configuration.model_name}']
         ):
-            llm_client = OpenAI(
+            llm_client = AsyncOpenAI(
                 base_url=model_configuration.base_url,
                 api_key=model_configuration.api_key
             )
-            response = llm_client.chat.completions.create(
-                model=model_configuration.model_name,
-                messages=[
-                    {
-                        "role": "user", 
-                        "content": prompt
-                    },   
-                ],
-                response_format={"type": "json_object"},
-            )
-            if len(response.choices) > 0 and response.choices[0].message is not None and response.choices[0].message.content is not None:
-                res = json.loads(response.choices[0].message.content)
-                res = [
-                    schemas.document.DocumentLabel(
-                        id=x['id'], 
-                        name=x['name']
-                    )
-                    for x in res.get('tags')
-                ]
-                return res
-            return None
+            try:
+                response = await llm_client.chat.completions.create(
+                    model=model_configuration.model_name,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": prompt
+                        },
+                    ],
+                    response_format={"type": "json_object"},
+                )
+                if len(response.choices) > 0 and response.choices[0].message is not None and response.choices[0].message.content is not None:
+                    res = json.loads(response.choices[0].message.content)
+                    res = [
+                        schemas.document.DocumentLabel(
+                            id=x['id'],
+                            name=x['name']
+                        )
+                        for x in res.get('tags')
+                    ]
+                    return res
+                return None
+            finally:
+                await _safe_close_async_client(llm_client)
 
 if __name__ == '__main__':
     async def main():

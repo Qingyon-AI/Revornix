@@ -8,10 +8,10 @@ from markitdown import MarkItDown
 from playwright.async_api import async_playwright
 
 import crud
+from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
 from common.common import extract_title_and_summary
 from data.sql.base import session_scope
-from enums.engine_enums import EngineProvided, EngineCategory
-from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
+from enums.engine_enums import EngineCategory, EngineProvided
 from proxy.ai_model_proxy import AIModelProxy
 
 
@@ -165,7 +165,7 @@ class MarkitdownEngine(MarkdownEngineBase):
                 api_key=api_key
             )
             md = MarkItDown(llm_client=llm_client, llm_model=model_configuration.model_name)
-            result = md.convert(file_path)
+            result = await asyncio.to_thread(md.convert, file_path)
 
             title, description = extract_title_and_summary(result.text_content)
 

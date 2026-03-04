@@ -1,9 +1,11 @@
+import asyncio
+import time
 from typing import TypedDict
 
 import crud
 from langgraph.graph import StateGraph, END
 
-from common.logger import exception_logger
+from common.logger import exception_logger, info_logger
 from common.document_guard import ensure_document_active
 from common.embedding_utils import coerce_embedding_vectors
 from data.common import stream_chunk_document
@@ -11,7 +13,7 @@ from data.milvus.insert import upsert_milvus
 from data.sql.base import session_scope
 from engine.embedding.factory import get_embedding_engine
 from enums.document import DocumentEmbeddingStatus
-from workflow.timing import add_timed_node, ainvoke_with_timing
+from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
 
 
 class DocumentEmbeddingState(TypedDict, total=False):
@@ -97,41 +99,73 @@ async def _embed_document(
     # 批量缓存
     embed_chunks: list = []
     embed_texts: list[str] = []
+    chunk_count = 0
+    batch_count = 0
+    embed_elapsed_ms = 0.0
+    upsert_elapsed_ms = 0.0
 
     # 如果你想 embedding batch 和 milvus batch 分开控制，
     # 可以再做一层 milvus_buffer；这里先用“embed 批完就写 milvus”版本（最简单可靠）
-    async for chunk_info in stream_chunk_document(doc_id=document_id):
-        embed_chunks.append(chunk_info)
-        embed_texts.append(chunk_info.text)
+    with timed_stage(
+        workflow_name=WORKFLOW_NAME,
+        node_name="embed_document",
+        stage_name="embed_and_upsert_batches",
+        context={
+            "document_id": document_id,
+            "user_id": user_id,
+            "batch_size": EMBED_BATCH_SIZE,
+        },
+    ):
+        async for chunk_info in stream_chunk_document(doc_id=document_id):
+            chunk_count += 1
+            embed_chunks.append(chunk_info)
+            embed_texts.append(chunk_info.text)
 
-        # 满一个 embedding batch：一次 embed + 一次 upsert milvus
-        if len(embed_chunks) >= EMBED_BATCH_SIZE:
-            vectors = embedding_engine.embed(embed_texts)
+            # 满一个 embedding batch：一次 embed + 一次 upsert milvus
+            if len(embed_chunks) >= EMBED_BATCH_SIZE:
+                batch_count += 1
+                embed_start = time.perf_counter()
+                vectors = await asyncio.to_thread(embedding_engine.embed, embed_texts)
+                embed_elapsed_ms += (time.perf_counter() - embed_start) * 1000
+                _assign_chunk_embeddings(
+                    chunks=embed_chunks,
+                    vectors_raw=vectors,
+                )
+
+                upsert_start = time.perf_counter()
+                await asyncio.to_thread(
+                    upsert_milvus,
+                    user_id,
+                    embed_chunks,
+                )
+                upsert_elapsed_ms += (time.perf_counter() - upsert_start) * 1000
+
+                embed_chunks.clear()
+                embed_texts.clear()
+
+        # 处理最后不足一个 batch 的尾巴
+        if embed_chunks:
+            batch_count += 1
+            embed_start = time.perf_counter()
+            vectors = await asyncio.to_thread(embedding_engine.embed, embed_texts)
+            embed_elapsed_ms += (time.perf_counter() - embed_start) * 1000
             _assign_chunk_embeddings(
                 chunks=embed_chunks,
                 vectors_raw=vectors,
             )
 
-            upsert_milvus(
-                user_id=user_id,
-                chunks_info=embed_chunks
+            upsert_start = time.perf_counter()
+            await asyncio.to_thread(
+                upsert_milvus,
+                user_id,
+                embed_chunks,
             )
-
-            embed_chunks.clear()
-            embed_texts.clear()
-
-    # 处理最后不足一个 batch 的尾巴
-    if embed_chunks:
-        vectors = embedding_engine.embed(embed_texts)
-        _assign_chunk_embeddings(
-            chunks=embed_chunks,
-            vectors_raw=vectors,
-        )
-
-        upsert_milvus(
-            user_id=user_id,
-            chunks_info=embed_chunks
-        )
+            upsert_elapsed_ms += (time.perf_counter() - upsert_start) * 1000
+    info_logger.info(
+        f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=embed_document, "
+        f"stage=embed_and_upsert_batches, chunks={chunk_count}, batches={batch_count}, "
+        f"embed_elapsed_ms={embed_elapsed_ms:.2f}, upsert_elapsed_ms={upsert_elapsed_ms:.2f}"
+    )
     return state
 
 
