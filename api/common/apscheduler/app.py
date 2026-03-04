@@ -49,8 +49,14 @@ async def send_notification_scheduler(
             link = db_notification_content_custom.link
             cover = db_notification_content_custom.cover
         elif db_notification_task.content_type == NotificationContentType.TEMPLATE:
+            db_notification_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
+                db=db,
+                notification_task_id=notification_task_id
+            )
+            if db_notification_content_template is None:
+                raise schemas.error.CustomException(message="notification content template not found", code=500)
             generate_res = await NotificationProxy.create_message_using_template(
-                template_id=db_notification_task.notification_template_id,
+                template_id=db_notification_content_template.id,
                 params={
                     "receiver_id": receiver_id,
                     "date": datetime.now().date(),
