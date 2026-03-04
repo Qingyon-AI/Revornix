@@ -1,13 +1,12 @@
 import crud
 import schemas
 import json
-from enums.document import DocumentCategory
 from data.sql.base import session_scope
 from langfuse.openai import OpenAI
 from langfuse import propagate_attributes
 from prompts.document_auto_tag import document_auto_tag_prompt
+from common.markdown_helpers import get_markdown_content_by_document_id
 from proxy.ai_model_proxy import AIModelProxy
-from proxy.file_system_proxy import FileSystemProxy
 
 class LLMDocumentTagEngine:
     
@@ -23,6 +22,8 @@ class LLMDocumentTagEngine:
         self, 
         document_id: int
     ) -> list[schemas.document.DocumentLabel] | None:
+        model_id: int | None = None
+        tags: list[schemas.document.DocumentLabel] = []
         with session_scope() as db:
             db_user = crud.user.get_user_by_id(
                 db=db,
@@ -34,11 +35,7 @@ class LLMDocumentTagEngine:
                 raise Exception('User does not have a default document reader model')
             if db_user.default_user_file_system is None:
                 raise Exception('User does not have a default user file system')
-
-            model_configuration = (await AIModelProxy.create(
-                user_id=self.user_id,
-                model_id=db_user.default_document_reader_model_id
-            )).get_configuration()
+            model_id = db_user.default_document_reader_model_id
             
             db_document = crud.document.get_document_by_document_id(
                 db=db,
@@ -46,46 +43,25 @@ class LLMDocumentTagEngine:
             )
             if db_document is None:
                 raise Exception("The document you want to generate the tags is not found")
-
-            doc_category = db_document.category
-            md_file_name = None
-            if doc_category == DocumentCategory.FILE or doc_category == DocumentCategory.WEBSITE:
-                db_convert_task = crud.task.get_document_convert_task_by_document_id(
-                    db=db,
-                    document_id=document_id
-                )
-                if db_convert_task is None:
-                    raise Exception("The document you want to process do not have a the convert task info")
-                if db_convert_task.md_file_name is None:
-                    raise Exception("The document you want to process do not have a the md file name")
-                md_file_name = db_convert_task.md_file_name
             
-            tags = crud.document.get_user_labels_by_user_id(
+            db_tags = crud.document.get_user_labels_by_user_id(
                 db=db,
                 user_id=self.user_id
             )
             tags = [
                 schemas.document.DocumentLabel(id=x.id, name=x.name)
-                for x in tags
+                for x in db_tags
             ]
-        document_content = ''
-        if doc_category == DocumentCategory.FILE or doc_category == DocumentCategory.WEBSITE:
-            remote_file_service = await FileSystemProxy.create(
-                user_id=self.user_id
-            )
-            if md_file_name is None:
-                raise Exception("The document you want to process do not have a the md file name")
-            document_content = await remote_file_service.get_file_content_by_file_path(
-                file_path=md_file_name
-            )
-        elif doc_category == DocumentCategory.QUICK_NOTE:
-            db_quick_not_document = crud.document.get_quick_note_document_by_document_id(
-                db=db,
-                document_id=document_id
-            )
-            if db_quick_not_document is None:
-                raise Exception("The document you want to process do not have a the quick note document info")
-            document_content = db_quick_not_document.content
+        if model_id is None:
+            raise Exception('User does not have a default document reader model')
+        model_configuration = (await AIModelProxy.create(
+            user_id=self.user_id,
+            model_id=model_id
+        )).get_configuration()
+        document_content = await get_markdown_content_by_document_id(
+            document_id=document_id,
+            user_id=self.user_id,
+        )
         
         prompt = document_auto_tag_prompt(
             document_content=document_content,
