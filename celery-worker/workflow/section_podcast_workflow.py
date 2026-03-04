@@ -10,6 +10,7 @@ from enums.section import SectionPodcastStatus
 from common.markdown_helpers import get_markdown_content_by_section_id
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class SectionPodcastState(TypedDict, total=False):
@@ -17,6 +18,9 @@ class SectionPodcastState(TypedDict, total=False):
     user_id: int
     engine_id: int
     podcast_file_name: str
+
+
+WORKFLOW_NAME = "section_podcast"
 
 
 async def _init_section_podcast_task(
@@ -130,9 +134,24 @@ async def _mark_section_podcast_success(
 
 def _build_workflow():
     workflow = StateGraph(SectionPodcastState)
-    workflow.add_node("init_section_podcast_task", _init_section_podcast_task)
-    workflow.add_node("generate_section_podcast", _generate_section_podcast)
-    workflow.add_node("mark_section_podcast_success", _mark_section_podcast_success)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="init_section_podcast_task",
+        node_func=_init_section_podcast_task,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="generate_section_podcast",
+        node_func=_generate_section_podcast,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="mark_section_podcast_success",
+        node_func=_mark_section_podcast_success,
+    )
     workflow.set_entry_point("init_section_podcast_task")
     workflow.add_edge("init_section_podcast_task", "generate_section_podcast")
     workflow.add_edge("generate_section_podcast", "mark_section_podcast_success")
@@ -157,11 +176,13 @@ async def run_section_podcast_workflow(
 ) -> None:
     workflow = get_section_podcast_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "section_id": section_id,
                 "user_id": user_id,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai podcast: {e}")

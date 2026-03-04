@@ -13,6 +13,7 @@ from workflow.document_convert_workflow import run_document_convert_workflow
 from workflow.document_podcast_workflow import run_document_podcast_workflow
 from workflow.document_tag_workflow import run_document_tag_workflow
 from workflow.document_transcribe_workflow import run_document_transcribe_workflow
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentProcessState(TypedDict, total=False):
@@ -23,6 +24,9 @@ class DocumentProcessState(TypedDict, total=False):
     auto_transcribe: bool
     auto_tag: bool
     override: dict | DocumentOverrideProperty | None
+
+
+WORKFLOW_NAME = "document_process"
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -253,14 +257,54 @@ async def _mark_process_success(
 
 def _build_workflow():
     workflow = StateGraph(DocumentProcessState)
-    workflow.add_node("init_document_process_task", _init_document_process_task)
-    workflow.add_node("maybe_transcribe_document", _maybe_transcribe_document)
-    workflow.add_node("convert_document", _convert_document)
-    workflow.add_node("apply_override", _apply_override)
-    workflow.add_node("maybe_tag_document", _maybe_tag_document)
-    workflow.add_node("process_document_chunks", _process_document_chunks)
-    workflow.add_node("maybe_generate_podcast", _maybe_generate_podcast)
-    workflow.add_node("mark_process_success", _mark_process_success)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="init_document_process_task",
+        node_func=_init_document_process_task,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="maybe_transcribe_document",
+        node_func=_maybe_transcribe_document,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="convert_document",
+        node_func=_convert_document,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="apply_override",
+        node_func=_apply_override,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="maybe_tag_document",
+        node_func=_maybe_tag_document,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="process_document_chunks",
+        node_func=_process_document_chunks,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="maybe_generate_podcast",
+        node_func=_maybe_generate_podcast,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="mark_process_success",
+        node_func=_mark_process_success,
+    )
 
     workflow.set_entry_point("init_document_process_task")
     workflow.add_edge("init_document_process_task", "maybe_transcribe_document")
@@ -296,8 +340,10 @@ async def run_document_process_workflow(
 ) -> None:
     workflow = get_document_process_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "document_id": document_id,
                 "user_id": user_id,
                 "auto_summary": auto_summary,
@@ -305,7 +351,7 @@ async def run_document_process_workflow(
                 "auto_transcribe": auto_transcribe,
                 "auto_tag": auto_tag,
                 "override": override,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while process document info: {e}")

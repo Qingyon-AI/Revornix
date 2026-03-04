@@ -31,6 +31,7 @@ from data.sql.base import session_scope
 from enums.ability import Ability
 from enums.document import DocumentGraphStatus
 from proxy.ai_model_proxy import AIModelProxy
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentGraphState(TypedDict, total=False):
@@ -38,6 +39,9 @@ class DocumentGraphState(TypedDict, total=False):
     user_id: int
     model_id: int
     llm_model_name: str
+
+
+WORKFLOW_NAME = "document_graph_task"
 
 
 async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
@@ -235,11 +239,36 @@ async def _mark_graph_success(state: DocumentGraphState) -> DocumentGraphState:
 
 def _build_workflow():
     workflow = StateGraph(DocumentGraphState)
-    workflow.add_node("init_graph_task", _init_graph_task)
-    workflow.add_node("prepare_context", _prepare_context)
-    workflow.add_node("extract_chunks", _extract_chunks)
-    workflow.add_node("persist_graph", _persist_graph)
-    workflow.add_node("mark_graph_success", _mark_graph_success)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="init_graph_task",
+        node_func=_init_graph_task,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="prepare_context",
+        node_func=_prepare_context,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="extract_chunks",
+        node_func=_extract_chunks,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="persist_graph",
+        node_func=_persist_graph,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="mark_graph_success",
+        node_func=_mark_graph_success,
+    )
     workflow.set_entry_point("init_graph_task")
     workflow.add_edge("init_graph_task", "prepare_context")
     workflow.add_edge("prepare_context", "extract_chunks")
@@ -266,11 +295,13 @@ async def run_document_graph_task_workflow(
 ) -> None:
     workflow = get_document_graph_task_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "document_id": document_id,
                 "user_id": user_id,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while graphing document info: {e}")

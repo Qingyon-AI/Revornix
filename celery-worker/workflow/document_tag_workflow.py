@@ -7,11 +7,15 @@ from common.logger import exception_logger
 from common.document_guard import ensure_document_active
 from data.sql.base import session_scope
 from engine.tag.llm_document import LLMDocumentTagEngine
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentTagState(TypedDict, total=False):
     document_id: int
     user_id: int
+
+
+WORKFLOW_NAME = "document_tag"
 
 
 async def handle_tag_document(
@@ -64,7 +68,12 @@ async def _tag_document(
 
 def _build_workflow():
     workflow = StateGraph(DocumentTagState)
-    workflow.add_node("tag_document", _tag_document)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="tag_document",
+        node_func=_tag_document,
+    )
     workflow.set_entry_point("tag_document")
     workflow.add_edge("tag_document", END)
     return workflow.compile()
@@ -87,11 +96,13 @@ async def run_document_tag_workflow(
 ) -> None:
     workflow = get_document_tag_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "document_id": document_id,
                 "user_id": user_id,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while tagging the document: {e}")

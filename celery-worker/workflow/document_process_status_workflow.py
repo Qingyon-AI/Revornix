@@ -6,11 +6,15 @@ import crud
 from data.sql.base import session_scope
 from common.logger import exception_logger
 from common.document_guard import DocumentDeletedError, ensure_document_active
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentProcessStatusState(TypedDict, total=False):
     document_id: int
     status: int
+
+
+WORKFLOW_NAME = "document_process_status"
 
 
 async def _update_document_status(
@@ -45,7 +49,12 @@ async def _update_document_status(
 
 def _build_workflow():
     workflow = StateGraph(DocumentProcessStatusState)
-    workflow.add_node("update_document_status", _update_document_status)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="update_document_status",
+        node_func=_update_document_status,
+    )
     workflow.set_entry_point("update_document_status")
     workflow.add_edge("update_document_status", END)
     return workflow.compile()
@@ -68,11 +77,13 @@ async def run_document_process_status_workflow(
 ) -> None:
     workflow = get_document_process_status_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "document_id": document_id,
                 "status": status,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while updating the document status: {e}")

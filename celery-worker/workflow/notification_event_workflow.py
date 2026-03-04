@@ -8,12 +8,16 @@ from common.logger import exception_logger
 from proxy.notification_proxy import NotificationProxy
 from data.sql.base import session_scope
 from enums.notification import NotificationContentType
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class NotificationEventState(TypedDict, total=False):
     user_id: int
     trigger_event_uuid: str
     params: dict | None
+
+
+WORKFLOW_NAME = "notification_event"
 
 
 class NotificationDispatchPayload(TypedDict, total=False):
@@ -158,7 +162,12 @@ async def _trigger_notification_event(
 
 def _build_workflow():
     workflow = StateGraph(NotificationEventState)
-    workflow.add_node("trigger_notification_event", _trigger_notification_event)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="trigger_notification_event",
+        node_func=_trigger_notification_event,
+    )
     workflow.set_entry_point("trigger_notification_event")
     workflow.add_edge("trigger_notification_event", END)
     return workflow.compile()
@@ -182,12 +191,14 @@ async def run_notification_event_workflow(
 ) -> None:
     workflow = get_notification_event_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "user_id": user_id,
                 "trigger_event_uuid": trigger_event_uuid,
                 "params": params,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while triggering notification event: {e}")

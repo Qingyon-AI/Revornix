@@ -8,6 +8,7 @@ from common.document_guard import ensure_document_active
 from data.sql.base import session_scope
 from enums.document import DocumentCategory, DocumentAudioTranscribeStatus
 from proxy.engine_proxy import EngineProxy
+from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentTranscribeState(TypedDict, total=False):
@@ -15,6 +16,9 @@ class DocumentTranscribeState(TypedDict, total=False):
     user_id: int
     engine_id: int
     skip_processing: bool
+
+
+WORKFLOW_NAME = "document_transcribe"
 
 
 async def _init_transcribe_task(
@@ -124,8 +128,18 @@ async def _transcribe_document_audio(
 
 def _build_workflow():
     workflow = StateGraph(DocumentTranscribeState)
-    workflow.add_node("init_transcribe_task", _init_transcribe_task)
-    workflow.add_node("transcribe_document", _transcribe_document_audio)
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="init_transcribe_task",
+        node_func=_init_transcribe_task,
+    )
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="transcribe_document",
+        node_func=_transcribe_document_audio,
+    )
     workflow.set_entry_point("init_transcribe_task")
     workflow.add_edge("init_transcribe_task", "transcribe_document")
     workflow.add_edge("transcribe_document", END)
@@ -149,11 +163,13 @@ async def run_document_transcribe_workflow(
 ) -> None:
     workflow = get_document_transcribe_workflow()
     try:
-        await workflow.ainvoke(
-            {
+        await ainvoke_with_timing(
+            workflow_name=WORKFLOW_NAME,
+            workflow=workflow,
+            payload={
                 "document_id": document_id,
                 "user_id": user_id,
-            }
+            },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while transcribing document audio: {e}")
