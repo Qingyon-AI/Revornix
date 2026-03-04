@@ -56,7 +56,7 @@ class AIModelProxy:
         *,
         user_id: int,
         model_id: int,
-    ):
+    ) -> "AIModelProxy":
         """
         async factory
         - 允许 await
@@ -64,89 +64,100 @@ class AIModelProxy:
         - __init__ 只做纯赋值
         """
 
-        # ---------- DB（同步世界） ----------
-        db = session_scope()
+        model_name: str | None = None
+        provider_base_url: str | None = None
+        provider_api_key: str | None = None
+        provider_creator_id: int | None = None
+        provider_is_public = False
+        model_db_id: int | None = None
+        official_provider_check_needed = False
+        official_access_token: str | None = None
+
         try:
-            db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
-            if db_user is None:
-                raise Exception("The user is not found")
+            with session_scope() as db:
+                db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+                if db_user is None:
+                    raise Exception("The user is not found")
 
-            db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
-            if db_model is None:
-                raise Exception("The model is not found")
+                db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+                if db_model is None:
+                    raise Exception("The model is not found")
 
-            db_model_provider = crud.model.get_ai_model_provider_by_id(
-                db=db,
-                provider_id=db_model.provider_id,
-            )
-            if db_model_provider is None:
-                raise Exception("The Model provider of the model is not found, please contact the administrator")
-            
-            
-            # ---------- Official model provider check ----------
-            if db_user.role != UserRole.ADMIN and db_user.role != UserRole.ROOT and db_model_provider.uuid == OfficialModelProvider.Revornix.meta.id:
-                # 生成用户 token
-                access_token, _ = create_token(user=db_user)
-
-                deployed_by_official = check_deployed_by_official_in_fuc()
-                plan_start_time = await get_user_plan_start_time_in_func(
-                    authorization=f"Bearer {access_token}",
+                db_model_provider = crud.model.get_ai_model_provider_by_id(
+                    db=db,
+                    provider_id=db_model.provider_id,
                 )
-                
-                ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED.value
+                if db_model_provider is None:
+                    raise Exception("The Model provider of the model is not found, please contact the administrator")
 
+                model_name = db_model.name
+                provider_base_url = db_model_provider.base_url
+                provider_api_key = db_model_provider.api_key
+                provider_creator_id = db_model_provider.creator_id
+                provider_is_public = bool(db_model_provider.is_public)
+                model_db_id = db_model.id
+
+                if (
+                    db_user.role != UserRole.ADMIN
+                    and db_user.role != UserRole.ROOT
+                    and db_model_provider.uuid == OfficialModelProvider.Revornix.meta.id
+                ):
+                    official_provider_check_needed = True
+                    official_access_token, _ = create_token(user=db_user)
+
+                if provider_creator_id != user_id:
+                    if not provider_is_public:
+                        raise Exception("The model provider for the model is not public, you are forbidden to use it")
+                    db_user_model_provider = crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
+                        db=db,
+                        user_id=user_id,
+                        ai_model_provider_id=db_model_provider.id,
+                        filter_role=UserModelProviderRole.FORKER
+                    )
+                    if db_user_model_provider is None:
+                        raise Exception("The user is not the forker of the model provider")
+        except Exception as e:
+            exception_logger.error(f'''Error occurred while creating AI model proxy: {e}''')
+            raise
+
+        deployed_by_official = check_deployed_by_official_in_fuc()
+        if deployed_by_official and official_provider_check_needed:
+            if official_access_token is None or model_db_id is None:
+                raise Exception("Official model provider metadata is missing")
+            authorization = f"Bearer {official_access_token}"
+            plan_start_time = await get_user_plan_start_time_in_func(
+                authorization=authorization,
+            )
+            with session_scope() as db:
                 token_total = get_monthly_model_used_points(
                     db=db,
                     user_id=user_id,
-                    model_id=db_model.id,
+                    model_id=model_db_id,
                     cycle_anchor_at=plan_start_time,
                 )
-                if token_total > 1_000_000:
-                    ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_MORE.value
-                if token_total > 10_000_000:
-                    ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_NONE.value
-                
-                # 权限校验（async）
-                auth_status = await plan_ability_checked_in_func(
-                    ability=ability,
-                    authorization=f"Bearer {access_token}",
+            ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED.value
+            if token_total > 1_000_000:
+                ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_MORE.value
+            if token_total > 10_000_000:
+                ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_NONE.value
+
+            auth_status = await plan_ability_checked_in_func(
+                ability=ability,
+                authorization=authorization,
+            )
+            if not auth_status:
+                raise PermissionError(
+                    "User does not have permission to use official LLM model"
                 )
 
-                if deployed_by_official and not auth_status:
-                    raise PermissionError(
-                        "User does not have permission to use official LLM model"
-                    )
-            
-            if db_model_provider.creator_id == user_id:
-                # 如果用户本人就是创建者 那么直接返回即可
-                return cls(
-                    api_key=db_model_provider.api_key,
-                    base_url=db_model_provider.base_url,
-                    model_name=db_model.name,
-                )
-            if db_model_provider.is_public:
-                db_user_model_provider = crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
-                    db=db,
-                    user_id=user_id,
-                    ai_model_provider_id=db_model_provider.id,
-                    filter_role=UserModelProviderRole.FORKER
-                )
-                if db_user_model_provider is None:
-                    raise Exception("The user is not the forker of the model provider")
-                else:
-                    # 如果该模型供应商是公开的 且用户是forker 那么直接返回即可
-                    return cls(
-                        api_key=db_model_provider.api_key,
-                        base_url=db_model_provider.base_url,
-                        model_name=db_model.name,
-                    )
-            else:
-                raise Exception("The model provider for the model is not public, you are forbidden to use it")
-        except Exception as e:
-            exception_logger.error(f'''Error occurred while creating AI model proxy: {e}''')
-            raise e
-        finally:
-            db.close()
+        if model_name is None or provider_base_url is None:
+            raise Exception("The model provider metadata is incomplete")
+
+        return cls(
+            api_key=provider_api_key,
+            base_url=provider_base_url,
+            model_name=model_name,
+        )
 
     # =========================
     # Public API
