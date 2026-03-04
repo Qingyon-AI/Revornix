@@ -79,7 +79,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 									<div
 										className='flex flex-row items-center'
 										onClick={() => router.push(`/user/detail/${note.user.id}`)}>
-										<Avatar className='mr-2'>
+										<Avatar className='mr-2 size-5'>
 											<AvatarImage
 												src={replacePath(note.user.avatar, note.user.id)}
 												alt='avatar'
