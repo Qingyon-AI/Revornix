@@ -92,7 +92,7 @@ const DocumentCommentForm = ({
 								/>
 								<FormMessage />
 								<div className='w-full flex justify-between items-center mb-3'>
-									<p className='text-muted-foreground text-sm'>
+									<p className='text-muted-foreground text-xs'>
 										{t('document_note_content_no_less_than')}
 									</p>
 									<Button size={'sm'} disabled={noteSubmitting}>
