@@ -1,6 +1,6 @@
 from .embedding.qwen_cloud import CloudQwen3EmbeddingEngine
 from .embedding.qwen_local import LocalQwen3EmbeddingEngine
-from .image.banana import BananaImageGenerateEngine
+from .image_generate.banana import BananaImageGenerateEngine
 from .markdown.mineru import MineruEngine
 from .markdown.mineru_api import MineruApiEngine
 from .markdown.markitdown import MarkitdownEngine

@@ -18,7 +18,7 @@ from common.dependencies import check_deployed_by_official_in_fuc
 deployed_by_official = check_deployed_by_official_in_fuc()
 
 # ---------------- Engines ----------------
-from engine.image.banana import BananaImageGenerateEngine
+from engine.image_generate.banana import BananaImageGenerateEngine
 from engine.markdown.jina import JinaEngine
 from engine.markdown.markitdown import MarkitdownEngine
 from engine.markdown.mineru import MineruEngine
