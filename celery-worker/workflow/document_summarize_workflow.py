@@ -136,9 +136,6 @@ async def _mark_summarize_success(
     if document_id is None:
         raise Exception("Document summarize workflow missing document_id")
 
-    if summary is None or title is None or description is None:
-        return state
-
     db = session_scope()
     try:
         ensure_document_active(db=db, document_id=document_id)
@@ -151,11 +148,14 @@ async def _mark_summarize_success(
             document_id=document_id
         )
         if db_summarize_task is not None:
-            db_summarize_task.summary = summary
             db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+            if summary is not None:
+                db_summarize_task.summary = summary
         if db_document is not None:
-            db_document.title = title
-            db_document.description = description
+            if title is not None:
+                db_document.title = title
+            if description is not None:
+                db_document.title = description
         db.commit()
     finally:
         db.close()

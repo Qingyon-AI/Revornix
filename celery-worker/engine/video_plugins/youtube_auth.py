@@ -4,6 +4,7 @@ import base64
 import json
 import os
 import stat
+import sys
 import threading
 import time
 from collections.abc import Mapping
@@ -11,7 +12,6 @@ from pathlib import Path
 from typing import TypedDict
 
 from common.logger import info_logger
-from config.base import BASE_DIR
 
 try:
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -30,6 +30,14 @@ class EncryptedPayload(TypedDict):
     ciphertext: str
 
 
+def _default_credential_root_dir() -> Path:
+    custom_root = os.getenv("REVORNIX_CREDENTIAL_DIR", "").strip()
+    if custom_root:
+        return Path(custom_root).expanduser()
+
+    return Path.home() / ".local" / "state" / "revornix"
+
+
 class YouTubeCookieManager:
     _cookie_text_cache: str | None = None
     _encryption_key_loaded: bool = False
@@ -43,7 +51,8 @@ class YouTubeCookieManager:
         custom_path = os.getenv("YOUTUBE_CREDENTIAL_FILE", "").strip()
         if custom_path:
             return Path(custom_path).expanduser()
-        return BASE_DIR / "temp" / "youtube_auth" / "cookie.json"
+
+        return _default_credential_root_dir() / "youtube_auth" / "cookie.json"
 
     @classmethod
     def _apply_secure_permissions(cls, path: Path, mode: int) -> None:

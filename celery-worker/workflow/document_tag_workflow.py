@@ -21,15 +21,21 @@ async def handle_tag_document(
     db = session_scope()
     try:
         ensure_document_active(db=db, document_id=document_id)
-        tag_engine = LLMDocumentTagEngine(user_id=user_id)
-        tags = await tag_engine.generate_tags(
-            document_id=document_id
-        )
-        if tags is None:
-            return
-        tag_ids = [
-            tag.id for tag in tags
-        ]
+    finally:
+        db.close()
+
+    tag_engine = LLMDocumentTagEngine(user_id=user_id)
+    tags = await tag_engine.generate_tags(
+        document_id=document_id
+    )
+    if tags is None:
+        return
+    tag_ids = [
+        tag.id for tag in tags
+    ]
+
+    db = session_scope()
+    try:
         ensure_document_active(db=db, document_id=document_id)
         crud.document.create_document_labels(
             db=db,

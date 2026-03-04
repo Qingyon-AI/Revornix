@@ -509,15 +509,35 @@ def resolve_entities_with_semantic_dedupe(
                 if same:
                     match = best_candidate
 
+        canonical_id: str
+        context_hash: str
         if match:
-            canonical_id = match.get("id")
-            context_hash = match.get("context_hash") or make_context_hash(sample)
-            if not match.get("context_hash"):
-                match["context_hash"] = context_hash
-            if not match.get("context_sample"):
-                match["context_sample"] = sample
-            if not match.get("context_embedding"):
-                match["context_embedding"] = emb_list
+            raw_canonical_id = match.get("id")
+            if isinstance(raw_canonical_id, str) and raw_canonical_id:
+                canonical_id = raw_canonical_id
+                raw_context_hash = match.get("context_hash")
+                context_hash = (
+                    raw_context_hash
+                    if isinstance(raw_context_hash, str) and raw_context_hash
+                    else make_context_hash(sample)
+                )
+                if not match.get("context_hash"):
+                    match["context_hash"] = context_hash
+                if not match.get("context_sample"):
+                    match["context_sample"] = sample
+                if not match.get("context_embedding"):
+                    match["context_embedding"] = emb_list
+            else:
+                context_hash = make_context_hash(sample)
+                canonical_id = make_entity_id(e.entity_type, e.text, context_hash)
+                existing_entities_index.setdefault(key, []).append(
+                    {
+                        "id": canonical_id,
+                        "context_hash": context_hash,
+                        "context_sample": sample,
+                        "context_embedding": emb_list,
+                    }
+                )
         else:
             context_hash = make_context_hash(sample)
             canonical_id = make_entity_id(e.entity_type, e.text, context_hash)

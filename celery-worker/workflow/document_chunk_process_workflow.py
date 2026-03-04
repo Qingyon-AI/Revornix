@@ -5,6 +5,7 @@ from langgraph.graph import StateGraph, END
 
 from common.ai import reducer_summary, summary_content
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
+from common.embedding_utils import extract_single_embedding_vector
 from common.jwt_utils import create_token
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
@@ -45,6 +46,60 @@ class DocumentChunkProcessState(TypedDict, total=False):
     auto_summary: bool
     model_id: int
     llm_model_name: str
+
+
+def _mark_chunk_related_tasks_failed(
+    *,
+    document_id: int,
+    auto_summary: bool,
+) -> None:
+    db = session_scope()
+    try:
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_embedding_task is not None:
+            db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+
+        if auto_summary:
+            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_summarize_task is not None:
+                db_summarize_task.status = DocumentSummarizeStatus.FAILED
+
+        db_graph_task = crud.task.get_document_graph_task_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_graph_task is not None:
+            db_graph_task.status = DocumentGraphStatus.FAILED
+        db.commit()
+    finally:
+        db.close()
+
+
+def _set_graph_task_status(
+    *,
+    document_id: int,
+    status: DocumentGraphStatus,
+    check_document_active: bool = False,
+) -> None:
+    db = session_scope()
+    try:
+        if check_document_active:
+            ensure_document_active(db=db, document_id=document_id)
+        db_graph_task = crud.task.get_document_graph_task_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_graph_task is not None:
+            db_graph_task.status = status
+            db.commit()
+    finally:
+        db.close()
 
 
 async def _init_chunk_tasks(
@@ -155,77 +210,89 @@ async def _process_document_chunks(
         user_id=user_id
     )
     embedding_engine = get_embedding_engine()
+    entities: list[EntityInfo] = []
+    relations: list[RelationInfo] = []
+    existing_entities_index: dict[tuple[str, str], list[dict]] = {}
+    final_summary_info = None
+
+    # 4) 任务进行
+    try:
+        async for chunk_info in stream_chunk_document(doc_id=document_id):
+            embedding_raw = embedding_engine.embed([chunk_info.text])
+            chunk_info.embedding = extract_single_embedding_vector(embedding_raw)
+            sub_entities, sub_relations = extract_entities_relations(
+                user_id=user_id,
+                llm_client=llm_client,
+                llm_model=llm_model,
+                chunk=chunk_info
+            )
+            if sub_entities:
+                keys = list({(e.entity_type, e.text) for e in sub_entities})
+                missing_keys = [k for k in keys if k not in existing_entities_index]
+                if missing_keys:
+                    existing_entities_index.update(get_entities_by_text_and_type(missing_keys))
+                sub_entities, sub_relations = resolve_entities_with_semantic_dedupe(
+                    entities=sub_entities,
+                    relations=sub_relations,
+                    chunk_text=chunk_info.text,
+                    existing_entities_index=existing_entities_index,
+                    embedding_engine=embedding_engine,
+                    llm_client=llm_client,
+                    llm_model=llm_model,
+                )
+            entities.extend(sub_entities)
+            relations.extend(sub_relations)
+            chunk_info.summary = (await summary_content(
+                user_id=user_id,
+                model_id=model_id,
+                content=chunk_info.text
+            )).summary
+            if auto_summary:
+                final_summary_info = await reducer_summary(
+                    user_id=user_id,
+                    model_id=model_id,
+                    current_summary=final_summary_info.summary if final_summary_info is not None else None,
+                    new_summary_to_append=chunk_info.summary,
+                    new_entities=sub_entities,
+                    new_relations=sub_relations
+                )
+            upsert_milvus(
+                user_id=user_id,
+                chunks_info=[chunk_info]
+            )
+            upsert_chunks_neo4j(
+                chunks_info=[chunk_info]
+            )
+    except Exception as e:
+        exception_logger.error(f"Something is error while embedding document info: {e}")
+        try:
+            _mark_chunk_related_tasks_failed(
+                document_id=document_id,
+                auto_summary=auto_summary
+            )
+        except Exception as status_error:
+            exception_logger.error(f"Failed to update chunk-related task status: {status_error}")
+        raise
 
     db = session_scope()
     try:
-        entities: list[EntityInfo] = []
-        relations: list[RelationInfo] = []
-        existing_entities_index: dict[tuple[str, str], list[dict]] = {}
-        final_summary_info = None
-
-        # 4) 任务进行
-        try:
-            async for chunk_info in stream_chunk_document(doc_id=document_id):
-                embedding = embedding_engine.embed([chunk_info.text])[0]
-                chunk_info.embedding = embedding.tolist()
-                sub_entities, sub_relations = extract_entities_relations(
-                    user_id=user_id,
-                    llm_client=llm_client,
-                    llm_model=llm_model,
-                    chunk=chunk_info
-                )
-                if sub_entities:
-                    keys = list({(e.entity_type, e.text) for e in sub_entities})
-                    missing_keys = [k for k in keys if k not in existing_entities_index]
-                    if missing_keys:
-                        existing_entities_index.update(get_entities_by_text_and_type(missing_keys))
-                    sub_entities, sub_relations = resolve_entities_with_semantic_dedupe(
-                        entities=sub_entities,
-                        relations=sub_relations,
-                        chunk_text=chunk_info.text,
-                        existing_entities_index=existing_entities_index,
-                        embedding_engine=embedding_engine,
-                        llm_client=llm_client,
-                        llm_model=llm_model,
-                    )
-                entities.extend(sub_entities)
-                relations.extend(sub_relations)
-                chunk_info.summary = (await summary_content(
-                    user_id=user_id,
-                    model_id=model_id,
-                    content=chunk_info.text
-                )).summary
-                if auto_summary:
-                    final_summary_info = await reducer_summary(
-                        user_id=user_id,
-                        model_id=model_id,
-                        current_summary=final_summary_info.summary if final_summary_info is not None else None,
-                        new_summary_to_append=chunk_info.summary,
-                        new_entities=sub_entities,
-                        new_relations=sub_relations
-                    )
-                upsert_milvus(
-                    user_id=user_id,
-                    chunks_info=[chunk_info]
-                )
-                upsert_chunks_neo4j(
-                    chunks_info=[chunk_info]
-                )
-            ensure_document_active(db=db, document_id=document_id)
-            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+        ensure_document_active(db=db, document_id=document_id)
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+            db=db,
+            document_id=document_id
+        )
+        if db_embedding_task is not None:
+            db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+        if auto_summary:
+            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
                 db=db,
                 document_id=document_id
             )
-            if db_embedding_task is not None:
-                db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
-            if auto_summary and final_summary_info is not None:
-                db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
-                    db=db,
-                    document_id=document_id
-                )
-                if db_summarize_task is not None:
+            if db_summarize_task is not None:
+                db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+                if final_summary_info is not None:
                     db_summarize_task.summary = final_summary_info.summary
-                    db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+            if final_summary_info is not None:
                 db_document = crud.document.get_document_by_document_id(
                     db=db,
                     document_id=document_id
@@ -233,25 +300,26 @@ async def _process_document_chunks(
                 if db_document is not None:
                     db_document.title = final_summary_info.title
                     db_document.description = final_summary_info.description
-        except Exception as e:
-            exception_logger.error(f"Something is error while embedding document info: {e}")
-            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
-                db=db,
-                document_id=document_id
+        db.commit()
+    except Exception:
+        try:
+            _mark_chunk_related_tasks_failed(
+                document_id=document_id,
+                auto_summary=auto_summary
             )
-            if db_embedding_task is not None:
-                db_embedding_task.status = DocumentEmbeddingStatus.FAILED
-            if auto_summary:
-                db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
-                    db=db,
-                    document_id=document_id
-                )
-                if db_summarize_task is not None:
-                    db_summarize_task.status = DocumentSummarizeStatus.FAILED
-            raise
-        finally:
-            db.commit()
-        # 5) 图谱构建
+        except Exception as status_error:
+            exception_logger.error(f"Failed to update chunk-related task status: {status_error}")
+        raise
+    finally:
+        db.close()
+
+    # 5) 图谱构建
+    deployed_by_official = check_deployed_by_official_in_fuc()
+    access_token: str | None = None
+    doc_info: DocumentInfo | None = None
+    db = session_scope()
+    try:
+        ensure_document_active(db=db, document_id=document_id)
         db_document = crud.document.get_document_by_document_id(
             db=db,
             document_id=document_id
@@ -266,56 +334,61 @@ async def _process_document_chunks(
         if db_user is None:
             raise Exception("The user which you want to process document is not found")
 
-        access_token, _ = create_token(
-            user=db_user
+        if deployed_by_official:
+            access_token, _ = create_token(
+                user=db_user
+            )
+
+        doc_info = DocumentInfo(
+            id=db_document.id,
+            title=db_document.title,
+            description=db_document.description,
+            creator_id=db_document.creator_id,
+            update_time=db_document.update_time,
+            create_time=db_document.create_time
         )
+    finally:
+        db.close()
+
+    auth_status = True
+    if deployed_by_official:
+        if access_token is None:
+            raise Exception("Failed to create access token for graph permission check")
         auth_status = await plan_ability_checked_in_func(
             ability=Ability.KNOWLEDGE_GRAPH.value,
             authorization=f"Bearer {access_token}"
         )
-        deployed_by_official = check_deployed_by_official_in_fuc()
+
+    try:
+        if deployed_by_official and not auth_status:
+            raise Exception("User does not have permission to build graph")
+        if doc_info is None:
+            raise Exception("The document info for graph build is missing")
+        upsert_doc_neo4j(
+            docs_info=[doc_info]
+        )
+        upsert_doc_chunk_relations()
+        upsert_entities_neo4j(entities)
+        upsert_relations_neo4j(relations)
+        upsert_chunk_entity_relations(entities)
+        create_communities_from_chunks()
+        create_community_nodes_and_relationships_with_size()
+        annotate_node_degrees()
+        _set_graph_task_status(
+            document_id=document_id,
+            status=DocumentGraphStatus.SUCCESS,
+            check_document_active=True,
+        )
+    except Exception as e:
+        exception_logger.error(f"Something is error while graphing document info: {e}")
         try:
-            if deployed_by_official and not auth_status:
-                raise Exception("User does not have permission to build graph")
-            ensure_document_active(db=db, document_id=document_id)
-            upsert_doc_neo4j(
-                docs_info=[
-                    DocumentInfo(
-                        id=db_document.id,
-                        title=db_document.title,
-                        description=db_document.description,
-                        creator_id=db_document.creator_id,
-                        update_time=db_document.update_time,
-                        create_time=db_document.create_time
-                    )
-                ]
+            _set_graph_task_status(
+                document_id=document_id,
+                status=DocumentGraphStatus.FAILED
             )
-            upsert_doc_chunk_relations()
-            upsert_entities_neo4j(entities)
-            upsert_relations_neo4j(relations)
-            upsert_chunk_entity_relations(entities)
-            create_communities_from_chunks()
-            create_community_nodes_and_relationships_with_size()
-            annotate_node_degrees()
-            db_graph_task = crud.task.get_document_graph_task_by_document_id(
-                db=db,
-                document_id=document_id
-            )
-            if db_graph_task is not None:
-                db_graph_task.status = DocumentGraphStatus.SUCCESS.value
-        except Exception as e:
-            exception_logger.error(f"Something is error while graphing document info: {e}")
-            db_graph_task = crud.task.get_document_graph_task_by_document_id(
-                db=db,
-                document_id=document_id
-            )
-            if db_graph_task is not None:
-                db_graph_task.status = DocumentGraphStatus.FAILED.value
-            raise
-        finally:
-            db.commit()
-    finally:
-        db.close()
+        except Exception as status_error:
+            exception_logger.error(f"Failed to update graph task status: {status_error}")
+        raise
 
     return state
 

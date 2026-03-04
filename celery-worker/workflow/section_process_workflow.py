@@ -1,3 +1,4 @@
+import asyncio
 import re
 import uuid
 from typing import TypedDict
@@ -13,8 +14,12 @@ from data.sql.base import session_scope
 from enums.section import SectionDocumentIntegration, SectionProcessStatus
 from enums.document import DocumentAudioTranscribeStatus, DocumentCategory, DocumentMdConvertStatus
 from base_implement.image_generate_engine_base import ImageGenerateEngineBase
-from schemas.section import GeneratedImage
-from common.markdown_helpers import get_markdown_content_by_document_id
+from schemas.section import GeneratedImage, ImagePlan
+from common.markdown_helpers import (
+    get_markdown_content_by_document_id,
+    get_markdown_content_by_section_id,
+)
+from protocol.remote_file_service import RemoteFileServiceProtocol
 from workflow.section_podcast_workflow import run_section_podcast_workflow
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
@@ -47,6 +52,9 @@ EDGE_QUERY = """
     MATCH (e1)-[r]->(e2)
     RETURN DISTINCT e1.id AS src_id, e2.id AS tgt_id, type(r) AS relation_type
 """
+
+DOCUMENT_MARKDOWN_FETCH_CONCURRENCY = 6
+IMAGE_GENERATE_CONCURRENCY = 2
 
 def _get_document_ready_state(
     *,
@@ -113,10 +121,61 @@ def apply_generated_images(
             exception_logger.warning(f"[SectionImage] missing image for id={image_id}")
             return match.group(0)
 
-        return f"\\n\\n{image_md}\\n\\n"
+        return f"\n\n{image_md}\n\n"
 
     pattern = re.compile(r"\[image-id:\s*([^\]]+)\]")
     return pattern.sub(repl, markdown_with_markers)
+
+
+async def _fetch_document_markdown(
+    *,
+    section_id: int,
+    user_id: int,
+    document_id: int,
+    remote_file_service: RemoteFileServiceProtocol,
+    semaphore: asyncio.Semaphore,
+) -> tuple[int, str | None]:
+    async with semaphore:
+        try:
+            markdown_content = await get_markdown_content_by_document_id(
+                document_id=document_id,
+                user_id=user_id,
+                remote_file_service=remote_file_service,
+            )
+            return document_id, markdown_content
+        except Exception as e:
+            exception_logger.error(
+                f"Section {section_id} failed to collect document {document_id}: {e}"
+            )
+            return document_id, None
+
+
+async def _generate_section_image(
+    *,
+    section_id: int,
+    engine: ImageGenerateEngineBase,
+    image_plan: ImagePlan,
+    semaphore: asyncio.Semaphore,
+) -> GeneratedImage | None:
+    async with semaphore:
+        try:
+            generated_image = await asyncio.to_thread(
+                engine.generate_image,
+                image_plan.prompt,
+            )
+        except Exception as image_error:
+            exception_logger.error(
+                f"[SectionImage] generate image failed: section={section_id}, "
+                f"image_id={image_plan.id}, error={image_error}"
+            )
+            return None
+        if generated_image is None:
+            return None
+        return GeneratedImage(
+            id=image_plan.id,
+            prompt=image_plan.prompt,
+            image=generated_image,
+        )
 
 
 async def _load_context(
@@ -231,18 +290,46 @@ async def _build_section_content(
 
     markdown_contents: list[str] = []
     ok_document_ids: list[int] = []
+    remote_file_service = await FileSystemProxy.create(
+        user_id=user_id
+    )
 
-    for document_id in target_document_ids:
+    current_markdown_content = None
+    if section_md_file_name is not None:
         try:
-            markdown_content = await get_markdown_content_by_document_id(
-                document_id=document_id,
-                user_id=user_id
+            current_markdown_content = await get_markdown_content_by_section_id(
+                section_id=section_id,
+                user_id=user_id,
+                remote_file_service=remote_file_service,
             )
         except Exception as e:
-            exception_logger.error(
-                f"Section {section_id} failed to collect document {document_id}: {e}"
+            exception_logger.warning(
+                f"Section {section_id} failed to load previous markdown context: {e}"
             )
-            with session_scope() as db:
+
+    fetch_semaphore = asyncio.Semaphore(DOCUMENT_MARKDOWN_FETCH_CONCURRENCY)
+    fetch_tasks = [
+        _fetch_document_markdown(
+            section_id=section_id,
+            user_id=user_id,
+            document_id=document_id,
+            remote_file_service=remote_file_service,
+            semaphore=fetch_semaphore,
+        )
+        for document_id in target_document_ids
+    ]
+    fetch_results = await asyncio.gather(*fetch_tasks)
+    failed_document_ids: list[int] = []
+    for document_id, markdown_content in fetch_results:
+        if markdown_content is None:
+            failed_document_ids.append(document_id)
+            continue
+        markdown_contents.append(markdown_content)
+        ok_document_ids.append(document_id)
+
+    if failed_document_ids:
+        with session_scope() as db:
+            for document_id in failed_document_ids:
                 try:
                     crud.section.update_section_document_by_section_id_and_document_id(
                         db=db,
@@ -250,17 +337,22 @@ async def _build_section_content(
                         document_id=document_id,
                         status=SectionDocumentIntegration.FAILED
                     )
-                    db.commit()
                 except Exception as update_error:
                     exception_logger.error(
                         f"Failed to mark section document failed: section={section_id}, "
                         f"document={document_id}, error={update_error}"
                     )
-            continue
-        markdown_contents.append(markdown_content)
-        ok_document_ids.append(document_id)
+            db.commit()
 
     if not markdown_contents:
+        with session_scope() as db:
+            db_section_process_task = crud.task.get_section_process_task_by_section_id(
+                db=db,
+                section_id=section_id
+            )
+            if db_section_process_task is not None:
+                db_section_process_task.status = SectionProcessStatus.FAILED
+            db.commit()
         state["skip_processing"] = True
         return state
 
@@ -298,22 +390,14 @@ async def _build_section_content(
     content = await make_section_markdown(
         user_id=user_id,
         model_id=model_id,
-        current_markdown_content=section_md_file_name,
+        current_markdown_content=current_markdown_content,
         new_markdown_contents_to_append="\n".join(markdown_contents),
         entities=entities,
         relations=relations
     )
 
     if state.get("auto_illustration") and engine_id is not None:
-        with session_scope() as db:
-            db_engine = crud.engine.get_engine_by_engine_id(
-                db=db,
-                engine_id=engine_id
-            )
-            if db_engine is None:
-                raise Exception("There is something wrong with the user's default image generate engine")
-
-        engine = await EngineProxy.create(
+        engine = await EngineProxy.create_image_generate_engine(
             user_id=user_id,
             engine_id=engine_id
         )
@@ -324,25 +408,24 @@ async def _build_section_content(
             relations=relations,
         )
         if images_plan.plans:
-            generated_images = []
-            for plan in images_plan.plans:
-                generated_image = engine.generate_image(
-                    text=plan.prompt,
+            image_semaphore = asyncio.Semaphore(IMAGE_GENERATE_CONCURRENCY)
+            generated_images = [
+                image
+                for image in await asyncio.gather(
+                    *[
+                        _generate_section_image(
+                            section_id=section_id,
+                            engine=engine,
+                            image_plan=plan,
+                            semaphore=image_semaphore,
+                        )
+                        for plan in images_plan.plans
+                    ]
                 )
-                if generated_image is None:
-                    continue
-                generated_images.append(
-                    GeneratedImage(
-                        id=plan.id,
-                        prompt=plan.prompt,
-                        image=generated_image
-                    )
-                )
+                if image is not None
+            ]
             content = apply_generated_images(images_plan.markdown_with_markers, generated_images)
 
-    remote_file_service = await FileSystemProxy.create(
-        user_id=user_id
-    )
     md_file_name = f"markdown/{uuid.uuid4().hex}.md"
     await remote_file_service.upload_raw_content_to_path(
         file_path=md_file_name,
@@ -366,14 +449,14 @@ async def _build_section_content(
         if db_section_process_task is not None:
             db_section_process_task.status = SectionProcessStatus.SUCCESS
 
-        if target_document_ids:
-            target_document_id_set = set(target_document_ids)
+        if ok_document_ids:
+            ok_document_id_set = set(ok_document_ids)
             db_section_documents = crud.section.get_section_documents_by_section_id(
                 db=db,
                 section_id=section_id
             )
             for db_section_document in db_section_documents:
-                if db_section_document.document_id in target_document_id_set:
+                if db_section_document.document_id in ok_document_id_set:
                     db_section_document.status = SectionDocumentIntegration.SUCCESS
 
         db.commit()

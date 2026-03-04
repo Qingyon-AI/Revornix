@@ -80,20 +80,9 @@ async def _transcribe_document_audio(
     if document_id is None or user_id is None or engine_id is None:
         raise Exception("Document transcribe workflow missing context")
 
+    audio_file_name = None
     db = session_scope()
     try:
-        db_engine = crud.engine.get_engine_by_engine_id(
-            db=db,
-            engine_id=engine_id
-        )
-        if db_engine is None:
-            raise Exception("There are something wrong with the user's audio transcribe engine")
-
-        engine = await EngineProxy.create(
-            user_id=user_id,
-            engine_id=engine_id
-        )
-
         ensure_document_active(db=db, document_id=document_id)
         db_audio_document = crud.document.get_audio_document_by_document_id(
             db=db,
@@ -101,10 +90,23 @@ async def _transcribe_document_audio(
         )
         if db_audio_document is None:
             raise Exception("The document you want to process do not have a the audio info")
+        audio_file_name = db_audio_document.audio_file_name
+    finally:
+        db.close()
 
-        text = await engine.transcribe_audio(
-            audio_file_name=db_audio_document.audio_file_name
-        )
+    if audio_file_name is None:
+        raise Exception("The audio file name is missing")
+
+    engine = await EngineProxy.create_stt_engine(
+        user_id=user_id,
+        engine_id=engine_id
+    )
+    text = await engine.transcribe_audio(
+        audio_file_name=audio_file_name
+    )
+
+    db = session_scope()
+    try:
         ensure_document_active(db=db, document_id=document_id)
         db_transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
             db=db,

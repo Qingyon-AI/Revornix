@@ -1,4 +1,4 @@
-from typing import Any, TypedDict
+from typing import TypedDict
 
 import crud
 from langgraph.graph import StateGraph, END
@@ -46,6 +46,10 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
     if document_id is None or user_id is None:
         raise Exception("Document graph workflow missing document_id or user_id")
 
+    model_id: int | None = None
+    access_token: str | None = None
+    deployed_by_official = check_deployed_by_official_in_fuc()
+
     db = session_scope()
     try:
         db_document = crud.document.get_document_by_document_id(
@@ -65,18 +69,27 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
             raise Exception("The user which you want to summarize document has not set default user file system")
         if db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to summarize document has not set default document reader model")
+        if deployed_by_official:
+            access_token, _ = create_token(
+                user=db_user
+            )
+        model_id = db_user.default_document_reader_model_id
+    finally:
+        db.close()
 
-        access_token, _ = create_token(
-            user=db_user
-        )
+    if deployed_by_official:
+        if access_token is None:
+            raise Exception("Failed to create access token for graph permission check")
         auth_status = await plan_ability_checked_in_func(
             ability=Ability.KNOWLEDGE_GRAPH.value,
             authorization=f'Bearer {access_token}'
         )
-        deployed_by_official = check_deployed_by_official_in_fuc()
-        if deployed_by_official and not auth_status:
+        if not auth_status:
             raise Exception("The user has not access to the knowledge graph ability")
 
+    db = session_scope()
+    try:
+        ensure_document_active(db=db, document_id=document_id)
         db_graph_task = crud.task.get_document_graph_task_by_document_id(
             db=db,
             document_id=document_id
@@ -90,15 +103,18 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
         if db_graph_task.status != DocumentGraphStatus.BUILDING:
             db_graph_task.status = DocumentGraphStatus.BUILDING
         db.commit()
-
-        return {
-            **state,
-            "document_id": document_id,
-            "user_id": user_id,
-            "model_id": db_user.default_document_reader_model_id,
-        }
     finally:
         db.close()
+
+    if model_id is None:
+        raise Exception("The user which you want to summarize document has not set default document reader model")
+
+    return {
+        **state,
+        "document_id": document_id,
+        "user_id": user_id,
+        "model_id": model_id,
+    }
 
 
 async def _prepare_context(state: DocumentGraphState) -> DocumentGraphState:
