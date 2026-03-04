@@ -1,3 +1,4 @@
+import asyncio
 from typing import TypedDict
 
 from langgraph.graph import StateGraph, END
@@ -15,6 +16,74 @@ class NotificationEventState(TypedDict, total=False):
     params: dict | None
 
 
+class NotificationDispatchPayload(TypedDict, total=False):
+    notification_source_id: int
+    notification_target_id: int
+    template_id: int | None
+    title: str | None
+    content: str | None
+    cover: str | None
+    link: str | None
+
+
+NOTIFICATION_DISPATCH_CONCURRENCY = 5
+
+
+async def _dispatch_notification(
+    *,
+    user_id: int,
+    trigger_event_uuid: str,
+    payload: NotificationDispatchPayload,
+    params: dict | None,
+    semaphore: asyncio.Semaphore,
+) -> None:
+    source_id = payload.get("notification_source_id")
+    target_id = payload.get("notification_target_id")
+    if source_id is None or target_id is None:
+        return
+
+    async with semaphore:
+        try:
+            notification_tool = await asyncio.to_thread(
+                NotificationProxy.create_notification_tool,
+                user_id=user_id,
+                notification_source_id=source_id,
+                notification_target_id=target_id,
+            )
+
+            title = payload.get("title")
+            content = payload.get("content")
+            cover = payload.get("cover")
+            link = payload.get("link")
+
+            template_id = payload.get("template_id")
+            if template_id is not None:
+                generate_res = await NotificationProxy.create_message_using_template(
+                    template_id=template_id,
+                    params=params,
+                )
+                title = generate_res.title
+                content = generate_res.content
+                cover = generate_res.cover
+                link = generate_res.link
+
+            if title is None:
+                raise Exception("Notification title is empty")
+
+            await notification_tool.send_notification(
+                title=title,
+                content=content,
+                cover=cover,
+                link=link
+            )
+        except Exception as dispatch_error:
+            exception_logger.error(
+                f"Failed to dispatch notification: user_id={user_id}, "
+                f"trigger_event_uuid={trigger_event_uuid}, source_id={source_id}, "
+                f"target_id={target_id}, error={dispatch_error}"
+            )
+
+
 async def _trigger_notification_event(
     state: NotificationEventState
 ) -> NotificationEventState:
@@ -23,7 +92,8 @@ async def _trigger_notification_event(
     if user_id is None or trigger_event_uuid is None:
         raise Exception("Notification workflow missing user_id or trigger_event_uuid")
     params = state.get("params")
-    
+
+    payloads: list[NotificationDispatchPayload] = []
     with session_scope() as db:
         db_trigger_event = crud.notification.get_trigger_event_by_uuid(
             db=db,
@@ -39,16 +109,11 @@ async def _trigger_notification_event(
         for db_notification_task in db_notification_tasks:
             if not db_notification_task.enable:
                 continue
-            notification_tool = NotificationProxy.create_notification_tool(
-                user_id=user_id,
-                notification_source_id=db_notification_task.notification_source_id,
-                notification_target_id=db_notification_task.notification_target_id
-            )
-            # TODO
-            title = None
-            content = None
-            cover = None
-            link = None
+
+            payload: NotificationDispatchPayload = {
+                "notification_source_id": db_notification_task.notification_source_id,
+                "notification_target_id": db_notification_task.notification_target_id,
+            }
             if db_notification_task.content_type == NotificationContentType.CUSTOM:
                 db_custom_notification_content = crud.notification.get_notification_task_content_custom_by_notification_task_id(
                     db=db,
@@ -56,10 +121,10 @@ async def _trigger_notification_event(
                 )
                 if db_custom_notification_content is None:
                     continue
-                title = db_custom_notification_content.title
-                content = db_custom_notification_content.content
-                cover = db_custom_notification_content.cover
-                link = db_custom_notification_content.link
+                payload["title"] = db_custom_notification_content.title
+                payload["content"] = db_custom_notification_content.content
+                payload["cover"] = db_custom_notification_content.cover
+                payload["link"] = db_custom_notification_content.link
             elif db_notification_task.content_type == NotificationContentType.TEMPLATE:
                 db_template_notification_content = crud.notification.get_notification_task_content_template_by_notification_task_id(
                     db=db,
@@ -67,21 +132,27 @@ async def _trigger_notification_event(
                 )
                 if db_template_notification_content is None:
                     continue
-                generate_res = await NotificationProxy.create_message_using_template(
-                    template_id=db_template_notification_content.id,
-                )
-                title = generate_res.title
-                content = generate_res.content
-                cover = generate_res.cover
-                link = generate_res.link
-            if title is None:
+                payload["template_id"] = db_template_notification_content.id
+            else:
                 continue
-            await notification_tool.send_notification(
-                title=title,
-                content=content,
-                cover=cover,
-                link=link
+            payloads.append(payload)
+
+    if not payloads:
+        return state
+
+    semaphore = asyncio.Semaphore(NOTIFICATION_DISPATCH_CONCURRENCY)
+    await asyncio.gather(
+        *[
+            _dispatch_notification(
+                user_id=user_id,
+                trigger_event_uuid=trigger_event_uuid,
+                payload=payload,
+                params=params,
+                semaphore=semaphore,
             )
+            for payload in payloads
+        ]
+    )
     return state
 
 

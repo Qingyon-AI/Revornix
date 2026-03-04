@@ -85,46 +85,43 @@ async def _generate_document_podcast(
     if document_id is None or user_id is None or engine_id is None:
         raise Exception("Document podcast workflow missing context")
 
+    remote_file_service = await FileSystemProxy.create(
+        user_id=user_id
+    )
+
     db = session_scope()
     try:
-        remote_file_service = await FileSystemProxy.create(
-            user_id=user_id
-        )
-
         ensure_document_active(db=db, document_id=document_id)
-        markdown_content = await get_markdown_content_by_document_id(
-            document_id=document_id,
-            user_id=user_id
-        )
-
-        db_engine = crud.engine.get_engine_by_engine_id(
-            db=db,
-            engine_id=engine_id
-        )
-        if db_engine is None:
-            raise Exception("There is something wrong with the user's default podcast generate engine")
-
-        engine = await EngineProxy.create(
-            user_id=user_id,
-            engine_id=db_engine.id
-        )
-
-        ensure_document_active(db=db, document_id=document_id)
-        audio_bytes = await engine.synthesize(
-            text=markdown_content
-        )
-        if audio_bytes is None:
-            raise Exception("The podcast of the document is not generated because of the error of the engine")
-        podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
-        ensure_document_active(db=db, document_id=document_id)
-        await remote_file_service.upload_raw_content_to_path(
-            file_path=podcast_file_name,
-            content=audio_bytes,
-            content_type="audio/mpeg"
-        )
-        state["podcast_file_name"] = podcast_file_name
     finally:
         db.close()
+
+    markdown_content = await get_markdown_content_by_document_id(
+        document_id=document_id,
+        user_id=user_id,
+        remote_file_service=remote_file_service,
+    )
+    engine = await EngineProxy.create_tts_engine(
+        user_id=user_id,
+        engine_id=engine_id
+    )
+
+    audio_bytes = await engine.synthesize(
+        text=markdown_content
+    )
+    podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
+
+    db = session_scope()
+    try:
+        ensure_document_active(db=db, document_id=document_id)
+    finally:
+        db.close()
+
+    await remote_file_service.upload_raw_content_to_path(
+        file_path=podcast_file_name,
+        content=audio_bytes,
+        content_type="audio/mpeg"
+    )
+    state["podcast_file_name"] = podcast_file_name
     return state
 
 

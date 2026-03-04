@@ -5,6 +5,7 @@ from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
+from common.embedding_utils import coerce_embedding_vectors
 from data.common import stream_chunk_document
 from data.milvus.insert import upsert_milvus
 from data.sql.base import session_scope
@@ -19,6 +20,19 @@ class DocumentEmbeddingState(TypedDict, total=False):
 
 # 建议从 64 起步，根据吞吐/内存/接口限制调整
 EMBED_BATCH_SIZE = 64
+
+
+def _assign_chunk_embeddings(
+    *,
+    chunks: list,
+    vectors_raw,
+) -> None:
+    vectors = coerce_embedding_vectors(
+        vectors_raw=vectors_raw,
+        expected_count=len(chunks),
+    )
+    for chunk, vector in zip(chunks, vectors):
+        chunk.embedding = vector
 
 
 async def _init_embedding_task(
@@ -88,9 +102,11 @@ async def _embed_document(
 
         # 满一个 embedding batch：一次 embed + 一次 upsert milvus
         if len(embed_chunks) >= EMBED_BATCH_SIZE:
-            vectors = embedding_engine.embed(embed_texts)  # 期望返回 list/ndarray，长度=EMBED_BATCH_SIZE
-            for ci, vec in zip(embed_chunks, vectors):
-                ci.embedding = vec.tolist()
+            vectors = embedding_engine.embed(embed_texts)
+            _assign_chunk_embeddings(
+                chunks=embed_chunks,
+                vectors_raw=vectors,
+            )
 
             upsert_milvus(
                 user_id=user_id,
@@ -103,8 +119,10 @@ async def _embed_document(
     # 处理最后不足一个 batch 的尾巴
     if embed_chunks:
         vectors = embedding_engine.embed(embed_texts)
-        for ci, vec in zip(embed_chunks, vectors):
-            ci.embedding = vec.tolist()
+        _assign_chunk_embeddings(
+            chunks=embed_chunks,
+            vectors_raw=vectors,
+        )
 
         upsert_milvus(
             user_id=user_id,

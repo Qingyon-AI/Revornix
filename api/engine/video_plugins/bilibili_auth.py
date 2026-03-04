@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import Any, TYPE_CHECKING, TypeAlias
 
 from common.logger import info_logger
-from config.base import BASE_DIR
 
 try:
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -37,6 +36,14 @@ except Exception:
     RuntimeCredential = None  # type: ignore[assignment]
     login_v2 = None  # type: ignore[assignment]
     BILIBILI_API_AVAILABLE = False
+
+
+def _default_credential_root_dir() -> Path:
+    custom_root = os.getenv("REVORNIX_CREDENTIAL_DIR", "").strip()
+    if custom_root:
+        return Path(custom_root).expanduser()
+    
+    return Path.home() / ".local" / "state" / "revornix"
 
 
 class BilibiliCredentialManager:
@@ -133,7 +140,8 @@ class BilibiliCredentialManager:
         custom_path = os.getenv("BILIBILI_CREDENTIAL_FILE", "").strip()
         if custom_path:
             return Path(custom_path).expanduser()
-        return BASE_DIR / "temp" / "bilibili_auth" / "credential.json"
+
+        return _default_credential_root_dir() / "bilibili_auth" / "credential.json"
 
     @classmethod
     def _normalize_cookies(cls, cookies: dict) -> dict[str, str]:
