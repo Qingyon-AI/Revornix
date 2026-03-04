@@ -39,6 +39,7 @@ import AudioRecord, { type AudioRecordResult } from './audio-record';
 import { FileService } from '@/lib/file';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { Field } from '../ui/field';
+import { invalidateDocumentListQueries } from '@/lib/document-cache';
 
 const AddAudio = () => {
 	const queryClient = getQueryClient();
@@ -101,6 +102,7 @@ const AddAudio = () => {
 		mutationKey: ['createDocument', 'file'],
 		mutationFn: createDocument,
 		onSuccess: (data) => {
+			void invalidateDocumentListQueries(queryClient, mainUserInfo?.id);
 			toast.success(t('document_create_success'));
 			setSubmitting(false);
 			router.push(`/document/detail/${data.document_id}`);

@@ -32,6 +32,7 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip } from '../ui/tooltip';
 import { TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import CustomMarkdown from '../ui/custom-markdown';
+import { invalidateDocumentListQueries } from '@/lib/document-cache';
 
 const AddQuickNote = () => {
 	const searchParams = useSearchParams();
@@ -88,6 +89,7 @@ const AddQuickNote = () => {
 		mutationKey: ['createDocument', 'quick-note'],
 		mutationFn: createDocument,
 		onSuccess: (data) => {
+			void invalidateDocumentListQueries(queryClient, mainUserInfo?.id);
 			toast.success(t('document_create_success'));
 			router.push(`/document/detail/${data.document_id}`);
 		},

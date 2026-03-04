@@ -37,6 +37,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
+import { invalidateDocumentListQueries } from '@/lib/document-cache';
 
 const AddLink = () => {
 	const queryClient = getQueryClient();
@@ -90,6 +91,7 @@ const AddLink = () => {
 		mutationKey: ['createDocument', 'link'],
 		mutationFn: createDocument,
 		onSuccess: (data) => {
+			void invalidateDocumentListQueries(queryClient, mainUserInfo?.id);
 			toast.success(t('document_create_success'));
 			router.push(`/document/detail/${data.document_id}`);
 		},
