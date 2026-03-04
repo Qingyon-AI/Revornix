@@ -10,6 +10,8 @@ import { useUserContext } from '@/provider/user-provider';
 import { useQuery } from '@tanstack/react-query';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { useTranslations } from 'next-intl';
+import { replacePath } from '@/lib/utils';
+import { getSectionDetail } from '@/service/section';
 
 const CoverUpdate = () => {
 	const t = useTranslations();
@@ -54,6 +56,14 @@ const CoverUpdate = () => {
 		setUploadingStatus('done');
 		form.setValue('cover', fileName);
 	};
+
+	const { data: section } = useQuery({
+		queryKey: ['getSectionDetail', form.watch('section_id')],
+		queryFn: async () => {
+			return getSectionDetail({ section_id: form.watch('section_id') });
+		},
+	});
+
 	return (
 		<FormField
 			name='cover'
@@ -84,10 +94,10 @@ const CoverUpdate = () => {
 							/>
 						</div>
 
-						{field.value && field.value.startsWith('http') && (
+						{field.value && section?.creator && (
 							<img
 								alt='cover'
-								src={field.value}
+								src={replacePath(field.value, section?.creator.id)}
 								className='w-full object-cover rounded'
 							/>
 						)}
