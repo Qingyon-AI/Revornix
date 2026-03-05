@@ -21,7 +21,6 @@ deployed_by_official = check_deployed_by_official_in_fuc()
 from engine.image_generate.banana import BananaImageGenerateEngine
 from engine.markdown.jina import JinaEngine
 from engine.markdown.markitdown import MarkitdownEngine
-from engine.markdown.mineru import MineruEngine
 from engine.markdown.mineru_api import MineruApiEngine
 from engine.tts.openai_audio import OpenAIAudioEngine
 from engine.tts.volc.tts import VolcTTSEngine
@@ -216,7 +215,6 @@ async def seed_database(db: Session):
 
     # -------- EngineProvideds --------
     engine_provideds: list[EngineProtocol] = [
-        MineruEngine(),
         JinaEngine(),
         MarkitdownEngine(),
         MineruApiEngine(),
@@ -319,7 +317,6 @@ async def seed_database(db: Session):
         engines: list[Engine] = [
             Engine.Official_Banana_Image, 
             Engine.Official_Volc_TTS,
-            Engine.Official_MinerU,
             Engine.Official_MinerU_API,
             Engine.Official_Volc_Fast_STT,
             Engine.Official_Volc_Standard_STT

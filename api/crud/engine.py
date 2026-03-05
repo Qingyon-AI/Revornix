@@ -4,9 +4,13 @@ from uuid import uuid4
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session, joinedload
 from common.encrypt import encrypt_engine_config
-from enums.engine_enums import UserEngineRole, EngineCategory
+from enums.engine_enums import UserEngineRole, EngineCategory, EngineProvided
 
 import models
+
+SUPPORTED_ENGINE_PROVIDED_UUIDS = tuple(
+    item.meta.uuid for item in EngineProvided
+)
 
 
 def create_engine_provided(
@@ -166,7 +170,10 @@ def get_all_engines_provided(
     filter_category: EngineCategory | None = None
 ):
     query = db.query(models.engine.EngineProvided)
-    query = query.filter(models.engine.EngineProvided.delete_at.is_(None))
+    query = query.filter(
+        models.engine.EngineProvided.delete_at.is_(None),
+        models.engine.EngineProvided.uuid.in_(SUPPORTED_ENGINE_PROVIDED_UUIDS),
+    )
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.engine.EngineProvided.name.like(f'%{keyword}%'))
     if filter_category is not None:
@@ -184,6 +191,9 @@ def get_all_engines(
         joinedload(models.engine.Engine.engine_provided)
     )
     query = query.filter(models.engine.Engine.delete_at.is_(None))
+    query = query.filter(
+        models.engine.EngineProvided.uuid.in_(SUPPORTED_ENGINE_PROVIDED_UUIDS)
+    )
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.engine.Engine.name.like(f'%{keyword}%'))
     if filter_category is not None:
@@ -205,7 +215,8 @@ def get_usable_engines_for_user(
     query = query.filter(
         models.engine.UserEngine.user_id == user_id,
         models.engine.UserEngine.delete_at.is_(None),
-        models.engine.Engine.delete_at.is_(None)
+        models.engine.Engine.delete_at.is_(None),
+        models.engine.EngineProvided.uuid.in_(SUPPORTED_ENGINE_PROVIDED_UUIDS),
     )
     if keyword:
         query = query.filter(models.engine.Engine.name.ilike(f"%{keyword}%"))
@@ -235,7 +246,11 @@ def search_engines_for_user(
             models.engine.UserEngine.delete_at.is_(None),
         ),
     )
-    query = query.filter(models.engine.Engine.delete_at.is_(None))
+    query = query.join(models.engine.EngineProvided)
+    query = query.filter(
+        models.engine.Engine.delete_at.is_(None),
+        models.engine.EngineProvided.uuid.in_(SUPPORTED_ENGINE_PROVIDED_UUIDS),
+    )
     query = query.filter(
         or_(
             models.engine.Engine.creator_id == user_id,
@@ -272,7 +287,11 @@ def search_next_engine_for_user(
             models.engine.UserEngine.delete_at.is_(None),
         ),
     )
-    query = query.filter(models.engine.Engine.delete_at.is_(None))
+    query = query.join(models.engine.EngineProvided)
+    query = query.filter(
+        models.engine.Engine.delete_at.is_(None),
+        models.engine.EngineProvided.uuid.in_(SUPPORTED_ENGINE_PROVIDED_UUIDS),
+    )
     query = query.filter(
         or_(
             models.engine.Engine.creator_id == user_id,
@@ -303,7 +322,11 @@ def count_all_engines_for_user(
             models.engine.UserEngine.delete_at.is_(None),
         ),
     )
-    query = query.filter(models.engine.Engine.delete_at.is_(None))
+    query = query.join(models.engine.EngineProvided)
+    query = query.filter(
+        models.engine.Engine.delete_at.is_(None),
+        models.engine.EngineProvided.uuid.in_(SUPPORTED_ENGINE_PROVIDED_UUIDS),
+    )
     query = query.filter(
         or_(
             models.engine.Engine.creator_id == user_id,

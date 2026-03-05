@@ -19,11 +19,6 @@ class EngineProvidedMeta(NamedTuple):
 class EngineProvided(Enum):
     """Revornix提供的可选择的引擎的种类
     """
-    MinerU = EngineProvidedMeta(
-        uuid='c59151aa86784d9ab52f74c12c830b1f',
-        name='MinerU',
-        category=EngineCategory.Markdown
-    )
     MinerU_API = EngineProvidedMeta(
         uuid='d90eabd6ce9e42da98ba6168cb189b70',
         name='MinerU_API',
@@ -101,12 +96,6 @@ class Engine(Enum):
         name='Official_Banana_Image',
         description='Official Nana Banana Pro image generation configuration item, only available for subscribed users (limited amount)',
         engine_provided=EngineProvided.Banana_Image
-    )
-    Official_MinerU = EngineMeta(
-        uuid='6cdcc277ce3f47e78b8f29a951773213',
-        name='Official_MinerU',
-        description='Official MinerU Markdown Engine Configuration Item',
-        engine_provided=EngineProvided.MinerU
     )
     Official_MinerU_API = EngineMeta(
         uuid='ced93e31c89944e79fece83dcc95f4df',
