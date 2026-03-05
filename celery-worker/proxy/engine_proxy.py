@@ -9,17 +9,6 @@ from base_implement.stt_engine_base import STTEngineBase
 from base_implement.tts_engine_base import TTSEngineBase
 from data.sql.base import session_scope
 from enums.engine_enums import UserEngineRole
-from engine import (
-    BananaImageGenerateEngine,
-    JinaEngine,
-    MineruEngine,
-    MineruApiEngine,
-    MarkitdownEngine,
-    OpenAIAudioEngine,
-    VolcTTSEngine,
-    VolcSTTStandardEngine,
-    VolcSTTFastEngine
-)
 from common.encrypt import decrypt_engine_config
 from common.dependencies import (
     check_deployed_by_official_in_fuc,
@@ -144,22 +133,31 @@ class EngineProxy:
 
         engine: EngineBase | None = None
         if engine_provided_uuid == EngineProvided.Volc_TTS.meta.uuid:
+            from engine.tts.volc.tts import VolcTTSEngine
             engine = VolcTTSEngine()
         elif engine_provided_uuid == EngineProvided.Banana_Image.meta.uuid:
+            from engine.image_generate.banana import BananaImageGenerateEngine
             engine = BananaImageGenerateEngine()
         elif engine_provided_uuid == EngineProvided.Jina.meta.uuid:
+            from engine.markdown.jina import JinaEngine
             engine = JinaEngine()
         elif engine_provided_uuid == EngineProvided.MarkitDown.meta.uuid:
+            from engine.markdown.markitdown import MarkitdownEngine
             engine = MarkitdownEngine()
         elif engine_provided_uuid == EngineProvided.MinerU.meta.uuid:
+            from engine.markdown.mineru import MineruEngine
             engine = MineruEngine()
         elif engine_provided_uuid == EngineProvided.MinerU_API.meta.uuid:
+            from engine.markdown.mineru_api import MineruApiEngine
             engine = MineruApiEngine()
         elif engine_provided_uuid == EngineProvided.OpenAI_TTS.meta.uuid:
+            from engine.tts.openai_audio import OpenAIAudioEngine
             engine = OpenAIAudioEngine()
         elif engine_provided_uuid == EngineProvided.Volc_STT_Standard.meta.uuid:
+            from engine.stt.volc_standard import VolcSTTStandardEngine
             engine = VolcSTTStandardEngine()
         elif engine_provided_uuid == EngineProvided.Volc_STT_Fast.meta.uuid:
+            from engine.stt.volc_fast import VolcSTTFastEngine
             engine = VolcSTTFastEngine()
         else:
             raise Exception("Unknown engine provided")

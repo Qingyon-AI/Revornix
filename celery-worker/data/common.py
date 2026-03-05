@@ -4,7 +4,6 @@ import hashlib
 import asyncio
 import inspect
 import time
-import torch
 import models
 from typing import cast
 from langfuse.openai import AsyncOpenAI
@@ -23,6 +22,23 @@ from sqlalchemy.orm import Session
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.file_system_proxy import FileSystemProxy
+
+
+def _clear_torch_cache() -> None:
+    try:
+        import torch
+    except Exception:
+        # Torch may be unavailable or broken in some deployments; cache clear is optional.
+        return
+
+    try:
+        if torch.backends.mps.is_available():
+            torch.mps.empty_cache()
+        elif torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except Exception:
+        # Cache clear should never break the chunk pipeline.
+        return
 
 
 async def _safe_close_async_client(client: AsyncOpenAI) -> None:
@@ -229,10 +245,7 @@ async def stream_chunk_document(
                 global_idx += 1
 
             # ✅ 每批后释放 GPU 显存
-            if torch.backends.mps.is_available():
-                torch.mps.empty_cache()
-            elif torch.cuda.is_available():
-                torch.cuda.empty_cache()
+            _clear_torch_cache()
     except Exception as e:
         exception_logger.error(f"Error while streaming chunk document: {e}")
         raise
