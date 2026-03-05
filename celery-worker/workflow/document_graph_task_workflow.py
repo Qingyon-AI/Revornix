@@ -32,6 +32,7 @@ from engine.embedding.factory import get_embedding_engine
 from data.sql.base import session_scope
 from enums.ability import Ability
 from enums.document import DocumentGraphStatus
+from enums.user import UserRole
 from proxy.ai_model_proxy import AIModelProxy
 from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
 
@@ -55,6 +56,7 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
     model_id: int | None = None
     access_token: str | None = None
     deployed_by_official = check_deployed_by_official_in_fuc()
+    is_admin_or_root = False
 
     db = session_scope()
     try:
@@ -71,11 +73,12 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
         )
         if db_user is None:
             raise Exception("The user which you want to summarize document is not found")
+        is_admin_or_root = db_user.role in (UserRole.ADMIN, UserRole.ROOT)
         if db_user.default_user_file_system is None:
             raise Exception("The user which you want to summarize document has not set default user file system")
         if db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to summarize document has not set default document reader model")
-        if deployed_by_official:
+        if deployed_by_official and not is_admin_or_root:
             access_token, _ = create_token(
                 user=db_user
             )
@@ -83,7 +86,7 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
     finally:
         db.close()
 
-    if deployed_by_official:
+    if deployed_by_official and not is_admin_or_root:
         if access_token is None:
             raise Exception("Failed to create access token for graph permission check")
         auth_status = await plan_ability_checked_in_func(

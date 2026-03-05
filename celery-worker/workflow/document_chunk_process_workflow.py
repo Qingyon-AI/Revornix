@@ -45,6 +45,7 @@ from enums.document import (
     DocumentGraphStatus,
     DocumentSummarizeStatus,
 )
+from enums.user import UserRole
 from proxy.ai_model_proxy import AIModelProxy
 from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
 
@@ -570,6 +571,7 @@ async def _process_document_chunks(
     deployed_by_official = check_deployed_by_official_in_fuc()
     access_token: str | None = None
     doc_info: DocumentInfo | None = None
+    is_admin_or_root = False
     with timed_stage(
         workflow_name=WORKFLOW_NAME,
         node_name="process_document_chunks",
@@ -597,7 +599,9 @@ async def _process_document_chunks(
             if db_user is None:
                 raise Exception("The user which you want to process document is not found")
 
-            if deployed_by_official:
+            is_admin_or_root = db_user.role in (UserRole.ADMIN, UserRole.ROOT)
+
+            if deployed_by_official and not is_admin_or_root:
                 access_token, _ = create_token(
                     user=db_user
                 )
@@ -614,7 +618,7 @@ async def _process_document_chunks(
             db.close()
 
     auth_status = True
-    if deployed_by_official:
+    if deployed_by_official and not is_admin_or_root:
         if access_token is None:
             raise Exception("Failed to create access token for graph permission check")
         with timed_stage(
@@ -632,7 +636,7 @@ async def _process_document_chunks(
             )
 
     try:
-        if deployed_by_official and not auth_status:
+        if deployed_by_official and not is_admin_or_root and not auth_status:
             raise Exception("User does not have permission to build graph")
         if doc_info is None:
             raise Exception("The document info for graph build is missing")

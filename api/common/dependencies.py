@@ -17,6 +17,7 @@ from urllib.parse import urlparse
 from fastapi import Request, HTTPException, status, Depends, Header
 from config.langfuse import LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
 from common.logger import exception_logger
+from enums.user import UserRole
 
 if OAUTH_SECRET_KEY is None:
     raise Exception("OAUTH_SECRET_KEY is not set")
@@ -78,6 +79,39 @@ def decode_jwt_token(
     secret_key: str = OAUTH_SECRET_KEY
 ):
     return jwt.decode(token, secret_key, algorithms=["HS256"])
+
+
+def _is_admin_or_root_from_authorization(
+    authorization: str | None,
+) -> bool:
+    if not authorization:
+        return False
+
+    token = authorization
+    if authorization.startswith("Bearer "):
+        token = authorization.replace("Bearer ", "", 1)
+
+    try:
+        payload = decode_jwt_token(token=token)
+        user_uuid = payload.get("sub")
+        if not user_uuid:
+            return False
+    except Exception:
+        return False
+
+    db = session_scope()
+    try:
+        db_user = crud.user.get_user_by_uuid(
+            db=db,
+            uuid=user_uuid,
+        )
+        if db_user is None:
+            return False
+        return db_user.role in (UserRole.ADMIN, UserRole.ROOT)
+    except Exception:
+        return False
+    finally:
+        db.close()
 
 def get_cache(request: Request) -> Redis:
     return request.app.state.redis
@@ -195,6 +229,9 @@ async def plan_ability_checked_in_func(
     ability: str,
     authorization: str
 ):
+    if _is_admin_or_root_from_authorization(authorization):
+        return True
+
     headers = { }
     if authorization is not None:
         headers.update({
@@ -295,6 +332,8 @@ def plan_ability_checked(
     ):
         # 如果不是官方的部署 那么就直接返回True表示该能力可用
         if not deployed_by_official:
+            return True
+        if _is_admin_or_root_from_authorization(authorization):
             return True
 
         headers = { }
