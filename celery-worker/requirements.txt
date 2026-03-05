@@ -20,7 +20,7 @@ opencv-python-headless==4.13.0.92
 pyJWT==2.10.1
 markitdown==0.1.4
 boto3==1.42.49
-psycopg2-binary==2.9.11
+psycopg==3.3.3
 playwright==1.58.0
 rapid_table==3.0.1
 ftfy==6.3.1
