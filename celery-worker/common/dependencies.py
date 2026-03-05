@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
+import crud
 import httpx
 from jose import jwt
 from data.sql.base import session_scope
@@ -9,6 +10,7 @@ from config.base import OFFICIAL, UNION_PAY_URL_PREFIX
 from datetime import datetime, timezone
 from config.langfuse import LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
 from common.logger import exception_logger
+from enums.user import UserRole
 
 if OAUTH_SECRET_KEY is None:
     raise Exception("OAUTH_SECRET_KEY is not set")
@@ -42,10 +44,46 @@ def decode_jwt_token(
 ):
     return jwt.decode(token, secret_key, algorithms=["HS256"])
 
+
+def _is_admin_or_root_from_authorization(
+    authorization: str | None,
+) -> bool:
+    if not authorization:
+        return False
+
+    token = authorization
+    if authorization.startswith("Bearer "):
+        token = authorization.replace("Bearer ", "", 1)
+
+    try:
+        payload = decode_jwt_token(token=token)
+        user_uuid = payload.get("sub")
+        if not user_uuid:
+            return False
+    except Exception:
+        return False
+
+    db = session_scope()
+    try:
+        db_user = crud.user.get_user_by_uuid(
+            db=db,
+            uuid=user_uuid,
+        )
+        if db_user is None:
+            return False
+        return db_user.role in (UserRole.ADMIN, UserRole.ROOT)
+    except Exception:
+        return False
+    finally:
+        db.close()
+
 async def plan_ability_checked_in_func(
     ability: str,
     authorization: str
 ):
+    if _is_admin_or_root_from_authorization(authorization):
+        return True
+
     headers = { }
     if authorization is not None:
         headers.update({
