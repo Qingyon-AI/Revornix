@@ -144,9 +144,6 @@ class EngineProxy:
         elif engine_provided_uuid == EngineProvided.MarkitDown.meta.uuid:
             from engine.markdown.markitdown import MarkitdownEngine
             engine = MarkitdownEngine()
-        elif engine_provided_uuid == EngineProvided.MinerU.meta.uuid:
-            from engine.markdown.mineru import MineruEngine
-            engine = MineruEngine()
         elif engine_provided_uuid == EngineProvided.MinerU_API.meta.uuid:
             from engine.markdown.mineru_api import MineruApiEngine
             engine = MineruApiEngine()

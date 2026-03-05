@@ -20,10 +20,8 @@ tiktoken==0.12.0
 apscheduler==3.11.2
 pyJWT==2.10.1
 python-jose==3.5.0
-opencv-python-headless==4.13.0.92
 playwright==1.58.0
 markitdown==0.1.4
-mineru==2.7.6
 boto3==1.42.49
 psycopg==3.3.3
 markdown==3.10.2
@@ -46,5 +44,3 @@ hf_transfer==0.1.9
 langfuse==3.14.1
 sentry_sdk==2.52.0
 langgraph==1.0.8
-doclayout_yolo==0.0.4
-ultralytics==8.4.14
