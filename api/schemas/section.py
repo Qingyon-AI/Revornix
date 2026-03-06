@@ -246,7 +246,6 @@ class SectionUpdateRequest(BaseModel):
     title: str | None = None
     description: str | None = None
     cover: str | None = None
-    documents: list[int] | None = None
     labels: list[int] | None = None
     auto_podcast: bool | None = None
     auto_illustration: bool | None = None

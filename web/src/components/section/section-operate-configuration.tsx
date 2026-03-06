@@ -114,7 +114,7 @@ const SectionOperateConfiguration = ({
 			labels: section.labels?.map((label) => label.id) || [],
 			auto_podcast: section.auto_podcast,
 			auto_illustration: section.auto_illustration,
-			process_task_trigger_type: section.process_task_trigger_type || undefined,
+			process_task_trigger_type: section.process_task_trigger_type ?? undefined,
 			process_task_trigger_scheduler:
 				section.process_task_trigger_scheduler || '',
 		};

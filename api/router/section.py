@@ -1,3 +1,6 @@
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
 from apscheduler.triggers.cron import CronTrigger
 from celery import chain
 from fastapi import APIRouter, Depends
@@ -13,7 +16,12 @@ from common.celery.app import (
     start_trigger_user_notification_event,
     update_section_process_status,
 )
-from common.dependencies import get_current_user, get_db
+from common.dependencies import get_current_user, get_db, get_request_timezone
+from common.timezone import (
+    decode_cron_expr_with_timezone,
+    encode_cron_expr_with_timezone,
+    normalize_timezone_name,
+)
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import (
     SectionPodcastStatus,
@@ -40,6 +48,39 @@ section_router.include_router(section_user_query_router)
 section_router.include_router(section_search_query_router)
 section_router.include_router(section_detail_query_router)
 section_router.include_router(section_subscription_manage_router)
+
+
+def _section_process_job_id(section_id: int) -> str:
+    return f"section-process-{section_id!s}"
+
+
+def _remove_section_process_schedule(section_id: int) -> None:
+    job_id = _section_process_job_id(section_id)
+    job = scheduler.get_job(job_id)
+    if job is not None:
+        scheduler.remove_job(job_id)
+
+
+def _schedule_section_process(
+    *,
+    db_section: models.section.Section,
+    cron_expr: str,
+    timezone_name: str,
+) -> None:
+    scheduler.add_job(
+        func=start_process_section,
+        kwargs={
+            "section_id": db_section.id,
+            "user_id": db_section.creator_id,
+            "auto_podcast": db_section.auto_podcast
+        },
+        trigger=CronTrigger.from_crontab(
+            cron_expr,
+            timezone=ZoneInfo(normalize_timezone_name(timezone_name)),
+        ),
+        id=_section_process_job_id(db_section.id),
+    )
+
 
 @section_router.post('/podcast/generate', response_model=schemas.common.NormalResponse)
 async def generate_podcast(
@@ -93,7 +134,8 @@ async def generate_podcast(
 def create_section(
     section_create_request: schemas.section.SectionCreateRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
+    request_timezone: str = Depends(get_request_timezone),
 ):
     db_section = crud.section.create_section(
         db=db,
@@ -134,26 +176,146 @@ def create_section(
         )
     db_section_process_task.trigger_type = section_create_request.process_task_trigger_type
 
+    if (
+        section_create_request.process_task_trigger_type == SectionProcessTriggerType.SCHEDULER
+        and section_create_request.process_task_trigger_scheduler is None
+    ):
+        raise schemas.error.CustomException("trigger scheduler cron cannot be empty", code=400)
+
     if section_create_request.process_task_trigger_scheduler is not None:
+        stored_cron_expr = encode_cron_expr_with_timezone(
+            cron_expr=section_create_request.process_task_trigger_scheduler,
+            timezone_name=request_timezone,
+        )
         crud.task.create_section_process_task_trigger_scheduler(
             db=db,
             section_process_task_id=db_section_process_task.id,
-            cron_expr=section_create_request.process_task_trigger_scheduler
+            cron_expr=stored_cron_expr
         )
         db.commit()
         if db_section_process_task.trigger_type == SectionProcessTriggerType.SCHEDULER:
-            scheduler.add_job(
-                func=start_process_section,
-                kwargs={
-                    "section_id": db_section.id,
-                    "user_id": db_section.creator_id,
-                    "auto_podcast": db_section.auto_podcast
-                },
-                trigger=CronTrigger.from_crontab(section_create_request.process_task_trigger_scheduler),
-                id=f"section-process-{db_section.id!s}"
+            _remove_section_process_schedule(db_section.id)
+            _schedule_section_process(
+                db_section=db_section,
+                cron_expr=section_create_request.process_task_trigger_scheduler,
+                timezone_name=request_timezone,
             )
     db.commit()
     return schemas.section.SectionCreateResponse(id=db_section.id)
+
+@section_router.post("/update", response_model=schemas.common.NormalResponse)
+def update_section(
+    section_update_request: schemas.section.SectionUpdateRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user),
+    request_timezone: str = Depends(get_request_timezone),
+):
+    now = datetime.now(timezone.utc)
+
+    db_section = crud.section.get_section_by_section_id(
+        db=db,
+        section_id=section_update_request.section_id
+    )
+    if db_section is None:
+        raise schemas.error.CustomException("The section is not exist", code=404)
+
+    section_user = crud.section.get_section_user_by_section_id_and_user_id(
+        db=db,
+        user_id=user.id,
+        section_id=section_update_request.section_id
+    )
+    if section_user is None or section_user.authority not in [UserSectionAuthority.READ_AND_WRITE, UserSectionAuthority.FULL_ACCESS]:
+        raise schemas.error.CustomException("You are forbidden to modify this section", code=403)
+
+    if section_update_request.title is not None:
+        db_section.title = section_update_request.title
+    if section_update_request.description is not None:
+        db_section.description = section_update_request.description
+    if section_update_request.cover is not None:
+        db_section.cover = section_update_request.cover
+    if section_update_request.labels is not None:
+        exist_section_labels = crud.section.get_section_labels_by_section_id(
+            db=db,
+            section_id=section_update_request.section_id
+        )
+        exist_section_label_ids = [label.id for label in exist_section_labels]
+        new_section_label_ids = [label_id for label_id in section_update_request.labels if label_id not in exist_section_label_ids]
+        crud.section.create_section_labels(
+            db=db,
+            section_id=section_update_request.section_id,
+            label_ids=new_section_label_ids
+        )
+        labels_to_delete = [label.id for label in exist_section_labels if label.id not in section_update_request.labels]
+        crud.section.delete_section_labels_by_label_ids(
+            db=db,
+            label_ids=labels_to_delete
+        )
+    if section_update_request.auto_podcast is not None:
+        db_section.auto_podcast = section_update_request.auto_podcast
+    if section_update_request.auto_illustration is not None:
+        db_section.auto_illustration = section_update_request.auto_illustration
+
+    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+        db=db,
+        section_id=db_section.id
+    )
+    if db_section_process_task is None:
+        db_section_process_task = crud.task.create_section_process_task(
+            db=db,
+            user_id=user.id,
+            section_id=db_section.id,
+        )
+    if section_update_request.process_task_trigger_type is not None:
+        db_section_process_task.trigger_type = section_update_request.process_task_trigger_type
+
+    db_section_process_task_trigger_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
+        db=db,
+        section_id=db_section.id
+    )
+    if section_update_request.process_task_trigger_scheduler is not None:
+        stored_cron_expr = encode_cron_expr_with_timezone(
+            cron_expr=section_update_request.process_task_trigger_scheduler,
+            timezone_name=request_timezone,
+        )
+        if db_section_process_task_trigger_scheduler is None:
+            db_section_process_task_trigger_scheduler = crud.task.create_section_process_task_trigger_scheduler(
+                db=db,
+                section_process_task_id=db_section_process_task.id,
+                cron_expr=stored_cron_expr,
+            )
+        else:
+            db_section_process_task_trigger_scheduler.cron_expr = stored_cron_expr
+
+    should_sync_schedule = (
+        section_update_request.process_task_trigger_type is not None
+        or section_update_request.process_task_trigger_scheduler is not None
+    )
+    if should_sync_schedule:
+        _remove_section_process_schedule(db_section.id)
+
+        if db_section_process_task.trigger_type == SectionProcessTriggerType.SCHEDULER:
+            scheduler_timezone = request_timezone
+            scheduler_cron_expr = section_update_request.process_task_trigger_scheduler
+
+            if scheduler_cron_expr is None:
+                if db_section_process_task_trigger_scheduler is None:
+                    raise schemas.error.CustomException("trigger scheduler cron cannot be empty", code=400)
+                scheduler_timezone, scheduler_cron_expr = decode_cron_expr_with_timezone(
+                    db_section_process_task_trigger_scheduler.cron_expr
+                )
+
+            if scheduler_cron_expr is None:
+                raise schemas.error.CustomException("trigger scheduler cron cannot be empty", code=400)
+
+            _schedule_section_process(
+                db_section=db_section,
+                cron_expr=scheduler_cron_expr,
+                timezone_name=scheduler_timezone,
+            )
+
+    db_section.update_time = now
+    db.commit()
+    return schemas.common.SuccessResponse()
 
 @section_router.post('/delete', response_model=schemas.common.NormalResponse)
 def delete_section(

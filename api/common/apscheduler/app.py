@@ -1,4 +1,6 @@
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -7,7 +9,12 @@ import crud
 import schemas
 from common.celery.app import start_process_section
 from common.logger import exception_logger, info_logger
-from common.timezone import get_cached_user_timezone, today_in_timezone
+from common.timezone import (
+    decode_cron_expr_with_timezone,
+    get_cached_user_timezone,
+    normalize_timezone_name,
+    today_in_timezone,
+)
 from data.sql.base import session_scope
 from enums.notification import (
     NotificationContentType,
@@ -161,6 +168,11 @@ for db_section, db_section_process_task in db_section_trigger_schedulers:
     )
     if db_section_process_task_scheduler is None:
         continue
+    timezone_name, cron_expr = decode_cron_expr_with_timezone(
+        db_section_process_task_scheduler.cron_expr
+    )
+    if cron_expr is None:
+        continue
     scheduler.add_job(
         func=start_process_section,
         kwargs={
@@ -168,7 +180,10 @@ for db_section, db_section_process_task in db_section_trigger_schedulers:
             "user_id": db_section.creator_id,
             "auto_podcast": db_section.auto_podcast
         },
-        trigger=CronTrigger.from_crontab(db_section_process_task_scheduler.cron_expr),
+        trigger=CronTrigger.from_crontab(
+            cron_expr,
+            timezone=ZoneInfo(normalize_timezone_name(timezone_name)),
+        ),
         id=f"section-process-{db_section.id!s}"
     )
 

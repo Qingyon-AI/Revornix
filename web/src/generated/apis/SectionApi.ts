@@ -49,6 +49,7 @@ import type {
   SectionRePublishRequest,
   SectionSeoDetailRequest,
   SectionSubscribeRequest,
+  SectionUpdateRequest,
   SectionUserAddRequest,
   SectionUserDeleteRequest,
   SectionUserModifyRequest,
@@ -125,6 +126,8 @@ import {
     SectionSeoDetailRequestToJSON,
     SectionSubscribeRequestFromJSON,
     SectionSubscribeRequestToJSON,
+    SectionUpdateRequestFromJSON,
+    SectionUpdateRequestToJSON,
     SectionUserAddRequestFromJSON,
     SectionUserAddRequestToJSON,
     SectionUserDeleteRequestFromJSON,
@@ -301,6 +304,12 @@ export interface SectionUserRequestSectionUserPostRequest {
 
 export interface SubscribeSectionSectionSubscribePostRequest {
     sectionSubscribeRequest: SectionSubscribeRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface UpdateSectionSectionUpdatePostRequest {
+    sectionUpdateRequest: SectionUpdateRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -1827,6 +1836,61 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async subscribeSectionSectionSubscribePost(requestParameters: SubscribeSectionSectionSubscribePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.subscribeSectionSectionSubscribePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for updateSectionSectionUpdatePost without sending the request
+     */
+    async updateSectionSectionUpdatePostRequestOpts(requestParameters: UpdateSectionSectionUpdatePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionUpdateRequest',
+                'Required parameter "sectionUpdateRequest" was null or undefined when calling updateSectionSectionUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/update`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionUpdateRequestToJSON(requestParameters['sectionUpdateRequest']),
+        };
+    }
+
+    /**
+     * Update Section
+     */
+    async updateSectionSectionUpdatePostRaw(requestParameters: UpdateSectionSectionUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateSectionSectionUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update Section
+     */
+    async updateSectionSectionUpdatePost(requestParameters: UpdateSectionSectionUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.updateSectionSectionUpdatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

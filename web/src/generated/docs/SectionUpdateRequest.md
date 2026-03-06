@@ -10,7 +10,6 @@ Name | Type
 `title` | string
 `description` | string
 `cover` | string
-`documents` | Array&lt;number&gt;
 `labels` | Array&lt;number&gt;
 `auto_podcast` | boolean
 `auto_illustration` | boolean
@@ -28,7 +27,6 @@ const example = {
   "title": null,
   "description": null,
   "cover": null,
-  "documents": null,
   "labels": null,
   "auto_podcast": null,
   "auto_illustration": null,
