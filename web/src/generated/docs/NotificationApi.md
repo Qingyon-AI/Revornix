@@ -1,6 +1,6 @@
 # NotificationApi
 
-All URIs are relative to *http://localhost:8001/api/main-service*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -41,7 +41,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## addNotificationSourceNotificationSourceAddPost
 
-> NormalResponse addNotificationSourceNotificationSourceAddPost(addNotificationSourceRequest, authorization)
+> NormalResponse addNotificationSourceNotificationSourceAddPost(addNotificationSourceRequest, authorization, xUserTimezone)
 
 Add Notification Source
 
@@ -63,6 +63,8 @@ async function example() {
     addNotificationSourceRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies AddNotificationSourceNotificationSourceAddPostRequest;
 
   try {
@@ -84,6 +86,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **addNotificationSourceRequest** | [AddNotificationSourceRequest](AddNotificationSourceRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -110,7 +113,7 @@ No authorization required
 
 ## addNotificationTargetNotificationTargetAddPost
 
-> NormalResponse addNotificationTargetNotificationTargetAddPost(addNotificationTargetRequest, authorization)
+> NormalResponse addNotificationTargetNotificationTargetAddPost(addNotificationTargetRequest, authorization, xUserTimezone)
 
 Add Notification Target
 
@@ -132,6 +135,8 @@ async function example() {
     addNotificationTargetRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies AddNotificationTargetNotificationTargetAddPostRequest;
 
   try {
@@ -153,6 +158,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **addNotificationTargetRequest** | [AddNotificationTargetRequest](AddNotificationTargetRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -179,7 +185,7 @@ No authorization required
 
 ## addNotificationTaskNotificationTaskAddPost
 
-> NormalResponse addNotificationTaskNotificationTaskAddPost(addNotificationTaskRequest, authorization)
+> NormalResponse addNotificationTaskNotificationTaskAddPost(addNotificationTaskRequest, authorization, xUserTimezone)
 
 Add Notification Task
 
@@ -201,6 +207,8 @@ async function example() {
     addNotificationTaskRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies AddNotificationTaskNotificationTaskAddPostRequest;
 
   try {
@@ -222,6 +230,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **addNotificationTaskRequest** | [AddNotificationTaskRequest](AddNotificationTaskRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -248,7 +257,7 @@ No authorization required
 
 ## deleteNotificationRecordNotificationRecordDeletePost
 
-> NormalResponse deleteNotificationRecordNotificationRecordDeletePost(deleteNotificationRecordRequest, authorization)
+> NormalResponse deleteNotificationRecordNotificationRecordDeletePost(deleteNotificationRecordRequest, authorization, xUserTimezone)
 
 Delete Notification Record
 
@@ -270,6 +279,8 @@ async function example() {
     deleteNotificationRecordRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteNotificationRecordNotificationRecordDeletePostRequest;
 
   try {
@@ -291,6 +302,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteNotificationRecordRequest** | [DeleteNotificationRecordRequest](DeleteNotificationRecordRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -317,7 +329,7 @@ No authorization required
 
 ## deleteNotificationSourceNotificationSourceDeletePost
 
-> NormalResponse deleteNotificationSourceNotificationSourceDeletePost(deleteNotificationSourceRequest, authorization)
+> NormalResponse deleteNotificationSourceNotificationSourceDeletePost(deleteNotificationSourceRequest, authorization, xUserTimezone)
 
 Delete Notification Source
 
@@ -339,6 +351,8 @@ async function example() {
     deleteNotificationSourceRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteNotificationSourceNotificationSourceDeletePostRequest;
 
   try {
@@ -360,6 +374,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteNotificationSourceRequest** | [DeleteNotificationSourceRequest](DeleteNotificationSourceRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -386,7 +401,7 @@ No authorization required
 
 ## deleteNotificationTargetNotificationTargetDeletePost
 
-> NormalResponse deleteNotificationTargetNotificationTargetDeletePost(deleteNotificationTargetRequest, authorization)
+> NormalResponse deleteNotificationTargetNotificationTargetDeletePost(deleteNotificationTargetRequest, authorization, xUserTimezone)
 
 Delete Notification Target
 
@@ -408,6 +423,8 @@ async function example() {
     deleteNotificationTargetRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteNotificationTargetNotificationTargetDeletePostRequest;
 
   try {
@@ -429,6 +446,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteNotificationTargetRequest** | [DeleteNotificationTargetRequest](DeleteNotificationTargetRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -455,7 +473,7 @@ No authorization required
 
 ## deleteNotificationTaskNotificationTaskDeletePost
 
-> NormalResponse deleteNotificationTaskNotificationTaskDeletePost(deleteNotificationTaskRequest, authorization)
+> NormalResponse deleteNotificationTaskNotificationTaskDeletePost(deleteNotificationTaskRequest, authorization, xUserTimezone)
 
 Delete Notification Task
 
@@ -477,6 +495,8 @@ async function example() {
     deleteNotificationTaskRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteNotificationTaskNotificationTaskDeletePostRequest;
 
   try {
@@ -498,6 +518,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteNotificationTaskRequest** | [DeleteNotificationTaskRequest](DeleteNotificationTaskRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -524,7 +545,7 @@ No authorization required
 
 ## forkNotificationSourceNotificationSourceForkPost
 
-> NormalResponse forkNotificationSourceNotificationSourceForkPost(notificationSourceForkRequest, authorization)
+> NormalResponse forkNotificationSourceNotificationSourceForkPost(notificationSourceForkRequest, authorization, xUserTimezone)
 
 Fork Notification Source
 
@@ -546,6 +567,8 @@ async function example() {
     notificationSourceForkRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ForkNotificationSourceNotificationSourceForkPostRequest;
 
   try {
@@ -567,6 +590,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **notificationSourceForkRequest** | [NotificationSourceForkRequest](NotificationSourceForkRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -593,7 +617,7 @@ No authorization required
 
 ## forkNotificationTargetNotificationTargetForkPost
 
-> NormalResponse forkNotificationTargetNotificationTargetForkPost(notificationTargetForkRequest, authorization)
+> NormalResponse forkNotificationTargetNotificationTargetForkPost(notificationTargetForkRequest, authorization, xUserTimezone)
 
 Fork Notification Target
 
@@ -615,6 +639,8 @@ async function example() {
     notificationTargetForkRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ForkNotificationTargetNotificationTargetForkPostRequest;
 
   try {
@@ -636,6 +662,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **notificationTargetForkRequest** | [NotificationTargetForkRequest](NotificationTargetForkRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -662,7 +689,7 @@ No authorization required
 
 ## getMineNotificationTaskNotificationTaskMinePost
 
-> PaginationNotificationTask getMineNotificationTaskNotificationTaskMinePost(pageableRequest, authorization)
+> PaginationNotificationTask getMineNotificationTaskNotificationTaskMinePost(pageableRequest, authorization, xUserTimezone)
 
 Get Mine Notification Task
 
@@ -684,6 +711,8 @@ async function example() {
     pageableRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetMineNotificationTaskNotificationTaskMinePostRequest;
 
   try {
@@ -705,6 +734,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **pageableRequest** | [PageableRequest](PageableRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -731,7 +761,7 @@ No authorization required
 
 ## getNotificationRecordDetailNotificationRecordDetailPost
 
-> NotificationRecord getNotificationRecordDetailNotificationRecordDetailPost(notificationRecordDetailRequest, authorization)
+> NotificationRecord getNotificationRecordDetailNotificationRecordDetailPost(notificationRecordDetailRequest, authorization, xUserTimezone)
 
 Get Notification Record Detail
 
@@ -753,6 +783,8 @@ async function example() {
     notificationRecordDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetNotificationRecordDetailNotificationRecordDetailPostRequest;
 
   try {
@@ -774,6 +806,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **notificationRecordDetailRequest** | [NotificationRecordDetailRequest](NotificationRecordDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -800,7 +833,7 @@ No authorization required
 
 ## getNotificationSourceDetailNotificationSourceDetailPost
 
-> NotificationSourceDetail getNotificationSourceDetailNotificationSourceDetailPost(notificationSourceDetailRequest, authorization)
+> NotificationSourceDetail getNotificationSourceDetailNotificationSourceDetailPost(notificationSourceDetailRequest, authorization, xUserTimezone)
 
 Get Notification Source Detail
 
@@ -822,6 +855,8 @@ async function example() {
     notificationSourceDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetNotificationSourceDetailNotificationSourceDetailPostRequest;
 
   try {
@@ -843,6 +878,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **notificationSourceDetailRequest** | [NotificationSourceDetailRequest](NotificationSourceDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -869,7 +905,7 @@ No authorization required
 
 ## getNotificationSourceRelatedTaskNotificationSourceTaskPost
 
-> GetNotificationSourceRelatedTaskResponse getNotificationSourceRelatedTaskNotificationSourceTaskPost(getNotificationSourceRelatedTaskRequest, authorization)
+> GetNotificationSourceRelatedTaskResponse getNotificationSourceRelatedTaskNotificationSourceTaskPost(getNotificationSourceRelatedTaskRequest, authorization, xUserTimezone)
 
 Get Notification Source Related Task
 
@@ -891,6 +927,8 @@ async function example() {
     getNotificationSourceRelatedTaskRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetNotificationSourceRelatedTaskNotificationSourceTaskPostRequest;
 
   try {
@@ -912,6 +950,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **getNotificationSourceRelatedTaskRequest** | [GetNotificationSourceRelatedTaskRequest](GetNotificationSourceRelatedTaskRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -938,7 +977,7 @@ No authorization required
 
 ## getNotificationSourcesNotificationSourceCommunityPost
 
-> InifiniteScrollPagnitionNotificationSource getNotificationSourcesNotificationSourceCommunityPost(searchNotificationSourceRequest, authorization)
+> InifiniteScrollPagnitionNotificationSource getNotificationSourcesNotificationSourceCommunityPost(searchNotificationSourceRequest, authorization, xUserTimezone)
 
 Get Notification Sources
 
@@ -960,6 +999,8 @@ async function example() {
     searchNotificationSourceRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetNotificationSourcesNotificationSourceCommunityPostRequest;
 
   try {
@@ -981,6 +1022,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchNotificationSourceRequest** | [SearchNotificationSourceRequest](SearchNotificationSourceRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1007,7 +1049,7 @@ No authorization required
 
 ## getNotificationTargetDetailNotificationTargetDetailPost
 
-> NotificationTargetDetail getNotificationTargetDetailNotificationTargetDetailPost(notificationTargetDetailRequest, authorization)
+> NotificationTargetDetail getNotificationTargetDetailNotificationTargetDetailPost(notificationTargetDetailRequest, authorization, xUserTimezone)
 
 Get Notification Target Detail
 
@@ -1029,6 +1071,8 @@ async function example() {
     notificationTargetDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetNotificationTargetDetailNotificationTargetDetailPostRequest;
 
   try {
@@ -1050,6 +1094,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **notificationTargetDetailRequest** | [NotificationTargetDetailRequest](NotificationTargetDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1076,7 +1121,7 @@ No authorization required
 
 ## getNotificationTargetNotificationTargetCommunityPost
 
-> InifiniteScrollPagnitionNotificationTarget getNotificationTargetNotificationTargetCommunityPost(searchNotificationTargetRequest, authorization)
+> InifiniteScrollPagnitionNotificationTarget getNotificationTargetNotificationTargetCommunityPost(searchNotificationTargetRequest, authorization, xUserTimezone)
 
 Get Notification Target
 
@@ -1098,6 +1143,8 @@ async function example() {
     searchNotificationTargetRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetNotificationTargetNotificationTargetCommunityPostRequest;
 
   try {
@@ -1119,6 +1166,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchNotificationTargetRequest** | [SearchNotificationTargetRequest](SearchNotificationTargetRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1145,7 +1193,7 @@ No authorization required
 
 ## getNotificationTargetRelatedTaskNotificationTargetTaskPost
 
-> GetNotificationTargetRelatedTaskResponse getNotificationTargetRelatedTaskNotificationTargetTaskPost(getNotificationTargetRelatedTaskRequest, authorization)
+> GetNotificationTargetRelatedTaskResponse getNotificationTargetRelatedTaskNotificationTargetTaskPost(getNotificationTargetRelatedTaskRequest, authorization, xUserTimezone)
 
 Get Notification Target Related Task
 
@@ -1167,6 +1215,8 @@ async function example() {
     getNotificationTargetRelatedTaskRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetNotificationTargetRelatedTaskNotificationTargetTaskPostRequest;
 
   try {
@@ -1188,6 +1238,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **getNotificationTargetRelatedTaskRequest** | [GetNotificationTargetRelatedTaskRequest](GetNotificationTargetRelatedTaskRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1214,7 +1265,7 @@ No authorization required
 
 ## getNotificationTaskNotificationTaskDetailPost
 
-> NotificationTask getNotificationTaskNotificationTaskDetailPost(notificationTaskDetailRequest, authorization)
+> NotificationTask getNotificationTaskNotificationTaskDetailPost(notificationTaskDetailRequest, authorization, xUserTimezone)
 
 Get Notification Task
 
@@ -1236,6 +1287,8 @@ async function example() {
     notificationTaskDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetNotificationTaskNotificationTaskDetailPostRequest;
 
   try {
@@ -1257,6 +1310,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **notificationTaskDetailRequest** | [NotificationTaskDetailRequest](NotificationTaskDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1283,7 +1337,7 @@ No authorization required
 
 ## getNotificationTemplatesNotificationTemplateAllPost
 
-> NotificationTemplatesResponse getNotificationTemplatesNotificationTemplateAllPost(authorization)
+> NotificationTemplatesResponse getNotificationTemplatesNotificationTemplateAllPost(authorization, xUserTimezone)
 
 Get Notification Templates
 
@@ -1303,6 +1357,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetNotificationTemplatesNotificationTemplateAllPostRequest;
 
   try {
@@ -1323,6 +1379,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1349,7 +1406,7 @@ No authorization required
 
 ## getProvidedNotificationSourceNotificationSourceProvidedPost
 
-> NotificationSourcesProvidedResponse getProvidedNotificationSourceNotificationSourceProvidedPost(authorization)
+> NotificationSourcesProvidedResponse getProvidedNotificationSourceNotificationSourceProvidedPost(authorization, xUserTimezone)
 
 Get Provided Notification Source
 
@@ -1369,6 +1426,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetProvidedNotificationSourceNotificationSourceProvidedPostRequest;
 
   try {
@@ -1389,6 +1448,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1415,7 +1475,7 @@ No authorization required
 
 ## getProvidedNotificationTargetNotificationTargetProvidedPost
 
-> NotificationTargetsProvidedResponse getProvidedNotificationTargetNotificationTargetProvidedPost(authorization)
+> NotificationTargetsProvidedResponse getProvidedNotificationTargetNotificationTargetProvidedPost(authorization, xUserTimezone)
 
 Get Provided Notification Target
 
@@ -1435,6 +1495,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetProvidedNotificationTargetNotificationTargetProvidedPostRequest;
 
   try {
@@ -1455,6 +1517,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1481,7 +1544,7 @@ No authorization required
 
 ## getTriggerEventsNotificationTriggerEventAllPost
 
-> TriggerEventsResponse getTriggerEventsNotificationTriggerEventAllPost(authorization)
+> TriggerEventsResponse getTriggerEventsNotificationTriggerEventAllPost(authorization, xUserTimezone)
 
 Get Trigger Events
 
@@ -1501,6 +1564,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetTriggerEventsNotificationTriggerEventAllPostRequest;
 
   try {
@@ -1521,6 +1586,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1547,7 +1613,7 @@ No authorization required
 
 ## getUsableNotificationSourceNotificationSourceUsablePost
 
-> NotificationSourcesUsableResponse getUsableNotificationSourceNotificationSourceUsablePost(authorization)
+> NotificationSourcesUsableResponse getUsableNotificationSourceNotificationSourceUsablePost(authorization, xUserTimezone)
 
 Get Usable Notification Source
 
@@ -1567,6 +1633,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetUsableNotificationSourceNotificationSourceUsablePostRequest;
 
   try {
@@ -1587,6 +1655,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1613,7 +1682,7 @@ No authorization required
 
 ## getUsableNotificationTargetNotificationTargetUsablePost
 
-> NotificationTargetsUsableResponse getUsableNotificationTargetNotificationTargetUsablePost(authorization)
+> NotificationTargetsUsableResponse getUsableNotificationTargetNotificationTargetUsablePost(authorization, xUserTimezone)
 
 Get Usable Notification Target
 
@@ -1633,6 +1702,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetUsableNotificationTargetNotificationTargetUsablePostRequest;
 
   try {
@@ -1653,6 +1724,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1679,7 +1751,7 @@ No authorization required
 
 ## notificationEmailTargetSendNotificationTargetEmailSendPost
 
-> NormalResponse notificationEmailTargetSendNotificationTargetEmailSendPost(emailTargetSendCodeRequest, authorization)
+> NormalResponse notificationEmailTargetSendNotificationTargetEmailSendPost(emailTargetSendCodeRequest, authorization, xUserTimezone)
 
 Notification Email Target Send
 
@@ -1701,6 +1773,8 @@ async function example() {
     emailTargetSendCodeRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies NotificationEmailTargetSendNotificationTargetEmailSendPostRequest;
 
   try {
@@ -1722,6 +1796,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **emailTargetSendCodeRequest** | [EmailTargetSendCodeRequest](EmailTargetSendCodeRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1748,7 +1823,7 @@ No authorization required
 
 ## notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPost
 
-> NormalResponse notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPost(iOSTargetChangeCodeStatusRequest, authorization)
+> NormalResponse notificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPost(iOSTargetChangeCodeStatusRequest, authorization, xUserTimezone)
 
 Notification Ios Target Change Code Status
 
@@ -1770,6 +1845,8 @@ async function example() {
     iOSTargetChangeCodeStatusRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies NotificationIosTargetChangeCodeStatusNotificationTargetIosCodeStatusPostRequest;
 
   try {
@@ -1791,6 +1868,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **iOSTargetChangeCodeStatusRequest** | [IOSTargetChangeCodeStatusRequest](IOSTargetChangeCodeStatusRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1817,7 +1895,7 @@ No authorization required
 
 ## readAllNotificationRecordNotificationRecordReadAllPost
 
-> NormalResponse readAllNotificationRecordNotificationRecordReadAllPost(authorization)
+> NormalResponse readAllNotificationRecordNotificationRecordReadAllPost(authorization, xUserTimezone)
 
 Read All Notification Record
 
@@ -1837,6 +1915,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ReadAllNotificationRecordNotificationRecordReadAllPostRequest;
 
   try {
@@ -1857,6 +1937,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1883,7 +1964,7 @@ No authorization required
 
 ## readNotificationRecordNotificationRecordReadPost
 
-> NormalResponse readNotificationRecordNotificationRecordReadPost(readNotificationRecordRequest, authorization)
+> NormalResponse readNotificationRecordNotificationRecordReadPost(readNotificationRecordRequest, authorization, xUserTimezone)
 
 Read Notification Record
 
@@ -1905,6 +1986,8 @@ async function example() {
     readNotificationRecordRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ReadNotificationRecordNotificationRecordReadPostRequest;
 
   try {
@@ -1926,6 +2009,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **readNotificationRecordRequest** | [ReadNotificationRecordRequest](ReadNotificationRecordRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1952,7 +2036,7 @@ No authorization required
 
 ## searchNotificationRecordNotificationRecordSearchPost
 
-> InifiniteScrollPagnitionNotificationRecord searchNotificationRecordNotificationRecordSearchPost(searchNotificationRecordRequest, authorization)
+> InifiniteScrollPagnitionNotificationRecord searchNotificationRecordNotificationRecordSearchPost(searchNotificationRecordRequest, authorization, xUserTimezone)
 
 Search Notification Record
 
@@ -1974,6 +2058,8 @@ async function example() {
     searchNotificationRecordRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchNotificationRecordNotificationRecordSearchPostRequest;
 
   try {
@@ -1995,6 +2081,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchNotificationRecordRequest** | [SearchNotificationRecordRequest](SearchNotificationRecordRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2021,7 +2108,7 @@ No authorization required
 
 ## updateNotificationSourceNotificationSourceUpdatePost
 
-> NormalResponse updateNotificationSourceNotificationSourceUpdatePost(updateNotificationSourceRequest, authorization)
+> NormalResponse updateNotificationSourceNotificationSourceUpdatePost(updateNotificationSourceRequest, authorization, xUserTimezone)
 
 Update Notification Source
 
@@ -2043,6 +2130,8 @@ async function example() {
     updateNotificationSourceRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateNotificationSourceNotificationSourceUpdatePostRequest;
 
   try {
@@ -2064,6 +2153,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **updateNotificationSourceRequest** | [UpdateNotificationSourceRequest](UpdateNotificationSourceRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2090,7 +2180,7 @@ No authorization required
 
 ## updateNotificationTargetNotificationTargetUpdatePost
 
-> NormalResponse updateNotificationTargetNotificationTargetUpdatePost(updateNotificationTargetRequest, authorization)
+> NormalResponse updateNotificationTargetNotificationTargetUpdatePost(updateNotificationTargetRequest, authorization, xUserTimezone)
 
 Update Notification Target
 
@@ -2112,6 +2202,8 @@ async function example() {
     updateNotificationTargetRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateNotificationTargetNotificationTargetUpdatePostRequest;
 
   try {
@@ -2133,6 +2225,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **updateNotificationTargetRequest** | [UpdateNotificationTargetRequest](UpdateNotificationTargetRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2159,7 +2252,7 @@ No authorization required
 
 ## updateNotificationTaskNotificationTaskUpdatePost
 
-> NormalResponse updateNotificationTaskNotificationTaskUpdatePost(updateNotificationTaskRequest, authorization)
+> NormalResponse updateNotificationTaskNotificationTaskUpdatePost(updateNotificationTaskRequest, authorization, xUserTimezone)
 
 Update Notification Task
 
@@ -2181,6 +2274,8 @@ async function example() {
     updateNotificationTaskRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateNotificationTaskNotificationTaskUpdatePostRequest;
 
   try {
@@ -2202,6 +2297,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **updateNotificationTaskRequest** | [UpdateNotificationTaskRequest](UpdateNotificationTaskRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

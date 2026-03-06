@@ -1,6 +1,6 @@
 # DocumentApi
 
-All URIs are relative to *http://localhost:8001/api/main-service*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -34,7 +34,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## addLabelDocumentLabelCreatePost
 
-> CreateLabelResponse addLabelDocumentLabelCreatePost(labelAddRequest, authorization)
+> CreateLabelResponse addLabelDocumentLabelCreatePost(labelAddRequest, authorization, xUserTimezone)
 
 Add Label
 
@@ -56,6 +56,8 @@ async function example() {
     labelAddRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies AddLabelDocumentLabelCreatePostRequest;
 
   try {
@@ -77,6 +79,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **labelAddRequest** | [LabelAddRequest](LabelAddRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -103,7 +106,7 @@ No authorization required
 
 ## createAiSummaryDocumentAiSummaryPost
 
-> NormalResponse createAiSummaryDocumentAiSummaryPost(documentAiSummaryRequest, authorization)
+> NormalResponse createAiSummaryDocumentAiSummaryPost(documentAiSummaryRequest, authorization, xUserTimezone)
 
 Create Ai Summary
 
@@ -125,6 +128,8 @@ async function example() {
     documentAiSummaryRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies CreateAiSummaryDocumentAiSummaryPostRequest;
 
   try {
@@ -146,6 +151,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentAiSummaryRequest** | [DocumentAiSummaryRequest](DocumentAiSummaryRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -172,7 +178,7 @@ No authorization required
 
 ## createDocumentDocumentCreatePost
 
-> DocumentCreateResponse createDocumentDocumentCreatePost(documentCreateRequest, authorization)
+> DocumentCreateResponse createDocumentDocumentCreatePost(documentCreateRequest, xUserTimezone, authorization)
 
 Create Document
 
@@ -192,6 +198,8 @@ async function example() {
   const body = {
     // DocumentCreateRequest
     documentCreateRequest: ...,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
     // string (optional)
     authorization: authorization_example,
   } satisfies CreateDocumentDocumentCreatePostRequest;
@@ -214,6 +222,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **documentCreateRequest** | [DocumentCreateRequest](DocumentCreateRequest.md) |  | |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
@@ -241,7 +250,7 @@ No authorization required
 
 ## createEmbeddingDocumentEmbeddingPost
 
-> NormalResponse createEmbeddingDocumentEmbeddingPost(documentEmbeddingRequest, authorization)
+> NormalResponse createEmbeddingDocumentEmbeddingPost(documentEmbeddingRequest, authorization, xUserTimezone)
 
 Create Embedding
 
@@ -263,6 +272,8 @@ async function example() {
     documentEmbeddingRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies CreateEmbeddingDocumentEmbeddingPostRequest;
 
   try {
@@ -284,6 +295,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentEmbeddingRequest** | [DocumentEmbeddingRequest](DocumentEmbeddingRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -310,7 +322,7 @@ No authorization required
 
 ## createNoteDocumentNoteCreatePost
 
-> NormalResponse createNoteDocumentNoteCreatePost(documentNoteCreateRequest, authorization)
+> NormalResponse createNoteDocumentNoteCreatePost(documentNoteCreateRequest, authorization, xUserTimezone)
 
 Create Note
 
@@ -332,6 +344,8 @@ async function example() {
     documentNoteCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies CreateNoteDocumentNoteCreatePostRequest;
 
   try {
@@ -353,6 +367,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentNoteCreateRequest** | [DocumentNoteCreateRequest](DocumentNoteCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -379,7 +394,7 @@ No authorization required
 
 ## deleteDocumentDocumentDeletePost
 
-> SuccessResponse deleteDocumentDocumentDeletePost(documentDeleteRequest, authorization)
+> SuccessResponse deleteDocumentDocumentDeletePost(documentDeleteRequest, authorization, xUserTimezone)
 
 Delete Document
 
@@ -401,6 +416,8 @@ async function example() {
     documentDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteDocumentDocumentDeletePostRequest;
 
   try {
@@ -422,6 +439,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentDeleteRequest** | [DocumentDeleteRequest](DocumentDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -448,7 +466,7 @@ No authorization required
 
 ## deleteLabelDocumentLabelDeletePost
 
-> NormalResponse deleteLabelDocumentLabelDeletePost(labelDeleteRequest, authorization)
+> NormalResponse deleteLabelDocumentLabelDeletePost(labelDeleteRequest, authorization, xUserTimezone)
 
 Delete Label
 
@@ -470,6 +488,8 @@ async function example() {
     labelDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteLabelDocumentLabelDeletePostRequest;
 
   try {
@@ -491,6 +511,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **labelDeleteRequest** | [LabelDeleteRequest](LabelDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -517,7 +538,7 @@ No authorization required
 
 ## deleteNoteDocumentNoteDeletePost
 
-> NormalResponse deleteNoteDocumentNoteDeletePost(documentNoteDeleteRequest, authorization)
+> NormalResponse deleteNoteDocumentNoteDeletePost(documentNoteDeleteRequest, authorization, xUserTimezone)
 
 Delete Note
 
@@ -539,6 +560,8 @@ async function example() {
     documentNoteDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteNoteDocumentNoteDeletePostRequest;
 
   try {
@@ -560,6 +583,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentNoteDeleteRequest** | [DocumentNoteDeleteRequest](DocumentNoteDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -586,7 +610,7 @@ No authorization required
 
 ## generateGraphDocumentGraphGeneratePost
 
-> NormalResponse generateGraphDocumentGraphGeneratePost(documentGraphGenerateRequest, authorization)
+> NormalResponse generateGraphDocumentGraphGeneratePost(documentGraphGenerateRequest, authorization, xUserTimezone)
 
 Generate Graph
 
@@ -608,6 +632,8 @@ async function example() {
     documentGraphGenerateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GenerateGraphDocumentGraphGeneratePostRequest;
 
   try {
@@ -629,6 +655,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentGraphGenerateRequest** | [DocumentGraphGenerateRequest](DocumentGraphGenerateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -655,7 +682,7 @@ No authorization required
 
 ## generatePodcastDocumentPodcastGeneratePost
 
-> NormalResponse generatePodcastDocumentPodcastGeneratePost(generateDocumentPodcastRequest, authorization)
+> NormalResponse generatePodcastDocumentPodcastGeneratePost(generateDocumentPodcastRequest, authorization, xUserTimezone)
 
 Generate Podcast
 
@@ -677,6 +704,8 @@ async function example() {
     generateDocumentPodcastRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GeneratePodcastDocumentPodcastGeneratePostRequest;
 
   try {
@@ -698,6 +727,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **generateDocumentPodcastRequest** | [GenerateDocumentPodcastRequest](GenerateDocumentPodcastRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -724,7 +754,7 @@ No authorization required
 
 ## getDocumentDetailDocumentDetailPost
 
-> DocumentDetailResponse getDocumentDetailDocumentDetailPost(documentDetailRequest, authorization)
+> DocumentDetailResponse getDocumentDetailDocumentDetailPost(documentDetailRequest, authorization, xUserTimezone)
 
 Get Document Detail
 
@@ -746,6 +776,8 @@ async function example() {
     documentDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetDocumentDetailDocumentDetailPostRequest;
 
   try {
@@ -767,6 +799,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentDetailRequest** | [DocumentDetailRequest](DocumentDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -793,7 +826,7 @@ No authorization required
 
 ## getLabelSummaryDocumentLabelSummaryPost
 
-> LabelSummaryResponse getLabelSummaryDocumentLabelSummaryPost(authorization)
+> LabelSummaryResponse getLabelSummaryDocumentLabelSummaryPost(authorization, xUserTimezone)
 
 Get Label Summary
 
@@ -813,6 +846,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetLabelSummaryDocumentLabelSummaryPostRequest;
 
   try {
@@ -833,6 +868,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -859,7 +895,7 @@ No authorization required
 
 ## getMonthSummaryDocumentMonthSummaryPost
 
-> DocumentMonthSummaryResponse getMonthSummaryDocumentMonthSummaryPost(authorization)
+> DocumentMonthSummaryResponse getMonthSummaryDocumentMonthSummaryPost(authorization, xUserTimezone)
 
 Get Month Summary
 
@@ -879,6 +915,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetMonthSummaryDocumentMonthSummaryPostRequest;
 
   try {
@@ -899,6 +937,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -925,7 +964,7 @@ No authorization required
 
 ## listLabelDocumentLabelListPost
 
-> SchemasDocumentLabelListResponse listLabelDocumentLabelListPost(authorization)
+> SchemasDocumentLabelListResponse listLabelDocumentLabelListPost(authorization, xUserTimezone)
 
 List Label
 
@@ -945,6 +984,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ListLabelDocumentLabelListPostRequest;
 
   try {
@@ -965,6 +1006,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -991,7 +1033,7 @@ No authorization required
 
 ## readDocumentDocumentReadPost
 
-> SuccessResponse readDocumentDocumentReadPost(readRequest, authorization)
+> SuccessResponse readDocumentDocumentReadPost(readRequest, authorization, xUserTimezone)
 
 Read Document
 
@@ -1013,6 +1055,8 @@ async function example() {
     readRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ReadDocumentDocumentReadPostRequest;
 
   try {
@@ -1034,6 +1078,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **readRequest** | [ReadRequest](ReadRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1060,7 +1105,7 @@ No authorization required
 
 ## recentReadDocumentDocumentRecentSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo recentReadDocumentDocumentRecentSearchPost(searchRecentReadRequest, authorization)
+> InifiniteScrollPagnitionDocumentInfo recentReadDocumentDocumentRecentSearchPost(searchRecentReadRequest, authorization, xUserTimezone)
 
 Recent Read Document
 
@@ -1082,6 +1127,8 @@ async function example() {
     searchRecentReadRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies RecentReadDocumentDocumentRecentSearchPostRequest;
 
   try {
@@ -1103,6 +1150,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchRecentReadRequest** | [SearchRecentReadRequest](SearchRecentReadRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1129,7 +1177,7 @@ No authorization required
 
 ## searchAllMineDocumentsDocumentSearchMinePost
 
-> InifiniteScrollPagnitionDocumentInfo searchAllMineDocumentsDocumentSearchMinePost(searchAllMyDocumentsRequest, authorization)
+> InifiniteScrollPagnitionDocumentInfo searchAllMineDocumentsDocumentSearchMinePost(searchAllMyDocumentsRequest, authorization, xUserTimezone)
 
 Search All Mine Documents
 
@@ -1151,6 +1199,8 @@ async function example() {
     searchAllMyDocumentsRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchAllMineDocumentsDocumentSearchMinePostRequest;
 
   try {
@@ -1172,6 +1222,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchAllMyDocumentsRequest** | [SearchAllMyDocumentsRequest](SearchAllMyDocumentsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1198,7 +1249,7 @@ No authorization required
 
 ## searchKnowledgeVectorDocumentVectorSearchPost
 
-> VectorSearchResponse searchKnowledgeVectorDocumentVectorSearchPost(vectorSearchRequest, authorization)
+> VectorSearchResponse searchKnowledgeVectorDocumentVectorSearchPost(vectorSearchRequest, authorization, xUserTimezone)
 
 Search Knowledge Vector
 
@@ -1220,6 +1271,8 @@ async function example() {
     vectorSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchKnowledgeVectorDocumentVectorSearchPostRequest;
 
   try {
@@ -1241,6 +1294,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **vectorSearchRequest** | [VectorSearchRequest](VectorSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1267,7 +1321,7 @@ No authorization required
 
 ## searchMyStarDocumentsDocumentStarSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo searchMyStarDocumentsDocumentStarSearchPost(searchMyStarDocumentsRequest, authorization)
+> InifiniteScrollPagnitionDocumentInfo searchMyStarDocumentsDocumentStarSearchPost(searchMyStarDocumentsRequest, authorization, xUserTimezone)
 
 Search My Star Documents
 
@@ -1289,6 +1343,8 @@ async function example() {
     searchMyStarDocumentsRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchMyStarDocumentsDocumentStarSearchPostRequest;
 
   try {
@@ -1310,6 +1366,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchMyStarDocumentsRequest** | [SearchMyStarDocumentsRequest](SearchMyStarDocumentsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1336,7 +1393,7 @@ No authorization required
 
 ## searchNoteDocumentNoteSearchPost
 
-> InifiniteScrollPagnitionDocumentNoteInfo searchNoteDocumentNoteSearchPost(searchDocumentNoteRequest, authorization)
+> InifiniteScrollPagnitionDocumentNoteInfo searchNoteDocumentNoteSearchPost(searchDocumentNoteRequest, authorization, xUserTimezone)
 
 Search Note
 
@@ -1358,6 +1415,8 @@ async function example() {
     searchDocumentNoteRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchNoteDocumentNoteSearchPostRequest;
 
   try {
@@ -1379,6 +1438,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchDocumentNoteRequest** | [SearchDocumentNoteRequest](SearchDocumentNoteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1405,7 +1465,7 @@ No authorization required
 
 ## searchUserUnreadDocumentsDocumentUnreadSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo searchUserUnreadDocumentsDocumentUnreadSearchPost(searchUnreadListRequest, authorization)
+> InifiniteScrollPagnitionDocumentInfo searchUserUnreadDocumentsDocumentUnreadSearchPost(searchUnreadListRequest, authorization, xUserTimezone)
 
 Search User Unread Documents
 
@@ -1427,6 +1487,8 @@ async function example() {
     searchUnreadListRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest;
 
   try {
@@ -1448,6 +1510,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchUnreadListRequest** | [SearchUnreadListRequest](SearchUnreadListRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1474,7 +1537,7 @@ No authorization required
 
 ## starDocumentDocumentStarPost
 
-> SuccessResponse starDocumentDocumentStarPost(starRequest, authorization)
+> SuccessResponse starDocumentDocumentStarPost(starRequest, authorization, xUserTimezone)
 
 Star Document
 
@@ -1496,6 +1559,8 @@ async function example() {
     starRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies StarDocumentDocumentStarPostRequest;
 
   try {
@@ -1517,6 +1582,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **starRequest** | [StarRequest](StarRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1543,7 +1609,7 @@ No authorization required
 
 ## transcribeAudioDocumentDocumentTranscribePost
 
-> NormalResponse transcribeAudioDocumentDocumentTranscribePost(documentTranscribeRequest, authorization)
+> NormalResponse transcribeAudioDocumentDocumentTranscribePost(documentTranscribeRequest, authorization, xUserTimezone)
 
 Transcribe Audio Document
 
@@ -1565,6 +1631,8 @@ async function example() {
     documentTranscribeRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies TranscribeAudioDocumentDocumentTranscribePostRequest;
 
   try {
@@ -1586,6 +1654,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentTranscribeRequest** | [DocumentTranscribeRequest](DocumentTranscribeRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1612,7 +1681,7 @@ No authorization required
 
 ## transformMarkdownDocumentMarkdownTransformPost
 
-> NormalResponse transformMarkdownDocumentMarkdownTransformPost(documentMarkdownConvertRequest, authorization)
+> NormalResponse transformMarkdownDocumentMarkdownTransformPost(documentMarkdownConvertRequest, authorization, xUserTimezone)
 
 Transform Markdown
 
@@ -1634,6 +1703,8 @@ async function example() {
     documentMarkdownConvertRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies TransformMarkdownDocumentMarkdownTransformPostRequest;
 
   try {
@@ -1655,6 +1726,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentMarkdownConvertRequest** | [DocumentMarkdownConvertRequest](DocumentMarkdownConvertRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1681,7 +1753,7 @@ No authorization required
 
 ## updateDocumentDocumentUpdatePost
 
-> NormalResponse updateDocumentDocumentUpdatePost(documentUpdateRequest, authorization)
+> NormalResponse updateDocumentDocumentUpdatePost(documentUpdateRequest, authorization, xUserTimezone)
 
 Update Document
 
@@ -1703,6 +1775,8 @@ async function example() {
     documentUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateDocumentDocumentUpdatePostRequest;
 
   try {
@@ -1724,6 +1798,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **documentUpdateRequest** | [DocumentUpdateRequest](DocumentUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

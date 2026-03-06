@@ -1,6 +1,6 @@
 # AiApi
 
-All URIs are relative to *http://localhost:8001/api/main-service*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -21,7 +21,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## askAiAiAskPost
 
-> any askAiAiAskPost(chatMessages, authorization)
+> any askAiAiAskPost(chatMessages, authorization, xUserTimezone)
 
 Ask Ai
 
@@ -43,6 +43,8 @@ async function example() {
     chatMessages: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies AskAiAiAskPostRequest;
 
   try {
@@ -64,6 +66,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **chatMessages** | [ChatMessages](ChatMessages.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -90,7 +93,7 @@ No authorization required
 
 ## createModelAiModelCreatePost
 
-> ModelCreateResponse createModelAiModelCreatePost(modelCreateRequest, authorization)
+> ModelCreateResponse createModelAiModelCreatePost(modelCreateRequest, authorization, xUserTimezone)
 
 Create Model
 
@@ -112,6 +115,8 @@ async function example() {
     modelCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies CreateModelAiModelCreatePostRequest;
 
   try {
@@ -133,6 +138,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelCreateRequest** | [ModelCreateRequest](ModelCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -159,7 +165,7 @@ No authorization required
 
 ## createModelProviderAiModelProviderCreatePost
 
-> ModelProviderCreateResponse createModelProviderAiModelProviderCreatePost(modelProviderCreateRequest, authorization)
+> ModelProviderCreateResponse createModelProviderAiModelProviderCreatePost(modelProviderCreateRequest, authorization, xUserTimezone)
 
 Create Model Provider
 
@@ -181,6 +187,8 @@ async function example() {
     modelProviderCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies CreateModelProviderAiModelProviderCreatePostRequest;
 
   try {
@@ -202,6 +210,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelProviderCreateRequest** | [ModelProviderCreateRequest](ModelProviderCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -228,7 +237,7 @@ No authorization required
 
 ## deleteAiModelAiModelDeletePost
 
-> NormalResponse deleteAiModelAiModelDeletePost(deleteModelRequest, authorization)
+> NormalResponse deleteAiModelAiModelDeletePost(deleteModelRequest, authorization, xUserTimezone)
 
 Delete Ai Model
 
@@ -250,6 +259,8 @@ async function example() {
     deleteModelRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteAiModelAiModelDeletePostRequest;
 
   try {
@@ -271,6 +282,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteModelRequest** | [DeleteModelRequest](DeleteModelRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -297,7 +309,7 @@ No authorization required
 
 ## deleteAiModelProviderAiModelProviderDeletePost
 
-> NormalResponse deleteAiModelProviderAiModelProviderDeletePost(deleteModelProviderRequest, authorization)
+> NormalResponse deleteAiModelProviderAiModelProviderDeletePost(deleteModelProviderRequest, authorization, xUserTimezone)
 
 Delete Ai Model Provider
 
@@ -319,6 +331,8 @@ async function example() {
     deleteModelProviderRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteAiModelProviderAiModelProviderDeletePostRequest;
 
   try {
@@ -340,6 +354,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **deleteModelProviderRequest** | [DeleteModelProviderRequest](DeleteModelProviderRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -366,7 +381,7 @@ No authorization required
 
 ## forkAiModelProviderAiModelProviderForkPost
 
-> NormalResponse forkAiModelProviderAiModelProviderForkPost(modelProviderForkRequest, authorization)
+> NormalResponse forkAiModelProviderAiModelProviderForkPost(modelProviderForkRequest, authorization, xUserTimezone)
 
 Fork Ai Model Provider
 
@@ -388,6 +403,8 @@ async function example() {
     modelProviderForkRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ForkAiModelProviderAiModelProviderForkPostRequest;
 
   try {
@@ -409,6 +426,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelProviderForkRequest** | [ModelProviderForkRequest](ModelProviderForkRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -435,7 +453,7 @@ No authorization required
 
 ## getAiModelAiModelDetailPost
 
-> Model getAiModelAiModelDetailPost(modelRequest, authorization)
+> Model getAiModelAiModelDetailPost(modelRequest, authorization, xUserTimezone)
 
 Get Ai Model
 
@@ -457,6 +475,8 @@ async function example() {
     modelRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetAiModelAiModelDetailPostRequest;
 
   try {
@@ -478,6 +498,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelRequest** | [ModelRequest](ModelRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -504,7 +525,7 @@ No authorization required
 
 ## getAiModelProviderAiModelProviderDetailPost
 
-> ModelProviderDetail getAiModelProviderAiModelProviderDetailPost(modelProviderRequest, authorization)
+> ModelProviderDetail getAiModelProviderAiModelProviderDetailPost(modelProviderRequest, authorization, xUserTimezone)
 
 Get Ai Model Provider
 
@@ -526,6 +547,8 @@ async function example() {
     modelProviderRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetAiModelProviderAiModelProviderDetailPostRequest;
 
   try {
@@ -547,6 +570,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelProviderRequest** | [ModelProviderRequest](ModelProviderRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -573,7 +597,7 @@ No authorization required
 
 ## listAiModelAiModelSearchPost
 
-> ModelSearchResponse listAiModelAiModelSearchPost(modelSearchRequest, authorization)
+> ModelSearchResponse listAiModelAiModelSearchPost(modelSearchRequest, authorization, xUserTimezone)
 
 List Ai Model
 
@@ -595,6 +619,8 @@ async function example() {
     modelSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ListAiModelAiModelSearchPostRequest;
 
   try {
@@ -616,6 +642,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelSearchRequest** | [ModelSearchRequest](ModelSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -642,7 +669,7 @@ No authorization required
 
 ## listAiModelProviderAiModelProviderCommunityPost
 
-> InifiniteScrollPagnitionModelProvider listAiModelProviderAiModelProviderCommunityPost(modelProviderSearchRequest, authorization)
+> InifiniteScrollPagnitionModelProvider listAiModelProviderAiModelProviderCommunityPost(modelProviderSearchRequest, authorization, xUserTimezone)
 
 List Ai Model Provider
 
@@ -666,6 +693,8 @@ async function example() {
     modelProviderSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ListAiModelProviderAiModelProviderCommunityPostRequest;
 
   try {
@@ -687,6 +716,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelProviderSearchRequest** | [ModelProviderSearchRequest](ModelProviderSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -713,7 +743,7 @@ No authorization required
 
 ## updateAiModelAiModelUpdatePost
 
-> NormalResponse updateAiModelAiModelUpdatePost(modelUpdateRequest, authorization)
+> NormalResponse updateAiModelAiModelUpdatePost(modelUpdateRequest, authorization, xUserTimezone)
 
 Update Ai Model
 
@@ -735,6 +765,8 @@ async function example() {
     modelUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateAiModelAiModelUpdatePostRequest;
 
   try {
@@ -756,6 +788,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelUpdateRequest** | [ModelUpdateRequest](ModelUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -782,7 +815,7 @@ No authorization required
 
 ## updateAiModelProviderAiModelProviderUpdatePost
 
-> NormalResponse updateAiModelProviderAiModelProviderUpdatePost(modelProviderUpdateRequest, authorization)
+> NormalResponse updateAiModelProviderAiModelProviderUpdatePost(modelProviderUpdateRequest, authorization, xUserTimezone)
 
 Update Ai Model Provider
 
@@ -804,6 +837,8 @@ async function example() {
     modelProviderUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateAiModelProviderAiModelProviderUpdatePostRequest;
 
   try {
@@ -825,6 +860,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **modelProviderUpdateRequest** | [ModelProviderUpdateRequest](ModelProviderUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

@@ -1,6 +1,6 @@
 # FileSystemApi
 
-All URIs are relative to *http://localhost:8001/api/main-service*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -18,7 +18,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## deleteUserFileSystemFileSystemUserFileSystemDeletePost
 
-> NormalResponse deleteUserFileSystemFileSystemUserFileSystemDeletePost(userFileSystemDeleteRequest, authorization)
+> NormalResponse deleteUserFileSystemFileSystemUserFileSystemDeletePost(userFileSystemDeleteRequest, authorization, xUserTimezone)
 
 Delete User File System
 
@@ -40,6 +40,8 @@ async function example() {
     userFileSystemDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest;
 
   try {
@@ -61,6 +63,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **userFileSystemDeleteRequest** | [UserFileSystemDeleteRequest](UserFileSystemDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -87,7 +90,7 @@ No authorization required
 
 ## getFileSystemInfoFileSystemDetailPost
 
-> FileSystemInfo getFileSystemInfoFileSystemDetailPost(fileSystemInfoRequest, authorization)
+> FileSystemInfo getFileSystemInfoFileSystemDetailPost(fileSystemInfoRequest, authorization, xUserTimezone)
 
 Get File System Info
 
@@ -109,6 +112,8 @@ async function example() {
     fileSystemInfoRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetFileSystemInfoFileSystemDetailPostRequest;
 
   try {
@@ -130,6 +135,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **fileSystemInfoRequest** | [FileSystemInfoRequest](FileSystemInfoRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -156,7 +162,7 @@ No authorization required
 
 ## getPresignedUrlFileSystemPresignUploadUrlPost
 
-> PresignUploadURLResponse getPresignedUrlFileSystemPresignUploadUrlPost(presignUploadURLRequest, authorization)
+> PresignUploadURLResponse getPresignedUrlFileSystemPresignUploadUrlPost(presignUploadURLRequest, authorization, xUserTimezone)
 
 Get Presigned Url
 
@@ -178,6 +184,8 @@ async function example() {
     presignUploadURLRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetPresignedUrlFileSystemPresignUploadUrlPostRequest;
 
   try {
@@ -199,6 +207,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **presignUploadURLRequest** | [PresignUploadURLRequest](PresignUploadURLRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -225,7 +234,7 @@ No authorization required
 
 ## getUserFileSystemInfoFileSystemUserFileSystemDetailPost
 
-> UserFileSystemDetail getUserFileSystemInfoFileSystemUserFileSystemDetailPost(userFileSystemInfoRequest, authorization)
+> UserFileSystemDetail getUserFileSystemInfoFileSystemUserFileSystemDetailPost(userFileSystemInfoRequest, authorization, xUserTimezone)
 
 Get User File System Info
 
@@ -247,6 +256,8 @@ async function example() {
     userFileSystemInfoRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetUserFileSystemInfoFileSystemUserFileSystemDetailPostRequest;
 
   try {
@@ -268,6 +279,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **userFileSystemInfoRequest** | [UserFileSystemInfoRequest](UserFileSystemInfoRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -294,7 +306,7 @@ No authorization required
 
 ## installUserFileSystemFileSystemInstallPost
 
-> FileSystemInstallResponse installUserFileSystemFileSystemInstallPost(fileSystemInstallRequest, authorization)
+> FileSystemInstallResponse installUserFileSystemFileSystemInstallPost(fileSystemInstallRequest, authorization, xUserTimezone)
 
 Install User File System
 
@@ -316,6 +328,8 @@ async function example() {
     fileSystemInstallRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies InstallUserFileSystemFileSystemInstallPostRequest;
 
   try {
@@ -337,6 +351,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **fileSystemInstallRequest** | [FileSystemInstallRequest](FileSystemInstallRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -363,7 +378,7 @@ No authorization required
 
 ## provideFileSystemFileSystemProvidePost
 
-> ProvideFileSystemSearchResponse provideFileSystemFileSystemProvidePost(fileSystemSearchRequest, authorization)
+> ProvideFileSystemSearchResponse provideFileSystemFileSystemProvidePost(fileSystemSearchRequest, authorization, xUserTimezone)
 
 Provide File System
 
@@ -385,6 +400,8 @@ async function example() {
     fileSystemSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ProvideFileSystemFileSystemProvidePostRequest;
 
   try {
@@ -406,6 +423,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **fileSystemSearchRequest** | [FileSystemSearchRequest](FileSystemSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -432,7 +450,7 @@ No authorization required
 
 ## searchMineFileSystemFileSystemMinePost
 
-> MineFileSystemSearchResponse searchMineFileSystemFileSystemMinePost(fileSystemSearchRequest, authorization)
+> MineFileSystemSearchResponse searchMineFileSystemFileSystemMinePost(fileSystemSearchRequest, authorization, xUserTimezone)
 
 Search Mine File System
 
@@ -454,6 +472,8 @@ async function example() {
     fileSystemSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchMineFileSystemFileSystemMinePostRequest;
 
   try {
@@ -475,6 +495,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **fileSystemSearchRequest** | [FileSystemSearchRequest](FileSystemSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -501,7 +522,7 @@ No authorization required
 
 ## updateFileSystemFileSystemUpdatePost
 
-> NormalResponse updateFileSystemFileSystemUpdatePost(userFileSystemUpdateRequest, authorization)
+> NormalResponse updateFileSystemFileSystemUpdatePost(userFileSystemUpdateRequest, authorization, xUserTimezone)
 
 Update File System
 
@@ -523,6 +544,8 @@ async function example() {
     userFileSystemUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateFileSystemFileSystemUpdatePostRequest;
 
   try {
@@ -544,6 +567,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **userFileSystemUpdateRequest** | [UserFileSystemUpdateRequest](UserFileSystemUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -570,7 +594,7 @@ No authorization required
 
 ## uploadFileSystemFileSystemGenericS3UploadPost
 
-> GenericFileSystemUploadResponse uploadFileSystemFileSystemGenericS3UploadPost(file, filePath, contentType, authorization)
+> GenericFileSystemUploadResponse uploadFileSystemFileSystemGenericS3UploadPost(file, filePath, contentType, authorization, xUserTimezone)
 
 Upload File System
 
@@ -596,6 +620,8 @@ async function example() {
     contentType: contentType_example,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UploadFileSystemFileSystemGenericS3UploadPostRequest;
 
   try {
@@ -619,6 +645,7 @@ example().catch(console.error);
 | **filePath** | `string` |  | [Defaults to `undefined`] |
 | **contentType** | `string` |  | [Defaults to `undefined`] |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

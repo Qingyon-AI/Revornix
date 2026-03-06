@@ -1,6 +1,6 @@
 # SectionApi
 
-All URIs are relative to *http://localhost:8001/api/main-service*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -32,13 +32,12 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 | [**sectionUserModifyRequestSectionUserModifyPost**](SectionApi.md#sectionusermodifyrequestsectionusermodifypost) | **POST** /section/user/modify | Section User Modify Request |
 | [**sectionUserRequestSectionUserPost**](SectionApi.md#sectionuserrequestsectionuserpost) | **POST** /section/user | Section User Request |
 | [**subscribeSectionSectionSubscribePost**](SectionApi.md#subscribesectionsectionsubscribepost) | **POST** /section/subscribe | Subscribe Section |
-| [**updateSectionSectionUpdatePost**](SectionApi.md#updatesectionsectionupdatepost) | **POST** /section/update | Update Section |
 
 
 
 ## addLabelSectionLabelCreatePost
 
-> CreateLabelResponse addLabelSectionLabelCreatePost(labelAddRequest, authorization)
+> CreateLabelResponse addLabelSectionLabelCreatePost(labelAddRequest, authorization, xUserTimezone)
 
 Add Label
 
@@ -60,6 +59,8 @@ async function example() {
     labelAddRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies AddLabelSectionLabelCreatePostRequest;
 
   try {
@@ -81,6 +82,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **labelAddRequest** | [LabelAddRequest](LabelAddRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -107,7 +109,7 @@ No authorization required
 
 ## createSectionCommentSectionCommentCreatePost
 
-> NormalResponse createSectionCommentSectionCommentCreatePost(sectionCommentCreateRequest, authorization)
+> NormalResponse createSectionCommentSectionCommentCreatePost(sectionCommentCreateRequest, authorization, xUserTimezone)
 
 Create Section Comment
 
@@ -129,6 +131,8 @@ async function example() {
     sectionCommentCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies CreateSectionCommentSectionCommentCreatePostRequest;
 
   try {
@@ -150,6 +154,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionCommentCreateRequest** | [SectionCommentCreateRequest](SectionCommentCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -176,7 +181,7 @@ No authorization required
 
 ## createSectionSectionCreatePost
 
-> SectionCreateResponse createSectionSectionCreatePost(sectionCreateRequest, authorization)
+> SectionCreateResponse createSectionSectionCreatePost(sectionCreateRequest, authorization, xUserTimezone)
 
 Create Section
 
@@ -198,6 +203,8 @@ async function example() {
     sectionCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies CreateSectionSectionCreatePostRequest;
 
   try {
@@ -219,6 +226,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionCreateRequest** | [SectionCreateRequest](SectionCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -245,7 +253,7 @@ No authorization required
 
 ## deleteLabelSectionLabelDeletePost
 
-> NormalResponse deleteLabelSectionLabelDeletePost(labelDeleteRequest, authorization)
+> NormalResponse deleteLabelSectionLabelDeletePost(labelDeleteRequest, authorization, xUserTimezone)
 
 Delete Label
 
@@ -267,6 +275,8 @@ async function example() {
     labelDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteLabelSectionLabelDeletePostRequest;
 
   try {
@@ -288,6 +298,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **labelDeleteRequest** | [LabelDeleteRequest](LabelDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -314,7 +325,7 @@ No authorization required
 
 ## deleteSectionCommentSectionCommentDeletePost
 
-> NormalResponse deleteSectionCommentSectionCommentDeletePost(sectionCommentDeleteRequest, authorization)
+> NormalResponse deleteSectionCommentSectionCommentDeletePost(sectionCommentDeleteRequest, authorization, xUserTimezone)
 
 Delete Section Comment
 
@@ -336,6 +347,8 @@ async function example() {
     sectionCommentDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteSectionCommentSectionCommentDeletePostRequest;
 
   try {
@@ -357,6 +370,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionCommentDeleteRequest** | [SectionCommentDeleteRequest](SectionCommentDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -383,7 +397,7 @@ No authorization required
 
 ## deleteSectionSectionDeletePost
 
-> NormalResponse deleteSectionSectionDeletePost(sectionDeleteRequest, authorization)
+> NormalResponse deleteSectionSectionDeletePost(sectionDeleteRequest, authorization, xUserTimezone)
 
 Delete Section
 
@@ -405,6 +419,8 @@ async function example() {
     sectionDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteSectionSectionDeletePostRequest;
 
   try {
@@ -426,6 +442,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionDeleteRequest** | [SectionDeleteRequest](SectionDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -452,7 +469,7 @@ No authorization required
 
 ## deleteSectionUserSectionUserDeletePost
 
-> NormalResponse deleteSectionUserSectionUserDeletePost(sectionUserDeleteRequest, authorization)
+> NormalResponse deleteSectionUserSectionUserDeletePost(sectionUserDeleteRequest, authorization, xUserTimezone)
 
 Delete Section User
 
@@ -474,6 +491,8 @@ async function example() {
     sectionUserDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteSectionUserSectionUserDeletePostRequest;
 
   try {
@@ -495,6 +514,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionUserDeleteRequest** | [SectionUserDeleteRequest](SectionUserDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -521,7 +541,7 @@ No authorization required
 
 ## generatePodcastSectionPodcastGeneratePost
 
-> NormalResponse generatePodcastSectionPodcastGeneratePost(generateSectionPodcastRequest, authorization)
+> NormalResponse generatePodcastSectionPodcastGeneratePost(generateSectionPodcastRequest, authorization, xUserTimezone)
 
 Generate Podcast
 
@@ -543,6 +563,8 @@ async function example() {
     generateSectionPodcastRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GeneratePodcastSectionPodcastGeneratePostRequest;
 
   try {
@@ -564,6 +586,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **generateSectionPodcastRequest** | [GenerateSectionPodcastRequest](GenerateSectionPodcastRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -590,7 +613,7 @@ No authorization required
 
 ## getAllMineSectionsSectionMineAllPost
 
-> AllMySectionsResponse getAllMineSectionsSectionMineAllPost(authorization)
+> AllMySectionsResponse getAllMineSectionsSectionMineAllPost(authorization, xUserTimezone)
 
 Get All Mine Sections
 
@@ -610,6 +633,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetAllMineSectionsSectionMineAllPostRequest;
 
   try {
@@ -630,6 +655,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -656,7 +682,7 @@ No authorization required
 
 ## getDateSectionInfoSectionDatePost
 
-> DaySectionResponse getDateSectionInfoSectionDatePost(daySectionRequest, authorization)
+> DaySectionResponse getDateSectionInfoSectionDatePost(daySectionRequest, authorization, xUserTimezone)
 
 Get Date Section Info
 
@@ -678,6 +704,8 @@ async function example() {
     daySectionRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetDateSectionInfoSectionDatePostRequest;
 
   try {
@@ -699,6 +727,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **daySectionRequest** | [DaySectionRequest](DaySectionRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -725,7 +754,7 @@ No authorization required
 
 ## getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost
 
-> SectionUserRoleAndAuthorityResponse getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost(mineSectionRoleAndAuthorityRequest, authorization)
+> SectionUserRoleAndAuthorityResponse getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost(mineSectionRoleAndAuthorityRequest, authorization, xUserTimezone)
 
 Get Mine Section Role And Authority
 
@@ -747,6 +776,8 @@ async function example() {
     mineSectionRoleAndAuthorityRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPostRequest;
 
   try {
@@ -768,6 +799,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mineSectionRoleAndAuthorityRequest** | [MineSectionRoleAndAuthorityRequest](MineSectionRoleAndAuthorityRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -794,7 +826,7 @@ No authorization required
 
 ## getMySubscribedSectionsSectionSubscribedPost
 
-> InifiniteScrollPagnitionSectionInfo getMySubscribedSectionsSectionSubscribedPost(searchSubscribedSectionRequest, authorization)
+> InifiniteScrollPagnitionSectionInfo getMySubscribedSectionsSectionSubscribedPost(searchSubscribedSectionRequest, authorization, xUserTimezone)
 
 Get My Subscribed Sections
 
@@ -816,6 +848,8 @@ async function example() {
     searchSubscribedSectionRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetMySubscribedSectionsSectionSubscribedPostRequest;
 
   try {
@@ -837,6 +871,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchSubscribedSectionRequest** | [SearchSubscribedSectionRequest](SearchSubscribedSectionRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -863,7 +898,7 @@ No authorization required
 
 ## getSectionDetailSectionDetailPost
 
-> SectionInfo getSectionDetailSectionDetailPost(sectionDetailRequest, authorization)
+> SectionInfo getSectionDetailSectionDetailPost(sectionDetailRequest, authorization, xUserTimezone)
 
 Get Section Detail
 
@@ -885,6 +920,8 @@ async function example() {
     sectionDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetSectionDetailSectionDetailPostRequest;
 
   try {
@@ -906,6 +943,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionDetailRequest** | [SectionDetailRequest](SectionDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -932,7 +970,7 @@ No authorization required
 
 ## getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost
 
-> SectionUserRoleAndAuthorityResponse getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost(sectionUserRoleAndAuthorityRequest, authorization)
+> SectionUserRoleAndAuthorityResponse getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost(sectionUserRoleAndAuthorityRequest, authorization, xUserTimezone)
 
 Get Section User Role And Authority
 
@@ -954,6 +992,8 @@ async function example() {
     sectionUserRoleAndAuthorityRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest;
 
   try {
@@ -975,6 +1015,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionUserRoleAndAuthorityRequest** | [SectionUserRoleAndAuthorityRequest](SectionUserRoleAndAuthorityRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1001,7 +1042,7 @@ No authorization required
 
 ## listLabelSectionLabelListPost
 
-> SchemasSectionLabelListResponse listLabelSectionLabelListPost(authorization)
+> SchemasSectionLabelListResponse listLabelSectionLabelListPost(authorization, xUserTimezone)
 
 List Label
 
@@ -1021,6 +1062,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ListLabelSectionLabelListPostRequest;
 
   try {
@@ -1041,6 +1084,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1067,7 +1111,7 @@ No authorization required
 
 ## publicSectionsSectionPublicSearchPost
 
-> InifiniteScrollPagnitionSectionInfo publicSectionsSectionPublicSearchPost(searchPublicSectionsRequest, authorization)
+> InifiniteScrollPagnitionSectionInfo publicSectionsSectionPublicSearchPost(searchPublicSectionsRequest, authorization, xUserTimezone)
 
 Public Sections
 
@@ -1089,6 +1133,8 @@ async function example() {
     searchPublicSectionsRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies PublicSectionsSectionPublicSearchPostRequest;
 
   try {
@@ -1110,6 +1156,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchPublicSectionsRequest** | [SearchPublicSectionsRequest](SearchPublicSectionsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1136,7 +1183,7 @@ No authorization required
 
 ## searchMineSectionsSectionMineSearchPost
 
-> InifiniteScrollPagnitionSectionInfo searchMineSectionsSectionMineSearchPost(searchMineSectionsRequest, authorization)
+> InifiniteScrollPagnitionSectionInfo searchMineSectionsSectionMineSearchPost(searchMineSectionsRequest, authorization, xUserTimezone)
 
 Search Mine Sections
 
@@ -1158,6 +1205,8 @@ async function example() {
     searchMineSectionsRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchMineSectionsSectionMineSearchPostRequest;
 
   try {
@@ -1179,6 +1228,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchMineSectionsRequest** | [SearchMineSectionsRequest](SearchMineSectionsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1205,7 +1255,7 @@ No authorization required
 
 ## searchSectionCommentSectionCommentSearchPost
 
-> InifiniteScrollPagnitionSectionCommentInfo searchSectionCommentSectionCommentSearchPost(sectionCommentSearchRequest, authorization)
+> InifiniteScrollPagnitionSectionCommentInfo searchSectionCommentSectionCommentSearchPost(sectionCommentSearchRequest, authorization, xUserTimezone)
 
 Search Section Comment
 
@@ -1227,6 +1277,8 @@ async function example() {
     sectionCommentSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchSectionCommentSectionCommentSearchPostRequest;
 
   try {
@@ -1248,6 +1300,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionCommentSearchRequest** | [SectionCommentSearchRequest](SectionCommentSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1274,7 +1327,7 @@ No authorization required
 
 ## searchUserSectionsSectionUserSearchPost
 
-> InifiniteScrollPagnitionSectionInfo searchUserSectionsSectionUserSearchPost(searchUserSectionsRequest, authorization)
+> InifiniteScrollPagnitionSectionInfo searchUserSectionsSectionUserSearchPost(searchUserSectionsRequest, authorization, xUserTimezone)
 
 Search User Sections
 
@@ -1296,6 +1349,8 @@ async function example() {
     searchUserSectionsRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchUserSectionsSectionUserSearchPostRequest;
 
   try {
@@ -1317,6 +1372,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchUserSectionsRequest** | [SearchUserSectionsRequest](SearchUserSectionsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1343,7 +1399,7 @@ No authorization required
 
 ## sectionDocumentRequestSectionDocumentsPost
 
-> InifiniteScrollPagnitionSectionDocumentInfo sectionDocumentRequestSectionDocumentsPost(sectionDocumentRequest, authorization)
+> InifiniteScrollPagnitionSectionDocumentInfo sectionDocumentRequestSectionDocumentsPost(sectionDocumentRequest, authorization, xUserTimezone)
 
 Section Document Request
 
@@ -1365,6 +1421,8 @@ async function example() {
     sectionDocumentRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SectionDocumentRequestSectionDocumentsPostRequest;
 
   try {
@@ -1386,6 +1444,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionDocumentRequest** | [SectionDocumentRequest](SectionDocumentRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1412,7 +1471,7 @@ No authorization required
 
 ## sectionPublishGetRequestSectionPublishGetPost
 
-> SectionPublishGetResponse sectionPublishGetRequestSectionPublishGetPost(sectionPublishGetRequest, authorization)
+> SectionPublishGetResponse sectionPublishGetRequestSectionPublishGetPost(sectionPublishGetRequest, authorization, xUserTimezone)
 
 Section Publish Get Request
 
@@ -1434,6 +1493,8 @@ async function example() {
     sectionPublishGetRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SectionPublishGetRequestSectionPublishGetPostRequest;
 
   try {
@@ -1455,6 +1516,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionPublishGetRequest** | [SectionPublishGetRequest](SectionPublishGetRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1481,7 +1543,7 @@ No authorization required
 
 ## sectionPublishRequestSectionPublishPost
 
-> NormalResponse sectionPublishRequestSectionPublishPost(sectionPublishRequest, authorization)
+> NormalResponse sectionPublishRequestSectionPublishPost(sectionPublishRequest, authorization, xUserTimezone)
 
 Section Publish Request
 
@@ -1503,6 +1565,8 @@ async function example() {
     sectionPublishRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SectionPublishRequestSectionPublishPostRequest;
 
   try {
@@ -1524,6 +1588,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionPublishRequest** | [SectionPublishRequest](SectionPublishRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1550,7 +1615,7 @@ No authorization required
 
 ## sectionRepublishSectionRepublishPost
 
-> NormalResponse sectionRepublishSectionRepublishPost(sectionRePublishRequest, authorization)
+> NormalResponse sectionRepublishSectionRepublishPost(sectionRePublishRequest, authorization, xUserTimezone)
 
 Section Republish
 
@@ -1572,6 +1637,8 @@ async function example() {
     sectionRePublishRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SectionRepublishSectionRepublishPostRequest;
 
   try {
@@ -1593,6 +1660,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionRePublishRequest** | [SectionRePublishRequest](SectionRePublishRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1619,7 +1687,7 @@ No authorization required
 
 ## sectionSeoDetailRequestSectionDetailSeoPost
 
-> SectionInfo sectionSeoDetailRequestSectionDetailSeoPost(sectionSeoDetailRequest, authorization)
+> SectionInfo sectionSeoDetailRequestSectionDetailSeoPost(sectionSeoDetailRequest, authorization, xUserTimezone)
 
 Section Seo Detail Request
 
@@ -1641,6 +1709,8 @@ async function example() {
     sectionSeoDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SectionSeoDetailRequestSectionDetailSeoPostRequest;
 
   try {
@@ -1662,6 +1732,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionSeoDetailRequest** | [SectionSeoDetailRequest](SectionSeoDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1688,7 +1759,7 @@ No authorization required
 
 ## sectionUserAddRequestSectionUserAddPost
 
-> NormalResponse sectionUserAddRequestSectionUserAddPost(sectionUserAddRequest, authorization)
+> NormalResponse sectionUserAddRequestSectionUserAddPost(sectionUserAddRequest, authorization, xUserTimezone)
 
 Section User Add Request
 
@@ -1710,6 +1781,8 @@ async function example() {
     sectionUserAddRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SectionUserAddRequestSectionUserAddPostRequest;
 
   try {
@@ -1731,6 +1804,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionUserAddRequest** | [SectionUserAddRequest](SectionUserAddRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1757,7 +1831,7 @@ No authorization required
 
 ## sectionUserModifyRequestSectionUserModifyPost
 
-> NormalResponse sectionUserModifyRequestSectionUserModifyPost(sectionUserModifyRequest, authorization)
+> NormalResponse sectionUserModifyRequestSectionUserModifyPost(sectionUserModifyRequest, authorization, xUserTimezone)
 
 Section User Modify Request
 
@@ -1779,6 +1853,8 @@ async function example() {
     sectionUserModifyRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SectionUserModifyRequestSectionUserModifyPostRequest;
 
   try {
@@ -1800,6 +1876,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionUserModifyRequest** | [SectionUserModifyRequest](SectionUserModifyRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1826,7 +1903,7 @@ No authorization required
 
 ## sectionUserRequestSectionUserPost
 
-> InifiniteScrollPagnitionSectionUserPublicInfo sectionUserRequestSectionUserPost(sectionUserRequest, authorization)
+> InifiniteScrollPagnitionSectionUserPublicInfo sectionUserRequestSectionUserPost(sectionUserRequest, authorization, xUserTimezone)
 
 Section User Request
 
@@ -1848,6 +1925,8 @@ async function example() {
     sectionUserRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SectionUserRequestSectionUserPostRequest;
 
   try {
@@ -1869,6 +1948,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionUserRequest** | [SectionUserRequest](SectionUserRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1895,7 +1975,7 @@ No authorization required
 
 ## subscribeSectionSectionSubscribePost
 
-> NormalResponse subscribeSectionSectionSubscribePost(sectionSubscribeRequest, authorization)
+> NormalResponse subscribeSectionSectionSubscribePost(sectionSubscribeRequest, authorization, xUserTimezone)
 
 Subscribe Section
 
@@ -1917,6 +1997,8 @@ async function example() {
     sectionSubscribeRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SubscribeSectionSectionSubscribePostRequest;
 
   try {
@@ -1938,75 +2020,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **sectionSubscribeRequest** | [SectionSubscribeRequest](SectionSubscribeRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-[**NormalResponse**](NormalResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## updateSectionSectionUpdatePost
-
-> NormalResponse updateSectionSectionUpdatePost(sectionUpdateRequest, authorization)
-
-Update Section
-
-### Example
-
-```ts
-import {
-  Configuration,
-  SectionApi,
-} from '';
-import type { UpdateSectionSectionUpdatePostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new SectionApi();
-
-  const body = {
-    // SectionUpdateRequest
-    sectionUpdateRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-  } satisfies UpdateSectionSectionUpdatePostRequest;
-
-  try {
-    const data = await api.updateSectionSectionUpdatePost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **sectionUpdateRequest** | [SectionUpdateRequest](SectionUpdateRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
