@@ -13,7 +13,7 @@ import lark_oapi as lark
 from lark_oapi.api.im.v1 import CreateImageRequest, CreateImageRequestBody, CreateImageResponse
 
 from common.logger import exception_logger
-from config.base import base_url
+from config.base import WEB_BASE_URL
 from protocol.notification_tool import NotificationToolProtocol
 
 
@@ -39,7 +39,7 @@ class FeishuNotificationTool(NotificationToolProtocol):
             return normalized_link
 
         if normalized_link.startswith("/"):
-            raw_base_url = base_url
+            raw_base_url = WEB_BASE_URL
             if raw_base_url is not None:
                 normalized_base_url = raw_base_url.strip().strip("'\"")
                 if normalized_base_url:

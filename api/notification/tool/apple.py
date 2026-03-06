@@ -10,7 +10,7 @@ from jwcrypto import jwk
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from common.logger import exception_logger
-from config.base import base_url
+from config.base import WEB_BASE_URL
 from protocol.notification_tool import NotificationToolProtocol
 
 APPLE_PUBLIC_KEYS_URL = "https://appleid.apple.com/auth/keys"
@@ -39,7 +39,7 @@ def _resolve_notification_link(link: str | None) -> str | None:
         return normalized_link
 
     if normalized_link.startswith("/"):
-        normalized_base_url = _normalize_base_url(base_url)
+        normalized_base_url = _normalize_base_url(WEB_BASE_URL)
         if normalized_base_url:
             return urljoin(normalized_base_url, normalized_link.lstrip("/"))
 
