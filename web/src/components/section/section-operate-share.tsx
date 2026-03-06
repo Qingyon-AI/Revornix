@@ -51,7 +51,7 @@ const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 					<DialogHeader>
 						<DialogTitle>{t('section_share')}</DialogTitle>
 					</DialogHeader>
-					<Tabs defaultValue='account' className='flex-1 overflow-auto'>
+					<Tabs defaultValue='share' className='flex-1 overflow-auto'>
 						<TabsList className='w-full'>
 							<TabsTrigger value='share'>{t('section_share')}</TabsTrigger>
 							<TabsTrigger value='publish'>{t('section_publish')}</TabsTrigger>

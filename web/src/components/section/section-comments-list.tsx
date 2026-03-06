@@ -79,7 +79,7 @@ const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 										onClick={() =>
 											router.push(`/user/detail/${comment.creator.id}`)
 										}>
-										<Avatar className='mr-2'>
+										<Avatar className='mr-2 size-5'>
 											<AvatarImage
 												src={replacePath(
 													comment.creator.avatar,
@@ -88,7 +88,7 @@ const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 												alt='avatar'
 												className='size-5 object-cover'
 											/>
-											<AvatarFallback className='size-8'>
+											<AvatarFallback className='size-5'>
 												{comment.creator.nickname}
 											</AvatarFallback>
 										</Avatar>
