@@ -8,6 +8,7 @@ import models
 import schemas
 from common.dependencies import get_current_user, get_current_user_without_throw, get_db
 from common.file import get_remote_file_signed_url
+from common.timezone import decode_cron_expr_with_timezone
 from enums.section import UserSectionAuthority, UserSectionRole
 from router.logic_helpers import ensure_private_section_access
 
@@ -247,7 +248,10 @@ async def get_section_detail(
             section_id=section_detail_request.section_id
         )
         if db_section_process_trigger_scheduler is not None:
-            res.process_task_trigger_scheduler = db_section_process_trigger_scheduler.cron_expr
+            _, cron_expr = decode_cron_expr_with_timezone(
+                db_section_process_trigger_scheduler.cron_expr
+            )
+            res.process_task_trigger_scheduler = cron_expr
     return res
 
 @section_detail_query_router.post('/date', response_model=schemas.section.DaySectionResponse)

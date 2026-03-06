@@ -224,6 +224,7 @@ export * from './SectionPublishRequest';
 export * from './SectionRePublishRequest';
 export * from './SectionSeoDetailRequest';
 export * from './SectionSubscribeRequest';
+export * from './SectionUpdateRequest';
 export * from './SectionUserAddRequest';
 export * from './SectionUserDeleteRequest';
 export * from './SectionUserModifyRequest';

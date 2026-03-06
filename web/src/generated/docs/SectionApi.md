@@ -32,6 +32,7 @@ All URIs are relative to *http://localhost*
 | [**sectionUserModifyRequestSectionUserModifyPost**](SectionApi.md#sectionusermodifyrequestsectionusermodifypost) | **POST** /section/user/modify | Section User Modify Request |
 | [**sectionUserRequestSectionUserPost**](SectionApi.md#sectionuserrequestsectionuserpost) | **POST** /section/user | Section User Request |
 | [**subscribeSectionSectionSubscribePost**](SectionApi.md#subscribesectionsectionsubscribepost) | **POST** /section/subscribe | Subscribe Section |
+| [**updateSectionSectionUpdatePost**](SectionApi.md#updatesectionsectionupdatepost) | **POST** /section/update | Update Section |
 
 
 
@@ -2019,6 +2020,78 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **sectionSubscribeRequest** | [SectionSubscribeRequest](SectionSubscribeRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## updateSectionSectionUpdatePost
+
+> NormalResponse updateSectionSectionUpdatePost(sectionUpdateRequest, authorization, xUserTimezone)
+
+Update Section
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { UpdateSectionSectionUpdatePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // SectionUpdateRequest
+    sectionUpdateRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies UpdateSectionSectionUpdatePostRequest;
+
+  try {
+    const data = await api.updateSectionSectionUpdatePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **sectionUpdateRequest** | [SectionUpdateRequest](SectionUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
