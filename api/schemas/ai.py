@@ -1,7 +1,8 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
-from pydantic import BaseModel, field_serializer, ConfigDict
+from pydantic import ConfigDict
 
+from .base import BaseModel
 from .user import UserPublicInfo
 
 
@@ -29,19 +30,6 @@ class ModelProviderDetail(BaseModel):
     update_time: datetime | None
     creator: UserPublicInfo
 
-    @field_serializer("create_time")
-    def serializer_create_timezone(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_timezone(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
     model_config = ConfigDict(
         from_attributes=True,
         extra="ignore",
@@ -58,19 +46,6 @@ class ModelProvider(BaseModel):
     update_time: datetime | None
     creator: UserPublicInfo
 
-    @field_serializer("create_time")
-    def serializer_create_timezone(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_timezone(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
     model_config = ConfigDict(
         from_attributes=True,
         extra="ignore",
@@ -85,19 +60,6 @@ class Model(BaseModel):
     update_time: datetime | None
 
     provider: ModelProvider
-
-    @field_serializer("create_time")
-    def serializer_create_timezone(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_timezone(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
 
     model_config = ConfigDict(
         from_attributes=True,

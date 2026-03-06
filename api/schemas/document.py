@@ -1,8 +1,9 @@
 from datetime import date as date_type
-from datetime import datetime, timezone
+from datetime import datetime
 
-from pydantic import BaseModel, field_serializer, ConfigDict
+from pydantic import field_serializer, ConfigDict
 
+from .base import BaseModel
 from .task import (
     DocumentConvertTask,
     DocumentEmbeddingTask,
@@ -76,19 +77,6 @@ class DocumentNoteInfo(BaseModel):
     user: UserPublicInfo
     create_time: datetime
     update_time: datetime | None
-
-    @field_serializer("create_time")
-    def serializer_create_timezone(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_timezone(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -196,20 +184,6 @@ class DocumentInfo(BaseModel):
     transcribe_task: DocumentTranscribeTask | None = None
     process_task: DocumentProcessTask | None = None
 
-    @field_serializer("create_time")
-    def serializer_create_timezone(self, v: datetime) -> datetime:
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
-    @field_serializer("update_time")
-    def serializer_update_timezone(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
     model_config = ConfigDict(
         from_attributes=True,
         extra="ignore",
@@ -253,20 +227,6 @@ class DocumentDetailResponse(BaseModel):
     summarize_task: DocumentSummarizeTask | None = None
     transcribe_task: DocumentTranscribeTask | None = None
     process_task: DocumentProcessTask | None = None
-
-    @field_serializer("create_time")
-    def serializer_create_timezone(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
-    @field_serializer("update_time")
-    def serializer_update_timezone(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
 
     model_config = ConfigDict(
         from_attributes=True,

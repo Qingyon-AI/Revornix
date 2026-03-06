@@ -3,7 +3,6 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Skeleton } from '../ui/skeleton';
-import { format } from 'date-fns';
 import { useRouter } from 'nextjs-toploader/app';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
@@ -12,6 +11,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { OctagonAlert } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { replacePath } from '@/lib/utils';
+import { formatInUserTimeZone } from '@/lib/time';
 
 const DocumentNotes = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -95,7 +95,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 									</div>
 									{note.create_time && (
 										<p className='text-xs text-muted-foreground'>
-											{format(note.create_time, 'MM-dd HH:mm')}
+											{formatInUserTimeZone(note.create_time, 'MM-dd HH:mm')}
 										</p>
 									)}
 								</div>

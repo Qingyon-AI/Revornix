@@ -16,7 +16,6 @@ import {
 } from '@/service/section';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format } from 'date-fns';
 import SectionDocumentCard from '@/components/section/section-document-card';
 import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
@@ -36,12 +35,18 @@ import { RefreshCcwIcon, TrashIcon, XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'nextjs-toploader/app';
 import CustomMarkdown from '@/components/ui/custom-markdown';
+import {
+	formatInUserTimeZone,
+	getLocalDateYMD,
+	getUserTimeZone,
+} from '@/lib/time';
 
 const SectionDetailPage = () => {
 	const t = useTranslations();
 	const router = useRouter();
 	const { mainUserInfo } = useUserContext();
-	const today = new Date().toISOString().split('T')[0];
+	const today = getLocalDateYMD();
+	const userTimeZone = getUserTimeZone();
 	const {
 		data: section,
 		isFetching: isFetchingSection,
@@ -49,7 +54,7 @@ const SectionDetailPage = () => {
 		error,
 		refetch,
 	} = useQuery({
-		queryKey: ['todayDocumentSummarySection'],
+		queryKey: ['todayDocumentSummarySection', today],
 		queryFn: () => getDayDocumentsSummarySection({ date: today }),
 	});
 
@@ -216,12 +221,16 @@ const SectionDetailPage = () => {
 							</div>
 						</SheetContent>
 					</Sheet>
-					{section && (
-						<p className='text-xs bg-muted rounded px-4 py-2'>
-							{t('section_updated_at')}{' '}
-							{format(section.create_time as Date, 'yyyy-MM-dd HH:mm:ss')}
-						</p>
-					)}
+						{section && (
+							<p className='text-xs bg-muted rounded px-4 py-2'>
+								{t('section_updated_at')}{' '}
+								{formatInUserTimeZone(
+									section.create_time as Date,
+									'yyyy-MM-dd HH:mm:ss',
+								)}{' '}
+								({userTimeZone})
+							</p>
+						)}
 				</div>
 				<Separator />
 				<div

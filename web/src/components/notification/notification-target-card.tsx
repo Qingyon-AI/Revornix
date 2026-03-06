@@ -36,8 +36,8 @@ import {
 	NotificationTarget,
 } from '@/generated';
 import { replacePath } from '@/lib/utils';
-import { format } from 'date-fns';
 import UpdateNotificationTarget from './update-notification-target';
+import { formatInUserTimeZone } from '@/lib/time';
 import {
 	filterInfiniteQueryElements,
 	mapInfiniteQueryElements,
@@ -257,8 +257,8 @@ const NotificationTargetCard = ({
 				</span>
 				<span className='ml-auto text-xs text-muted-foreground'>
 					{notification_target.create_time &&
-						format(
-							new Date(notification_target.create_time),
+						formatInUserTimeZone(
+							notification_target.create_time,
 							'yyyy-MM-dd HH:mm',
 						)}
 				</span>

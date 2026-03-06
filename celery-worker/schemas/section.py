@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import Field
+from .base import BaseModel
 
 class ImagePlan(BaseModel):
     id: str = Field(..., description="Unique id used in markdown marker [image-id: <id>]")

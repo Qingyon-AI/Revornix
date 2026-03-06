@@ -4,6 +4,7 @@ import qs from 'qs';
 import Cookies from 'js-cookie'
 import { toast } from 'sonner';
 import { utils } from '@kinda/utils';
+import { getUserTimeZone } from '@/lib/time';
 
 type Subscriber = {
     resolve: () => void;
@@ -117,16 +118,22 @@ const checkTokenRefreshStatus = <T>(url: string, initialOptions?: RequestOptions
 }
 
 export const request = <T>(url: string, initialOptions?: RequestOptions): Promise<T> => {
-    const headers = new Headers();
-    if (!initialOptions?.formData) {
-        headers.append('Content-Type', 'application/json');
+    const headers = new Headers(initialOptions?.headers || undefined);
+    if (!initialOptions?.formData && !headers.has('Content-Type')) {
+        headers.set('Content-Type', 'application/json');
     }
-    headers.append('Trace-Id', uuidv4())
+    headers.set('Trace-Id', uuidv4());
 
     const isServer = typeof window === 'undefined';
     if (!isServer) {
         const accessToken = Cookies.get('access_token');
-        if (accessToken) headers.append('Authorization', `Bearer ${accessToken}`);
+        if (accessToken && !headers.has('Authorization')) {
+            headers.set('Authorization', `Bearer ${accessToken}`);
+        }
+        const userTimeZone = getUserTimeZone();
+        if (userTimeZone) {
+            headers.set('X-User-Timezone', userTimeZone);
+        }
     }
 
     return new Promise(async (resolve, reject) => {
@@ -137,8 +144,8 @@ export const request = <T>(url: string, initialOptions?: RequestOptions): Promis
             credentials: 'same-origin',
             redirect: 'follow',
             referrerPolicy: 'no-referrer',
-            headers: headers,
-            ...initialOptions
+            ...initialOptions,
+            headers,
         }
 
         if (method === 'POST' && initialOptions?.data && !initialOptions.formData) {

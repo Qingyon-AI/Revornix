@@ -5,7 +5,6 @@ import { searchSectionComment } from '@/service/section';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Skeleton } from '../ui/skeleton';
-import { format } from 'date-fns';
 import { useRouter } from 'nextjs-toploader/app';
 import { useTranslations } from 'next-intl';
 import {
@@ -17,6 +16,7 @@ import {
 import { TrashIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { replacePath } from '@/lib/utils';
+import { formatInUserTimeZone } from '@/lib/time';
 
 const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
@@ -97,7 +97,7 @@ const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 										</p>
 									</div>
 									<p className='text-xs text-muted-foreground'>
-										{format(comment.create_time, 'MM-dd HH:mm')}
+										{formatInUserTimeZone(comment.create_time, 'MM-dd HH:mm')}
 									</p>
 								</div>
 							</div>

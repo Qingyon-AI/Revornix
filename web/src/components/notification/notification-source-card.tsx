@@ -31,13 +31,13 @@ import { Loader2, XCircleIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
 import { replacePath } from '@/lib/utils';
-import { format } from 'date-fns';
 import {
 	InifiniteScrollPagnitionNotificationSource,
 	NotificationSource,
 } from '@/generated';
 import { Badge } from '../ui/badge';
 import { useUserContext } from '@/provider/user-provider';
+import { formatInUserTimeZone } from '@/lib/time';
 import {
 	filterInfiniteQueryElements,
 	mapInfiniteQueryElements,
@@ -253,8 +253,8 @@ const NotificationSourceCard = ({
 				</span>
 				<span className='ml-auto text-xs text-muted-foreground'>
 					{notification_source.create_time &&
-						format(
-							new Date(notification_source.create_time),
+						formatInUserTimeZone(
+							notification_source.create_time,
 							'yyyy-MM-dd HH:mm',
 						)}
 				</span>

@@ -2,9 +2,9 @@
 
 import { DocumentCategory, SectionDocumentIntegration } from '@/enums/document';
 import { SectionDocumentInfo } from '@/generated';
-import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
+import { formatInUserTimeZone } from '@/lib/time';
 
 const SectionDocumentCard = ({
 	document,
@@ -80,7 +80,7 @@ const SectionDocumentCard = ({
 				</div>
 				<div className='text-xs text-muted-foreground'>
 					{document.create_time &&
-						format(new Date(document.create_time), 'yyyy-MM-dd HH:mm')}
+						formatInUserTimeZone(document.create_time, 'yyyy-MM-dd HH:mm')}
 				</div>
 			</div>
 		</div>

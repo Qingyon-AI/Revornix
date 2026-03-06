@@ -1,7 +1,8 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
-from pydantic import BaseModel, field_serializer, field_validator, ConfigDict
-from enums.section import UserSectionRole, UserSectionAuthority
+from pydantic import field_validator
+from .base import BaseModel
+from enums.section import UserSectionAuthority
 
 
 class BindEmailRequest(BaseModel):
@@ -176,11 +177,6 @@ class PrivateUserInfo(BaseModel):
     default_audio_transcribe_engine_id: int | None = None
     default_image_generate_engine_id: int | None = None
 
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
-
 class UserInfoRequest(BaseModel):
     user_id: int
 
@@ -193,22 +189,6 @@ class SectionUserPublicInfo(BaseModel):
     role: int | None = None
     create_time: datetime
     update_time: datetime | None
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is None:
-            return v
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class UserPublicInfo(BaseModel):
     id: int
@@ -219,8 +199,3 @@ class UserPublicInfo(BaseModel):
     is_followed: bool | None = None
     fans: int | None = None
     follows: int | None = None
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )

@@ -1,7 +1,8 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
-from pydantic import BaseModel, field_serializer, ConfigDict
+from pydantic import ConfigDict
 
+from .base import BaseModel
 from .user import UserPublicInfo
 from enums.engine_enums import EngineCategory
 
@@ -14,11 +15,6 @@ class EngineProvidedInfo(BaseModel):
     description: str | None = None
     description_zh: str | None = None
     demo_config: str | None = None
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class EngineProvidedSearchRequest(BaseModel):
     keyword: str
@@ -54,24 +50,6 @@ class EngineDetail(BaseModel):
     config_json: str | None = None
     creator: UserPublicInfo
     engine_provided: EngineProvidedInfo
-
-    @field_serializer("create_time")
-    def serializer_create_timezone(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_timezone(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
         
 class EngineBaseInfo(BaseModel):
     id: int
@@ -84,24 +62,6 @@ class EngineBaseInfo(BaseModel):
     is_forked: bool | None = None
     creator: UserPublicInfo
     engine_provided: EngineProvidedInfo
-    
-    @field_serializer("create_time")
-    def serializer_create_timezone(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_timezone(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class EngineInfo(BaseModel):
     id: int
@@ -115,32 +75,9 @@ class EngineInfo(BaseModel):
     is_forked: bool | None = None
     creator: UserPublicInfo
     engine_provided: EngineProvidedInfo
-    
-    @field_serializer("create_time")
-    def serializer_create_timezone(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_timezone(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class UsableEnginesResponse(BaseModel):
     data: list[EngineInfo]
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class UsableEngineSearchRequest(BaseModel):
     keyword: str | None = None

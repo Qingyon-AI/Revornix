@@ -5,7 +5,7 @@
 from datetime import datetime, timezone
 
 from celery import chain, group
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Header, UploadFile
 from sqlalchemy.orm import Session
 
 import crud
@@ -19,6 +19,11 @@ from common.dependencies import (
     plan_ability_checked_in_func,
 )
 from common.jwt_utils import create_token
+from common.timezone import (
+    get_cached_user_timezone,
+    normalize_timezone_name,
+    today_in_timezone,
+)
 from enums.ability import Ability
 from enums.document import DocumentCategory, UserDocumentAuthority
 from enums.section import SectionDocumentIntegration, UserSectionAuthority, UserSectionRole
@@ -156,8 +161,14 @@ async def create_document(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
     deployed_by_official: bool = Depends(check_deployed_by_official),
+    x_user_timezone: str | None = Header(default=None),
 ):
     now = datetime.now(timezone.utc)
+    if x_user_timezone is not None and x_user_timezone.strip():
+        user_timezone = normalize_timezone_name(x_user_timezone)
+    else:
+        user_timezone = await get_cached_user_timezone(user.id)
+    summary_date = today_in_timezone(user_timezone)
     access_token, _ = create_token(
         user=user
     )
@@ -165,7 +176,8 @@ async def create_document(
         db=db,
         user_id=user.id,
         filter_platform='api',
-        filter_date=now.date()
+        filter_date=summary_date,
+        filter_timezone=user_timezone,
     )
     auth_status = True
     if db_api_plat_user_documents > 10 and db_api_plat_user_documents < 25 and deployed_by_official:
@@ -283,14 +295,14 @@ async def create_document(
     db_today_section = crud.section.get_section_by_user_and_date(
         db=db,
         user_id=user.id,
-        date=now.date()
+        date=summary_date
     )
     if db_today_section is None:
         db_today_section = crud.section.create_section(
             db=db,
             creator_id=user.id,
-            title=f'{now.date().isoformat()} Summary',
-            description=f"This document is the summary of all documents on {now.date().isoformat()}."
+            title=f'{summary_date.isoformat()} Summary',
+            description=f"This document is the summary of all documents on {summary_date.isoformat()}."
         )
         crud.section.create_section_user(
             db=db,
@@ -302,7 +314,7 @@ async def create_document(
         crud.section.create_date_section(
             db=db,
             section_id=db_today_section.id,
-            date=now.date()
+            date=summary_date
         )
     document_create_request.sections.append(db_today_section.id)
     # 去重

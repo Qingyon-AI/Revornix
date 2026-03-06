@@ -1,5 +1,6 @@
-from pydantic import BaseModel, field_serializer, ConfigDict
-from datetime import datetime, timezone
+from pydantic import ConfigDict
+from schemas.base import BaseModel
+from datetime import datetime
 
 class DocumentInfo(BaseModel):
     id: int
@@ -8,16 +9,6 @@ class DocumentInfo(BaseModel):
     description: str | None
     update_time: datetime | None
     create_time: datetime
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
 
     model_config = ConfigDict(
         from_attributes=True,

@@ -1,5 +1,4 @@
 import { DocumentInfo } from '@/generated';
-import { format } from 'date-fns';
 import { File, NotebookPen, Paperclip } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -10,6 +9,7 @@ import {
 	DocumentEmbeddingStatus,
 } from '@/enums/document';
 import { replacePath } from '@/lib/utils';
+import { formatInUserTimeZone } from '@/lib/time';
 
 const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 	const t = useTranslations();
@@ -86,7 +86,7 @@ const DocumentCard = ({ document }: { document: DocumentInfo }) => {
 					<div className='w-fit px-2 py-1 rounded bg-black/5 dark:bg-white/5'>
 						{t('document_last_update') + ': '}
 						{document.create_time &&
-							format(new Date(document.create_time), 'MM-dd HH:mm')}
+							formatInUserTimeZone(document.create_time, 'MM-dd HH:mm')}
 					</div>
 				</div>
 			</div>

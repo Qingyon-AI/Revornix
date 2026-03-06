@@ -17,6 +17,7 @@ from urllib.parse import urlparse
 from fastapi import Request, HTTPException, status, Depends, Header
 from config.langfuse import LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
 from common.logger import exception_logger
+from common.timezone import UTC_TIMEZONE_NAME, normalize_timezone_name, timezone_cache_key
 from enums.user import UserRole
 
 if OAUTH_SECRET_KEY is None:
@@ -116,6 +117,30 @@ def _is_admin_or_root_from_authorization(
 def get_cache(request: Request) -> Redis:
     return request.app.state.redis
 
+
+async def _cache_user_timezone(
+    request: Request,
+    user_id: int,
+    raw_timezone: str | None,
+) -> str:
+    if raw_timezone is None or not raw_timezone.strip():
+        return UTC_TIMEZONE_NAME
+    timezone_name = normalize_timezone_name(raw_timezone)
+    redis_conn = getattr(request.app.state, "redis", None)
+    if redis_conn is None:
+        return timezone_name
+    try:
+        await redis_conn.set(timezone_cache_key(user_id), timezone_name)
+    except Exception as e:
+        exception_logger.warning(f"Failed to cache user timezone for user_id={user_id}: {e}")
+    return timezone_name
+
+
+def get_request_timezone(
+    x_user_timezone: str | None = Header(default=None),
+) -> str:
+    return normalize_timezone_name(x_user_timezone)
+
 def get_api_key(
     api_key: str | None = Header(default=None), 
     db: Session = Depends(get_db)
@@ -130,15 +155,23 @@ def get_api_key(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key")
     return db_api_key
 
-def get_current_user_with_api_key(
+async def get_current_user_with_api_key(
+    request: Request,
     api_key: models.api_key.ApiKey = Depends(get_api_key),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    x_user_timezone: str | None = Header(default=None),
 ):
-     user = crud.user.get_user_by_id(
-         db=db, 
-         user_id=api_key.user_id
+    user = crud.user.get_user_by_id(
+        db=db,
+        user_id=api_key.user_id
+    )
+    if user is not None:
+        await _cache_user_timezone(
+            request=request,
+            user_id=user.id,
+            raw_timezone=x_user_timezone,
         )
-     return user
+    return user
 
 def get_real_ip(
     request: Request, 
@@ -163,9 +196,11 @@ def get_authorization_header(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authorization header format")
     return authorization.replace("Bearer ", "")
 
-def get_current_user_without_throw(
+async def get_current_user_without_throw(
+    request: Request,
     authorization: str | None = Header(default=None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    x_user_timezone: str | None = Header(default=None),
 ):
     authenticate_value = "Bearer"
     if authorization is None or not authorization.startswith(authenticate_value):
@@ -190,11 +225,18 @@ def get_current_user_without_throw(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are forbidden"
         )
+    await _cache_user_timezone(
+        request=request,
+        user_id=user.id,
+        raw_timezone=x_user_timezone,
+    )
     return user
 
-def get_current_user(
+async def get_current_user(
+    request: Request,
     authorization: str | None = Header(default=None), 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    x_user_timezone: str | None = Header(default=None),
 ):
     authenticate_value = "Bearer"
     credentials_exception = HTTPException(
@@ -223,6 +265,11 @@ def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are forbidden"
         )
+    await _cache_user_timezone(
+        request=request,
+        user_id=user.id,
+        raw_timezone=x_user_timezone,
+    )
     return user
 
 async def plan_ability_checked_in_func(
