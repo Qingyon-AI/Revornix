@@ -1,6 +1,6 @@
 # UserApi
 
-All URIs are relative to *http://localhost:8001/api/main-service*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -46,7 +46,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## bindEmailCodeUserBindEmailCodePost
 
-> NormalResponse bindEmailCodeUserBindEmailCodePost(bindEmailRequest, authorization)
+> NormalResponse bindEmailCodeUserBindEmailCodePost(bindEmailRequest, authorization, xUserTimezone)
 
 Bind Email Code
 
@@ -68,6 +68,8 @@ async function example() {
     bindEmailRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies BindEmailCodeUserBindEmailCodePostRequest;
 
   try {
@@ -89,6 +91,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **bindEmailRequest** | [BindEmailRequest](BindEmailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -115,7 +118,7 @@ No authorization required
 
 ## bindEmailUserBindEmailPost
 
-> NormalResponse bindEmailUserBindEmailPost(bindEmailVerifyRequest, authorization)
+> NormalResponse bindEmailUserBindEmailPost(bindEmailVerifyRequest, authorization, xUserTimezone)
 
 Bind Email
 
@@ -139,6 +142,8 @@ async function example() {
     bindEmailVerifyRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies BindEmailUserBindEmailPostRequest;
 
   try {
@@ -160,6 +165,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **bindEmailVerifyRequest** | [BindEmailVerifyRequest](BindEmailVerifyRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -186,7 +192,7 @@ No authorization required
 
 ## bindEmailVerifyUserBindEmailVerifyPost
 
-> NormalResponse bindEmailVerifyUserBindEmailVerifyPost(bindEmailCodeVerifyRequest, authorization)
+> NormalResponse bindEmailVerifyUserBindEmailVerifyPost(bindEmailCodeVerifyRequest, authorization, xUserTimezone)
 
 Bind Email Verify
 
@@ -208,6 +214,8 @@ async function example() {
     bindEmailCodeVerifyRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies BindEmailVerifyUserBindEmailVerifyPostRequest;
 
   try {
@@ -229,6 +237,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **bindEmailCodeVerifyRequest** | [BindEmailCodeVerifyRequest](BindEmailCodeVerifyRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -255,7 +264,7 @@ No authorization required
 
 ## bindGithubUserBindGithubPost
 
-> NormalResponse bindGithubUserBindGithubPost(githubUserBind, authorization)
+> NormalResponse bindGithubUserBindGithubPost(githubUserBind, authorization, xUserTimezone)
 
 Bind Github
 
@@ -277,6 +286,8 @@ async function example() {
     githubUserBind: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies BindGithubUserBindGithubPostRequest;
 
   try {
@@ -298,6 +309,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **githubUserBind** | [GithubUserBind](GithubUserBind.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -324,7 +336,7 @@ No authorization required
 
 ## bindGoogleUserBindGooglePost
 
-> NormalResponse bindGoogleUserBindGooglePost(googleUserBind, authorization)
+> NormalResponse bindGoogleUserBindGooglePost(googleUserBind, authorization, xUserTimezone)
 
 Bind Google
 
@@ -346,6 +358,8 @@ async function example() {
     googleUserBind: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies BindGoogleUserBindGooglePostRequest;
 
   try {
@@ -367,6 +381,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **googleUserBind** | [GoogleUserBind](GoogleUserBind.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -393,7 +408,7 @@ No authorization required
 
 ## bindPhoneUserBindPhoneCodePost
 
-> NormalResponse bindPhoneUserBindPhoneCodePost(bindPhoneCodeCreateRequest, authorization)
+> NormalResponse bindPhoneUserBindPhoneCodePost(bindPhoneCodeCreateRequest, authorization, xUserTimezone)
 
 Bind Phone
 
@@ -415,6 +430,8 @@ async function example() {
     bindPhoneCodeCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies BindPhoneUserBindPhoneCodePostRequest;
 
   try {
@@ -436,6 +453,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **bindPhoneCodeCreateRequest** | [BindPhoneCodeCreateRequest](BindPhoneCodeCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -462,7 +480,7 @@ No authorization required
 
 ## bindPhoneVerifyUserBindPhoneVerifyPost
 
-> NormalResponse bindPhoneVerifyUserBindPhoneVerifyPost(bindPhoneCodeVerifyRequest, authorization)
+> NormalResponse bindPhoneVerifyUserBindPhoneVerifyPost(bindPhoneCodeVerifyRequest, authorization, xUserTimezone)
 
 Bind Phone Verify
 
@@ -484,6 +502,8 @@ async function example() {
     bindPhoneCodeVerifyRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies BindPhoneVerifyUserBindPhoneVerifyPostRequest;
 
   try {
@@ -505,6 +525,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **bindPhoneCodeVerifyRequest** | [BindPhoneCodeVerifyRequest](BindPhoneCodeVerifyRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -531,7 +552,7 @@ No authorization required
 
 ## bindWechatUserBindWechatWebPost
 
-> NormalResponse bindWechatUserBindWechatWebPost(weChatWebUserBindRequest, authorization)
+> NormalResponse bindWechatUserBindWechatWebPost(weChatWebUserBindRequest, authorization, xUserTimezone)
 
 Bind Wechat
 
@@ -553,6 +574,8 @@ async function example() {
     weChatWebUserBindRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies BindWechatUserBindWechatWebPostRequest;
 
   try {
@@ -574,6 +597,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **weChatWebUserBindRequest** | [WeChatWebUserBindRequest](WeChatWebUserBindRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1217,7 +1241,7 @@ No authorization required
 
 ## deleteUserUserDeletePost
 
-> NormalResponse deleteUserUserDeletePost(authorization)
+> NormalResponse deleteUserUserDeletePost(authorization, xUserTimezone)
 
 Delete User
 
@@ -1237,6 +1261,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteUserUserDeletePostRequest;
 
   try {
@@ -1257,6 +1283,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1283,7 +1310,7 @@ No authorization required
 
 ## followUserUserFollowPost
 
-> NormalResponse followUserUserFollowPost(followUserRequest, authorization)
+> NormalResponse followUserUserFollowPost(followUserRequest, authorization, xUserTimezone)
 
 Follow User
 
@@ -1305,6 +1332,8 @@ async function example() {
     followUserRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies FollowUserUserFollowPostRequest;
 
   try {
@@ -1326,6 +1355,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **followUserRequest** | [FollowUserRequest](FollowUserRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1352,7 +1382,7 @@ No authorization required
 
 ## initialSeePasswordUserPasswordInitialSeePost
 
-> InitialPasswordResponse initialSeePasswordUserPasswordInitialSeePost(authorization)
+> InitialPasswordResponse initialSeePasswordUserPasswordInitialSeePost(authorization, xUserTimezone)
 
 Initial See Password
 
@@ -1372,6 +1402,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies InitialSeePasswordUserPasswordInitialSeePostRequest;
 
   try {
@@ -1392,6 +1424,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1487,7 +1520,7 @@ No authorization required
 
 ## myInfoUserMineInfoPost
 
-> PrivateUserInfo myInfoUserMineInfoPost(authorization)
+> PrivateUserInfo myInfoUserMineInfoPost(authorization, xUserTimezone)
 
 My Info
 
@@ -1507,6 +1540,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies MyInfoUserMineInfoPostRequest;
 
   try {
@@ -1527,6 +1562,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1553,7 +1589,7 @@ No authorization required
 
 ## searchUserFansUserFansPost
 
-> InifiniteScrollPagnitionUserPublicInfo searchUserFansUserFansPost(searchUserFansRequest, authorization)
+> InifiniteScrollPagnitionUserPublicInfo searchUserFansUserFansPost(searchUserFansRequest, authorization, xUserTimezone)
 
 Search User Fans
 
@@ -1575,6 +1611,8 @@ async function example() {
     searchUserFansRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchUserFansUserFansPostRequest;
 
   try {
@@ -1596,6 +1634,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchUserFansRequest** | [SearchUserFansRequest](SearchUserFansRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1622,7 +1661,7 @@ No authorization required
 
 ## searchUserFollowsUserFollowsPost
 
-> InifiniteScrollPagnitionUserPublicInfo searchUserFollowsUserFollowsPost(searchUserFollowsRequest, authorization)
+> InifiniteScrollPagnitionUserPublicInfo searchUserFollowsUserFollowsPost(searchUserFollowsRequest, authorization, xUserTimezone)
 
 Search User Follows
 
@@ -1644,6 +1683,8 @@ async function example() {
     searchUserFollowsRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchUserFollowsUserFollowsPostRequest;
 
   try {
@@ -1665,6 +1706,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchUserFollowsRequest** | [SearchUserFollowsRequest](SearchUserFollowsRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1691,7 +1733,7 @@ No authorization required
 
 ## searchUserUserSearchPost
 
-> InifiniteScrollPagnitionUserPublicInfo searchUserUserSearchPost(searchUserRequest, authorization)
+> InifiniteScrollPagnitionUserPublicInfo searchUserUserSearchPost(searchUserRequest, authorization, xUserTimezone)
 
 Search User
 
@@ -1713,6 +1755,8 @@ async function example() {
     searchUserRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchUserUserSearchPostRequest;
 
   try {
@@ -1734,6 +1778,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **searchUserRequest** | [SearchUserRequest](SearchUserRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1760,7 +1805,7 @@ No authorization required
 
 ## unbindGithubUserUnbindGithubPost
 
-> NormalResponse unbindGithubUserUnbindGithubPost(authorization)
+> NormalResponse unbindGithubUserUnbindGithubPost(authorization, xUserTimezone)
 
 Unbind Github
 
@@ -1780,6 +1825,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UnbindGithubUserUnbindGithubPostRequest;
 
   try {
@@ -1800,6 +1847,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1826,7 +1874,7 @@ No authorization required
 
 ## unbindGoogleUserUnbindGooglePost
 
-> NormalResponse unbindGoogleUserUnbindGooglePost(authorization)
+> NormalResponse unbindGoogleUserUnbindGooglePost(authorization, xUserTimezone)
 
 Unbind Google
 
@@ -1846,6 +1894,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UnbindGoogleUserUnbindGooglePostRequest;
 
   try {
@@ -1866,6 +1916,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1892,7 +1943,7 @@ No authorization required
 
 ## unbindPhoneUserUnbindPhonePost
 
-> NormalResponse unbindPhoneUserUnbindPhonePost(authorization)
+> NormalResponse unbindPhoneUserUnbindPhonePost(authorization, xUserTimezone)
 
 Unbind Phone
 
@@ -1912,6 +1963,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UnbindPhoneUserUnbindPhonePostRequest;
 
   try {
@@ -1932,6 +1985,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1958,7 +2012,7 @@ No authorization required
 
 ## unbindWechatUserUnbindWechatPost
 
-> NormalResponse unbindWechatUserUnbindWechatPost(authorization)
+> NormalResponse unbindWechatUserUnbindWechatPost(authorization, xUserTimezone)
 
 Unbind Wechat
 
@@ -1978,6 +2032,8 @@ async function example() {
   const body = {
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UnbindWechatUserUnbindWechatPostRequest;
 
   try {
@@ -1998,6 +2054,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2024,7 +2081,7 @@ No authorization required
 
 ## updateDefaultEngineUserDefaultEngineUpdatePost
 
-> NormalResponse updateDefaultEngineUserDefaultEngineUpdatePost(defaultEngineUpdateRequest, authorization)
+> NormalResponse updateDefaultEngineUserDefaultEngineUpdatePost(defaultEngineUpdateRequest, authorization, xUserTimezone)
 
 Update Default Engine
 
@@ -2046,6 +2103,8 @@ async function example() {
     defaultEngineUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateDefaultEngineUserDefaultEngineUpdatePostRequest;
 
   try {
@@ -2067,6 +2126,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **defaultEngineUpdateRequest** | [DefaultEngineUpdateRequest](DefaultEngineUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2093,7 +2153,7 @@ No authorization required
 
 ## updateDefaultFileSystemUserDefaultFileSystemUpdatePost
 
-> NormalResponse updateDefaultFileSystemUserDefaultFileSystemUpdatePost(defaultFileSystemUpdateRequest, authorization)
+> NormalResponse updateDefaultFileSystemUserDefaultFileSystemUpdatePost(defaultFileSystemUpdateRequest, authorization, xUserTimezone)
 
 Update Default File System
 
@@ -2115,6 +2175,8 @@ async function example() {
     defaultFileSystemUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateDefaultFileSystemUserDefaultFileSystemUpdatePostRequest;
 
   try {
@@ -2136,6 +2198,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **defaultFileSystemUpdateRequest** | [DefaultFileSystemUpdateRequest](DefaultFileSystemUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2162,7 +2225,7 @@ No authorization required
 
 ## updateDefaultModelUserDefaultModelUpdatePost
 
-> NormalResponse updateDefaultModelUserDefaultModelUpdatePost(defaultModelUpdateRequest, authorization)
+> NormalResponse updateDefaultModelUserDefaultModelUpdatePost(defaultModelUpdateRequest, authorization, xUserTimezone)
 
 Update Default Model
 
@@ -2184,6 +2247,8 @@ async function example() {
     defaultModelUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateDefaultModelUserDefaultModelUpdatePostRequest;
 
   try {
@@ -2205,6 +2270,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **defaultModelUpdateRequest** | [DefaultModelUpdateRequest](DefaultModelUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2231,7 +2297,7 @@ No authorization required
 
 ## updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost
 
-> NormalResponse updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost(defaultReadMarkReasonUpdateRequest, authorization)
+> NormalResponse updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost(defaultReadMarkReasonUpdateRequest, authorization, xUserTimezone)
 
 Update My Default Read Mark Reason
 
@@ -2253,6 +2319,8 @@ async function example() {
     defaultReadMarkReasonUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequest;
 
   try {
@@ -2274,6 +2342,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **defaultReadMarkReasonUpdateRequest** | [DefaultReadMarkReasonUpdateRequest](DefaultReadMarkReasonUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2300,7 +2369,7 @@ No authorization required
 
 ## updateMyInfoUserUpdatePost
 
-> NormalResponse updateMyInfoUserUpdatePost(userInfoUpdateRequest, authorization)
+> NormalResponse updateMyInfoUserUpdatePost(userInfoUpdateRequest, authorization, xUserTimezone)
 
 Update My Info
 
@@ -2322,6 +2391,8 @@ async function example() {
     userInfoUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateMyInfoUserUpdatePostRequest;
 
   try {
@@ -2343,6 +2414,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **userInfoUpdateRequest** | [UserInfoUpdateRequest](UserInfoUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2369,7 +2441,7 @@ No authorization required
 
 ## updatePasswordUserPasswordUpdatePost
 
-> NormalResponse updatePasswordUserPasswordUpdatePost(passwordUpdateRequest, authorization)
+> NormalResponse updatePasswordUserPasswordUpdatePost(passwordUpdateRequest, authorization, xUserTimezone)
 
 Update Password
 
@@ -2391,6 +2463,8 @@ async function example() {
     passwordUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdatePasswordUserPasswordUpdatePostRequest;
 
   try {
@@ -2412,6 +2486,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **passwordUpdateRequest** | [PasswordUpdateRequest](PasswordUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2507,7 +2582,7 @@ No authorization required
 
 ## userInfoUserInfoPost
 
-> UserPublicInfo userInfoUserInfoPost(userInfoRequest, authorization)
+> UserPublicInfo userInfoUserInfoPost(userInfoRequest, authorization, xUserTimezone)
 
 User Info
 
@@ -2529,6 +2604,8 @@ async function example() {
     userInfoRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UserInfoUserInfoPostRequest;
 
   try {
@@ -2550,6 +2627,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **userInfoRequest** | [UserInfoRequest](UserInfoRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

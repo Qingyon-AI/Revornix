@@ -1,6 +1,6 @@
 # McpApi
 
-All URIs are relative to *http://localhost:8001/api/main-service*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -14,7 +14,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## createServerMcpServerCreatePost
 
-> NormalResponse createServerMcpServerCreatePost(mCPServerCreateRequest, authorization)
+> NormalResponse createServerMcpServerCreatePost(mCPServerCreateRequest, authorization, xUserTimezone)
 
 Create Server
 
@@ -36,6 +36,8 @@ async function example() {
     mCPServerCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies CreateServerMcpServerCreatePostRequest;
 
   try {
@@ -57,6 +59,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mCPServerCreateRequest** | [MCPServerCreateRequest](MCPServerCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -83,7 +86,7 @@ No authorization required
 
 ## deleteServerMcpServerDeletePost
 
-> NormalResponse deleteServerMcpServerDeletePost(mCPServerDeleteRequest, authorization)
+> NormalResponse deleteServerMcpServerDeletePost(mCPServerDeleteRequest, authorization, xUserTimezone)
 
 Delete Server
 
@@ -105,6 +108,8 @@ async function example() {
     mCPServerDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteServerMcpServerDeletePostRequest;
 
   try {
@@ -126,6 +131,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mCPServerDeleteRequest** | [MCPServerDeleteRequest](MCPServerDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -152,7 +158,7 @@ No authorization required
 
 ## getMcpServerDetailMcpServerDetailPost
 
-> MCPServerInfo getMcpServerDetailMcpServerDetailPost(mCPServerDetailRequest, authorization)
+> MCPServerInfo getMcpServerDetailMcpServerDetailPost(mCPServerDetailRequest, authorization, xUserTimezone)
 
 Get Mcp Server Detail
 
@@ -174,6 +180,8 @@ async function example() {
     mCPServerDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetMcpServerDetailMcpServerDetailPostRequest;
 
   try {
@@ -195,6 +203,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mCPServerDetailRequest** | [MCPServerDetailRequest](MCPServerDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -221,7 +230,7 @@ No authorization required
 
 ## getMcpServerListMcpServerSearchPost
 
-> MCPServerSearchResponse getMcpServerListMcpServerSearchPost(mCPServerSearchRequest, authorization)
+> MCPServerSearchResponse getMcpServerListMcpServerSearchPost(mCPServerSearchRequest, authorization, xUserTimezone)
 
 Get Mcp Server List
 
@@ -243,6 +252,8 @@ async function example() {
     mCPServerSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetMcpServerListMcpServerSearchPostRequest;
 
   try {
@@ -264,6 +275,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mCPServerSearchRequest** | [MCPServerSearchRequest](MCPServerSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -290,7 +302,7 @@ No authorization required
 
 ## updateServerMcpServerUpdatePost
 
-> NormalResponse updateServerMcpServerUpdatePost(mCPServerUpdateRequest, authorization)
+> NormalResponse updateServerMcpServerUpdatePost(mCPServerUpdateRequest, authorization, xUserTimezone)
 
 Update Server
 
@@ -312,6 +324,8 @@ async function example() {
     mCPServerUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateServerMcpServerUpdatePostRequest;
 
   try {
@@ -333,6 +347,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **mCPServerUpdateRequest** | [MCPServerUpdateRequest](MCPServerUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

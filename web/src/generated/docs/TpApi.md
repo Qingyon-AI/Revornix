@@ -1,6 +1,6 @@
 # TpApi
 
-All URIs are relative to *http://localhost:8001/api/main-service*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -16,7 +16,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## addLabelTpSectionLabelCreatePost
 
-> CreateLabelResponse addLabelTpSectionLabelCreatePost(labelAddRequest, apiKey)
+> CreateLabelResponse addLabelTpSectionLabelCreatePost(labelAddRequest, xUserTimezone, apiKey)
 
 Add Label
 
@@ -36,6 +36,8 @@ async function example() {
   const body = {
     // LabelAddRequest
     labelAddRequest: ...,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
     // string (optional)
     apiKey: apiKey_example,
   } satisfies AddLabelTpSectionLabelCreatePostRequest;
@@ -58,6 +60,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **labelAddRequest** | [LabelAddRequest](LabelAddRequest.md) |  | |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
@@ -85,7 +88,7 @@ No authorization required
 
 ## createDocumentLabelTpDocumentLabelCreatePost
 
-> CreateLabelResponse createDocumentLabelTpDocumentLabelCreatePost(labelAddRequest, apiKey)
+> CreateLabelResponse createDocumentLabelTpDocumentLabelCreatePost(labelAddRequest, xUserTimezone, apiKey)
 
 Create Document Label
 
@@ -105,6 +108,8 @@ async function example() {
   const body = {
     // LabelAddRequest
     labelAddRequest: ...,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
     // string (optional)
     apiKey: apiKey_example,
   } satisfies CreateDocumentLabelTpDocumentLabelCreatePostRequest;
@@ -127,6 +132,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **labelAddRequest** | [LabelAddRequest](LabelAddRequest.md) |  | |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
@@ -154,7 +160,7 @@ No authorization required
 
 ## createDocumentTpDocumentCreatePost
 
-> DocumentCreateResponse createDocumentTpDocumentCreatePost(documentCreateRequest, apiKey)
+> DocumentCreateResponse createDocumentTpDocumentCreatePost(documentCreateRequest, xUserTimezone, apiKey)
 
 Create Document
 
@@ -174,6 +180,8 @@ async function example() {
   const body = {
     // DocumentCreateRequest
     documentCreateRequest: ...,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
     // string (optional)
     apiKey: apiKey_example,
   } satisfies CreateDocumentTpDocumentCreatePostRequest;
@@ -196,6 +204,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **documentCreateRequest** | [DocumentCreateRequest](DocumentCreateRequest.md) |  | |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
@@ -223,7 +232,7 @@ No authorization required
 
 ## createSectionTpSectionCreatePost
 
-> SectionCreateResponse createSectionTpSectionCreatePost(sectionCreateRequest, apiKey)
+> SectionCreateResponse createSectionTpSectionCreatePost(sectionCreateRequest, xUserTimezone, apiKey)
 
 Create Section
 
@@ -243,6 +252,8 @@ async function example() {
   const body = {
     // SectionCreateRequest
     sectionCreateRequest: ...,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
     // string (optional)
     apiKey: apiKey_example,
   } satisfies CreateSectionTpSectionCreatePostRequest;
@@ -265,6 +276,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **sectionCreateRequest** | [SectionCreateRequest](SectionCreateRequest.md) |  | |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
@@ -292,7 +304,7 @@ No authorization required
 
 ## getAllMineSectionsTpSectionMineAllPost
 
-> AllMySectionsResponse getAllMineSectionsTpSectionMineAllPost(apiKey)
+> AllMySectionsResponse getAllMineSectionsTpSectionMineAllPost(xUserTimezone, apiKey)
 
 Get All Mine Sections
 
@@ -310,6 +322,8 @@ async function example() {
   const api = new TpApi();
 
   const body = {
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
     // string (optional)
     apiKey: apiKey_example,
   } satisfies GetAllMineSectionsTpSectionMineAllPostRequest;
@@ -331,6 +345,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
@@ -358,7 +373,7 @@ No authorization required
 
 ## listLabelTpDocumentLabelListPost
 
-> SchemasDocumentLabelListResponse listLabelTpDocumentLabelListPost(apiKey)
+> SchemasDocumentLabelListResponse listLabelTpDocumentLabelListPost(xUserTimezone, apiKey)
 
 List Label
 
@@ -376,6 +391,8 @@ async function example() {
   const api = new TpApi();
 
   const body = {
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
     // string (optional)
     apiKey: apiKey_example,
   } satisfies ListLabelTpDocumentLabelListPostRequest;
@@ -397,6 +414,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
@@ -424,7 +442,7 @@ No authorization required
 
 ## uploadFileSystemTpFileUploadPost
 
-> NormalResponse uploadFileSystemTpFileUploadPost(file, filePath, contentType, apiKey)
+> NormalResponse uploadFileSystemTpFileUploadPost(file, filePath, contentType, xUserTimezone, apiKey)
 
 Upload File System
 
@@ -449,6 +467,8 @@ async function example() {
     // string
     contentType: contentType_example,
     // string (optional)
+    xUserTimezone: xUserTimezone_example,
+    // string (optional)
     apiKey: apiKey_example,
   } satisfies UploadFileSystemTpFileUploadPostRequest;
 
@@ -472,6 +492,7 @@ example().catch(console.error);
 | **file** | `Blob` |  | [Defaults to `undefined`] |
 | **filePath** | `string` |  | [Defaults to `undefined`] |
 | **contentType** | `string` |  | [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type

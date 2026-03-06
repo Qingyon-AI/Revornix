@@ -1,6 +1,6 @@
 # EngineApi
 
-All URIs are relative to *http://localhost:8001/api/main-service*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -17,7 +17,7 @@ All URIs are relative to *http://localhost:8001/api/main-service*
 
 ## createEngineEngineCreatePost
 
-> NormalResponse createEngineEngineCreatePost(engineCreateRequest, authorization)
+> NormalResponse createEngineEngineCreatePost(engineCreateRequest, authorization, xUserTimezone)
 
 Create Engine
 
@@ -41,6 +41,8 @@ async function example() {
     engineCreateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies CreateEngineEngineCreatePostRequest;
 
   try {
@@ -62,6 +64,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **engineCreateRequest** | [EngineCreateRequest](EngineCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -88,7 +91,7 @@ No authorization required
 
 ## deleteEngineEngineDeletePost
 
-> NormalResponse deleteEngineEngineDeletePost(engineDeleteRequest, authorization)
+> NormalResponse deleteEngineEngineDeletePost(engineDeleteRequest, authorization, xUserTimezone)
 
 Delete Engine
 
@@ -110,6 +113,8 @@ async function example() {
     engineDeleteRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies DeleteEngineEngineDeletePostRequest;
 
   try {
@@ -131,6 +136,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **engineDeleteRequest** | [EngineDeleteRequest](EngineDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -157,7 +163,7 @@ No authorization required
 
 ## getEngineDetailEngineDetailPost
 
-> EngineDetail getEngineDetailEngineDetailPost(engineDetailRequest, authorization)
+> EngineDetail getEngineDetailEngineDetailPost(engineDetailRequest, authorization, xUserTimezone)
 
 Get Engine Detail
 
@@ -179,6 +185,8 @@ async function example() {
     engineDetailRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies GetEngineDetailEngineDetailPostRequest;
 
   try {
@@ -200,6 +208,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **engineDetailRequest** | [EngineDetailRequest](EngineDetailRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -226,7 +235,7 @@ No authorization required
 
 ## installEngineEngineForkPost
 
-> NormalResponse installEngineEngineForkPost(engineForkRequest, authorization)
+> NormalResponse installEngineEngineForkPost(engineForkRequest, authorization, xUserTimezone)
 
 Install Engine
 
@@ -248,6 +257,8 @@ async function example() {
     engineForkRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies InstallEngineEngineForkPostRequest;
 
   try {
@@ -269,6 +280,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **engineForkRequest** | [EngineForkRequest](EngineForkRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -295,7 +307,7 @@ No authorization required
 
 ## provideDocumentParseEngineEngineProvidedPost
 
-> EngineProvidedSearchResponse provideDocumentParseEngineEngineProvidedPost(engineProvidedSearchRequest, authorization)
+> EngineProvidedSearchResponse provideDocumentParseEngineEngineProvidedPost(engineProvidedSearchRequest, authorization, xUserTimezone)
 
 Provide Document Parse Engine
 
@@ -317,6 +329,8 @@ async function example() {
     engineProvidedSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies ProvideDocumentParseEngineEngineProvidedPostRequest;
 
   try {
@@ -338,6 +352,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **engineProvidedSearchRequest** | [EngineProvidedSearchRequest](EngineProvidedSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -364,7 +379,7 @@ No authorization required
 
 ## searchDocumentParseEngineEngineCommunityPost
 
-> InifiniteScrollPagnitionEngineInfo searchDocumentParseEngineEngineCommunityPost(communityEngineSearchRequest, authorization)
+> InifiniteScrollPagnitionEngineInfo searchDocumentParseEngineEngineCommunityPost(communityEngineSearchRequest, authorization, xUserTimezone)
 
 Search Document Parse Engine
 
@@ -388,6 +403,8 @@ async function example() {
     communityEngineSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchDocumentParseEngineEngineCommunityPostRequest;
 
   try {
@@ -409,6 +426,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **communityEngineSearchRequest** | [CommunityEngineSearchRequest](CommunityEngineSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -435,7 +453,7 @@ No authorization required
 
 ## searchUsableEngineEngineUsablePost
 
-> UsableEnginesResponse searchUsableEngineEngineUsablePost(usableEngineSearchRequest, authorization)
+> UsableEnginesResponse searchUsableEngineEngineUsablePost(usableEngineSearchRequest, authorization, xUserTimezone)
 
 Search Usable Engine
 
@@ -459,6 +477,8 @@ async function example() {
     usableEngineSearchRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchUsableEngineEngineUsablePostRequest;
 
   try {
@@ -480,6 +500,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **usableEngineSearchRequest** | [UsableEngineSearchRequest](UsableEngineSearchRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -506,7 +527,7 @@ No authorization required
 
 ## updateEngineEngineUpdatePost
 
-> NormalResponse updateEngineEngineUpdatePost(engineUpdateRequest, authorization)
+> NormalResponse updateEngineEngineUpdatePost(engineUpdateRequest, authorization, xUserTimezone)
 
 Update Engine
 
@@ -528,6 +549,8 @@ async function example() {
     engineUpdateRequest: ...,
     // string (optional)
     authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies UpdateEngineEngineUpdatePostRequest;
 
   try {
@@ -549,6 +572,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **engineUpdateRequest** | [EngineUpdateRequest](EngineUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
