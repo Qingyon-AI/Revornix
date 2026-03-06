@@ -1,10 +1,15 @@
 import inspect
+import os
 import time
 from contextlib import contextmanager
 from functools import wraps
 from typing import Any, Callable
 
 from common.logger import exception_logger, info_logger
+
+
+_TRUTHY_VALUES = {"1", "true", "yes", "on"}
+WORKFLOW_TIMING_VERBOSE = os.environ.get("WORKFLOW_TIMING_VERBOSE", "0").strip().lower() in _TRUTHY_VALUES
 
 
 _STATE_CONTEXT_KEYS = (
@@ -18,6 +23,12 @@ _STATE_CONTEXT_KEYS = (
     "auto_transcribe",
     "auto_tag",
 )
+
+
+def _log_timing_info(message: str, *, verbose_only: bool = False) -> None:
+    if verbose_only and not WORKFLOW_TIMING_VERBOSE:
+        return
+    info_logger.info(message)
 
 
 def _stringify_value(value: Any) -> str:
@@ -106,8 +117,9 @@ def wrap_workflow_node(
             before_state = state.copy() if isinstance(state, dict) else state
             context = _format_context(state)
             start = time.perf_counter()
-            info_logger.info(
-                f"[WorkflowTiming] node_start workflow={workflow_name}, node={node_name}, {context}"
+            _log_timing_info(
+                f"[WorkflowTiming] node_start workflow={workflow_name}, node={node_name}, {context}",
+                verbose_only=True,
             )
             try:
                 result = await node_func(*args, **kwargs)
@@ -119,12 +131,14 @@ def wrap_workflow_node(
                 )
                 raise
             elapsed_ms = (time.perf_counter() - start) * 1000
-            result_context = _format_context(result)
-            state_delta = _format_state_delta(before_state, result)
-            info_logger.info(
-                f"[WorkflowTiming] node_end workflow={workflow_name}, node={node_name}, "
-                f"elapsed_ms={elapsed_ms:.2f}, input={context}, output={result_context}, {state_delta}"
-            )
+            if WORKFLOW_TIMING_VERBOSE:
+                result_context = _format_context(result)
+                state_delta = _format_state_delta(before_state, result)
+                _log_timing_info(
+                    f"[WorkflowTiming] node_end workflow={workflow_name}, node={node_name}, "
+                    f"elapsed_ms={elapsed_ms:.2f}, input={context}, output={result_context}, {state_delta}",
+                    verbose_only=True,
+                )
             return result
 
         return _async_wrapper
@@ -135,8 +149,9 @@ def wrap_workflow_node(
         before_state = state.copy() if isinstance(state, dict) else state
         context = _format_context(state)
         start = time.perf_counter()
-        info_logger.info(
-            f"[WorkflowTiming] node_start workflow={workflow_name}, node={node_name}, {context}"
+        _log_timing_info(
+            f"[WorkflowTiming] node_start workflow={workflow_name}, node={node_name}, {context}",
+            verbose_only=True,
         )
         try:
             result = node_func(*args, **kwargs)
@@ -148,12 +163,14 @@ def wrap_workflow_node(
             )
             raise
         elapsed_ms = (time.perf_counter() - start) * 1000
-        result_context = _format_context(result)
-        state_delta = _format_state_delta(before_state, result)
-        info_logger.info(
-            f"[WorkflowTiming] node_end workflow={workflow_name}, node={node_name}, "
-            f"elapsed_ms={elapsed_ms:.2f}, input={context}, output={result_context}, {state_delta}"
-        )
+        if WORKFLOW_TIMING_VERBOSE:
+            result_context = _format_context(result)
+            state_delta = _format_state_delta(before_state, result)
+            _log_timing_info(
+                f"[WorkflowTiming] node_end workflow={workflow_name}, node={node_name}, "
+                f"elapsed_ms={elapsed_ms:.2f}, input={context}, output={result_context}, {state_delta}",
+                verbose_only=True,
+            )
         return result
 
     return _sync_wrapper
@@ -186,9 +203,10 @@ def timed_stage(
 ):
     context_text = _format_brief_mapping(context) if context else "no_context"
     start = time.perf_counter()
-    info_logger.info(
+    _log_timing_info(
         f"[WorkflowTiming] stage_start workflow={workflow_name}, node={node_name}, "
-        f"stage={stage_name}, {context_text}"
+        f"stage={stage_name}, {context_text}",
+        verbose_only=True,
     )
     try:
         yield
@@ -200,7 +218,7 @@ def timed_stage(
         )
         raise
     elapsed_ms = (time.perf_counter() - start) * 1000
-    info_logger.info(
+    _log_timing_info(
         f"[WorkflowTiming] stage_end workflow={workflow_name}, node={node_name}, "
         f"stage={stage_name}, elapsed_ms={elapsed_ms:.2f}, {context_text}"
     )
@@ -214,8 +232,9 @@ async def ainvoke_with_timing(
 ) -> Any:
     context = _format_context(payload)
     start = time.perf_counter()
-    info_logger.info(
-        f"[WorkflowTiming] workflow_start workflow={workflow_name}, {context}"
+    _log_timing_info(
+        f"[WorkflowTiming] workflow_start workflow={workflow_name}, {context}",
+        verbose_only=True,
     )
     try:
         result = await workflow.ainvoke(payload)
@@ -227,7 +246,7 @@ async def ainvoke_with_timing(
         )
         raise
     elapsed_ms = (time.perf_counter() - start) * 1000
-    info_logger.info(
+    _log_timing_info(
         f"[WorkflowTiming] workflow_end workflow={workflow_name}, elapsed_ms={elapsed_ms:.2f}, {context}"
     )
     return result
