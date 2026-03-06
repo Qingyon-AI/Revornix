@@ -1,5 +1,6 @@
 import crud
 import json
+import schemas
 from common.logger import exception_logger
 from data.sql.base import session_scope
 from enums.notification import NotificationSourceProvided, NotificationTemplate
@@ -20,6 +21,34 @@ class NotificationProxy:
     
     def __init__(self) -> None:
         pass
+
+    @staticmethod
+    def resolve_message_for_channel(
+        *,
+        message: schemas.notification.Message,
+        channel_key: str,
+    ) -> schemas.notification.Message:
+        resolved = message.model_copy(deep=True)
+        if message.variants is None:
+            return resolved
+
+        variant = message.variants.get(channel_key)
+        if variant is None:
+            return resolved
+
+        if variant.title is not None:
+            resolved.title = variant.title
+        if variant.content is not None:
+            resolved.content = variant.content
+        if variant.content_type is not None:
+            resolved.content_type = variant.content_type
+        if variant.plain_content is not None:
+            resolved.plain_content = variant.plain_content
+        if variant.link is not None:
+            resolved.link = variant.link
+        if variant.cover is not None:
+            resolved.cover = variant.cover
+        return resolved
 
     # =========================
     # Factory（唯一推荐入口）

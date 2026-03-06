@@ -4,10 +4,12 @@ import hmac
 import textwrap
 import time
 import urllib.parse
+from urllib.parse import urljoin
 
 import httpx
 
 from common.logger import exception_logger
+from config.base import base_url
 from protocol.notification_tool import NotificationToolProtocol
 
 
@@ -15,10 +17,33 @@ class DingTalkNotificationTool(NotificationToolProtocol):
     
     def __init__(self):
         super().__init__(
-            notification_tool_uuid="44e649be4483436ea6f9826551017945",
-            notification_tool_name="DingTalk Notification Tool",
-            notification_tool_name_zh="钉钉通知工具",
+            uuid="44e649be4483436ea6f9826551017945",
+            tool_name="DingTalk Notification Tool",
+            tool_name_zh="钉钉通知工具",
+            channel_key="dingtalk",
         )
+
+    def _resolve_notification_link(self, link: str | None) -> str | None:
+        if link is None:
+            return None
+
+        normalized_link = link.strip()
+        if not normalized_link:
+            return None
+
+        if normalized_link.startswith(("http://", "https://")):
+            return normalized_link
+
+        if normalized_link.startswith("/"):
+            raw_base_url = base_url
+            if raw_base_url is not None:
+                normalized_base_url = raw_base_url.strip().strip("'\"")
+                if normalized_base_url:
+                    if not normalized_base_url.endswith("/"):
+                        normalized_base_url += "/"
+                    return urljoin(normalized_base_url, normalized_link.lstrip("/"))
+
+        return normalized_link
 
     def gen_sign(self, timestamp: str, secret: str) -> str:
         """
@@ -38,6 +63,8 @@ class DingTalkNotificationTool(NotificationToolProtocol):
         self,
         title: str,
         content: str | None = None,
+        content_type: str | None = None,
+        plain_content: str | None = None,
         cover: str | None = None,
         link: str | None = None,
     ):
@@ -46,34 +73,38 @@ class DingTalkNotificationTool(NotificationToolProtocol):
             raise ValueError("The target config of the notification is not set")
 
         webhook_url = target_config.get("webhook_url")
-        sign = target_config.get("sign")
+        sign_secret = target_config.get("sign")
         
-        if not webhook_url or not sign:
-            raise ValueError("The target config of the notification is not complete")
+        if not webhook_url:
+            raise ValueError("The target webhook_url of the notification is not set")
 
         # 必须使用毫秒级时间戳
         timestamp = str(int(time.time() * 1000))
 
-        if target_config.get("sign"):
-            sign = self.gen_sign(timestamp, sign)
+        if sign_secret:
+            sign = self.gen_sign(timestamp, sign_secret)
             webhook_url = f"{webhook_url}&timestamp={timestamp}&sign={sign}"
 
-        # 使用 dedent 去掉 Markdown 缩进
-        text = textwrap.dedent(f"""
-            # {title}\n
-            ## {content}\n
-        """)
+        normalized_title = title
+        normalized_content = content if content is not None else plain_content
+        normalized_link = self._resolve_notification_link(link)
+
+        lines = [f"### {normalized_title}"]
+        if normalized_content:
+            lines.append(normalized_content)
 
         if cover:
-            text += f"![cover]({cover})\n"
+            lines.append(f"![cover]({cover})")
 
-        if link:
-            text += f"[点击查看详情]({link})\n"
+        if normalized_link:
+            lines.append(f"[点击查看详情]({normalized_link})")
+
+        text = textwrap.dedent("\n\n".join(lines)).strip()
 
         payload = {
             "msgtype": "markdown",
             "markdown": {
-                "title": title,
+                "title": normalized_title,
                 "text": text,
             },
         }

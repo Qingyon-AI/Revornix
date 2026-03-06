@@ -5,19 +5,21 @@ class NotificationToolProtocol():
     
     def __init__(
         self,
-        notification_tool_uuid: str,
-        notification_tool_name: str,
-        notification_tool_name_zh: str,
-        notification_tool_description: str | None = None,
-        notification_tool_description_zh: str | None = None,
+        uuid: str,
+        tool_name: str,
+        tool_name_zh: str,
+        channel_key: str,
+        tool_description: str | None = None,
+        tool_description_zh: str | None = None,
         notification_source_config: str | None = None,
         notification_target_config: str | None = None
     ):
-        self.notification_tool_uuid = notification_tool_uuid
-        self.notification_tool_name = notification_tool_name
-        self.notification_tool_name_zh = notification_tool_name_zh
-        self.notification_tool_description = notification_tool_description
-        self.notification_tool_description_zh = notification_tool_description_zh
+        self.uuid = uuid
+        self.tool_name = tool_name
+        self.tool_name_zh = tool_name_zh
+        self.channel_key = channel_key
+        self.tool_description = tool_description
+        self.tool_description_zh = tool_description_zh
         self.notification_source_config = notification_source_config
         self.notification_target_config = notification_target_config
         
@@ -51,6 +53,8 @@ class NotificationToolProtocol():
         self, 
         title: str,
         content: str | None = None,
+        content_type: str | None = None,
+        plain_content: str | None = None,
         cover: str | None = None,
         link: str | None = None
     ):

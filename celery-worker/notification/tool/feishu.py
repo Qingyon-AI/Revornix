@@ -5,12 +5,15 @@ import hmac
 import io
 import json
 import time
+from typing import Any
+from urllib.parse import urljoin
 
 import httpx
 import lark_oapi as lark
 from lark_oapi.api.im.v1 import CreateImageRequest, CreateImageRequestBody, CreateImageResponse
 
 from common.logger import exception_logger
+from config.base import base_url
 from protocol.notification_tool import NotificationToolProtocol
 
 
@@ -18,10 +21,33 @@ class FeishuNotificationTool(NotificationToolProtocol):
     
     def __init__(self):
         super().__init__(
-            notification_tool_uuid="ecbf8d6f190a4ace9ec5672cdf646425",
-            notification_tool_name="Feishu Notification Tool",
-            notification_tool_name_zh="飞书通知工具",
+            uuid="ecbf8d6f190a4ace9ec5672cdf646425",
+            tool_name="Feishu Notification Tool",
+            tool_name_zh="飞书通知工具",
+            channel_key="feishu",
         )
+
+    def _resolve_notification_link(self, link: str | None) -> str | None:
+        if link is None:
+            return None
+
+        normalized_link = link.strip()
+        if not normalized_link:
+            return None
+
+        if normalized_link.startswith(("http://", "https://")):
+            return normalized_link
+
+        if normalized_link.startswith("/"):
+            raw_base_url = base_url
+            if raw_base_url is not None:
+                normalized_base_url = raw_base_url.strip().strip("'\"")
+                if normalized_base_url:
+                    if not normalized_base_url.endswith("/"):
+                        normalized_base_url += "/"
+                    return urljoin(normalized_base_url, normalized_link.lstrip("/"))
+
+        return normalized_link
 
     def upload_image(
         self,
@@ -91,6 +117,8 @@ class FeishuNotificationTool(NotificationToolProtocol):
         self,
         title: str,
         content: str | None = None,
+        content_type: str | None = None,
+        plain_content: str | None = None,
         cover: str | None = None,
         link: str | None = None
     ):
@@ -100,18 +128,21 @@ class FeishuNotificationTool(NotificationToolProtocol):
             raise Exception("The source or target config of the notification is not set")
 
         webhook_url = target_config.get('webhook_url')
-        sign = target_config.get('sign')
-        if not webhook_url or not sign:
-            raise Exception("The webhook_url or sign of the notification is not set")
+        sign_secret = target_config.get('sign')
+        if not webhook_url:
+            raise Exception("The webhook_url of the notification is not set")
         
         timestamp = int(time.time())
 
-        sign = self.gen_sign(timestamp, target_config.get('sign'))
+        generated_sign = self.gen_sign(timestamp, sign_secret) if sign_secret else None
+        markdown_content = (content if content is not None else plain_content) or " "
+        normalized_title = title
+        normalized_link = self._resolve_notification_link(link)
 
-        elements = [
+        elements: list[dict[str, Any]] = [
             {
                 "tag": "markdown",
-                "content": content,
+                "content": markdown_content,
                 "text_align": "left",
                 "text_size": "normal_v2",
                 "margin": "0px 0px 0px 0px"
@@ -123,16 +154,17 @@ class FeishuNotificationTool(NotificationToolProtocol):
                 cover_res = await client.get(cover)
                 cover_res.raise_for_status()
             image_key = await asyncio.to_thread(self.upload_image, image=cover_res.content)
-            elements.insert(0, {
-                "tag": "img",
-                "img_key": image_key,
-                "preview": True,
-                "transparent": False,
-                "scale_type": "fit_horizontal",
-                "margin": "0px 0px 0px 0px"
-            })
+            if image_key is not None:
+                elements.insert(0, {
+                    "tag": "img",
+                    "img_key": image_key,
+                    "preview": True,
+                    "transparent": False,
+                    "scale_type": "fit_horizontal",
+                    "margin": "0px 0px 0px 0px"
+                })
         # 如果有 link，则加入按钮
-        if link:
+        if normalized_link:
             elements.append({
                 "tag": "button",
                 "text": {
@@ -145,7 +177,7 @@ class FeishuNotificationTool(NotificationToolProtocol):
                 "behaviors": [
                     {
                         "type": "open_url",
-                        "default_url": link,
+                        "default_url": normalized_link,
                         "pc_url": "",
                         "ios_url": "",
                         "android_url": ""
@@ -178,7 +210,7 @@ class FeishuNotificationTool(NotificationToolProtocol):
                 "header": {
                     "title": {
                         "tag": "plain_text",
-                        "content": title
+                        "content": normalized_title
                     },
                     "subtitle": {
                         "tag": "plain_text",
@@ -190,10 +222,10 @@ class FeishuNotificationTool(NotificationToolProtocol):
             }
         }
 
-        if sign is not None:
+        if generated_sign is not None:
             payload.update({
                 'timestamp': timestamp,
-                'sign': sign
+                'sign': generated_sign
             })
         try:
             headers = {"Content-Type": "application/json"}
