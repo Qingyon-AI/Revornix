@@ -40,8 +40,8 @@ import EngineUpdate from './engine-update';
 import { EngineInfo } from '@/generated';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
-import { format } from 'date-fns';
 import { replacePath } from '@/lib/utils';
+import { formatInUserTimeZone } from '@/lib/time';
 
 const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 	const locale = useLocale();
@@ -243,7 +243,7 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 					</span>
 					<span className='ml-auto text-xs text-muted-foreground'>
 						{engine_info.create_time &&
-							format(new Date(engine_info.create_time), 'yyyy-MM-dd HH:mm')}
+							formatInUserTimeZone(engine_info.create_time, 'yyyy-MM-dd HH:mm')}
 					</span>
 				</CardFooter>
 			</Card>

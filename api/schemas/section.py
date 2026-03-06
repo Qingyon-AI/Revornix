@@ -1,7 +1,8 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
-from pydantic import BaseModel, Field, field_serializer, field_validator, ConfigDict
+from pydantic import Field, field_validator
 
+from .base import BaseModel
 from enums.section import UserSectionRole, UserSectionAuthority
 from schemas.task import SectionPodcastTask, SectionProcessTask
 from schemas.user import SectionUserPublicInfo, UserPublicInfo
@@ -54,23 +55,6 @@ class SectionPublishGetResponse(BaseModel):
     uuid: str | None = None
     create_time: datetime
     update_time: datetime | None
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class SectionRePublishRequest(BaseModel):
     section_id: int
@@ -125,23 +109,6 @@ class SectionCommentInfo(BaseModel):
     create_time: datetime
     update_time: datetime | None
     creator: UserPublicInfo
-    @field_serializer("create_time")
-    def serializer_create_timezone(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_timezone(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class SectionCommentSearchRequest(BaseModel):
     section_id: int
@@ -176,10 +143,6 @@ class BaseSectionInfo(BaseModel):
     title: str
     description: str | None
     authority: UserSectionAuthority | None = None
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class AllMySectionsResponse(BaseModel):
     data: list[BaseSectionInfo]
@@ -201,10 +164,6 @@ class SearchPublicSectionsRequest(BaseModel):
 class SectionLabel(BaseModel):
     id: int
     name: str
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class CreateLabelResponse(BaseModel):
     id: int
@@ -229,22 +188,6 @@ class SectionDocumentInfo(BaseModel):
     users: list[UserPublicInfo] | None = None
     create_time: datetime
     update_time: datetime | None = None
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is None:
-            return None
-        if v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class SectionInfo(BaseModel):
     id: int
@@ -267,25 +210,6 @@ class SectionInfo(BaseModel):
     process_task_trigger_type: int | None = None
     process_task_trigger_scheduler: str | None = None
 
-    @field_serializer("create_time")
-    def serialize_create_time(self, v: datetime):
-        return v if v.tzinfo else v.replace(
-            tzinfo=timezone.utc
-        )
-
-    @field_serializer("update_time")
-    def serialize_update_time(self, v: datetime | None):
-        if v is None:
-            return None
-        return v if v.tzinfo else v.replace(
-            tzinfo=timezone.utc
-        )
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
-
 class SectionDeleteRequest(BaseModel):
     section_id: int
 
@@ -302,16 +226,6 @@ class DaySectionResponse(BaseModel):
     update_time: datetime | None
     md_file_name: str | None
     documents: list[SectionDocumentInfo]
-
-    @field_serializer("create_time")
-    def serialize_create_time(self, v):
-        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
-
-    @field_serializer("update_time")
-    def serialize_update_time(self, v: datetime | None):
-        if v is None:
-            return None
-        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
 
 class SectionCreateRequest(BaseModel):
     title: str

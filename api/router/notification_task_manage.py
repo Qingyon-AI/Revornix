@@ -60,7 +60,7 @@ def _schedule_task(
         trigger=CronTrigger.from_crontab(cron_expr),
         args=[db_notification_target.creator_id, notification_task_id],
         id=str(notification_task_id),
-        next_run_time=datetime.now(),
+        next_run_time=datetime.now(timezone.utc),
     )
 
 

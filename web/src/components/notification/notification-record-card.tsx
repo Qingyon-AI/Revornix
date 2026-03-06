@@ -13,7 +13,6 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { InfiniteData, QueryKey, useMutation } from '@tanstack/react-query';
-import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import {
 	InifiniteScrollPagnitionNotificationRecord,
@@ -31,6 +30,7 @@ import {
 	mapInfiniteQueryElements,
 } from '@/lib/infinite-query-cache';
 import { useUserContext } from '@/provider/user-provider';
+import { formatInUserTimeZone } from '@/lib/time';
 
 const NotificationRecordCard = ({
 	notification,
@@ -159,7 +159,7 @@ const NotificationRecordCard = ({
 									}>
 									{notification.creator.nickname}
 								</p>
-								{format(
+								{formatInUserTimeZone(
 									notification.create_time as Date,
 									'yyyy-MM-dd HH:mm:ss',
 								)}
@@ -269,7 +269,7 @@ const NotificationRecordCard = ({
 										}}>
 										{notification.creator.nickname}
 									</p>
-									{format(
+									{formatInUserTimeZone(
 										notification.create_time as Date,
 										'yyyy-MM-dd HH:mm:ss',
 									)}

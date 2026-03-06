@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import Field
+from .base import BaseModel
 
 
 class NodeSource(BaseModel):

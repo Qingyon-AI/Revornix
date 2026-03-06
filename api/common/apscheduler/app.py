@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -7,6 +7,7 @@ import crud
 import schemas
 from common.celery.app import start_process_section
 from common.logger import exception_logger, info_logger
+from common.timezone import get_cached_user_timezone, today_in_timezone
 from data.sql.base import session_scope
 from enums.notification import (
     NotificationContentType,
@@ -61,11 +62,12 @@ async def send_notification_scheduler(
             )
             if db_notification_content_template is None:
                 raise schemas.error.CustomException(message="notification content template not found", code=500)
+            receiver_timezone = await get_cached_user_timezone(receiver_id)
             message = await NotificationProxy.create_message_using_template(
                 template_id=db_notification_content_template.notification_template_id,
                 params={
                     "receiver_id": receiver_id,
-                    "date": datetime.now().date(),
+                    "date": today_in_timezone(receiver_timezone),
                 }
             )
         else:
@@ -145,7 +147,7 @@ for db_notification_task in db_notification_tasks:
             db_notification_task.id
         ],
         id=str(db_notification_task.id),
-        next_run_time=datetime.now()
+        next_run_time=datetime.now(timezone.utc)
     )
 
 db_section_trigger_schedulers = crud.task.get_section_process_tasks(

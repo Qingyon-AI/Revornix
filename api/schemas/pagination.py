@@ -1,6 +1,6 @@
 from typing import Generic, TypeVar
 
-from pydantic import BaseModel
+from .base import BaseModel
 
 # 定义一个泛型类型变量
 T = TypeVar("T")

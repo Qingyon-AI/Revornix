@@ -8,7 +8,6 @@ import {
 } from '@/service/ai';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { format } from 'date-fns';
 import { getQueryClient } from '@/lib/get-query-client';
 import {
 	Card,
@@ -40,6 +39,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
 import { Badge } from '../ui/badge';
 import { replacePath } from '@/lib/utils';
+import { formatInUserTimeZone } from '@/lib/time';
 
 interface ModelCardProps {
 	modelProvider: ModelProvider;
@@ -300,7 +300,10 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 					</span>
 					<span className='ml-auto text-xs text-muted-foreground'>
 						{modelProvider.create_time &&
-							format(new Date(modelProvider.create_time), 'yyyy-MM-dd HH:mm')}
+							formatInUserTimeZone(
+								modelProvider.create_time,
+								'yyyy-MM-dd HH:mm',
+							)}
 					</span>
 				</CardFooter>
 			</Card>

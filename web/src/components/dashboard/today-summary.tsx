@@ -10,6 +10,7 @@ import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
 import { toast } from 'sonner';
 import { getUserFileSystemDetail } from '@/service/file-system';
+import { getLocalDateYMD } from '@/lib/time';
 import {
 	Card,
 	CardContent,
@@ -31,7 +32,7 @@ import {
 const TodaySummary = () => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
-	const today = new Date().toISOString().split('T')[0];
+	const today = getLocalDateYMD();
 	const {
 		data: section,
 		isFetching,
@@ -39,7 +40,7 @@ const TodaySummary = () => {
 		error,
 		refetch,
 	} = useQuery({
-		queryKey: ['todayDocumentSummarySection'],
+		queryKey: ['todayDocumentSummarySection', today],
 		queryFn: () => getDayDocumentsSummarySection({ date: today }),
 	});
 

@@ -1,4 +1,5 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
+from .base import BaseModel
 
 class DocumentLabel(BaseModel):
     id: int

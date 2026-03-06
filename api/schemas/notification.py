@@ -1,8 +1,7 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, field_serializer, ConfigDict
-
+from .base import BaseModel
 from .user import UserPublicInfo
 
 class IOSTargetChangeCodeStatusRequest(BaseModel):
@@ -36,21 +35,6 @@ class NotificationTaskBaseInfo(BaseModel):
     title: str
     create_time: datetime
     update_time: datetime | None
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class GetNotificationTargetRelatedTaskRequest(BaseModel):
     notification_target_id: int
@@ -58,21 +42,11 @@ class GetNotificationTargetRelatedTaskRequest(BaseModel):
 class GetNotificationTargetRelatedTaskResponse(BaseModel):
     data: list[NotificationTaskBaseInfo]
 
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
-
 class GetNotificationSourceRelatedTaskRequest(BaseModel):
     notification_source_id: int
 
 class GetNotificationSourceRelatedTaskResponse(BaseModel):
     data: list[NotificationTaskBaseInfo]
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class TriggerEvent(BaseModel):
     id: int
@@ -83,29 +57,9 @@ class TriggerEvent(BaseModel):
     description_zh: str | None
     create_time: datetime
     update_time: datetime | None
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class TriggerEventsResponse(BaseModel):
     data: list[TriggerEvent]
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class MessageVariant(BaseModel):
     title: str | None = None
@@ -134,21 +88,6 @@ class NotificationSourceProvided(BaseModel):
     description_zh: str | None
     create_time: datetime
     update_time: datetime | None
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class NotificationTargetProvided(BaseModel):
     id: int
@@ -159,21 +98,6 @@ class NotificationTargetProvided(BaseModel):
     description_zh: str | None
     create_time: datetime
     update_time: datetime | None
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class NotificationSource(BaseModel):
     id: int
@@ -185,21 +109,6 @@ class NotificationSource(BaseModel):
     creator: UserPublicInfo
     is_forked: bool | None = None
     is_public: bool
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class NotificationSourceDetail(BaseModel):
     id: int
@@ -211,21 +120,6 @@ class NotificationSourceDetail(BaseModel):
     config_json: str | None = None
     creator: UserPublicInfo
     is_public: bool
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class NotificationTarget(BaseModel):
     id: int
@@ -237,21 +131,6 @@ class NotificationTarget(BaseModel):
     creator: UserPublicInfo
     is_forked: bool | None = None
     is_public: bool
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class NotificationTargetDetail(BaseModel):
     id: int
@@ -263,21 +142,6 @@ class NotificationTargetDetail(BaseModel):
     config_json: str | None = None
     creator: UserPublicInfo
     is_public: bool
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)  # 默认转换为 UTC
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class NotificationTargetsProvidedResponse(BaseModel):
     data: list[NotificationTargetProvided]
@@ -401,26 +265,6 @@ class NotificationRecord(BaseModel):
     creator: UserPublicInfo
     create_time: datetime
     update_time: datetime | None
-    @field_serializer("read_at")
-    def serializer_read_at(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class DeleteNotificationRecordRequest(BaseModel):
     notification_record_ids: list[int]
@@ -452,21 +296,6 @@ class NotificationTask(BaseModel):
     notification_target: NotificationTarget | None = None
     create_time: datetime
     update_time: datetime | None
-    @field_serializer("create_time")
-    def serializer_create_time(self, v: datetime):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-    @field_serializer("update_time")
-    def serializer_update_time(self, v: datetime | None):
-        if v is not None and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class DeleteNotificationTaskRequest(BaseModel):
     notification_task_ids: list[int]
@@ -509,11 +338,6 @@ class NotificationTemplate(BaseModel):
     name_zh: str
     description: str | None = None
     description_zh: str | None = None
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra="ignore",
-    )
 
 class NotificationTemplatesResponse(BaseModel):
     data: list[NotificationTemplate]

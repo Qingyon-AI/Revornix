@@ -1,5 +1,6 @@
 from datetime import date as date_type
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from sqlalchemy import Date, cast, func, or_
 from sqlalchemy.orm import Session, selectinload
@@ -335,7 +336,8 @@ def count_user_documents(
     label_ids: list[int] | None = None,
     filter_category: DocumentCategory | None = None,
     filter_platform: str | None = None,
-    filter_date: date_type | None = None
+    filter_date: date_type | None = None,
+    filter_timezone: str | None = None,
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.UserDocument).outerjoin(models.document.DocumentLabel)
@@ -352,8 +354,14 @@ def count_user_documents(
     if filter_platform is not None:
         query = query.filter(models.document.Document.from_plat == filter_platform)
     if filter_date is not None:
-        start = datetime.combine(filter_date, datetime.min.time())
-        end = start + timedelta(days=1)
+        try:
+            zone = ZoneInfo(filter_timezone or "UTC")
+        except ZoneInfoNotFoundError:
+            zone = ZoneInfo("UTC")
+        start_local = datetime.combine(filter_date, datetime.min.time(), tzinfo=zone)
+        end_local = start_local + timedelta(days=1)
+        start = start_local.astimezone(timezone.utc)
+        end = end_local.astimezone(timezone.utc)
         query = query.filter(
             models.document.Document.create_time >= start,
             models.document.Document.create_time < end
