@@ -11,10 +11,10 @@
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#f4f4f4;">
         <tr>
             <td align="center" style="padding:20px 0;">
-                <!-- 主容器 -->
+                <!-- Main container -->
                 <table width="600" border="0" cellspacing="0" cellpadding="0"
                     style="background-color:#ffffff;border-radius:8px;overflow:hidden;">
-                    <!-- 封面图 -->
+                    <!-- Cover image -->
                     {% if cover %}
                     <tr>
                         <td align="center" style="padding:0;">
@@ -23,22 +23,24 @@
                         </td>
                     </tr>
                     {% endif %}
-                    <!-- 内文 -->
+                    <!-- Body -->
                     <tr>
                         <td style="padding:30px;">
                             <h1 style="margin:0 0 20px;font-size:24px;line-height:1.2;color:#222222;">{{ title }}</h1>
-                            <p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#555555;">{{ content }}</p>
+                            {% if content_html %}
+                            <div style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#555555;">{{ content_html | safe }}</div>
+                            {% endif %}
                             {% if link %}
                             <p style="margin:0 0 30px;">
                                 <a href="{{ link }}"
-                                    style="background-color:#007BFF;color:#ffffff;text-decoration:none;padding:12px 20px;font-size:16px;border-radius:4px;display:inline-block;">查看详情</a>
+                                    style="background-color:#007BFF;color:#ffffff;text-decoration:none;padding:12px 20px;font-size:16px;border-radius:4px;display:inline-block;">View Details</a>
                             </p>
-                            {% endif %}
-                            <p style="margin:0;font-size:14px;color:#999999;">如果以上按钮无法点击，您也可以复制以下链接到浏览器：<br><a
+                            <p style="margin:0;font-size:14px;color:#999999;">If the button above does not work, copy and paste this link into your browser:<br><a
                                     href="{{ link }}" style="color:#007BFF;">{{ link }}</a></p>
+                            {% endif %}
                         </td>
                     </tr>
-                    <!-- 页脚 -->
+                    <!-- Footer -->
                     <tr>
                         <td
                             style="padding:20px;background-color:#fafafa;text-align:center;font-size:12px;color:#999999;">

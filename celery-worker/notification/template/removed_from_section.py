@@ -1,9 +1,9 @@
 from typing import cast
 
 import crud
-import schemas
 from data.sql.base import session_scope
 from enums.section import UserSectionRole
+from notification.template.platform_message_builder import build_multi_platform_message
 from protocol.notification_template import NotificationTemplate
 from common.file import get_remote_file_signed_url
 
@@ -65,23 +65,40 @@ class RemovedFromSectionNotificationTemplate(NotificationTemplate):
                 )
             except Exception:
                 cover = None
+        title = "You Are Removed from Section"
         if section_role == UserSectionRole.MEMBER:
-            return schemas.notification.Message(
-                title="You are removed from Section",
-                content=f"You have been removed from section {section_title}. You will no longer be able to collaborate on this section or receive update notifications. If you have any questions, please contact the section owner.",
-                link=f'/section/detail/{section_id}',
-                cover=cover
+            plain_content = (
+                f"You have been removed from section {section_title}. "
+                "You will no longer be able to collaborate on this section or receive update notifications. "
+                "If you have any questions, please contact the section owner."
             )
         elif section_role == UserSectionRole.SUBSCRIBER:
-            return schemas.notification.Message(
-                title="You are removed from Section",
-                content=f"You have been removed from section {section_title}. You will no longer receive update notifications for this section. If you have any questions, please contact the section owner.",
-                link=f'/section/detail/{section_id}',
-                cover=cover
+            plain_content = (
+                f"You have been removed from section {section_title}. "
+                "You will no longer receive update notifications for this section. "
+                "If you have any questions, please contact the section owner."
             )
-        return schemas.notification.Message(
-            title="You are removed from Section",
-            content=f"You have been removed from section {section_title}. If you have any questions, please contact the section owner.",
-            link=f'/section/detail/{section_id}',
-            cover=cover
+        else:
+            plain_content = (
+                f"You have been removed from section {section_title}. "
+                "If you have any questions, please contact the section owner."
+            )
+
+        link = f'/section/detail/{section_id}'
+        markdown_content = f"### {title}\n\n{plain_content}"
+        email_html = (
+            f"<p>{plain_content}</p>"
+            "<p>If needed, contact the section owner for more details.</p>"
+        )
+        return build_multi_platform_message(
+            title=title,
+            plain_content=plain_content,
+            link=link,
+            cover=cover,
+            email_html=email_html,
+            email_plain=plain_content,
+            feishu_markdown=markdown_content,
+            dingtalk_markdown=markdown_content,
+            telegram_text=plain_content,
+            apple_text=plain_content,
         )
