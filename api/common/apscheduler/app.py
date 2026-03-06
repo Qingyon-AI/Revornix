@@ -1,6 +1,4 @@
 from datetime import datetime
-
-import markdown
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -14,6 +12,7 @@ from enums.notification import (
     NotificationContentType,
     NotificationTriggerType,
 )
+from notification.template.platform_message_builder import build_multi_platform_message
 from proxy.notification_proxy import NotificationProxy
 
 scheduler = AsyncIOScheduler()
@@ -37,6 +36,11 @@ async def send_notification_scheduler(
         if db_notification_task is None:
             raise schemas.error.CustomException(message="notification task not found", code=500)
 
+        notification_tool = NotificationProxy.create_notification_tool(
+            user_id=db_notification_task.creator_id,
+            notification_source_id=db_notification_task.notification_source_id,
+            notification_target_id=db_notification_task.notification_target_id
+        )
         if db_notification_task.content_type == NotificationContentType.CUSTOM:
             db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(
                 db=db,
@@ -44,10 +48,12 @@ async def send_notification_scheduler(
             )
             if db_notification_content_custom is None:
                 raise schemas.error.CustomException(message="notification content custom not found", code=500)
-            title = db_notification_content_custom.title
-            content = db_notification_content_custom.content
-            link = db_notification_content_custom.link
-            cover = db_notification_content_custom.cover
+            message = build_multi_platform_message(
+                title=db_notification_content_custom.title,
+                plain_content=db_notification_content_custom.content or "",
+                link=db_notification_content_custom.link,
+                cover=db_notification_content_custom.cover,
+            )
         elif db_notification_task.content_type == NotificationContentType.TEMPLATE:
             db_notification_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
                 db=db,
@@ -55,17 +61,26 @@ async def send_notification_scheduler(
             )
             if db_notification_content_template is None:
                 raise schemas.error.CustomException(message="notification content template not found", code=500)
-            generate_res = await NotificationProxy.create_message_using_template(
+            message = await NotificationProxy.create_message_using_template(
                 template_id=db_notification_content_template.notification_template_id,
                 params={
                     "receiver_id": receiver_id,
                     "date": datetime.now().date(),
                 }
             )
-            title = generate_res.title
-            content = generate_res.content
-            link = generate_res.link
-            cover = generate_res.cover
+        else:
+            raise schemas.error.CustomException(message="notification content type not supported", code=500)
+
+        resolved_message = NotificationProxy.resolve_message_for_channel(
+            message=message,
+            channel_key=notification_tool.channel_key
+        )
+        title = resolved_message.title
+        content = resolved_message.content
+        content_type = resolved_message.content_type
+        plain_content = resolved_message.plain_content
+        link = resolved_message.link
+        cover = resolved_message.cover
 
         db_notification_source = crud.notification.get_notification_source_by_id(
             db=db,
@@ -73,17 +88,12 @@ async def send_notification_scheduler(
         )
         if db_notification_source is None:
             raise schemas.error.CustomException(message="notification source not found", code=500)
-        
-        notification_tool = NotificationProxy.create_notification_tool(
-            user_id=db_notification_task.creator_id,
-            notification_source_id=db_notification_task.notification_source_id,
-            notification_target_id=db_notification_task.notification_target_id
-        )
-        if content:
-            content = markdown.markdown(content)
+
         await notification_tool.send_notification(
             title=title,
             content=content,
+            content_type=content_type,
+            plain_content=plain_content,
             link=link,
             cover=cover
         )

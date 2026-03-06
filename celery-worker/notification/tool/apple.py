@@ -1,4 +1,5 @@
 import json
+import os
 import time
 import uuid
 
@@ -6,19 +7,105 @@ import httpx
 import jwt
 import re, textwrap
 from jwcrypto import jwk
+from urllib.parse import parse_qs, urljoin, urlparse
 
 from common.logger import exception_logger
+from config.base import base_url
 from protocol.notification_tool import NotificationToolProtocol
 
 APPLE_PUBLIC_KEYS_URL = "https://appleid.apple.com/auth/keys"
+
+
+def _normalize_base_url(raw: str | None) -> str | None:
+    if raw is None:
+        return None
+    normalized = raw.strip().strip("'\"")
+    if not normalized:
+        return None
+    if not normalized.endswith("/"):
+        normalized += "/"
+    return normalized
+
+
+def _resolve_notification_link(link: str | None) -> str | None:
+    if link is None:
+        return None
+
+    normalized_link = link.strip()
+    if not normalized_link:
+        return None
+
+    if normalized_link.startswith(("http://", "https://")):
+        return normalized_link
+
+    if normalized_link.startswith("/"):
+        normalized_base_url = _normalize_base_url(base_url)
+        if normalized_base_url:
+            return urljoin(normalized_base_url, normalized_link.lstrip("/"))
+
+    return normalized_link
+
+
+def _build_notification_route(link: str | None) -> dict[str, object] | None:
+    normalized_link = _resolve_notification_link(link)
+    if normalized_link is None:
+        return None
+
+    parsed = urlparse(normalized_link)
+    ios_path = parsed.path or normalized_link
+    ios_query_values = parse_qs(parsed.query, keep_blank_values=True)
+    ios_query: dict[str, str | list[str]] = {}
+    for key, values in ios_query_values.items():
+        if len(values) == 1:
+            ios_query[key] = values[0]
+        else:
+            ios_query[key] = values
+
+    ios_deep_link_scheme = os.environ.get("IOS_DEEPLINK_SCHEME", "revornix").strip()
+    if ios_deep_link_scheme.endswith("://"):
+        ios_deep_link_scheme = ios_deep_link_scheme[:-3]
+    if not ios_deep_link_scheme:
+        ios_deep_link_scheme = "revornix"
+    deep_link_path = ios_path.lstrip("/")
+    ios_url = (
+        f"{ios_deep_link_scheme}://{deep_link_path}"
+        if deep_link_path
+        else f"{ios_deep_link_scheme}://"
+    )
+    if parsed.query:
+        ios_url = f"{ios_url}?{parsed.query}"
+
+    return {
+        "web_url": normalized_link,
+        "ios_path": ios_path,
+        "ios_query": ios_query,
+        "ios_url": ios_url,
+    }
+
+
+def _truncate_utf8_bytes(text: str, max_bytes: int) -> str:
+    encoded = text.encode("utf-8")
+    if len(encoded) <= max_bytes:
+        return text
+
+    truncated = encoded[:max_bytes]
+    while True:
+        try:
+            decoded = truncated.decode("utf-8")
+            break
+        except UnicodeDecodeError as decode_error:
+            truncated = truncated[:decode_error.start]
+
+    return decoded.rstrip() + "..."
 
 class AppleNotificationTool(NotificationToolProtocol):
     
     def __init__(self):
         super().__init__(
-            notification_tool_uuid="341d8be7bebd4630b1fae93c32c4a21c",
-            notification_tool_name="Apple Notification Tool",
-            notification_tool_name_zh="Apple通知工具",
+            uuid="341d8be7bebd4630b1fae93c32c4a21c",
+            tool_name="Apple Notification Tool",
+            tool_name_zh="Apple通知工具",
+            channel_key="apple",
         )
     
     def _normalize_pem(self, pem_str: str) -> bytes:
@@ -152,6 +239,8 @@ class AppleNotificationTool(NotificationToolProtocol):
         self,
         title: str,
         content: str | None = None,
+        content_type: str | None = None,
+        plain_content: str | None = None,
         cover: str | None = None,
         link: str | None = None
     ):
@@ -171,6 +260,12 @@ class AppleNotificationTool(NotificationToolProtocol):
         if device_token is None:
             raise Exception("The target config of the notification is not complete")
 
+        plain_title_source = (title or "").strip()
+        plain_content_source = (content if content is not None else plain_content) or ""
+        plain_title = _truncate_utf8_bytes(plain_title_source, max_bytes=178)
+        plain_content = _truncate_utf8_bytes(plain_content_source, max_bytes=1500)
+        route_payload = _build_notification_route(link)
+
         headers = self._create_apns_headers(
             team_id=team_id,
             key_id=key_id,
@@ -182,17 +277,21 @@ class AppleNotificationTool(NotificationToolProtocol):
         data = {
             "aps" : {
                 "alert" : {
-                    "title" : title,
-                    "body" : content
+                    "title" : plain_title,
+                    "body" : plain_content
                 },
                 "sound": {
                     "name": "default"
                 },
                 "mutable-content": 1,
             },
-            "link": link,
             "content-available": 1
         }
+        if route_payload is not None:
+            data.update({
+                "link": route_payload.get("web_url"),
+                "route": route_payload,
+            })
         if cover is not None:
             data.update({'sender_avatar': cover})
         async with httpx.AsyncClient(http2=True, timeout=10) as client:

@@ -8,6 +8,7 @@ from common.logger import exception_logger
 from proxy.notification_proxy import NotificationProxy
 from data.sql.base import session_scope
 from enums.notification import NotificationContentType
+from notification.template.platform_message_builder import build_multi_platform_message
 from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
@@ -62,14 +63,30 @@ async def _dispatch_notification(
 
             template_id = payload.get("template_id")
             if template_id is not None:
-                generate_res = await NotificationProxy.create_message_using_template(
+                message = await NotificationProxy.create_message_using_template(
                     template_id=template_id,
                     params=params,
                 )
-                title = generate_res.title
-                content = generate_res.content
-                cover = generate_res.cover
-                link = generate_res.link
+            else:
+                if title is None:
+                    raise Exception("Notification title is empty")
+                message = build_multi_platform_message(
+                    title=title,
+                    plain_content=content or "",
+                    link=link,
+                    cover=cover,
+                )
+
+            resolved_message = NotificationProxy.resolve_message_for_channel(
+                message=message,
+                channel_key=notification_tool.channel_key,
+            )
+            title = resolved_message.title
+            content = resolved_message.content
+            content_type = resolved_message.content_type
+            plain_content = resolved_message.plain_content
+            cover = resolved_message.cover
+            link = resolved_message.link
 
             if title is None:
                 raise Exception("Notification title is empty")
@@ -77,6 +94,8 @@ async def _dispatch_notification(
             await notification_tool.send_notification(
                 title=title,
                 content=content,
+                content_type=content_type,
+                plain_content=plain_content,
                 cover=cover,
                 link=link
             )
@@ -136,7 +155,7 @@ async def _trigger_notification_event(
                 )
                 if db_template_notification_content is None:
                     continue
-                payload["template_id"] = db_template_notification_content.id
+                payload["template_id"] = db_template_notification_content.notification_template_id
             else:
                 continue
             payloads.append(payload)

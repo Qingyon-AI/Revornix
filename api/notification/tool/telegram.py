@@ -1,36 +1,76 @@
 import telegram
+from urllib.parse import urljoin
 
+from config.base import base_url
 from protocol.notification_tool import NotificationToolProtocol
 
 
 class TelegramNotificationTool(NotificationToolProtocol):
-    
+    MAX_TEXT_LENGTH = 4096
+    MAX_CAPTION_LENGTH = 1024
+
     def __init__(self):
         super().__init__(
-            notification_tool_uuid="9abd6f1eced74095b2771a2f8edb650b",
-            notification_tool_name="Telegram Notification Tool",
-            notification_tool_name_zh="Telegram通知工具",
+            uuid="9abd6f1eced74095b2771a2f8edb650b",
+            tool_name="Telegram Notification Tool",
+            tool_name_zh="Telegram通知工具",
+            channel_key="telegram",
         )
 
-    def escape_v2_text(self, text: str) -> str:
-        """
-        转义 Telegram MarkdownV2 文本内容需要的特殊字符
-        用于普通文本（标题、正文等）
-        """
-        escape_chars = r"_*[]()~`>#+-=|{}.!"
-        return "".join("\\" + c if c in escape_chars else c for c in text)
+    def _resolve_notification_link(self, link: str | None) -> str | None:
+        if link is None:
+            return None
 
-    def escape_v2_url(self, url: str) -> str:
-        """
-        转义 Telegram MarkdownV2 中作为链接 URL 部分的特殊字符
-        文档要求：URL 里只需要转义 ')' 和 '\\'
-        """
-        return url.replace("\\", "\\\\").replace(")", "\\)")
+        normalized_link = link.strip()
+        if not normalized_link:
+            return None
+
+        if normalized_link.startswith(("http://", "https://")):
+            return normalized_link
+
+        if normalized_link.startswith("/"):
+            raw_base_url = base_url
+            if raw_base_url is not None:
+                normalized_base_url = raw_base_url.strip().strip("'\"")
+                if normalized_base_url:
+                    if not normalized_base_url.endswith("/"):
+                        normalized_base_url += "/"
+                    return urljoin(normalized_base_url, normalized_link.lstrip("/"))
+
+        return normalized_link
+
+    def _split_text_chunks(self, text: str, max_length: int) -> list[str]:
+        content = text.strip()
+        if not content:
+            return []
+
+        chunks: list[str] = []
+        remaining = content
+        while remaining:
+            if len(remaining) <= max_length:
+                chunks.append(remaining)
+                break
+
+            split_at = remaining.rfind("\n", 0, max_length)
+            if split_at < max_length // 3:
+                split_at = max_length
+
+            chunk = remaining[:split_at].strip()
+            if not chunk:
+                chunk = remaining[:max_length]
+                split_at = max_length
+
+            chunks.append(chunk)
+            remaining = remaining[split_at:].lstrip()
+
+        return chunks
 
     async def send_notification(
         self,
         title: str,
         content: str | None = None,
+        content_type: str | None = None,
+        plain_content: str | None = None,
         cover: str | None = None,
         link: str | None = None
     ):
@@ -48,46 +88,34 @@ class TelegramNotificationTool(NotificationToolProtocol):
             raise Exception("The chat_id of the notification is not set")
         
         bot = telegram.Bot(token=bot_token)
+        normalized_title = title
+        normalized_content = (content if content is not None else plain_content) or ""
+        normalized_link = self._resolve_notification_link(link)
 
-        # ================== 构建 UI ==================
-        parts: list[str] = []
+        summary_lines = [f"📢 {normalized_title}"]
+        if normalized_link:
+            summary_lines.append(f"View Detail: {normalized_link}")
+        summary_text = "\n".join(summary_lines).strip()
 
-        # 主标题行
-        parts.append("📢 *通知中心*")
-        parts.append("━━━━━━━━━━━━━━━")
-
-        # 标题
-        safe_title = self.escape_v2_text(title)
-        parts.append(f"📝 *标题*\n{safe_title}")
-
-        # 内容（可选）
-        if content:
-            safe_content = self.escape_v2_text(content)
-            parts.append(f"💬 *内容*\n{safe_content}")
-
-        # 链接（可选） -> 使用 [文本](URL) 形式
-        if link:
-            safe_label = self.escape_v2_text("点击查看")
-            safe_url = self.escape_v2_url(link)
-            parts.append(f"🔗 [{safe_label}]({safe_url})")
-
-        parts.append("━━━━━━━━━━━━━━━")
-
-        caption = "\n".join(parts)
-
-        # ================== 发送消息 ==================
         if cover:
-            # 有封面：图片 + caption（文本+链接）一起发送
+            caption = summary_text
+            if len(caption) > self.MAX_CAPTION_LENGTH:
+                caption = caption[: self.MAX_CAPTION_LENGTH - 3].rstrip() + "..."
+
             await bot.send_photo(
                 chat_id=chat_id,
-                photo=cover,           # 这里可以是图片 URL 或 file_id
-                caption=caption,
-                parse_mode="MarkdownV2"
+                photo=cover,
+                caption=caption
             )
-        else:
-            # 没有封面：纯文本消息
-            await bot.send_message(
-                chat_id=chat_id,
-                text=caption,
-                parse_mode="MarkdownV2"
-            )
+
+            if normalized_content:
+                for chunk in self._split_text_chunks(normalized_content, self.MAX_TEXT_LENGTH):
+                    await bot.send_message(chat_id=chat_id, text=chunk)
+            return
+
+        text_parts = [summary_text]
+        if normalized_content:
+            text_parts.append(normalized_content)
+        full_text = "\n\n".join(part for part in text_parts if part)
+        for chunk in self._split_text_chunks(full_text, self.MAX_TEXT_LENGTH):
+            await bot.send_message(chat_id=chat_id, text=chunk)
