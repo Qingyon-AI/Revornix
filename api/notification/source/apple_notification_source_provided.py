@@ -1,5 +1,3 @@
-import json
-
 from protocol.notification_source import NotificationSourceProvidedProtocol
 
 
