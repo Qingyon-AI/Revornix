@@ -1,9 +1,10 @@
 from datetime import date as date_type
+from html import escape
 from typing import cast
 
 import crud
-import schemas
 from data.sql.base import session_scope
+from notification.template.platform_message_builder import build_multi_platform_message
 from protocol.notification_template import NotificationTemplate
 from proxy.file_system_proxy import FileSystemProxy
 
@@ -48,9 +49,20 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
                 date=date
             )
             if db_section is None or db_section.md_file_name is None:
-                return schemas.notification.Message(
-                    title=f"Daily Summary Of {date.isoformat()}",
-                    content="No Summary Today For Now"
+                title = f"Daily Summary for {date.isoformat()}"
+                plain_content = "No summary is available for today yet."
+                return build_multi_platform_message(
+                    title=title,
+                    plain_content=plain_content,
+                    email_html=(
+                        "<p>No summary is available for today yet.</p>"
+                        "<p>We will send another update once it is ready.</p>"
+                    ),
+                    email_plain=plain_content,
+                    feishu_markdown="### Daily Summary\nNo summary is available for today yet.",
+                    dingtalk_markdown="### Daily Summary\nNo summary is available for today yet.",
+                    telegram_text=plain_content,
+                    apple_text=plain_content,
                 )
             section_md_file_name = db_section.md_file_name
 
@@ -63,8 +75,24 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
             file_path=section_md_file_name
         )
         markdown_content = raw_markdown.decode("utf-8") if isinstance(raw_markdown, bytes) else raw_markdown
-        return schemas.notification.Message(
-            title=f"Daily Summary Of {date.isoformat()}",
-            content=markdown_content,
-            link='/section/today'
+        title = f"Daily Summary for {date.isoformat()}"
+        plain_content = "Your daily summary is ready. Open the link to view the full report."
+        email_html = (
+            "<p>Your daily summary is ready.</p>"
+            "<p>Open the link to view the full report.</p>"
+            "<hr>"
+            f"<pre style='white-space:pre-wrap;font-family:monospace'>{escape(markdown_content)}</pre>"
+        )
+        email_plain = f"{plain_content}\n\n{markdown_content}"
+        markdown_body = f"### Daily Summary ({date.isoformat()})\n\n{markdown_content}"
+        return build_multi_platform_message(
+            title=title,
+            plain_content=plain_content,
+            link='/section/today',
+            email_html=email_html,
+            email_plain=email_plain,
+            feishu_markdown=markdown_body,
+            dingtalk_markdown=markdown_body,
+            telegram_text=plain_content,
+            apple_text=plain_content,
         )

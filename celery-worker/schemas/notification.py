@@ -98,11 +98,23 @@ class TriggerEventsResponse(BaseModel):
         extra="ignore",
     )
 
+class MessageVariant(BaseModel):
+    title: str | None = None
+    content: str | None = None
+    content_type: str | None = None
+    plain_content: str | None = None
+    link: str | None = None
+    cover: str | None = None
+
+
 class Message(BaseModel):
     title: str
     content: str | None = None
+    content_type: str | None = None
+    plain_content: str | None = None
     link: str | None = None
     cover: str | None = None
+    variants: dict[str, MessageVariant] | None = None
 
 class NotificationSourceProvided(BaseModel):
     id: int

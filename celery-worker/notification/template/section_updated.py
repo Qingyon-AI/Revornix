@@ -1,9 +1,9 @@
 from typing import cast
 
 import crud
-import schemas
 from data.sql.base import session_scope
 from enums.section import UserSectionRole
+from notification.template.platform_message_builder import build_multi_platform_message
 from protocol.notification_template import NotificationTemplate
 from common.file import get_remote_file_signed_url
 
@@ -60,19 +60,29 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
                 user_id=section_creator_id,
                 file_name=section_cover
             )
+        title = "Section Updated"
         if section_role == UserSectionRole.MEMBER:
-            return schemas.notification.Message(
-                title="Section Updated",
-                content=f"Section {section_title} that you participate in has been updated. Click to view.",
-                link=f'/section/detail/{section_id}',
-                cover=cover
-            )
+            plain_content = f"Section {section_title} that you participate in has been updated. Click to view."
         elif section_role == UserSectionRole.SUBSCRIBER:
-            return schemas.notification.Message(
-                title="Section Updated",
-                content=f"Section {section_title} that you subscribed to has been updated. Click to view.",
-                link=f'/section/detail/{section_id}',
-                cover=cover
-            )
+            plain_content = f"Section {section_title} that you subscribed to has been updated. Click to view."
         else:
             raise Exception("invalid user section role")
+
+        link = f'/section/detail/{section_id}'
+        markdown_content = f"### {title}\n\n{plain_content}"
+        email_html = (
+            f"<p>{plain_content}</p>"
+            "<p>Open the section page to read the newest update.</p>"
+        )
+        return build_multi_platform_message(
+            title=title,
+            plain_content=plain_content,
+            link=link,
+            cover=cover,
+            email_html=email_html,
+            email_plain=plain_content,
+            feishu_markdown=markdown_content,
+            dingtalk_markdown=markdown_content,
+            telegram_text=plain_content,
+            apple_text=plain_content,
+        )
