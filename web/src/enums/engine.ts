@@ -10,8 +10,8 @@ export enum EngineCategory {
     Markdown = 0,
     // TTS
     TTS = 1,
-    // 图片
-    IMAGE = 2,
+    // 图片生成
+    IMAGE_GENERATE = 2,
     // 音频解析 speech-to-text
     STT = 3
 }
@@ -28,7 +28,7 @@ export const EngineCategoryLabel: Record<
         zh: '语音合成',
         en: 'Text to Speech',
     },
-    [EngineCategory.IMAGE]: {
+    [EngineCategory.IMAGE_GENERATE]: {
         zh: '图片生成',
         en: 'Image Generation',
     },

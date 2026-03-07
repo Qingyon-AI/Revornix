@@ -8,7 +8,7 @@ class UserEngineRole(IntEnum):
 class EngineCategory(IntEnum):
     Markdown = 0
     TTS = 1
-    IMAGE = 2
+    IMAGE_GENERATE = 2
     STT = 3
     IMAGE_UNDERSTAND = 4
 
@@ -58,7 +58,7 @@ class EngineProvided(Enum):
     Banana_Image = EngineProvidedMeta(
         uuid='9f1fb0005a99483da191a38af6dc7a23',
         name='Banana_Image',
-        category=EngineCategory.IMAGE
+        category=EngineCategory.IMAGE_GENERATE
     )
     Kimi_Image_Understand = EngineProvidedMeta(
         uuid='c5f2670915994b1f80bc9cf2517343a4',
