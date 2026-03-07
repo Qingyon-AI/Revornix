@@ -11,17 +11,59 @@
 
 [English](./README.md) | 中文文档 | [日本語ドキュメント](./README_jp.md)
 
-## 简介
+> 拒绝 FOMO！面对信息流，做个懒人，剩下的，交给 AI！
+> 
+> Reject FOMO! When facing the information stream, be lazy, leave the rest to AI!
 
-🖥️ 官网链接: [https://revornix.com](https://revornix.com)
+Revornix 是一个开源、可本地部署的 AI 信息工作台。它可以把分散的信息源汇聚成结构化知识，自动生成图文与播客内容，并通过通知机制把关键信息主动送到你面前。
 
-🚀 开发计划: [RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
+## 入口链接
 
-❤️ 加入社群: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
+- 官网: [https://revornix.com](https://revornix.com)
+- 环境变量文档: [https://revornix.com/docs/environment](https://revornix.com/docs/environment)
+- 开发计划: [RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
+- 社群: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
 
-一句话描述：Revornix是在AI时代可高度自定义的资讯、文档管理工具，帮助你便捷整合任意资讯，并基于这些资讯输出图文并茂、有播客音频的报告，然后通知你。
+## 为什么是 Revornix
 
-**一些界面UI**
+- 一条完整链路: 从采集到总结、图谱、播客、通知，全流程自动化。
+- 面向 AI 检索优化: 分块 + 向量化 + 个性化 GraphRAG，减少无效上下文。
+- 数据可控: 开源且支持本地部署，核心数据留在自己的基础设施。
+- 模型自由: 兼容 OpenAI API 的模型都可以接入，并按功能独立配置。
+- 可协作: 支持知识库分享与共建，也支持公开内容被搜索引擎收录。
+
+## 从信息流到结果的流程
+
+1. 采集: 网页、PDF、Word、Excel、PPT、文本、API、库文档等多源输入。
+2. 解析: 使用 MinerU、Jina 等引擎做清洗与标准化，支持自定义解析引擎。
+3. 组织: 分块、向量存储、知识图谱构建，让内容可检索、可推理。
+4. 交付: 自动输出图文内容、插图、播客，并通过通知系统触达。
+
+## 项目结构
+
+注意多余的结构有些是暂时没用到的，后续会逐步启用或者清理。
+
+```text
+Revornix/
+├── web/                  # Next.js 前端（用户交互与控制台）
+├── api/                  # FastAPI 核心后端（鉴权、文档、专栏、AI 能力接口）
+├── celery-worker/        # 异步任务流（embedding、总结、图谱、播客、通知）
+└── hot-news/             # 热搜聚合服务（基于 DailyHotApi）
+```
+
+## 核心能力
+
+- 输入源自由: 多类型输入统一解析，支持扩展解析引擎。
+- 文本转化强: 内容转 Markdown 与结构化处理质量高。
+- 向量检索: 支持语义检索与上下文增强。
+- 图谱推理: 个性化 GraphRAG 提升上下文准确率。
+- 内置 MCP: 同时具备 MCP Client 与 MCP Server 能力。
+- 自动播客: 文档/专栏可自动生成与更新播客音频。
+- AI 插图: 可生成并嵌入高质量插图内容。
+- 热搜一站式: 集成 DailyHotApi 查看多平台热榜。
+- 多语言与响应式: 支持多语言，适配移动端与桌面端。
+
+## 一些界面
 
 ![首页](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114204108304.png)
 
@@ -29,60 +71,36 @@
 
 ![专栏页面](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114204036225.png)
 
-注：**热搜头条功能源自[DailyHotApi](https://github.com/imsyy/DailyHotApi)项目**
+注: 热搜头条能力基于 [DailyHotApi](https://github.com/imsyy/DailyHotApi)。
 
 ![热搜](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114225533807.png)
-
-## 功能特性
-
-- 输入源自由：根据不同类型的解析引擎，当前支持网页、PDF、Word、Excel、PPT、手动输入文本、API、PIP库、NODEJS库等输入源，未来还将接入更多三方平台。
-- 先进文本转化技术：依赖MinerU、Jina等先进的文本内容转化技术，输入源转化情况达到行业领先水平，并且支持自定义转化引擎。
-- 向量化存储：Revornix会将所有的输入内容拆碎了然后转化为向量最终存储到向量数据库中，便于用户进行检索与查询，同时也给AI模型提供更丰富的上下文信息。
-- 知识图谱：基于个性化GraphRag技术，Revornix会将信息源分析并生成知识图谱，大大提高模型上下文准确度，同时一份大大的知识图谱也会让人有着不小的爽感。
-- 集成分享机制：Revornix内置了分享机制，用户可以分享自己的指定知识库和他人共建，甚者可以将自己的知识库推送到公域供搜索引擎搜索，也可以使用他人的公开知识库，知识共享这一块儿是Revornix的重点。
-- 本地化&开源：代码开源，同时若使用本地部署方式，所有数据均存储在本地，无需担心数据泄露问题。
-- 智能助手&内置MCP：Revornix内置了MCP服务客户端和服务端，既可以向第三方提供MCP服务，也可以使用AI助手来调用本地或者三方的MCP服务。
-- 大模型无缝接入：模型不固定，只要兼容openai的api的模型，你都可以任意选择，并且针对不同的功能点，模型可以独立。
-- 多语言&响应式：无论你是中文用户还是英文用户，无论你是使用手机还是电脑，都能获得良好的使用体验。
-- 自动播客：用户可以开启文档/专栏的自动播客生成/更新功能，开启后，Revornix会自动生成文档/专栏的播客音频文件，提供一种更加便利的方式获取信息。
-- 热搜集成：Revornix内嵌了[DailyHotApi](https://github.com/imsyy/DailyHotApi)服务，用户可以一站式查看各大平台的热搜榜单。
-- 插图能力：基于Banana Pro等大模型强大的生图能力，Revornix可以生成高质量的图片，并且支持将图片嵌入到文档/专栏中。
 
 ## 快速开始
 
 > [!NOTE]
-> 强烈建议使用 conda 针对每个服务创建不同的 python 虚拟环境，因为不同服务之间的python依赖可能存在冲突。当然如果你有别的python虚拟环境管理工具，也可以使用别的。
+> 推荐为每个 Python 服务使用独立虚拟环境（例如 conda），避免依赖冲突。
 
-### 克隆仓库到本地
+### 1) 克隆仓库
 
 ```shell
 git clone git@github.com:Qingyon-AI/Revornix.git
 cd Revornix
 ```
 
-### 安装并且启动基础服务
+### 2) 启动基础依赖服务
 
 > [!NOTE]
-> 如果你没有安装postgres、redis、neo4j、minio、milvus，那么你需要手动在本地安装这些服务，并根据实际需求设置各个服务的环境变量配置，具体参照各服务实际需求和[Revornix环境变量章节](https://revornix.com/docs/environment)。
-> 
-> 考虑到这些属于比较麻烦且不重要的工作，我特地做了一套`docker-compose-local.yaml`和`.env.local.example`文件，你可以直接使用`docker-compose-local.yaml`这个文件下载这些服务，并使用`.env.local.example`的配置作为环境变量。
+> 如果本地已有 postgres、redis、neo4j、minio、milvus，可直接复用。否则推荐使用 `docker-compose-local.yaml` + `.env.local.example`。
 
 > [!WARNING]
-> 注意：如果你本地已经安装了其中的部分服务，请按照你的实际情况在`docker-compose-local.yaml`文件中关闭对应的服务配置，否则可能会引起一些意料之外的情况。
-
-复制我提供的example文件，同时根据实际需求结合[Revornix环境变量章节](https://revornix.com/docs/environment)修改字段，如果你没有特殊需求，一般只需修改`OAUTH_SECRET_KEY`字段即可。
+> 如果你的机器上已运行了部分依赖，请在 `docker-compose-local.yaml` 中关闭对应服务，避免端口或实例冲突。
 
 ```shell
 cp .env.local.example .env.local
-```
-
-启动postgres、redis、neo4j、minio、milvus服务。
-
-```shell
 docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 ```
 
-### 各大微服务环境变量配置
+### 3) 配置微服务环境变量
 
 ```shell
 cp ./web/.env.example ./web/.env
@@ -90,12 +108,12 @@ cp ./api/.env.example ./api/.env
 cp ./celery-worker/.env.example ./celery-worker/.env
 ```
 
-前往对应的环境变量文件配置，详情见[Revornix环境变量章节](https://revornix.com/docs/environment)
+按 [环境变量文档](https://revornix.com/docs/environment) 完成配置。
 
 > [!WARNING]
-> 注意如果你使用手动部署方式，那么不同服务的`SECRET_KEY`必须保持一致，否则会导致不同服务之间的用户认证体系无法互通。
+> 手动部署时，多个服务的 `SECRET_KEY` 必须保持一致，否则用户认证无法互通。
 
-### 初始化一些必要的数据
+### 4) 初始化必要数据
 
 ```shell
 cd api
@@ -103,7 +121,7 @@ python -m data.milvus.create
 python -m data.sql.create
 ```
 
-### 启动核心后端服务
+### 5) 启动核心后端服务
 
 ```shell
 cd api
@@ -112,7 +130,7 @@ pip install -r ./requirements.txt
 fastapi run --port 8001
 ```
 
-### 启动热搜聚集服务
+### 6) 启动热搜聚合服务
 
 ```shell
 cd hot-news
@@ -120,7 +138,7 @@ pnpm build
 pnpm start
 ```
 
-### 启动 celery 任务序列
+### 7) 启动 Celery 任务服务
 
 ```shell
 cd celery-worker
@@ -130,7 +148,7 @@ playwright install
 celery -A common.celery.app worker --pool=threads --concurrency=10 --loglevel=info -E
 ```
 
-### 启动前端服务
+### 8) 启动前端服务
 
 ```shell
 cd web
@@ -138,10 +156,10 @@ pnpm build
 pnpm start
 ```
 
-当你将所有服务均启动之后，访问 http://localhost:3000 即可看到前端页面
+全部服务启动后，访问 http://localhost:3000。
 
 ## 贡献者
 
-<a href="https://github.com/Qingyon-AI/Revornx/graphs/contributors">
+<a href="https://github.com/Qingyon-AI/Revornix/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Qingyon-AI/Revornix" />
 </a>
