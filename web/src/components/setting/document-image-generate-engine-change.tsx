@@ -19,11 +19,11 @@ const DocumentImageGenerateEngineChange = () => {
 	const t = useTranslations();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const { data } = useQuery({
-		queryKey: ['searchMyEngine', EngineCategory.IMAGE],
+		queryKey: ['searchMyEngine', EngineCategory.IMAGE_GENERATE],
 		queryFn: async () => {
 			const res = await searchUableEngines({
 				keyword: '',
-				filter_category: EngineCategory.IMAGE,
+				filter_category: EngineCategory.IMAGE_GENERATE,
 			});
 			return res;
 		},

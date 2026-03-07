@@ -153,7 +153,7 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 				<CardContent className='relative gap-2 flex flex-row items-center'>
 					<Badge className='rounded-full mr-auto pl-[2px]' variant={'outline'}>
 						<div className='rounded-full bg-indigo-600 p-1'>
-							{engine_info.category === EngineCategory.IMAGE && (
+							{engine_info.category === EngineCategory.IMAGE_GENERATE && (
 								<ImageIcon className='size-4' color='white' />
 							)}
 							{engine_info.category === EngineCategory.TTS && (
