@@ -11,17 +11,60 @@
 
 [English](./README.md) | [中文文档](./README_zh.md) | [日本語ドキュメント](./README_jp.md)
 
-## Introduction
+> Reject FOMO! When facing the information stream, be lazy, leave the rest to AI!
+> 
+> 拒绝 FOMO！面对信息流，做个懒人，剩下的，交给 AI！
 
-🖥️ Official site: [https://revornix.com](https://revornix.com)
+Revornix is an open-source, local-first AI information workspace. It helps you collect fragmented inputs, turn them into structured knowledge, generate reports with images and podcast audio, and deliver the output through automated notifications.
 
-🚀 Development plan: [RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
+## Links
 
-❤️ Join the community: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
+- Official site: [https://revornix.com](https://revornix.com)
+- Environment docs: [https://revornix.com/docs/environment](https://revornix.com/docs/environment)
+- Roadmap: [RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
+- Community: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
 
-One-sentence description: Revornix is a highly customizable information and document management tool for the AI era. It helps you easily consolidate any information source, generate rich reports with images and podcast audio, and then notify you.
+## Why Revornix
 
-**Some UI**
+- One pipeline for noisy information: from ingestion to summary, graph, podcast, and notification.
+- Built for AI retrieval quality: chunking + vector storage + personalized GraphRAG.
+- Open and controllable: self-host locally and keep your data under your own infra.
+- Model-flexible: any provider compatible with the OpenAI API can be wired in.
+- Collaboration-ready: share private/public knowledge sections and co-create with others.
+
+## How It Works
+
+1. Collect: web pages, PDF, Word, Excel, PPT, text, APIs, library docs, and more.
+2. Understand: parse and normalize with pluggable converters (MinerU, Jina, custom engines).
+3. Organize: store vectors, build graph context, and keep content query-ready.
+4. Deliver: generate rich documents, add illustrations/podcasts, and push notifications.
+
+## Project Structure
+
+```text
+Revornix/
+├── web/                  # Next.js frontend (user interaction + dashboard)
+├── api/                  # FastAPI core backend (auth, documents, sections, AI APIs)
+├── celery-worker/        # Async workflows (embedding, summary, graph, podcast, notifications)
+├── hot-news/             # Trending aggregation service (based on DailyHotApi)
+├── nginx/                # Reverse proxy config
+├── docker-compose.yaml   # Full stack deployment
+└── docker-compose-local.yaml # Local dependency bootstrap
+```
+
+## Core Capabilities
+
+- Flexible ingestion: multi-format parsing with customizable engines.
+- Advanced transformation: strong markdown/content conversion pipelines.
+- Vector retrieval: chunk-to-vector storage for semantic search and AI context.
+- Graph reasoning: personalized GraphRAG for better context precision.
+- Built-in MCP: both MCP client and MCP server are supported.
+- Auto podcast: generate and update podcast audio for documents/sections.
+- Illustration generation: generate and embed AI images into content.
+- Trending in one place: major platform hot lists via integrated DailyHotApi.
+- Responsive and multilingual: available on mobile/desktop with multi-language support.
+
+## Some UI
 
 ![Home](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114204108304.png)
 
@@ -29,60 +72,36 @@ One-sentence description: Revornix is a highly customizable information and docu
 
 ![Column Page](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114204036225.png)
 
-Note: **The trending headlines feature comes from the [DailyHotApi](https://github.com/imsyy/DailyHotApi) project**
+Note: The trending headlines feature is based on [DailyHotApi](https://github.com/imsyy/DailyHotApi).
 
 ![Trending](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114225533807.png)
-
-## Features
-
-- Input sources stay flexible: Depending on different parsing engines, we currently support web pages, PDF, Word, Excel, PPT, manually entered text, APIs, PIP libraries, Node.js libraries, and more. Additional third-party platforms will be integrated in the future.
-- Advanced text conversion: Powered by cutting-edge text transformation technologies such as MinerU and Jina, delivering industry-leading conversion quality with support for custom conversion engines.
-- Vectorized storage: Revornix breaks all input content into chunks, converts them into vectors, and stores them in a vector database to make retrieval easy and to provide richer context to AI models.
-- Knowledge graphs: Based on personalized GraphRag, Revornix analyzes information sources and generates knowledge graphs, greatly improving context accuracy while giving you a satisfying big-picture view.
-- Integrated sharing: Built-in sharing lets users share specific knowledge bases for co-creation, push their knowledge bases to the public for search engine indexing, or use other public knowledge bases. Knowledge sharing is a core focus for Revornix.
-- Local-first & open source: The code is open source, and with local deployment all data is stored locally, so you don’t need to worry about data leakage.
-- Intelligent assistant & built-in MCP: Revornix includes both an MCP client and server, letting you provide MCP services to third parties or let the AI assistant call local or external MCP services.
-- Seamless model integration: Models are not fixed. Any model compatible with the OpenAI API can be used, and different features can use independent models.
-- Multilingual & responsive: Whether you use Chinese or English, on mobile or desktop, you’ll get a great experience.
-- Automatic podcasts: Enable automatic podcast generation/updates for documents/columns. Revornix will automatically generate podcast audio files, offering a more convenient way to consume information.
-- Trending integration: Revornix embeds the [DailyHotApi](https://github.com/imsyy/DailyHotApi) service so you can view trending lists from major platforms in one place.
-- Illustration generation: Leveraging powerful image-generation models such as Banana Pro, Revornix can generate high-quality images and embed them into documents/columns.
 
 ## Quick Start
 
 > [!NOTE]
-> We strongly recommend using conda to create different Python virtual environments for each service because Python dependencies may conflict across services. If you prefer another virtual environment manager, feel free to use it.
+> We recommend creating isolated Python environments per service (for example with conda), because dependencies across services can conflict.
 
-### Clone the repository locally
+### 1) Clone repository
 
 ```shell
 git clone git@github.com:Qingyon-AI/Revornix.git
 cd Revornix
 ```
 
-### Install and start the base services
+### 2) Start base dependencies
 
 > [!NOTE]
-> If you haven’t installed postgres, redis, neo4j, minio, or milvus, you need to install them manually and configure environment variables based on your needs. Refer to each service’s requirements and the [Revornix environment variables](https://revornix.com/docs/environment).
-> 
-> To avoid that busywork, we provide `docker-compose-local.yaml` and `.env.local.example`. You can use `docker-compose-local.yaml` to pull these services and `.env.local.example` as the environment configuration.
+> If you already have postgres, redis, neo4j, minio, and milvus installed, you can reuse them. Otherwise use `docker-compose-local.yaml` with `.env.local.example`.
 
 > [!WARNING]
-> If some of these services are already installed locally, disable the corresponding services in `docker-compose-local.yaml` according to your setup to prevent unexpected issues.
-
-Copy the example file provided, then adjust fields as needed with the [Revornix environment variables](https://revornix.com/docs/environment). If you have no special requirements, you typically only need to change the `OAUTH_SECRET_KEY` field.
+> If some dependencies are already running on your machine, disable the corresponding services in `docker-compose-local.yaml` to avoid conflicts.
 
 ```shell
 cp .env.local.example .env.local
-```
-
-Start postgres, redis, neo4j, minio, and milvus.
-
-```shell
 docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 ```
 
-### Environment variables for each microservice
+### 3) Configure env files for microservices
 
 ```shell
 cp ./web/.env.example ./web/.env
@@ -90,12 +109,12 @@ cp ./api/.env.example ./api/.env
 cp ./celery-worker/.env.example ./celery-worker/.env
 ```
 
-Configure the corresponding environment variable files. See the [Revornix environment variables](https://revornix.com/docs/environment) for details.
+Configure env values based on [environment docs](https://revornix.com/docs/environment).
 
 > [!WARNING]
-> If you use manual deployment, the `SECRET_KEY` must stay consistent across services; otherwise, user authentication won’t work across services.
+> For manual deployment, keep `SECRET_KEY` consistent across services, or cross-service authentication will fail.
 
-### Initialize the necessary data
+### 4) Initialize required data
 
 ```shell
 cd api
@@ -103,7 +122,7 @@ python -m data.milvus.create
 python -m data.sql.create
 ```
 
-### Start the core backend service
+### 5) Run API service
 
 ```shell
 cd api
@@ -112,7 +131,7 @@ pip install -r ./requirements.txt
 fastapi run --port 8001
 ```
 
-### Start the trending aggregation service
+### 6) Run trending aggregation service
 
 ```shell
 cd hot-news
@@ -120,7 +139,7 @@ pnpm build
 pnpm start
 ```
 
-### Start the Celery task queue
+### 7) Run Celery worker
 
 ```shell
 cd celery-worker
@@ -130,7 +149,7 @@ playwright install
 celery -A common.celery.app worker --pool=threads --concurrency=10 --loglevel=info -E
 ```
 
-### Start the frontend service
+### 8) Run frontend
 
 ```shell
 cd web
@@ -138,7 +157,7 @@ pnpm build
 pnpm start
 ```
 
-After all services are running, visit http://localhost:3000 to view the frontend.
+After all services are running, open http://localhost:3000.
 
 ## Contributors
 
