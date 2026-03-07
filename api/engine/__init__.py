@@ -1,6 +1,7 @@
 from .embedding.qwen_cloud import CloudQwen3EmbeddingEngine
 from .embedding.qwen_local import LocalQwen3EmbeddingEngine
 from .image_generate.banana import BananaImageGenerateEngine
+from .image_understand.kimi import KimiImageUnderstandEngine
 from .markdown.mineru_api import MineruApiEngine
 from .markdown.markitdown import MarkitdownEngine
 from .markdown.jina import JinaEngine
@@ -13,6 +14,7 @@ __all__ = [
     "BananaImageGenerateEngine",
     "CloudQwen3EmbeddingEngine",
     "JinaEngine",
+    "KimiImageUnderstandEngine",
     "LocalQwen3EmbeddingEngine",
     "MineruApiEngine",
     "MarkitdownEngine",

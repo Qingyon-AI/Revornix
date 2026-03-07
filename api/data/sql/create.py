@@ -19,6 +19,7 @@ deployed_by_official = check_deployed_by_official_in_fuc()
 
 # ---------------- Engines ----------------
 from engine.image_generate.banana import BananaImageGenerateEngine
+from engine.image_understand.kimi import KimiImageUnderstandEngine
 from engine.markdown.jina import JinaEngine
 from engine.markdown.markitdown import MarkitdownEngine
 from engine.markdown.mineru_api import MineruApiEngine
@@ -220,6 +221,7 @@ async def seed_database(db: Session):
         MineruApiEngine(),
         VolcTTSEngine(),
         BananaImageGenerateEngine(),
+        KimiImageUnderstandEngine(),
         OpenAIAudioEngine(),
         VolcSTTFastEngine(),
         VolcSTTStandardEngine()

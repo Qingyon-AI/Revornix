@@ -10,6 +10,8 @@ class EngineCategory(IntEnum):
     TTS = 1
     IMAGE = 2
     STT = 3
+    IMAGE_UNDERSTAND = 4
+    
 
 class EngineProvidedMeta(NamedTuple):
     uuid: str
@@ -58,6 +60,11 @@ class EngineProvided(Enum):
         uuid='9f1fb0005a99483da191a38af6dc7a23',
         name='Banana_Image',
         category=EngineCategory.IMAGE
+    )
+    Kimi_Image_Understand = EngineProvidedMeta(
+        uuid='c5f2670915994b1f80bc9cf2517343a4',
+        name='Kimi_Image_Understand',
+        category=EngineCategory.IMAGE_UNDERSTAND
     )
 
     @property

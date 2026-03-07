@@ -138,6 +138,9 @@ class EngineProxy:
         elif engine_provided_uuid == EngineProvided.Banana_Image.meta.uuid:
             from engine.image_generate.banana import BananaImageGenerateEngine
             engine = BananaImageGenerateEngine()
+        elif engine_provided_uuid == EngineProvided.Kimi_Image_Understand.meta.uuid:
+            from engine.image_understand.kimi import KimiImageUnderstandEngine
+            engine = KimiImageUnderstandEngine()
         elif engine_provided_uuid == EngineProvided.Jina.meta.uuid:
             from engine.markdown.jina import JinaEngine
             engine = JinaEngine()
