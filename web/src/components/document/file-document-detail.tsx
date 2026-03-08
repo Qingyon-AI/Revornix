@@ -17,9 +17,7 @@ import DocumentOperate from './document-operate';
 import { useInView } from 'react-intersection-observer';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
-import {
-	getUserFileSystemDetail,
-} from '@/service/file-system';
+import { getUserFileSystemDetail } from '@/service/file-system';
 import {
 	DocumentProcessStatus,
 	DocumentMdConvertStatus,
@@ -100,21 +98,21 @@ const FileDocumentDetail = ({
 	};
 
 	const onGetMarkdown = async () => {
-			if (
-				!document ||
-				document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
-				!mainUserInfo
-			)
-				return;
-			if (!mainUserInfo?.default_user_file_system) {
-				toast.error(t('error_default_file_system_not_found'));
-				return;
+		if (
+			!document ||
+			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
+			!mainUserInfo
+		)
+			return;
+		if (!mainUserInfo?.default_user_file_system) {
+			toast.error(t('error_default_file_system_not_found'));
+			return;
+		}
+		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
+		try {
+			if (!document.convert_task?.md_file_name) {
+				throw new Error(t('document_markdown_file_missing'));
 			}
-			const fileService = new FileService(userFileSystemDetail?.file_system_id!);
-			try {
-				if (!document.convert_task?.md_file_name) {
-					throw new Error(t('document_markdown_file_missing'));
-				}
 			let [res, err] = await utils.to(
 				fileService.getFileContent(document.convert_task?.md_file_name),
 			);
@@ -163,11 +161,21 @@ const FileDocumentDetail = ({
 				</div>
 			)}
 			{document &&
-				document.convert_task?.status ===
-					DocumentMdConvertStatus.CONVERTING && (
+				(document.convert_task?.status === DocumentMdConvertStatus.WAIT_TO ||
+					!document.convert_task) && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
-							{t('document_transform_to_markdown_doing')}
+							<span className='mr-1'>
+								{t('document_transform_to_markdown_todo')}
+							</span>
+							<Tooltip>
+								<TooltipTrigger>
+									<Info size={15} />
+								</TooltipTrigger>
+								<TooltipContent>
+									{t('document_transform_to_markdown_todo_tips')}
+								</TooltipContent>
+							</Tooltip>
 						</p>
 						<Button
 							variant={'link'}
@@ -186,20 +194,11 @@ const FileDocumentDetail = ({
 					</div>
 				)}
 			{document &&
-				document.convert_task?.status === DocumentMdConvertStatus.WAIT_TO && (
+				document.convert_task?.status ===
+					DocumentMdConvertStatus.CONVERTING && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
-							<span className='mr-1'>
-								{t('document_transform_to_markdown_todo')}
-							</span>
-							<Tooltip>
-								<TooltipTrigger>
-									<Info size={15} />
-								</TooltipTrigger>
-								<TooltipContent>
-									{t('document_transform_to_markdown_todo_tips')}
-								</TooltipContent>
-							</Tooltip>
+							{t('document_transform_to_markdown_doing')}
 						</p>
 						<Button
 							variant={'link'}

@@ -79,21 +79,21 @@ const WebsiteDocumentDetail = ({
 
 	const [markdown, setMarkdown] = useState<string>();
 	const onGetMarkdown = async () => {
-			if (
-				!document ||
-				document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
-				!mainUserInfo
-			)
-				return;
-			if (!mainUserInfo.default_user_file_system) {
-				toast.error(t('error_default_file_system_not_found'));
-				return;
+		if (
+			!document ||
+			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
+			!mainUserInfo
+		)
+			return;
+		if (!mainUserInfo.default_user_file_system) {
+			toast.error(t('error_default_file_system_not_found'));
+			return;
+		}
+		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
+		try {
+			if (!document.convert_task?.md_file_name) {
+				throw new Error(t('document_markdown_file_missing'));
 			}
-			const fileService = new FileService(userFileSystemDetail?.file_system_id!);
-			try {
-				if (!document.convert_task?.md_file_name) {
-					throw new Error(t('document_markdown_file_missing'));
-				}
 			let [res, err] = await utils.to(
 				fileService.getFileContent(document.convert_task?.md_file_name),
 			);
@@ -159,30 +159,8 @@ const WebsiteDocumentDetail = ({
 				</div>
 			)}
 			{document &&
-				document.convert_task?.status ===
-					DocumentMdConvertStatus.CONVERTING && (
-					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
-						<p className='flex flex-row items-center'>
-							{t('document_transform_to_markdown_doing')}
-						</p>
-						<Button
-							variant={'link'}
-							className='h-fit p-0 text-xs'
-							disabled={markdownTransforming}
-							onClick={() => {
-								handleTransformToMarkdown();
-							}}>
-							{t('retry')}
-							{markdownTransforming && (
-								<Loader2 className='size-4 animate-spin' />
-							)}
-						</Button>
-						<Separator />
-						<DocumentOperate id={id} />
-					</div>
-				)}
-			{document &&
-				document.convert_task?.status === DocumentMdConvertStatus.WAIT_TO && (
+				(document.convert_task?.status === DocumentMdConvertStatus.WAIT_TO ||
+					!document.convert_task) && (
 					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
 						<p className='flex flex-row items-center'>
 							<span className='mr-1'>
@@ -211,6 +189,29 @@ const WebsiteDocumentDetail = ({
 						</Button>
 						<Separator />
 						<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
+					</div>
+				)}
+			{document &&
+				document.convert_task?.status ===
+					DocumentMdConvertStatus.CONVERTING && (
+					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
+						<p className='flex flex-row items-center'>
+							{t('document_transform_to_markdown_doing')}
+						</p>
+						<Button
+							variant={'link'}
+							className='h-fit p-0 text-xs'
+							disabled={markdownTransforming}
+							onClick={() => {
+								handleTransformToMarkdown();
+							}}>
+							{t('retry')}
+							{markdownTransforming && (
+								<Loader2 className='size-4 animate-spin' />
+							)}
+						</Button>
+						<Separator />
+						<DocumentOperate id={id} />
 					</div>
 				)}
 			{document &&
