@@ -38,6 +38,56 @@ from schemas.ai import ChatItem
 from typing import Any
 
 ai_router = APIRouter()
+MCP_AGENT_MAX_STEPS = 12
+
+
+def _contains_cjk(text: str) -> bool:
+    return any("\u4e00" <= char <= "\u9fff" for char in text)
+
+
+def _is_graph_recursion_limit_error(exc: Exception) -> bool:
+    error_message = str(exc)
+    return (
+        exc.__class__.__name__ == "GraphRecursionError"
+        or "GRAPH_RECURSION_LIMIT" in error_message
+        or "Recursion limit of" in error_message
+    )
+
+
+def _build_mcp_recursion_limit_text(*, query: str, has_partial_answer: bool) -> str:
+    is_chinese = _contains_cjk(query)
+    if is_chinese:
+        if has_partial_answer:
+            return (
+                "\n\n补充说明：本次 MCP 工具调用已达到步骤上限，当前回答可能不完整。"
+                "你可以缩小问题范围、明确要调用的工具，或关闭 MCP 后重试。"
+            )
+        return (
+            "本次 MCP 工具调用已达到步骤上限，我暂时无法在限制内完成回答。"
+            "你可以缩小问题范围、明确要调用的工具，或关闭 MCP 后重试。"
+        )
+
+    if has_partial_answer:
+        return (
+            "\n\nAdditional note: the MCP tool-calling workflow hit its step limit, "
+            "so the answer above may be incomplete. Try narrowing the request, naming the tool more explicitly, "
+            "or retrying with MCP disabled."
+        )
+    return (
+        "The MCP tool-calling workflow hit its step limit before the answer could be completed. "
+        "Try narrowing the request, naming the tool more explicitly, or retrying with MCP disabled."
+    )
+
+
+def _build_agent_error_message(*, query: str, is_recursion_limit: bool) -> str:
+    is_chinese = _contains_cjk(query)
+    if is_recursion_limit:
+        return (
+            "MCP 工具调用达到步骤上限，未能在限制内完成。"
+            if is_chinese
+            else "The MCP tool-calling workflow hit its step limit before completion."
+        )
+    return "服务处理失败，请稍后重试。" if is_chinese else "The server failed to complete the request."
 
 @ai_router.post("/model/create", response_model=schemas.ai.ModelCreateResponse)
 def create_model(
@@ -501,7 +551,7 @@ async def create_agent(
             # Ensure token usage is included in streaming events when provider supports it.
             stream_usage=True,
         )
-        return MCPAgent(llm=llm, client=mcp_client), model_id
+        return MCPAgent(llm=llm, client=mcp_client, max_steps=MCP_AGENT_MAX_STEPS), model_id
     except Exception as e:
         exception_logger.error(f"Failed to create agent: {e}")
         raise
@@ -517,6 +567,9 @@ async def stream_ops_with_agent(
     interpreter = EventInterpreter()
     usage_collector = UsageCollector()
     chat_id = uuid4().hex
+    query = ""
+    stream_failed = False
+    emitted_text_output = False
 
     try:
         # ==========================
@@ -561,18 +614,48 @@ async def stream_ops_with_agent(
                 ):
                     if not interpreted:
                         continue
+                    if (
+                        interpreted.get("type") == "output"
+                        and isinstance(interpreted.get("payload"), dict)
+                        and interpreted["payload"].get("kind") == "token"
+                        and interpreted["payload"].get("content")
+                    ):
+                        emitted_text_output = True
 
                     yield _sse(interpreted)
 
     except Exception as e:
+        stream_failed = True
         # ==========================
         # 3️⃣ 错误事件
         # ==========================
         exception_logger.error(f"Failed to stream ops with agent: {e}")
         usage_snapshot = usage_collector.snapshot()
+        is_recursion_limit = _is_graph_recursion_limit_error(e)
+
+        if is_recursion_limit:
+            yield _sse(
+                {
+                    "chat_id": chat_id,
+                    "type": "output",
+                    "timestamp": time.time(),
+                    "trace": {},
+                    "payload": {
+                        "kind": "token",
+                        "content": _build_mcp_recursion_limit_text(
+                            query=query,
+                            has_partial_answer=emitted_text_output,
+                        ),
+                    },
+                }
+            )
+
         payload: dict[str, Any] = {
-            "code": "SERVER_ERROR",
-            "message": str(e)
+            "code": "MCP_RECURSION_LIMIT" if is_recursion_limit else "SERVER_ERROR",
+            "message": _build_agent_error_message(
+                query=query,
+                is_recursion_limit=is_recursion_limit,
+            ),
         }
         if usage_snapshot is not None:
             payload["usage"] = usage_snapshot
@@ -601,6 +684,9 @@ async def stream_ops_with_agent(
             source="ask_ai_stream",
             idempotency_key=f"ask_ai:{chat_id}",
         )
+
+    if stream_failed:
+        return
 
     done_payload: dict[str, object] = {"success": True}
     if usage_snapshot is not None:

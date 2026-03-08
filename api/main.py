@@ -22,6 +22,7 @@ from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_start
 from engine.video_plugins.youtube_auth import initialize_youtube_auth_on_startup
 from mcp_router.common import common_mcp_router
 from mcp_router.document import document_mcp_router
+from mcp_router.graph import graph_mcp_router
 from router.ai import ai_router
 from router.api_key import api_key_router
 from router.document import document_router
@@ -37,6 +38,7 @@ from router.user_auth import user_auth_router
 
 common_mcp_app = common_mcp_router.http_app()
 document_mcp_app = document_mcp_router.http_app()
+graph_mcp_app = graph_mcp_router.http_app()
 
 
 @asynccontextmanager
@@ -61,9 +63,10 @@ async def lifespan(app: FastAPI):
         await initialize_youtube_auth_on_startup()
         async with AsyncExitStack() as stack:
             # 这些 session manager 会在 FastAPI 停止时统一退出
-            # 将两个 MCP 应用的 lifespan 加入栈，ExitStack 会负责顺序启动和清理
+            # 将 MCP 应用的 lifespan 加入栈，ExitStack 会负责顺序启动和清理
             await stack.enter_async_context(common_mcp_app.lifespan(app))
             await stack.enter_async_context(document_mcp_app.lifespan(app))
+            await stack.enter_async_context(graph_mcp_app.lifespan(app))
             info_logger.info("FastAPI lifespan started.")
             yield
     finally:
@@ -115,6 +118,7 @@ app.include_router(graph_router, prefix="/graph", tags=["graph"])
 # 挂载 MCP 应用：挂载路径 + MCP 内部路径组成最终调用地址，例如 /mcp-server/common/mcp/
 app.mount("/mcp-server/common", common_mcp_app)
 app.mount("/mcp-server/document", document_mcp_app)
+app.mount("/mcp-server/graph", graph_mcp_app)
 
 @app.get('/health')
 async def health():
