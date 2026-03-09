@@ -53,43 +53,46 @@ const MessageSendForm = () => {
 	const currentSession = useAiChatStore((s) => s.currentSession);
 	const sessions = useAiChatStore((s) => s.sessions);
 
-	const handleAIResponseEvent = (event: AIEvent) => {
-		const store = useAiChatStore.getState();
-		switch (event.type) {
-			case 'status':
-				store.advanceChatMessageWorkflow(
-					event.chat_id,
-					event.payload.phase,
-					event.payload.detail,
-				);
-				break;
-
-			case 'output':
-				if (event.payload.kind === 'tool_result') {
-					store.advanceChatMessageWorkflow(event.chat_id, 'tool_result', {
-						tool: event.payload.tool,
-						result: event.payload.content,
-					});
+	const createAIResponseEventHandler = (sessionId: string) => {
+		return (event: AIEvent) => {
+			const store = useAiChatStore.getState();
+			switch (event.type) {
+				case 'status':
+					store.advanceChatMessageWorkflow(
+						sessionId,
+						event.chat_id,
+						event.payload.phase,
+						event.payload.detail,
+					);
 					break;
-				}
 
-				// 普通 token
-				store.advanceChatMessageWorkflow(event.chat_id, 'writing');
-				store.updateChatMessage(
-					event.chat_id,
-					'assistant',
-					event.payload.content,
-				);
-				break;
+				case 'output':
+					if (event.payload.kind === 'tool_result') {
+						store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'tool_result', {
+							tool: event.payload.tool,
+							result: event.payload.content,
+						});
+						break;
+					}
 
-			case 'done':
-				store.advanceChatMessageWorkflow(event.chat_id, 'done');
-				break;
+					store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'writing');
+					store.updateChatMessage(
+						sessionId,
+						event.chat_id,
+						'assistant',
+						event.payload.content,
+					);
+					break;
 
-			case 'error':
-				store.advanceChatMessageWorkflow(event.chat_id, 'error', event.payload);
-				break;
-		}
+				case 'done':
+					store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'done');
+					break;
+
+				case 'error':
+					store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'error', event.payload);
+					break;
+			}
+		};
 	};
 
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -134,10 +137,10 @@ const MessageSendForm = () => {
 			role: 'user',
 		};
 
+		let targetSessionId = currentSession()?.id ?? null;
 		const baseMessages = currentSession()?.messages ?? [];
 
-		// if there is no current session
-		if (!currentSession() && !sessions.length) {
+		if (!targetSessionId) {
 			const newSession = {
 				id: crypto.randomUUID(),
 				title: 'New Session',
@@ -145,15 +148,22 @@ const MessageSendForm = () => {
 			};
 			addSession(newSession);
 			setCurrentSessionId(newSession.id);
+			targetSessionId = newSession.id;
 		}
-		// create a new array to update the state
-		updateChatMessage(newMessage.chat_id, 'user', newMessage.content);
+
+		updateChatMessage(
+			targetSessionId,
+			newMessage.chat_id,
+			'user',
+			newMessage.content,
+		);
 
 		const messagesToSend = [...baseMessages, newMessage];
 
 		mutateSendMessage.mutate({
 			messages: messagesToSend,
 			enable_mcp: values.enable_mcp,
+			onEvent: createAIResponseEventHandler(targetSessionId),
 		});
 		form.resetField('message');
 	};
@@ -199,9 +209,11 @@ const MessageSendForm = () => {
 	const fetchStream = async ({
 		messages,
 		enable_mcp,
+		onEvent,
 	}: {
 		messages: Message[];
 		enable_mcp: boolean;
+		onEvent: (event: AIEvent) => void;
 	}) => {
 		const headers = new Headers();
 		headers.append('Content-Type', 'application/json');
@@ -227,7 +239,7 @@ const MessageSendForm = () => {
 			}
 			throw new Error(`Failed to send message, ${errorMessage}`);
 		}
-		await consumeSSE(response, handleAIResponseEvent);
+		await consumeSSE(response, onEvent);
 	};
 
 	const mutateSendMessage = useMutation({
