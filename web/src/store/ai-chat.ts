@@ -18,11 +18,13 @@ export type AIChatAction = {
     deleteSession: (id: string) => void;
     setHasHydrated: (status: boolean) => void;
     updateChatMessage: (
+        session_id: string,
         chat_id: string,
         role: 'assistant' | 'user',
         token: string
     ) => void;
     advanceChatMessageWorkflow: (
+        session_id: string,
         chat_id: string,
         step: AIPhase,
         meta?: any
@@ -102,10 +104,10 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                         sessions: [],
                     };
                 }),
-                updateChatMessage: (chat_id: string, role: string, token: string) => {
+                updateChatMessage: (session_id: string, chat_id: string, role: string, token: string) => {
                     return set((state) => {
                         const sessions = state.sessions.map(session => {
-                            if (session.id !== state.currentSessionId) return session;
+                            if (session.id !== session_id) return session;
 
                             const messages = [...session.messages];
 
@@ -130,10 +132,10 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                         return { sessions }; // ✅ 必须 return
                     })
                 },
-                advanceChatMessageWorkflow: (chat_id, phase, meta) => {
+                advanceChatMessageWorkflow: (session_id, chat_id, phase, meta) => {
                     set((state) => {
                         const sessions = state.sessions.map((session) => {
-                            if (session.id !== state.currentSessionId) return session;
+                            if (session.id !== session_id) return session;
 
                             const messages = [...session.messages];
                             const idx = messages.findIndex((m) => m.chat_id === chat_id);
