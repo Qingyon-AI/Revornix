@@ -14,7 +14,6 @@ Name | Type
 `description` | string
 `from_plat` | string
 `labels` | [Array&lt;SectionLabel&gt;](SectionLabel.md)
-`sections` | [Array&lt;SectionLabel&gt;](SectionLabel.md)
 `users` | [Array&lt;UserPublicInfo&gt;](UserPublicInfo.md)
 `create_time` | Date
 `update_time` | Date
@@ -34,7 +33,6 @@ const example = {
   "description": null,
   "from_plat": null,
   "labels": null,
-  "sections": null,
   "users": null,
   "create_time": null,
   "update_time": null,

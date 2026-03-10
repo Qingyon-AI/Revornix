@@ -184,7 +184,6 @@ class SectionDocumentInfo(BaseModel):
     description: str | None = None
     from_plat: str | None = None
     labels: list[SectionLabel] | None = None
-    sections: list[SectionLabel] | None = None
     users: list[UserPublicInfo] | None = None
     create_time: datetime
     update_time: datetime | None = None
