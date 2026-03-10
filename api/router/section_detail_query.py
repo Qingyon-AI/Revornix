@@ -305,4 +305,29 @@ async def get_date_section_info(
             user_id=user.id,
             file_name=res.md_file_name
         )
+
+    db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(
+        db=db,
+        section_id=db_section.id,
+    )
+    if db_section_podcast_task is not None:
+        res.podcast_task = schemas.section.SectionPodcastTask(
+            status=db_section_podcast_task.status,
+            podcast_file_name=db_section_podcast_task.podcast_file_name,
+        )
+        if db_section_podcast_task.podcast_file_name is not None:
+            res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
+                user_id=db_section_podcast_task.user_id,
+                file_name=db_section_podcast_task.podcast_file_name,
+            )
+
+    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+        db=db,
+        section_id=db_section.id,
+    )
+    if db_section_process_task is not None:
+        res.process_task = schemas.section.SectionProcessTask(
+            status=db_section_process_task.status,
+        )
+
     return res

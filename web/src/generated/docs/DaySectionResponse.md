@@ -15,6 +15,8 @@ Name | Type
 `update_time` | Date
 `md_file_name` | string
 `documents` | [Array&lt;SectionDocumentInfo&gt;](SectionDocumentInfo.md)
+`podcast_task` | [SectionPodcastTask](SectionPodcastTask.md)
+`process_task` | [SectionProcessTask](SectionProcessTask.md)
 
 ## Example
 
@@ -32,6 +34,8 @@ const example = {
   "update_time": null,
   "md_file_name": null,
   "documents": null,
+  "podcast_task": null,
+  "process_task": null,
 } satisfies DaySectionResponse
 
 console.log(example)

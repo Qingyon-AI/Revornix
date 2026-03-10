@@ -13,6 +13,20 @@
  */
 
 import { mapValues } from '../runtime';
+import type { SectionProcessTask } from './SectionProcessTask';
+import {
+    SectionProcessTaskFromJSON,
+    SectionProcessTaskFromJSONTyped,
+    SectionProcessTaskToJSON,
+    SectionProcessTaskToJSONTyped,
+} from './SectionProcessTask';
+import type { SectionPodcastTask } from './SectionPodcastTask';
+import {
+    SectionPodcastTaskFromJSON,
+    SectionPodcastTaskFromJSONTyped,
+    SectionPodcastTaskToJSON,
+    SectionPodcastTaskToJSONTyped,
+} from './SectionPodcastTask';
 import type { SectionDocumentInfo } from './SectionDocumentInfo';
 import {
     SectionDocumentInfoFromJSON,
@@ -88,6 +102,18 @@ export interface DaySectionResponse {
      * @memberof DaySectionResponse
      */
     documents: Array<SectionDocumentInfo>;
+    /**
+     * 
+     * @type {SectionPodcastTask}
+     * @memberof DaySectionResponse
+     */
+    podcast_task?: SectionPodcastTask | null;
+    /**
+     * 
+     * @type {SectionProcessTask}
+     * @memberof DaySectionResponse
+     */
+    process_task?: SectionProcessTask | null;
 }
 
 /**
@@ -125,6 +151,8 @@ export function DaySectionResponseFromJSONTyped(json: any, ignoreDiscriminator: 
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
         'md_file_name': json['md_file_name'],
         'documents': ((json['documents'] as Array<any>).map(SectionDocumentInfoFromJSON)),
+        'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
+        'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),
     };
 }
 
@@ -148,6 +176,8 @@ export function DaySectionResponseToJSONTyped(value?: DaySectionResponse | null,
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'md_file_name': value['md_file_name'],
         'documents': ((value['documents'] as Array<any>).map(SectionDocumentInfoToJSON)),
+        'podcast_task': SectionPodcastTaskToJSON(value['podcast_task']),
+        'process_task': SectionProcessTaskToJSON(value['process_task']),
     };
 }
 
