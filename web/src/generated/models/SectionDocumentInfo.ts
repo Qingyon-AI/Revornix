@@ -84,12 +84,6 @@ export interface SectionDocumentInfo {
     labels?: Array<SectionLabel> | null;
     /**
      * 
-     * @type {Array<SectionLabel>}
-     * @memberof SectionDocumentInfo
-     */
-    sections?: Array<SectionLabel> | null;
-    /**
-     * 
      * @type {Array<UserPublicInfo>}
      * @memberof SectionDocumentInfo
      */
@@ -138,7 +132,6 @@ export function SectionDocumentInfoFromJSONTyped(json: any, ignoreDiscriminator:
         'description': json['description'] == null ? undefined : json['description'],
         'from_plat': json['from_plat'] == null ? undefined : json['from_plat'],
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SectionLabelFromJSON)),
-        'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SectionLabelFromJSON)),
         'users': json['users'] == null ? undefined : ((json['users'] as Array<any>).map(UserPublicInfoFromJSON)),
         'create_time': (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
@@ -164,7 +157,6 @@ export function SectionDocumentInfoToJSONTyped(value?: SectionDocumentInfo | nul
         'description': value['description'],
         'from_plat': value['from_plat'],
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SectionLabelToJSON)),
-        'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SectionLabelToJSON)),
         'users': value['users'] == null ? undefined : ((value['users'] as Array<any>).map(UserPublicInfoToJSON)),
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
