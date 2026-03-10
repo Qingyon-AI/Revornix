@@ -226,6 +226,8 @@ class DaySectionResponse(BaseModel):
     update_time: datetime | None
     md_file_name: str | None
     documents: list[SectionDocumentInfo]
+    podcast_task: SectionPodcastTask | None = None
+    process_task: SectionProcessTask | None = None
 
 class SectionCreateRequest(BaseModel):
     title: str
