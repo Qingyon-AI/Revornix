@@ -57,12 +57,13 @@ const PublicNavControls = () => {
 			<Button
 				type='button'
 				variant='outline'
-				size='sm'
+				size='icon-sm'
 				onClick={handleLanguageToggle}
 				disabled={isSwitchingLanguage}
-				className='gap-1.5 rounded-xl border-border/60 bg-background/72 px-2.5 text-xs shadow-none'>
+				className='rounded-xl border-border/60 bg-background/72 shadow-none'
+				aria-label={locale === 'zh' ? 'Switch to English' : '切换到中文'}
+				title={locale === 'zh' ? 'Switch to English' : '切换到中文'}>
 				<Languages className='size-4' />
-				<span>{locale === 'zh' ? '中' : 'EN'}</span>
 			</Button>
 		</div>
 	);

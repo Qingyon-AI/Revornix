@@ -13,12 +13,14 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BadgeCheck, Bell, LogOut } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { useRouter } from 'nextjs-toploader/app';
 import { useUserContext } from '@/provider/user-provider';
 
 const NavUser = () => {
 	const t = useTranslations();
 	const router = useRouter();
+	const pathname = usePathname();
 	const { mainUserInfo, logOut } = useUserContext();
 	const onLogout = async () => {
 		logOut();
@@ -27,9 +29,9 @@ const NavUser = () => {
 
 	return (
 		<>
-			{!mainUserInfo && (
+			{!mainUserInfo && pathname !== '/login' && (
 				<Link href={'/login'}>
-					<Button variant={'outline'} size='sm' className='rounded-xl px-4'>
+					<Button variant={'outline'} size='sm' className='hidden rounded-xl px-4 md:inline-flex'>
 						{t('seo_nav_login_in')}
 					</Button>
 				</Link>
