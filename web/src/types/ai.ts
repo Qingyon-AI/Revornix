@@ -5,6 +5,8 @@ export type Message = {
     ai_state?: AIState;              // 当前态
     ai_workflow?: AIWorkflow;  // 历史态
     tool_results?: ToolResult[];
+    references?: SectionAskReference[];
+    document_references?: AIDocumentReference[];
 };
 
 type ToolResult = {
@@ -41,6 +43,22 @@ export interface AIState {
     error?: string;
 }
 
+export type SectionAskReference = {
+    document_id: number;
+    document_title: string;
+    chunk_id: string;
+    excerpt: string;
+    score?: number | null;
+};
+
+export type AIDocumentReference = {
+    document_id: number;
+    document_title: string;
+    description?: string | null;
+    section_titles?: string[];
+    source_tool?: string;
+};
+
 export type AIEvent =
     | {
         chat_id: string;
@@ -63,11 +81,17 @@ export type AIEvent =
             kind: 'tool_result';
             tool: string;
             content: any;
+            references?: AIDocumentReference[];
         };
     }
     | {
         chat_id: string;
         type: 'done';
+        payload?: {
+            success?: boolean;
+            references?: SectionAskReference[];
+            usage?: Record<string, number> | null;
+        };
     }
     | {
         chat_id: string;

@@ -51,7 +51,6 @@ const MessageSendForm = () => {
 	const setCurrentSessionId = useAiChatStore((s) => s.setCurrentSessionId);
 	const updateChatMessage = useAiChatStore((s) => s.updateChatMessage);
 	const currentSession = useAiChatStore((s) => s.currentSession);
-	const sessions = useAiChatStore((s) => s.sessions);
 
 	const createAIResponseEventHandler = (sessionId: string) => {
 		return (event: AIEvent) => {
@@ -68,10 +67,24 @@ const MessageSendForm = () => {
 
 				case 'output':
 					if (event.payload.kind === 'tool_result') {
-						store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'tool_result', {
-							tool: event.payload.tool,
-							result: event.payload.content,
-						});
+						if (
+							Array.isArray(event.payload.references) &&
+							event.payload.references.length > 0
+						) {
+							store.mergeChatMessageDocumentReferences(
+								sessionId,
+								event.chat_id,
+								event.payload.references,
+							);
+						}
+						store.advanceChatMessageWorkflow(
+							sessionId,
+							event.chat_id,
+							'tool_result',
+							{
+								tool: event.payload.tool,
+							},
+						);
 						break;
 					}
 
@@ -265,7 +278,7 @@ const MessageSendForm = () => {
 									placeholder={t('revornix_ai_message_placeholder')}
 									{...field}
 									onKeyDown={(e) => {
-										if (e.metaKey && e.key === 'Enter') {
+										if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
 											e.preventDefault(); // 阻止换行
 											form.handleSubmit(
 												onFormValidateSuccess,
