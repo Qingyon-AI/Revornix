@@ -233,7 +233,7 @@ async def create_document(
             user_id=user.id,
             filter_category=DocumentCategory.FILE
         )
-        if db_file_documents_count > 20:
+        if db_file_documents_count > 20 and deployed_by_official:
             auth_status = await plan_ability_checked_in_func(
                 ability=Ability.COLLECT_LINK.value,
                 authorization=f'Bearer {access_token}'
@@ -271,6 +271,22 @@ async def create_document(
             db=db,
             document_id=db_document.id,
             content=document_create_request.content
+        )
+    elif document_create_request.category == DocumentCategory.AUDIO:
+        if document_create_request.file_name is None:
+            raise Exception('The audio file is required when the document category is audio')
+        db_document = crud.document.create_base_document(
+            db=db,
+            creator_id=user.id,
+            category=document_create_request.category,
+            from_plat='api',
+            title=f'Audio saved at {now}',
+            description=f'Audio saved at {now}'
+        )
+        crud.document.create_audio_document(
+            db=db,
+            document_id=db_document.id,
+            audio_file_name=document_create_request.file_name
         )
     else:
         raise Exception('Invalid document category')
@@ -352,6 +368,7 @@ async def create_document(
             user_id=user.id,
             auto_summary=document_create_request.auto_summary,
             auto_podcast=document_create_request.auto_podcast,
+            auto_transcribe=document_create_request.auto_transcribe,
             auto_tag=document_create_request.auto_tag,
             override=schemas.task.DocumentOverrideProperty(
                 title=document_create_request.title,
