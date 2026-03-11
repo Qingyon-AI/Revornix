@@ -4,7 +4,7 @@ import { Form, FormField, FormItem, FormMessage } from '../ui/form';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
-import { Loader2, SendIcon } from 'lucide-react';
+import { CornerDownLeft, Loader2, SendIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -95,14 +95,15 @@ const SectionCommentForm = ({ section_id }: { section_id: number }) => {
 					control={form.control}
 					render={({ field }) => {
 						return (
-							<FormItem className='mb-5'>
-								<div className='bg-input/50 p-3 rounded-lg'>
+							<FormItem>
+								<div className='rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm'>
 									<Textarea
-										className='dark:bg-transparent shadow-none p-0 border-none outline-none ring-0 focus-visible:ring-0 mb-2'
+										rows={3}
+										className='min-h-0 max-h-44 overflow-y-auto resize-none rounded-none border-none bg-transparent px-0 py-1 text-sm leading-7 shadow-none outline-none ring-0 placeholder:text-muted-foreground/80 focus-visible:ring-0 dark:bg-transparent'
 										placeholder={t('section_comment_content_placeholder')}
 										{...field}
 										onKeyDown={(e) => {
-											if (e.metaKey && e.key === 'Enter') {
+											if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
 												e.preventDefault(); // 阻止换行
 												form.handleSubmit(
 													onFormValidateSuccess,
@@ -111,11 +112,17 @@ const SectionCommentForm = ({ section_id }: { section_id: number }) => {
 											}
 										}}
 									/>
-									<div className='flex flex-row items-center justify-between'>
+									<div className='mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-3'>
+										<div className='flex items-center gap-2 text-xs text-muted-foreground'>
+											<div className='flex size-7 items-center justify-center rounded-lg border border-border/60 bg-background/70'>
+												<CornerDownLeft className='size-3.5' />
+											</div>
+											<span>{t('section_comment_submit_shortcut')}</span>
+										</div>
 										<Button
 											size={'sm'}
 											type='submit'
-											className='text-xs ml-auto'
+											className='ml-auto rounded-xl px-4 text-xs'
 											disabled={commentSubmitting}>
 											{t('section_comment_submit')}
 											<SendIcon />

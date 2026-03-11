@@ -5,7 +5,6 @@ import { searchSectionComment } from '@/service/section';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Skeleton } from '../ui/skeleton';
-import { useRouter } from 'nextjs-toploader/app';
 import { useTranslations } from 'next-intl';
 import {
 	Empty,
@@ -13,15 +12,12 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { MessageSquare } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { replacePath } from '@/lib/utils';
-import { formatInUserTimeZone } from '@/lib/time';
+import { MessageSquareText } from 'lucide-react';
+import SectionCommentCard from './section-comment-card';
 
 const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
 
-	const router = useRouter();
 	const [keyword, setKeyword] = useState('');
 
 	const { ref: bottomRef, inView } = useInView();
@@ -56,64 +52,33 @@ const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 	return (
 		<>
 			{!isFetching && comments && comments.length === 0 && (
-				<Empty className='h-full'>
+				<Empty className='h-full rounded-2xl border border-dashed border-border/70 bg-muted/20'>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<MessageSquare />
+							<MessageSquareText />
 						</EmptyMedia>
 						<EmptyDescription>{t('section_comments_empty')}</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
 			)}
-			<div className='flex flex-col gap-2'>
+			<div className='flex flex-col gap-3'>
 				{comments &&
 					comments.map((comment) => {
 						return (
-							<div
-								key={comment.id}
-								className='text-sm rounded p-5 bg-muted dark:bg-black'>
-								<p>{comment.content}</p>
-								<div className='flex flex-row items-center justify-between mt-2'>
-									<div
-										className='flex flex-row items-center'
-										onClick={() =>
-											router.push(`/user/detail/${comment.creator.id}`)
-										}>
-										<Avatar className='mr-2 size-5'>
-											<AvatarImage
-												src={replacePath(
-													comment.creator.avatar,
-													comment.creator.id,
-												)}
-												alt='avatar'
-												className='size-5 object-cover'
-											/>
-											<AvatarFallback className='size-5'>
-												{comment.creator.nickname}
-											</AvatarFallback>
-										</Avatar>
-										<p className='text-xs text-muted-foreground'>
-											{comment.creator.nickname}
-										</p>
-									</div>
-									<p className='text-xs text-muted-foreground'>
-										{formatInUserTimeZone(comment.create_time, 'MM-dd HH:mm')}
-									</p>
-								</div>
-							</div>
+							<SectionCommentCard key={comment.id} comment={comment} />
 						);
 					})}
 				{isFetching && !data && (
 					<div className='flex flex-col gap-3'>
 						{[...Array(12)].map((number, index) => {
-							return <Skeleton className='w-full h-20' key={index} />;
+							return <Skeleton className='h-28 w-full rounded-2xl' key={index} />;
 						})}
 					</div>
 				)}
 				{isFetchingNextPage && data && (
 					<div className='flex flex-col gap-3'>
 						{[...Array(12)].map((number, index) => {
-							return <Skeleton className='w-full h-20' key={index} />;
+							return <Skeleton className='h-28 w-full rounded-2xl' key={index} />;
 						})}
 					</div>
 				)}

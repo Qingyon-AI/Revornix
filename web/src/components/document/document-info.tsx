@@ -11,7 +11,6 @@ import {
 import { useRouter } from 'nextjs-toploader/app';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Separator } from '../ui/separator';
 import {
 	DocumentCategory,
 	DocumentEmbeddingStatus,
@@ -81,7 +80,8 @@ const DocumentInfo = ({ id }: { id: number }) => {
 	const summaryButtonClassName =
 		'm-0 ml-auto p-0 text-muted-foreground underline underline-offset-3';
 	const panelClassName = 'rounded-xl border border-border/50 bg-card/70 p-4';
-	const compactPanelClassName = 'rounded-xl border border-border/50 bg-card/70 p-3';
+	const compactPanelClassName =
+		'rounded-xl border border-border/50 bg-card/70 p-3';
 
 	const renderStatusBadge = (
 		label: string,
@@ -107,83 +107,68 @@ const DocumentInfo = ({ id }: { id: number }) => {
 			)}
 			{isPending && <Skeleton className='h-full w-full' />}
 			{data && (
-				<div className='relative h-full'>
-					<div className='h-full overflow-auto pb-4'>
-						<div className='mb-4'>
-							<img
-								className='relative h-40 w-full object-cover'
-								alt='cover'
-								src={
-									data.cover
-										? replacePath(data.cover, data.creator.id)
-										: '/images/cover.jpg'
-								}
-							/>
-						</div>
-						<div className='space-y-4 px-4 pb-4'>
-							<div className={panelClassName}>
-								<div className='space-y-4'>
-									<div className='font-bold text-lg'>
-										{data.title ? data.title : t('document_no_title')}
-									</div>
-									<div className='text-sm/6 text-muted-foreground'>
-										{data.description
-											? data.description
-											: t('document_no_description')}
-									</div>
-									{data.creator && (
-										<div
-											className='flex flex-row items-center gap-2'
-											onClick={() =>
-												router.push(`/user/detail/${data.creator.id}`)
-											}>
-											<Avatar
-												className='size-6'
-												title={data.creator.nickname ?? ''}
-												onClick={(e) => {
-													router.push(`/user/detail/${data.creator.id}`);
-													e.preventDefault();
-													e.stopPropagation();
-												}}>
-												<AvatarImage
-													src={replacePath(
-														data.creator.avatar,
-														data.creator.id,
-													)}
-													alt='avatar'
-													className='size-6 object-cover'
-												/>
-												<AvatarFallback className='size-6'>
-													{data.creator.nickname}
-												</AvatarFallback>
-											</Avatar>
-											<p className='text-xs text-muted-foreground'>
+				<div className='h-full overflow-auto'>
+					<div className='space-y-4 px-4 pb-4'>
+						<div className={panelClassName}>
+							<div className='space-y-4'>
+								<div className='font-bold text-lg'>
+									{data.title ? data.title : t('document_no_title')}
+								</div>
+								<div className='text-sm/6 text-muted-foreground'>
+									{data.description
+										? data.description
+										: t('document_no_description')}
+								</div>
+								{data.creator && (
+									<div
+										className='flex flex-row items-center gap-2'
+										onClick={() =>
+											router.push(`/user/detail/${data.creator.id}`)
+										}>
+										<Avatar
+											className='size-6'
+											title={data.creator.nickname ?? ''}
+											onClick={(e) => {
+												router.push(`/user/detail/${data.creator.id}`);
+												e.preventDefault();
+												e.stopPropagation();
+											}}>
+											<AvatarImage
+												src={replacePath(data.creator.avatar, data.creator.id)}
+												alt='avatar'
+												className='size-6 object-cover'
+											/>
+											<AvatarFallback className='size-6'>
 												{data.creator.nickname}
-											</p>
-										</div>
-									)}
-									<div className='flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
-										<div className={chipClassName}>
-											{t('document_from_plat')}: {data.from_plat}
-										</div>
-										<div className={chipClassName}>
-											{t('document_category')}: {' '}
-											{data.category === DocumentCategory.WEBSITE
-												? t('document_category_link')
-												: data.category === DocumentCategory.FILE
-													? t('document_category_file')
-													: data.category === DocumentCategory.QUICK_NOTE
-														? t('document_category_quick_note')
-														: data.category === DocumentCategory.AUDIO
-															? t('document_category_audio')
-															: t('document_category_others')}
-										</div>
+											</AvatarFallback>
+										</Avatar>
+										<p className='text-xs text-muted-foreground'>
+											{data.creator.nickname}
+										</p>
+									</div>
+								)}
+								<div className='flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
+									<div className={chipClassName}>
+										{t('document_from_plat')}: {data.from_plat}
+									</div>
+									<div className={chipClassName}>
+										{t('document_category')}:{' '}
+										{data.category === DocumentCategory.WEBSITE
+											? t('document_category_link')
+											: data.category === DocumentCategory.FILE
+												? t('document_category_file')
+												: data.category === DocumentCategory.QUICK_NOTE
+													? t('document_category_quick_note')
+													: data.category === DocumentCategory.AUDIO
+														? t('document_category_audio')
+														: t('document_category_others')}
 									</div>
 								</div>
 							</div>
-							{data.sections && data.sections.length > 0 && (
-								<div className={compactPanelClassName}>
-									<div className='flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
+						</div>
+						{data.sections && data.sections.length > 0 && (
+							<div className={compactPanelClassName}>
+								<div className='flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
 									{data.sections.map((section) => {
 										return (
 											<Link
@@ -195,11 +180,11 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										);
 									})}
 								</div>
-								</div>
-							)}
-							{data.labels && data.labels.length > 0 && (
-								<div className={compactPanelClassName}>
-									<div className='flex w-full flex-wrap gap-2 overflow-auto text-xs text-muted-foreground'>
+							</div>
+						)}
+						{data.labels && data.labels.length > 0 && (
+							<div className={compactPanelClassName}>
+								<div className='flex w-full flex-wrap gap-2 overflow-auto text-xs text-muted-foreground'>
 									{data.labels.map((label) => {
 										return (
 											<div key={label.id} className={chipClassName}>
@@ -208,13 +193,10 @@ const DocumentInfo = ({ id }: { id: number }) => {
 										);
 									})}
 								</div>
-								</div>
-							)}
-							<div className={compactPanelClassName}>
-								<div className='mb-3 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground/80'>
-									Status
-								</div>
-								<div className='flex flex-wrap gap-2 text-xs text-muted-foreground'>
+							</div>
+						)}
+						<div className={compactPanelClassName}>
+							<div className='flex flex-wrap gap-2 text-xs text-muted-foreground'>
 								{data.embedding_task &&
 									renderStatusBadge(
 										t('document_embedding_status'),
@@ -304,8 +286,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 								{data.podcast_task &&
 									renderStatusBadge(
 										t('document_podcast_status'),
-										data.podcast_task.status ===
-											DocumentPodcastStatus.WAIT_TO
+										data.podcast_task.status === DocumentPodcastStatus.WAIT_TO
 											? t('document_podcast_status_todo')
 											: data.podcast_task.status ===
 												  DocumentPodcastStatus.GENERATING
@@ -325,75 +306,74 @@ const DocumentInfo = ({ id }: { id: number }) => {
 												? t('document_process_status_doing')
 												: data.process_task.status ===
 													  DocumentProcessStatus.SUCCESS
-												? t('document_process_status_success')
-												: t('document_process_status_failed'),
+													? t('document_process_status_success')
+													: t('document_process_status_failed'),
 									)}
 							</div>
-							</div>
-							<div className={panelClassName}>
-								<h1 className='mb-3 text-lg font-bold'>{t('ai_summary')}</h1>
-								{data.summarize_task && (
-									<>
-										{data.summarize_task.status ===
-											DocumentSummarizeStatus.SUCCESS && (
-											<p className='text-sm/6 text-muted-foreground'>
-												{data.summarize_task.summary}
-											</p>
-										)}
-										{data.summarize_task.status ===
-											DocumentSummarizeStatus.SUMMARIZING && (
-											<p className='text-sm/6 text-muted-foreground'>
-												{t('ai_summarizing')}
-											</p>
-										)}
-										{data.summarize_task.status ===
-											DocumentSummarizeStatus.FAILED && (
-											<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-												<AlertDescription>
-													<span className='inline-flex'>
-														{t('ai_summary_failed')}
-													</span>
-													<Button
-														variant='link'
-														size='sm'
-														className={summaryButtonClassName}
-														disabled={mutateSummaryDocument.isPending}
-														title={t('ai_resummary')}
-														onClick={() => {
-															mutateSummaryDocument.mutate();
-														}}>
-														{t('ai_resummary')}
-														{mutateSummaryDocument.isPending && (
-															<Loader2 className='size-4 animate-spin' />
-														)}
-													</Button>
-												</AlertDescription>
-											</Alert>
-										)}
-									</>
-								)}
-								{!data.summarize_task && (
-									<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-										<AlertDescription>
-											<span className='inline-flex'>{t('ai_summary_empty')}</span>
-											<Button
-												variant='link'
-												size='sm'
-												className={summaryButtonClassName}
-												disabled={mutateSummaryDocument.isPending}
-												title={t('ai_summary')}
-												onClick={() => {
-													mutateSummaryDocument.mutate();
-												}}>
-												{t('ai_summary')}
-												{mutateSummaryDocument.isPending && (
-													<Loader2 className='size-4 animate-spin' />
-												)}
-											</Button>
-										</AlertDescription>
-									</Alert>
-								)}
-							</div>
+						</div>
+						<div className={panelClassName}>
+							<h1 className='mb-3 text-lg font-bold'>{t('ai_summary')}</h1>
+							{data.summarize_task && (
+								<>
+									{data.summarize_task.status ===
+										DocumentSummarizeStatus.SUCCESS && (
+										<p className='text-sm/6 text-muted-foreground'>
+											{data.summarize_task.summary}
+										</p>
+									)}
+									{data.summarize_task.status ===
+										DocumentSummarizeStatus.SUMMARIZING && (
+										<p className='text-sm/6 text-muted-foreground'>
+											{t('ai_summarizing')}
+										</p>
+									)}
+									{data.summarize_task.status ===
+										DocumentSummarizeStatus.FAILED && (
+										<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+											<AlertDescription>
+												<span className='inline-flex'>
+													{t('ai_summary_failed')}
+												</span>
+												<Button
+													variant='link'
+													size='sm'
+													className={summaryButtonClassName}
+													disabled={mutateSummaryDocument.isPending}
+													title={t('ai_resummary')}
+													onClick={() => {
+														mutateSummaryDocument.mutate();
+													}}>
+													{t('ai_resummary')}
+													{mutateSummaryDocument.isPending && (
+														<Loader2 className='size-4 animate-spin' />
+													)}
+												</Button>
+											</AlertDescription>
+										</Alert>
+									)}
+								</>
+							)}
+							{!data.summarize_task && (
+								<Alert className='bg-destructive/10 dark:bg-destructive/20'>
+									<AlertDescription>
+										<span className='inline-flex'>{t('ai_summary_empty')}</span>
+										<Button
+											variant='link'
+											size='sm'
+											className={summaryButtonClassName}
+											disabled={mutateSummaryDocument.isPending}
+											title={t('ai_summary')}
+											onClick={() => {
+												mutateSummaryDocument.mutate();
+											}}>
+											{t('ai_summary')}
+											{mutateSummaryDocument.isPending && (
+												<Loader2 className='size-4 animate-spin' />
+											)}
+										</Button>
+									</AlertDescription>
+								</Alert>
+							)}
 						</div>
 					</div>
 				</div>

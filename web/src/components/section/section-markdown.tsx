@@ -60,7 +60,7 @@ const SectionMarkdown = ({
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
 			const [res, err] = await utils.to(
-				fileService.getFileContent(section?.md_file_name)
+				fileService.getFileContent(section?.md_file_name),
 			);
 			if (!res || err) {
 				setMarkdownGetError(err.message);
@@ -96,9 +96,16 @@ const SectionMarkdown = ({
 	}, [section, mainUserInfo, userFileSystemDetail]);
 
 	const hasMarkdownFile = Boolean(section?.md_file_name);
-	const showSkeleton = (!section && isFetching && !isError) || (hasMarkdownFile && markdownIsFetching && !markdown);
+	const showSkeleton =
+		(!section && isFetching && !isError) ||
+		(hasMarkdownFile && markdownIsFetching && !markdown);
 	const showError = !showSkeleton && (isError || Boolean(markdownGetError));
-	const showEmpty = !showSkeleton && !showError && isFetched && Boolean(section) && !hasMarkdownFile;
+	const showEmpty =
+		!showSkeleton &&
+		!showError &&
+		isFetched &&
+		Boolean(section) &&
+		!hasMarkdownFile;
 
 	return (
 		<>
@@ -108,9 +115,7 @@ const SectionMarkdown = ({
 				</div>
 			)}
 
-			{showSkeleton && (
-				<Skeleton className='h-full w-full' />
-			)}
+			{showSkeleton && <Skeleton className='h-full w-full' />}
 
 			{showError && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-sm relative'>
