@@ -331,7 +331,7 @@ const MessageSendForm = () => {
 				<div className='w-full flex flex-row items-center justify-between mt-2'>
 					<p className='text-xs text-muted-foreground'>
 						{t('revornix_ai_default_model')}:
-						<span className='text-[10px] ml-2 rounded bg-muted/50 px-1.5 py-1 font-mono text-muted-foreground'>
+						<span className='ml-2 rounded-md border border-border/50 bg-card/75 px-1.5 py-1 font-mono text-[10px] text-muted-foreground'>
 							{default_llm_model?.name
 								? default_llm_model.name
 								: t('setting_revornix_model_empty')}
@@ -342,7 +342,7 @@ const MessageSendForm = () => {
 							{t('revornix_ai_default_model_goto')}
 						</Link>
 					</p>
-					<kbd className='pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100'>
+					<kbd className='pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-md border border-border/60 bg-card/75 px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100'>
 						<span className='text-xs font-bold'>⌘</span>{' '}
 						<span className='text-xs font-bold mr-1'>Enter</span>
 						<span>{t('revornix_ai_quickly_send')}</span>

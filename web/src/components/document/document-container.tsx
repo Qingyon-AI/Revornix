@@ -116,32 +116,34 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	};
 
 	return (
-		<div className='px-5 pb-5 md:h-full w-full md:grid md:grid-cols-12 md:gap-5 relative'>
+		<div className='relative w-full px-5 pb-5 md:grid md:h-full md:grid-cols-12 md:items-stretch md:gap-4'>
 			{/* 此处的min-h-0是因为父级的grid布局会导致子元素的h-full无法准确继承到父级的实际高度，导致其高度被内容撑开 */}
-			<div className='md:col-span-8 md:h-full relative min-h-0'>
-				{isError && (
-					<div className='text-sm text-muted-foreground h-full w-full flex justify-center items-center'>
-						{error.message}
-					</div>
-				)}
-				{document?.category === DocumentCategory.WEBSITE && (
-					<WebsiteDocumentDetail onFinishRead={handleFinishRead} id={id} />
-				)}
-				{document?.category === DocumentCategory.FILE && (
-					<FileDocumentDetail onFinishRead={handleFinishRead} id={id} />
-				)}
-				{document?.category === DocumentCategory.QUICK_NOTE && (
-					<QuickDocumentDetail onFinishRead={handleFinishRead} id={id} />
-				)}
-				{document?.category === DocumentCategory.AUDIO && (
-					<AudioDocumentDetail onFinishRead={handleFinishRead} id={id} />
-				)}
+			<div className='relative min-h-0 md:col-span-8 md:flex md:h-full md:flex-col'>
+				<div className='overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm md:flex-1 md:min-h-0'>
+					{isError && (
+						<div className='text-sm text-muted-foreground h-full w-full flex justify-center items-center'>
+							{error.message}
+						</div>
+					)}
+					{document?.category === DocumentCategory.WEBSITE && (
+						<WebsiteDocumentDetail onFinishRead={handleFinishRead} id={id} />
+					)}
+					{document?.category === DocumentCategory.FILE && (
+						<FileDocumentDetail onFinishRead={handleFinishRead} id={id} />
+					)}
+					{document?.category === DocumentCategory.QUICK_NOTE && (
+						<QuickDocumentDetail onFinishRead={handleFinishRead} id={id} />
+					)}
+					{document?.category === DocumentCategory.AUDIO && (
+						<AudioDocumentDetail onFinishRead={handleFinishRead} id={id} />
+					)}
+				</div>
 			</div>
-			<div className='md:col-span-4 md:py-0 md:h-full flex flex-col gap-5 min-h-0 relative'>
-				<Card className='py-0 md:flex-2 overflow-auto relative'>
+			<div className='relative min-h-0 flex flex-col gap-4 md:col-span-4 md:h-full md:py-0'>
+				<Card className='relative overflow-auto rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-2'>
 					<DocumentInfo id={id} />
 				</Card>
-				<Card className='py-0 md:flex-1 relative'>
+				<Card className='relative rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-1'>
 					<Dialog>
 						<DialogTrigger asChild>
 							<Button

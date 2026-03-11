@@ -115,15 +115,15 @@ const SectionInfoMember = ({ section_id }: { section_id: number }) => {
 						})}
 						<Sheet>
 							<SheetTrigger asChild>
-								<div className='size-6 z-10 rounded-full bg-muted flex justify-center items-center hover:cursor-pointer'>
+								<div className='z-10 flex size-6 items-center justify-center rounded-full border border-border/50 bg-card/75 text-muted-foreground transition-colors hover:cursor-pointer hover:bg-card'>
 									<Ellipsis />
 								</div>
 							</SheetTrigger>
-							<SheetContent>
+							<SheetContent className='bg-card/95'>
 								<SheetHeader>
 									<SheetTitle>{t('section_participants')}</SheetTitle>
 									<Input
-										className='w-full'
+										className='w-full bg-card/70'
 										placeholder={t('section_participants_search')}
 										value={keyword}
 										onChange={(e) => setKeyword(e.target.value)}
@@ -134,7 +134,7 @@ const SectionInfoMember = ({ section_id }: { section_id: number }) => {
 										{t('section_participants_empty')}
 									</div>
 								)}
-								<div className='px-5 flex-1 overflow-auto text-xs text-muted-foreground gap-3 flex flex-col'>
+								<div className='flex flex-1 flex-col gap-3 overflow-auto px-4 text-xs text-muted-foreground'>
 									{!isFetching &&
 										users &&
 										users.map((user, index) => {
@@ -143,7 +143,7 @@ const SectionInfoMember = ({ section_id }: { section_id: number }) => {
 												<div
 													ref={isLast ? loadMoreRef : null}
 													key={index}
-													className='bg-muted/50 flex flex-row items-center gap-5 rounded-lg p-3'
+													className='flex flex-row items-center gap-4 rounded-xl border border-border/50 bg-card/70 p-3'
 													onClick={(e) => {
 														router.push(`/user/detail/${user.id}`);
 														e.preventDefault();

@@ -16,15 +16,15 @@ const SectionDocumentCard = ({
 	return (
 		<div
 			onClick={() => router.push(`/document/detail/${document.id}`)}
-			className='relative bg-white dark:bg-black rounded ring-1 ring-inset dark:ring-white/10 ring-black/10 p-5'>
-			<div className='flex flex-row mb-3'>
+			className='group relative rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md'>
+			<div className='mb-3 flex flex-row gap-3'>
 				<div className='flex-1'>
-					<div className='text-sm font-bold line-clamp-1'>
+					<div className='line-clamp-1 text-sm font-semibold leading-6'>
 						{document.title
 							? document.title
 							: t('section_document_card_no_title')}
 					</div>
-					<div className='text-xs text-muted-foreground line-clamp-2 break-all'>
+					<div className='line-clamp-2 break-all text-xs leading-5 text-muted-foreground'>
 						{document.description
 							? document.description
 							: t('section_document_card_no_description')}
@@ -34,18 +34,18 @@ const SectionDocumentCard = ({
 					<img
 						src={document.cover}
 						alt='cover'
-						className='relative h-16 aspect-square rounded overflow-hidden shrink-0 object-cover'
+						className='relative h-14 w-14 shrink-0 rounded-xl object-cover'
 					/>
 				)}
 			</div>
 
 			{document.labels && document.labels.length > 0 && (
-				<div className='flex flex-row gap-3 items-center mb-3'>
+				<div className='mb-3 flex flex-wrap gap-2'>
 					{document.labels?.map((label, index) => {
 						return (
 							<div
 								key={index}
-								className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
+								className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
 								{'# ' + label.name}
 							</div>
 						);
@@ -53,9 +53,9 @@ const SectionDocumentCard = ({
 				</div>
 			)}
 
-			<div className='flex justify-between items-center'>
-				<div className='flex flex-row items-center gap-2 overflow-auto'>
-					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
+			<div className='flex items-end justify-between gap-3'>
+				<div className='flex flex-1 flex-wrap items-center gap-2 overflow-auto'>
+					<div className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
 						{document.category === DocumentCategory.WEBSITE
 							? t('document_category_link')
 							: document.category === DocumentCategory.FILE
@@ -64,9 +64,9 @@ const SectionDocumentCard = ({
 									? t('document_category_quick_note')
 									: document.category === DocumentCategory.AUDIO
 										? t('document_category_audio')
-										: t('document_category_others')}
+									: t('document_category_others')}
 					</div>
-					<div className='w-fit text-xs text-muted-foreground px-2 py-1 rounded bg-muted'>
+					<div className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
 						{document.status === SectionDocumentIntegration.WAIT_TO
 							? t('section_document_card_section_supplement_todo')
 							: document.status === SectionDocumentIntegration.SUPPLEMENTING
@@ -75,10 +75,10 @@ const SectionDocumentCard = ({
 									? t('section_document_card_section_supplement_done')
 									: document.status === SectionDocumentIntegration.FAILED
 										? t('section_document_card_section_supplement_failed')
-										: t('section_document_card_section_supplement_unknown')}
+							: t('section_document_card_section_supplement_unknown')}
 					</div>
 				</div>
-				<div className='text-xs text-muted-foreground'>
+				<div className='shrink-0 text-[11px] text-muted-foreground'>
 					{document.create_time &&
 						formatInUserTimeZone(document.create_time, 'yyyy-MM-dd HH:mm')}
 				</div>

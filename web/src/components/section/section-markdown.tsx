@@ -106,16 +106,12 @@ const SectionMarkdown = ({
 			)}
 
 			{markdown && (
-				<div
-					className={cn(
-						'h-full w-full relative flex flex-col overflow-auto',
-						className
-					)}>
-					<div className='prose dark:prose-invert mx-auto py-5'>
+				<div className={cn('relative w-full', className)}>
+					<div className='prose mx-auto pt-4 pb-0 dark:prose-invert'>
 						<CustomMarkdown content={markdown} />
-						<p className='text-sm text-center text-muted-foreground bg-muted rounded py-2'>
+						<div className='not-prose mt-4 rounded-lg bg-muted/80 px-3 py-2 text-center text-sm text-muted-foreground'>
 							{t('section_ai_tips')}
-						</p>
+						</div>
 					</div>
 				</div>
 			)}

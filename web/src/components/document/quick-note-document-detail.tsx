@@ -86,7 +86,7 @@ const QuickDocumentDetail = ({
 			{!isError && (
 				<div className='w-full h-full flex flex-col'>
 					<div className='flex-1 overflow-auto relative'>
-						<div className='prose dark:prose-invert mx-auto pb-5'>
+						<div className='prose mx-auto pb-4 dark:prose-invert'>
 							<CustomMarkdown
 								content={
 									document?.quick_note_info?.content
@@ -97,8 +97,8 @@ const QuickDocumentDetail = ({
 						</div>
 						<div ref={bottomRef}></div>
 					</div>
-					<Separator className='mb-5' />
-					<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
+					<Separator className='mb-4' />
+					<DocumentOperate id={id} className='overflow-auto' />
 				</div>
 			)}
 		</div>

@@ -79,22 +79,24 @@ const SectionContainer = ({ id }: { id: number }) => {
 	}, [section?.process_task?.status]);
 
 	return (
-		<div className='px-5 pb-5 md:h-full w-full md:grid md:grid-cols-12 md:gap-5 relative'>
-			<div className='md:col-span-8 md:h-full relative min-h-0 flex flex-col'>
-				<div className='flex-1 overflow-auto'>
-					<SectionMarkdown id={id} />
+		<div className='relative w-full px-5 pb-5 md:grid md:h-full md:grid-cols-12 md:items-stretch md:gap-4'>
+			<div className='relative min-h-0 md:col-span-8 md:flex md:h-full md:flex-col'>
+				<div className='overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm md:flex-1 md:min-h-0'>
+					<div className='flex flex-col md:h-full'>
+						<SectionMarkdown id={id} className='md:min-h-0 md:flex-1 md:overflow-auto' />
+						<Separator className='mb-2 mt-3' />
+						<SectionOperate id={id} className='overflow-auto' />
+					</div>
 				</div>
-				<Separator className='mb-5' />
-				<SectionOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
 			</div>
 
-			<div className='md:col-span-4 py-0 md:h-full flex flex-col gap-5 min-h-0 relative'>
-				<Card className='py-0 md:flex-1 overflow-auto relative pb-5'>
+			<div className='relative min-h-0 flex flex-col gap-4 py-0 md:col-span-4 md:h-full'>
+				<Card className='relative overflow-auto rounded-2xl border border-border/60 bg-card/80 py-0 pb-5 shadow-sm backdrop-blur-sm md:flex-1'>
 					<div>
 						<SectionInfo id={id} />
 					</div>
 				</Card>
-				<Card className='py-0 md:flex-1 relative'>
+				<Card className='relative rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-1'>
 					<Dialog>
 						<DialogTrigger asChild>
 							<Button
@@ -163,7 +165,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 				<>
 					{section?.podcast_task?.status ===
 						SectionPodcastStatus.GENERATING && (
-						<Card className='p-5 relative'>
+						<Card className='relative rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm'>
 							<div className='text-muted-foreground text-xs flex flex-row justify-center items-center gap-2'>
 								{t('section_podcast_processing')}
 								<Spinner />
@@ -173,7 +175,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 
 					{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
 						section?.podcast_task?.podcast_file_name && (
-							<Card className='p-5 relative flex flex-col gap-5'>
+							<Card className='relative flex flex-col gap-4 rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm'>
 								<AudioPlayer
 									src={section?.podcast_task?.podcast_file_name}
 									cover={
