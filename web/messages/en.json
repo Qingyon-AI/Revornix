@@ -976,6 +976,18 @@
     "seo_register_password_again_different": "The two passwords do not match",
     "seo_register_already_have_account": "Already have an account?",
     "seo_login_go_to_login": "Go to Login",
+    "auth_shell_title": "Bring your documents, sections, and AI workflows into one knowledge surface.",
+    "auth_shell_description": "Revornix combines content capture, organization, graphing, and AI-assisted retrieval in one workspace so knowledge can be searched, connected, and reused.",
+    "auth_shell_feature_capture_title": "Capture in one place",
+    "auth_shell_feature_capture_description": "Collect webpages, files, notes, and audio into the same workspace.",
+    "auth_shell_feature_organize_title": "Structure your knowledge",
+    "auth_shell_feature_organize_description": "Sections, labels, and summaries help scattered content become readable and trackable.",
+    "auth_shell_feature_assist_title": "Use AI with context",
+    "auth_shell_feature_assist_description": "Ask, summarize, and connect ideas against real document and section context instead of generic chat.",
+    "auth_legal_notice_prefix": "By logging in or registering, you agree to our",
+    "auth_legal_notice_terms": "Terms of Service",
+    "auth_legal_notice_and": "and",
+    "auth_legal_notice_privacy": "Privacy Policy",
     "seo_nav_login_in": "Sign In",
     "seo_nav_docs": "Revornix Document"
 }

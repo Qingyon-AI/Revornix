@@ -976,6 +976,18 @@
     "seo_register_password_again_different": "两次输入的密码不一致",
     "seo_register_already_have_account": "已有账号？",
     "seo_login_go_to_login": "前往登录",
+    "auth_shell_title": "把你的文档、专栏与 AI 工作流放进同一个知识界面。",
+    "auth_shell_description": "Revornix 将内容收集、整理、图谱化与 AI 问答整合到一个统一空间，让知识不再只是堆积，而是可以被检索、连接与复用。",
+    "auth_shell_feature_capture_title": "集中收纳内容",
+    "auth_shell_feature_capture_description": "从网页、文件、速记到音频，把信息源汇聚到同一个工作台。",
+    "auth_shell_feature_organize_title": "结构化整理知识",
+    "auth_shell_feature_organize_description": "专栏、标签和摘要协同工作，让零散内容快速形成可阅读、可追踪的体系。",
+    "auth_shell_feature_assist_title": "让 AI 参与理解",
+    "auth_shell_feature_assist_description": "基于文档和专栏上下文进行问答、总结与连接，而不是脱离语境地聊天。",
+    "auth_legal_notice_prefix": "登录或注册即表示你同意我们的",
+    "auth_legal_notice_terms": "服务条款",
+    "auth_legal_notice_and": "和",
+    "auth_legal_notice_privacy": "隐私政策",
     "seo_nav_login_in": "登录",
     "seo_nav_docs": "说明文档"
 }

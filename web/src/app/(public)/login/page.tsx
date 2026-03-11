@@ -4,6 +4,7 @@ import { getSafeRedirectPage } from '@/lib/safe-redirect';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
+import AuthShell from '@/components/user/auth-shell';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -19,11 +20,11 @@ export default async function LoginPage(props: { searchParams: SearchParams }) {
 
 	return (
 		<Suspense>
-			<div className='flex items-center justify-center min-h-[calc(theme("height.screen")-theme("height.16"))]'>
+			<AuthShell>
 				<LoginProvider>
 					<LoginForm />
 				</LoginProvider>
-			</div>
+			</AuthShell>
 		</Suspense>
 	);
 }

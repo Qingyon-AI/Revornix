@@ -128,12 +128,16 @@ export function RegisterFormCloud() {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={onSubmit} className='space-y-2 min-w-100'>
-				<CardHeader className='mb-5'>
-					<CardTitle className='text-2xl'>{t('seo_register')}</CardTitle>
-					<CardDescription>{t('seo_register_description')}</CardDescription>
+			<form onSubmit={onSubmit} className='w-full space-y-2'>
+				<CardHeader className='mb-5 px-0 pb-0 pt-0'>
+					<CardTitle className='text-[1.95rem] tracking-tight'>
+						{t('seo_register')}
+					</CardTitle>
+					<CardDescription className='text-sm leading-6'>
+						{t('seo_register_description')}
+					</CardDescription>
 				</CardHeader>
-				<CardContent>
+				<CardContent className='px-0'>
 					<FormField
 						control={form.control}
 						name='email'
@@ -142,6 +146,7 @@ export function RegisterFormCloud() {
 								<FormLabel>{t('seo_register_form_email')}</FormLabel>
 								<FormControl>
 									<Input
+										className='h-11 rounded-xl border-border/70 bg-background/80 shadow-none'
 										placeholder={t('seo_register_form_email_placeholder')}
 										{...field}
 									/>
@@ -156,9 +161,10 @@ export function RegisterFormCloud() {
 						render={({ field }) => (
 							<FormItem className='mb-5'>
 								<FormLabel>{t('seo_register_form_email_code')}</FormLabel>
-								<div className='flex w-full max-w-sm items-center space-x-2'>
+								<div className='flex w-full items-center space-x-2'>
 									<FormControl>
 										<Input
+											className='h-11 rounded-xl border-border/70 bg-background/80 shadow-none'
 											placeholder={t(
 												'seo_register_form_email_code_placeholder'
 											)}
@@ -168,6 +174,7 @@ export function RegisterFormCloud() {
 									<Button
 										type='button'
 										onClick={onSendCode}
+										className='h-11 rounded-xl'
 										disabled={!!countdown || codeSending}>
 										{!countdown && t('seo_register_form_email_code_send')}
 										{!!countdown && `${Math.round(countdown / 1000)}s`}
@@ -186,6 +193,7 @@ export function RegisterFormCloud() {
 								<FormLabel>{t('seo_register_form_password')}</FormLabel>
 								<FormControl>
 									<Input
+										className='h-11 rounded-xl border-border/70 bg-background/80 shadow-none'
 										type='password'
 										placeholder={t('seo_register_form_password_placeholder')}
 										{...field}
@@ -203,6 +211,7 @@ export function RegisterFormCloud() {
 								<FormLabel>{t('seo_register_form_password_again')}</FormLabel>
 								<FormControl>
 									<Input
+										className='h-11 rounded-xl border-border/70 bg-background/80 shadow-none'
 										type='password'
 										placeholder={t(
 											'seo_register_form_password_again_placeholder'
@@ -214,7 +223,10 @@ export function RegisterFormCloud() {
 							</FormItem>
 						)}
 					/>
-					<Button className='w-full' type='submit' disabled={submitting}>
+					<Button
+						className='h-11 w-full rounded-xl'
+						type='submit'
+						disabled={submitting}>
 						{t('seo_register_submit')}
 						{submitting && <Loader2 className='mr-1 size-4 animate-spin' />}
 					</Button>
