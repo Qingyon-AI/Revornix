@@ -19,8 +19,9 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { TrashIcon } from 'lucide-react';
+import { Clock3, TrashIcon } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
+import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const RecentReadDocumentBox = () => {
 	const t = useTranslations();
@@ -41,12 +42,15 @@ const RecentReadDocumentBox = () => {
 				router.push('/document/recent');
 			}}>
 			<CardHeader className='flex flex-1 flex-col gap-1 px-5'>
-				<CardTitle className='flex flex-row items-center'>
-					<span>{t('recent_read_documents_card_title')}</span>
-					<span className='ml-2 font-bold text-sm'>
+				<CardTitle className='flex items-center gap-3'>
+					<CardTitleIcon icon={Clock3} tone='indigo' />
+					<div className='flex items-center'>
+						<span>{t('recent_read_documents_card_title')}</span>
+						<span className='ml-2 font-bold text-sm'>
 						{isFetchingRecentReadDocuments && <Skeleton className='size-4' />}
 						{!isFetchingRecentReadDocuments && recentReadDocuments?.total}
-					</span>
+						</span>
+					</div>
 				</CardTitle>
 				<CardDescription>
 					{t('recent_read_documents_card_description')}

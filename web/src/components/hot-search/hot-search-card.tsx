@@ -1,4 +1,4 @@
-import { Expand } from 'lucide-react';
+import { Expand, Newspaper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
 	Card,
@@ -22,6 +22,7 @@ import {
 } from '../ui/dialog';
 import { memo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const HotSearchCard = ({ website }: { website: Website }) => {
 	const locale = useLocale();
@@ -77,7 +78,10 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 			</Dialog>
 			<Card className={cn('shrink-0')}>
 				<CardHeader className='w-full flex flex-row items-center justify-between'>
-					<CardTitle>{website.title}</CardTitle>
+					<CardTitle className='flex min-w-0 items-center gap-3'>
+						<CardTitleIcon icon={Newspaper} tone='sky' />
+						<span className='truncate'>{website.title}</span>
+					</CardTitle>
 					<Button size={'icon'} variant={'outline'} onClick={handleShowMore}>
 						<Expand size={4} className='text-muted-foreground' />
 					</Button>

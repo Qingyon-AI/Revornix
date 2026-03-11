@@ -27,7 +27,8 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { TrashIcon } from 'lucide-react';
+import { PieChart as PieChartIcon, TrashIcon } from 'lucide-react';
+import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const DocumentLabelSummary = ({ className }: { className?: string }) => {
 	const t = useTranslations();
@@ -65,7 +66,10 @@ const DocumentLabelSummary = ({ className }: { className?: string }) => {
 	return (
 		<Card className={cn(className)}>
 			<CardHeader className='items-center pb-0'>
-				<CardTitle>{t('dashboard_document_label_summary')}</CardTitle>
+				<CardTitle className='flex items-center gap-3'>
+					<CardTitleIcon icon={PieChartIcon} tone='rose' />
+					<span>{t('dashboard_document_label_summary')}</span>
+				</CardTitle>
 				<CardDescription>
 					{t('dashboard_document_label_summary_tips')}
 				</CardDescription>

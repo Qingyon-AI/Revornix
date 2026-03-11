@@ -34,6 +34,7 @@ import AudioPlayer from '@/components/ui/audio-player';
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const TodaySummary = () => {
 	const t = useTranslations();
@@ -117,7 +118,10 @@ const TodaySummary = () => {
 		<Card className='rounded-2xl border border-border/60 bg-card/80 shadow-sm backdrop-blur-sm'>
 			<CardHeader className='flex flex-row items-start justify-between gap-4'>
 				<div className='flex flex-col gap-1.5'>
-					<CardTitle>{t('dashboard_today_summary')}</CardTitle>
+					<CardTitle className='flex items-center gap-3'>
+						<CardTitleIcon icon={FileText} tone='emerald' />
+						<span>{t('dashboard_today_summary')}</span>
+					</CardTitle>
 					<CardDescription>
 						{t('dashboard_today_summary_description')}
 					</CardDescription>
