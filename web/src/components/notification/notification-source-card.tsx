@@ -79,6 +79,9 @@ const NotificationSourceCard = ({
 		},
 		onSuccess(data, variables, context) {
 			toast.success(t('setting_notification_source_manage_delete_success'));
+			queryClient.invalidateQueries({
+				queryKey: ['searchUsableNotificationSources'],
+			});
 			setShowDeleteDialog(false);
 		},
 	});

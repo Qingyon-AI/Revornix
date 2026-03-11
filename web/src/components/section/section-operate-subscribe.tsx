@@ -8,7 +8,6 @@ import { utils } from '@kinda/utils';
 import { BellOffIcon, BellPlusIcon, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import { useUserContext } from '@/provider/user-provider';
 
 const SectionOperateSubscribe = ({
 	section_id,
@@ -56,7 +55,7 @@ const SectionOperateSubscribe = ({
 			queryKey: ['getSectionDetail', id],
 		});
 		queryClient.invalidateQueries({
-			queryKey: ['getSectionSubscribers', id],
+			queryKey: ['getSectionSubscriber', id],
 		});
 		queryClient.invalidateQueries({
 			predicate(query) {

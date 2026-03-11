@@ -97,13 +97,11 @@ class ConnectionManager:
         cache = await self._ensure_cache()
         if cache is not None:
             try:
-                await _resolve_redis_call(cache.rpush(cache_key, message))
-                await _resolve_redis_call(
-                    cache.ltrim(cache_key, -self.offline_cache_max_messages, -1)
-                )
-                await _resolve_redis_call(
-                    cache.expire(cache_key, self.offline_cache_ttl_seconds)
-                )
+                async with cache.pipeline(transaction=True) as pipeline:
+                    pipeline.rpush(cache_key, message)
+                    pipeline.ltrim(cache_key, -self.offline_cache_max_messages, -1)
+                    pipeline.expire(cache_key, self.offline_cache_ttl_seconds)
+                    await _resolve_redis_call(pipeline.execute())
                 return
             except Exception as e:
                 exception_logger.error(
@@ -117,12 +115,13 @@ class ConnectionManager:
         cache = await self._ensure_cache()
         if cache is not None:
             try:
-                cached_messages = await _resolve_redis_call(
-                    cache.lrange(cache_key, 0, -1)
-                )
+                async with cache.pipeline(transaction=True) as pipeline:
+                    pipeline.lrange(cache_key, 0, -1)
+                    pipeline.delete(cache_key)
+                    result = await _resolve_redis_call(pipeline.execute())
+                cached_messages = result[0] if result else []
                 if cached_messages:
-                    await _resolve_redis_call(cache.delete(cache_key))
-                    return cached_messages
+                    return list(cached_messages)
             except Exception as e:
                 exception_logger.error(
                     f"Failed to read websocket cached messages from redis, fallback to memory. "

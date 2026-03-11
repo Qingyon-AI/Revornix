@@ -21,7 +21,7 @@ export const handleRoute = async (_: undefined, noCache: boolean) => {
 const getDyCookies = async () => {
   try {
     const cookisUrl = "https://www.douyin.com/passport/general/login_guiding_strategy/?aid=6383";
-    const { data } = await get({ url: cookisUrl, originaInfo: true });
+    const { data } = await get({ url: cookisUrl, originaInfo: true, noCache: true });
     const pattern = /passport_csrf_token=(.*); Path/s;
     const matchResult = data.headers["set-cookie"][0].match(pattern);
     const cookieData = matchResult[1];

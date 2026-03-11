@@ -30,7 +30,7 @@ const SectionInfoMember = ({ section_id }: { section_id: number }) => {
 		fetchNextPage,
 		hasNextPage,
 	} = useInfiniteQuery({
-		queryKey: ['getSectionMember', section_id, keyword],
+		queryKey: ['getSectionMembers', section_id, keyword],
 		queryFn: (pageParam) => getSectionUser({ ...pageParam.pageParam }),
 		initialPageParam: {
 			section_id: section_id,

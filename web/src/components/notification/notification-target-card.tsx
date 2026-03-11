@@ -81,6 +81,9 @@ const NotificationTargetCard = ({
 		},
 		onSuccess(data, variables, context) {
 			toast.success(t('setting_notification_target_manage_delete_success'));
+			queryClient.invalidateQueries({
+				queryKey: ['searchUsableNotificationTargets'],
+			});
 			setShowDeleteDialog(false);
 		},
 	});
