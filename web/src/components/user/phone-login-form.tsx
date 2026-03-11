@@ -146,12 +146,16 @@ const PhoneLoginForm = () => {
 
 	return (
 		<Form {...phoneForm}>
-			<form onSubmit={onSubmitPhoneForm} className='space-y-2 min-w-100'>
-				<CardHeader className='mb-5'>
-					<CardTitle className='text-2xl'>{t('seo_login')}</CardTitle>
-					<CardDescription>{t('seo_login_description')}</CardDescription>
+			<form onSubmit={onSubmitPhoneForm} className='w-full space-y-2'>
+				<CardHeader className='mb-5 px-0 pb-0 pt-0'>
+					<CardTitle className='text-[1.95rem] tracking-tight'>
+						{t('seo_login')}
+					</CardTitle>
+					<CardDescription className='text-sm leading-6'>
+						{t('seo_login_description')}
+					</CardDescription>
 				</CardHeader>
-				<CardContent>
+				<CardContent className='px-0'>
 					<FormField
 						control={phoneForm.control}
 						name='phone'
@@ -160,6 +164,7 @@ const PhoneLoginForm = () => {
 								<FormLabel>{t('seo_login_form_phone')}</FormLabel>
 								<FormControl>
 									<Input
+										className='h-11 rounded-xl border-border/70 bg-background/80 shadow-none'
 										placeholder={t('seo_login_form_phone_placeholder')}
 										{...field}
 									/>
@@ -175,9 +180,10 @@ const PhoneLoginForm = () => {
 							<FormItem className='mb-5'>
 								<FormLabel>{t('seo_login_form_code')}</FormLabel>
 								<div className='flex flex-col space-y-2'>
-									<div className='flex-row flex w-full items-center space-x-2'>
+									<div className='flex w-full flex-row items-center space-x-2'>
 										<FormControl className='flex-1'>
 											<Input
+												className='h-11 rounded-xl border-border/70 bg-background/80 shadow-none'
 												placeholder={t('seo_login_form_code_placeholder')}
 												{...field}
 											/>
@@ -185,6 +191,7 @@ const PhoneLoginForm = () => {
 										<Button
 											type='button'
 											onClick={onSendCode}
+											className='h-11 rounded-xl'
 											disabled={sendingCode || !!countdown}>
 											{sendingCode && (
 												<Loader2 className='mr-1 size-4 animate-spin' />
@@ -201,8 +208,11 @@ const PhoneLoginForm = () => {
 						)}
 					/>
 				</CardContent>
-				<CardFooter className='flex flex-col gap-2'>
-					<Button disabled={submitLoading} type='submit' className='w-full'>
+				<CardFooter className='flex flex-col gap-3 px-0 pb-0 pt-0'>
+					<Button
+						disabled={submitLoading}
+						type='submit'
+						className='h-11 w-full rounded-xl'>
 						{submitLoading && <Loader2 className='mr-1 size-4 animate-spin' />}
 						{t('seo_login_submit')}
 					</Button>
@@ -220,26 +230,29 @@ const PhoneLoginForm = () => {
 									}&redirect_uri=${encodeURIComponent(
 										`https://app.revornix.com/integrations/wechat/oauth/create/callback`
 									)}&response_type=code&scope=snsapi_login&state=ndkasnl#wechat_redirect`}>
-									<Button type='button' className='w-full'>
+									<Button type='button' variant='outline' className='h-11 w-full rounded-xl shadow-none'>
 										<WechatIcon />
 									</Button>
 								</Link>
 								<Button
 									type='button'
-									className='w-full'
+									variant='outline'
+									className='h-11 w-full rounded-xl shadow-none'
 									onClick={handleGoogleLogin}>
 									<GoogleIcon />
 								</Button>
 								<Button
 									type='button'
-									className='w-full'
+									variant='outline'
+									className='h-11 w-full rounded-xl shadow-none'
 									onClick={handleGitHubLogin}>
 									<GithubIcon />
 								</Button>
 								<Button
 									disabled={submitLoading}
 									type='button'
-									className='w-full'
+									variant='outline'
+									className='h-11 w-full rounded-xl shadow-none'
 									onClick={() => {
 										setLoginWay('email');
 									}}>

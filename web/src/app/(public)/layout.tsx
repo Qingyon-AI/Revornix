@@ -6,9 +6,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 	return (
 		<>
 			<NextTopLoader />
-			<Nav />
-			<main className='w-full'>{children}</main>
-			<Footer />
+			<div className='grid min-h-screen grid-rows-[auto_1fr_auto] overflow-hidden'>
+				<Nav />
+				<main className='min-h-0 overflow-hidden'>{children}</main>
+				<Footer />
+			</div>
 		</>
 	);
 };

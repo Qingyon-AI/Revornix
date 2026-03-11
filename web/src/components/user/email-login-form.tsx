@@ -119,12 +119,16 @@ const EmailLoginForm = () => {
 
 	return (
 		<Form {...emailForm}>
-			<form onSubmit={onSubmitEmailForm} className='space-y-2 min-w-100'>
-				<CardHeader className='mb-5'>
-					<CardTitle className='text-2xl'>{t('seo_login')}</CardTitle>
-					<CardDescription>{t('seo_login_description')}</CardDescription>
+			<form onSubmit={onSubmitEmailForm} className='w-full space-y-2'>
+				<CardHeader className='mb-5 px-0 pb-0 pt-0'>
+					<CardTitle className='text-[1.95rem] tracking-tight'>
+						{t('seo_login')}
+					</CardTitle>
+					<CardDescription className='text-sm leading-6'>
+						{t('seo_login_description')}
+					</CardDescription>
 				</CardHeader>
-				<CardContent>
+				<CardContent className='px-0'>
 					<FormField
 						control={emailForm.control}
 						name='email'
@@ -133,6 +137,7 @@ const EmailLoginForm = () => {
 								<FormLabel>{t('seo_login_form_email')}</FormLabel>
 								<FormControl>
 									<Input
+										className='h-11 rounded-xl border-border/70 bg-background/80 shadow-none'
 										placeholder={t('seo_login_form_email_placeholder')}
 										{...field}
 									/>
@@ -149,6 +154,7 @@ const EmailLoginForm = () => {
 								<FormLabel>{t('seo_login_form_password')}</FormLabel>
 								<FormControl>
 									<Input
+										className='h-11 rounded-xl border-border/70 bg-background/80 shadow-none'
 										type='password'
 										placeholder={t('seo_login_form_password_placeholder')}
 										{...field}
@@ -159,8 +165,11 @@ const EmailLoginForm = () => {
 						)}
 					/>
 				</CardContent>
-				<CardFooter className='flex flex-col gap-2'>
-					<Button disabled={submitLoading} type='submit' className='w-full'>
+				<CardFooter className='flex flex-col gap-3 px-0 pb-0 pt-0'>
+					<Button
+						disabled={submitLoading}
+						type='submit'
+						className='h-11 w-full rounded-xl'>
 						{submitLoading && <Loader2 className='mr-1 size-4 animate-spin' />}
 						{t('seo_login_submit')}
 					</Button>
@@ -178,25 +187,28 @@ const EmailLoginForm = () => {
 									}&redirect_uri=${encodeURIComponent(
 										`https://app.revornix.com/integrations/wechat/oauth/create/callback`
 									)}&response_type=code&scope=snsapi_login&state=ndkasnl#wechat_redirect`}>
-									<Button type='button' className='w-full'>
+									<Button type='button' variant='outline' className='h-11 w-full rounded-xl shadow-none'>
 										<WechatIcon />
 									</Button>
 								</Link>
 								<Button
 									type='button'
-									className='w-full'
+									variant='outline'
+									className='h-11 w-full rounded-xl shadow-none'
 									onClick={handleGoogleLogin}>
 									<GoogleIcon />
 								</Button>
 								<Button
 									type='button'
-									className='w-full'
+									variant='outline'
+									className='h-11 w-full rounded-xl shadow-none'
 									onClick={handleGitHubLogin}>
 									<GithubIcon />
 								</Button>
 								<Button
 									type='button'
-									className='w-full'
+									variant='outline'
+									className='h-11 w-full rounded-xl shadow-none'
 									onClick={() => setLoginWay('phone')}>
 									<Phone />
 								</Button>

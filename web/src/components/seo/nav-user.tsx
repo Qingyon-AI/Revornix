@@ -29,7 +29,9 @@ const NavUser = () => {
 		<>
 			{!mainUserInfo && (
 				<Link href={'/login'}>
-					<Button variant={'outline'}>{t('seo_nav_login_in')}</Button>
+					<Button variant={'outline'} size='sm' className='rounded-xl px-4'>
+						{t('seo_nav_login_in')}
+					</Button>
 				</Link>
 			)}
 			{mainUserInfo && (
