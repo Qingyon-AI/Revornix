@@ -4,7 +4,7 @@ aliyun-python-sdk-core-v3==2.13.33
 alibabacloud-oss-v2==1.2.4
 beautifulsoup4==4.14.3
 bilibili-api-python==17.4.1
-yt-dlp==2026.2.4
+yt-dlp==2026.3.3
 httpx[http2]==0.28.1
 openai==1.109.1
 pydantic==2.12.5
@@ -36,7 +36,7 @@ mcp_use==1.6.0
 langchain==1.2.10
 langchain_openai==1.1.9
 langchain_core==1.2.12
-langgraph==1.0.8
+langgraph==1.1.0
 fastmcp==2.14.5
 websockets==15.0.1
 lark_oapi==1.5.3
