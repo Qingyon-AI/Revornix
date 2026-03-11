@@ -33,7 +33,6 @@ const TodayNews = () => {
 		'bilibili',
 		'acfun',
 		'weibo',
-		'zhihu',
 		'zhihu-daily',
 		'baidu',
 		'douyin',
