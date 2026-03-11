@@ -34,7 +34,6 @@ const HotSearch = () => {
 		'bilibili',
 		'acfun',
 		'weibo',
-		'zhihu',
 		'zhihu-daily',
 		'baidu',
 		'douyin',
