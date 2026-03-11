@@ -7,6 +7,7 @@ import SectionOperateSubscribe from './section-operate-subscribe';
 import SectionOperateShare from './section-operate-share';
 import SectionOperateComment from './section-operate-comment';
 import SectionDocument from './section-document';
+import SectionOperateAI from './section-operate-ai';
 import { cn } from '@/lib/utils';
 
 const SectionOperate = ({
@@ -25,8 +26,13 @@ const SectionOperate = ({
 	});
 
 	return (
-		<div className={cn('w-full flex justify-between', className)}>
+		<div className={cn('w-full flex flex-wrap gap-1', className)}>
 			<SectionOperateComment section_id={id} />
+			<SectionOperateAI
+				section_id={id}
+				section_title={section?.title}
+				disabled={!section?.md_file_name && section?.documents_count === 0}
+			/>
 			<SectionDocument section_id={id} />
 			{section && mainUserInfo?.id === section?.creator.id && (
 				<>

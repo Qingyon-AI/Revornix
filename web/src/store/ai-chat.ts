@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware'
 import { get, set, del } from 'idb-keyval'
-import { AIPhase, AIWorkflow, SessionItem } from '@/types/ai'
+import { AIDocumentReference, AIPhase, AIWorkflow, SessionItem } from '@/types/ai'
 
 export type AIChatState = {
     currentSessionId: string | null;
@@ -28,6 +28,11 @@ export type AIChatAction = {
         chat_id: string,
         step: AIPhase,
         meta?: any
+    ) => void;
+    mergeChatMessageDocumentReferences: (
+        session_id: string,
+        chat_id: string,
+        references: AIDocumentReference[]
     ) => void;
 };
 
@@ -168,6 +173,48 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                                         label,
                                         meta
                                     ),
+                                };
+                            }
+
+                            return { ...session, messages };
+                        });
+
+                        return { sessions };
+                    });
+                },
+                mergeChatMessageDocumentReferences: (session_id, chat_id, references) => {
+                    set((state) => {
+                        const sessions = state.sessions.map((session) => {
+                            if (session.id !== session_id) return session;
+
+                            const messages = [...session.messages];
+                            const idx = messages.findIndex((m) => m.chat_id === chat_id);
+
+                            if (idx === -1) {
+                                messages.push({
+                                    chat_id,
+                                    role: 'assistant',
+                                    content: '',
+                                    document_references: references,
+                                });
+                            } else {
+                                const existingReferences = messages[idx].document_references ?? [];
+                                const mergedReferences = [...existingReferences];
+                                const seenDocumentIds = new Set(
+                                    existingReferences.map((reference) => reference.document_id)
+                                );
+
+                                for (const reference of references) {
+                                    if (seenDocumentIds.has(reference.document_id)) {
+                                        continue;
+                                    }
+                                    mergedReferences.push(reference);
+                                    seenDocumentIds.add(reference.document_id);
+                                }
+
+                                messages[idx] = {
+                                    ...messages[idx],
+                                    document_references: mergedReferences,
                                 };
                             }
 

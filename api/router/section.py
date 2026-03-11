@@ -31,6 +31,7 @@ from enums.section import (
     UserSectionRole,
 )
 from router.section_comment_manage import section_comment_manage_router
+from router.section_ai import section_ai_router
 from router.section_detail_query import section_detail_query_router
 from router.section_label_manage import section_label_manage_router
 from router.section_publish_manage import section_publish_manage_router
@@ -41,6 +42,7 @@ from router.section_user_query import section_user_query_router
 
 section_router = APIRouter()
 section_router.include_router(section_comment_manage_router)
+section_router.include_router(section_ai_router)
 section_router.include_router(section_user_manage_router)
 section_router.include_router(section_label_manage_router)
 section_router.include_router(section_publish_manage_router)

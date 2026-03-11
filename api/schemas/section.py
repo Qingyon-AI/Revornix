@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import Field, field_validator
 
 from .base import BaseModel
+from .ai import ChatItem
 from enums.section import UserSectionRole, UserSectionAuthority
 from schemas.task import SectionPodcastTask, SectionProcessTask
 from schemas.user import SectionUserPublicInfo, UserPublicInfo
@@ -137,6 +138,20 @@ class SearchUserSectionsRequest(BaseModel):
 
 class SectionDetailRequest(BaseModel):
     section_id: int
+
+
+class SectionAskRequest(BaseModel):
+    section_id: int
+    messages: list[ChatItem]
+    enable_mcp: bool = False
+
+
+class SectionAskReference(BaseModel):
+    document_id: int
+    document_title: str
+    chunk_id: str
+    excerpt: str
+    score: float | None = None
 
 class BaseSectionInfo(BaseModel):
     id: int

@@ -2,6 +2,7 @@ import json
 import time
 from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
+from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends
@@ -27,6 +28,7 @@ from common.encrypt import encrypt_api_key
 from common.interpret_event import EventInterpreter
 from common.jwt_utils import create_token
 from common.logger import exception_logger, info_logger
+from common.structured_mcp_adapter import StructuredLangChainAdapter
 from common.usage_collector import UsageCollector
 from common.usage_billing import persist_model_usage_from_snapshot
 from data.sql.base import session_scope
@@ -35,7 +37,6 @@ from enums.mcp import MCPCategory
 from enums.model import UserModelProviderRole
 from proxy.ai_model_proxy import AIModelProxy
 from schemas.ai import ChatItem
-from typing import Any
 
 ai_router = APIRouter()
 MCP_AGENT_MAX_STEPS = 12
@@ -80,6 +81,7 @@ def _build_mcp_recursion_limit_text(*, query: str, has_partial_answer: bool) -> 
 
 
 def _build_agent_error_message(*, query: str, is_recursion_limit: bool) -> str:
+    """Build a localized error message for agent-based chat failures."""
     is_chinese = _contains_cjk(query)
     if is_recursion_limit:
         return (
@@ -473,6 +475,7 @@ async def create_agent(
     user_id: int,
     enable_mcp: bool = False
 ):
+    """Create an MCP agent with Revornix auth rules and structured tool artifacts."""
     db = session_scope()
     try:
         user = crud.user.get_user_by_id(
@@ -551,7 +554,10 @@ async def create_agent(
             # Ensure token usage is included in streaming events when provider supports it.
             stream_usage=True,
         )
-        return MCPAgent(llm=llm, client=mcp_client, max_steps=MCP_AGENT_MAX_STEPS), model_id
+        agent = MCPAgent(llm=llm, client=mcp_client, max_steps=MCP_AGENT_MAX_STEPS)
+        agent.adapter = StructuredLangChainAdapter(disallowed_tools=agent.disallowed_tools)
+        agent.adapter._record_telemetry = False
+        return agent, model_id
     except Exception as e:
         exception_logger.error(f"Failed to create agent: {e}")
         raise
@@ -564,6 +570,7 @@ async def stream_ops_with_agent(
     agent: MCPAgent,
     messages: list[ChatItem],
 ) -> AsyncGenerator[str, None]:
+    """Stream a general Revornix AI response through the MCP agent pipeline."""
     interpreter = EventInterpreter()
     usage_collector = UsageCollector()
     chat_id = uuid4().hex
@@ -713,17 +720,34 @@ async def ask_ai(
     chat_messages: schemas.ai.ChatMessages,
     user: models.user.User = Depends(get_current_user)
 ):
-    enable_mcp = chat_messages.enable_mcp
-    messages = chat_messages.messages
+    """Handle Revornix AI chat requests with optional MCP tool usage."""
+    messages = [
+        message
+        for message in chat_messages.messages
+        if message.role in {"user", "assistant"}
+    ]
+
+    if user.default_revornix_model_id is None:
+        raise schemas.error.CustomException(
+            "The user has not set a default model",
+            code=400,
+        )
+    if not messages:
+        raise schemas.error.CustomException("Messages cannot be empty", code=400)
+    if messages[-1].role != "user":
+        raise schemas.error.CustomException(
+            "The latest message must be from the user",
+            code=400,
+        )
 
     try:
         agent, model_id = await create_agent(
             user_id=user.id,
-            enable_mcp=enable_mcp
+            enable_mcp=chat_messages.enable_mcp,
         )
     except Exception as e:
         raise schemas.error.CustomException(
-            message=e,
+            message=str(e),
             code=400
         ) from e
     return StreamingResponse(
