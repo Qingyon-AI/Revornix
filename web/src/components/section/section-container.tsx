@@ -83,7 +83,10 @@ const SectionContainer = ({ id }: { id: number }) => {
 			<div className='relative min-h-0 md:col-span-8 md:flex md:h-full md:flex-col'>
 				<div className='overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm md:flex-1 md:min-h-0'>
 					<div className='flex flex-col md:h-full'>
-						<SectionMarkdown id={id} className='md:min-h-0 md:flex-1 md:overflow-auto' />
+						<SectionMarkdown
+							id={id}
+							className='md:min-h-0 md:flex-1 md:overflow-auto'
+						/>
 						<Separator className='mb-2 mt-3' />
 						<SectionOperate id={id} className='overflow-auto' />
 					</div>
@@ -91,10 +94,8 @@ const SectionContainer = ({ id }: { id: number }) => {
 			</div>
 
 			<div className='relative min-h-0 flex flex-col gap-4 py-0 md:col-span-4 md:h-full'>
-				<Card className='relative overflow-auto rounded-2xl border border-border/60 bg-card/80 py-0 pb-5 shadow-sm backdrop-blur-sm md:flex-1'>
-					<div>
-						<SectionInfo id={id} />
-					</div>
+				<Card className='relative overflow-auto rounded-2xl border border-border/60 bg-card/80 pt-5 pb-0 shadow-sm backdrop-blur-sm md:flex-1'>
+					<SectionInfo id={id} />
 				</Card>
 				<Card className='relative rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-1'>
 					<Dialog>
