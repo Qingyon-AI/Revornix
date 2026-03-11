@@ -19,8 +19,9 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { TrashIcon } from 'lucide-react';
+import { Star, TrashIcon } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
+import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const StarDocumentBox = () => {
 	const t = useTranslations();
@@ -40,12 +41,15 @@ const StarDocumentBox = () => {
 				router.push('/document/star');
 			}}>
 			<CardHeader className='flex flex-1 flex-col gap-1 px-5'>
-				<CardTitle className='flex flex-row items-center'>
-					<span>{t('star_documents_card_title')}</span>
-					<span className='ml-2 font-bold text-sm'>
+				<CardTitle className='flex items-center gap-3'>
+					<CardTitleIcon icon={Star} tone='amber' />
+					<div className='flex items-center'>
+						<span>{t('star_documents_card_title')}</span>
+						<span className='ml-2 font-bold text-sm'>
 						{isFetchingStarDocuments && <Skeleton className='size-4' />}
 						{!isFetchingStarDocuments && starDocuments?.total}
-					</span>
+						</span>
+					</div>
 				</CardTitle>
 				<CardDescription>
 					{t('star_documents_card_description')}

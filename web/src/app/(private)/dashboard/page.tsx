@@ -12,6 +12,7 @@ import TodaySummary from '@/components/dashboard/today-summary';
 import TodayNews from '@/components/dashboard/today-news';
 import { BookOpen, LayoutDashboard, Sparkles, Tags } from 'lucide-react';
 import RandomClassicalPoem from '@/components/dashboard/random-classical-poem';
+import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const DashboardPage = () => {
 	const t = useTranslations();
@@ -60,10 +61,8 @@ const DashboardPage = () => {
 			<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
 				<Card className='rounded-2xl border border-border/60 bg-card/80 shadow-sm backdrop-blur-sm'>
 					<CardHeader>
-						<CardTitle className='flex items-center gap-2'>
-							<div className='flex size-9 items-center justify-center rounded-xl bg-sky-500/10 text-sky-700 dark:text-sky-300'>
-								<Tags className='size-4' />
-							</div>
+						<CardTitle className='flex items-center gap-3'>
+							<CardTitleIcon icon={Tags} tone='sky' />
 							<span>{t('document_label_collection_title')}</span>
 						</CardTitle>
 					</CardHeader>
@@ -73,10 +72,8 @@ const DashboardPage = () => {
 				</Card>
 				<Card className='rounded-2xl border border-border/60 bg-card/80 shadow-sm backdrop-blur-sm'>
 					<CardHeader>
-						<CardTitle className='flex items-center gap-2'>
-							<div className='flex size-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'>
-								<BookOpen className='size-4' />
-							</div>
+						<CardTitle className='flex items-center gap-3'>
+							<CardTitleIcon icon={BookOpen} tone='emerald' />
 							<span>{t('section_label_collection_title')}</span>
 						</CardTitle>
 					</CardHeader>

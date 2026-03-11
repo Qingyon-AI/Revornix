@@ -21,6 +21,8 @@ import { useMemo } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { BarChart3 } from 'lucide-react';
+import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const DocumentMonthSummary = ({ className }: { className?: string }) => {
 	const t = useTranslations();
@@ -60,7 +62,10 @@ const DocumentMonthSummary = ({ className }: { className?: string }) => {
 	return (
 		<Card className={cn(className)}>
 			<CardHeader>
-				<CardTitle>{t('month_summary_title')}</CardTitle>
+				<CardTitle className='flex items-center gap-3'>
+					<CardTitleIcon icon={BarChart3} tone='indigo' />
+					<span>{t('month_summary_title')}</span>
+				</CardTitle>
 				<CardDescription>{t('month_summary_description')}</CardDescription>
 			</CardHeader>
 			<CardContent>

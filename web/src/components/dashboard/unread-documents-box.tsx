@@ -19,8 +19,9 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { TrashIcon } from 'lucide-react';
+import { Inbox, TrashIcon } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
+import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const UnReadDocumentBox = () => {
 	const router = useRouter();
@@ -40,12 +41,15 @@ const UnReadDocumentBox = () => {
 					router.push('/document/unread');
 				}}>
 				<CardHeader className='flex flex-1 flex-col gap-1 px-5'>
-					<CardTitle className='flex flex-row items-center'>
-						<span>{t('unread_documents_card_title')}</span>
-						<span className='ml-2 font-bold text-sm'>
+					<CardTitle className='flex items-center gap-3'>
+						<CardTitleIcon icon={Inbox} tone='sky' />
+						<div className='flex items-center'>
+							<span>{t('unread_documents_card_title')}</span>
+							<span className='ml-2 font-bold text-sm'>
 							{isFetchingUnReadDocuments && <Skeleton className='size-4' />}
 							{!isFetchingUnReadDocuments && unReadDocuments?.total}
-						</span>
+							</span>
+						</div>
 					</CardTitle>
 					<CardDescription>
 						{t('unread_documents_card_description')}

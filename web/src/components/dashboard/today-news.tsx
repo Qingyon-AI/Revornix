@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DAILY_HOT_API_PREFIX } from '@/config/api';
 import { Website } from '@/app/(private)/hot-search/page';
 import Link from 'next/link';
-import { ChevronRight, RefreshCcwIcon, TrashIcon } from 'lucide-react';
+import { ChevronRight, Newspaper, RefreshCcwIcon, TrashIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AutoScrollList } from '@/components/ui/auto-scroll-list';
 import {
@@ -23,6 +23,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
+import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const TodayNews = () => {
 	const t = useTranslations();
@@ -109,7 +110,10 @@ const TodayNews = () => {
 		<Card>
 			<CardHeader className='flex justify-between items-center'>
 				<div className='flex flex-col gap-1.5'>
-					<CardTitle>{t('dashboard_today_hot_search')}</CardTitle>
+					<CardTitle className='flex items-center gap-3'>
+						<CardTitleIcon icon={Newspaper} tone='sky' />
+						<span>{t('dashboard_today_hot_search')}</span>
+					</CardTitle>
 					<CardDescription>
 						{t('dashboard_today_hot_search_description')}
 					</CardDescription>
