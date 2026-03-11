@@ -130,13 +130,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						<SidebarMenu>
 							<SidebarMenuItem>
 								<SidebarMenuButton asChild>
-									<Link href={'/section/today'}>
-										{t('sidebar_day_summary')}
-									</Link>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-							<SidebarMenuItem>
-								<SidebarMenuButton asChild>
 									<Link href={'/section/community'}>
 										{t('sidebar_social_section')}
 									</Link>
