@@ -31,7 +31,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { RefreshCcwIcon, TrashIcon, XIcon } from 'lucide-react';
+import { AlertTriangle, FileText, RefreshCcwIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'nextjs-toploader/app';
 import CustomMarkdown from '@/components/ui/custom-markdown';
@@ -176,7 +176,7 @@ const SectionDetailPage = () => {
 									<Empty className='h-full'>
 										<EmptyHeader>
 											<EmptyMedia variant='icon'>
-												<TrashIcon />
+												<FileText />
 											</EmptyMedia>
 											<EmptyDescription>
 												{t('documents_empty')}
@@ -241,7 +241,7 @@ const SectionDetailPage = () => {
 						<Empty className='h-full'>
 							<EmptyHeader>
 								<EmptyMedia variant='icon'>
-									<XIcon />
+									<AlertTriangle />
 								</EmptyMedia>
 								<EmptyDescription>
 									{markdownGetError || error?.message}
@@ -264,7 +264,7 @@ const SectionDetailPage = () => {
 						<Empty className='h-full'>
 							<EmptyHeader>
 								<EmptyMedia variant='icon'>
-									<XIcon />
+									<FileText />
 								</EmptyMedia>
 								<EmptyDescription>
 									{t('dashboard_today_summary_md_empty')}

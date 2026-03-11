@@ -12,7 +12,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { TrashIcon } from 'lucide-react';
+import { Tags } from 'lucide-react';
 
 const DocumentLabelsBox = () => {
 	const router = useRouter();
@@ -32,7 +32,7 @@ const DocumentLabelsBox = () => {
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<Tags />
 						</EmptyMedia>
 						<EmptyDescription>{t('document_label_empty')}</EmptyDescription>
 					</EmptyHeader>

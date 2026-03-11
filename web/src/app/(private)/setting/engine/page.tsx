@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { searchCommunityEngines } from '@/service/engine';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { Info, TrashIcon, XCircleIcon } from 'lucide-react';
+import { Cpu, Info, XCircleIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useInView } from 'react-intersection-observer';
@@ -81,7 +81,7 @@ const EnginePage = () => {
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<Cpu />
 						</EmptyMedia>
 						<EmptyDescription>{t('engine_empty')}</EmptyDescription>
 					</EmptyHeader>

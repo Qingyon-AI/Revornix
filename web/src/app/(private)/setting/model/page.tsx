@@ -12,7 +12,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { Info, TrashIcon, XCircleIcon } from 'lucide-react';
+import { Bot, Info, XCircleIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useTranslations } from 'next-intl';
@@ -79,7 +79,7 @@ const ModelSettingPage = () => {
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<Bot />
 						</EmptyMedia>
 						<EmptyDescription>{t('ai_model_provider_empty')}</EmptyDescription>
 					</EmptyHeader>

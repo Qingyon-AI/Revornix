@@ -24,8 +24,8 @@ import { Label } from '@/components/ui/label';
 import {
 	ArrowDownNarrowWide,
 	ArrowDownWideNarrow,
+	FileText,
 	SlidersHorizontalIcon,
-	TrashIcon,
 } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -223,7 +223,7 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<FileText />
 						</EmptyMedia>
 						<EmptyDescription>{t('documents_empty')}</EmptyDescription>
 					</EmptyHeader>

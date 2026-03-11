@@ -4,7 +4,7 @@ import {
 	CheckIcon,
 	ChevronsUpDown,
 	PlusCircleIcon,
-	TrashIcon,
+	Search,
 	XIcon,
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
@@ -197,7 +197,7 @@ const MultipleSelector = (props: MultipleSelectorProps) => {
 							<Empty className='h-full'>
 								<EmptyHeader>
 									<EmptyMedia variant='icon'>
-										<TrashIcon />
+										<Search />
 									</EmptyMedia>
 									<EmptyDescription>{t('empty')}</EmptyDescription>
 								</EmptyHeader>

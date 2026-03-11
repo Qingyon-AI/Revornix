@@ -10,7 +10,7 @@ import {
 	searchNotificationRecords,
 } from '@/service/notification';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
-import { BadgeCheck, Loader2, TrashIcon } from 'lucide-react';
+import { BadgeCheck, BellOff, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -123,7 +123,7 @@ const NotificationsPage = () => {
 						<Empty className='h-full'>
 							<EmptyHeader>
 								<EmptyMedia variant='icon'>
-									<TrashIcon />
+									<BellOff />
 								</EmptyMedia>
 								<EmptyDescription>{t('notification_empty')}</EmptyDescription>
 							</EmptyHeader>

@@ -13,7 +13,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { TrashIcon } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { replacePath } from '@/lib/utils';
 import { formatInUserTimeZone } from '@/lib/time';
@@ -59,7 +59,7 @@ const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 				<Empty className='h-full'>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<MessageSquare />
 						</EmptyMedia>
 						<EmptyDescription>{t('section_comments_empty')}</EmptyDescription>
 					</EmptyHeader>

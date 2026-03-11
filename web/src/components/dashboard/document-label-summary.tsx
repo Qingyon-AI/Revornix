@@ -27,7 +27,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { PieChart as PieChartIcon, TrashIcon } from 'lucide-react';
+import { PieChart as PieChartIcon, Tags } from 'lucide-react';
 import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const DocumentLabelSummary = ({ className }: { className?: string }) => {
@@ -99,7 +99,7 @@ const DocumentLabelSummary = ({ className }: { className?: string }) => {
 						<Empty>
 							<EmptyHeader>
 								<EmptyMedia variant='icon'>
-									<TrashIcon />
+									<Tags />
 								</EmptyMedia>
 								<EmptyDescription>
 									{t('dashboard_document_label_summary_empty')}

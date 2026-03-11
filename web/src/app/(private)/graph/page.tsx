@@ -13,7 +13,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { TrashIcon } from 'lucide-react';
+import { Share2 } from 'lucide-react';
 import NodeSourceDialog from '@/components/graph/node-source-dialog';
 
 interface NodeSource {
@@ -303,7 +303,7 @@ const GraphPage = () => {
 						<Empty className='h-full'>
 							<EmptyHeader>
 								<EmptyMedia variant='icon'>
-									<TrashIcon />
+									<Share2 />
 								</EmptyMedia>
 								<EmptyDescription>{t('graph_empty')}</EmptyDescription>
 							</EmptyHeader>
