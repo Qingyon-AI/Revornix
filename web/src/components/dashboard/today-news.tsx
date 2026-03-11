@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DAILY_HOT_API_PREFIX } from '@/config/api';
 import { Website } from '@/app/(private)/hot-search/page';
 import Link from 'next/link';
-import { ChevronRight, Newspaper, RefreshCcwIcon, TrashIcon } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Newspaper, RefreshCcwIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AutoScrollList } from '@/components/ui/auto-scroll-list';
 import {
@@ -132,7 +132,7 @@ const TodayNews = () => {
 					<Empty className='h-full'>
 						<EmptyHeader>
 							<EmptyMedia variant='icon'>
-								<TrashIcon />
+								<AlertTriangle />
 							</EmptyMedia>
 							<EmptyDescription>{error}</EmptyDescription>
 						</EmptyHeader>

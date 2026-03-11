@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getMineNotificationTargets } from '@/service/notification';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { Info, TrashIcon, XCircleIcon } from 'lucide-react';
+import { Bell, Info, XCircleIcon } from 'lucide-react';
 import NotificationTargetCard from '@/components/notification/notification-target-card';
 import { useInView } from 'react-intersection-observer';
 import { useEffect, useState } from 'react';
@@ -85,7 +85,7 @@ const NotificationTargetManagePage = () => {
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<Bell />
 						</EmptyMedia>
 						<EmptyDescription>
 							{t('setting_notification_target_manage_empty')}

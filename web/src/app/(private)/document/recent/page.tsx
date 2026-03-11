@@ -26,8 +26,8 @@ import { Label } from '@/components/ui/label';
 import {
 	ArrowDownNarrowWide,
 	ArrowDownWideNarrow,
+	Clock3,
 	SlidersHorizontalIcon,
-	TrashIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Separator } from '@/components/ui/separator';
@@ -218,7 +218,7 @@ const RecentReadDocumentPage = () => {
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<Clock3 />
 						</EmptyMedia>
 						<EmptyDescription>{t('documents_empty')}</EmptyDescription>
 					</EmptyHeader>

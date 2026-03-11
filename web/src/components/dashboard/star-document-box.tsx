@@ -19,7 +19,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { Star, TrashIcon } from 'lucide-react';
+import { Star, StarOff } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
 import CardTitleIcon from '@/components/ui/card-title-icon';
 
@@ -68,7 +68,7 @@ const StarDocumentBox = () => {
 					<Empty className='gap-4 py-4 md:py-6'>
 						<EmptyHeader>
 							<EmptyMedia variant='icon'>
-								<TrashIcon />
+								<StarOff />
 							</EmptyMedia>
 							<EmptyDescription>{t('no_star_documents')}</EmptyDescription>
 						</EmptyHeader>

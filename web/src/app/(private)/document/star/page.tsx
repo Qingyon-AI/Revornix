@@ -12,7 +12,7 @@ import {
 	ArrowDownNarrowWide,
 	ArrowDownWideNarrow,
 	SlidersHorizontalIcon,
-	TrashIcon,
+	StarOff,
 } from 'lucide-react';
 import {
 	Popover,
@@ -218,7 +218,7 @@ const StarDocumentPage = () => {
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<StarOff />
 						</EmptyMedia>
 						<EmptyDescription>{t('documents_empty')}</EmptyDescription>
 					</EmptyHeader>

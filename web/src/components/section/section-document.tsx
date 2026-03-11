@@ -14,7 +14,7 @@ import {
 import SectionDocumentCard from './section-document-card';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
-import { PlusCircleIcon, TableOfContentsIcon, TrashIcon } from 'lucide-react';
+import { PlusCircleIcon, TableOfContentsIcon } from 'lucide-react';
 import { useRouter } from 'nextjs-toploader/app';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
@@ -103,7 +103,7 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 						<Empty className='h-full'>
 							<EmptyHeader>
 								<EmptyMedia variant='icon'>
-									<TrashIcon />
+									<TableOfContentsIcon />
 								</EmptyMedia>
 								<EmptyDescription>{t('documents_empty')}</EmptyDescription>
 							</EmptyHeader>

@@ -12,8 +12,8 @@ import { Label } from '@/components/ui/label';
 import {
 	ArrowDownNarrowWide,
 	ArrowDownWideNarrow,
+	BookOpen,
 	SlidersHorizontalIcon,
-	TrashIcon,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -227,7 +227,7 @@ const SubscribedSectionPage = () => {
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<BookOpen />
 						</EmptyMedia>
 						<EmptyDescription>{t('sections_empty')}</EmptyDescription>
 					</EmptyHeader>

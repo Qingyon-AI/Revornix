@@ -19,7 +19,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { Inbox, TrashIcon } from 'lucide-react';
+import { Inbox } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
 import CardTitleIcon from '@/components/ui/card-title-icon';
 
@@ -68,7 +68,7 @@ const UnReadDocumentBox = () => {
 						<Empty className='gap-4 py-4 md:py-6'>
 							<EmptyHeader>
 								<EmptyMedia variant='icon'>
-									<TrashIcon />
+									<Inbox />
 								</EmptyMedia>
 								<EmptyDescription>{t('no_unread_documents')}</EmptyDescription>
 							</EmptyHeader>

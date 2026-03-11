@@ -19,7 +19,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { Clock3, TrashIcon } from 'lucide-react';
+import { Clock3 } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
 import CardTitleIcon from '@/components/ui/card-title-icon';
 
@@ -69,7 +69,7 @@ const RecentReadDocumentBox = () => {
 					<Empty className='gap-4 py-4 md:py-6'>
 						<EmptyHeader>
 							<EmptyMedia variant='icon'>
-								<TrashIcon />
+								<Clock3 />
 							</EmptyMedia>
 							<EmptyDescription>{t('no_recent_read_documents')}</EmptyDescription>
 						</EmptyHeader>

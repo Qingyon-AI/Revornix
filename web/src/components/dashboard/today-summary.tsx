@@ -15,11 +15,11 @@ import Link from 'next/link';
 import { Button } from '../ui/button';
 import {
 	Activity,
+	AlertTriangle,
 	AudioLines,
 	ChevronRight,
 	FileText,
 	RefreshCcwIcon,
-	XIcon,
 } from 'lucide-react';
 import {
 	Empty,
@@ -149,7 +149,7 @@ const TodaySummary = () => {
 					<Empty>
 						<EmptyHeader>
 							<EmptyMedia variant='icon'>
-								<XIcon />
+								<AlertTriangle />
 							</EmptyMedia>
 							<EmptyDescription>{error?.message}</EmptyDescription>
 						</EmptyHeader>

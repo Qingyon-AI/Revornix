@@ -12,7 +12,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { TrashIcon } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 
 const SectionLabelsBox = () => {
 	const router = useRouter();
@@ -28,7 +28,7 @@ const SectionLabelsBox = () => {
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<BookOpen />
 						</EmptyMedia>
 						<EmptyDescription>{t('section_label_empty')}</EmptyDescription>
 					</EmptyHeader>

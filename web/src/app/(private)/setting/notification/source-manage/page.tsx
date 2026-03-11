@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getMineNotificationSources } from '@/service/notification';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { Info, TrashIcon, XCircleIcon } from 'lucide-react';
+import { Info, Send, XCircleIcon } from 'lucide-react';
 import NotificationSourceCard from '@/components/notification/notification-source-card';
 import { useInView } from 'react-intersection-observer';
 import { useEffect, useState } from 'react';
@@ -84,7 +84,7 @@ const NotificationSourceManagePage = () => {
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<Send />
 						</EmptyMedia>
 						<EmptyDescription>
 							{t('setting_notification_source_manage_empty')}

@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button';
 import {
 	ArrowDownNarrowWide,
 	ArrowDownWideNarrow,
+	Inbox,
 	SlidersHorizontalIcon,
-	TrashIcon,
 } from 'lucide-react';
 import {
 	Popover,
@@ -218,7 +218,7 @@ const UnReadDocumentPage = () => {
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<TrashIcon />
+							<Inbox />
 						</EmptyMedia>
 						<EmptyDescription>{t('documents_empty')}</EmptyDescription>
 					</EmptyHeader>
