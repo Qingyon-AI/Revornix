@@ -35,11 +35,11 @@ const StarDocumentBox = () => {
 	);
 	return (
 		<Card
-			className='cursor-pointer'
+			className='cursor-pointer gap-4 rounded-2xl border border-border/60 bg-card/80 py-4 shadow-sm backdrop-blur-sm'
 			onClick={() => {
 				router.push('/document/star');
 			}}>
-			<CardHeader className='flex-1 flex flex-col'>
+			<CardHeader className='flex flex-1 flex-col gap-1 px-5'>
 				<CardTitle className='flex flex-row items-center'>
 					<span>{t('star_documents_card_title')}</span>
 					<span className='ml-2 font-bold text-sm'>
@@ -51,15 +51,17 @@ const StarDocumentBox = () => {
 					{t('star_documents_card_description')}
 				</CardDescription>
 			</CardHeader>
-			<CardContent className='flex-1'>
-				{isFetchingStarDocuments && <Skeleton className='w-full h-40' />}
+			<CardContent className='flex-1 px-5 pt-0'>
+				{isFetchingStarDocuments && (
+					<Skeleton className='h-32 w-full rounded-xl' />
+				)}
 				{!isFetchingStarDocuments &&
 					starDocuments &&
 					starDocuments.total > 0 && (
 						<StackedDocuments documents={starDocuments.elements} />
 					)}
 				{starDocuments?.total === 0 && !isFetchingStarDocuments && (
-					<Empty>
+					<Empty className='gap-4 py-4 md:py-6'>
 						<EmptyHeader>
 							<EmptyMedia variant='icon'>
 								<TrashIcon />

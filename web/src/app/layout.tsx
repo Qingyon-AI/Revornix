@@ -9,6 +9,8 @@ import ReactQueryProvider from '@/provider/react-query-privider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { getMessages } from 'next-intl/server';
+import { AudioPlayerProvider } from '@/provider/audio-player-provider';
+import FloatingAudioPlayer from '@/components/ui/floating-audio-player';
 
 export const metadata: Metadata = {
 	title: 'Revornix',
@@ -34,7 +36,12 @@ export default async function RootLayout({
 							defaultTheme='system'
 							enableSystem
 							disableTransitionOnChange>
-							<UserContextProvider>{children}</UserContextProvider>
+							<UserContextProvider>
+								<AudioPlayerProvider>
+									{children}
+									<FloatingAudioPlayer />
+								</AudioPlayerProvider>
+							</UserContextProvider>
 						</ThemeProvider>
 					</ReactQueryProvider>
 					<Toaster position='top-right' richColors />

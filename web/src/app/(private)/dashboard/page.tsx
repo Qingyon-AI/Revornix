@@ -24,7 +24,7 @@ const DashboardPage = () => {
 					<div className='absolute right-6 top-6 h-24 w-24 rounded-full bg-sky-500/10 blur-3xl' />
 				</div>
 				<div className='relative flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between'>
-					<div className='flex items-start gap-3'>
+					<div className='flex items-center gap-3'>
 						<div className='flex size-9 shrink-0 items-center justify-center rounded-xl bg-foreground text-background shadow-sm'>
 							<LayoutDashboard className='size-4.5' />
 						</div>

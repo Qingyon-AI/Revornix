@@ -2,15 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getDayDocumentsSummarySection } from '@/service/section';
-import { useEffect, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
-import { FileService } from '@/lib/file';
-import { useUserContext } from '@/provider/user-provider';
-import { toast } from 'sonner';
-import { getUserFileSystemDetail } from '@/service/file-system';
-import { getLocalDateYMD } from '@/lib/time';
+import { getLocalDateYMD, formatInUserTimeZone } from '@/lib/time';
 import {
 	Card,
 	CardContent,
@@ -20,7 +13,14 @@ import {
 } from '../ui/card';
 import Link from 'next/link';
 import { Button } from '../ui/button';
-import { ChevronRight, RefreshCcwIcon, XIcon } from 'lucide-react';
+import {
+	Activity,
+	AudioLines,
+	ChevronRight,
+	FileText,
+	RefreshCcwIcon,
+	XIcon,
+} from 'lucide-react';
 import {
 	Empty,
 	EmptyContent,
@@ -28,10 +28,15 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import AudioPlayer from '@/components/ui/audio-player';
+import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
+import { cn } from '@/lib/utils';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const TodaySummary = () => {
 	const t = useTranslations();
-	const { mainUserInfo } = useUserContext();
 	const today = getLocalDateYMD();
 	const {
 		data: section,
@@ -44,85 +49,105 @@ const TodaySummary = () => {
 		queryFn: () => getDayDocumentsSummarySection({ date: today }),
 	});
 
-	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
-		queryFn: () =>
-			getUserFileSystemDetail({
-				user_file_system_id: mainUserInfo!.default_user_file_system!,
-			}),
-		enabled:
-			mainUserInfo?.id !== undefined &&
-			mainUserInfo?.default_user_file_system !== undefined,
-	});
-
-	const [markdownGetError, setMarkdownGetError] = useState<string>();
-	const [markdown, setMarkdown] = useState<string>();
-
-		const onGetMarkdown = async () => {
-			if (!section || !section.md_file_name || !mainUserInfo) return;
-			if (!mainUserInfo.default_user_file_system) {
-				toast.error(t('error_default_file_system_not_found'));
-				return;
-			}
-		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
-		try {
-			const [res, err] = await utils.to(
-				fileService.getFileContent(section?.md_file_name),
-			);
-			if (!res || err) {
-				setMarkdownGetError(err.message);
-				return;
-			}
-			if (typeof res === 'string') {
-				setMarkdown(res);
-			}
-		} catch (e: any) {
-			setMarkdownGetError(e.message);
+	const getProcessState = () => {
+		if (!section?.process_task) {
+			return {
+				label: t('dashboard_today_summary_process_ready'),
+				className:
+					'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+			};
 		}
+
+		if (section.process_task.status === SectionProcessStatus.PROCESSING) {
+			return {
+				label: t('dashboard_today_summary_process_processing'),
+				className:
+					'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+			};
+		}
+
+		if (section.process_task.status === SectionProcessStatus.FAILED) {
+			return {
+				label: t('dashboard_today_summary_process_failed'),
+				className:
+					'border-destructive/20 bg-destructive/10 text-destructive',
+			};
+		}
+
+		return {
+			label: t('dashboard_today_summary_process_success'),
+			className:
+				'border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300',
+		};
 	};
 
-	useEffect(() => {
-		if (
-			!section ||
-			!section?.md_file_name ||
-			!mainUserInfo ||
-			!userFileSystemDetail
-		)
-			return;
-		onGetMarkdown();
-	}, [section, mainUserInfo, userFileSystemDetail]);
+	const getAudioState = () => {
+		if (!section?.podcast_task) {
+			return t('dashboard_today_summary_audio_empty');
+		}
+		if (section.podcast_task.status === SectionPodcastStatus.GENERATING) {
+			return t('dashboard_today_summary_audio_processing');
+		}
+		if (section.podcast_task.status === SectionPodcastStatus.FAILED) {
+			return t('dashboard_today_summary_audio_failed');
+		}
+		if (section.podcast_task.podcast_file_name) {
+			return t('dashboard_today_summary_audio_ready');
+		}
+		return t('dashboard_today_summary_audio_empty');
+	};
+
+	const getAudioHint = () => {
+		if (!section?.podcast_task) {
+			return t('dashboard_today_summary_audio_unavailable_hint');
+		}
+		if (section.podcast_task.status === SectionPodcastStatus.GENERATING) {
+			return t('section_podcast_processing');
+		}
+		if (section.podcast_task.status === SectionPodcastStatus.FAILED) {
+			return t('section_podcast_failed');
+		}
+		return t('dashboard_today_summary_audio_unavailable_hint');
+	};
+
+	const processState = getProcessState();
+	const summaryHref = section ? `/section/detail/${section.section_id}` : null;
+
 	return (
-		<Card>
-			<CardHeader className='flex justify-between items-center'>
+		<Card className='rounded-2xl border border-border/60 bg-card/80 shadow-sm backdrop-blur-sm'>
+			<CardHeader className='flex flex-row items-start justify-between gap-4'>
 				<div className='flex flex-col gap-1.5'>
 					<CardTitle>{t('dashboard_today_summary')}</CardTitle>
 					<CardDescription>
 						{t('dashboard_today_summary_description')}
 					</CardDescription>
 				</div>
-				<Link href={'/section/today'}>
-					<Button variant='ghost' className='text-sm text-muted-foreground'>
+				{summaryHref ? (
+					<Link href={summaryHref}>
+						<Button variant='ghost' className='text-sm text-muted-foreground'>
+							{t('dashboard_today_summary_full')}
+							<ChevronRight />
+						</Button>
+					</Link>
+				) : (
+					<Button
+						variant='ghost'
+						className='text-sm text-muted-foreground'
+						disabled>
 						{t('dashboard_today_summary_full')}
 						<ChevronRight />
 					</Button>
-				</Link>
+				)}
 			</CardHeader>
 			<CardContent className='flex-1'>
-				{(isFetching ||
-					(section &&
-						section.md_file_name &&
-						!isError &&
-						!markdown &&
-						!markdownGetError)) && <Skeleton className='h-full w-full' />}
-				{section && !section?.md_file_name && (
+				{isFetching && !section && <Skeleton className='h-48 w-full rounded-2xl' />}
+				{isError && (
 					<Empty>
 						<EmptyHeader>
 							<EmptyMedia variant='icon'>
 								<XIcon />
 							</EmptyMedia>
-							<EmptyDescription>
-								{t('dashboard_today_summary_md_empty')}
-							</EmptyDescription>
+							<EmptyDescription>{error?.message}</EmptyDescription>
 						</EmptyHeader>
 						<EmptyContent>
 							<Button
@@ -137,30 +162,81 @@ const TodaySummary = () => {
 						</EmptyContent>
 					</Empty>
 				)}
-				{(isError || markdownGetError) && (
-					<Empty>
-						<EmptyHeader>
-							<EmptyMedia variant='icon'>
-								<XIcon />
-							</EmptyMedia>
-							<EmptyDescription>
-								{markdownGetError || error?.message}
-							</EmptyDescription>
-						</EmptyHeader>
-						<EmptyContent>
-							<Button
-								variant='outline'
-								size='sm'
-								onClick={() => {
-									refetch();
-								}}>
-								<RefreshCcwIcon />
-								{t('refresh')}
-							</Button>
-						</EmptyContent>
-					</Empty>
+				{section && !isError && (
+					<div className='flex h-full flex-col gap-4'>
+						<div className='flex flex-col gap-3 rounded-2xl border border-border/60 bg-muted/20 p-4'>
+							<div className='flex items-start justify-between gap-3'>
+								<div className='min-w-0'>
+									<p className='text-[11px] uppercase tracking-[0.22em] text-muted-foreground'>
+										{section.date}
+									</p>
+									<h3 className='truncate text-lg font-semibold'>
+										{section.title}
+									</h3>
+								</div>
+								<Badge variant='outline' className={cn(processState.className)}>
+									{processState.label}
+								</Badge>
+							</div>
+
+							<div className='grid grid-cols-2 gap-3 min-[560px]:grid-cols-4'>
+								<div className='rounded-xl border border-border/50 bg-background/60 p-3'>
+									<div className='mb-1 flex items-center gap-2 text-xs text-muted-foreground'>
+										<FileText className='size-3.5' />
+										<span>{t('dashboard_today_summary_field_documents')}</span>
+									</div>
+									<div className='text-sm font-medium'>
+										{section.documents.length}
+									</div>
+								</div>
+
+								<div className='rounded-xl border border-border/50 bg-background/60 p-3'>
+									<div className='mb-1 flex items-center gap-2 text-xs text-muted-foreground'>
+										<Activity className='size-3.5' />
+										<span>{t('dashboard_today_summary_field_updated')}</span>
+									</div>
+									<div className='text-sm font-medium'>
+										{formatInUserTimeZone(
+											section.update_time ?? section.create_time,
+											'MM-dd HH:mm',
+										)}
+									</div>
+								</div>
+
+								<div className='rounded-xl border border-border/50 bg-background/60 p-3'>
+									<div className='mb-1 flex items-center gap-2 text-xs text-muted-foreground'>
+										<Activity className='size-3.5' />
+										<span>{t('dashboard_today_summary_field_process')}</span>
+									</div>
+									<div className='text-sm font-medium'>{processState.label}</div>
+								</div>
+
+								<div className='rounded-xl border border-border/50 bg-background/60 p-3'>
+									<div className='mb-1 flex items-center gap-2 text-xs text-muted-foreground'>
+										<AudioLines className='size-3.5' />
+										<span>{t('dashboard_today_summary_field_audio')}</span>
+									</div>
+									<div className='text-sm font-medium'>{getAudioState()}</div>
+								</div>
+							</div>
+						</div>
+
+						{section.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
+						section.podcast_task.podcast_file_name ? (
+							<AudioPlayer
+								src={section.podcast_task.podcast_file_name}
+								title={section.title}
+								artist='AI Generated'
+								variant='compact'
+							/>
+						) : (
+							<Alert className='border-border/60 bg-muted/20'>
+								<AudioLines className='text-muted-foreground' />
+								<AlertDescription>{getAudioHint()}</AlertDescription>
+							</Alert>
+						)}
+					</div>
 				)}
-				{markdown && <div className='line-clamp-10'>{markdown}</div>}
 			</CardContent>
 		</Card>
 	);

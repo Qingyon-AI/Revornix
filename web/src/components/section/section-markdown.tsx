@@ -48,14 +48,15 @@ const SectionMarkdown = ({
 	const [markdownIsFetching, setMarkdownIsFetching] = useState<boolean>(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
 
-		const onGetMarkdown = async () => {
-			if (!section || !section.md_file_name || !mainUserInfo) return;
-			setMarkdownIsFetching(true);
-			if (!mainUserInfo.default_user_file_system) {
-				toast.error(t('error_default_file_system_not_found'));
-				setMarkdownIsFetching(false);
-				return;
-			}
+	const onGetMarkdown = async () => {
+		if (!section || !section.md_file_name || !mainUserInfo) return;
+		setMarkdownGetError(undefined);
+		setMarkdownIsFetching(true);
+		if (!mainUserInfo.default_user_file_system) {
+			toast.error(t('error_default_file_system_not_found'));
+			setMarkdownIsFetching(false);
+			return;
+		}
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
 			const [res, err] = await utils.to(
@@ -77,6 +78,13 @@ const SectionMarkdown = ({
 	};
 
 	useEffect(() => {
+		if (section?.md_file_name) return;
+		setMarkdown(undefined);
+		setMarkdownGetError(undefined);
+		setMarkdownIsFetching(false);
+	}, [section?.md_file_name]);
+
+	useEffect(() => {
 		if (
 			!section ||
 			!section.md_file_name ||
@@ -87,19 +95,24 @@ const SectionMarkdown = ({
 		onGetMarkdown();
 	}, [section, mainUserInfo, userFileSystemDetail]);
 
+	const hasMarkdownFile = Boolean(section?.md_file_name);
+	const showSkeleton = (!section && isFetching && !isError) || (hasMarkdownFile && markdownIsFetching && !markdown);
+	const showError = !showSkeleton && (isError || Boolean(markdownGetError));
+	const showEmpty = !showSkeleton && !showError && isFetched && Boolean(section) && !hasMarkdownFile;
+
 	return (
 		<>
-			{section && isFetched && !section?.md_file_name && (
+			{showEmpty && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-sm'>
 					{t('section_markdown_empty')}
 				</div>
 			)}
 
-			{(isFetching || markdownIsFetching) && !markdown && (
+			{showSkeleton && (
 				<Skeleton className='h-full w-full' />
 			)}
 
-			{(isError || markdownGetError) && (
+			{showError && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-sm relative'>
 					{error?.message ?? <p>{markdownGetError}</p>}
 				</div>
