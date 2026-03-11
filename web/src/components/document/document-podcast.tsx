@@ -81,7 +81,7 @@ const DocumentPodcast = ({ document_id }: { document_id: number }) => {
 				<>
 					{document?.podcast_task?.status ===
 						DocumentPodcastStatus.GENERATING && (
-						<Card className='p-5 relative'>
+						<Card className='relative p-4'>
 							<div className='flex flex-row justify-center items-center gap-1 text-muted-foreground text-xs'>
 								<span>{t('document_podcast_processing')}</span>
 								<Spinner />
@@ -90,7 +90,7 @@ const DocumentPodcast = ({ document_id }: { document_id: number }) => {
 					)}
 					{document?.podcast_task?.status === DocumentPodcastStatus.SUCCESS &&
 						document?.podcast_task?.podcast_file_name && (
-							<Card className='p-5 relative'>
+							<Card className='relative p-4'>
 								<AudioPlayer
 									src={document?.podcast_task?.podcast_file_name}
 									cover={

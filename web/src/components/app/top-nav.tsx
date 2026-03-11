@@ -46,21 +46,25 @@ const TopNav = () => {
 	}, [pathname, locale]);
 
 	return (
-		<Breadcrumb>
-			<BreadcrumbList>
+		<Breadcrumb className='min-w-0'>
+			<BreadcrumbList className='gap-1 text-[13px]'>
 				{crumbs.map((crumb, index) => {
 					return (
-						<div key={index} className='flex flex-row items-center gap-1.5'>
-							<BreadcrumbItem className='md:block'>
+						<div
+							key={index}
+							className='flex min-w-0 flex-row items-center gap-1'>
+							<BreadcrumbItem className='min-w-0 md:block'>
 								{crumb.unclickable}
 								{crumb.unclickable ? (
-									<div>{crumb.title}</div>
+									<div className='truncate'>{crumb.title}</div>
 								) : (
-									<Link href={crumb.path}>{crumb.title}</Link>
+									<Link href={crumb.path} className='truncate'>
+										{crumb.title}
+									</Link>
 								)}
 							</BreadcrumbItem>
 							{index !== crumbs.length - 1 && (
-								<BreadcrumbSeparator className='md:block' />
+								<BreadcrumbSeparator className='md:block [&>svg]:size-3' />
 							)}
 						</div>
 					);

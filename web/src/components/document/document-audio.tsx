@@ -14,7 +14,7 @@ const DocumentAudio = ({ document_id }: { document_id: number }) => {
 	return (
 		<>
 			{document?.audio_info && document?.audio_info.audio_file_name && (
-				<Card className='p-5 relative'>
+				<Card className='relative p-4'>
 					<AudioPlayer
 						src={document?.audio_info.audio_file_name}
 						cover={

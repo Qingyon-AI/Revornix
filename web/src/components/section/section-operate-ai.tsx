@@ -385,12 +385,12 @@ const SectionOperateAI = ({
 					}))
 				}
 				className='mt-2'>
-				<div className='rounded-xl border border-border/50 bg-background/40 px-3 py-2'>
+				<div className='rounded-xl border border-border/50 bg-card/65 px-3 py-2'>
 					<div className='flex items-center justify-between gap-3'>
 						<div className='min-w-0 flex-1'>
 							<div className='flex items-center gap-2 text-[11px] font-medium tracking-wide text-muted-foreground'>
 								<span>{t('section_ai_references')}</span>
-								<span className='rounded-full border border-border/60 bg-muted/30 px-1.5 py-0.5 text-[10px] leading-none'>
+								<span className='rounded-full border border-border/60 bg-card/75 px-1.5 py-0.5 text-[10px] leading-none'>
 									{references.length}
 								</span>
 							</div>
@@ -403,7 +403,7 @@ const SectionOperateAI = ({
 						<CollapsibleTrigger asChild>
 							<button
 								type='button'
-								className='inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground'>
+								className='inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-card/80 hover:text-foreground'>
 								<span>
 									{isExpanded
 										? t('section_ai_references_hide')
@@ -423,9 +423,9 @@ const SectionOperateAI = ({
 							{references.map((reference) => (
 								<div
 									key={reference.chunk_id}
-									className='rounded-lg border border-border/50 bg-muted/15 p-2.5'>
+									className='rounded-lg border border-border/50 bg-card/65 p-2.5'>
 									<div className='flex min-w-0 items-start gap-2'>
-										<div className='mt-0.5 rounded-md border border-border/50 bg-background/70 p-1'>
+										<div className='mt-0.5 rounded-md border border-border/50 bg-card/75 p-1'>
 											<FileText className='size-3 text-muted-foreground' />
 										</div>
 										<div className='min-w-0 flex-1'>
@@ -461,7 +461,7 @@ const SectionOperateAI = ({
 					{t('section_ai_ask')}
 				</Button>
 			</SheetTrigger>
-			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-background pt-0 sm:max-w-2xl'>
+			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-2xl'>
 				<SheetHeader className='border-b border-border/60 px-5 pt-6 pb-3'>
 					<SheetTitle className='text-xl'>{t('section_ai_ask')}</SheetTitle>
 					<SheetDescription className='max-w-2xl text-sm leading-5'>
@@ -469,14 +469,14 @@ const SectionOperateAI = ({
 							title: section_title || t('sidebar_section'),
 						})}
 					</SheetDescription>
-					<div className='rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-xs leading-5 text-muted-foreground'>
+					<div className='rounded-lg border border-border/60 bg-card/65 px-3 py-2 text-xs leading-5 text-muted-foreground'>
 						{t('section_ai_session_notice')}
 					</div>
 				</SheetHeader>
 
 				<div className='flex-1 overflow-auto px-5 py-4'>
 					{messages.length === 0 && (
-						<div className='rounded-xl border border-border/60 bg-muted/20 px-4 py-3'>
+						<div className='rounded-xl border border-border/60 bg-card/65 px-4 py-3'>
 							<div className='text-sm text-foreground'>
 								{t('section_ai_empty')}
 							</div>
@@ -505,7 +505,7 @@ const SectionOperateAI = ({
 				</div>
 
 				<div className='border-t border-border/60 px-5 py-4'>
-					<div className='rounded-xl border border-border/70 bg-background px-4 py-3'>
+					<div className='rounded-xl border border-border/70 bg-card/85 px-4 py-3'>
 						<Textarea
 							value={input}
 							onChange={(event) => setInput(event.target.value)}

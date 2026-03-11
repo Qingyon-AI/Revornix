@@ -1,11 +1,15 @@
 import * as React from 'react';
 import {
 	BotIcon,
+	BookOpen,
+	FileText,
 	Flame,
 	LayoutDashboard,
+	LifeBuoy,
 	PlusCircle,
 	ChartNetwork,
 	SatelliteDish,
+	Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
 import { NavUser } from '@/components/user/nav-user';
@@ -32,25 +36,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const t = useTranslations();
 	return (
 		<Sidebar {...props}>
-			<SidebarHeader>
+			<SidebarHeader className='p-3'>
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton size='lg' asChild>
 							<Link href='/dashboard'>
-								<div className='flex aspect-square size-8 items-center justify-center rounded-lg'>
+								<div className='flex aspect-square size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/20 via-sky-400/10 to-transparent ring-1 ring-sidebar-border/70 shadow-sm'>
 									<Image src={logo} alt='logo' className='block dark:hidden' />
 									<Image
 										src={darklogo}
 										alt='logo'
 										className='hidden dark:block'
 									/>
-									<SatelliteDish className='size-4' />
+									<SatelliteDish className='size-4 text-emerald-700/80 dark:text-emerald-200/80' />
 								</div>
 								<div className='grid flex-1 text-left text-sm leading-tight'>
-									<span className='truncate font-semibold'>
+									<span className='truncate font-semibold tracking-tight'>
 										{t('website_title')}
 									</span>
-									<span className='truncate text-xs'>
+									<span className='truncate text-xs text-sidebar-foreground/70'>
 										{t('website_description')}
 									</span>
 								</div>
@@ -109,7 +113,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				</SidebarGroup>
 				<SidebarGroup>
 					<SidebarGroupLabel className='w-full justify-between items-center'>
-						<div>{t('sidebar_section')}</div>
+						<div className='flex items-center gap-2'>
+							<BookOpen className='size-3.5 text-emerald-600 dark:text-emerald-300' />
+							<div>{t('sidebar_section')}</div>
+						</div>
 						<Link href={'/section/create'}>
 							<Button
 								variant={'link'}
@@ -154,7 +161,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				</SidebarGroup>
 				<SidebarGroup>
 					<SidebarGroupLabel className='w-full justify-between items-center'>
-						<div>{t('sidebar_document')}</div>
+						<div className='flex items-center gap-2'>
+							<FileText className='size-3.5 text-sky-600 dark:text-sky-300' />
+							<div>{t('sidebar_document')}</div>
+						</div>
 						<Link href={'/document/create'}>
 							<Button
 								variant={'link'}
@@ -202,7 +212,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					</SidebarGroupContent>
 				</SidebarGroup>
 				<SidebarGroup>
-					<SidebarGroupLabel>{t('sidebar_help')}</SidebarGroupLabel>
+					<SidebarGroupLabel>
+						<div className='flex items-center gap-2'>
+							<LifeBuoy className='size-3.5 text-amber-600 dark:text-amber-300' />
+							<div>{t('sidebar_help')}</div>
+						</div>
+					</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
 							<SidebarMenuItem>
@@ -231,6 +246,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>
+				<div className='mb-1 mx-4 mt-auto rounded-2xl border border-sidebar-border/70 bg-gradient-to-br from-sidebar-accent to-sidebar p-3 text-xs text-sidebar-foreground/70 shadow-sm'>
+					<div className='mb-1 flex items-center gap-2 text-sidebar-foreground'>
+						<Sparkles className='size-3.5 text-emerald-600 dark:text-emerald-300' />
+						<span className='font-medium'>{t('website_title')}</span>
+					</div>
+					<div className='line-clamp-2'>{t('website_description')}</div>
+				</div>
 			</SidebarContent>
 			<SidebarFooter>
 				<NavUser />

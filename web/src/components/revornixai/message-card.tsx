@@ -51,12 +51,12 @@ const MessageCard = ({ message }: { message: Message }) => {
 				open={sourcesOpen}
 				onOpenChange={setSourcesOpen}
 				className='mt-3'>
-				<div className='rounded-xl border border-border/50 bg-background/40 px-3 py-2'>
+				<div className='rounded-xl border border-border/50 bg-card/60 px-3 py-2'>
 					<div className='flex items-center justify-between gap-3'>
 						<div className='min-w-0 flex-1'>
 							<div className='flex items-center gap-2 text-[11px] font-medium tracking-wide text-muted-foreground'>
 								<span>{t('revornix_ai_sources')}</span>
-								<span className='rounded-full border border-border/60 bg-muted/30 px-1.5 py-0.5 text-[10px] leading-none'>
+								<span className='rounded-full border border-border/60 bg-card/75 px-1.5 py-0.5 text-[10px] leading-none'>
 									{documentReferences.length}
 								</span>
 							</div>
@@ -70,7 +70,7 @@ const MessageCard = ({ message }: { message: Message }) => {
 						<CollapsibleTrigger asChild>
 							<button
 								type='button'
-								className='inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground'>
+								className='inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-card/80 hover:text-foreground'>
 								<span>
 									{sourcesOpen
 										? t('revornix_ai_sources_hide')
@@ -90,9 +90,9 @@ const MessageCard = ({ message }: { message: Message }) => {
 							{documentReferences.map((reference) => (
 								<div
 									key={`${reference.document_id}-${reference.source_tool ?? 'source'}`}
-									className='rounded-lg border border-border/50 bg-muted/15 p-2.5'>
+									className='rounded-lg border border-border/50 bg-card/60 p-2.5'>
 									<div className='flex min-w-0 items-start gap-2'>
-										<div className='mt-0.5 rounded-md border border-border/50 bg-background/70 p-1'>
+										<div className='mt-0.5 rounded-md border border-border/50 bg-card/75 p-1'>
 											<FileTextIcon className='size-3 text-muted-foreground' />
 										</div>
 										<div className='min-w-0 flex-1'>
@@ -129,9 +129,15 @@ const MessageCard = ({ message }: { message: Message }) => {
 				'justify-end': message.role === 'user',
 			})}>
 			<div className='flex flex-col gap-2'>
-				<div className='min-w-0 rounded-lg bg-muted p-3 w-fit max-w-full md:max-w-3xl'>
+				<div
+					className={cn(
+						'min-w-0 max-w-full rounded-xl border p-3 md:max-w-3xl',
+						message.role === 'user'
+							? 'w-fit border-primary/15 bg-primary/10'
+							: 'w-fit border-border/60 bg-card/80',
+					)}>
 					{ai_state && (
-						<Alert className='mb-5'>
+						<Alert className='mb-4 border-border/60 bg-card/70'>
 							<AlertDescription>
 								<Accordion type='multiple' className='w-full'>
 									<AccordionItem value='state'>
@@ -195,7 +201,7 @@ const MessageCard = ({ message }: { message: Message }) => {
 																				{(step.phase === 'tool' ||
 																					step.phase === 'tool_result') &&
 																					step.meta?.tool && (
-																						<div className='bg-muted px-1 py-0.5 rounded break-all'>
+																						<div className='break-all rounded border border-border/50 bg-card/75 px-1.5 py-0.5'>
 																							{step.meta.tool}
 																						</div>
 																					)}
