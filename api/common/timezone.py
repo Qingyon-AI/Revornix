@@ -2,7 +2,7 @@ from datetime import date as date_type
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from common.redis import redis_pool
 
 USER_TIMEZONE_CACHE_KEY_PREFIX = "user:timezone:"
@@ -32,7 +32,11 @@ async def get_cached_user_timezone(user_id: int) -> str:
         return normalize_timezone_name(cached_timezone)
     except Exception as e:
         exception_logger.warning(
-            f"Failed to get cached timezone for user_id={user_id}: {e}"
+            format_log_message(
+                "user_timezone_cache_read_failed",
+                user_id=user_id,
+                error=e,
+            )
         )
         return UTC_TIMEZONE_NAME
     finally:

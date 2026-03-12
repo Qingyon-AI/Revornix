@@ -19,7 +19,7 @@ def _build_notification_record(
         notification_task_id=notification_record.task_id,
     )
     if db_notification_task is None:
-        raise schemas.error.CustomException(message="notification task not found", code=404)
+        raise schemas.error.CustomException(message="Notification task not found", code=404)
 
     return schemas.notification.NotificationRecord.model_validate(
         {
@@ -95,15 +95,15 @@ def get_notification_record_detail(
         notification_record_id=notification_detail_request.notification_record_id
     )
     if db_notification_record is None:
-        raise schemas.error.CustomException(message="notification record not found", code=404)
+        raise schemas.error.CustomException(message="Notification record not found", code=404)
     db_notification_target = crud.notification.get_notification_target_by_id(
         db=db,
         notification_target_id=db_notification_record.notification_task.notification_target_id
     )
     if db_notification_target is None:
-        raise schemas.error.CustomException(message="notification target not found", code=404)
+        raise schemas.error.CustomException(message="Notification target not found", code=404)
     if db_notification_target.creator_id != user.id:
-        raise schemas.error.CustomException(message="permission denied", code=403)
+        raise schemas.error.CustomException(message="You don't have permission to access this notification record", code=403)
     return schemas.notification.NotificationRecord.model_validate({
         **db_notification_record.__dict__,
         "creator": db_notification_target.creator

@@ -52,9 +52,9 @@ async def create_user_by_sms_verify(
         name=f'user-create-sms-{sms_user_code_verify_request.phone}'
     )
     if code is None:
-        raise CustomException(message="The code is expired", code=400)
+        raise CustomException(message="Verification code has expired", code=400)
     if code != sms_user_code_verify_request.code:
-        raise CustomException(message="The code is wrong", code=400)
+        raise CustomException(message="Verification code is incorrect", code=400)
     await cache.delete(
         f'user-create-sms-{sms_user_code_verify_request.phone}'
     )
@@ -111,7 +111,7 @@ async def bind_phone(
         phone=bind_phone_code_create_request.phone
     )
     if phone_exist:
-        raise CustomException(message='The phone number is already registered', code=400)
+        raise CustomException(message='Phone number is already registered', code=400)
     code = "".join(random.sample(string.digits, 6))
 
     def _send_sms():
@@ -141,9 +141,9 @@ async def bind_phone_verify(
         name=f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
     )
     if code is None:
-        raise CustomException(message='The code is expired', code=400)
+        raise CustomException(message='Verification code has expired', code=400)
     if code != bind_phone_code_verify_request.code:
-        raise CustomException(message='The code is wrong', code=400)
+        raise CustomException(message='Verification code is incorrect', code=400)
     await cache.delete(
         f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
     )

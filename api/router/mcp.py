@@ -20,14 +20,14 @@ def get_mcp_server_detail(
         id=mcp_server_detail_request.id
     )
     if mcp_server is None:
-        raise schemas.error.CustomException(message="MCPServerNotFoundError", code=404)
+        raise schemas.error.CustomException(message="MCP server not found", code=404)
     if mcp_server.category == MCPCategory.STD:
         db_std_mcp_server = crud.mcp.get_std_mcp_server_by_base_server_id(
             db=db,
             base_server_id=mcp_server.id
         )
         if db_std_mcp_server is None:
-            raise schemas.error.CustomException(message="MCPServerNotFoundError", code=404)
+            raise schemas.error.CustomException(message="MCP server not found", code=404)
         return schemas.mcp.MCPServerInfo(
             id=mcp_server.id,
             enable=mcp_server.enable,
@@ -43,7 +43,7 @@ def get_mcp_server_detail(
             base_server_id=mcp_server.id
         )
         if db_http_mcp_server is None:
-            raise schemas.error.CustomException(message="MCPServerNotFoundError", code=404)
+            raise schemas.error.CustomException(message="MCP server not found", code=404)
         return schemas.mcp.MCPServerInfo(
             id=mcp_server.id,
             enable=mcp_server.enable,
@@ -53,7 +53,7 @@ def get_mcp_server_detail(
             headers=db_http_mcp_server.headers
         )
     else:
-        raise schemas.error.CustomException(message="MCPServerCategoryError")
+        raise schemas.error.CustomException(message="Unsupported MCP server category", code=400)
 
 @mcp_router.post("/server/search", response_model=schemas.mcp.MCPServerSearchResponse)
 def get_mcp_server_list(
@@ -115,7 +115,7 @@ def create_server(
     )
     if mcp_server_create_request.category == MCPCategory.STD:
         if mcp_server_create_request.cmd is None:
-            raise schemas.error.CustomException(message="cmd is required for STD mcp server", code=400)
+            raise schemas.error.CustomException(message="Command is required for STD MCP servers", code=400)
         crud.mcp.create_std_mcp(
             db=db,
             cmd=mcp_server_create_request.cmd,
@@ -125,7 +125,7 @@ def create_server(
         )
     elif mcp_server_create_request.category == MCPCategory.HTTP:
         if mcp_server_create_request.url is None:
-            raise schemas.error.CustomException(message="url is required for HTTP mcp server", code=400)
+            raise schemas.error.CustomException(message="URL is required for HTTP MCP servers", code=400)
         crud.mcp.create_http_mcp(
             db=db,
             url=mcp_server_create_request.url,
@@ -146,9 +146,9 @@ def update_server(
         id=mcp_server_update_request.id
     )
     if db_base_mcp_server is None:
-        raise schemas.error.CustomException(message="mcp server not found", code=404)
+        raise schemas.error.CustomException(message="MCP server not found", code=404)
     if db_base_mcp_server.user_id != user.id:
-        raise schemas.error.CustomException(message="permission denied", code=400)
+        raise schemas.error.CustomException(message="You don't have permission to manage this MCP server", code=403)
     if mcp_server_update_request.name is not None:
         db_base_mcp_server.name = mcp_server_update_request.name
     if mcp_server_update_request.enable is not None:
@@ -160,7 +160,7 @@ def update_server(
                 base_server_id=mcp_server_update_request.id
             )
             if db_std_mcp_server is None:
-                raise schemas.error.CustomException(message="mcp server not found", code=404)
+                raise schemas.error.CustomException(message="MCP server not found", code=404)
             if mcp_server_update_request.cmd is not None:
                 db_std_mcp_server.cmd = mcp_server_update_request.cmd
             if mcp_server_update_request.args is not None:
@@ -173,7 +173,7 @@ def update_server(
                 base_server_id=mcp_server_update_request.id
             )
             if db_http_mcp_server is None:
-                raise schemas.error.CustomException(message="mcp server not found", code=404)
+                raise schemas.error.CustomException(message="MCP server not found", code=404)
             if mcp_server_update_request.url is not None:
                 db_http_mcp_server.url = mcp_server_update_request.url
             if mcp_server_update_request.headers is not None:
@@ -185,7 +185,7 @@ def update_server(
                 base_server_id=db_base_mcp_server.id
             )
             if mcp_server_update_request.url is None:
-                raise schemas.error.CustomException(message="url is required for HTTP mcp server", code=400)
+                raise schemas.error.CustomException(message="URL is required for HTTP MCP servers", code=400)
             crud.mcp.create_http_mcp(
                 db=db,
                 url=mcp_server_update_request.url,
@@ -198,7 +198,7 @@ def update_server(
                 base_server_id=db_base_mcp_server.id
             )
             if mcp_server_update_request.cmd is None:
-                raise schemas.error.CustomException(message="cmd is required for STD mcp server", code=400)
+                raise schemas.error.CustomException(message="Command is required for STD MCP servers", code=400)
             crud.mcp.create_std_mcp(
                 db=db,
                 cmd=mcp_server_update_request.cmd,
@@ -220,11 +220,11 @@ def delete_server(mcp_server_delete_request: schemas.mcp.MCPServerDeleteRequest,
         id=mcp_server_delete_request.id
     )
     if db_base_mcp_server is None:
-        raise schemas.error.CustomException(message="mcp server not found",
+        raise schemas.error.CustomException(message="MCP server not found",
                                             code=404)
     if db_base_mcp_server.user_id != user.id:
-        raise schemas.error.CustomException(message="permission denied",
-                                            code=400)
+        raise schemas.error.CustomException(message="You don't have permission to manage this MCP server",
+                                            code=403)
     category = db_base_mcp_server.category
     if category == MCPCategory.STD:
         db_std_mcp_server = crud.mcp.get_std_mcp_server_by_base_server_id(
@@ -232,7 +232,7 @@ def delete_server(mcp_server_delete_request: schemas.mcp.MCPServerDeleteRequest,
             base_server_id=mcp_server_delete_request.id
         )
         if db_std_mcp_server is None:
-            raise schemas.error.CustomException(message="mcp server not found",
+            raise schemas.error.CustomException(message="MCP server not found",
                                                 code=404)
         crud.mcp.delete_std_mcp_server_by_base_server_id(
             db=db,
@@ -244,7 +244,7 @@ def delete_server(mcp_server_delete_request: schemas.mcp.MCPServerDeleteRequest,
             base_server_id=mcp_server_delete_request.id
         )
         if db_http_mcp_server is None:
-            raise schemas.error.CustomException(message="mcp server not found", code=404)
+            raise schemas.error.CustomException(message="MCP server not found", code=404)
         crud.mcp.delete_http_mcp_server_by_base_server_id(
             db=db,
             base_server_id=mcp_server_delete_request.id

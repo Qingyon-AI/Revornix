@@ -5,7 +5,7 @@ import pkgutil
 import re
 from pathlib import Path
 
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 
 
 def collect_classes(
@@ -81,5 +81,7 @@ def safe_json_loads(
     try:
         return json.loads(data)
     except (ValueError, TypeError) as e:
-        exception_logger.error(f'Failed to parse JSON data: {e}', e)
+        exception_logger.error(
+            format_log_message("json_parse_failed", error=e, data=data)
+        )
         return default

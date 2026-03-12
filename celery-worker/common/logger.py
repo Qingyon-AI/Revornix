@@ -1,7 +1,10 @@
+import json
 import logging
 import os
+import re
 import traceback
 from logging import handlers
+from typing import Any
 from config.base import BASE_DIR
 
 class BaseLogger(object):
@@ -47,6 +50,34 @@ class BaseLogger(object):
 
 exception_logger = BaseLogger("exception.log").logger
 info_logger = BaseLogger("info.log").logger
+
+
+def _stringify_log_value(value: Any, *, limit: int = 300) -> str:
+    if isinstance(value, (dict, list, tuple, set)):
+        try:
+            text = json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
+        except TypeError:
+            text = str(value)
+    else:
+        text = str(value)
+    text = re.sub(r"\s+", " ", text).strip()
+    if len(text) > limit:
+        text = text[: limit - 3] + "..."
+    if not text:
+        return '""'
+    if any(char.isspace() for char in text) or "=" in text:
+        return json.dumps(text, ensure_ascii=False)
+    return text
+
+
+def format_log_message(event: str, **fields: Any) -> str:
+    parts = [f"event={_stringify_log_value(event)}"]
+    for key, value in fields.items():
+        if value is None:
+            continue
+        parts.append(f"{key}={_stringify_log_value(value)}")
+    return " ".join(parts)
+
 
 def log_exception():
     exception_logger.error(traceback.format_exc())

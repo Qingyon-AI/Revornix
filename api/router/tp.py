@@ -40,13 +40,13 @@ async def upload_file_system(
     user: models.user.User = Depends(get_current_user_with_api_key)
 ):
     if user.default_user_file_system is None:
-        raise schemas.error.CustomException(message="The user have no default file system")
+        raise schemas.error.CustomException(message="Default file system is not configured", code=400)
     user_file_system = crud.file_system.get_user_file_system_by_id(
         db=db,
         user_file_system_id=user.default_user_file_system
     )
     if user_file_system is None:
-        raise schemas.error.CustomException(message="There are something wrong with the user file system")
+        raise schemas.error.CustomException(message="User file system is invalid", code=400)
 
     remote_file_service = await FileSystemProxy.create(
         user_id=user.id
@@ -196,7 +196,7 @@ async def create_document(
             authorization=f'Bearer {access_token}'
         )
     if not auth_status and deployed_by_official:
-        raise Exception('The number of documents exceeds the limit for your plan')
+        raise schemas.error.CustomException("Document limit reached for the current plan", code=403)
 
     if document_create_request.category == DocumentCategory.WEBSITE:
         db_website_documents_count = crud.document.count_user_documents(
@@ -210,10 +210,10 @@ async def create_document(
                 authorization=f'Bearer {access_token}'
             )
             if not auth_status and deployed_by_official:
-                raise Exception('The number of website documents exceeds the limit for your plan')
+                raise schemas.error.CustomException("Website document limit reached for the current plan", code=403)
 
         if document_create_request.url is None:
-            raise Exception('The url is required when the document category is website')
+            raise schemas.error.CustomException("URL is required for website documents", code=400)
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -239,10 +239,10 @@ async def create_document(
                 authorization=f'Bearer {access_token}'
             )
             if not auth_status and deployed_by_official:
-                raise Exception('The number of file documents exceeds the limit for your plan')
+                raise schemas.error.CustomException("File document limit reached for the current plan", code=403)
 
         if document_create_request.file_name is None:
-            raise Exception('The file name is required when the document category is file')
+            raise schemas.error.CustomException("File name is required for file documents", code=400)
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -258,7 +258,7 @@ async def create_document(
         )
     elif document_create_request.category == DocumentCategory.QUICK_NOTE:
         if document_create_request.content is None:
-            raise Exception('The content is required when the document category is quick note')
+            raise schemas.error.CustomException("Content is required for quick notes", code=400)
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -274,7 +274,7 @@ async def create_document(
         )
     elif document_create_request.category == DocumentCategory.AUDIO:
         if document_create_request.file_name is None:
-            raise Exception('The audio file is required when the document category is audio')
+            raise schemas.error.CustomException("File name is required for audio documents", code=400)
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -289,7 +289,7 @@ async def create_document(
             audio_file_name=document_create_request.file_name
         )
     else:
-        raise Exception('Invalid document category')
+        raise schemas.error.CustomException("Unsupported document category", code=400)
     if len(document_create_request.labels) > 0:
         crud.document.create_document_labels(
             db=db,

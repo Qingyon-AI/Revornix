@@ -15,7 +15,7 @@ import models
 import schemas
 from common.dependencies import get_current_user, get_db
 from common.interpret_event import EventInterpreter
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from common.markdown_helpers import get_markdown_content_by_section_id
 from common.usage_collector import UsageCollector
 from common.usage_billing import persist_model_usage_from_snapshot
@@ -308,7 +308,12 @@ async def _build_section_context(
         except Exception as e:
             # Neo4j 是增强链路，不应该因为图检索异常把专栏问答整体打断。
             exception_logger.warning(
-                f"Failed to expand section graph context. section={section_id}, user={viewer_user_id}, error={e}",
+                format_log_message(
+                    "section_graph_context_expand_failed",
+                    section_id=section_id,
+                    user_id=viewer_user_id,
+                    error=e,
+                ),
                 exc_info=True,
             )
         else:
@@ -518,7 +523,12 @@ async def _stream_section_answer_with_agent(
     except Exception as e:
         stream_failed = True
         exception_logger.error(
-            f"Failed to answer section question with MCP. section={section_id}, user={user.id}, error={e}",
+            format_log_message(
+                "section_ai_stream_failed",
+                section_id=section_id,
+                user_id=user.id,
+                error=e,
+            ),
             exc_info=True,
         )
         usage_snapshot = usage_collector.snapshot()

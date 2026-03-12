@@ -16,7 +16,7 @@ from config.base import OFFICIAL, DEPLOY_HOSTS, UNION_PAY_URL_PREFIX
 from urllib.parse import urlparse
 from fastapi import Request, HTTPException, status, Depends, Header
 from config.langfuse import LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from common.timezone import UTC_TIMEZONE_NAME, normalize_timezone_name, timezone_cache_key
 from enums.user import UserRole
 
@@ -70,7 +70,9 @@ def get_db():
         yield db
     except Exception as e:
         db.rollback()
-        exception_logger.error(f"Error occurred while getting db: {e}")
+        exception_logger.error(
+            format_log_message("db_session_failed", error=e)
+        )
         raise
     finally:
         db.close()
@@ -132,7 +134,14 @@ async def _cache_user_timezone(
     try:
         await redis_conn.set(timezone_cache_key(user_id), timezone_name)
     except Exception as e:
-        exception_logger.warning(f"Failed to cache user timezone for user_id={user_id}: {e}")
+        exception_logger.warning(
+            format_log_message(
+                "user_timezone_cache_failed",
+                user_id=user_id,
+                timezone=timezone_name,
+                error=e,
+            )
+        )
     return timezone_name
 
 
@@ -212,7 +221,9 @@ async def get_current_user_without_throw(
         if uuid is None:
             return None
     except Exception as e:
-        exception_logger.error(f"Error occurred while decoding token: {e}")
+        exception_logger.warning(
+            format_log_message("token_decode_failed", source="optional_auth", error=e)
+        )
         return None
     user = crud.user.get_user_by_uuid(
         db=db, 
@@ -252,7 +263,9 @@ async def get_current_user(
         if uuid is None:
             raise credentials_exception
     except Exception as e:
-        exception_logger.error(f"Error occurred while decoding token: {e}")
+        exception_logger.warning(
+            format_log_message("token_decode_failed", source="required_auth", error=e)
+        )
         raise credentials_exception
     user = crud.user.get_user_by_uuid(
         db=db, 
@@ -347,12 +360,17 @@ async def get_user_plan_start_time_in_func(
             )
             if not response.is_success:
                 exception_logger.warning(
-                    f"Failed to get user plan info. status={response.status_code}"
+                    format_log_message(
+                        "user_plan_info_request_failed",
+                        status_code=response.status_code,
+                    )
                 )
                 return None
             payload = response.json()
     except Exception as e:
-        exception_logger.warning(f"Failed to request user plan info: {e}")
+        exception_logger.warning(
+            format_log_message("user_plan_info_request_failed", error=e)
+        )
         return None
 
     user_plan = None

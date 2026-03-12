@@ -147,7 +147,7 @@ async def get_document_detail(
         document_id=document_detail_request.document_id
     )
     if document is None:
-        raise schemas.error.CustomException("The document is not exist", code=404)
+        raise schemas.error.CustomException("Document not found", code=404)
 
     _ensure_document_access(
         db=db,

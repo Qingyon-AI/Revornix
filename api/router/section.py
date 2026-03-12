@@ -95,12 +95,12 @@ async def generate_podcast(
         section_id=generate_podcast_request.section_id
     )
     if db_section is None:
-        raise schemas.error.CustomException('The section you want to generate the podcast is not found', code=404)
+        raise schemas.error.CustomException('Section not found', code=404)
     if db_section.creator_id != user.id:
-        raise schemas.error.CustomException('You are not the creator of this section, so you can not generate the podcast', code=403)
+        raise schemas.error.CustomException('Only the section creator can generate a podcast', code=403)
 
     if user.default_user_file_system is None:
-        raise schemas.error.CustomException('Please set the default file system for the user first.', code=400)
+        raise schemas.error.CustomException('Default file system is not configured', code=400)
 
     db_exist_podcast_task = crud.task.get_section_podcast_task_by_section_id(
         db=db,
@@ -108,11 +108,11 @@ async def generate_podcast(
     )
     if db_exist_podcast_task is not None:
         if db_exist_podcast_task.status == SectionPodcastStatus.SUCCESS:
-            raise schemas.error.CustomException('The podcast task is already finished, please refresh the page', code=409)
+            raise schemas.error.CustomException('Podcast task is already complete', code=409)
         if db_exist_podcast_task.status == SectionPodcastStatus.WAIT_TO:
-            raise schemas.error.CustomException('The podcast task is already in the queue, please wait', code=409)
+            raise schemas.error.CustomException('Podcast task is already queued', code=409)
         if db_exist_podcast_task.status == SectionPodcastStatus.GENERATING:
-            raise schemas.error.CustomException('The podcast task is already processing, please wait', code=409)
+            raise schemas.error.CustomException('Podcast task is already in progress', code=409)
     db_section_process_task = crud.task.get_section_process_task_by_section_id(
         db=db,
         section_id=generate_podcast_request.section_id
@@ -182,7 +182,7 @@ def create_section(
         section_create_request.process_task_trigger_type == SectionProcessTriggerType.SCHEDULER
         and section_create_request.process_task_trigger_scheduler is None
     ):
-        raise schemas.error.CustomException("trigger scheduler cron cannot be empty", code=400)
+        raise schemas.error.CustomException("Scheduler cron expression is required", code=400)
 
     if section_create_request.process_task_trigger_scheduler is not None:
         stored_cron_expr = encode_cron_expr_with_timezone(
@@ -219,7 +219,7 @@ def update_section(
         section_id=section_update_request.section_id
     )
     if db_section is None:
-        raise schemas.error.CustomException("The section is not exist", code=404)
+        raise schemas.error.CustomException("Section not found", code=404)
 
     section_user = crud.section.get_section_user_by_section_id_and_user_id(
         db=db,
@@ -227,7 +227,7 @@ def update_section(
         section_id=section_update_request.section_id
     )
     if section_user is None or section_user.authority not in [UserSectionAuthority.READ_AND_WRITE, UserSectionAuthority.FULL_ACCESS]:
-        raise schemas.error.CustomException("You are forbidden to modify this section", code=403)
+        raise schemas.error.CustomException("You don't have permission to modify this section", code=403)
 
     if section_update_request.title is not None:
         db_section.title = section_update_request.title
@@ -301,13 +301,13 @@ def update_section(
 
             if scheduler_cron_expr is None:
                 if db_section_process_task_trigger_scheduler is None:
-                    raise schemas.error.CustomException("trigger scheduler cron cannot be empty", code=400)
+                    raise schemas.error.CustomException("Scheduler cron expression is required", code=400)
                 scheduler_timezone, scheduler_cron_expr = decode_cron_expr_with_timezone(
                     db_section_process_task_trigger_scheduler.cron_expr
                 )
 
             if scheduler_cron_expr is None:
-                raise schemas.error.CustomException("trigger scheduler cron cannot be empty", code=400)
+                raise schemas.error.CustomException("Scheduler cron expression is required", code=400)
 
             _schedule_section_process(
                 db_section=db_section,
@@ -331,7 +331,7 @@ def delete_section(
         user_id=user.id
     )
     if db_section_user is None or db_section_user.role not in [UserSectionRole.CREATOR]:
-        raise schemas.error.CustomException("You are forbidden to delete this section", code=403)
+        raise schemas.error.CustomException("You don't have permission to delete this section", code=403)
 
     crud.section.delete_section_users_by_section_id(
         db=db,

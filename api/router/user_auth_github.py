@@ -25,7 +25,7 @@ async def create_user_by_github(
     GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
     GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')
     if GITHUB_CLIENT_ID is None or GITHUB_CLIENT_SECRET is None:
-        raise CustomException(message="Github client id or secret is not set", code=500)
+        raise CustomException(message="GitHub OAuth is not configured", code=500)
 
     redirect_uri = str(request.base_url) + "integrations/github/oauth2/create/callback"
     token = await asyncio.to_thread(
@@ -36,7 +36,7 @@ async def create_user_by_github(
         redirect_uri=redirect_uri,
     )
     if token is None:
-        raise CustomException(message="some thing is error while getting github account info", code=400)
+        raise CustomException(message="Failed to fetch GitHub account information", code=400)
     github_user_info = await asyncio.to_thread(get_github_userInfo, token=token.get('access_token'))
     db_exist_github_user = crud.user.get_github_user_by_github_user_id(
         db=db,
@@ -86,14 +86,14 @@ def bind_github(
     GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
     GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')
     if GITHUB_CLIENT_ID is None or GITHUB_CLIENT_SECRET is None:
-        raise CustomException(message="Github client id or secret is not set", code=500)
+        raise CustomException(message="GitHub OAuth is not configured", code=500)
 
     db_github_user_exist = crud.user.get_github_user_by_user_id(
         db=db,
         user_id=user.id
     )
     if db_github_user_exist is not None:
-        raise CustomException(message="The account has already been bound", code=400)
+        raise CustomException(message="A GitHub account is already bound to this user", code=400)
 
     redirect_uri = str(request.base_url) + "integrations/github/oauth2/bind/callback"
     token = get_github_token(
@@ -103,7 +103,7 @@ def bind_github(
         redirect_uri=redirect_uri
     )
     if token is None:
-        raise CustomException(message="some thing is error while getting github account info", code=400)
+        raise CustomException(message="Failed to fetch GitHub account information", code=400)
     github_user_info = get_github_userInfo(
         token=token.get('access_token')
     )
@@ -113,7 +113,7 @@ def bind_github(
         github_user_id=str(github_user_info.get('id'))
     )
     if db_github_exist is not None:
-        raise CustomException(message="The github account has been bound by other user", code=400)
+        raise CustomException(message="This GitHub account is already bound to another user", code=400)
 
     crud.user.create_github_user(
         db=db,

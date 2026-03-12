@@ -8,7 +8,7 @@ import models
 import schemas
 from common.dependencies import decode_jwt_token, get_current_user, get_db
 from common.encrypt import decrypt_notification_source_config, decrypt_notification_target_config
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger, format_log_message, info_logger
 from common.websocket import notificationManager
 from enums.notification import UserNotificationSourceRole, UserNotificationTargetRole
 from router.notification_record_manage import notification_record_manage_router
@@ -42,7 +42,9 @@ async def websocket_connect(
         if uuid is None:
             raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
     except Exception as e:
-        exception_logger.error(f"decode jwt token error for websocket connection: {e}")
+        exception_logger.warning(
+            format_log_message("notification_websocket_token_decode_failed", error=e)
+        )
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from e
     user = crud.user.get_user_by_uuid(
         db=db,
@@ -61,12 +63,24 @@ async def websocket_connect(
     try:
         while True:
             data = await websocket.receive_text()
-            info_logger.info(f'Received message from {websocket_id}: {data}')
+            info_logger.info(
+                format_log_message(
+                    "notification_websocket_message_received",
+                    websocket_id=websocket_id,
+                    payload=data,
+                )
+            )
     except WebSocketDisconnect:
         notificationManager.disconnect(websocket_id, websocket=websocket)
     except Exception as e:
         notificationManager.disconnect(websocket_id, websocket=websocket)
-        exception_logger.error(f"websocket error, id={websocket_id}, error={e}")
+        exception_logger.error(
+            format_log_message(
+                "notification_websocket_failed",
+                websocket_id=websocket_id,
+                error=e,
+            )
+        )
     finally:
         db.close()
 
@@ -87,7 +101,7 @@ def fork_notification_target(
 
     if db_user_notification_target is not None:
         if notification_target_fork_request.status:
-            raise schemas.error.CustomException(code=403, message="You have forked this notification target")
+            raise schemas.error.CustomException(code=403, message="Notification target is already forked")
         else:
             db_user_notification_target.delete_at = now
             db.commit()
@@ -101,7 +115,7 @@ def fork_notification_target(
                 role=UserNotificationTargetRole.FORKER,
             )
         else:
-            raise schemas.error.CustomException(code=403, message="You have not forked this notification target")
+            raise schemas.error.CustomException(code=403, message="Notification target is not forked")
 
     db.commit()
 
@@ -197,13 +211,13 @@ def get_notification_source_detail(
         notification_source_id=notification_source_detail_request.notification_source_id
     )
     if db_notification_source is None:
-        raise schemas.error.CustomException(message="notification source not found", code=404)
+        raise schemas.error.CustomException(message="Notification source not found", code=404)
     db_notification_source_provided = crud.notification.get_notification_source_provided_by_id(
         db=db,
         id=db_notification_source.notification_source_provided_id
     )
     if db_notification_source_provided is None:
-        raise schemas.error.CustomException(message="This notification source is not provided", code=404)
+        raise schemas.error.CustomException(message="Notification source provider not found", code=404)
 
     if db_notification_source.creator_id != user.id:
         if not db_notification_source.is_public:
@@ -305,9 +319,9 @@ def delete_notification_target(
             notification_target_id=notification_target_id
         )
         if db_notification_target is None:
-            raise schemas.error.CustomException(message="notification target not found", code=404)
+            raise schemas.error.CustomException(message="Notification target not found", code=404)
         if db_notification_target.creator_id != user.id:
-            raise schemas.error.CustomException(message="you don't have permission to delete this notification target", code=403)
+            raise schemas.error.CustomException(message="You don't have permission to delete this notification target", code=403)
         db_notification_target.delete_at = now
         db_user_notification_target = crud.notification.get_user_notification_target_by_user_id_and_notification_target_id(
             db=db,
@@ -316,9 +330,9 @@ def delete_notification_target(
             filter_role=UserNotificationTargetRole.CREATOR
         )
         if db_user_notification_target is None:
-            raise schemas.error.CustomException(message="The user notification target not found", code=404)
+            raise schemas.error.CustomException(message="User notification target record not found", code=404)
         if db_user_notification_target.user_id != user.id:
-            raise schemas.error.CustomException(message="you don't have permission to delete this notification target", code=403)
+            raise schemas.error.CustomException(message="You don't have permission to delete this notification target", code=403)
         db_user_notification_target.delete_at = now
     db.commit()
     return schemas.common.SuccessResponse()
@@ -334,13 +348,13 @@ def get_notification_target_detail(
         notification_target_id=notification_target_detail_request.notification_target_id
     )
     if db_notification_target is None:
-        raise schemas.error.CustomException(message="notification target not found", code=404)
+        raise schemas.error.CustomException(message="Notification target not found", code=404)
     db_notification_target_provided = crud.notification.get_notification_target_provided_by_id(
         db=db,
         id=db_notification_target.notification_target_provided_id
     )
     if db_notification_target_provided is None:
-        raise schemas.error.CustomException(message="This notification target is not provided", code=404)
+        raise schemas.error.CustomException(message="Notification target provider not found", code=404)
 
     if db_notification_target.creator_id != user.id:
         if not db_notification_target.is_public:

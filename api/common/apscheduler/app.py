@@ -8,7 +8,7 @@ from apscheduler.triggers.cron import CronTrigger
 import crud
 import schemas
 from common.celery.app import start_process_section
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger, format_log_message, info_logger
 from common.timezone import (
     decode_cron_expr_with_timezone,
     get_cached_user_timezone,
@@ -27,9 +27,13 @@ scheduler = AsyncIOScheduler()
 
 def job_listener(event):
     if event.exception:
-        exception_logger.error(f'Job {event.job_id} failed')
+        exception_logger.error(
+            format_log_message("apscheduler_job_failed", job_id=event.job_id)
+        )
     else:
-        info_logger.info(f'Job {event.job_id} executed')
+        info_logger.info(
+            format_log_message("apscheduler_job_executed", job_id=event.job_id)
+        )
 
 async def send_notification_scheduler(
     receiver_id: int,
@@ -42,7 +46,7 @@ async def send_notification_scheduler(
             notification_task_id=notification_task_id
         )
         if db_notification_task is None:
-            raise schemas.error.CustomException(message="notification task not found", code=500)
+            raise schemas.error.CustomException(message="Notification task not found", code=500)
 
         notification_tool = NotificationProxy.create_notification_tool(
             user_id=db_notification_task.creator_id,
@@ -55,7 +59,7 @@ async def send_notification_scheduler(
                 notification_task_id=notification_task_id
             )
             if db_notification_content_custom is None:
-                raise schemas.error.CustomException(message="notification content custom not found", code=500)
+                raise schemas.error.CustomException(message="Custom notification content not found", code=500)
             message = build_multi_platform_message(
                 title=db_notification_content_custom.title,
                 plain_content=db_notification_content_custom.content or "",
@@ -68,7 +72,7 @@ async def send_notification_scheduler(
                 notification_task_id=notification_task_id
             )
             if db_notification_content_template is None:
-                raise schemas.error.CustomException(message="notification content template not found", code=500)
+                raise schemas.error.CustomException(message="Notification content template not found", code=500)
             receiver_timezone = await get_cached_user_timezone(receiver_id)
             message = await NotificationProxy.create_message_using_template(
                 template_id=db_notification_content_template.notification_template_id,
@@ -78,7 +82,7 @@ async def send_notification_scheduler(
                 }
             )
         else:
-            raise schemas.error.CustomException(message="notification content type not supported", code=500)
+            raise schemas.error.CustomException(message="Unsupported notification content type", code=500)
 
         resolved_message = NotificationProxy.resolve_message_for_channel(
             message=message,
@@ -96,7 +100,7 @@ async def send_notification_scheduler(
             notification_source_id=db_notification_task.notification_source_id
         )
         if db_notification_source is None:
-            raise schemas.error.CustomException(message="notification source not found", code=500)
+            raise schemas.error.CustomException(message="Notification source not found", code=500)
 
         await notification_tool.send_notification(
             title=title,
@@ -123,7 +127,7 @@ async def send_notification_scheduler(
 
 scheduler.add_listener(job_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
-info_logger.info("Restarting all apscheduler tasks...")
+info_logger.info(format_log_message("apscheduler_restart_started"))
 
 db = session_scope()
 
@@ -187,6 +191,6 @@ for db_section, db_section_process_task in db_section_trigger_schedulers:
         id=f"section-process-{db_section.id!s}"
     )
 
-info_logger.info("All apscheduler tasks restarted")
+info_logger.info(format_log_message("apscheduler_restart_finished"))
 
 db.close()

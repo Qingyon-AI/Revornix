@@ -15,6 +15,7 @@ from enums.section import (
     UserSectionAuthority,
     UserSectionRole,
 )
+from schemas.error import CustomException
 
 
 async def create_document_for_user(
@@ -31,7 +32,7 @@ async def create_document_for_user(
 
     if document_create_request.category == DocumentCategory.WEBSITE:
         if document_create_request.url is None:
-            raise Exception("The url is required when the document category is website")
+            raise CustomException("URL is required for website documents", code=400)
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -47,7 +48,7 @@ async def create_document_for_user(
         )
     elif document_create_request.category == DocumentCategory.FILE:
         if document_create_request.file_name is None:
-            raise Exception("The file name is required when the document category is file")
+            raise CustomException("File name is required for file documents", code=400)
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -63,7 +64,7 @@ async def create_document_for_user(
         )
     elif document_create_request.category == DocumentCategory.QUICK_NOTE:
         if document_create_request.content is None:
-            raise Exception("The content is required when the document category is quick note")
+            raise CustomException("Content is required for quick notes", code=400)
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -79,7 +80,7 @@ async def create_document_for_user(
         )
     elif document_create_request.category == DocumentCategory.AUDIO:
         if document_create_request.file_name is None:
-            raise Exception("The audio file is required when the document category is audio")
+            raise CustomException("File name is required for audio documents", code=400)
         db_document = crud.document.create_base_document(
             db=db,
             creator_id=user.id,
@@ -94,7 +95,7 @@ async def create_document_for_user(
             audio_file_name=document_create_request.file_name,
         )
     else:
-        raise Exception("Invalid document category")
+        raise CustomException("Unsupported document category", code=400)
 
     if document_create_request.labels:
         crud.document.create_document_labels(

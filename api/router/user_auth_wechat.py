@@ -28,14 +28,14 @@ async def create_user_by_wechat_mini(
     WECHAT_MINI_APP_ID = os.environ.get('WECHAT_MINI_APP_ID')
     WECHAT_MINI_APP_SECRET = os.environ.get('WECHAT_MINI_APP_SECRET')
     if WECHAT_MINI_APP_ID is None or WECHAT_MINI_APP_SECRET is None:
-        raise CustomException('WeChat Mini Program Not Configured', 500)
+        raise CustomException('WeChat Mini Program login is not configured', 500)
 
     code = wechat_mini_user_create_request.code
     response_tokens = await asyncio.to_thread(get_mini_wechat_tokens, WECHAT_MINI_APP_ID, WECHAT_MINI_APP_SECRET, code)
     openid = response_tokens.openid
     union_id = response_tokens.unionid
     if openid is None or union_id is None:
-        raise CustomException('WeChat Login Failed', 403)
+        raise CustomException('WeChat login failed', 403)
 
     # 如果openid都已经存在了 那就说明这个用户在这个平台已经注册过了 直接返回token
     db_exist_wechat_user_by_open_id = crud.user.get_wechat_user_by_wechat_open_id(
@@ -92,7 +92,7 @@ async def create_user_by_wechat_mini(
             user_id=db_exist_wechat_user_by_union_id[0].user_id
         )
         if db_user is None:
-            raise CustomException('The Wechat User is Not Found by the exist info', 404)
+            raise CustomException('WeChat user record exists, but the linked user was not found', 404)
         crud.user.create_wechat_user(
             db=db,
             user_id=db_user.id,
@@ -118,7 +118,7 @@ async def create_user_by_wechat_web(
     WECHAT_WEB_APP_ID = os.environ.get('WECHAT_WEB_APP_ID')
     WECHAT_WEB_APP_SECRET = os.environ.get('WECHAT_WEB_APP_SECRET')
     if WECHAT_WEB_APP_ID is None or WECHAT_WEB_APP_SECRET is None:
-        raise CustomException('WeChat Web Not Configured', 500)
+        raise CustomException('WeChat Web login is not configured', 500)
 
     code = wechat_web_user_create_request.code
     response_tokens = await asyncio.to_thread(get_web_wechat_tokens, WECHAT_WEB_APP_ID, WECHAT_WEB_APP_SECRET, code)
@@ -127,7 +127,7 @@ async def create_user_by_wechat_web(
     openid = response_tokens.openid
     union_id = response_tokens.unionid
     if access_token is None or openid is None or union_id is None:
-        raise CustomException('WeChat Login Failed', 403)
+        raise CustomException('WeChat login failed', 403)
 
     db_exist_wechat_user_by_openid = crud.user.get_wechat_user_by_wechat_open_id(
         db=db,
@@ -181,7 +181,7 @@ async def create_user_by_wechat_web(
             user_id=db_exist_wechat_user_by_union_id[0].user_id
         )
         if db_user is None:
-            raise CustomException('The Wechat User is Not Found by the exist info', 404)
+            raise CustomException('WeChat user record exists, but the linked user was not found', 404)
         crud.user.create_wechat_user(
             db=db,
             user_id=db_user.id,
@@ -207,20 +207,20 @@ def bind_wechat(
     WECHAT_WEB_APP_ID = os.environ.get('WECHAT_WEB_APP_ID')
     WECHAT_WEB_APP_SECRET = os.environ.get('WECHAT_WEB_APP_SECRET')
     if WECHAT_WEB_APP_ID is None or WECHAT_WEB_APP_SECRET is None:
-        raise CustomException('WeChat Web Not Configured', 500)
+        raise CustomException('WeChat Web login is not configured', 500)
     db_wechat_user_exist = crud.user.get_wechat_user_by_user_id(
         db=db,
         user_id=user.id,
         filter_wechat_platform=WeChatUserSource.REVORNIX_WEB_APP
     )
     if len(db_wechat_user_exist) > 0:
-        raise CustomException(message="This wechat account is already bound", code=403)
+        raise CustomException(message="A WeChat Web account is already bound to this user", code=403)
     code = wechat_user_bind_request.code
     response_tokens = get_web_wechat_tokens(WECHAT_WEB_APP_ID, WECHAT_WEB_APP_SECRET, code)
     access_token = response_tokens.access_token
     openid = response_tokens.openid
     if access_token is None or openid is None:
-        raise CustomException(message='WeChat Login Failed', code=400)
+        raise CustomException(message='WeChat login failed', code=400)
     union_id = response_tokens.unionid
     response_user_info = get_web_user_info(access_token, openid)
     nickname = response_user_info.get('nickname')
@@ -230,7 +230,7 @@ def bind_wechat(
         filter_wechat_platform=WeChatUserSource.REVORNIX_WEB_APP
     )
     if db_wechat_exist is not None:
-        raise CustomException(message="The wechat account has been bound by other user", code=400)
+        raise CustomException(message="This WeChat account is already bound to another user", code=400)
     crud.user.create_wechat_user(
         db=db,
         user_id=user.id,

@@ -18,7 +18,7 @@ import crud
 import models
 import schemas
 from common.document_creation import create_document_for_user
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from common.timezone import UTC_TIMEZONE_NAME, get_cached_user_timezone
 from common.tp_auth.wechat_utils import (
     WeChatMediaDownload,
@@ -530,7 +530,14 @@ async def _process_wechat_official_message(
     except Exception as exc:
         db.rollback()
         exception_logger.error(
-            f"Failed to process WeChat official account message: msg_type={message.msg_type}, openid={message.from_user_name}, error={exc}"
+            format_log_message(
+                "wechat_official_message_process_failed",
+                msg_type=message.msg_type,
+                openid=message.from_user_name,
+                msg_id=message.msg_id,
+                event=message.event,
+                error=exc,
+            )
         )
     finally:
         db.close()

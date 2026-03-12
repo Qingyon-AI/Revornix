@@ -27,7 +27,7 @@ def section_graph(
     )
 
     if not section:
-        raise Exception("Section not found")
+        raise schemas.error.CustomException("Section not found", code=404)
 
     documents = crud.section.get_documents_for_section_by_section_id(
         db=db,
@@ -88,7 +88,7 @@ def section_graph(
         # 如果专栏不是公开的，需要检查用户是否是专栏的成员
 
         if user is None:
-            raise Exception("You are not authorized to view this section")
+            raise schemas.error.CustomException("You don't have permission to view this section", code=403)
 
         users = crud.section.get_users_for_section_by_section_id(
             db=db,
@@ -96,7 +96,7 @@ def section_graph(
             filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR])
 
         if user.id not in [user.id for user in users]:
-            raise Exception("You are not authorized to view this section")
+            raise schemas.error.CustomException("You don't have permission to view this section", code=403)
         else:
             with neo4j_driver.session() as session:
                 entity_query = """

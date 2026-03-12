@@ -58,7 +58,7 @@ def ensure_private_section_access(
     member_user_ids: list[int],
 ) -> None:
     if user_id is None:
-        raise schemas.error.CustomException("This section is private, anonymous user can't access it", code=403)
+        raise schemas.error.CustomException("This section is private and requires login", code=403)
     if user_id not in member_user_ids:
         raise schemas.error.CustomException("You don't have permission to access this section", code=403)
 
@@ -71,4 +71,4 @@ def ensure_document_access(
 ) -> None:
     if is_creator or has_public_section or has_related_section:
         return
-    raise schemas.error.CustomException("You have no permission to access this document", code=403)
+    raise schemas.error.CustomException("You don't have permission to access this document", code=403)

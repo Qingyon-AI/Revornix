@@ -6,7 +6,7 @@ from typing import Any, Awaitable, TypeVar, cast
 
 from fastapi import WebSocket
 
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger, format_log_message, info_logger
 from common.redis import redis_pool
 
 
@@ -18,7 +18,12 @@ def _read_int_env(env_name: str, default_value: int) -> int:
         return int(raw_value)
     except ValueError:
         exception_logger.error(
-            f"Invalid env value for {env_name}={raw_value}, fallback to {default_value}"
+            format_log_message(
+                "websocket_env_invalid",
+                env_name=env_name,
+                raw_value=raw_value,
+                fallback=default_value,
+            )
         )
         return default_value
 
@@ -66,8 +71,11 @@ class ConnectionManager:
                 self.cache = await redis_pool()
             except Exception as e:
                 exception_logger.error(
-                    f"Failed to initialize websocket redis cache. "
-                    f"channel={self.channel}, error={e}"
+                    format_log_message(
+                        "websocket_cache_init_failed",
+                        channel=self.channel,
+                        error=e,
+                    )
                 )
                 self.cache = None
         return self.cache
@@ -83,8 +91,11 @@ class ConnectionManager:
             await _resolve_redis_call(close_fn())
         except Exception as e:
             exception_logger.error(
-                f"Failed to close websocket redis cache. "
-                f"channel={self.channel}, error={e}"
+                format_log_message(
+                    "websocket_cache_close_failed",
+                    channel=self.channel,
+                    error=e,
+                )
             )
         finally:
             self.cache = None
@@ -105,8 +116,12 @@ class ConnectionManager:
                 return
             except Exception as e:
                 exception_logger.error(
-                    f"Failed to cache websocket message in redis, fallback to memory. "
-                    f"channel={self.channel}, websocket_id={websocket_id}, error={e}"
+                    format_log_message(
+                        "websocket_message_cache_failed",
+                        channel=self.channel,
+                        websocket_id=websocket_id,
+                        error=e,
+                    )
                 )
         self._memory_offline_messages[websocket_id].append(message)
 
@@ -124,8 +139,12 @@ class ConnectionManager:
                     return list(cached_messages)
             except Exception as e:
                 exception_logger.error(
-                    f"Failed to read websocket cached messages from redis, fallback to memory. "
-                    f"channel={self.channel}, websocket_id={websocket_id}, error={e}"
+                    format_log_message(
+                        "websocket_cached_messages_read_failed",
+                        channel=self.channel,
+                        websocket_id=websocket_id,
+                        error=e,
+                    )
                 )
         memory_cached_messages = list(self._memory_offline_messages.pop(websocket_id, []))
         return memory_cached_messages
@@ -138,16 +157,24 @@ class ConnectionManager:
         if connection is None:
             return
         info_logger.info(
-            f"Replaying {len(cached_messages)} offline websocket messages. "
-            f"channel={self.channel}, websocket_id={websocket_id}"
+            format_log_message(
+                "websocket_offline_messages_replayed",
+                channel=self.channel,
+                websocket_id=websocket_id,
+                message_count=len(cached_messages),
+            )
         )
         for index, message in enumerate(cached_messages):
             try:
                 await connection.send_text(message)
             except Exception as e:
                 exception_logger.error(
-                    f"Failed while replaying websocket cached message. "
-                    f"channel={self.channel}, websocket_id={websocket_id}, error={e}"
+                    format_log_message(
+                        "websocket_cached_message_replay_failed",
+                        channel=self.channel,
+                        websocket_id=websocket_id,
+                        error=e,
+                    )
                 )
                 self.disconnect(websocket_id)
                 remain_messages = cached_messages[index:]
@@ -159,7 +186,13 @@ class ConnectionManager:
                 return
 
     async def connect(self, id: str, websocket: WebSocket):
-        info_logger.info(f"websocket {id} connected successfully")
+        info_logger.info(
+            format_log_message(
+                "websocket_connected",
+                channel=self.channel,
+                websocket_id=id,
+            )
+        )
         await websocket.accept()
         self.connections[id] = websocket
         await self._replay_offline_messages(websocket_id=id)
@@ -185,8 +218,12 @@ class ConnectionManager:
             return True
         except Exception as e:
             exception_logger.error(
-                f"Websocket send failed, cache message for retry. "
-                f"channel={self.channel}, websocket_id={websocket_id}, error={e}"
+                format_log_message(
+                    "websocket_send_failed",
+                    channel=self.channel,
+                    websocket_id=websocket_id,
+                    error=e,
+                )
             )
             self.disconnect(websocket_id)
             await self._cache_offline_message(websocket_id=websocket_id, message=message)
@@ -199,8 +236,12 @@ class ConnectionManager:
                 await connection.send_text(message)
             except Exception as e:
                 exception_logger.error(
-                    f"Websocket broadcast failed, disconnect stale connection. "
-                    f"channel={self.channel}, websocket_id={connection_id}, error={e}"
+                    format_log_message(
+                        "websocket_broadcast_failed",
+                        channel=self.channel,
+                        websocket_id=connection_id,
+                        error=e,
+                    )
                 )
                 self.disconnect(connection_id)
 

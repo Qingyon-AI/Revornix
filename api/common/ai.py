@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from langfuse.openai import AsyncOpenAI
 
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from common.usage_billing import persist_model_usage_from_completion
 from data.custom_types.all import EntityInfo, RelationInfo
 from prompts.make_section_markdown import make_section_markdown_prompt
@@ -33,9 +33,13 @@ async def _safe_close_async_client(client: AsyncOpenAI) -> None:
                 await result
         except RuntimeError as e:
             if "Event loop is closed" not in str(e):
-                exception_logger.warning(f"Failed to close async llm client: {e}")
+                exception_logger.warning(
+                    format_log_message("async_llm_client_close_failed", error=e)
+                )
         except Exception as e:
-            exception_logger.warning(f"Failed to close async llm client: {e}")
+            exception_logger.warning(
+                format_log_message("async_llm_client_close_failed", error=e)
+            )
         return
 
     aclose_fn = getattr(client, "aclose", None)
@@ -46,9 +50,13 @@ async def _safe_close_async_client(client: AsyncOpenAI) -> None:
                 await result
         except RuntimeError as e:
             if "Event loop is closed" not in str(e):
-                exception_logger.warning(f"Failed to aclose async llm client: {e}")
+                exception_logger.warning(
+                    format_log_message("async_llm_client_aclose_failed", error=e)
+                )
         except Exception as e:
-            exception_logger.warning(f"Failed to aclose async llm client: {e}")
+            exception_logger.warning(
+                format_log_message("async_llm_client_aclose_failed", error=e)
+            )
 
 async def summary_content(
     user_id: int,

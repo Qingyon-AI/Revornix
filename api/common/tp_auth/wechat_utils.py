@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from pydantic import BaseModel
 
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 
 # WeChat official account safe mode uses PKCS7 padding with a 32-byte block size.
 WECHAT_AES_BLOCK_SIZE = 256
@@ -179,7 +179,12 @@ def get_mini_wechat_tokens(
     try:
         res = MiniWeChatTokenResponse(**response_token.json())
     except Exception:
-        exception_logger.error(f'get_mini_wechat_tokens error: {response_token.json()}')
+        exception_logger.error(
+            format_log_message(
+                "wechat_mini_token_parse_failed",
+                response=response_token.json(),
+            )
+        )
         raise
     return res
 
@@ -192,7 +197,12 @@ def get_web_wechat_tokens(
     try:
         res = WebWeChatTokenResponse(**response_token.json())
     except Exception:
-        exception_logger.error(f'get_web_wechat_tokens error: {response_token.json()}')
+        exception_logger.error(
+            format_log_message(
+                "wechat_web_token_parse_failed",
+                response=response_token.json(),
+            )
+        )
         raise
     return res
 

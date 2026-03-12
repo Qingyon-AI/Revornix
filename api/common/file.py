@@ -1,4 +1,4 @@
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from proxy.file_system_proxy import FileSystemProxy
 
 
@@ -17,5 +17,12 @@ async def get_remote_file_signed_url(
 
         return file_service.presign_get_url(file_name)
     except Exception as e:
-        exception_logger.error(f"There is something wrong while getting the remote file signed url: {e}")
+        exception_logger.error(
+            format_log_message(
+                "remote_file_signed_url_failed",
+                user_id=user_id,
+                file_name=file_name,
+                error=e,
+            )
+        )
         raise

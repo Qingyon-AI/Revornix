@@ -34,9 +34,9 @@ def _get_scheduler_cron_expr(
         notification_task_id=notification_task_id,
     )
     if db_trigger_scheduler is None:
-        raise schemas.error.CustomException(message="notification task trigger scheduler not found", code=404)
+        raise schemas.error.CustomException(message="Notification task scheduler not found", code=404)
     if not db_trigger_scheduler.cron_expr:
-        raise schemas.error.CustomException(message="trigger scheduler cron cannot be empty", code=400)
+        raise schemas.error.CustomException(message="Scheduler cron expression is required", code=400)
 
     return db_trigger_scheduler.cron_expr
 
@@ -53,7 +53,7 @@ def _schedule_task(
         notification_target_id=notification_target_id,
     )
     if db_notification_target is None:
-        raise schemas.error.CustomException(message="notification target not found", code=404)
+        raise schemas.error.CustomException(message="Notification target not found", code=404)
 
     scheduler.add_job(
         func=send_notification_scheduler,
@@ -110,7 +110,7 @@ def add_notification_task(
     )
     if add_notification_task_request.content_type == NotificationContentType.CUSTOM:
         if add_notification_task_request.notification_title is None or add_notification_task_request.notification_content is None:
-            raise schemas.error.CustomException(message="The title of the notification is None", code=400)
+            raise schemas.error.CustomException(message="Notification title is required", code=400)
         crud.notification.create_notification_task_content_custom(
             db=db,
             notification_task_id=db_notification_task.id,
@@ -121,7 +121,7 @@ def add_notification_task(
         )
     elif add_notification_task_request.content_type == NotificationContentType.TEMPLATE:
         if add_notification_task_request.notification_template_id is None:
-            raise schemas.error.CustomException(message="The template id of the notification is None", code=400)
+            raise schemas.error.CustomException(message="Notification template ID is required", code=400)
         crud.notification.create_notification_task_content_template(
             db=db,
             notification_task_id=db_notification_task.id,
@@ -143,7 +143,7 @@ def add_notification_task(
 
     if add_notification_task_request.enable and add_notification_task_request.trigger_type == NotificationTriggerType.SCHEDULER:
         if add_notification_task_request.trigger_scheduler_cron is None:
-            raise schemas.error.CustomException(message="trigger scheduler cron cannot be empty", code=400)
+            raise schemas.error.CustomException(message="Scheduler cron expression is required", code=400)
         _schedule_task(
             db=db,
             notification_task_id=db_notification_task.id,
@@ -164,9 +164,9 @@ def get_notification_task(
         notification_task_id=get_notification_task_request.notification_task_id
     )
     if db_notification_task is None:
-        raise schemas.error.CustomException(message="notification task not found", code=404)
+        raise schemas.error.CustomException(message="Notification task not found", code=404)
     if db_notification_task.creator_id != user.id:
-        raise schemas.error.CustomException(message="permission denied", code=403)
+        raise schemas.error.CustomException(message="You don't have permission to manage this notification task", code=403)
 
     res = schemas.notification.NotificationTask.model_validate(db_notification_task)
 
@@ -256,9 +256,9 @@ def update_notification_task(
         notification_task_id=update_notification_task_request.notification_task_id
     )
     if db_notification_task is None:
-        raise schemas.error.CustomException(message="notification task not found", code=404)
+        raise schemas.error.CustomException(message="Notification task not found", code=404)
     if db_notification_task.creator_id != user.id:
-        raise schemas.error.CustomException(message="permission denied", code=403)
+        raise schemas.error.CustomException(message="You don't have permission to manage this notification task", code=403)
 
     if update_notification_task_request.title is not None:
         db_notification_task.title = update_notification_task_request.title
@@ -270,7 +270,7 @@ def update_notification_task(
             notification_task_id=update_notification_task_request.notification_task_id
         )
         if db_origin_notification_task_trigger_scheduler is None:
-            raise schemas.error.CustomException(message="notification task trigger scheduler not found", code=404)
+            raise schemas.error.CustomException(message="Notification task scheduler not found", code=404)
         _remove_task_schedule(db_notification_task.id)
 
     if update_notification_task_request.content_type is not None:
@@ -282,7 +282,7 @@ def update_notification_task(
             notification_task_id=update_notification_task_request.notification_task_id
         )
         if update_notification_task_request.notification_title is None or update_notification_task_request.notification_content is None:
-            raise schemas.error.CustomException(message="title cannot be empty for custom notification", code=400)
+            raise schemas.error.CustomException(message="Notification title is required for custom notifications", code=400)
         if db_notification_task_content_custom is None:
             crud.notification.create_notification_task_content_custom(
                 db=db,
@@ -299,7 +299,7 @@ def update_notification_task(
             db_notification_task_content_custom.link = update_notification_task_request.notification_link
     elif update_notification_task_request.content_type == NotificationContentType.TEMPLATE:
         if update_notification_task_request.notification_template_id is None:
-            raise schemas.error.CustomException(message="notification template id cannot be empty for template notification", code=400)
+            raise schemas.error.CustomException(message="Notification template ID is required for template notifications", code=400)
         db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
             db=db,
             notification_task_id=update_notification_task_request.notification_task_id
