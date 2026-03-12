@@ -125,7 +125,7 @@ const SectionMarkdown = ({
 
 			{markdown && (
 				<div className={cn('relative w-full', className)}>
-					<div className='prose mx-auto pt-4 pb-0 dark:prose-invert'>
+					<div className='prose mx-auto dark:prose-invert'>
 						<CustomMarkdown content={markdown} />
 						<div className='not-prose mt-4 rounded-lg bg-muted/80 px-3 py-2 text-center text-sm text-muted-foreground'>
 							{t('section_ai_tips')}

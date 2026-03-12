@@ -140,7 +140,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 				</div>
 			</div>
 			<div className='relative min-h-0 flex flex-col gap-4 md:col-span-4 md:h-full md:py-0'>
-				<Card className='relative overflow-auto rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-2 pt-5'>
+				<Card className='relative overflow-auto rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-2'>
 					<DocumentInfo id={id} />
 				</Card>
 				<Card className='relative rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-1'>

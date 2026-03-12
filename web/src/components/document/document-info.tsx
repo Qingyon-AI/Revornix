@@ -107,14 +107,14 @@ const DocumentInfo = ({ id }: { id: number }) => {
 			)}
 			{isPending && <Skeleton className='h-full w-full' />}
 			{data && (
-				<div className='h-full overflow-auto'>
+				<div className='h-full overflow-auto pt-5'>
 					<div className='space-y-4 px-4 pb-4'>
 						<div className={panelClassName}>
 							<div className='space-y-4'>
-								<div className='font-bold text-lg'>
+								<div className='font-bold text-lg break-all'>
 									{data.title ? data.title : t('document_no_title')}
 								</div>
-								<div className='text-sm/6 text-muted-foreground'>
+								<div className='text-sm/6 text-muted-foreground break-all'>
 									{data.description
 										? data.description
 										: t('document_no_description')}
