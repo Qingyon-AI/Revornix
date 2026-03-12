@@ -4,11 +4,11 @@ import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { unBindGoogle } from '@/service/user';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
 import { GOOGLE_CLIENT_ID } from '@/config/google';
 import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
+import AccountUnbindConfirmButton from './account-unbind-confirm-button';
 
 const GoogleBind = () => {
 	const t = useTranslations();
@@ -38,14 +38,12 @@ const GoogleBind = () => {
 					<div className='font-bold text-xs'>
 						ID: {mainUserInfo.google_info.google_user_id}
 					</div>
-					<Button
-						variant={'link'}
+					<AccountUnbindConfirmButton
+						description={t('account_unbind_confirm_description')}
 						className='text-xs'
 						disabled={unBindStatus}
-						onClick={handleUnBindGoogle}>
-						{t('account_unbind')}
-						{unBindStatus && <Loader2 className='size-4 animate-spin' />}
-					</Button>
+						onConfirm={handleUnBindGoogle}
+					/>
 				</div>
 			)}
 
