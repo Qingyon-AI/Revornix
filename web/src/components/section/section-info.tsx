@@ -73,11 +73,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 	});
 
 	if (isFetching && !isFetched) {
-		return (
-			<div className='px-4'>
-				<Skeleton className='h-92 w-full rounded-2xl' />
-			</div>
-		);
+		return <Skeleton className='h-92 w-full rounded-2xl' />;
 	}
 
 	if (!section) return null;
@@ -91,7 +87,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 	});
 
 	return (
-		<div className='space-y-2 px-4'>
+		<div className='space-y-2 px-4 pt-5'>
 			<div className='min-w-0 flex-1'>
 				<h2 className='text-xl font-semibold leading-8 tracking-tight'>
 					{title}
