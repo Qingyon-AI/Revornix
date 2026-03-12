@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from typing import Any
 from data.sql.base import session_scope
 from config.oauth2 import OAUTH_SECRET_KEY
-from config.base import OFFICIAL, DEPLOY_HOSTS, UNION_PAY_URL_PREFIX
+from config.base import OFFICIAL, DEPLOY_HOSTS, UNION_PAY_API_PREFIX
 from urllib.parse import urlparse
 from fastapi import Request, HTTPException, status, Depends, Header
 from config.langfuse import LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
@@ -300,7 +300,7 @@ async def plan_ability_checked_in_func(
         })
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f'{UNION_PAY_URL_PREFIX}/user/ability/check',
+            f'{UNION_PAY_API_PREFIX}/user/ability/check',
             headers=headers,
             json={
                 "ability": ability
@@ -356,7 +356,7 @@ async def get_user_plan_start_time_in_func(
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{UNION_PAY_URL_PREFIX}/user/info",
+                f"{UNION_PAY_API_PREFIX}/user/info",
                 headers=headers,
             )
             if not response.is_success:
@@ -409,7 +409,7 @@ def plan_ability_checked(
             })
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f'{UNION_PAY_URL_PREFIX}/user/ability/check',
+                f'{UNION_PAY_API_PREFIX}/user/ability/check',
                 headers=headers,
                 json={
                     "ability": ability

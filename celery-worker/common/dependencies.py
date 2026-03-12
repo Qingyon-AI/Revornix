@@ -7,7 +7,7 @@ from jose import jwt
 from common.env import is_env_enabled
 from data.sql.base import session_scope
 from config.oauth2 import OAUTH_SECRET_KEY
-from config.base import OFFICIAL, UNION_PAY_URL_PREFIX
+from config.base import OFFICIAL, UNION_PAY_API_PREFIX
 from datetime import datetime, timezone
 from config.langfuse import LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
 from common.logger import exception_logger
@@ -94,7 +94,7 @@ async def plan_ability_checked_in_func(
         timeout = httpx.Timeout(10.0, connect=5.0)
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
-                f'{UNION_PAY_URL_PREFIX}/user/ability/check',
+                f'{UNION_PAY_API_PREFIX}/user/ability/check',
                 headers=headers,
                 json={
                     "ability": ability
@@ -157,7 +157,7 @@ async def get_user_plan_start_time_in_func(
         timeout = httpx.Timeout(10.0, connect=5.0)
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
-                f"{UNION_PAY_URL_PREFIX}/user/info",
+                f"{UNION_PAY_API_PREFIX}/user/info",
                 headers=headers,
             )
             if not response.is_success:
