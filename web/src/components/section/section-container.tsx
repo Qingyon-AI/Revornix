@@ -94,7 +94,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 			</div>
 
 			<div className='relative min-h-0 flex flex-col gap-4 py-0 md:col-span-4 md:h-full'>
-				<Card className='relative overflow-auto rounded-2xl border border-border/60 bg-card/80 pt-5 pb-0 shadow-sm backdrop-blur-sm md:flex-1'>
+				<Card className='relative overflow-auto rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-1'>
 					<SectionInfo id={id} />
 				</Card>
 				<Card className='relative rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-1'>

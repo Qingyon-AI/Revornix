@@ -40,7 +40,7 @@ type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 const getSectionDetail = async (
-	data: SectionSeoDetailRequest
+	data: SectionSeoDetailRequest,
 ): Promise<SectionInfoType> => {
 	return await serverRequest(sectionApi.getSEOSectionDetail, {
 		data,
@@ -56,7 +56,7 @@ export async function generateMetadata(props: {
 
 	// fetch data
 	const [section_res, section_err] = await utils.to(
-		getSectionDetail({ uuid: uuid })
+		getSectionDetail({ uuid: uuid }),
 	);
 
 	if (section_err) {
@@ -83,7 +83,7 @@ const SEOSectionDetail = async (props: {
 	let section = null;
 
 	const getFileContent = async (
-		file_path: string
+		file_path: string,
 	): Promise<string | Blob | ArrayBuffer> => {
 		const url = `${file_path}`;
 		const res = await fetch(url);
@@ -111,7 +111,7 @@ const SEOSectionDetail = async (props: {
 	};
 
 	const [section_res, section_err] = await utils.to(
-		getSectionDetail({ uuid: uuid })
+		getSectionDetail({ uuid: uuid }),
 	);
 
 	if (section_err) {
@@ -124,7 +124,7 @@ const SEOSectionDetail = async (props: {
 
 	if (section_res && section_res.md_file_name) {
 		const [markdown_res, markdown_err] = await utils.to(
-			getFileContent(section_res.md_file_name)
+			getFileContent(section_res.md_file_name),
 		);
 		if (markdown_err) {
 			throw new Error('Something is wrong while getting the markdown file');
@@ -136,9 +136,9 @@ const SEOSectionDetail = async (props: {
 		<div className='px-5 w-full md:grid md:grid-cols-12 flex flex-col gap-5 relative'>
 			<div className='md:col-span-3 gap-5 min-h-0 md:h-[calc(100vh-var(--spacing)*16)] pb-5 md:sticky top-16 overflow-auto'>
 				<Card className='py-0 shadow-none overflow-hidden mb-5'>
-					<div>{section && <SectionInfo id={Number(section.id)} />}</div>
+					{section && <SectionInfo id={Number(section.id)} />}
 				</Card>
-				<Card className='py-0 shadow-none relative h-[400px]'>
+				<Card className='py-0 shadow-none relative h-100'>
 					<Dialog>
 						<DialogTrigger asChild>
 							<Button

@@ -73,7 +73,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 	});
 
 	if (isFetching && !isFetched) {
-		return <Skeleton className='h-92 w-full rounded-2xl' />;
+		return <Skeleton className='h-100 w-full rounded-2xl' />;
 	}
 
 	if (!section) return null;
