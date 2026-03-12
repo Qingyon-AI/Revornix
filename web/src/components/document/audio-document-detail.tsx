@@ -207,7 +207,10 @@ const AudioDocumentDetail = ({
 								{t('document_ai_tips')}
 							</p>
 						</div>
-						<div ref={bottomRef}></div>
+						<div
+							ref={bottomRef}
+							className='pointer-events-none absolute inset-x-0 bottom-0 h-px'
+						/>
 					</div>
 					<Separator className='mb-4' />
 					<DocumentOperate id={id} className='overflow-auto' />

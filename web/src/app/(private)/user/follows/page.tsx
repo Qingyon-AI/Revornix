@@ -79,9 +79,14 @@ const UserFollows = () => {
 				)}
 				{users &&
 					users.map((user, index) => {
-						return <UserFollowCard key={index} user={user} />;
+						return (
+							<div
+								key={index}
+								ref={index === users.length - 1 ? bottomRef : undefined}>
+								<UserFollowCard user={user} />
+							</div>
+						);
 					})}
-				<div ref={bottomRef}></div>
 			</div>
 		</div>
 	);

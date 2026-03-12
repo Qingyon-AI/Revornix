@@ -22,7 +22,6 @@ import { Skeleton } from '../ui/skeleton';
 import { UserSectionRole } from '@/enums/section';
 import {
 	Empty,
-	EmptyContent,
 	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
@@ -76,6 +75,10 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 		queryFn: () => getMineUserRoleAndAuthority({ section_id: section_id }),
 	});
 
+	const canAddDocument =
+		sectionUserRoleAndAuthority?.role === UserSectionRole.CERATOR ||
+		sectionUserRoleAndAuthority?.role === UserSectionRole.MEMBER;
+
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
 	}, [inView, isFetching, hasNextPage]);
@@ -86,55 +89,67 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 				<Button
 					title={t('section_documents')}
 					variant={'ghost'}
-					className='flex-1 text-xs w-full'>
+					className='w-full flex-1 text-xs'>
 					<TableOfContentsIcon />
 					{t('section_documents')}
 				</Button>
 			</SheetTrigger>
-			<SheetContent className='flex'>
-				<SheetHeader>
+			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-xl'>
+				<SheetHeader className='border-b border-border/60 px-5 pt-6 pb-3 pr-12 text-left'>
 					<SheetTitle>{t('section_documents')}</SheetTitle>
-					<SheetDescription>
+					<SheetDescription className='text-sm leading-6'>
 						{t('section_documents_description')}
 					</SheetDescription>
 				</SheetHeader>
-				<div className='px-5 flex flex-col gap-5 overflow-auto pb-5 flex-1'>
-					{isSuccess && documents && documents.length === 0 && (
-						<Empty className='h-full'>
-							<EmptyHeader>
-								<EmptyMedia variant='icon'>
-									<TableOfContentsIcon />
-								</EmptyMedia>
-								<EmptyDescription>{t('documents_empty')}</EmptyDescription>
-							</EmptyHeader>
-						</Empty>
-					)}
-					{isSuccess &&
-						documents &&
-						documents.map((document, index) => {
-							return <SectionDocumentCard key={index} document={document} />;
-						})}
-					{isFetching && !data && (
-						<>
-							{[...Array(10)].map((number, index) => {
-								return <Skeleton className='h-40 w-full' key={index} />;
+				<div className='min-h-0 flex-1 overflow-y-auto px-4 pb-3 pt-4 sm:px-5 sm:pb-4'>
+					<div className='flex flex-col gap-4'>
+						{isSuccess && documents && documents.length === 0 && (
+							<Empty className='rounded-3xl border border-dashed border-border/70 bg-muted/20 py-12'>
+								<EmptyHeader>
+									<EmptyMedia variant='icon'>
+										<TableOfContentsIcon />
+									</EmptyMedia>
+									<EmptyDescription>{t('documents_empty')}</EmptyDescription>
+								</EmptyHeader>
+							</Empty>
+						)}
+						{isSuccess &&
+							documents &&
+							documents.map((document, index) => {
+								return (
+									<div
+										key={document.id ?? index}
+										ref={
+											index === documents.length - 1 ? bottomRef : undefined
+										}>
+										<SectionDocumentCard document={document} />
+									</div>
+								);
 							})}
-						</>
-					)}
-					{isFetchingNextPage && data && (
-						<>
-							{[...Array(10)].map((number, index) => {
-								return <Skeleton className='h-40 w-full' key={index} />;
-							})}
-						</>
-					)}
-					<div ref={bottomRef}></div>
+						{isFetching && !data && (
+							<>
+								{[...Array(10)].map((_, index) => {
+									return (
+										<Skeleton className='h-40 w-full rounded-3xl' key={index} />
+									);
+								})}
+							</>
+						)}
+						{isFetchingNextPage && data && (
+							<>
+								{[...Array(10)].map((_, index) => {
+									return (
+										<Skeleton className='h-40 w-full rounded-3xl' key={index} />
+									);
+								})}
+							</>
+						)}
+					</div>
 				</div>
-				{(sectionUserRoleAndAuthority?.role === UserSectionRole.CERATOR ||
-					sectionUserRoleAndAuthority?.role === UserSectionRole.MEMBER) && (
-					<div className='p-5 w-full'>
+				{canAddDocument && (
+					<div className='shrink-0 border-t border-border/60 bg-card/95 px-4 pb-4 pt-3 backdrop-blur sm:px-5 sm:pb-5'>
 						<Button
-							className='w-full'
+							className='w-full rounded-2xl'
 							onClick={() => {
 								handleAddDocument(section_id.toString());
 							}}>

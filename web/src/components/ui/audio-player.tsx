@@ -80,7 +80,7 @@ export default function AudioPlayer({
 			<img
 				src={normalizedTrack.cover}
 				alt={normalizedTrack.title}
-				className='size-20 flex-shrink-0 rounded-md object-cover ring-1 ring-black/10 ring-inset dark:ring-white/10'
+				className='size-20 flex-shrink-0 rounded-md object-cover ring-1 ring-black/10 ring-inset dark:ring-white/10 p-2'
 			/>
 
 			<div className='flex min-w-0 flex-1 flex-col'>

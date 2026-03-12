@@ -21,7 +21,7 @@ import {
 	SheetTrigger,
 } from '../ui/sheet';
 import { useForm } from 'react-hook-form';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getQueryClient } from '@/lib/get-query-client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -47,6 +47,58 @@ import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Label } from '../ui/label';
 import Link from 'next/link';
 import { useRef } from 'react';
+import type { SectionInfo } from '@/generated';
+
+const updateFormSchema = z.object({
+	section_id: z.number().int(),
+	cover: z.string().optional(),
+	title: z.string().optional(),
+	description: z.string().optional(),
+	labels: z.array(z.number()).optional(),
+	auto_podcast: z.boolean().optional(),
+	auto_illustration: z.boolean().optional(),
+	process_task_trigger_type: z.number().optional(),
+	process_task_trigger_scheduler: z.string().optional(),
+});
+
+type UpdateFormValues = z.infer<typeof updateFormSchema>;
+const formBlockClassName =
+	'space-y-3 rounded-2xl border border-border/60 bg-background/35 p-4';
+
+const normalizeSectionFormValues = (
+	values: Partial<UpdateFormValues>,
+): UpdateFormValues => {
+	return {
+		section_id: values.section_id ?? 0,
+		title: values.title || '',
+		description: values.description || '',
+		cover: values.cover || undefined,
+		labels: values.labels || [],
+		auto_podcast: values.auto_podcast ?? false,
+		auto_illustration: values.auto_illustration ?? false,
+		process_task_trigger_type: values.process_task_trigger_type ?? undefined,
+		process_task_trigger_scheduler: values.process_task_trigger_scheduler || '',
+	};
+};
+
+const buildSectionFormValues = (
+	section_id: number,
+	section?: SectionInfo,
+): UpdateFormValues => {
+	return normalizeSectionFormValues({
+		section_id,
+		title: section?.title,
+		description: section?.description,
+		cover: section?.cover || undefined,
+		labels: section?.labels?.map((label) => label.id),
+		auto_podcast: section?.auto_podcast,
+		auto_illustration: section?.auto_illustration,
+		process_task_trigger_type:
+			section?.process_task_trigger_type ?? undefined,
+		process_task_trigger_scheduler:
+			section?.process_task_trigger_scheduler || undefined,
+	});
+};
 
 const SectionOperateConfiguration = ({
 	section_id,
@@ -57,23 +109,10 @@ const SectionOperateConfiguration = ({
 }) => {
 	const t = useTranslations();
 
-	const initialValuesRef = useRef<Partial<
-		z.infer<typeof updateFormSchema>
-	> | null>(null);
-
-	const updateFormSchema = z.object({
-		section_id: z.number().int(),
-		cover: z.string().optional().optional(),
-		title: z.string().optional(),
-		description: z.string().optional(),
-		labels: z.array(z.number()).optional(),
-		auto_podcast: z.boolean().optional(),
-		auto_illustration: z.boolean().optional(),
-		process_task_trigger_type: z.number().optional(),
-		process_task_trigger_scheduler: z.string().optional(),
-	});
+	const initialValuesRef = useRef<UpdateFormValues | null>(null);
 	const id = section_id;
 
+	const [open, setOpen] = useState(false);
 	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
 
 	const { data: labels } = useQuery({
@@ -90,38 +129,29 @@ const SectionOperateConfiguration = ({
 		},
 	});
 
-	const form = useForm({
-		defaultValues: {
-			section_id: id,
-			title: '',
-			cover: undefined,
-			description: '',
-			labels: [],
-			auto_podcast: false,
-			auto_illustration: false,
-		},
+	const form = useForm<UpdateFormValues>({
+		defaultValues: buildSectionFormValues(id),
 		resolver: zodResolver(updateFormSchema),
 	});
 
+	const sectionInitialValues = useMemo(() => {
+		if (!section) {
+			return null;
+		}
+		return buildSectionFormValues(id, section);
+	}, [id, section]);
+
 	useEffect(() => {
-		if (!section) return;
+		if (!open || !sectionInitialValues) {
+			return;
+		}
+		if (form.formState.isDirty && initialValuesRef.current) {
+			return;
+		}
 
-		const initialValues = {
-			section_id: id,
-			title: section.title || '',
-			description: section.description || '',
-			cover: section.cover || undefined,
-			labels: section.labels?.map((label) => label.id) || [],
-			auto_podcast: section.auto_podcast,
-			auto_illustration: section.auto_illustration,
-			process_task_trigger_type: section.process_task_trigger_type ?? undefined,
-			process_task_trigger_scheduler:
-				section.process_task_trigger_scheduler || '',
-		};
-
-		form.reset(initialValues);
-		initialValuesRef.current = initialValues;
-	}, [section]);
+		form.reset(sectionInitialValues);
+		initialValuesRef.current = sectionInitialValues;
+	}, [form, form.formState.isDirty, open, sectionInitialValues]);
 
 	const [updating, setUpdating] = useState<boolean>(false);
 
@@ -142,11 +172,16 @@ const SectionOperateConfiguration = ({
 	};
 
 	const onFormValidateSuccess = async (
-		values: z.infer<typeof updateFormSchema>
+		values: UpdateFormValues
 	) => {
 		if (!initialValuesRef.current) return;
 
-		const patch = diffValues(values, initialValuesRef.current);
+		const normalizedValues = normalizeSectionFormValues({
+			...values,
+			section_id: id,
+		});
+
+		const patch = diffValues(normalizedValues, initialValuesRef.current);
 
 		// 如果啥都没改
 		if (Object.keys(patch).length === 0) {
@@ -167,6 +202,9 @@ const SectionOperateConfiguration = ({
 			setUpdating(false);
 			return;
 		}
+
+		form.reset(normalizedValues);
+		initialValuesRef.current = normalizedValues;
 		toast.success(t('section_update_success'));
 		setUpdating(false);
 		queryClient.invalidateQueries({ queryKey: ['getSectionDetail', id] });
@@ -188,33 +226,46 @@ const SectionOperateConfiguration = ({
 	});
 
 	return (
-		<Sheet>
+		<Sheet
+			open={open}
+			onOpenChange={(nextOpen) => {
+				if (nextOpen && sectionInitialValues) {
+					form.reset(sectionInitialValues);
+					initialValuesRef.current = sectionInitialValues;
+				}
+				setOpen(nextOpen);
+			}}>
 			<SheetTrigger asChild>
 				<Button className={cn('text-xs', className)} variant={'ghost'}>
 					<PencilIcon />
 					{t('section_configuration_label')}
 				</Button>
 			</SheetTrigger>
-			<SheetContent>
-				<SheetHeader>
-					<SheetTitle>{t('section_configuration_label')}</SheetTitle>
-					<SheetDescription>{t('section_form_description')}</SheetDescription>
+			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-xl'>
+				<SheetHeader className='border-b border-border/60 px-5 pt-6 pb-3 pr-12 text-left'>
+					<SheetTitle className='text-xl'>
+						{t('section_configuration_label')}
+					</SheetTitle>
+					<SheetDescription className='max-w-md text-sm leading-6'>
+						{t('section_form_description')}
+					</SheetDescription>
 				</SheetHeader>
-				<div className='px-5 flex flex-col gap-5 overflow-auto flex-1'>
+				<div className='min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5'>
 					<Form {...form}>
 						<form
 							onSubmit={onSubmitUpdateForm}
 							id='update-form'
-							className='space-y-5'>
-							{section?.cover && <CoverUpdate />}
+							className='space-y-4'>
+							<CoverUpdate ownerId={section?.creator.id} />
 							<FormField
 								name='title'
 								control={form.control}
 								render={({ field }) => {
 									return (
-										<FormItem>
+										<FormItem className={formBlockClassName}>
 											<FormLabel>{t('section_form_title')}</FormLabel>
 											<Input
+												className='bg-background/60'
 												{...field}
 												placeholder={t('section_form_title_placeholder')}
 											/>
@@ -228,9 +279,10 @@ const SectionOperateConfiguration = ({
 								control={form.control}
 								render={({ field }) => {
 									return (
-										<FormItem>
+										<FormItem className={formBlockClassName}>
 											<FormLabel>{t('section_form_description')}</FormLabel>
 											<Textarea
+												className='min-h-28 bg-background/60'
 												{...field}
 												placeholder={t('section_form_description_placeholder')}
 											/>
@@ -244,7 +296,7 @@ const SectionOperateConfiguration = ({
 								name='labels'
 								render={({ field }) => {
 									return (
-										<FormItem className='space-y-0 mb-5'>
+										<FormItem className={formBlockClassName}>
 											<AddSectionLabelDialog
 												open={showAddLabelDialog}
 												onOpenChange={setShowAddLabelDialog}
@@ -278,11 +330,11 @@ const SectionOperateConfiguration = ({
 											) : (
 												<Skeleton className='h-10' />
 											)}
-											<div className='text-muted-foreground text-xs flex flex-row gap-0 items-center'>
+											<div className='flex flex-row items-center gap-0 text-xs text-muted-foreground'>
 												<span>{t('section_form_labels_empty_tips')}</span>
 												<Button
 													type='button'
-													className='text-xs text-muted-foreground px-0 py-0 h-fit'
+													className='h-fit px-0 py-0 text-xs text-muted-foreground'
 													variant={'link'}
 													onClick={() => setShowAddLabelDialog(true)}>
 													{t('section_form_label_create')}
@@ -297,8 +349,8 @@ const SectionOperateConfiguration = ({
 								control={form.control}
 								render={({ field }) => {
 									return (
-										<FormItem className='rounded-lg border border-input p-3'>
-											<div className='flex flex-row gap-1 items-center'>
+										<FormItem className={formBlockClassName}>
+											<div className='flex flex-row items-center justify-between gap-3'>
 												<FormLabel className='flex flex-row gap-1 items-center'>
 													{t('section_form_auto_podcast')}
 												</FormLabel>
@@ -332,8 +384,8 @@ const SectionOperateConfiguration = ({
 								control={form.control}
 								render={({ field }) => {
 									return (
-										<FormItem className='rounded-lg border border-input p-3'>
-											<div className='flex flex-row gap-1 items-center'>
+										<FormItem className={formBlockClassName}>
+											<div className='flex flex-row items-center justify-between gap-3'>
 												<FormLabel className='flex flex-row gap-1 items-center'>
 													{t('section_form_auto_illustration')}
 												</FormLabel>
@@ -350,7 +402,7 @@ const SectionOperateConfiguration = ({
 											<FormDescription>
 												{t('section_form_auto_illustration_description')}
 											</FormDescription>
-											{!mainUserInfo?.default_podcast_user_engine_id && (
+											{!mainUserInfo?.default_image_generate_engine_id && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
@@ -367,8 +419,8 @@ const SectionOperateConfiguration = ({
 								control={form.control}
 								render={({ field }) => {
 									return (
-										<FormItem className='mb-5'>
-											<FormLabel>
+										<FormItem className={formBlockClassName}>
+											<FormLabel className='flex items-center gap-1.5'>
 												{t('section_form_process_task_trigger_type')}
 												<Tooltip>
 													<TooltipTrigger>
@@ -382,7 +434,7 @@ const SectionOperateConfiguration = ({
 												</Tooltip>
 											</FormLabel>
 											<RadioGroup
-												className='grid grid-cols-1 md:grid-cols-2 gap-5'
+												className='grid grid-cols-1 gap-3 md:grid-cols-2'
 												value={
 													field.value !== undefined
 														? field.value!.toString()
@@ -391,7 +443,7 @@ const SectionOperateConfiguration = ({
 												onValueChange={(e) => {
 													field.onChange(Number(e));
 												}}>
-												<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
+												<div className='flex flex-row items-center justify-between rounded-xl border border-border/60 bg-background/60 p-3'>
 													<Label htmlFor='r1'>
 														{t(
 															'section_form_process_task_trigger_type_updated'
@@ -399,7 +451,7 @@ const SectionOperateConfiguration = ({
 													</Label>
 													<RadioGroupItem value='1' id='r1' />
 												</div>
-												<div className='rounded-lg border border-input p-3 flex flex-row items-center justify-between'>
+												<div className='flex flex-row items-center justify-between rounded-xl border border-border/60 bg-background/60 p-3'>
 													<Label htmlFor='r0'>
 														{t(
 															'section_form_process_task_trigger_type_scheduler'
@@ -418,8 +470,8 @@ const SectionOperateConfiguration = ({
 									name='process_task_trigger_scheduler'
 									render={({ field }) => {
 										return (
-											<FormItem className='mb-5'>
-												<FormLabel>
+											<FormItem className={formBlockClassName}>
+												<FormLabel className='flex items-center gap-1.5'>
 													{t('section_form_process_task_trigger_scheduler')}
 													<Tooltip>
 														<TooltipTrigger>
@@ -438,7 +490,7 @@ const SectionOperateConfiguration = ({
 													</Tooltip>
 												</FormLabel>
 												<Input
-													className='font-mono'
+													className='bg-background/60 font-mono'
 													placeholder={t(
 														'section_form_process_task_trigger_scheduler_placeholder'
 													)}
@@ -454,8 +506,12 @@ const SectionOperateConfiguration = ({
 						</form>
 					</Form>
 				</div>
-				<SheetFooter>
-					<Button type='submit' form='update-form' disabled={updating}>
+				<SheetFooter className='shrink-0 border-t border-border/60 bg-card/95 px-4 pb-4 pt-3 backdrop-blur sm:px-5 sm:pb-5'>
+					<Button
+						type='submit'
+						form='update-form'
+						disabled={updating}
+						className='w-full rounded-2xl'>
 						{t('section_configuration_form_submit')}
 						{updating && <Loader2 className='animate-spin' />}
 					</Button>

@@ -50,7 +50,13 @@ const SectionDocumentsList = ({ section_id }: { section_id: number }) => {
 			{isSuccess &&
 				documents &&
 				documents.map((document, index) => {
-					return <SectionDocumentCard key={index} document={document} />;
+					return (
+						<div
+							key={document.id ?? index}
+							ref={index === documents.length - 1 ? bottomRef : undefined}>
+							<SectionDocumentCard document={document} />
+						</div>
+					);
 				})}
 			{isSuccess && documents && documents.length === 0 && (
 				<p className='flex-1 flex justify-center items-center text-sm text-muted-foreground'>
@@ -71,7 +77,6 @@ const SectionDocumentsList = ({ section_id }: { section_id: number }) => {
 					})}
 				</>
 			)}
-			<div ref={bottomRef}></div>
 		</>
 	);
 };

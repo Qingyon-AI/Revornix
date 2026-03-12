@@ -89,17 +89,17 @@ const SectionCommentForm = ({ section_id }: { section_id: number }) => {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={handleSubmitComment}>
+			<form onSubmit={handleSubmitComment} className='shrink-0'>
 				<FormField
 					name='content'
 					control={form.control}
 					render={({ field }) => {
 						return (
 							<FormItem>
-								<div className='rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm'>
+								<div className='rounded-3xl border border-border/70 bg-card/80 p-3 backdrop-blur-sm'>
 									<Textarea
 										rows={3}
-										className='min-h-0 max-h-44 overflow-y-auto resize-none rounded-none border-none bg-transparent px-0 py-1 text-sm leading-7 shadow-none outline-none ring-0 placeholder:text-muted-foreground/80 focus-visible:ring-0 dark:bg-transparent'
+										className='min-h-[88px] max-h-44 overflow-y-auto resize-none rounded-none border-none bg-transparent px-1 py-1.5 text-sm leading-6 shadow-none outline-none ring-0 placeholder:text-muted-foreground/80 focus-visible:ring-0 dark:bg-transparent'
 										placeholder={t('section_comment_content_placeholder')}
 										{...field}
 										onKeyDown={(e) => {
@@ -122,7 +122,7 @@ const SectionCommentForm = ({ section_id }: { section_id: number }) => {
 										<Button
 											size={'sm'}
 											type='submit'
-											className='ml-auto rounded-xl px-4 text-xs'
+											className='ml-auto rounded-2xl px-4 text-xs'
 											disabled={commentSubmitting}>
 											{t('section_comment_submit')}
 											<SendIcon />

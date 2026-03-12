@@ -5,8 +5,8 @@ import SectionCommentsList from './section-comments-list';
 
 const SectionComments = ({ section_id }: { section_id: number }) => {
 	return (
-		<div className='flex h-full flex-col gap-4'>
-			<div className='min-h-0 flex-1 overflow-auto rounded-2xl backdrop-blur-sm'>
+		<div className='flex h-full min-h-0 flex-col gap-4'>
+			<div className='min-h-0 flex-1 overflow-hidden'>
 				<SectionCommentsList section_id={section_id} />
 			</div>
 			<SectionCommentForm section_id={section_id} />

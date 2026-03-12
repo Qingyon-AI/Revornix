@@ -81,9 +81,14 @@ const UserFans = () => {
 				)}
 				{users &&
 					users.map((user, index) => {
-						return <UserFanCard key={index} user={user} />;
+						return (
+							<div
+								key={index}
+								ref={index === users.length - 1 ? bottomRef : undefined}>
+								<UserFanCard user={user} />
+							</div>
+						);
 					})}
-				<div ref={bottomRef}></div>
 			</div>
 		</div>
 	);

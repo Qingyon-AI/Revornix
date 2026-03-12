@@ -106,10 +106,17 @@ const NotificationSourceManagePage = () => {
 				{notification_sources &&
 					notification_sources.map((notification_source, index) => {
 						return (
-							<NotificationSourceCard
+							<div
 								key={index}
-								notification_source={notification_source}
-							/>
+								ref={
+									index === notification_sources.length - 1
+										? bottomRef
+										: undefined
+								}>
+								<NotificationSourceCard
+									notification_source={notification_source}
+								/>
+							</div>
 						);
 					})}
 				{isFetching && !data && (
@@ -126,7 +133,6 @@ const NotificationSourceManagePage = () => {
 						})}
 					</>
 				)}
-				<div ref={bottomRef}></div>
 			</div>
 		</>
 	);

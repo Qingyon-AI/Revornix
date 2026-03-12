@@ -200,7 +200,15 @@ const SectionDetailPage = () => {
 									documents.length > 0 &&
 									documents.map((document, index) => {
 										return (
-											<SectionDocumentCard key={index} document={document} />
+											<div
+												key={index}
+												ref={
+													index === documents.length - 1
+														? bottomRef
+														: undefined
+												}>
+												<SectionDocumentCard document={document} />
+											</div>
 										);
 									})}
 								{isFetchingSectionDocuments && !data && (
@@ -217,7 +225,6 @@ const SectionDetailPage = () => {
 										})}
 									</>
 								)}
-								<div ref={bottomRef}></div>
 							</div>
 						</SheetContent>
 					</Sheet>

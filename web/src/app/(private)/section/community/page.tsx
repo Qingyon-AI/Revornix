@@ -230,7 +230,13 @@ const CommunitySectionPage = () => {
 			<div className='grid grid-cols-1 gap-4 md:grid-cols-4 px-5 pb-5'>
 				{sections &&
 					sections.map((section, index) => {
-						return <SectionCard key={section.id} section={section} />;
+						return (
+							<div
+								key={section.id}
+								ref={index === sections.length - 1 ? bottomRef : undefined}>
+								<SectionCard section={section} />
+							</div>
+						);
 					})}
 				{isFetching && !data && (
 					<>
@@ -246,7 +252,6 @@ const CommunitySectionPage = () => {
 						})}
 					</>
 				)}
-				<div ref={bottomRef}></div>
 			</div>
 		</>
 	);

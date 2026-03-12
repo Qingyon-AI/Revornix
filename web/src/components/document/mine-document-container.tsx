@@ -239,7 +239,13 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 			<div className='grid grid-cols-1 gap-4 md:grid-cols-4 px-5 pb-5'>
 				{documents &&
 					documents.map((document, index) => {
-						return <DocumentCard key={index} document={document} />;
+						return (
+							<div
+								key={index}
+								ref={index === documents.length - 1 ? bottomRef : undefined}>
+								<DocumentCard document={document} />
+							</div>
+						);
 					})}
 				{isFetching && !data && (
 					<>
@@ -255,7 +261,6 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 						})}
 					</>
 				)}
-				<div ref={bottomRef}></div>
 			</div>
 		</>
 	);

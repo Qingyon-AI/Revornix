@@ -100,7 +100,13 @@ const EnginePage = () => {
 			<div className='grid grid-cols-1 gap-4 md:grid-cols-4 px-5 pb-5'>
 				{engines &&
 					engines.map((engine, index) => {
-						return <MineEngineCard key={index} engine_info={engine} />;
+						return (
+							<div
+								key={index}
+								ref={index === engines.length - 1 ? bottomRef : undefined}>
+								<MineEngineCard engine_info={engine} />
+							</div>
+						);
 					})}
 				{isFetching && !data && (
 					<>
@@ -116,7 +122,6 @@ const EnginePage = () => {
 						})}
 					</>
 				)}
-				<div ref={bottomRef}></div>
 			</div>
 		</>
 	);

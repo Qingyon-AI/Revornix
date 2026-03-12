@@ -89,7 +89,13 @@ const ModelSettingPage = () => {
 				{modelProviders &&
 					modelProviders.map((modelProvider, index) => {
 						return (
-							<ModelProviderCard key={index} modelProvider={modelProvider} />
+							<div
+								key={index}
+								ref={
+									index === modelProviders.length - 1 ? bottomRef : undefined
+								}>
+								<ModelProviderCard modelProvider={modelProvider} />
+							</div>
 						);
 					})}
 				{isError && (
@@ -116,7 +122,6 @@ const ModelSettingPage = () => {
 						})}
 					</>
 				)}
-				<div ref={bottomRef}></div>
 			</div>
 		</>
 	);

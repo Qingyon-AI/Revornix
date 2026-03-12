@@ -147,13 +147,17 @@ const NotificationsPage = () => {
 						{notifications &&
 							notifications.map((notification, index) => {
 								return (
-									<NotificationRecordCard
+									<div
 										key={index}
-										notification={notification}
-									/>
+										ref={
+											index === notifications.length - 1
+												? bottomRef
+												: undefined
+										}>
+										<NotificationRecordCard notification={notification} />
+									</div>
 								);
 							})}
-						<div ref={bottomRef}></div>
 					</div>
 				</TabsContent>
 			</Tabs>
