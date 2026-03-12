@@ -7,6 +7,10 @@ from botocore.client import Config
 from datetime import datetime, timedelta, timezone
 
 from common.logger import exception_logger
+from common.upload_limits import (
+    FILE_DOCUMENT_MAX_UPLOAD_BYTES,
+    FILE_DOCUMENT_UPLOAD_PATH_PREFIX,
+)
 from enums.file import RemoteFileService
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
@@ -54,17 +58,20 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
             raise Exception("Bucket not specified")
         now = datetime.now(timezone.utc)
         expiration = now + timedelta(seconds=expires_in)
+        conditions: list[Any] = [
+            {"Content-Type": content_type},
+            {"bucket": self.bucket},
+            ["eq", "$key", file_path],
+        ]
+        if file_path.startswith(FILE_DOCUMENT_UPLOAD_PATH_PREFIX):
+            conditions.append(["content-length-range", 0, FILE_DOCUMENT_MAX_UPLOAD_BYTES])
         response = self.s3_client.generate_presigned_post(
             Bucket=self.bucket,
             Key=file_path,
             Fields={
                 "Content-Type": content_type
             },
-            Conditions=[
-                {"Content-Type": content_type},
-                {"bucket": self.bucket},
-                ["eq", "$key", file_path]
-            ],
+            Conditions=conditions,
             ExpiresIn=expires_in,
         )
         return schemas.file_system.PresignUploadURLResponse(

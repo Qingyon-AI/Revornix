@@ -14,6 +14,10 @@ from datetime import datetime, timedelta, timezone
 
 from common.dependencies import check_deployed_by_official_in_fuc
 from common.logger import exception_logger, info_logger
+from common.upload_limits import (
+    FILE_DOCUMENT_MAX_UPLOAD_BYTES,
+    FILE_DOCUMENT_UPLOAD_PATH_PREFIX,
+)
 from config.file_system import FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_USER_NAME
 from data.sql.base import session_scope
 from enums.file import RemoteFileService
@@ -113,17 +117,20 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             raise Exception("Bucket not specified")
         now = datetime.now(timezone.utc)
         expiration = now + timedelta(seconds=expires_in)
+        conditions: list[Any] = [
+            {"Content-Type": content_type},
+            {"bucket": self.bucket},
+            ["eq", "$key", file_path],
+        ]
+        if file_path.startswith(FILE_DOCUMENT_UPLOAD_PATH_PREFIX):
+            conditions.append(["content-length-range", 0, FILE_DOCUMENT_MAX_UPLOAD_BYTES])
         response = self.s3_client.generate_presigned_post(
             Bucket=self.bucket,
             Key=file_path,
             Fields={
                 "Content-Type": content_type
             },
-            Conditions=[
-                {"Content-Type": content_type},
-                {"bucket": self.bucket},
-                ["eq", "$key", file_path]
-            ],
+            Conditions=conditions,
             ExpiresIn=expires_in,
         )
         return schemas.file_system.PresignUploadURLResponse(

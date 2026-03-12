@@ -38,6 +38,7 @@ import { useSearchParams } from 'next/navigation';
 import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
+import { FILE_DOCUMENT_MAX_UPLOAD_BYTES } from '@/lib/upload';
 
 const AddFile = () => {
 	const queryClient = getQueryClient();
@@ -171,6 +172,7 @@ const AddFile = () => {
 										<FileUpload
 											accept='.jpg, .jpeg, .png, .pdf, .doc, .docx, .ppt, .pptx'
 											className='h-52'
+											maxSizeBytes={FILE_DOCUMENT_MAX_UPLOAD_BYTES}
 											onSuccess={(file_name) => {
 												field.onChange(file_name);
 											}}

@@ -67,7 +67,9 @@ const SettingPage = () => {
 						</div>
 					</div>
 					<Separator />
-					<div className='flex justify-between items-center'>
+					<div
+						className='flex justify-between items-center'
+						id='default_user_file_system_change'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_file_system_page_current_user_file_system')}
 						</Label>

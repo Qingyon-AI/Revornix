@@ -12,6 +12,7 @@ import crud
 import models
 import schemas
 from common.celery.app import start_process_document, start_process_section
+from common.upload_limits import validate_file_upload_size
 from common.dependencies import (
     check_deployed_by_official,
     get_current_user_with_api_key,
@@ -51,10 +52,12 @@ async def upload_file_system(
     remote_file_service = await FileSystemProxy.create(
         user_id=user.id
     )
-    await file.seek(0)
-    await remote_file_service.upload_file_to_path(
-        file_path=file_path,
-        file=file.file,
+    content = await file.read()
+    normalized_file_path = file_path.lstrip("/")
+    validate_file_upload_size(file_path=normalized_file_path, size=len(content))
+    await remote_file_service.upload_raw_content_to_path(
+        file_path=normalized_file_path,
+        content=content,
         content_type=content_type
     )
     return schemas.common.SuccessResponse()

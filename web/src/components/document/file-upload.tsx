@@ -1,5 +1,5 @@
 import { utils } from '@kinda/utils';
-import { FileIcon, Loader2, Trash2 } from 'lucide-react';
+import { FileIcon, Info, Loader2, Trash2 } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
@@ -9,6 +9,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { getUserFileSystemDetail } from '@/service/file-system';
+import { formatUploadSize } from '@/lib/upload';
 
 const FileUpload = ({
 	onSuccess,
@@ -16,9 +17,11 @@ const FileUpload = ({
 	className,
 	accept,
 	defaultFileName, // ⭐新增：默认文件路径（字符串）
+	maxSizeBytes,
 }: {
 	accept?: string;
 	defaultFileName?: string; // ⭐ 接收默认值
+	maxSizeBytes?: number;
 	onSuccess?: (fileName: string) => void;
 	onDelete?: () => void;
 	className?: string;
@@ -56,12 +59,24 @@ const FileUpload = ({
 
 	const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
-			if (!file) return;
+		if (!file) return;
 
-			if (!mainUserInfo?.default_user_file_system) {
-				toast.error(t('error_default_file_system_not_found'));
-				return;
+		if (maxSizeBytes && file.size > maxSizeBytes) {
+			toast.error(
+				t('file_upload_size_exceeded', {
+					size: formatUploadSize(maxSizeBytes),
+				}),
+			);
+			if (upload.current) {
+				upload.current.value = '';
 			}
+			return;
+		}
+
+		if (!mainUserInfo?.default_user_file_system) {
+			toast.error(t('error_default_file_system_not_found'));
+			return;
+		}
 
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 
@@ -72,15 +87,25 @@ const FileUpload = ({
 		const suffix = file.name.split('.').pop();
 		const newFileName = `files/${name}.${suffix}`;
 
-		await utils.sleep(2000);
-		await fileService.uploadFile(newFileName, file);
+		try {
+			await utils.sleep(2000);
+			await fileService.uploadFile(newFileName, file);
 
-		// ⭐更新文件路径
-		setFileName(newFileName);
+			// ⭐更新文件路径
+			setFileName(newFileName);
 
-		onSuccess && onSuccess(newFileName);
+			onSuccess && onSuccess(newFileName);
 
-		setUploadingStatus('done');
+			setUploadingStatus('done');
+		} catch (error) {
+			setFile(null);
+			setFileName(null);
+			setUploadingStatus(null);
+			if (upload.current) {
+				upload.current.value = '';
+			}
+			toast.error(error instanceof Error ? error.message : t('upload_failed'));
+		}
 	};
 
 	const handleDeleteFile = () => {
@@ -125,7 +150,17 @@ const FileUpload = ({
 			{!uploadingStatus && (
 				<>
 					<FileIcon />
-					{t('document_create_file_upload')}
+					<div className='flex flex-col items-center gap-1.5 text-center'>
+						<span>{t('document_create_file_upload')}</span>
+						{maxSizeBytes && (
+							<span className='inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/80 px-2.5 py-1 text-[11px] text-muted-foreground shadow-sm'>
+								<Info className='size-3' />
+								{t('document_create_file_upload_limit_hint', {
+									size: formatUploadSize(maxSizeBytes),
+								})}
+							</span>
+						)}
+					</div>
 				</>
 			)}
 
