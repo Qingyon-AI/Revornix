@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Info, Loader2 } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { WeChatInfo } from '@/generated';
+import AccountUnbindConfirmButton from './account-unbind-confirm-button';
 
 const getWechatPlatformLabel = (
 	t: ReturnType<typeof useTranslations>,
@@ -92,14 +93,12 @@ const WeChatBind = () => {
 							</div>
 						))}
 						<div className='flex w-fit shrink-0 items-center'>
-							<Button
-								variant={'link'}
+							<AccountUnbindConfirmButton
+								description={t('account_wechat_unbind_confirm_description')}
 								className='h-auto px-0 text-xs'
 								disabled={unBindStatus}
-								onClick={handleUnBindWeChat}>
-								{t('account_unbind')}
-								{unBindStatus && <Loader2 className='size-4 animate-spin' />}
-							</Button>
+								onConfirm={handleUnBindWeChat}
+							/>
 							<TooltipProvider>
 								<Tooltip>
 									<TooltipTrigger asChild>

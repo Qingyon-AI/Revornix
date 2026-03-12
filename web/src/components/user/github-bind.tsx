@@ -4,11 +4,11 @@ import { unBindGitHub } from '@/service/user';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
 import { GITHUB_CLIENT_ID } from '@/config/github';
 import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
+import AccountUnbindConfirmButton from './account-unbind-confirm-button';
 
 const GitHubBind = () => {
 	const t = useTranslations();
@@ -38,14 +38,12 @@ const GitHubBind = () => {
 					<div className='font-bold text-xs'>
 						ID: {mainUserInfo.github_info.github_user_id}
 					</div>
-					<Button
-						variant={'link'}
+					<AccountUnbindConfirmButton
+						description={t('account_unbind_confirm_description')}
 						className='text-xs'
 						disabled={unBindStatus}
-						onClick={handleUnBindGitHub}>
-						{t('account_unbind')}
-						{unBindStatus && <Loader2 className='size-4 animate-spin' />}
-					</Button>
+						onConfirm={handleUnBindGitHub}
+					/>
 				</div>
 			)}
 

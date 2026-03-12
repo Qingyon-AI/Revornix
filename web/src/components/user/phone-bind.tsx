@@ -30,6 +30,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
 import { useCountDown } from 'ahooks';
 import { useTranslations } from 'next-intl';
+import AccountUnbindConfirmButton from './account-unbind-confirm-button';
 
 const phoneFormSchema = z.object({
 	phone: z.string().min(8).max(40),
@@ -141,14 +142,12 @@ const PhoneBind = () => {
 					<div className='font-bold text-xs'>
 						{mainUserInfo.phone_info.phone}
 					</div>
-					<Button
-						variant={'link'}
+					<AccountUnbindConfirmButton
+						description={t('account_unbind_confirm_description')}
 						className='text-xs'
 						disabled={unBindingPhone}
-						onClick={handleUnBindPhone}>
-						{t('account_unbind')}
-						{unBindingPhone && <Loader2 className='size-4 animate-spin' />}
-					</Button>
+						onConfirm={handleUnBindPhone}
+					/>
 				</div>
 			)}
 
