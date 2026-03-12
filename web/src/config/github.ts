@@ -1,1 +1,2 @@
-export const GITHUB_CLIENT_ID = 'Iv23liJSg8YL7I1GVbJ8'
+export const GITHUB_CLIENT_ID =
+	process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID ?? ''

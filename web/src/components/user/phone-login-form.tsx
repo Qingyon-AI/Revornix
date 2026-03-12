@@ -145,6 +145,8 @@ const PhoneLoginForm = () => {
 		window.location.assign(link);
 	};
 
+	const wechatCreateRedirectUri = `${process.env.NEXT_PUBLIC_HOST}/integrations/wechat/oauth/create/callback`;
+
 	return (
 		<Form {...phoneForm}>
 			<form onSubmit={onSubmitPhoneForm} className='w-full space-y-2'>
@@ -229,7 +231,7 @@ const PhoneLoginForm = () => {
 									href={`https://open.weixin.qq.com/connect/qrconnect?appid=${
 										process.env.NEXT_PUBLIC_WECHAT_APP_ID
 									}&redirect_uri=${encodeURIComponent(
-										`https://app.revornix.com/integrations/wechat/oauth/create/callback`
+										wechatCreateRedirectUri
 									)}&response_type=code&scope=snsapi_login&state=ndkasnl#wechat_redirect`}>
 									<Button type='button' variant='outline' className='h-11 w-full rounded-xl shadow-none'>
 										<WechatIcon />
