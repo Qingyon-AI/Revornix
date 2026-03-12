@@ -17,6 +17,7 @@ from common.celery.app import (
     start_process_section,
     update_document_process_status,
 )
+from common.document_creation import create_document_for_user
 from common.dependencies import (
     check_deployed_by_official,
     get_authorization_header,
@@ -27,7 +28,6 @@ from common.dependencies import (
 from common.timezone import (
     get_cached_user_timezone,
     normalize_timezone_name,
-    today_in_timezone,
 )
 from enums.ability import Ability
 from enums.document import (
@@ -39,9 +39,8 @@ from enums.document import (
     DocumentPodcastStatus,
     DocumentProcessStatus,
     DocumentSummarizeStatus,
-    UserDocumentAuthority,
 )
-from enums.section import SectionDocumentIntegration, SectionProcessTriggerType, UserSectionAuthority, UserSectionRole
+from enums.section import SectionDocumentIntegration, SectionProcessTriggerType
 from router.document_interaction_manage import document_interaction_manage_router
 from router.document_query import document_query_router
 
@@ -449,13 +448,11 @@ async def create_document(
     authorization: str = Depends(get_authorization_header),
     x_user_timezone: str | None = Header(default=None),
 ):
-    now = datetime.now(timezone.utc)
     if x_user_timezone is not None and x_user_timezone.strip():
         summary_timezone = normalize_timezone_name(x_user_timezone)
     else:
         summary_timezone = await get_cached_user_timezone(user.id)
-    summary_date = today_in_timezone(summary_timezone)
-    db_document = None
+
     if document_create_request.category == DocumentCategory.WEBSITE:
         db_website_documents_count = crud.document.count_user_documents(
             db=db,
@@ -469,21 +466,6 @@ async def create_document(
             )
             if not auth_status:
                 raise Exception('The number of website documents exceeds the limit for your plan')
-        if document_create_request.url is None:
-            raise Exception('The url is required when the document category is website')
-        db_document = crud.document.create_base_document(
-            db=db,
-            creator_id=user.id,
-            title='Website Analysing...',
-            description='Website Analysing...',
-            category=document_create_request.category,
-            from_plat=document_create_request.from_plat
-        )
-        crud.document.create_website_document(
-            db=db,
-            document_id=db_document.id,
-            url=document_create_request.url,
-        )
     elif document_create_request.category == DocumentCategory.FILE:
         db_file_documents_count = crud.document.count_user_documents(
             db=db,
@@ -497,157 +479,13 @@ async def create_document(
             )
             if not auth_status:
                 raise Exception('The number of file documents exceeds the limit for your plan')
-        if document_create_request.file_name is None:
-            raise Exception('The file name is required when the document category is file')
-        db_document = crud.document.create_base_document(
-            db=db,
-            creator_id=user.id,
-            category=document_create_request.category,
-            from_plat=document_create_request.from_plat,
-            title='File document analysing...',
-            description='File document analysing...'
-        )
-        crud.document.create_file_document(
-            db=db,
-            document_id=db_document.id,
-            file_name=document_create_request.file_name
-        )
-    elif document_create_request.category == DocumentCategory.QUICK_NOTE:
-        if document_create_request.content is None:
-            raise Exception('The content is required when the document category is quick note')
-        db_document = crud.document.create_base_document(
-            db=db,
-            creator_id=user.id,
-            category=document_create_request.category,
-            from_plat=document_create_request.from_plat,
-            title=f'Quick Note saved at {now}',
-            description=f'Quick Note saved at {now}'
-        )
-        crud.document.create_quick_note_document(
-            db=db,
-            document_id=db_document.id,
-            content=document_create_request.content
-        )
-    elif document_create_request.category == DocumentCategory.AUDIO:
-        if document_create_request.file_name is None:
-            raise Exception('The audio file is required when the document category is audio')
-        db_document = crud.document.create_base_document(
-            db=db,
-            creator_id=user.id,
-            category=document_create_request.category,
-            from_plat=document_create_request.from_plat,
-            title=f'Audio saved at {now}',
-            description=f'Audio saved at {now}'
-        )
-        crud.document.create_audio_document(
-            db=db,
-            document_id=db_document.id,
-            audio_file_name=document_create_request.file_name
-        )
-    else:
-        raise Exception('Invalid document category')
-    if len(document_create_request.labels) > 0:
-        crud.document.create_document_labels(
-            db=db,
-            document_id=db_document.id,
-            label_ids=document_create_request.labels
-        )
-    crud.document.create_user_document(
+
+    db_document = await create_document_for_user(
         db=db,
-        user_id=user.id,
-        document_id=db_document.id,
-        authority=UserDocumentAuthority.OWNER
+        user=user,
+        document_create_request=document_create_request,
+        summary_timezone=summary_timezone,
     )
-    crud.task.create_document_process_task(
-        db=db,
-        user_id=user.id,
-        document_id=db_document.id,
-    )
-    # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
-    db_today_section = crud.section.get_section_by_user_and_date(
-        db=db,
-        user_id=user.id,
-        date=summary_date
-    )
-    if db_today_section is None:
-        db_today_section = crud.section.create_section(
-            db=db,
-            creator_id=user.id,
-            title=f'{summary_date.isoformat()} Summary',
-            description=f"This document is the summary of all documents on {summary_date.isoformat()}."
-        )
-        crud.section.create_section_user(
-            db=db,
-            section_id=db_today_section.id,
-            user_id=user.id,
-            role=UserSectionRole.CREATOR,
-            authority=UserSectionAuthority.FULL_ACCESS
-        )
-        crud.section.create_date_section(
-            db=db,
-            section_id=db_today_section.id,
-            date=summary_date
-        )
-        crud.task.create_section_process_task(
-            db=db,
-            user_id=user.id,
-            section_id=db_today_section.id,
-            trigger_type=SectionProcessTriggerType.UPDATED
-        )
-    document_create_request.sections.append(db_today_section.id)
-    # 去重
-    document_create_request.sections = list(dict.fromkeys(
-        document_create_request.sections
-    ))
-    for section_id in document_create_request.sections:
-        crud.section.create_or_update_section_document(
-            db=db,
-            document_id=db_document.id,
-            section_id=section_id,
-            status=SectionDocumentIntegration.WAIT_TO
-        )
-    db.commit()
-    # 开始后台处理
-    # 获取所有关联的 section（此时已经写入 WAIT_TO 状态）
-    db_sections = crud.section.get_sections_by_document_id(
-        db=db,
-        document_id=db_document.id
-    )
-    db_sections_to_process = []
-    for db_section in db_sections:
-        db_section_process_task = crud.task.get_section_process_task_by_section_id(
-            db=db,
-            section_id=db_section.id
-        )
-        # 只有触发时机为 UPDATED 的专栏才需要在文档的更新的时候触发
-        if db_section_process_task is not None and db_section_process_task.trigger_type == SectionProcessTriggerType.UPDATED:
-            db_sections_to_process.append(db_section)
-    # 构造每个 Section 的 Celery 任务
-    section_process_tasks = group(
-        start_process_section.si(
-            section_id=db_section.id,
-            user_id=user.id,
-            auto_podcast=db_section.auto_podcast
-        )
-        for db_section in db_sections_to_process
-    )
-    background_tasks = chain(
-        start_process_document.si(
-            document_id=db_document.id,
-            user_id=user.id,
-            auto_tag=document_create_request.auto_tag,
-            auto_summary=document_create_request.auto_summary,
-            auto_podcast=document_create_request.auto_podcast,
-            auto_transcribe=document_create_request.auto_transcribe,
-            override=schemas.task.DocumentOverrideProperty(
-                title=document_create_request.title,
-                description=document_create_request.description,
-                cover=document_create_request.cover
-            ).model_dump(mode='json')
-        ),
-        section_process_tasks
-    )
-    background_tasks.apply_async()
     return schemas.document.DocumentCreateResponse(document_id=db_document.id)
 
 @document_router.post('/markdown/transform', response_model=schemas.common.NormalResponse)

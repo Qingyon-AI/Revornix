@@ -40,7 +40,8 @@ async def create_user_by_wechat_mini(
     # 如果openid都已经存在了 那就说明这个用户在这个平台已经注册过了 直接返回token
     db_exist_wechat_user_by_open_id = crud.user.get_wechat_user_by_wechat_open_id(
         db=db,
-        wechat_user_open_id=openid
+        wechat_user_open_id=openid,
+        filter_wechat_platform=WeChatUserSource.REVORNIX_MINI_PROGRAM
     )
     if db_exist_wechat_user_by_open_id is not None:
         db_user = crud.user.get_user_by_id(
@@ -130,7 +131,8 @@ async def create_user_by_wechat_web(
 
     db_exist_wechat_user_by_openid = crud.user.get_wechat_user_by_wechat_open_id(
         db=db,
-        wechat_user_open_id=openid
+        wechat_user_open_id=openid,
+        filter_wechat_platform=WeChatUserSource.REVORNIX_WEB_APP
     )
     if db_exist_wechat_user_by_openid is not None:
         db_user = crud.user.get_user_by_id(
@@ -224,7 +226,8 @@ def bind_wechat(
     nickname = response_user_info.get('nickname')
     db_wechat_exist = crud.user.get_wechat_user_by_wechat_open_id(
         db=db,
-        wechat_user_open_id=openid
+        wechat_user_open_id=openid,
+        filter_wechat_platform=WeChatUserSource.REVORNIX_WEB_APP
     )
     if db_wechat_exist is not None:
         raise CustomException(message="The wechat account has been bound by other user", code=400)
