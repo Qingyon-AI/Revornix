@@ -192,7 +192,7 @@ async def create_ai_summary(
         document_id=ai_summary_request.document_id
     )
     if db_document is None:
-        raise Exception('The document you want to summarize is not found')
+        raise schemas.error.CustomException("Document not found", code=404)
 
     db_exist_summarize_task = crud.task.get_document_summarize_task_by_document_id(
         db=db,
@@ -200,18 +200,18 @@ async def create_ai_summary(
     )
     if db_exist_summarize_task is not None:
         if db_exist_summarize_task.status == DocumentSummarizeStatus.SUCCESS:
-            raise Exception('The summarize task is already finished, please refresh the page')
+            raise schemas.error.CustomException("Summary task is already complete", code=409)
         if db_exist_summarize_task.status == DocumentSummarizeStatus.WAIT_TO:
-            raise Exception('The summarize task is already in the queue, please wait')
+            raise schemas.error.CustomException("Summary task is already queued", code=409)
         if db_exist_summarize_task.status == DocumentSummarizeStatus.SUMMARIZING:
-            raise Exception('The summarize task is already processing, please wait')
+            raise schemas.error.CustomException("Summary task is already in progress", code=409)
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
         document_id=ai_summary_request.document_id
     )
     if db_process_task is None:
-        raise Exception('The document you want to summarize is not processed')
+        raise schemas.error.CustomException("Document must be processed before generating a summary", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
 
@@ -240,7 +240,7 @@ async def create_embedding(
         document_id=embedding_request.document_id
     )
     if db_document is None:
-        raise Exception('The document you want to summarize is not found')
+        raise schemas.error.CustomException("Document not found", code=404)
 
     db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
         db=db,
@@ -248,18 +248,18 @@ async def create_embedding(
     )
     if db_embedding_task is not None:
         if db_embedding_task.status == DocumentEmbeddingStatus.SUCCESS:
-            raise Exception('The embedding task is already finished, please refresh the page')
+            raise schemas.error.CustomException("Embedding task is already complete", code=409)
         if db_embedding_task.status == DocumentEmbeddingStatus.WAIT_TO:
-            raise Exception('The embedding task is already in the queue, please wait')
+            raise schemas.error.CustomException("Embedding task is already queued", code=409)
         if db_embedding_task.status == DocumentEmbeddingStatus.EMBEDDING:
-            raise Exception('The embedding task is already processing, please wait')
+            raise schemas.error.CustomException("Embedding task is already in progress", code=409)
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
         document_id=embedding_request.document_id
     )
     if db_process_task is None:
-        raise Exception('The document you want to embedding is not processed')
+        raise schemas.error.CustomException("Document must be processed before generating embeddings", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
 
@@ -288,7 +288,7 @@ async def transcribe_audio_document(
         document_id=transcribe_request.document_id
     )
     if db_document is None:
-        raise Exception('The document you want to transcribe is not found')
+        raise schemas.error.CustomException("Document not found", code=404)
 
     db_transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
         db=db,
@@ -296,18 +296,18 @@ async def transcribe_audio_document(
     )
     if db_transcribe_task is not None:
         if db_transcribe_task.status == DocumentAudioTranscribeStatus.SUCCESS:
-            raise Exception('The transcribe task is already finished, please refresh the page')
+            raise schemas.error.CustomException("Transcription task is already complete", code=409)
         if db_transcribe_task.status == DocumentAudioTranscribeStatus.WAIT_TO:
-            raise Exception('The transcribe task is already in the queue, please wait')
+            raise schemas.error.CustomException("Transcription task is already queued", code=409)
         if db_transcribe_task.status == DocumentAudioTranscribeStatus.TRANSCRIBING:
-            raise Exception('The transcribe task is already processing, please wait')
+            raise schemas.error.CustomException("Transcription task is already in progress", code=409)
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
         document_id=transcribe_request.document_id
     )
     if db_process_task is None:
-        raise Exception('The document you want to transcribe is not processed')
+        raise schemas.error.CustomException("Document must be processed before transcription", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
 
@@ -337,7 +337,7 @@ async def generate_graph(
         document_id=graph_generate_request.document_id
     )
     if db_document is None:
-        raise Exception('The document you want to summarize is not found')
+        raise schemas.error.CustomException("Document not found", code=404)
 
     db_graph_generate_task = crud.task.get_document_graph_task_by_document_id(
         db=db,
@@ -345,18 +345,18 @@ async def generate_graph(
     )
     if db_graph_generate_task is not None:
         if db_graph_generate_task.status == DocumentGraphStatus.SUCCESS:
-            raise Exception('The generate task is already finished, please refresh the page')
+            raise schemas.error.CustomException("Graph generation task is already complete", code=409)
         if db_graph_generate_task.status == DocumentGraphStatus.WAIT_TO:
-            raise Exception('The generate task is already in the queue, please wait')
+            raise schemas.error.CustomException("Graph generation task is already queued", code=409)
         if db_graph_generate_task.status == DocumentGraphStatus.BUILDING:
-            raise Exception('The generate task is already processing, please wait')
+            raise schemas.error.CustomException("Graph generation task is already in progress", code=409)
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
         document_id=graph_generate_request.document_id
     )
     if db_process_task is None:
-        raise Exception('The document you want to generate the graph is not processed')
+        raise schemas.error.CustomException("Document must be processed before generating a graph", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
 
@@ -385,11 +385,11 @@ async def generate_podcast(
         document_id=generate_podcast_request.document_id
     )
     if db_document is None:
-        raise Exception('The document you want to generate the podcast is not found')
+        raise schemas.error.CustomException("Document not found", code=404)
 
     # podcast必须要存储系统，所以检查用户的存储系统配置
     if user.default_user_file_system is None:
-        raise Exception('Please set the default file system for the user first.')
+        raise schemas.error.CustomException("Default file system is not configured", code=400)
 
     db_exist_podcast_task = crud.task.get_document_podcast_task_by_document_id(
         db=db,
@@ -397,18 +397,18 @@ async def generate_podcast(
     )
     if db_exist_podcast_task is not None:
         if db_exist_podcast_task.status == DocumentPodcastStatus.SUCCESS:
-            raise Exception('The podcast task is already finished, please refresh the page')
+            raise schemas.error.CustomException("Podcast task is already complete", code=409)
         if db_exist_podcast_task.status == DocumentPodcastStatus.WAIT_TO:
-            raise Exception('The podcast task is already in the queue, please wait')
+            raise schemas.error.CustomException("Podcast task is already queued", code=409)
         if db_exist_podcast_task.status == DocumentPodcastStatus.GENERATING:
-            raise Exception('The podcast task is already processing, please wait')
+            raise schemas.error.CustomException("Podcast task is already in progress", code=409)
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
         document_id=generate_podcast_request.document_id
     )
     if db_process_task is None:
-        raise Exception('The document you want to generate the podcast is not processed')
+        raise schemas.error.CustomException("Document must be processed before generating a podcast", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db.commit()
 
@@ -465,7 +465,7 @@ async def create_document(
                 authorization=authorization
             )
             if not auth_status:
-                raise Exception('The number of website documents exceeds the limit for your plan')
+                raise schemas.error.CustomException("Website document limit reached for the current plan", code=403)
     elif document_create_request.category == DocumentCategory.FILE:
         db_file_documents_count = crud.document.count_user_documents(
             db=db,
@@ -478,7 +478,7 @@ async def create_document(
                 authorization=authorization
             )
             if not auth_status:
-                raise Exception('The number of file documents exceeds the limit for your plan')
+                raise schemas.error.CustomException("File document limit reached for the current plan", code=403)
 
     db_document = await create_document_for_user(
         db=db,
@@ -499,17 +499,17 @@ async def transform_markdown(
         document_id=transform_markdown_request.document_id
     )
     if db_document is None:
-        raise Exception('The document you want to transform is not found')
+        raise schemas.error.CustomException("Document not found", code=404)
 
     if user.default_user_file_system is None:
-        raise Exception("The user havn't set the default file system yet")
+        raise schemas.error.CustomException("Default file system is not configured", code=400)
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
         document_id=transform_markdown_request.document_id
     )
     if db_process_task is None:
-        raise Exception('The document you want to transform is not processed')
+        raise schemas.error.CustomException("Document must be processed before Markdown conversion", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
 
     db_convert_task = crud.task.get_document_convert_task_by_document_id(
@@ -519,11 +519,11 @@ async def transform_markdown(
     # 如果该文档的转化任务存在
     if db_convert_task is not None:
         if db_convert_task.status == DocumentMdConvertStatus.SUCCESS:
-            raise Exception('The transform task is already finished, please refresh the page')
+            raise schemas.error.CustomException("Markdown conversion task is already complete", code=409)
         elif db_convert_task.status == DocumentMdConvertStatus.WAIT_TO:
-            raise Exception('The transform task is already in the queue, please wait')
+            raise schemas.error.CustomException("Markdown conversion task is already queued", code=409)
         elif db_convert_task.status == DocumentMdConvertStatus.CONVERTING:
-            raise Exception('The transform task is already processing, please wait')
+            raise schemas.error.CustomException("Markdown conversion task is already in progress", code=409)
         db_convert_task.status = DocumentMdConvertStatus.WAIT_TO
     db.commit()
 
@@ -552,7 +552,7 @@ def update_document(
         raise schemas.error.CustomException("Document not found", code=404)
 
     if db_document.creator_id != user.id:
-        raise schemas.error.CustomException("You dont have permission to update this document", code=403)
+        raise schemas.error.CustomException("You don't have permission to update this document", code=403)
 
     section_process_tasks = None
     if document_update_request.title is not None:

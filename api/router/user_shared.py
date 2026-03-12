@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 import crud
 import models
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from enums.file import RemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from schemas.error import CustomException
@@ -17,13 +17,23 @@ def cleanup_user_bucket_sync(file_service: BuiltInRemoteFileService) -> None:
         file_service.empty_bucket()
     except Exception as cleanup_error:
         exception_logger.error(
-            f"Failed to empty user bucket during cleanup: {cleanup_error}"
+            format_log_message(
+                "user_bucket_cleanup_empty_failed",
+                bucket=file_service.bucket,
+                user_id=file_service.user_id,
+                error=cleanup_error,
+            )
         )
     try:
         file_service.delete_bucket()
     except Exception as cleanup_error:
         exception_logger.error(
-            f"Failed to delete user bucket during cleanup: {cleanup_error}"
+            format_log_message(
+                "user_bucket_cleanup_delete_failed",
+                bucket=file_service.bucket,
+                user_id=file_service.user_id,
+                error=cleanup_error,
+            )
         )
 
 
@@ -61,7 +71,7 @@ async def setup_default_file_system_for_user(
         uuid=RemoteFileService.Built_In.meta.id,
     )
     if db_file_system is None:
-        raise CustomException("The Built-In File System is Not Found", 404)
+        raise CustomException("Built-in file system not found", 404)
     db_user_file_system = crud.file_system.create_user_file_system(
         db=db,
         file_system_id=db_file_system.id,

@@ -27,7 +27,7 @@ from common.dependencies import (
 from common.encrypt import encrypt_api_key
 from common.interpret_event import EventInterpreter
 from common.jwt_utils import create_token
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger, format_log_message, info_logger
 from common.structured_mcp_adapter import StructuredLangChainAdapter
 from common.usage_collector import UsageCollector
 from common.usage_billing import persist_model_usage_from_snapshot
@@ -102,9 +102,9 @@ def create_model(
         provider_id=model_create_request.provider_id
     )
     if db_model_provider is None:
-        raise schemas.error.CustomException("The model provider is not exist", code=404)
+        raise schemas.error.CustomException("Model provider not found", code=404)
     if db_model_provider.creator_id != user.id:
-        raise schemas.error.CustomException("The model provider is not belong to you, so you can't add model to it", code=403)
+        raise schemas.error.CustomException("You don't have permission to add models to this provider", code=403)
 
     db_ai_model = crud.model.create_ai_model(
         db=db,
@@ -126,14 +126,14 @@ def get_ai_model(
         model_id=model_request.model_id
     )
     if ai_model is None:
-        raise schemas.error.CustomException("The model is not exist", code=404)
+        raise schemas.error.CustomException("Model not found", code=404)
 
     ai_model_provider = crud.model.get_ai_model_provider_by_id(
         db=db,
         provider_id=ai_model.provider_id
     )
     if ai_model_provider is None:
-        raise schemas.error.CustomException("The model provider of the model is not exist", code=404)
+        raise schemas.error.CustomException("Model provider not found for this model", code=404)
 
     if ai_model_provider.creator_id == user.id:
         return schemas.ai.Model.model_validate(ai_model)
@@ -141,7 +141,7 @@ def get_ai_model(
         if ai_model_provider.is_public:
             return schemas.ai.Model.model_validate(ai_model)
         else:
-            raise schemas.error.CustomException("The model provider of the model is not belong to you", code=403)
+            raise schemas.error.CustomException("You don't have permission to access this model", code=403)
 
 @ai_router.post("/model-provider/create", response_model=schemas.ai.ModelProviderCreateResponse)
 def create_model_provider(
@@ -179,13 +179,13 @@ def get_ai_model_provider(
         provider_id=model_provider_request.provider_id
     )
     if ai_model_provider is None:
-        raise schemas.error.CustomException("The model provider is not exist", code=404)
+        raise schemas.error.CustomException("Model provider not found", code=404)
 
     if ai_model_provider.creator_id == user.id:
         return schemas.ai.ModelProviderDetail.model_validate(ai_model_provider)
 
     if not ai_model_provider.is_public:
-        raise schemas.error.CustomException("The private model provider is not belong to you", code=403)
+        raise schemas.error.CustomException("You don't have permission to access this private model provider", code=403)
 
     db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
         db=db,
@@ -216,15 +216,15 @@ def delete_ai_model(
             model_id=model_id
         )
         if db_model is None:
-            raise schemas.error.CustomException("The model is not exist", code=404)
+            raise schemas.error.CustomException("Model not found", code=404)
         db_model_provider = crud.model.get_ai_model_provider_by_id(
             db=db,
             provider_id=db_model.provider_id
         )
         if db_model_provider is None:
-            raise schemas.error.CustomException("The model provider of the model is not exist, please contact the administrator for help", code=500)
+            raise schemas.error.CustomException("Model provider metadata is missing for this model", code=500)
         if db_model_provider.creator_id != user.id:
-            raise schemas.error.CustomException("The model provider of this model is not belong to you, so you can not delete this model", code=403)
+            raise schemas.error.CustomException("You don't have permission to delete this model", code=403)
         db_model.delete_at = now
 
     if user.default_revornix_model_id in delete_model_request.model_ids:
@@ -247,9 +247,9 @@ def delete_ai_model_provider(
         provider_id=delete_model_request.provider_id
     )
     if db_model_provider is None:
-        raise schemas.error.CustomException("The model provider is not exist", code=404)
+        raise schemas.error.CustomException("Model provider not found", code=404)
     if db_model_provider.creator_id != user.id:
-        raise schemas.error.CustomException("The model provider is not belong to you", code=403)
+        raise schemas.error.CustomException("You don't have permission to delete this model provider", code=403)
 
     db_models = crud.model.get_ai_models_for_ai_model_provider(
         db=db,
@@ -336,9 +336,9 @@ def fork_ai_model_provider(
         provider_id=model_provider_fork_request.provider_id
     )
     if db_ai_model_provider is None:
-        raise schemas.error.CustomException("The model provider is not exist", code=404)
+        raise schemas.error.CustomException("Model provider not found", code=404)
     if db_ai_model_provider.creator_id != user.id and not db_ai_model_provider.is_public:
-        raise schemas.error.CustomException("You can't include the private model provider", code=403)
+        raise schemas.error.CustomException("You can't fork a private model provider", code=403)
 
     if db_ai_model_provider.creator_id == user.id:
         raise schemas.error.CustomException("You can't fork your own model provider", code=403)
@@ -351,12 +351,12 @@ def fork_ai_model_provider(
     )
     if db_user_ai_model_provider is not None:
         if model_provider_fork_request.status:
-            raise schemas.error.CustomException("You have already fork the model provider", code=403)
+            raise schemas.error.CustomException("Model provider is already forked", code=403)
         else:
             db_user_ai_model_provider.delete_at = now
     else:
         if not model_provider_fork_request.status:
-            raise schemas.error.CustomException("You have not fork the model provider", code=403)
+            raise schemas.error.CustomException("Model provider is not forked", code=403)
         else:
             db_user_ai_model_provider = crud.model.create_user_ai_model_provider(
                 db=db,
@@ -381,9 +381,9 @@ def list_ai_model(
             provider_id=model_search_request.provider_id
         )
         if db_ai_model_provider is None:
-            raise schemas.error.CustomException("The model provider is not exist", code=404)
+            raise schemas.error.CustomException("Model provider not found", code=404)
         if db_ai_model_provider.creator_id != user.id and not db_ai_model_provider.is_public:
-            raise schemas.error.CustomException("You can't search the private model provider", code=403)
+            raise schemas.error.CustomException("You don't have permission to access this private model provider", code=403)
         db_models = crud.model.get_ai_models_for_ai_model_provider(
             db=db,
             provider_id=model_search_request.provider_id
@@ -421,15 +421,15 @@ def update_ai_model(
         model_id=model_update_request.id
     )
     if db_ai_model is None:
-        raise schemas.error.CustomException("The model is not exist", code=404)
+        raise schemas.error.CustomException("Model not found", code=404)
     db_ai_model_provider = crud.model.get_ai_model_provider_by_id(
         db=db,
         provider_id=db_ai_model.provider_id
     )
     if db_ai_model_provider is None:
-        raise schemas.error.CustomException("The model provider of the model is not exist, please contact the admin for help", code=500)
+        raise schemas.error.CustomException("Model provider metadata is missing for this model", code=500)
     if db_ai_model_provider.creator_id != user.id:
-        raise schemas.error.CustomException("The model provider of the model is not belong to you", code=403)
+        raise schemas.error.CustomException("You don't have permission to update this model", code=403)
 
     if model_update_request.name is not None:
         db_ai_model.name = model_update_request.name
@@ -451,9 +451,9 @@ def update_ai_model_provider(
         provider_id=model_provider_update_request.id
     )
     if db_ai_model_provider is None:
-        raise schemas.error.CustomException("The model provider is not exist", code=404)
+        raise schemas.error.CustomException("Model provider not found", code=404)
     if db_ai_model_provider.creator_id != user.id:
-        raise schemas.error.CustomException("The model provider is not belong to you", code=403)
+        raise schemas.error.CustomException("You don't have permission to update this model provider", code=403)
 
     if model_provider_update_request.name is not None:
         db_ai_model_provider.name = model_provider_update_request.name
@@ -483,7 +483,7 @@ async def create_agent(
             user_id=user_id
         )
         if user is None:
-            raise schemas.error.CustomException("The user is not exist", code=404)
+            raise schemas.error.CustomException("User not found", code=404)
         model_id = user.default_revornix_model_id
         if model_id is None:
             raise schemas.error.CustomException("The user has not set a default model", code=400)
@@ -559,7 +559,9 @@ async def create_agent(
         agent.adapter._record_telemetry = False
         return agent, model_id
     except Exception as e:
-        exception_logger.error(f"Failed to create agent: {e}")
+        exception_logger.error(
+            format_log_message("ai_agent_create_failed", user_id=user_id, error=e)
+        )
         raise
     finally:
         db.close()
@@ -606,13 +608,23 @@ async def stream_ops_with_agent(
                     event_usage_snapshot = usage_collector.snapshot()
                     if event_usage_snapshot is not None:
                         info_logger.info(
-                            f"MCP usage at chat_model_end. user_id={user_id}, chat_id={chat_id}, usage={event_usage_snapshot}"
+                            format_log_message(
+                                "ai_mcp_usage_collected",
+                                user_id=user_id,
+                                chat_id=chat_id,
+                                usage=event_usage_snapshot,
+                            )
                         )
                     else:
                         raw_data = raw_event_dict.get("data")
                         data_keys = list(raw_data.keys()) if isinstance(raw_data, dict) else []
                         info_logger.warning(
-                            f"No usage found at chat_model_end. user_id={user_id}, chat_id={chat_id}, data_keys={data_keys}"
+                            format_log_message(
+                                "ai_mcp_usage_missing",
+                                user_id=user_id,
+                                chat_id=chat_id,
+                                data_keys=data_keys,
+                            )
                         )
                 # 🔥 核心：解释 LangGraph / MCP 事件
                 for interpreted in interpreter.interpret(
@@ -636,7 +648,14 @@ async def stream_ops_with_agent(
         # ==========================
         # 3️⃣ 错误事件
         # ==========================
-        exception_logger.error(f"Failed to stream ops with agent: {e}")
+        exception_logger.error(
+            format_log_message(
+                "ai_stream_failed",
+                user_id=user_id,
+                chat_id=chat_id,
+                error=e,
+            )
+        )
         usage_snapshot = usage_collector.snapshot()
         is_recursion_limit = _is_graph_recursion_limit_error(e)
 
@@ -682,7 +701,12 @@ async def stream_ops_with_agent(
     usage_snapshot = usage_collector.snapshot()
     if usage_snapshot is not None:
         info_logger.info(
-            f"MCP usage summary. user_id={user_id}, chat_id={chat_id}, usage={usage_snapshot}"
+            format_log_message(
+                "ai_usage_summary",
+                user_id=user_id,
+                chat_id=chat_id,
+                usage=usage_snapshot,
+            )
         )
         persist_model_usage_from_snapshot(
             user_id=user_id,

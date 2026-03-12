@@ -7,7 +7,7 @@ from typing import Any
 from uuid import uuid4
 
 import crud
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from data.sql.base import session_scope
 from sqlalchemy.orm import Session
 
@@ -224,7 +224,13 @@ def persist_model_usage(
             return billable_points
     except Exception as e:
         exception_logger.error(
-            f"Failed to persist local model usage. user_id={user_id}, model_id={model_id}, source={source}, error={e}"
+            format_log_message(
+                "model_usage_persist_failed",
+                user_id=user_id,
+                model_id=model_id,
+                source=source,
+                error=e,
+            )
         )
         return 0
 
@@ -305,7 +311,13 @@ def persist_engine_usage(
             return billable_points
     except Exception as e:
         exception_logger.error(
-            f"Failed to persist engine usage. user_id={user_id}, engine={resource_uuid}, source={source}, error={e}"
+            format_log_message(
+                "engine_usage_persist_failed",
+                user_id=user_id,
+                engine_uuid=resource_uuid,
+                source=source,
+                error=e,
+            )
         )
         return 0
 

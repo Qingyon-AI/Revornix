@@ -1,6 +1,6 @@
 import crud
 
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from data.sql.base import session_scope
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentAudioTranscribeStatus
 from proxy.file_system_proxy import FileSystemProxy
@@ -86,11 +86,23 @@ async def get_markdown_content_by_section_id(
     except Exception as e:
         if allow_missing and _is_remote_file_missing_error(e):
             exception_logger.warning(
-                f"Section markdown file is missing, section={section_id}, user={user_id}, "
-                f"file={section_md_file_name}"
+                format_log_message(
+                    "section_markdown_missing",
+                    section_id=section_id,
+                    user_id=user_id,
+                    file_name=section_md_file_name,
+                )
             )
             return None
-        exception_logger.error(f"Something is error while getting the section: {e}, parameter: {section_id}, {user_id}")
+        exception_logger.error(
+            format_log_message(
+                "section_markdown_read_failed",
+                section_id=section_id,
+                user_id=user_id,
+                file_name=section_md_file_name,
+                error=e,
+            )
+        )
         raise
 
 
@@ -112,7 +124,7 @@ async def get_markdown_content_by_document_id(
             if db_user is None:
                 raise Exception("The user does not exist")
             if db_user.default_user_file_system is None:
-                raise Exception("The user havn't set the default file system")
+                raise Exception("Default file system is not configured")
 
             db_document = crud.document.get_document_by_document_id(
                 db=db,
@@ -126,7 +138,7 @@ async def get_markdown_content_by_document_id(
                     document_id=document_id
                 )
                 if db_convert_task is None or db_convert_task.status != DocumentMdConvertStatus.SUCCESS or db_convert_task.md_file_name is None:
-                    raise Exception("The document convert task of the document you want to summary havn't been finished")
+                    raise Exception("Document Markdown conversion is not complete")
                 markdown_file_name = db_convert_task.md_file_name
             elif db_document.category == DocumentCategory.QUICK_NOTE:
                 quick_note_document = crud.document.get_quick_note_document_by_document_id(
@@ -142,7 +154,7 @@ async def get_markdown_content_by_document_id(
                     document_id=document_id
                 )
                 if db_transcribe_task is None or db_transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or db_transcribe_task.transcribed_text is None:
-                    raise Exception("The document transcribe task of the document you want to summary havn't been finished")
+                    raise Exception("Document transcription is not complete")
                 markdown_content = db_transcribe_task.transcribed_text
             else:
                 raise Exception("Document category not supported")
@@ -168,5 +180,13 @@ async def get_markdown_content_by_document_id(
         )
         return markdown_content
     except Exception as e:
-        exception_logger.error(f"Something is error while getting the markdown content: {e}")
+        exception_logger.error(
+            format_log_message(
+                "document_markdown_read_failed",
+                document_id=document_id,
+                user_id=user_id,
+                file_name=markdown_file_name,
+                error=e,
+            )
+        )
         raise

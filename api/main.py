@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse, Response
 
 import schemas
 from common.apscheduler.app import scheduler
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger, format_log_message, info_logger
 from common.redis import redis_pool
 from common.websocket import notificationManager
 from config.sentry import API_SENTRY_DSN, API_SENTRY_ENABLE
@@ -36,6 +36,7 @@ from router.tp import tp_router
 from router.user import user_router
 from router.user_auth import user_auth_router
 from router.wechat_official import wechat_official_router
+from schemas.error import normalize_error_message
 
 common_mcp_app = common_mcp_router.http_app()
 document_mcp_app = document_mcp_router.http_app()
@@ -55,7 +56,9 @@ async def lifespan(app: FastAPI):
         redis_conn = await redis_pool()
         app.state.redis = redis_conn
     except Exception as e:
-        exception_logger.exception(f"Redis init failed: {e}")
+        exception_logger.exception(
+            format_log_message("redis_init_failed", error=e)
+        )
         raise
     try:
         if not scheduler.running:
@@ -68,15 +71,15 @@ async def lifespan(app: FastAPI):
             await stack.enter_async_context(common_mcp_app.lifespan(app))
             await stack.enter_async_context(document_mcp_app.lifespan(app))
             await stack.enter_async_context(graph_mcp_app.lifespan(app))
-            info_logger.info("FastAPI lifespan started.")
+            info_logger.info(format_log_message("fastapi_lifespan_started"))
             yield
     finally:
-        info_logger.info("FastAPI shutting down...")
+        info_logger.info(format_log_message("fastapi_shutdown_started"))
         if scheduler.running:
             scheduler.shutdown(wait=False)
         if redis_conn is not None:
             await redis_conn.aclose()
-            info_logger.info("Redis connection closed.")
+            info_logger.info(format_log_message("redis_connection_closed"))
         await notificationManager.close_cache()
 
 app = FastAPI(
@@ -144,8 +147,19 @@ async def add_process_time_header(request: Request, call_next):
 
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exc: Exception):
-    exception_logger.error(f"记载报错, 涉及请求{request}, 错误{exc}")
-    res = schemas.common.ErrorResponse(message=str(exc))
+    exception_logger.exception(
+        format_log_message(
+            "request_unhandled_exception",
+            method=request.method,
+            path=request.url.path,
+            client=request.client.host if request.client else None,
+            error=exc,
+        )
+    )
+    res = schemas.common.ErrorResponse(
+        message=normalize_error_message(str(exc)),
+        code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=res.model_dump(),
@@ -156,8 +170,20 @@ async def unicorn_exception_handler(request: Request, exc: Exception):
 
 @app.exception_handler(schemas.error.CustomException)
 async def unicorn_custom_exception_handler(request: Request, exc: schemas.error.CustomException):
-    exception_logger.error(f"记载报错, 涉及请求{request}, 错误{exc}")
-    res = schemas.common.ErrorResponse(message=str(exc), code=exc.code)
+    exception_logger.error(
+        format_log_message(
+            "request_custom_exception",
+            method=request.method,
+            path=request.url.path,
+            client=request.client.host if request.client else None,
+            code=exc.code,
+            error=exc.message,
+        )
+    )
+    res = schemas.common.ErrorResponse(
+        message=normalize_error_message(exc.message),
+        code=exc.code,
+    )
     return JSONResponse(
         status_code=exc.code,
         content=res.model_dump(),

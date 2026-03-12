@@ -26,7 +26,7 @@ def _build_notification_source_config_json(
     if source_provided_uuid == NotificationSourceProvided.EMAIL.meta.uuid:
         if email_source_form is None:
             if require_config:
-                raise schemas.error.CustomException(message="email config should not be empty", code=400)
+                raise schemas.error.CustomException(message="Email source configuration is required", code=400)
             return None
         return json.dumps(
             {
@@ -43,7 +43,7 @@ def _build_notification_source_config_json(
     }:
         if ios_source_form is None:
             if require_config:
-                raise schemas.error.CustomException(message="ios config should not be empty", code=400)
+                raise schemas.error.CustomException(message="iOS source configuration is required", code=400)
             return None
         return json.dumps(
             {
@@ -57,7 +57,7 @@ def _build_notification_source_config_json(
     if source_provided_uuid == NotificationSourceProvided.FEISHU.meta.uuid:
         if feishu_source_form is None:
             if require_config:
-                raise schemas.error.CustomException(message="feishu config should not be empty", code=400)
+                raise schemas.error.CustomException(message="Feishu source configuration is required", code=400)
             return None
         return json.dumps(
             {
@@ -72,7 +72,7 @@ def _build_notification_source_config_json(
     if source_provided_uuid == NotificationSourceProvided.TELEGRAM.meta.uuid:
         if telegram_source_form is None:
             if require_config:
-                raise schemas.error.CustomException(message="telegram config should not be empty", code=400)
+                raise schemas.error.CustomException(message="Telegram source configuration is required", code=400)
             return None
         return json.dumps(
             {
@@ -94,7 +94,7 @@ def add_notification_source(
         id=add_notification_source_request.notification_source_provided_id
     )
     if db_notification_source_provided is None:
-        raise schemas.error.CustomException(message="notification source provided not found", code=404)
+        raise schemas.error.CustomException(message="Notification source provider not found", code=404)
 
     config_json = _build_notification_source_config_json(
         source_provided_uuid=db_notification_source_provided.uuid,
@@ -139,7 +139,7 @@ def update_notification_source(
         notification_source_id=update_notification_source_request.notification_source_id
     )
     if db_notification_source is None:
-        raise schemas.error.CustomException(message="notification source not found", code=404)
+        raise schemas.error.CustomException(message="Notification source not found", code=404)
 
     if db_notification_source.creator_id != user.id:
         raise schemas.error.CustomException(message="You don't have permission to update this notification source", code=403)
@@ -198,7 +198,7 @@ def fork_notification_source(
 
     if db_user_notification_source is not None:
         if notification_source_fork_request.status:
-            raise schemas.error.CustomException(code=403, message="You have forked this notification source")
+            raise schemas.error.CustomException(code=403, message="Notification source is already forked")
         db_user_notification_source.delete_at = now
         db.commit()
         return schemas.common.SuccessResponse()
@@ -211,7 +211,7 @@ def fork_notification_source(
             role=UserNotificationSourceRole.FORKER,
         )
     else:
-        raise schemas.error.CustomException(code=403, message="You have not forked this notification source")
+        raise schemas.error.CustomException(code=403, message="Notification source is not forked")
 
     db.commit()
     return schemas.common.SuccessResponse()
@@ -245,9 +245,9 @@ def delete_notification_source(
             notification_source_id=notification_source_id
         )
         if db_notification_source is None:
-            raise schemas.error.CustomException(message="notification source not found", code=404)
+            raise schemas.error.CustomException(message="Notification source not found", code=404)
         if db_notification_source.creator_id != user.id:
-            raise schemas.error.CustomException(message="you don't have permission to delete this notification source", code=403)
+            raise schemas.error.CustomException(message="You don't have permission to delete this notification source", code=403)
         db_notification_source.delete_at = now
         db_user_notification_source = crud.notification.get_user_notification_source_by_user_id_and_notification_source_id(
             db=db,
@@ -256,9 +256,9 @@ def delete_notification_source(
             filter_role=UserNotificationSourceRole.CREATOR
         )
         if db_user_notification_source is None:
-            raise schemas.error.CustomException(message="the user notification source not found", code=404)
+            raise schemas.error.CustomException(message="User notification source record not found", code=404)
         if db_user_notification_source.user_id != user.id:
-            raise schemas.error.CustomException(message="you don't have permission to delete this notification source", code=403)
+            raise schemas.error.CustomException(message="You don't have permission to delete this notification source", code=403)
         db_user_notification_source.delete_at = now
     db.commit()
     return schemas.common.SuccessResponse()

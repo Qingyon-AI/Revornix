@@ -51,7 +51,7 @@ def get_file_system_info(
         file_system_id=file_system_info_request.file_system_id
     )
     if db_file_system is None:
-        raise schemas.error.CustomException(code=404, message="File System not found")
+        raise schemas.error.CustomException(code=404, message="File system not found")
     return schemas.file_system.FileSystemInfo.model_validate(db_file_system)
 
 def _normalize_and_validate_path(path: str) -> str:
@@ -64,18 +64,18 @@ def _normalize_and_validate_path(path: str) -> str:
     """
     path = (path or "").strip()
     if not path:
-        raise schemas.error.CustomException(code=400, message="path is required")
+        raise schemas.error.CustomException(code=400, message="Path is required")
 
     if path.startswith("/"):
         path = path.lstrip("/")
 
     if "\\" in path:
-        raise schemas.error.CustomException(code=400, message="invalid path")
+        raise schemas.error.CustomException(code=400, message="Path is invalid")
 
     parts = path.split("/")
     if any(p in ("..", "") for p in parts):
         # "" 会出现于 //，也一起拒掉
-        raise schemas.error.CustomException(code=400, message="invalid path")
+        raise schemas.error.CustomException(code=400, message="Path is invalid")
 
     return path
 
@@ -111,13 +111,13 @@ def get_user_file_system_info(
         user_file_system_id=user_file_system_info_request.user_file_system_id
     )
     if db_user_file_system is None:
-        raise schemas.error.CustomException(code=404, message="User File System not found")
+        raise schemas.error.CustomException(code=404, message="User file system not found")
     db_file_system = crud.file_system.get_file_system_by_id(
         db=db,
         file_system_id=db_user_file_system.file_system_id
     )
     if db_file_system is None:
-        raise schemas.error.CustomException(code=404, message="File System not found")
+        raise schemas.error.CustomException(code=404, message="File system not found")
     res = schemas.file_system.UserFileSystemDetail(
         id=db_user_file_system.id,
         file_system_id=db_user_file_system.file_system_id,
@@ -206,9 +206,9 @@ def delete_user_file_system(
         user_file_system_id=user_file_system_delete_request.user_file_system_id
     )
     if db_user_file_system is None:
-        raise schemas.error.CustomException(code=404, message="User File System not found")
+        raise schemas.error.CustomException(code=404, message="User file system not found")
     if db_user_file_system.user_id != current_user.id:
-        raise schemas.error.CustomException(code=403, message="User File System not found")
+        raise schemas.error.CustomException(code=403, message="You don't have permission to manage this user file system")
     db_user_file_system.delete_at =now
     
     db.commit()
@@ -226,7 +226,7 @@ def update_file_system(
         user_file_system_id=user_file_system_update_request.user_file_system_id
     )
     if user_file_system is None:
-        raise schemas.error.CustomException(code=404, message="User File System not found")
+        raise schemas.error.CustomException(code=404, message="User file system not found")
     else:
         if user_file_system_update_request.title is not None:
             user_file_system.title = user_file_system_update_request.title
@@ -249,7 +249,7 @@ async def upload_file_system(
 ):
     default_user_file_system = current_user.default_user_file_system
     if default_user_file_system is None:
-        raise schemas.error.CustomException(code=404, message="User File System not found")
+        raise schemas.error.CustomException(code=404, message="User file system not found")
 
     content = await file.read()
     user_file_system = crud.file_system.get_user_file_system_by_id(
@@ -257,17 +257,17 @@ async def upload_file_system(
         user_file_system_id=default_user_file_system
     )
     if user_file_system is None:
-        raise schemas.error.CustomException(code=404, message="User File System not found")
+        raise schemas.error.CustomException(code=404, message="User file system not found")
     if user_file_system.config_json is None:
-        raise schemas.error.CustomException(code=404, message="The config_json of User File System is None")
+        raise schemas.error.CustomException(code=404, message="User file system configuration is missing")
 
     remote_file_service = await FileSystemProxy.create(
         user_id=current_user.id
     )
     if remote_file_service is None:
-        raise schemas.error.CustomException(code=404, message="User File System not found")
+        raise schemas.error.CustomException(code=404, message="User file system not found")
     if remote_file_service.file_service_uuid != RemoteFileService.Generic_S3.meta.id:
-        raise schemas.error.CustomException(code=404, message="The default user file system is not Generic S3")
+        raise schemas.error.CustomException(code=400, message="Default user file system is not Generic S3")
     generic_s3_remote_file_service = GenericS3RemoteFileService()
     file_config = json.loads(decrypt_file_system_config(user_file_system.config_json))
     generic_s3_remote_file_service.set_config(file_config)

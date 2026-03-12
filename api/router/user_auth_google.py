@@ -27,7 +27,7 @@ async def create_user_by_google(
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
     if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
-        raise CustomException(message="Google client id or secret is not set", code=500)
+        raise CustomException(message="Google OAuth is not configured", code=500)
 
     redirect_uri = str(request.base_url) + "integrations/google/oauth2/create/callback"
     token = await asyncio.to_thread(
@@ -38,7 +38,7 @@ async def create_user_by_google(
         redirect_uri=redirect_uri,
     )
     if token is None:
-        raise CustomException(message="something error while getting google account info", code=400)
+        raise CustomException(message="Failed to fetch Google account information", code=400)
 
     idinfo = await asyncio.to_thread(
         id_token.verify_oauth2_token,
@@ -97,14 +97,14 @@ def bind_google(
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
     if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
-        raise CustomException(message="Google client id or secret is not set", code=500)
+        raise CustomException(message="Google OAuth is not configured", code=500)
 
     db_google_user_exist = crud.user.get_google_user_by_user_id(
         db=db,
         user_id=user.id
     )
     if db_google_user_exist is not None:
-        raise CustomException(message="The account is already binded", code=400)
+        raise CustomException(message="A Google account is already bound to this user", code=400)
 
     redirect_uri = str(request.base_url) + "integrations/google/oauth2/bind/callback"
     token = get_google_token(
@@ -114,7 +114,7 @@ def bind_google(
         redirect_uri=redirect_uri
     )
     if token is None:
-        raise CustomException(message="Something is error while getting google account info", code=400)
+        raise CustomException(message="Failed to fetch Google account information", code=400)
 
     idinfo = id_token.verify_oauth2_token(token.get('id_token'),
                                           requests.Request(),
@@ -125,7 +125,7 @@ def bind_google(
         google_user_id=idinfo.get('sub')
     )
     if db_google_exist is not None:
-        raise CustomException(message="The google account is already be binded", code=400)
+        raise CustomException(message="This Google account is already bound to another user", code=400)
 
     crud.user.create_google_user(
         db=db,

@@ -14,7 +14,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 
 SMTP_HOST = os.environ.get('SMTP_HOST')
 SMTP_PORT = os.environ.get('SMTP_PORT')
@@ -64,7 +64,14 @@ class RevornixSystemEmail:
                 cover=cover
             )
         except Exception as e:
-            exception_logger.error(f"Template load error: {e}", exc_info=True)
+            exception_logger.error(
+                format_log_message(
+                    "system_email_template_render_failed",
+                    template=template or "default.html",
+                    error=e,
+                ),
+                exc_info=True,
+            )
             html_body = content or ""
 
         msg = MIMEMultipart("alternative")
@@ -87,7 +94,15 @@ class RevornixSystemEmail:
             return True
         except Exception as e:
             # 记录日志
-            exception_logger.error(f"SMTP send error: {e}", exc_info=True)
+            exception_logger.error(
+                format_log_message(
+                    "system_email_send_failed",
+                    recipient=recipient,
+                    title=title,
+                    error=e,
+                ),
+                exc_info=True,
+            )
             raise
 
 

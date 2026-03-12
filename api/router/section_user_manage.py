@@ -26,7 +26,7 @@ def section_user_add_request(
         section_id=section_share_request.section_id
     )
     if section_user is None or section_user.role not in [UserSectionRole.CREATOR, UserSectionRole.MEMBER]:
-        raise schemas.error.CustomException("You are forbidden to share this section", code=403)
+        raise schemas.error.CustomException("You don't have permission to share this section", code=403)
 
     db_exist_user_section = crud.section.get_section_user_by_section_id_and_user_id(
         db=db,
@@ -35,7 +35,7 @@ def section_user_add_request(
     )
 
     if db_exist_user_section is not None:
-        raise schemas.error.CustomException("The user is already in this section", code=409)
+        raise schemas.error.CustomException("User is already in this section", code=409)
 
     crud.section.create_section_user(
         db=db,
@@ -64,7 +64,7 @@ def section_user_modify_request(
         section_id=section_user_modify_request.section_id
     )
     if section_user is None or section_user.role not in [UserSectionRole.CREATOR]:
-        raise schemas.error.CustomException("You are forbidden to modify member' authority", code=403)
+        raise schemas.error.CustomException("You don't have permission to modify member authority", code=403)
 
     origin_section_user = crud.section.get_section_user_by_section_id_and_user_id(
         db=db,
@@ -76,7 +76,7 @@ def section_user_modify_request(
 
     # 如果用户是订阅者，那么就不能修改权限，仅支持对专栏的参与者修改权限
     if origin_section_user.role == UserSectionRole.SUBSCRIBER:
-        raise schemas.error.CustomException("You can't modify subscriber's authority", code=400)
+        raise schemas.error.CustomException("You can't modify subscriber authority", code=400)
 
     if section_user_modify_request.authority is not None:
         origin_section_user.authority = section_user_modify_request.authority
@@ -99,7 +99,7 @@ def delete_section_user(
         section_id=section_user_delete_request.section_id
     )
     if section_user is None or section_user.role not in [UserSectionRole.CREATOR]:
-        raise schemas.error.CustomException("You are forbidden to delete user from this section", code=403)
+        raise schemas.error.CustomException("You don't have permission to remove users from this section", code=403)
 
     if user.id == section_user_delete_request.user_id:
         raise schemas.error.CustomException("As the creator of the section, you can't delete yourself", code=400)

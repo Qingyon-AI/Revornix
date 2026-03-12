@@ -23,7 +23,7 @@ from common.dependencies import (
 from common.file import get_remote_file_signed_url
 from common.hash import verify_password
 from common.jwt_utils import create_token
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from common.system_email.email import RevornixSystemEmail
 from data.milvus.delete import delete_documents_from_milvus
 from data.neo4j.delete import delete_documents_and_related_from_neo4j
@@ -313,7 +313,7 @@ def follow_user(
         user_id=follow_user_request.to_user_id
     )
     if db_user is None:
-        raise CustomException(message="The user you want to follow is not exist", code=404)
+        raise CustomException(message="User to follow not found", code=404)
     db_user_followed = crud.user.get_user_follow_by_to_user_id_and_from_user_id(
         db=db,
         to_user_id=follow_user_request.to_user_id,
@@ -351,7 +351,7 @@ async def user_info(
         user_id=user_info_request.user_id
     )
     if db_user is None:
-        raise CustomException(message="The user you want to get the info is not exist", code=404)
+        raise CustomException(message="User not found", code=404)
     user_follow = crud.user.get_user_follow_by_to_user_id_and_from_user_id(
         db=db,
         to_user_id=user_info_request.user_id,
@@ -387,7 +387,7 @@ async def create_user_by_email_code(
         db=db,
         email=email_create_request.email
     ):
-        raise CustomException("The email already exists", code=400)
+        raise CustomException("Email already exists", code=400)
     else:
         code = "".join(random.sample(string.ascii_letters + string.digits, 6))
         await cache.set(
@@ -415,12 +415,12 @@ async def create_user_by_email_verify(
         db=db,
         email=email_user_create_verify_request.email
     ):
-        raise CustomException(message="The email is already exists", code=400)
+        raise CustomException(message="Email already exists", code=400)
     code = await cache.get(
         name=f'user-create-by-email-{email_user_create_verify_request.email}'
     )
     if code != email_user_create_verify_request.code or code is None:
-        raise CustomException(message="Code is wrong", code=400)
+        raise CustomException(message="Verification code is incorrect", code=400)
     await cache.delete(
         f'user-create-by-email-{email_user_create_verify_request.email}'
     )
@@ -446,7 +446,7 @@ async def create_user_by_email_verify(
     await commit_with_bucket_cleanup(db=db, file_service=file_service)
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
-        raise CustomException(message='The token is not created.')
+        raise CustomException(message='Failed to create authentication token', code=500)
     return schemas.user.TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
@@ -464,7 +464,7 @@ async def create_user_by_email(
         db=db,
         email=email_user_create_verify_request.email
     ):
-        raise CustomException(message="The email is already exists", code=400)
+        raise CustomException(message="Email already exists", code=400)
     db_user = crud.user.create_base_user(
         db=db,
         nickname=email_user_create_verify_request.email,
@@ -487,7 +487,7 @@ async def create_user_by_email(
     await commit_with_bucket_cleanup(db=db, file_service=file_service)
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
-        raise CustomException(message='The token is not created.')
+        raise CustomException(message='Failed to create authentication token', code=500)
     return schemas.user.TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
@@ -505,12 +505,12 @@ def update_password(
         user_id=user.id
     )
     if db_email_user is None:
-        raise CustomException(message='The current user has no email info.')
+        raise CustomException(message='Current user has no email address', code=400)
     if not verify_password(
         stored_password=db_email_user.hashed_password,
         provided_password=password_update_request.origin_password
     ):
-        raise CustomException(message='The origin password is wrong.', code=403)
+        raise CustomException(message='Current password is incorrect', code=403)
     crud.user.update_user_password(
         db=db,
         user_id=user.id,
@@ -531,7 +531,7 @@ async def bind_email_code(
         email=bind_email_request.email
     )
     if email_exist:
-        raise CustomException(message='The email is already exists', code=400)
+        raise CustomException(message='Email already exists', code=400)
     code = "".join(random.sample(string.ascii_letters + string.digits, 6))
     await cache.set(
         name=f'{user.id}-user-bind-email-{bind_email_request.email}',
@@ -557,7 +557,7 @@ async def bind_email_verify(
         name=f'{user.id}-user-bind-email-{bind_email_verify_request.email}'
     )
     if code is None or code != bind_email_verify_request.code:
-        raise CustomException(message="Code is wrong.", code=400)
+        raise CustomException(message="Verification code is incorrect", code=400)
     await cache.delete(
         f'{user.id}-user-bind-email-{bind_email_verify_request.email}'
     )
@@ -581,7 +581,7 @@ def bind_email(
         email=bind_email_verify_request.email
     )
     if db_exist_email_user is not None:
-        raise CustomException(message='The email is already exists.')
+        raise CustomException(message='Email already exists', code=400)
     db_user_email = crud.user.get_email_user_by_user_id(
         db=db,
         user_id=user.id
@@ -639,13 +639,13 @@ def initial_see_password(
         user_id=user.id
     )
     if email_user is None:
-        raise CustomException(message='The current user has no email info.')
+        raise CustomException(message='Current user has no email address', code=400)
 
     if email_user.has_seen_initial_password:
-        raise CustomException(message='The current user has seen the initial password.')
+        raise CustomException(message='Initial password has already been viewed', code=400)
 
     if email_user.initial_password is None:
-        raise CustomException(message='The initial password is not set.')
+        raise CustomException(message='Initial password is not set', code=400)
 
     email_user.has_seen_initial_password = True
     db.commit()
@@ -729,15 +729,15 @@ def login(
         email=user_login_request.email
     )
     if user is None:
-        raise CustomException(message="The email is not registered yet", code=404)
+        raise CustomException(message="Email is not registered", code=404)
     if user.is_forbidden:
-        raise schemas.error.CustomException(message="The user is forbidden", code=403)
+        raise schemas.error.CustomException(message="User is forbidden", code=403)
     email_user = crud.user.get_email_user_by_user_id(
         db=db,
         user_id=user.id
     )
     if email_user is None:
-        raise CustomException(message="The email is not registered yet", code=404)
+        raise CustomException(message="Email is not registered", code=404)
     if not user or not verify_password(
         stored_password=email_user.hashed_password,
         provided_password=user_login_request.password
@@ -764,9 +764,11 @@ def update_token(
     try:
         payload = decode_jwt_token(token=token_update_request.refresh_token)
     except ExpiredSignatureError as e:
-        exception_logger.error(f"Decode refresh token error: {e}")
+        exception_logger.warning(
+            format_log_message("refresh_token_decode_failed", error=e)
+        )
         # Refresh endpoint should not return 401 to avoid refresh-loop in frontend.
-        raise CustomException(message="Refresh token is expired, please login again.", code=403) from e
+        raise CustomException(message="Refresh token has expired, please log in again", code=403) from e
     user_uuid: str | None = payload.get("sub")
     if user_uuid is None:
         raise CustomException(message="Refresh token is invalid", code=403)
@@ -775,7 +777,7 @@ def update_token(
         uuid=user_uuid
     )
     if user is None:
-        raise CustomException(message="The user for this refresh_token is not exist", code=403)
+        raise CustomException(message="User for this refresh token was not found", code=403)
     user.last_login_ip = ip
     user.last_login_time = datetime.now(timezone.utc)
     db.commit()
