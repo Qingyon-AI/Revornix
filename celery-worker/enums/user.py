@@ -5,6 +5,7 @@ class WeChatUserSource(IntEnum):
     UNKNOWN = 0
     REVORNIX_WEB_APP = 1
     REVORNIX_MINI_PROGRAM = 2
+    REVORNIX_OFFICIAL_ACCOUNT = 3
 
 class MarkDocumentReadReason(IntEnum):
     REQUEST_ONCE = 0

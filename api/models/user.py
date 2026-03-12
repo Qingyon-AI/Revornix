@@ -16,7 +16,7 @@ class WechatUser(Base):
     wechat_user_union_id: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     wechat_user_open_id: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     wechat_user_name: Mapped[str | None] = mapped_column(String(100))
-    wechat_platform: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: unknown, 1: Revornix WeChat Web App, 2: Revornix WeChat Mini Program')
+    wechat_platform: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: unknown, 1: Revornix WeChat Web App, 2: Revornix WeChat Mini Program, 3: Revornix WeChat Official Account')
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
