@@ -16,6 +16,7 @@ from config.base import OFFICIAL, DEPLOY_HOSTS, UNION_PAY_URL_PREFIX
 from urllib.parse import urlparse
 from fastapi import Request, HTTPException, status, Depends, Header
 from config.langfuse import LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
+from common.env import is_env_disabled, is_env_enabled
 from common.logger import exception_logger, format_log_message
 from common.timezone import UTC_TIMEZONE_NAME, normalize_timezone_name, timezone_cache_key
 from enums.user import UserRole
@@ -47,12 +48,12 @@ async def check_deployed_by_official(
     # 检查是否是部署在官方的服务
     if host in DEPLOY_HOSTS:
         return True
-    if OFFICIAL == 'True':
+    if is_env_enabled(OFFICIAL):
         return True
     return False
 
 def check_deployed_by_official_in_fuc():
-    if OFFICIAL == 'True':
+    if is_env_enabled(OFFICIAL):
         return True
     return False
 
@@ -60,7 +61,7 @@ async def reject_if_official(
     host = Depends(get_request_host)
 ):
     # 如果不是部署着的服务 则可访问
-    if host not in DEPLOY_HOSTS and OFFICIAL == 'False':
+    if host not in DEPLOY_HOSTS and is_env_disabled(OFFICIAL):
         return True
     raise schemas.error.CustomException(message='This api is only available for local use, and is disabled in the official deployment version', code=403)
 

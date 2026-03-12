@@ -4,6 +4,7 @@ load_dotenv(override=True)
 import crud
 import httpx
 from jose import jwt
+from common.env import is_env_enabled
 from data.sql.base import session_scope
 from config.oauth2 import OAUTH_SECRET_KEY
 from config.base import OFFICIAL, UNION_PAY_URL_PREFIX
@@ -23,7 +24,7 @@ LANGFUSE_BASE_BACKOFF_SECONDS = 1.0
 LANGFUSE_MAX_BACKOFF_SECONDS = 6.0
 
 def check_deployed_by_official_in_fuc():
-    if OFFICIAL == 'True':
+    if is_env_enabled(OFFICIAL):
         return True
     return False
 

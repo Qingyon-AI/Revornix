@@ -77,18 +77,6 @@ from alembic.util.exc import CommandError
 from data.sql.base import engine  # 你得有这个 engine
 
 
-# =========================================================
-# 环境保护（防止误操作生产）
-# =========================================================
-ENV = os.getenv("ENV", "development")
-ALLOW_DB_RESET = os.getenv("ALLOW_DB_RESET", "0") == "1"
-
-if ENV != "development" and not ALLOW_DB_RESET:
-    raise RuntimeError(
-        "❌ Refusing to initialize database in non-development environment.\n"
-        "Set ALLOW_DB_RESET=1 if you really want to do this."
-    )
-
 if not ROOT_USER_NAME or not ROOT_USER_PASSWORD:
     raise RuntimeError("❌ ROOT_USER_NAME or ROOT_USER_PASSWORD is not set.")
 

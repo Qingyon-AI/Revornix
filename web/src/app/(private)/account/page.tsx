@@ -18,6 +18,7 @@ import WeChatBind from '@/components/user/wechat-bind';
 import UserPlan from '@/components/user/user-plan';
 import { headers } from 'next/headers';
 import EmailBindCloud from '@/components/user/email-bind-cloud';
+import { isEnvEnabled } from '@/lib/env';
 import { isAllowedDeployHost } from '@/lib/utils';
 
 const AccountPage = async () => {
@@ -111,7 +112,7 @@ const AccountPage = async () => {
 							<PassWordUpdate />
 						</div>
 					</div>
-					{process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH === 'true' && (
+					{isEnvEnabled(process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH) && (
 						<>
 							<Separator />
 							<div className='flex justify-between items-center'>

@@ -112,7 +112,7 @@ cp ./celery-worker/.env.example ./celery-worker/.env
 詳細は [環境変数ドキュメント](https://revornix.com/docs/environment) を参照してください。
 
 > [!WARNING]
-> 手動デプロイ時は `SECRET_KEY` を全サービスで統一しないと、サービス間認証が失敗します。
+> 手動デプロイ時は `OAUTH_SECRET_KEY` を全サービスで統一しないと、サービス間認証が失敗します。
 
 ### 4) 必要データを初期化
 
@@ -146,7 +146,7 @@ cd celery-worker
 conda create -n celery-worker python=3.11 -y
 pip install -r ./requirements.txt
 playwright install
-celery -A common.celery.app worker --pool=threads --concurrency=10 --loglevel=info -E
+celery -A common.celery.app worker --pool=threads --concurrency=20 --loglevel=info -E
 ```
 
 ### 8) フロントエンドを起動

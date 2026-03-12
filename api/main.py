@@ -14,6 +14,7 @@ from fastapi.responses import JSONResponse, Response
 
 import schemas
 from common.apscheduler.app import scheduler
+from common.env import is_env_enabled
 from common.logger import exception_logger, format_log_message, info_logger
 from common.redis import redis_pool
 from common.websocket import notificationManager
@@ -47,7 +48,7 @@ graph_mcp_app = graph_mcp_router.http_app()
 async def lifespan(app: FastAPI):
     redis_conn = None
     try:
-        if API_SENTRY_ENABLE == "True":
+        if is_env_enabled(API_SENTRY_ENABLE):
             import sentry_sdk
             sentry_sdk.init(
                 dsn=API_SENTRY_DSN,

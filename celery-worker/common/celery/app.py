@@ -3,12 +3,15 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 import asyncio
+import os
 
 from celery import Celery
-from celery.signals import worker_ready
+from celery.signals import worker_process_init, worker_ready
 
-from common.logger import exception_logger
+from common.env import is_env_enabled
+from common.logger import exception_logger, info_logger
 from config.redis import REDIS_PORT, REDIS_URL
+from config.sentry import WORKER_SENTRY_DSN, WORKER_SENTRY_ENABLE
 from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_startup
 from engine.video_plugins.youtube_auth import initialize_youtube_auth_on_startup
 from workflow.document_embedding_workflow import run_document_embedding_workflow
@@ -30,8 +33,50 @@ celery_app = Celery(
 )
 
 
+_sentry_initialized_pid: int | None = None
+
+
+def _initialize_worker_sentry() -> None:
+    global _sentry_initialized_pid
+
+    current_pid = os.getpid()
+    if _sentry_initialized_pid == current_pid:
+        return
+
+    if not is_env_enabled(WORKER_SENTRY_ENABLE):
+        return
+
+    if not WORKER_SENTRY_DSN:
+        info_logger.warning(
+            "WORKER_SENTRY_ENABLE is enabled but WORKER_SENTRY_DSN is empty; worker sentry init skipped."
+        )
+        return
+
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.celery import CeleryIntegration
+
+        sentry_sdk.init(
+            dsn=WORKER_SENTRY_DSN,
+            send_default_pii=True,
+            integrations=[CeleryIntegration()],
+        )
+        _sentry_initialized_pid = current_pid
+        info_logger.info(f"Worker sentry initialized for pid={current_pid}")
+    except Exception as e:
+        exception_logger.error(f"Failed to initialize worker sentry: {e}")
+
+
 def _run(coro):
     return asyncio.run(coro)
+
+
+_initialize_worker_sentry()
+
+
+@worker_process_init.connect
+def initialize_sentry_when_worker_process_init(**kwargs):
+    _initialize_worker_sentry()
 
 
 @worker_ready.connect
