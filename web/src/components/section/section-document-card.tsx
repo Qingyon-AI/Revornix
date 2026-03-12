@@ -16,15 +16,15 @@ const SectionDocumentCard = ({
 	return (
 		<div
 			onClick={() => router.push(`/document/detail/${document.id}`)}
-			className='group relative rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md'>
-			<div className='mb-3 flex flex-row gap-3'>
-				<div className='flex-1'>
-					<div className='line-clamp-1 text-sm font-semibold leading-6'>
+			className='group relative space-y-3 overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md'>
+			<div className='flex min-w-0 flex-row gap-3'>
+				<div className='min-w-0 flex-1'>
+					<div className='line-clamp-2 break-words text-sm font-semibold leading-6'>
 						{document.title
 							? document.title
 							: t('section_document_card_no_title')}
 					</div>
-					<div className='line-clamp-2 break-all text-xs leading-5 text-muted-foreground'>
+					<div className='line-clamp-2 break-words text-xs leading-5 text-muted-foreground'>
 						{document.description
 							? document.description
 							: t('section_document_card_no_description')}
@@ -40,12 +40,12 @@ const SectionDocumentCard = ({
 			</div>
 
 			{document.labels && document.labels.length > 0 && (
-				<div className='mb-3 flex flex-wrap gap-2'>
+				<div className='flex flex-wrap gap-2'>
 					{document.labels?.map((label, index) => {
 						return (
 							<div
 								key={index}
-								className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
+								className='max-w-full rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
 								{'# ' + label.name}
 							</div>
 						);
@@ -53,8 +53,8 @@ const SectionDocumentCard = ({
 				</div>
 			)}
 
-			<div className='flex items-end justify-between gap-3'>
-				<div className='flex flex-1 flex-wrap items-center gap-2 overflow-auto'>
+			<div className='flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between'>
+				<div className='flex min-w-0 flex-wrap items-center gap-2'>
 					<div className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
 						{document.category === DocumentCategory.WEBSITE
 							? t('document_category_link')
@@ -78,7 +78,7 @@ const SectionDocumentCard = ({
 							: t('section_document_card_section_supplement_unknown')}
 					</div>
 				</div>
-				<div className='shrink-0 text-[11px] text-muted-foreground'>
+				<div className='text-[11px] text-muted-foreground sm:shrink-0 sm:self-end'>
 					{document.create_time &&
 						formatInUserTimeZone(document.create_time, 'yyyy-MM-dd HH:mm')}
 				</div>

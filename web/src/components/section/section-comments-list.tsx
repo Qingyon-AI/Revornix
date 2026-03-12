@@ -2,7 +2,7 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { searchSectionComment } from '@/service/section';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Skeleton } from '../ui/skeleton';
 import { useTranslations } from 'next-intl';
@@ -17,8 +17,7 @@ import SectionCommentCard from './section-comment-card';
 
 const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 	const t = useTranslations();
-
-	const [keyword, setKeyword] = useState('');
+	const keyword = '';
 
 	const { ref: bottomRef, inView } = useInView();
 
@@ -50,9 +49,9 @@ const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 	}, [inView, isFetching, hasNextPage, fetchNextPage]);
 
 	return (
-		<>
-			{!isFetching && comments && comments.length === 0 && (
-				<Empty className='h-full rounded-2xl border border-dashed border-border/70 bg-muted/20'>
+		<div className='h-full overflow-y-auto'>
+			{!isFetching && comments.length === 0 ? (
+				<Empty className='flex min-h-full rounded-3xl border border-dashed border-border/70 bg-muted/20'>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
 							<MessageSquareText />
@@ -60,31 +59,38 @@ const SectionCommentsList = ({ section_id }: { section_id: number }) => {
 						<EmptyDescription>{t('section_comments_empty')}</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
-			)}
-			<div className='flex flex-col gap-3'>
-				{comments &&
-					comments.map((comment) => {
+			) : (
+				<div className='flex flex-col gap-3'>
+					{comments.map((comment, index) => {
 						return (
-							<SectionCommentCard key={comment.id} comment={comment} />
+							<div
+								key={comment.id}
+								ref={index === comments.length - 1 ? bottomRef : undefined}>
+								<SectionCommentCard comment={comment} />
+							</div>
 						);
 					})}
-				{isFetching && !data && (
-					<div className='flex flex-col gap-3'>
-						{[...Array(12)].map((number, index) => {
-							return <Skeleton className='h-28 w-full rounded-2xl' key={index} />;
-						})}
-					</div>
-				)}
-				{isFetchingNextPage && data && (
-					<div className='flex flex-col gap-3'>
-						{[...Array(12)].map((number, index) => {
-							return <Skeleton className='h-28 w-full rounded-2xl' key={index} />;
-						})}
-					</div>
-				)}
-				<div ref={bottomRef}></div>
-			</div>
-		</>
+					{isFetching && !data && (
+						<div className='flex flex-col gap-3'>
+							{[...Array(12)].map((_, index) => {
+								return (
+									<Skeleton className='h-28 w-full rounded-3xl' key={index} />
+								);
+							})}
+						</div>
+					)}
+					{isFetchingNextPage && data && (
+						<div className='flex flex-col gap-3'>
+							{[...Array(12)].map((_, index) => {
+								return (
+									<Skeleton className='h-28 w-full rounded-3xl' key={index} />
+								);
+							})}
+						</div>
+					)}
+				</div>
+			)}
+		</div>
 	);
 };
 

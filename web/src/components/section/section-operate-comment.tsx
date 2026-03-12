@@ -19,19 +19,19 @@ const SectionOperateComment = ({ section_id }: { section_id: number }) => {
 				<Button
 					title={t('section_comments')}
 					variant={'ghost'}
-					className='flex-1 text-xs w-full'>
+					className='w-full flex-1 text-xs'>
 					<MessageCircleMore />
 					{t('section_comments')}
 				</Button>
 			</SheetTrigger>
-			<SheetContent className='h-full gap-3'>
-				<SheetHeader className='px-5 pb-0 pr-12 text-left'>
-					<SheetTitle>{t('section_comments')}</SheetTitle>
-					<SheetDescription>
+			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-xl'>
+				<SheetHeader className='border-b border-border/60 px-5 pt-6 pb-3 pr-12 text-left'>
+					<SheetTitle className='text-xl'>{t('section_comments')}</SheetTitle>
+					<SheetDescription className='max-w-md text-sm leading-6'>
 						{t('section_comments_description')}
 					</SheetDescription>
 				</SheetHeader>
-				<div className='h-full px-5 pb-5'>
+				<div className='min-h-0 flex-1 px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
 					<SectionComments section_id={section_id} />
 				</div>
 			</SheetContent>

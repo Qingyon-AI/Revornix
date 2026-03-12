@@ -119,7 +119,7 @@ const FloatingAudioPlayer = () => {
 					<img
 						src={track.cover}
 						alt={track.title}
-						className='size-14 rounded-xl object-cover ring-1 ring-black/10 dark:ring-white/10'
+						className='size-14 rounded-xl object-cover ring-1 ring-black/10 dark:ring-white/10 p-2'
 					/>
 					<div className='min-w-0 flex-1'>
 						<div className='flex items-start justify-between gap-2 rounded-xl'>

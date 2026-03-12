@@ -69,10 +69,11 @@ const DocumentNotes = ({ id }: { id: number }) => {
 
 			{notes && notes.length > 0 && (
 				<div className='flex-1 flex flex-col gap-2 overflow-auto pb-5'>
-					{notes.map((note) => {
+					{notes.map((note, index) => {
 						return (
 							<div
 								key={note.id}
+								ref={index === notes.length - 1 ? bottomRef : undefined}
 								className='text-sm rounded p-5 bg-muted dark:bg-muted'>
 								<p>{note.content}</p>
 								<div className='flex flex-row items-center justify-between mt-2'>
@@ -124,7 +125,6 @@ const DocumentNotes = ({ id }: { id: number }) => {
 					{t('document_notes_empty')}
 				</div>
 			)}
-			<div ref={bottomRef}></div>
 		</div>
 	);
 };

@@ -107,10 +107,17 @@ const NotificationTargetManagePage = () => {
 				{notification_targets &&
 					notification_targets.map((notification_target, index) => {
 						return (
-							<NotificationTargetCard
+							<div
 								key={index}
-								notification_target={notification_target}
-							/>
+								ref={
+									index === notification_targets.length - 1
+										? bottomRef
+										: undefined
+								}>
+								<NotificationTargetCard
+									notification_target={notification_target}
+								/>
+							</div>
 						);
 					})}
 				{isFetching && !data && (
@@ -127,7 +134,6 @@ const NotificationTargetManagePage = () => {
 						})}
 					</>
 				)}
-				<div ref={bottomRef}></div>
 			</div>
 		</>
 	);

@@ -233,7 +233,9 @@ const UserContainer = ({ id }: { id: number }) => {
 					{sections &&
 						sections.map((section, index) => {
 							return (
-								<div key={index}>
+								<div
+									key={index}
+									ref={index === sections.length - 1 ? bottomRef : undefined}>
 									<SectionCard section={section} />
 								</div>
 							);
@@ -252,7 +254,6 @@ const UserContainer = ({ id }: { id: number }) => {
 							})}
 						</>
 					)}
-					<div ref={bottomRef}></div>
 				</div>
 			</div>
 		</div>
