@@ -40,6 +40,7 @@ import { GOOGLE_CLIENT_ID } from '@/config/google';
 import { GITHUB_CLIENT_ID } from '@/config/github';
 import WechatIcon from '../icons/wechat-icon';
 import { getSafeRedirectPage } from '@/lib/safe-redirect';
+import { isEnvEnabled } from '@/lib/env';
 
 const phoneFormSchema = z.object({
 	phone: z.string().min(2).max(50),
@@ -216,7 +217,7 @@ const PhoneLoginForm = () => {
 						{submitLoading && <Loader2 className='mr-1 size-4 animate-spin' />}
 						{t('seo_login_submit')}
 					</Button>
-					{process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH === 'true' && (
+					{isEnvEnabled(process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH) && (
 						<>
 							<div className='my-2 w-full relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border'>
 								<span className='relative z-10 bg-background px-2 text-muted-foreground'>

@@ -15,9 +15,6 @@ COPY package*json tsconfig.json pnpm-lock.yaml ./
 COPY src ./src
 COPY public ./public
 
-# 复制环境变量
-RUN [ ! -e ".env" ] && cp .env.example .env || true
-
 # 安装依赖
 RUN pnpm install
 RUN pnpm build

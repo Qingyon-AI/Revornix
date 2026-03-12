@@ -112,7 +112,7 @@ cp ./celery-worker/.env.example ./celery-worker/.env
 Configure env values based on [environment docs](https://revornix.com/docs/environment).
 
 > [!WARNING]
-> For manual deployment, keep `SECRET_KEY` consistent across services, or cross-service authentication will fail.
+> For manual deployment, keep `OAUTH_SECRET_KEY` consistent across services, or cross-service authentication will fail.
 
 ### 4) Initialize required data
 
@@ -146,7 +146,7 @@ cd celery-worker
 conda create -n celery-worker python=3.11 -y
 pip install -r ./requirements.txt
 playwright install
-celery -A common.celery.app worker --pool=threads --concurrency=10 --loglevel=info -E
+celery -A common.celery.app worker --pool=threads --concurrency=20 --loglevel=info -E
 ```
 
 ### 8) Run frontend

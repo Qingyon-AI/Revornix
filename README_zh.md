@@ -111,7 +111,7 @@ cp ./celery-worker/.env.example ./celery-worker/.env
 按 [环境变量文档](https://revornix.com/docs/environment) 完成配置。
 
 > [!WARNING]
-> 手动部署时，多个服务的 `SECRET_KEY` 必须保持一致，否则用户认证无法互通。
+> 手动部署时，多个服务的 `OAUTH_SECRET_KEY` 必须保持一致，否则用户认证无法互通。
 
 ### 4) 初始化必要数据
 
@@ -145,7 +145,7 @@ cd celery-worker
 conda create -n celery-worker python=3.11 -y
 pip install -r ./requirements.txt
 playwright install
-celery -A common.celery.app worker --pool=threads --concurrency=10 --loglevel=info -E
+celery -A common.celery.app worker --pool=threads --concurrency=20 --loglevel=info -E
 ```
 
 ### 8) 启动前端服务
