@@ -128,14 +128,14 @@ const InitMineEngine = () => {
 			{usableEngines?.data && usableEngines?.data?.length === 0 && (
 				<Form {...form}>
 					<form
-						className='flex flex-col gap-5 flex-1 overflow-auto'
+						className='flex flex-col gap-5'
 						id='install_form'
 						onSubmit={handleSubmit}>
-						<Field className='grid grid-cols-12 gap-2'>
-							<FieldLabel className='col-span-3'>
+						<Field className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+							<FieldLabel className='sm:col-span-4 sm:pt-2'>
 								{t('setting_engine_page_engine_form_engine_category')}
 							</FieldLabel>
-							<div className='col-span-9'>
+							<div className='sm:col-span-8'>
 								<Select
 									disabled
 									onValueChange={(e) => {
@@ -171,11 +171,11 @@ const InitMineEngine = () => {
 							name='engine_id'
 							render={({ field }) => (
 								<FormItem>
-									<div className='grid grid-cols-12 gap-2'>
-										<FormLabel className='col-span-3'>
+									<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+										<FormLabel className='sm:col-span-4 sm:pt-2'>
 											{t('setting_engine_page_engine_form_engine_id')}
 										</FormLabel>
-										<div className='col-span-9'>
+										<div className='sm:col-span-8'>
 											<Select
 												onValueChange={(value) => field.onChange(Number(value))}
 												value={field.value ? String(field.value) : undefined}>
@@ -212,11 +212,11 @@ const InitMineEngine = () => {
 							name='name'
 							render={({ field }) => (
 								<FormItem>
-									<div className='grid grid-cols-12 gap-2'>
-										<FormLabel className='col-span-3'>
+									<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+										<FormLabel className='sm:col-span-4 sm:pt-2'>
 											{t('setting_engine_page_engine_form_title')}
 										</FormLabel>
-										<div className='col-span-9'>
+										<div className='sm:col-span-8'>
 											<Input
 												{...field}
 												placeholder={t(
@@ -235,11 +235,11 @@ const InitMineEngine = () => {
 							name='description'
 							render={({ field }) => (
 								<FormItem>
-									<div className='grid grid-cols-12 gap-2'>
-										<FormLabel className='col-span-3'>
+									<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+										<FormLabel className='sm:col-span-4 sm:pt-2'>
 											{t('setting_engine_page_engine_form_description')}
 										</FormLabel>
-										<div className='col-span-9'>
+										<div className='sm:col-span-8'>
 											<Textarea
 												{...field}
 												placeholder={t(
@@ -263,11 +263,11 @@ const InitMineEngine = () => {
 									render={({ field }) => {
 										return (
 											<FormItem>
-												<div className='grid grid-cols-12 gap-2'>
-													<FormLabel className='col-span-3'>
+												<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+													<FormLabel className='sm:col-span-4 sm:pt-2'>
 														{t('setting_engine_page_engine_form_config_json')}
 													</FormLabel>
-													<div className='col-span-9'>
+													<div className='sm:col-span-8'>
 														<Textarea
 															placeholder={t(
 																'setting_engine_page_engine_form_config_json_placeholder',
@@ -283,11 +283,11 @@ const InitMineEngine = () => {
 										);
 									}}
 								/>
-								<div className='grid grid-cols-12 gap-2'>
-									<FormLabel className='col-span-3'>
+								<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+									<FormLabel className='sm:col-span-4 sm:pt-2'>
 										{t('setting_engine_page_mine_engine_config_demo')}
 									</FormLabel>
-									<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
+									<div className='rounded-2xl bg-muted p-4 font-mono text-sm break-all sm:col-span-8'>
 										{
 											provideEngines?.data.find((item) => {
 												return item.id === form.watch('engine_id');
@@ -297,7 +297,10 @@ const InitMineEngine = () => {
 								</div>
 							</>
 						)}
-						<Button type='submit' disabled={mutateCreateEngine.isPending}>
+						<Button
+							type='submit'
+							className='w-full rounded-2xl'
+							disabled={mutateCreateEngine.isPending}>
 							{t('save')}
 							{mutateCreateEngine.isPending && (
 								<Loader2 className='animate-spin size-4' />
@@ -307,9 +310,9 @@ const InitMineEngine = () => {
 				</Form>
 			)}
 			{usableEngines?.data && usableEngines?.data?.length > 0 && (
-				<div className='bg-muted rounded p-5 py-12 flex flex-col justify-center items-center gap-5'>
-					<CircleCheck className='size-28 text-muted-foreground' />
-					<p className='text-muted-foreground text-sm'>{t('done')}</p>
+				<div className='flex flex-col items-center justify-center gap-4 rounded-[24px] border border-emerald-500/15 bg-emerald-500/5 px-5 py-10 text-center'>
+					<CircleCheck className='size-12 text-emerald-600' />
+					<p className='text-sm text-muted-foreground'>{t('done')}</p>
 				</div>
 			)}
 		</>

@@ -10,6 +10,7 @@ import crud
 import models
 import schemas
 from common.encrypt import decrypt_file_system_config
+from common.upload_limits import validate_file_upload_size
 from enums.file import RemoteFileService
 from common.dependencies import get_current_user, get_db
 from proxy.file_system_proxy import FileSystemProxy
@@ -247,11 +248,13 @@ async def upload_file_system(
     db: Session = Depends(get_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
+    file_path = _normalize_and_validate_path(file_path)
     default_user_file_system = current_user.default_user_file_system
     if default_user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User file system not found")
 
     content = await file.read()
+    validate_file_upload_size(file_path=file_path, size=len(content))
     user_file_system = crud.file_system.get_user_file_system_by_id(
         db=db,
         user_file_system_id=default_user_file_system

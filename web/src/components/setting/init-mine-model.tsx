@@ -172,34 +172,40 @@ const InitMineModel = () => {
 		console.error(errors);
 		toast.error(t('form_validate_failed'));
 	};
+	const isSubmitting =
+		mutateAddAiModelProvider.isPending || mutateAddModel.isPending;
 
 	return (
 		<>
 			{models?.data && models?.data?.length === 0 && (
 				<Form {...form}>
-					<form className='flex flex-col gap-2' onSubmit={handleSubmit}>
+					<form className='flex flex-col gap-4' onSubmit={handleSubmit}>
 						<Tabs
 							value={providerChooseYepOrNo}
 							onValueChange={setProviderChooseYepOrNo}
 							className='w-full'>
-							<TabsList className='w-full'>
-								<TabsTrigger value='yep'>
+							<TabsList className='grid h-auto w-full grid-cols-2 rounded-2xl bg-muted/70 p-1'>
+								<TabsTrigger
+									value='yep'
+									className='whitespace-normal px-3 py-2 text-center leading-5'>
 									{t('init_mine_model_model_provider_choose_yep')}
 								</TabsTrigger>
-								<TabsTrigger value='no'>
+								<TabsTrigger
+									value='no'
+									className='whitespace-normal px-3 py-2 text-center leading-5'>
 									{t('init_mine_model_model_provider_choose_no')}
 								</TabsTrigger>
 							</TabsList>
 							{/* 已有供应商 */}
-							<TabsContent value='yep'>
+							<TabsContent value='yep' className='space-y-4 pt-2'>
 								<FormField
 									name='model_provider_id'
 									control={form.control}
 									render={({ field }) => {
 										return (
 											<FormItem>
-												<div className='grid grid-cols-12 gap-2'>
-													<FormLabel className='col-span-3'>
+												<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+													<FormLabel className='sm:col-span-4 sm:pt-2'>
 														{t('init_mine_model_form_model_name')}
 													</FormLabel>
 													<Select
@@ -209,7 +215,7 @@ const InitMineModel = () => {
 														value={
 															field.value ? String(field.value) : undefined
 														}>
-														<div className='col-span-9'>
+														<div className='sm:col-span-8'>
 															<SelectTrigger className='w-full'>
 																<SelectValue
 																	placeholder={t(
@@ -240,19 +246,19 @@ const InitMineModel = () => {
 								/>
 							</TabsContent>
 							{/* 新建供应商 */}
-							<TabsContent value='no' className='space-y-2'>
+							<TabsContent value='no' className='space-y-4 pt-2'>
 								<FormField
 									control={form.control}
 									name='model_provider_name'
 									render={({ field }) => (
 										<FormItem>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>
+											<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+												<FormLabel className='sm:col-span-4 sm:pt-2'>
 													{t('setting_model_provider_name')}
 												</FormLabel>
 												<Input
 													type='text'
-													className='col-span-9'
+													className='sm:col-span-8'
 													placeholder={t(
 														'setting_model_provider_name_placeholder',
 													)}
@@ -268,13 +274,13 @@ const InitMineModel = () => {
 									name='model_provider_description'
 									render={({ field }) => (
 										<FormItem>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>
+											<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+												<FormLabel className='sm:col-span-4 sm:pt-2'>
 													{t('setting_model_provider_description')}
 												</FormLabel>
 												<Input
 													type='text'
-													className='col-span-9'
+													className='sm:col-span-8'
 													placeholder={t(
 														'setting_model_provider_description_placeholder',
 													)}
@@ -290,13 +296,13 @@ const InitMineModel = () => {
 										name='model_provider_api_key'
 										render={({ field }) => (
 											<FormItem>
-												<div className='grid grid-cols-12 gap-2'>
-													<FormLabel className='col-span-3'>
+												<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+													<FormLabel className='sm:col-span-4 sm:pt-2'>
 														{t('setting_model_provider_api_key')}
 													</FormLabel>
 													<Input
 														type='password'
-														className='col-span-9'
+														className='sm:col-span-8'
 														placeholder={t('setting_model_provider_api_key_placeholder')}
 														{...field}
 													/>
@@ -310,12 +316,12 @@ const InitMineModel = () => {
 										name='model_provider_base_url'
 										render={({ field }) => (
 											<FormItem>
-												<div className='grid grid-cols-12 gap-2'>
-													<FormLabel className='col-span-3'>
+												<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+													<FormLabel className='sm:col-span-4 sm:pt-2'>
 														{t('setting_model_provider_base_url')}
 													</FormLabel>
 													<Input
-														className='col-span-9'
+														className='sm:col-span-8'
 														placeholder={t('setting_model_provider_base_url_placeholder')}
 														{...field}
 													/>
@@ -329,12 +335,12 @@ const InitMineModel = () => {
 									name='model_name'
 									render={({ field }) => (
 										<FormItem>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>
+											<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
+												<FormLabel className='sm:col-span-4 sm:pt-2'>
 													{t('setting_model_name')}
 												</FormLabel>
 												<Input
-													className='col-span-9'
+													className='sm:col-span-8'
 													placeholder={t('setting_model_name_placeholder')}
 													{...field}
 												/>
@@ -345,9 +351,12 @@ const InitMineModel = () => {
 								/>
 							</TabsContent>
 						</Tabs>
-						<Button type='submit' disabled={mutateAddAiModelProvider.isPending}>
+						<Button
+							type='submit'
+							className='w-full rounded-2xl'
+							disabled={isSubmitting}>
 							{t('save')}
-							{mutateAddAiModelProvider.isPending && (
+							{isSubmitting && (
 								<Loader2 className='animate-spin size-4' />
 							)}
 						</Button>
@@ -355,9 +364,9 @@ const InitMineModel = () => {
 				</Form>
 			)}
 			{models?.data && models?.data?.length > 0 && (
-				<div className='bg-muted rounded p-5 py-12 flex flex-col justify-center items-center gap-5'>
-					<CircleCheck className='size-28 text-muted-foreground' />
-					<p className='text-muted-foreground text-sm'>{t('done')}</p>
+				<div className='flex flex-col items-center justify-center gap-4 rounded-[24px] border border-emerald-500/15 bg-emerald-500/5 px-5 py-10 text-center'>
+					<CircleCheck className='size-12 text-emerald-600' />
+					<p className='text-sm text-muted-foreground'>{t('done')}</p>
 				</div>
 			)}
 		</>

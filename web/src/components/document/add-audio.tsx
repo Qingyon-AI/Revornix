@@ -40,6 +40,10 @@ import { FileService } from '@/lib/file';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { Field } from '../ui/field';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
+import {
+	AUDIO_DOCUMENT_MAX_DURATION_MS,
+	formatMediaDuration,
+} from '@/lib/document-media';
 
 const AddAudio = () => {
 	const queryClient = getQueryClient();
@@ -126,14 +130,21 @@ const AddAudio = () => {
 				event.stopPropagation();
 			}
 		}
-		// 上传音频文件
-		await handleUploadAudioFile();
-		// 提交表单
-		return form.handleSubmit(onFormValidateSuccess, onFormValidateError)(event);
+		try {
+			// 上传音频文件
+			await handleUploadAudioFile();
+			// 提交表单
+			return await form.handleSubmit(
+				onFormValidateSuccess,
+				onFormValidateError,
+			)(event);
+		} catch (error) {
+			console.error(error);
+			setSubmitting(false);
+		}
 	};
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		console.log(values);
 		mutateCreateDocument.mutate(values);
 	};
 
@@ -182,11 +193,19 @@ const AddAudio = () => {
 		return { file, fileName };
 	};
 
-		const handleUploadAudioFile = async () => {
-			if (!audioResult) {
-				toast.error(t('error_audio_result_not_found'));
-				throw new Error(t('error_audio_result_not_found'));
-			}
+	const handleUploadAudioFile = async () => {
+		if (!audioResult) {
+			toast.error(t('error_audio_result_not_found'));
+			throw new Error(t('error_audio_result_not_found'));
+		}
+
+		if (audioResult.durationMs > AUDIO_DOCUMENT_MAX_DURATION_MS) {
+			const message = t('document_audio_record_limit_reached', {
+				duration: formatMediaDuration(AUDIO_DOCUMENT_MAX_DURATION_MS),
+			});
+			toast.error(message);
+			throw new Error(message);
+		}
 
 		const cachedFilePath = lastUploadedRef.current?.filePath;
 		const cachedSourceUrl = lastUploadedRef.current?.sourceUrl;
@@ -202,10 +221,10 @@ const AddAudio = () => {
 			crypto.randomUUID(),
 		);
 
-			if (!mainUserInfo?.default_user_file_system) {
-				toast.error(t('error_default_file_system_not_found'));
-				throw new Error(t('error_default_file_system_not_found'));
-			}
+		if (!mainUserInfo?.default_user_file_system) {
+			toast.error(t('error_default_file_system_not_found'));
+			throw new Error(t('error_default_file_system_not_found'));
+		}
 
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 
@@ -245,6 +264,7 @@ const AddAudio = () => {
 						)}
 						<Field>
 							<AudioRecord
+								maxDurationMs={AUDIO_DOCUMENT_MAX_DURATION_MS}
 								onRecordReady={(result: AudioRecordResult) => {
 									if (lastUploadedRef.current?.sourceUrl !== result.url) {
 										lastUploadedRef.current = null;
@@ -256,8 +276,8 @@ const AddAudio = () => {
 									lastUploadedRef.current = null;
 									form.setValue('file_name', '');
 									setAudioResult(undefined);
-								}}
-							/>
+									}}
+								/>
 						</Field>
 						<div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
 							<FormField
