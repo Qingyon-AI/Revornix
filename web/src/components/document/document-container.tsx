@@ -119,7 +119,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		<div className='relative w-full px-5 pb-5 md:grid md:h-full md:grid-cols-12 md:items-stretch md:gap-4'>
 			{/* 此处的min-h-0是因为父级的grid布局会导致子元素的h-full无法准确继承到父级的实际高度，导致其高度被内容撑开 */}
 			<div className='relative min-h-0 md:col-span-8 md:flex md:h-full md:flex-col'>
-				<div className='overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm md:flex-1 md:min-h-0'>
+				<div className='overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm md:flex-1 md:min-h-0 mb-4 md:mb-0'>
 					{isError && (
 						<div className='text-sm text-muted-foreground h-full w-full flex justify-center items-center'>
 							{error.message}

@@ -105,7 +105,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 				</div>
 			)}
 
-			<div className='grid grid-cols-2 gap-3'>
+			<div className='grid grid-cols-2 gap-3 mb-5'>
 				<InfoMetric
 					icon={BookOpenText}
 					label={t('section_documents')}

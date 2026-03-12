@@ -80,7 +80,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 
 	return (
 		<div className='relative w-full px-5 pb-5 md:grid md:h-full md:grid-cols-12 md:items-stretch md:gap-4'>
-			<div className='relative min-h-0 md:col-span-8 md:flex md:h-full md:flex-col'>
+			<div className='relative min-h-0 md:col-span-8 md:flex md:h-full md:flex-col mb-4 sm:mb-0'>
 				<div className='overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm md:flex-1 md:min-h-0'>
 					<div className='flex flex-col md:h-full'>
 						<SectionMarkdown

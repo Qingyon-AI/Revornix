@@ -326,7 +326,7 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 	});
 
 	return (
-		<div className='w-full h-full flex justify-center items-center relative'>
+		<div className='w-full h-full flex justify-center items-center relative min-h-40'>
 			{isDocumentDetailError && (
 				<div className='text-sm text-muted-foreground'>
 					Error: {documentDetailError.message}

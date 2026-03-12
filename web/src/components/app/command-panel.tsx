@@ -63,7 +63,7 @@ const CommandPanel = () => {
 	return (
 		<>
 			<Button
-				className='md:hidden'
+				className='rounded-xl md:hidden'
 				variant={'outline'}
 				size={'icon-sm'}
 				onClick={() => setShowCommandPanel(true)}>

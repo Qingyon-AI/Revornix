@@ -292,7 +292,7 @@ const SectionGraph = ({ section_id }: { section_id: number }) => {
 	}, [data, resolvedTheme]);
 
 	return (
-		<div className='w-full h-full flex justify-center items-center relative'>
+		<div className='w-full h-full flex justify-center items-center relative min-h-40'>
 			{isError && <div className='text-red-500'>Error: {error.message}</div>}
 			{isLoading && <Skeleton className='w-full h-full' />}
 			{isFetched && (
