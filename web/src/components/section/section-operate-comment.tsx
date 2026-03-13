@@ -10,8 +10,17 @@ import {
 import { Button } from '../ui/button';
 import SectionComments from './section-comments';
 import { MessageCircleMore } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const SectionOperateComment = ({ section_id }: { section_id: number }) => {
+const SectionOperateComment = ({
+	section_id,
+	className,
+	onTriggerClick,
+}: {
+	section_id: number;
+	className?: string;
+	onTriggerClick?: () => void;
+}) => {
 	const t = useTranslations();
 	return (
 		<Sheet>
@@ -19,7 +28,8 @@ const SectionOperateComment = ({ section_id }: { section_id: number }) => {
 				<Button
 					title={t('section_comments')}
 					variant={'ghost'}
-					className='w-full flex-1 text-xs'>
+					className={cn('w-full flex-1 text-xs', className)}
+					onClick={onTriggerClick}>
 					<MessageCircleMore />
 					{t('section_comments')}
 				</Button>

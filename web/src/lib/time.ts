@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 
 type DateLike = Date | string | number | null | undefined;
 
-const toDate = (value: DateLike): Date | null => {
+export const toDate = (value: DateLike): Date | null => {
 	if (value === null || value === undefined) return null;
 	const date = value instanceof Date ? value : new Date(value);
 	if (Number.isNaN(date.getTime())) return null;

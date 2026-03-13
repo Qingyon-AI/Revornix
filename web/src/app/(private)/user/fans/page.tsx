@@ -64,7 +64,7 @@ const UserFans = () => {
 					{t('fans_empty')}
 				</div>
 			)}
-			<div className='w-full grid grid-cols-4 gap-5'>
+			<div className='w-full grid md:grid-cols-3 xl:grid-cols-4 gap-5'>
 				{isFetching && !data && (
 					<>
 						{[...Array(20)].map((number, index) => {

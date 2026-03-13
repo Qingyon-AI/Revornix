@@ -1,28 +1,28 @@
 import AudioPlayer from '../ui/audio-player';
-import { Alert, AlertDescription } from '../ui/alert';
 import { toast } from 'sonner';
-import { Spinner } from '../ui/spinner';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateDocumentPodcast, getDocumentDetail } from '@/service/document';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
-import { Button } from '../ui/button';
-import { Loader2, OctagonAlert } from 'lucide-react';
 import { Card } from '../ui/card';
 import { DocumentPodcastStatus } from '@/enums/document';
 import { useUserContext } from '@/provider/user-provider';
+import AudioStatusCard from '../ui/audio-status-card';
+import { cn } from '@/lib/utils';
 
-const DocumentPodcast = ({ document_id }: { document_id: number }) => {
+const DocumentPodcast = ({
+	document_id,
+	className,
+}: {
+	document_id: number;
+	className?: string;
+}) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 
 	const { mainUserInfo } = useUserContext();
 
-	const {
-		data: document,
-		isError,
-		error,
-	} = useQuery({
+	const { data: document } = useQuery({
 		queryKey: ['getDocumentDetail', document_id],
 		queryFn: () => getDocumentDetail({ document_id: document_id }),
 	});
@@ -43,54 +43,52 @@ const DocumentPodcast = ({ document_id }: { document_id: number }) => {
 			console.error(error);
 		},
 	});
+
+	const canGeneratePodcast = Boolean(
+		mainUserInfo?.default_podcast_user_engine_id,
+	);
+
 	return (
 		<>
 			{!document?.podcast_task && (
-				<>
-					<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-						<AlertDescription>
-							<span className='inline-flex'>{t('document_podcast_unset')}</span>
-							<Button
-								variant={'link'}
-								size='sm'
-								className='text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
-								onClick={() => mutateGeneratePodcast.mutate()}
-								disabled={
-									mutateGeneratePodcast.isPending ||
-									!mainUserInfo?.default_podcast_user_engine_id
-								}>
-								{t('document_podcast_generate')}
-								{mutateGeneratePodcast.isPending && (
-									<Loader2 className='animate-spin' />
-								)}
-							</Button>
-						</AlertDescription>
-					</Alert>
-					{!mainUserInfo?.default_podcast_user_engine_id && (
-						<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-							<OctagonAlert className='h-4 w-4 text-destructive!' />
-							<AlertDescription>
-								{t('document_create_auto_podcast_engine_unset')}
-							</AlertDescription>
-						</Alert>
-					)}
-				</>
+				<AudioStatusCard
+					badge={t('document_podcast_status_todo')}
+					title={t('document_podcast_unset')}
+					description={t('document_podcast_placeholder_description')}
+					actionLabel={t('document_podcast_generate')}
+					onAction={() => mutateGeneratePodcast.mutate()}
+					actionDisabled={!canGeneratePodcast}
+					actionLoading={mutateGeneratePodcast.isPending}
+					tone={canGeneratePodcast ? 'warning' : 'danger'}
+					className={className}
+					hint={
+						!canGeneratePodcast
+							? t('document_create_auto_podcast_engine_unset')
+							: undefined
+					}
+				/>
 			)}
 
 			{document?.podcast_task && (
 				<>
 					{document?.podcast_task?.status ===
 						DocumentPodcastStatus.GENERATING && (
-						<Card className='relative p-4'>
-							<div className='flex flex-row justify-center items-center gap-1 text-muted-foreground text-xs'>
-								<span>{t('document_podcast_processing')}</span>
-								<Spinner />
-							</div>
-						</Card>
+							<AudioStatusCard
+								badge={t('document_podcast_status_doing')}
+								title={t('document_podcast_processing')}
+								description={t('document_podcast_processing_description')}
+								tone='default'
+								actionLoading
+								className={className}
+							/>
 					)}
 					{document?.podcast_task?.status === DocumentPodcastStatus.SUCCESS &&
 						document?.podcast_task?.podcast_file_name && (
-							<Card className='relative p-4'>
+							<Card
+								className={cn(
+									'relative gap-0 rounded-[30px] border border-border/60 bg-card/85 p-4 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.55)] backdrop-blur',
+									className,
+								)}>
 								<AudioPlayer
 									src={document?.podcast_task?.podcast_file_name}
 									cover={
@@ -103,27 +101,22 @@ const DocumentPodcast = ({ document_id }: { document_id: number }) => {
 							</Card>
 						)}
 					{document?.podcast_task?.status === DocumentPodcastStatus.FAILED && (
-						<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-							<AlertDescription>
-								<span className='inline-flex'>
-									{t('document_podcast_failed')}
-								</span>
-								<Button
-									variant={'link'}
-									size='sm'
-									className='text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
-									onClick={() => mutateGeneratePodcast.mutate()}
-									disabled={
-										mutateGeneratePodcast.isPending ||
-										!mainUserInfo?.default_podcast_user_engine_id
-									}>
-									{t('document_podcast_regenerate')}
-									{mutateGeneratePodcast.isPending && (
-										<Loader2 className='animate-spin' />
-									)}
-								</Button>
-							</AlertDescription>
-						</Alert>
+						<AudioStatusCard
+							badge={t('document_podcast_status_failed')}
+							title={t('document_podcast_failed')}
+							description={t('document_podcast_failed_description')}
+							actionLabel={t('document_podcast_regenerate')}
+							onAction={() => mutateGeneratePodcast.mutate()}
+							actionDisabled={!canGeneratePodcast}
+							actionLoading={mutateGeneratePodcast.isPending}
+							tone='danger'
+							className={className}
+							hint={
+								!canGeneratePodcast
+									? t('document_create_auto_podcast_engine_unset')
+									: undefined
+							}
+						/>
 					)}
 				</>
 			)}

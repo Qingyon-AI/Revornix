@@ -31,7 +31,6 @@ import {
 	Expand,
 	Sparkles,
 	Users,
-	Waves,
 	type LucideIcon,
 } from 'lucide-react';
 import SectionGraphSEO from '@/components/section/section-graph-seo';
@@ -40,8 +39,8 @@ import SectionCommentForm from '@/components/section/section-comment-form';
 import SectionDocumentsList from '@/components/section/section-documents-list';
 import { SectionPodcastStatus } from '@/enums/section';
 import AudioPlayer from '@/components/ui/audio-player';
+import AudioStatusCard from '@/components/ui/audio-status-card';
 import CustomMarkdown from '@/components/ui/custom-markdown';
-import { Spinner } from '@/components/ui/spinner';
 import { replacePath } from '@/lib/utils';
 
 type Params = Promise<{ uuid: string }>;
@@ -342,7 +341,7 @@ const SEOSectionDetail = async (props: {
 							</CardDescription>
 						</CardHeader>
 						<CardContent className='px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-4'>
-							<div className='flex flex-col gap-3 xl:max-h-[calc(100vh-14rem)] xl:overflow-auto xl:pr-1'>
+							<div className='flex flex-col gap-3 xl:max-h-[calc(100vh-14rem)] xl:overflow-auto xl:p-1 pt-0'>
 								{section ? (
 									<SectionDocumentsList section_id={section.id} />
 								) : null}
@@ -351,25 +350,23 @@ const SEOSectionDetail = async (props: {
 					</Card>
 
 					{!section?.podcast_task ? (
-						<Card className={surfaceCardClassName}>
-							<CardContent className='flex items-center gap-3 px-5 py-5 sm:px-6 sm:py-6'>
-								<Waves className='size-5 text-muted-foreground' />
-								<div className='space-y-1'>
-									<p className='text-sm font-medium'>
-										{t('section_podcast_unset')}
-									</p>
-								</div>
-							</CardContent>
-						</Card>
+						<AudioStatusCard
+							badge={t('document_podcast_status_todo')}
+							title={t('section_podcast_unset')}
+							description={t('section_podcast_placeholder_description')}
+							className={surfaceCardClassName}
+						/>
 					) : null}
 
 					{section?.podcast_task?.status === SectionPodcastStatus.GENERATING ? (
-						<Card className={surfaceCardClassName}>
-							<CardContent className='flex items-center justify-center gap-2 px-5 py-6 text-sm text-muted-foreground sm:px-6'>
-								<span>{t('section_podcast_processing')}</span>
-								<Spinner />
-							</CardContent>
-						</Card>
+						<AudioStatusCard
+							badge={t('document_podcast_status_doing')}
+							title={t('section_podcast_processing')}
+							description={t('section_podcast_processing_description')}
+							tone='default'
+							actionLoading
+							className={surfaceCardClassName}
+						/>
 					) : null}
 
 					{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
@@ -398,12 +395,13 @@ const SEOSectionDetail = async (props: {
 					) : null}
 
 					{section?.podcast_task?.status === SectionPodcastStatus.FAILED ? (
-						<Card className='rounded-[26px] border border-destructive/25 bg-destructive/5 py-0 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.55)]'>
-							<CardContent className='flex items-center gap-3 px-5 py-5 text-sm text-destructive sm:px-6 sm:py-6'>
-								<Waves className='size-4 shrink-0' />
-								<span>{t('section_podcast_failed')}</span>
-							</CardContent>
-						</Card>
+						<AudioStatusCard
+							badge={t('document_podcast_status_failed')}
+							title={t('section_podcast_failed')}
+							description={t('section_podcast_failed_description')}
+							tone='danger'
+							className={surfaceCardClassName}
+						/>
 					) : null}
 				</div>
 			</div>

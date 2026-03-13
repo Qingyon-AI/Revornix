@@ -9,10 +9,14 @@ import {
 	DialogTrigger,
 } from '@/components/ui/dialog';
 import {
+	AudioLines,
 	FolderCheck,
 	FolderOutput,
+	GitBranch,
+	Info,
 	LinkIcon,
 	Loader2,
+	Menu,
 	NotebookPen,
 	Star,
 	StarOff,
@@ -30,7 +34,7 @@ import {
 import { getQueryClient } from '@/lib/get-query-client';
 import {
 	DocumentDetailResponse,
-	DocumentInfo,
+	DocumentInfo as DocumentListItem,
 	InifiniteScrollPagnitionDocumentInfo,
 } from '@/generated';
 import { toast } from 'sonner';
@@ -45,15 +49,28 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from '../ui/sheet';
+import {
+	Drawer,
+	DrawerContent,
+	DrawerDescription,
+	DrawerHeader,
+	DrawerTitle,
+	DrawerTrigger,
+} from '../ui/drawer';
 import DocumentNotes from './document-notes';
 import { DocumentCategory } from '@/enums/document';
 import DocumentConfiguration from './document-configuration';
 import { useUserContext } from '@/provider/user-provider';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
 	filterInfiniteDataElements,
 	filterInfiniteQueryElements,
 } from '@/lib/infinite-query-cache';
+import DocumentInfo from './document-info';
+import DocumentGraph from './document-graph';
+import DocumentPodcast from './document-podcast';
+import DocumentAudio from './document-audio';
 
 const DocumentOperate = ({
 	id,
@@ -62,11 +79,15 @@ const DocumentOperate = ({
 	id: number;
 	className?: string;
 }) => {
+	type MobilePanel = 'info' | 'graph' | 'media' | null;
 	const t = useTranslations();
 	const router = useRouter();
 	const queryClient = getQueryClient();
+	const isCompactViewport = useIsMobile(1280);
 	const [showDeleteDocumentDialog, setShowDeleteDocumentDialog] =
 		useState(false);
+	const [showMobileMenu, setShowMobileMenu] = useState(false);
+	const [mobilePanel, setMobilePanel] = useState<MobilePanel>(null);
 
 	const { mainUserInfo } = useUserContext();
 	const userUnreadDocumentQueryKey = [
@@ -85,7 +106,7 @@ const DocumentOperate = ({
 
 	const mapDocumentDetailToListItem = (
 		documentDetail: DocumentDetailResponse,
-	): DocumentInfo => {
+	): DocumentListItem => {
 		return {
 			id: documentDetail.id,
 			creator_id: documentDetail.creator.id,
@@ -135,7 +156,7 @@ const DocumentOperate = ({
 
 	const matchDocumentInfiniteQueryFilter = (
 		queryKey: readonly unknown[],
-		documentItem: DocumentInfo,
+		documentItem: DocumentListItem,
 	) => {
 		const keyword =
 			typeof queryKey[2] === 'string' ? queryKey[2].trim().toLowerCase() : '';
@@ -163,7 +184,7 @@ const DocumentOperate = ({
 
 	const upsertDocumentInInfiniteCache = (
 		baseQueryKey: 'searchUserRecentReadDocument' | 'searchUserUnreadDocument',
-		documentItem: DocumentInfo,
+		documentItem: DocumentListItem,
 	) => {
 		const queryCaches = queryClient.getQueriesData<
 			InfiniteData<InifiniteScrollPagnitionDocumentInfo>
@@ -177,7 +198,7 @@ const DocumentOperate = ({
 			const normalizedQueryKey = queryKey as readonly unknown[];
 			const removedData = filterInfiniteDataElements<
 				InifiniteScrollPagnitionDocumentInfo,
-				DocumentInfo
+				DocumentListItem
 			>(oldData, (item) => item.id !== documentItem.id);
 			const dataWithoutTarget = removedData ?? oldData;
 
@@ -227,7 +248,7 @@ const DocumentOperate = ({
 		queryKeys.forEach((queryKey) => {
 			filterInfiniteQueryElements<
 				InifiniteScrollPagnitionDocumentInfo,
-				DocumentInfo
+				DocumentListItem
 			>(queryClient, queryKey, (item) => item.id !== id);
 		});
 	};
@@ -278,7 +299,7 @@ const DocumentOperate = ({
 			if (nextReadStatus) {
 				filterInfiniteQueryElements<
 					InifiniteScrollPagnitionDocumentInfo,
-					DocumentInfo
+					DocumentListItem
 				>(queryClient, userUnreadDocumentQueryKey, (item) => item.id !== id);
 				upsertDocumentInInfiniteCache(
 					'searchUserRecentReadDocument',
@@ -290,7 +311,7 @@ const DocumentOperate = ({
 
 			filterInfiniteQueryElements<
 				InifiniteScrollPagnitionDocumentInfo,
-				DocumentInfo
+				DocumentListItem
 			>(queryClient, userRecentReadDocumentQueryKey, (item) => item.id !== id);
 			upsertDocumentInInfiniteCache(
 				'searchUserUnreadDocument',
@@ -334,7 +355,7 @@ const DocumentOperate = ({
 			if (!currentDocument?.is_star) {
 				filterInfiniteQueryElements<
 					InifiniteScrollPagnitionDocumentInfo,
-					DocumentInfo
+					DocumentListItem
 				>(queryClient, userMyStarDocumentQueryKey, (item) => item.id !== id);
 			}
 			queryClient.invalidateQueries({
@@ -359,131 +380,405 @@ const DocumentOperate = ({
 		},
 	});
 
+	const actionButtonClassName =
+		'h-11 w-full justify-center rounded-[20px] border border-border/50 bg-background/40 px-3.5 text-center text-xs font-medium text-foreground shadow-none transition-colors hover:bg-background/80 sm:text-sm';
+	const mobileActionButtonClassName =
+		'h-14 w-full justify-start gap-3 rounded-[20px] border border-border/70 bg-background/70 px-4 text-left text-sm font-medium text-foreground shadow-[0_1px_0_rgba(255,255,255,0.04)] transition-colors hover:bg-background/90 dark:bg-background/45 dark:hover:bg-background/60 [&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:text-muted-foreground';
+	const desktopDockClassName =
+		'grid w-full grid-cols-2 gap-2 rounded-[28px] border border-border/60 bg-background/75 p-2.5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.75)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/65 sm:grid-cols-3 xl:grid-cols-6';
+	const closeMobileMenu = () => {
+		setShowMobileMenu(false);
+	};
+	const closeMobileMenuDeferred = () => {
+		window.setTimeout(() => {
+			setShowMobileMenu(false);
+		}, 0);
+	};
+	const openMobilePanel = (panel: Exclude<MobilePanel, null>) => {
+		setShowMobileMenu(false);
+		window.setTimeout(() => {
+			setMobilePanel(panel);
+		}, 180);
+	};
+	const closeMobilePanel = () => {
+		setMobilePanel(null);
+	};
+
+	const mobilePanelMeta =
+		mobilePanel === 'info'
+			? {
+					title: t('document_mobile_info_title'),
+					description: t('document_mobile_info_description'),
+			  }
+			: mobilePanel === 'graph'
+				? {
+						title: t('document_graph'),
+						description: t('document_graph_description'),
+				  }
+				: {
+						title: t('document_mobile_media_title'),
+						description: t('document_mobile_media_description'),
+				  };
+
+	const renderOriginAction = (
+		buttonClassName: string,
+		onClick?: () => void,
+	) => {
+		if (data?.category === DocumentCategory.WEBSITE && data.website_info) {
+			return (
+				<Button asChild variant='ghost' className={buttonClassName}>
+					<Link
+						title={t('website_document_go_to_origin')}
+						href={data.website_info?.url ? data.website_info.url : ''}
+						target='_blank'
+						onClick={onClick}>
+						<LinkIcon />
+						<span className='truncate'>
+							{t('website_document_go_to_origin')}
+						</span>
+					</Link>
+				</Button>
+			);
+		}
+
+		if (data?.category === DocumentCategory.FILE && data.file_info) {
+			return (
+				<Button asChild variant='ghost' className={buttonClassName}>
+					<Link
+						title={t('file_document_go_to_origin')}
+						target='_blank'
+						href={data.file_info?.file_name ?? '#'}
+						onClick={onClick}>
+						<LinkIcon />
+						<span className='truncate'>{t('file_document_go_to_origin')}</span>
+					</Link>
+				</Button>
+			);
+		}
+
+		return null;
+	};
+
+	const renderStarAction = (
+		buttonClassName: string,
+		onClick?: () => void,
+	) => {
+		if (data?.is_star) {
+			return (
+				<Button
+					title={t('document_star_cancel')}
+					variant='ghost'
+					onClick={() => {
+						mutateStar.mutate();
+						onClick?.();
+					}}
+					className={buttonClassName}>
+					<StarOff />
+					<span className='truncate'>{t('document_star_cancel')}</span>
+				</Button>
+			);
+		}
+
+		return (
+			<Button
+				variant='ghost'
+				title={t('document_star')}
+				onClick={() => {
+					mutateStar.mutate();
+					onClick?.();
+				}}
+				className={buttonClassName}>
+				<Star />
+				<span className='truncate'>{t('document_star')}</span>
+			</Button>
+		);
+	};
+
+	const renderReadAction = (
+		buttonClassName: string,
+		onClick?: () => void,
+	) => {
+		if (data?.is_read) {
+			return (
+				<Button
+					variant='ghost'
+					title={t('document_unread')}
+					onClick={() => {
+						mutateRead.mutate(!Boolean(data.is_read));
+						onClick?.();
+					}}
+					className={buttonClassName}>
+					<FolderOutput />
+					<span className='truncate'>{t('document_unread')}</span>
+				</Button>
+			);
+		}
+
+		return (
+			<Button
+				variant='ghost'
+				title={t('document_read')}
+				onClick={() => {
+					mutateRead.mutate(!Boolean(data?.is_read));
+					onClick?.();
+				}}
+				className={buttonClassName}>
+				<FolderCheck />
+				<span className='truncate'>{t('document_read')}</span>
+			</Button>
+		);
+	};
+
+	const renderNotesAction = (
+		buttonClassName: string,
+		onTriggerClick?: () => void,
+	) => {
+		return (
+			<Sheet>
+				<SheetTrigger asChild>
+					<Button
+						title={t('document_notes_title')}
+						variant='ghost'
+						className={buttonClassName}
+						onClick={onTriggerClick}>
+						<NotebookPen />
+						<span className='truncate'>{t('document_notes_title')}</span>
+					</Button>
+				</SheetTrigger>
+				<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-2xl'>
+					<SheetHeader className='border-b border-border/60 px-5 pt-6 pb-3 pr-12 text-left'>
+						<SheetTitle className='text-xl'>
+							{t('document_notes_title')}
+						</SheetTitle>
+						<SheetDescription>{t('document_notes_description')}</SheetDescription>
+					</SheetHeader>
+					<div className='min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.06),transparent_28%),radial-gradient(circle_at_top_left,rgba(16,185,129,0.06),transparent_24%)] px-4 py-4 sm:px-5 sm:py-5'>
+						<DocumentNotes id={id} />
+					</div>
+				</SheetContent>
+			</Sheet>
+		);
+	};
+
+	const renderDeleteAction = (
+		buttonClassName: string,
+		onTriggerClick?: () => void,
+	) => {
+		if (data?.creator.id !== mainUserInfo?.id) {
+			return null;
+		}
+
+		return (
+			<Dialog
+				open={showDeleteDocumentDialog}
+				onOpenChange={setShowDeleteDocumentDialog}>
+				<DialogTrigger asChild>
+					<Button
+						title={t('document_delete')}
+						variant='ghost'
+						className={buttonClassName}
+						onClick={onTriggerClick}>
+						<Trash />
+						<span className='truncate'>{t('document_delete')}</span>
+					</Button>
+				</DialogTrigger>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>{t('document_delete')}</DialogTitle>
+						<DialogDescription>
+							{t('document_delete_alert_description')}
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<DialogClose asChild>
+							<Button variant='outline'>{t('document_delete_cancel')}</Button>
+						</DialogClose>
+						<Button
+							variant='destructive'
+							onClick={() => mutateDelete.mutate()}
+							disabled={mutateDelete.isPending}>
+							{t('document_delete_confirm')}
+							{mutateDelete.isPending ? (
+								<Loader2 className='size-4 animate-spin' />
+							) : null}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		);
+	};
+
+	const renderConfigurationAction = (
+		buttonClassName: string,
+		onTriggerClick?: () => void,
+	) => {
+		if (data?.creator.id !== mainUserInfo?.id) {
+			return null;
+		}
+
+		return (
+			<DocumentConfiguration
+				document_id={id}
+				className={buttonClassName}
+				onTriggerClick={onTriggerClick}
+			/>
+		);
+	};
+
+	const renderMobilePanelAction = ({
+		icon: Icon,
+		label,
+		onClick,
+	}: {
+		icon: typeof Info;
+		label: string;
+		onClick: () => void;
+	}) => {
+		return (
+			<Button
+				variant='ghost'
+				className={mobileActionButtonClassName}
+				onClick={onClick}>
+				<Icon />
+				<span className='truncate'>{label}</span>
+			</Button>
+		);
+	};
+
 	return (
 		<>
 			{data && (
-				<div className={cn('w-full flex justify-between', className)}>
-					{data.category === DocumentCategory.WEBSITE && data.website_info && (
-						<Link
-							title={t('website_document_go_to_origin')}
-							href={data.website_info?.url ? data.website_info.url : ''}
-							className='flex-1 text-center'
-							target='_blank'>
-							<Button variant={'ghost'} className='w-full'>
-								{/* {t('website_document_go_to_origin')} */}
-								<LinkIcon />
-							</Button>
-						</Link>
-					)}
-					{data.category === DocumentCategory.FILE && data.file_info && (
-						<Link
-							title={t('file_document_go_to_origin')}
-							target='_blank'
-							className='flex-1 text-center'
-							href={data.file_info?.file_name ?? '#'}>
-							<Button variant={'ghost'} className='w-full'>
-								<LinkIcon />
-							</Button>
-						</Link>
-					)}
-					{data.is_star ? (
-						<Button
-							title={t('document_star_cancel')}
-							variant={'ghost'}
-							onClick={() => mutateStar.mutate()}
-							className='flex-1'>
-							<StarOff />
-						</Button>
-					) : (
-						<Button
-							variant={'ghost'}
-							title={t('document_star')}
-							onClick={() => mutateStar.mutate()}
-							className='flex-1'>
-							<Star />
-						</Button>
-					)}
-					{data.is_read ? (
-						<Button
-							variant={'ghost'}
-							title={t('document_unread')}
-							onClick={() => mutateRead.mutate(!Boolean(data.is_read))}
-							className='flex-1'>
-							<FolderOutput />
-						</Button>
-					) : (
-						<Button
-							variant={'ghost'}
-							title={t('document_read')}
-							onClick={() => mutateRead.mutate(!Boolean(data.is_read))}
-							className='flex-1'>
-							<FolderCheck />
-						</Button>
-					)}
-
-					<Sheet>
-						<SheetTrigger asChild>
-							<Button
-								title={t('document_notes_title')}
-								variant={'ghost'}
-								className='flex-1'>
-								<NotebookPen />
-							</Button>
-						</SheetTrigger>
-						<SheetContent className='flex flex-col'>
-							<SheetHeader>
-								<SheetTitle>{t('document_notes_title')}</SheetTitle>
-								<SheetDescription>
-									{t('document_notes_description')}
-								</SheetDescription>
-							</SheetHeader>
-							<div className='flex-1 overflow-auto'>
-								<DocumentNotes id={id} />
-							</div>
-						</SheetContent>
-					</Sheet>
-					{data.creator.id === mainUserInfo?.id && (
+				<>
+					{isCompactViewport ? (
 						<>
-							<Dialog
-								open={showDeleteDocumentDialog}
-								onOpenChange={setShowDeleteDocumentDialog}>
-								<DialogTrigger asChild>
+							<Drawer open={showMobileMenu} onOpenChange={setShowMobileMenu}>
+								<DrawerTrigger asChild>
 									<Button
-										title={t('document_delete')}
-										variant={'ghost'}
-										className='flex-1'>
-										<Trash />
+										size='icon'
+										className={cn(
+											'size-14 rounded-full border border-border/70 bg-card/92 text-foreground shadow-[0_24px_50px_-26px_rgba(15,23,42,0.55)] backdrop-blur-2xl supports-[backdrop-filter]:bg-card/78 dark:bg-background/80 dark:supports-[backdrop-filter]:bg-background/65',
+											className,
+										)}>
+										<Menu className='size-5 text-foreground' />
+										<span className='sr-only'>
+											{t('document_action_menu_title')}
+										</span>
 									</Button>
-								</DialogTrigger>
-								<DialogContent>
-									<DialogHeader>
-										<DialogTitle>{t('document_delete')}</DialogTitle>
-										<DialogDescription>
-											{t('document_delete_alert_description')}
-										</DialogDescription>
-									</DialogHeader>
-									<DialogFooter>
-										<DialogClose asChild>
-											<Button variant='outline'>
-												{t('document_delete_cancel')}
-											</Button>
-										</DialogClose>
-										<Button
-											variant='destructive'
-											onClick={() => mutateDelete.mutate()}
-											disabled={mutateDelete.isPending}>
-											{t('document_delete_confirm')}
-											{mutateDelete.isPending && (
-												<Loader2 className='size-4 animate-spin' />
-											)}
-										</Button>
-									</DialogFooter>
-								</DialogContent>
-							</Dialog>
-							<DocumentConfiguration document_id={id} />
+								</DrawerTrigger>
+								<DrawerContent className='rounded-t-[32px] border-border/70 bg-background/96 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-24px_60px_-32px_rgba(15,23,42,0.55)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/88 dark:bg-background/92'>
+									<DrawerHeader className='items-start px-4 pb-3 pt-2 text-left'>
+										<DrawerTitle className='text-lg tracking-tight'>
+											{t('document_action_menu_title')}
+										</DrawerTitle>
+										<DrawerDescription className='max-w-[28rem] text-sm leading-6 text-muted-foreground/90'>
+											{t('document_action_menu_description')}
+										</DrawerDescription>
+									</DrawerHeader>
+
+									<div className='space-y-4 px-4'>
+										<div className='space-y-2 border-t border-border/60 pt-4'>
+											<p className='px-1 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase'>
+												{t('document_mobile_menu_section_browse')}
+											</p>
+											<div className='grid grid-cols-2 gap-2.5'>
+												{renderMobilePanelAction({
+													icon: Info,
+													label: t('document_mobile_info_title'),
+													onClick: () => openMobilePanel('info'),
+												})}
+												{renderMobilePanelAction({
+													icon: GitBranch,
+													label: t('document_graph'),
+													onClick: () => openMobilePanel('graph'),
+												})}
+												{renderMobilePanelAction({
+													icon: AudioLines,
+													label: t('document_mobile_media_title'),
+													onClick: () => openMobilePanel('media'),
+												})}
+											</div>
+										</div>
+
+										<div className='space-y-2 border-t border-border/60 pt-4'>
+											<p className='px-1 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase'>
+												{t('document_mobile_menu_section_actions')}
+											</p>
+											<div className='grid grid-cols-2 gap-2.5'>
+												{renderOriginAction(
+													mobileActionButtonClassName,
+													closeMobileMenu,
+												)}
+												{renderStarAction(
+													mobileActionButtonClassName,
+													closeMobileMenu,
+												)}
+												{renderReadAction(
+													mobileActionButtonClassName,
+													closeMobileMenu,
+												)}
+												{renderNotesAction(
+													mobileActionButtonClassName,
+													closeMobileMenuDeferred,
+												)}
+												{renderDeleteAction(
+													mobileActionButtonClassName,
+													closeMobileMenuDeferred,
+												)}
+												{renderConfigurationAction(
+													mobileActionButtonClassName,
+													closeMobileMenuDeferred,
+												)}
+											</div>
+										</div>
+									</div>
+								</DrawerContent>
+							</Drawer>
+
+							<Sheet
+								open={mobilePanel !== null}
+								onOpenChange={(open) => {
+									if (!open) {
+										closeMobilePanel();
+									}
+								}}>
+								<SheetContent
+									side='bottom'
+									className='flex h-[86dvh] flex-col gap-0 rounded-t-[32px] border-border/70 bg-background/96 pt-0 shadow-[0_-24px_60px_-32px_rgba(15,23,42,0.55)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/88 dark:bg-background/92'>
+									<SheetHeader className='border-b border-border/60 px-5 pb-3 pt-6 text-left'>
+										<SheetTitle className='text-xl tracking-tight'>
+											{mobilePanelMeta.title}
+										</SheetTitle>
+										<SheetDescription className='max-w-md text-sm leading-6'>
+											{mobilePanelMeta.description}
+										</SheetDescription>
+									</SheetHeader>
+									<div className='min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.06),transparent_28%),radial-gradient(circle_at_top_left,rgba(16,185,129,0.06),transparent_24%)] px-4 py-4 sm:px-5 sm:py-5'>
+										{mobilePanel === 'info' ? (
+											<DocumentInfo id={id} />
+										) : mobilePanel === 'graph' ? (
+											<div className='h-full min-h-[420px] overflow-hidden rounded-[28px] border border-border/60 bg-background/50'>
+												<DocumentGraph document_id={id} />
+											</div>
+										) : data.category === DocumentCategory.AUDIO ? (
+											<DocumentAudio document_id={id} />
+										) : (
+											<DocumentPodcast document_id={id} />
+										)}
+									</div>
+								</SheetContent>
+							</Sheet>
 						</>
+					) : (
+						<div className={cn(desktopDockClassName, className)}>
+							{renderOriginAction(actionButtonClassName)}
+							{renderStarAction(actionButtonClassName)}
+							{renderReadAction(actionButtonClassName)}
+							{renderNotesAction(actionButtonClassName)}
+							{renderDeleteAction(actionButtonClassName)}
+							{renderConfigurationAction(actionButtonClassName)}
+						</div>
 					)}
-				</div>
+				</>
 			)}
 		</>
 	);

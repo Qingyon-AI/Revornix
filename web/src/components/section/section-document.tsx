@@ -26,8 +26,17 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
+import { cn } from '@/lib/utils';
 
-const SectionDocument = ({ section_id }: { section_id: number }) => {
+const SectionDocument = ({
+	section_id,
+	className,
+	onTriggerClick,
+}: {
+	section_id: number;
+	className?: string;
+	onTriggerClick?: () => void;
+}) => {
 	const t = useTranslations();
 	const router = useRouter();
 
@@ -76,7 +85,7 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 	});
 
 	const canAddDocument =
-		sectionUserRoleAndAuthority?.role === UserSectionRole.CERATOR ||
+		sectionUserRoleAndAuthority?.role === UserSectionRole.CREATOR ||
 		sectionUserRoleAndAuthority?.role === UserSectionRole.MEMBER;
 
 	useEffect(() => {
@@ -89,7 +98,8 @@ const SectionDocument = ({ section_id }: { section_id: number }) => {
 				<Button
 					title={t('section_documents')}
 					variant={'ghost'}
-					className='w-full flex-1 text-xs'>
+					className={cn('w-full flex-1 text-xs', className)}
+					onClick={onTriggerClick}>
 					<TableOfContentsIcon />
 					{t('section_documents')}
 				</Button>

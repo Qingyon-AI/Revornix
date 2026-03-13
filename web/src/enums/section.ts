@@ -5,7 +5,7 @@ export enum UserSectionAuthority {
 }
 
 export enum UserSectionRole {
-    CERATOR = 0,
+    CREATOR = 0,
     MEMBER = 1,
     SUBSCRIBER = 2
 }

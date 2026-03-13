@@ -39,7 +39,7 @@ const FileSystemPage = () => {
 					</div>
 				)}
 			{isSuccess && (
-				<div className='grid grid-cols-1 md:grid-cols-4 gap-5'>
+				<div className='grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-5'>
 					{mineFileSystems?.data?.map((file_system, index) => {
 						return (
 							<MineFileSystemCard key={index} user_file_system={file_system} />

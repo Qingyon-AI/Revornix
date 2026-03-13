@@ -12,9 +12,11 @@ import { cn } from '@/lib/utils';
 const SectionOperateSubscribe = ({
 	section_id,
 	className,
+	onTriggerClick,
 }: {
 	section_id: number;
 	className?: string;
+	onTriggerClick?: () => void;
 }) => {
 	const t = useTranslations();
 	const id = section_id;
@@ -70,7 +72,10 @@ const SectionOperateSubscribe = ({
 				className={cn('text-xs', className)}
 				variant={'ghost'}
 				disabled={subscribing}
-				onClick={handleUpdateSubscribeStatue}>
+				onClick={() => {
+					handleUpdateSubscribeStatue();
+					onTriggerClick?.();
+				}}>
 				{section?.is_subscribed ? (
 					<>
 						<BellOffIcon />

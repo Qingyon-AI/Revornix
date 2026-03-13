@@ -59,7 +59,11 @@ const SectionDetailPage = () => {
 	});
 
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
+		queryKey: [
+			'getUserFileSystemDetail',
+			mainUserInfo?.id,
+			mainUserInfo?.default_user_file_system,
+		],
 		queryFn: () =>
 			getUserFileSystemDetail({
 				user_file_system_id: mainUserInfo!.default_user_file_system!,

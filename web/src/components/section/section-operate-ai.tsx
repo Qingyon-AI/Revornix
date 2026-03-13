@@ -121,10 +121,14 @@ const SectionOperateAI = ({
 	section_id,
 	section_title,
 	disabled,
+	className,
+	onTriggerClick,
 }: {
 	section_id: number;
 	section_title?: string;
 	disabled?: boolean;
+	className?: string;
+	onTriggerClick?: () => void;
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
@@ -455,8 +459,9 @@ const SectionOperateAI = ({
 				<Button
 					title={t('section_ai_ask')}
 					variant={'ghost'}
-					className='flex-1 text-xs w-full'
-					disabled={disabled}>
+					className={cn('flex-1 text-xs w-full', className)}
+					disabled={disabled}
+					onClick={onTriggerClick}>
 					<Bot />
 					{t('section_ai_ask')}
 				</Button>

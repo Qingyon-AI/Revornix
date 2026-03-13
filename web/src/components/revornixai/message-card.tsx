@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Message } from '@/types/ai';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
 	Accordion,
 	AccordionContent,
@@ -18,6 +19,7 @@ import {
 import {
 	ChevronDownIcon,
 	CheckCircle2Icon,
+	CopyIcon,
 	FileTextIcon,
 	PenLineIcon,
 	SparkleIcon,
@@ -26,6 +28,7 @@ import {
 } from 'lucide-react';
 import { isEmpty } from 'lodash-es';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import CustomMarkdown from '../ui/custom-markdown';
 
 const MessageCard = ({ message }: { message: Message }) => {
@@ -34,6 +37,17 @@ const MessageCard = ({ message }: { message: Message }) => {
 	const ai_state = message.ai_state;
 	const documentReferences = message.document_references;
 	const [sourcesOpen, setSourcesOpen] = useState(false);
+	const [copied, setCopied] = useState(false);
+	const copyResetTimerRef = useRef<number | null>(null);
+
+	useEffect(() => {
+		return () => {
+			if (copyResetTimerRef.current) {
+				window.clearTimeout(copyResetTimerRef.current);
+			}
+		};
+	}, []);
+
 	const resolvePhaseLabel = (label?: string) => {
 		if (!label) return '';
 		if (t.has(label as any)) {
@@ -41,6 +55,45 @@ const MessageCard = ({ message }: { message: Message }) => {
 		}
 		return label;
 	};
+
+	const copyMarkdownToClipboard = async (content: string) => {
+		if (navigator.clipboard?.writeText) {
+			await navigator.clipboard.writeText(content);
+			return;
+		}
+
+		const textarea = document.createElement('textarea');
+		textarea.value = content;
+		textarea.setAttribute('readonly', 'true');
+		textarea.style.position = 'absolute';
+		textarea.style.left = '-9999px';
+		document.body.appendChild(textarea);
+		textarea.select();
+		document.execCommand('copy');
+		document.body.removeChild(textarea);
+	};
+
+	const handleCopyMarkdown = async () => {
+		if (!message.content?.trim()) {
+			toast.error(t('copy_failed'));
+			return;
+		}
+
+		try {
+			await copyMarkdownToClipboard(message.content);
+			setCopied(true);
+			if (copyResetTimerRef.current) {
+				window.clearTimeout(copyResetTimerRef.current);
+			}
+			copyResetTimerRef.current = window.setTimeout(() => {
+				setCopied(false);
+			}, 1600);
+			toast.success(t('copy_successfully'));
+		} catch (_error) {
+			toast.error(t('copy_failed'));
+		}
+	};
+
 	const renderDocumentReferences = () => {
 		if (!documentReferences || documentReferences.length === 0) {
 			return null;
@@ -125,106 +178,121 @@ const MessageCard = ({ message }: { message: Message }) => {
 	};
 	return (
 		<div
-			className={cn('flex flex-row gap-5', {
+			className={cn('flex w-full', {
 				'justify-end': message.role === 'user',
 			})}>
-			<div className='flex flex-col gap-2'>
-				<div
-					className={cn(
-						'min-w-0 max-w-full rounded-xl border p-3 md:max-w-3xl',
-						message.role === 'user'
-							? 'w-fit border-primary/15 bg-primary/10'
-							: 'w-fit border-border/60 bg-card/80',
-					)}>
-					{ai_state && (
-						<Alert className='mb-4 border-border/60 bg-card/70'>
-							<AlertDescription>
-								<Accordion type='multiple' className='w-full'>
-									<AccordionItem value='state'>
-										<AccordionTrigger className='py-0'>
-											<div className='flex flex-row gap-2 items-center'>
-												{ai_state.phase === 'thinking' && (
-													<SparkleIcon size={12} />
-												)}
-												{ai_state.phase === 'writing' && (
-													<PenLineIcon size={12} />
-												)}
-												{ai_state.phase === 'tool' && <WrenchIcon size={12} />}
-												{ai_state.phase === 'done' && (
-													<CheckCircle2Icon size={12} />
-												)}
-												{ai_state.phase === 'error' && (
-													<XCircleIcon size={12} />
-												)}
-												<AlertTitle className='font-bold text-primary'>
-													{resolvePhaseLabel(ai_state?.label)}
-												</AlertTitle>
-											</div>
-										</AccordionTrigger>
-										<AccordionContent className='pb-0 mt-2'>
-											{ai_workflow && (
-												<div className='space-y-1'>
-													<div className='relative pl-5'>
-														{/* 竖线 */}
-														<div className='absolute left-1.5 top-0 bottom-0 w-px bg-border' />
+			<div
+				className={cn(
+					'min-w-0 rounded-xl border px-3 py-2.5 md:px-4 md:py-3',
+					message.role === 'user'
+						? 'max-w-[min(82%,760px)] border-primary/5 bg-primary/5'
+						: 'max-w-[min(92%,1080px)] border-border/60 bg-card/84 shadow-[0_14px_36px_-30px_rgba(15,23,42,0.28)]',
+				)}>
+				{ai_state && (
+					<Alert className='mb-3 border-border/60 bg-card/70'>
+						<AlertDescription>
+							<Accordion type='multiple' className='w-full'>
+								<AccordionItem value='state'>
+									<AccordionTrigger className='py-0'>
+										<div className='flex flex-row gap-2 items-center'>
+											{ai_state.phase === 'thinking' && (
+												<SparkleIcon size={12} />
+											)}
+											{ai_state.phase === 'writing' && (
+												<PenLineIcon size={12} />
+											)}
+											{ai_state.phase === 'tool' && <WrenchIcon size={12} />}
+											{ai_state.phase === 'done' && (
+												<CheckCircle2Icon size={12} />
+											)}
+											{ai_state.phase === 'error' && (
+												<XCircleIcon size={12} />
+											)}
+											<AlertTitle className='font-bold text-primary'>
+												{resolvePhaseLabel(ai_state?.label)}
+											</AlertTitle>
+										</div>
+									</AccordionTrigger>
+									<AccordionContent className='pb-0 mt-2'>
+										{ai_workflow && (
+											<div className='space-y-1'>
+												<div className='relative pl-5'>
+													<div className='absolute left-1.5 top-0 bottom-0 w-px bg-border' />
 
-														<div className='space-y-2'>
-															{ai_workflow.map((step, index) => {
-																return (
-																	<div
-																		className='flex flex-col text-xs'
-																		key={index}>
-																		<div className='flex flex-row items-center gap-2'>
-																			{step.phase === 'thinking' && (
-																				<SparkleIcon size={12} />
-																			)}
-																			{step.phase === 'writing' && (
-																				<PenLineIcon size={12} />
-																			)}
-																			{step.phase === 'tool' && (
-																				<WrenchIcon size={12} />
-																			)}
-																			{step.phase === 'tool_result' && (
-																				<WrenchIcon size={12} />
-																			)}
-																			{step.phase === 'done' && (
-																				<CheckCircle2Icon size={12} />
-																			)}
-																			{step.phase === 'error' && (
-																				<XCircleIcon size={12} />
-																			)}
-																			<span>{resolvePhaseLabel(step.label)}</span>
-																		</div>
-
-																		{!isEmpty(step.meta) && (
-																			<div className='pl-5 mt-1 w-fit'>
-																				{(step.phase === 'tool' ||
-																					step.phase === 'tool_result') &&
-																					step.meta?.tool && (
-																						<div className='break-all rounded border border-border/50 bg-card/75 px-1.5 py-0.5'>
-																							{step.meta.tool}
-																						</div>
-																					)}
-																			</div>
+													<div className='space-y-2'>
+														{ai_workflow.map((step, index) => {
+															return (
+																<div
+																	className='flex flex-col text-xs'
+																	key={index}>
+																	<div className='flex flex-row items-center gap-2'>
+																		{step.phase === 'thinking' && (
+																			<SparkleIcon size={12} />
 																		)}
+																		{step.phase === 'writing' && (
+																			<PenLineIcon size={12} />
+																		)}
+																		{step.phase === 'tool' && (
+																			<WrenchIcon size={12} />
+																		)}
+																		{step.phase === 'tool_result' && (
+																			<WrenchIcon size={12} />
+																		)}
+																		{step.phase === 'done' && (
+																			<CheckCircle2Icon size={12} />
+																		)}
+																		{step.phase === 'error' && (
+																			<XCircleIcon size={12} />
+																		)}
+																		<span>{resolvePhaseLabel(step.label)}</span>
 																	</div>
-																);
-															})}
-														</div>
+
+																	{!isEmpty(step.meta) && (
+																		<div className='pl-5 mt-1 w-fit'>
+																			{(step.phase === 'tool' ||
+																				step.phase === 'tool_result') &&
+																				step.meta?.tool && (
+																					<div className='break-all rounded border border-border/50 bg-card/75 px-1.5 py-0.5'>
+																						{step.meta.tool}
+																					</div>
+																				)}
+																		</div>
+																	)}
+																</div>
+															);
+														})}
 													</div>
 												</div>
-											)}
-										</AccordionContent>
-									</AccordionItem>
-								</Accordion>
-							</AlertDescription>
-						</Alert>
-					)}
+											</div>
+										)}
+									</AccordionContent>
+								</AccordionItem>
+							</Accordion>
+						</AlertDescription>
+					</Alert>
+				)}
 
-					<div className='prose max-w-none break-words dark:prose-invert'>
-						<CustomMarkdown content={message.content} />
-					</div>
-					{message.role === 'assistant' && renderDocumentReferences()}
+				<div className='prose max-w-none break-words dark:prose-invert'>
+					<CustomMarkdown content={message.content} />
+				</div>
+				{message.role === 'assistant' && renderDocumentReferences()}
+				<div
+					className={cn(
+						'mt-2.5 flex items-center justify-end border-t pt-1.5',
+						message.role === 'user'
+							? 'border-primary/30'
+							: 'border-border/40',
+					)}>
+					<Button
+						type='button'
+						size='sm'
+						variant='ghost'
+						className='h-8 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground'
+						aria-label={t('copy')}
+						onClick={handleCopyMarkdown}>
+						<CopyIcon className='size-3.5' />
+						<span>{copied ? t('copied') : t('copy')}</span>
+					</Button>
 				</div>
 			</div>
 		</div>

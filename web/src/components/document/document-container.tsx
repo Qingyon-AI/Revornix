@@ -14,7 +14,7 @@ import {
 	DocumentInfo as DocumentListItem,
 	InifiniteScrollPagnitionDocumentInfo,
 } from '@/generated';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DocumentCategory } from '@/enums/document';
 import DocumentGraph from './document-graph';
 import { Button } from '../ui/button';
@@ -32,12 +32,117 @@ import { useTranslations } from 'next-intl';
 import AudioDocumentDetail from './audio-document-detail';
 import DocumentPodcast from './document-podcast';
 import DocumentAudio from './document-audio';
+import DocumentOperate from './document-operate';
 import { filterInfiniteQueryElements } from '@/lib/infinite-query-cache';
+import { useSidebar } from '../ui/sidebar';
+import { Skeleton } from '../ui/skeleton';
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+const DocumentDetailSkeleton = () => {
+	return (
+		<div className='mx-auto flex h-full w-full max-w-[880px] flex-col gap-6'>
+			<div className='space-y-3'>
+				<Skeleton className='h-10 w-56 rounded-2xl sm:h-12 sm:w-72' />
+				<Skeleton className='h-5 w-48 rounded-full sm:w-64' />
+			</div>
+			<Skeleton className='aspect-[16/8] w-full rounded-[28px]' />
+			<div className='space-y-4'>
+				<Skeleton className='h-5 w-full rounded-full' />
+				<Skeleton className='h-5 w-full rounded-full' />
+				<Skeleton className='h-5 w-11/12 rounded-full' />
+				<Skeleton className='h-5 w-4/5 rounded-full' />
+			</div>
+			<div className='space-y-4 pt-2'>
+				<Skeleton className='h-8 w-40 rounded-2xl' />
+				<Skeleton className='h-5 w-full rounded-full' />
+				<Skeleton className='h-5 w-full rounded-full' />
+				<Skeleton className='h-5 w-10/12 rounded-full' />
+			</div>
+		</div>
+	);
+};
+
+const DocumentSidebarSkeleton = ({
+	surfaceCardClassName,
+}: {
+	surfaceCardClassName: string;
+}) => {
+	return (
+		<div className='space-y-5'>
+			<Card
+				className={`relative overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
+				<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
+					<Skeleton className='aspect-[16/10] w-full rounded-[24px]' />
+					<div className='space-y-3'>
+						<Skeleton className='h-8 w-3/4 rounded-2xl' />
+						<Skeleton className='h-4 w-full rounded-full' />
+						<Skeleton className='h-4 w-5/6 rounded-full' />
+					</div>
+					<div className='flex flex-wrap gap-2'>
+						<Skeleton className='h-8 w-24 rounded-full' />
+						<Skeleton className='h-8 w-28 rounded-full' />
+						<Skeleton className='h-8 w-20 rounded-full' />
+					</div>
+					<div className='grid grid-cols-2 gap-3'>
+						<Skeleton className='h-28 w-full rounded-[20px]' />
+						<Skeleton className='h-28 w-full rounded-[20px]' />
+						<Skeleton className='h-28 w-full rounded-[20px]' />
+						<Skeleton className='h-28 w-full rounded-[20px]' />
+					</div>
+				</div>
+			</Card>
+
+			<Card className={`overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
+				<div className='flex items-start justify-between gap-4 border-b border-border/60 px-4 pb-4 pt-4 sm:px-5 sm:pt-5'>
+					<div className='space-y-2'>
+						<Skeleton className='h-6 w-32 rounded-xl' />
+						<Skeleton className='h-4 w-48 rounded-full' />
+					</div>
+					<Skeleton className='size-10 rounded-2xl' />
+				</div>
+
+				<div className='px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
+					<Skeleton className='h-[300px] w-full rounded-[24px]' />
+				</div>
+			</Card>
+
+			<Card
+				className={`overflow-hidden gap-0 rounded-[26px] border border-border/60 py-0 ${surfaceCardClassName}`}>
+				<div className='space-y-4 p-4'>
+					<div className='flex items-center gap-3'>
+						<Skeleton className='size-12 rounded-2xl' />
+						<div className='min-w-0 flex-1 space-y-2'>
+							<Skeleton className='h-5 w-32 rounded-full' />
+							<Skeleton className='h-4 w-24 rounded-full' />
+						</div>
+					</div>
+					<Skeleton className='h-24 w-full rounded-[22px]' />
+				</div>
+			</Card>
+		</div>
+	);
+};
 
 const DocumentContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
+	const { state: sidebarState } = useSidebar();
+	const isCompactViewport = useIsMobile(1280);
+	const mainColumnRef = useRef<HTMLDivElement | null>(null);
+	const [dockBounds, setDockBounds] = useState({
+		left: 0,
+		width: 0,
+	});
+	const mainCardMinHeightClassName =
+		'min-h-[calc(100dvh-6rem)] sm:min-h-[calc(100dvh-6.25rem)]';
+	const surfaceCardClassName =
+		'rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.55)] backdrop-blur';
+	const mainSurfaceClassName = cn(
+		`bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.08),transparent_26%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.08),transparent_24%)] ${surfaceCardClassName}`,
+	);
+	const mainContentClassName = cn(mainCardMinHeightClassName, 'p-4 sm:p-5 lg:p-6');
 	const userUnreadDocumentQueryKey = [
 		'searchUserUnreadDocument',
 		mainUserInfo?.id,
@@ -49,6 +154,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 
 	const {
 		data: document,
+		isPending,
 		isError,
 		error,
 	} = useQuery({
@@ -115,67 +221,204 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		}
 	};
 
+	useEffect(() => {
+		let animationFrameId: number | null = null;
+		let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+		const updateDockBounds = () => {
+			if (!mainColumnRef.current) {
+				return;
+			}
+
+			const rect = mainColumnRef.current.getBoundingClientRect();
+			setDockBounds({
+				left: rect.left,
+				width: rect.width,
+			});
+		};
+
+		const syncDockBoundsDuringTransition = (duration = 260) => {
+			if (animationFrameId !== null) {
+				cancelAnimationFrame(animationFrameId);
+			}
+			if (timeoutId !== null) {
+				clearTimeout(timeoutId);
+			}
+
+			const startedAt = performance.now();
+
+			const tick = () => {
+				updateDockBounds();
+
+				if (performance.now() - startedAt < duration) {
+					animationFrameId = requestAnimationFrame(tick);
+					return;
+				}
+
+				animationFrameId = null;
+			};
+
+			animationFrameId = requestAnimationFrame(tick);
+			timeoutId = setTimeout(() => {
+				updateDockBounds();
+			}, duration);
+		};
+
+		updateDockBounds();
+		syncDockBoundsDuringTransition();
+
+		const resizeObserver = new ResizeObserver(() => {
+			updateDockBounds();
+		});
+
+		if (mainColumnRef.current) {
+			resizeObserver.observe(mainColumnRef.current);
+		}
+
+		window.addEventListener('resize', updateDockBounds);
+		window.addEventListener('scroll', updateDockBounds, true);
+
+		return () => {
+			if (animationFrameId !== null) {
+				cancelAnimationFrame(animationFrameId);
+			}
+			if (timeoutId !== null) {
+				clearTimeout(timeoutId);
+			}
+			resizeObserver.disconnect();
+			window.removeEventListener('resize', updateDockBounds);
+			window.removeEventListener('scroll', updateDockBounds, true);
+		};
+	}, [isCompactViewport, sidebarState, document?.id]);
+
 	return (
-		<div className='relative w-full px-5 pb-5 md:grid md:h-full md:grid-cols-12 md:items-stretch md:gap-4'>
-			{/* 此处的min-h-0是因为父级的grid布局会导致子元素的h-full无法准确继承到父级的实际高度，导致其高度被内容撑开 */}
-			<div className='relative min-h-0 md:col-span-8 md:flex md:h-full md:flex-col'>
-				<div className='overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm md:flex-1 md:min-h-0 mb-4 md:mb-0'>
-					{isError && (
-						<div className='text-sm text-muted-foreground h-full w-full flex justify-center items-center'>
-							{error.message}
+		<div className='relative'>
+			<div className='mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-4 pb-6 pt-0 sm:px-5 lg:px-6 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(320px,392px)] xl:items-start'>
+				<div ref={mainColumnRef} className='relative min-w-0'>
+					<div className={mainSurfaceClassName}>
+						<div className={mainContentClassName}>
+							{isPending && !document && !isError && <DocumentDetailSkeleton />}
+							{isError && (
+								<div className='flex min-h-[60vh] w-full items-center justify-center px-6 text-center text-sm text-muted-foreground'>
+									{error.message}
+								</div>
+							)}
+							{document?.category === DocumentCategory.WEBSITE && (
+								<WebsiteDocumentDetail
+									onFinishRead={handleFinishRead}
+									id={id}
+								/>
+							)}
+							{document?.category === DocumentCategory.FILE && (
+								<FileDocumentDetail onFinishRead={handleFinishRead} id={id} />
+							)}
+							{document?.category === DocumentCategory.QUICK_NOTE && (
+								<QuickDocumentDetail onFinishRead={handleFinishRead} id={id} />
+							)}
+							{document?.category === DocumentCategory.AUDIO && (
+								<AudioDocumentDetail onFinishRead={handleFinishRead} id={id} />
+							)}
 						</div>
-					)}
-					{document?.category === DocumentCategory.WEBSITE && (
-						<WebsiteDocumentDetail onFinishRead={handleFinishRead} id={id} />
-					)}
-					{document?.category === DocumentCategory.FILE && (
-						<FileDocumentDetail onFinishRead={handleFinishRead} id={id} />
-					)}
-					{document?.category === DocumentCategory.QUICK_NOTE && (
-						<QuickDocumentDetail onFinishRead={handleFinishRead} id={id} />
-					)}
-					{document?.category === DocumentCategory.AUDIO && (
-						<AudioDocumentDetail onFinishRead={handleFinishRead} id={id} />
-					)}
+					</div>
 				</div>
-			</div>
-			<div className='relative min-h-0 flex flex-col gap-4 md:col-span-4 md:h-full md:py-0'>
-				<Card className='relative overflow-auto rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-2'>
-					<DocumentInfo id={id} />
-				</Card>
-				<Card className='relative rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-1'>
-					<Dialog>
-						<DialogTrigger asChild>
-							<Button
-								className='absolute top-2 left-2 z-10'
-								size={'icon'}
-								variant={'outline'}>
-								<Expand size={4} className='text-muted-foreground' />
-							</Button>
-						</DialogTrigger>
-						<DialogContent className='max-w-[80vw]! h-[80vh] flex flex-col'>
-							<DialogHeader>
-								<DialogTitle>{t('document_graph')}</DialogTitle>
-								<DialogDescription>
-									{t('document_graph_description')}
-								</DialogDescription>
-							</DialogHeader>
-							<div className='flex-1'>
-								<DocumentGraph document_id={id} />
-							</div>
-						</DialogContent>
-					</Dialog>
 
-					<DocumentGraph document_id={id} />
-				</Card>
+				{!isCompactViewport ? (
+					<div className='relative min-w-0 space-y-5 xl:sticky xl:top-0'>
+						{isPending && !document && !isError ? (
+							<DocumentSidebarSkeleton
+								surfaceCardClassName={surfaceCardClassName}
+							/>
+						) : (
+							<>
+								<Card
+									className={`relative overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
+									<DocumentInfo id={id} />
+								</Card>
 
-				{document && document?.category !== DocumentCategory.AUDIO && (
-					<DocumentPodcast document_id={id} />
-				)}
-				{document && document?.category === DocumentCategory.AUDIO && (
-					<DocumentAudio document_id={id} />
-				)}
+								<Card
+									className={`overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
+									<div className='flex items-start justify-between gap-4 border-b border-border/60 px-4 pb-0 pt-4 sm:px-5 sm:pt-5'>
+										<div className='space-y-1 pb-4'>
+											<h3 className='text-base font-semibold'>
+												{t('document_graph')}
+											</h3>
+											<p className='text-sm leading-6 text-muted-foreground'>
+												{t('document_graph_description')}
+											</p>
+										</div>
+										<Dialog>
+											<DialogTrigger asChild>
+												<Button
+													className='size-10 shrink-0 rounded-2xl bg-background/70'
+													size='icon'
+													variant='outline'>
+													<Expand
+														size={4}
+														className='text-muted-foreground'
+													/>
+												</Button>
+											</DialogTrigger>
+											<DialogContent className='flex h-[82vh] w-[min(1440px,96vw)] max-w-[min(1440px,96vw)] flex-col sm:max-w-[min(1440px,96vw)]'>
+												<DialogHeader>
+													<DialogTitle>{t('document_graph')}</DialogTitle>
+													<DialogDescription>
+														{t('document_graph_description')}
+													</DialogDescription>
+												</DialogHeader>
+												<div className='min-h-[360px] flex-1 overflow-hidden rounded-2xl border border-border/60 bg-background/45'>
+													<DocumentGraph document_id={id} />
+												</div>
+											</DialogContent>
+										</Dialog>
+									</div>
+
+									<div className='px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
+										<div className='h-[300px] overflow-hidden rounded-[24px] border border-border/60 bg-background/35'>
+											<DocumentGraph document_id={id} />
+										</div>
+									</div>
+								</Card>
+
+								{document && document?.category !== DocumentCategory.AUDIO && (
+									<DocumentPodcast
+										document_id={id}
+										className={surfaceCardClassName}
+									/>
+								)}
+								{document && document?.category === DocumentCategory.AUDIO && (
+									<DocumentAudio
+										document_id={id}
+										className={surfaceCardClassName}
+									/>
+								)}
+							</>
+						)}
+					</div>
+				) : null}
 			</div>
+
+			{document && isCompactViewport ? (
+				<div className='pointer-events-none fixed bottom-4 right-4 z-40'>
+					<div className='pointer-events-auto'>
+						<DocumentOperate id={id} />
+					</div>
+				</div>
+			) : null}
+
+			{document && !isCompactViewport && dockBounds.width > 0 ? (
+				<div
+					className='pointer-events-none fixed bottom-4 z-40 sm:bottom-8'
+					style={{
+						left: `${dockBounds.left}px`,
+						width: `${dockBounds.width}px`,
+					}}>
+					<div className='px-4 sm:px-5 lg:px-6'>
+						<div className='pointer-events-auto mx-auto w-full max-w-[880px]'>
+							<DocumentOperate id={id} />
+						</div>
+					</div>
+				</div>
+			) : null}
 		</div>
 	);
 };

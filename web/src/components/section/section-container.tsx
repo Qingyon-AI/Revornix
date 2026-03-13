@@ -1,9 +1,25 @@
 'use client';
 
-import { Card } from '../ui/card';
+import { useEffect, useRef, useState } from 'react';
+import { useInterval } from 'ahooks';
+import { useQuery } from '@tanstack/react-query';
+import { Expand } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+
+import { SectionProcessStatus } from '@/enums/section';
+import { getQueryClient } from '@/lib/get-query-client';
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { getSectionDetail } from '@/service/section';
+
 import SectionGraph from './section-graph';
 import SectionInfo from './section-info';
 import SectionMarkdown from './section-markdown';
+import SectionMedia from './section-media';
+import SectionOperate from './section-operate';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Skeleton } from '../ui/skeleton';
 import {
 	Dialog,
 	DialogContent,
@@ -12,50 +28,54 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '../ui/dialog';
-import { useTranslations } from 'next-intl';
-import { Button } from '../ui/button';
-import { Expand, Loader2, OctagonAlert } from 'lucide-react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { generateSectionPodcast, getSectionDetail } from '@/service/section';
-import { Alert, AlertDescription } from '../ui/alert';
-import AudioPlayer from '../ui/audio-player';
-import { getQueryClient } from '@/lib/get-query-client';
-import { toast } from 'sonner';
-import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
-import { useEffect, useState } from 'react';
-import { useInterval } from 'ahooks';
-import { useUserContext } from '@/provider/user-provider';
-import { Separator } from '../ui/separator';
-import SectionOperate from './section-operate';
-import { Spinner } from '../ui/spinner';
+import { useSidebar } from '../ui/sidebar';
+
+const SectionGraphCardSkeleton = ({
+	surfaceCardClassName,
+}: {
+	surfaceCardClassName: string;
+}) => {
+	return (
+		<Card className={`overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
+			<div className='flex items-start justify-between gap-4 border-b border-border/60 px-4 pb-0 pt-4 sm:px-5 sm:pt-5'>
+				<div className='space-y-2 pb-4'>
+					<Skeleton className='h-6 w-28 rounded-xl' />
+					<Skeleton className='h-4 w-48 rounded-full' />
+				</div>
+				<Skeleton className='size-10 shrink-0 rounded-2xl' />
+			</div>
+
+			<div className='px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
+				<Skeleton className='h-[300px] w-full rounded-[24px]' />
+			</div>
+		</Card>
+	);
+};
 
 const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
+	const { state: sidebarState } = useSidebar();
+	const isCompactViewport = useIsMobile(1280);
+	const mainColumnRef = useRef<HTMLDivElement | null>(null);
+	const [dockBounds, setDockBounds] = useState({
+		left: 0,
+		width: 0,
+	});
 
-	const { data: section } = useQuery({
+	const mainCardMinHeightClassName =
+		'min-h-[calc(100dvh-6rem)] sm:min-h-[calc(100dvh-6.25rem)]';
+	const surfaceCardClassName =
+		'rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.55)] backdrop-blur';
+	const mainSurfaceClassName = cn(
+		`bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.08),transparent_26%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.08),transparent_24%)] ${surfaceCardClassName}`,
+	);
+	const mainContentClassName = cn(mainCardMinHeightClassName, 'p-4 sm:p-5 lg:p-6');
+
+	const { data: section, isPending } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
 			return getSectionDetail({ section_id: id });
-		},
-	});
-
-	const { mainUserInfo } = useUserContext();
-
-	const mutateGeneratePodcast = useMutation({
-		mutationFn: () =>
-			generateSectionPodcast({
-				section_id: id,
-			}),
-		onSuccess(data, variables, onMutateResult, context) {
-			toast.success(t('section_podcast_generate_task_submitted'));
-			queryClient.invalidateQueries({
-				queryKey: ['getSectionDetail', id],
-			});
-		},
-		onError(error, variables, onMutateResult, context) {
-			toast.error(t('section_podcast_generate_task_submitted_failed'));
-			console.error(error);
 		},
 	});
 
@@ -70,148 +90,175 @@ const SectionContainer = ({ id }: { id: number }) => {
 		if (
 			section &&
 			section.process_task &&
-			section.process_task?.status < SectionProcessStatus.SUCCESS
+			section.process_task.status < SectionProcessStatus.SUCCESS
 		) {
 			setDelay(1000);
-		} else {
-			setDelay(undefined);
+			return;
 		}
+		setDelay(undefined);
 	}, [section?.process_task?.status]);
 
+	useEffect(() => {
+		let animationFrameId: number | null = null;
+		let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+		const updateDockBounds = () => {
+			if (!mainColumnRef.current) {
+				return;
+			}
+
+			const rect = mainColumnRef.current.getBoundingClientRect();
+			setDockBounds({
+				left: rect.left,
+				width: rect.width,
+			});
+		};
+
+		const syncDockBoundsDuringTransition = (duration = 260) => {
+			if (animationFrameId !== null) {
+				cancelAnimationFrame(animationFrameId);
+			}
+			if (timeoutId !== null) {
+				clearTimeout(timeoutId);
+			}
+
+			const startedAt = performance.now();
+
+			const tick = () => {
+				updateDockBounds();
+
+				if (performance.now() - startedAt < duration) {
+					animationFrameId = requestAnimationFrame(tick);
+					return;
+				}
+
+				animationFrameId = null;
+			};
+
+			animationFrameId = requestAnimationFrame(tick);
+			timeoutId = setTimeout(() => {
+				updateDockBounds();
+			}, duration);
+		};
+
+		updateDockBounds();
+		syncDockBoundsDuringTransition();
+
+		const resizeObserver = new ResizeObserver(() => {
+			updateDockBounds();
+		});
+
+		if (mainColumnRef.current) {
+			resizeObserver.observe(mainColumnRef.current);
+		}
+
+		window.addEventListener('resize', updateDockBounds);
+		window.addEventListener('scroll', updateDockBounds, true);
+
+		return () => {
+			if (animationFrameId !== null) {
+				cancelAnimationFrame(animationFrameId);
+			}
+			if (timeoutId !== null) {
+				clearTimeout(timeoutId);
+			}
+			resizeObserver.disconnect();
+			window.removeEventListener('resize', updateDockBounds);
+			window.removeEventListener('scroll', updateDockBounds, true);
+		};
+	}, [isCompactViewport, sidebarState, section?.id]);
+
 	return (
-		<div className='relative w-full px-5 pb-5 md:grid md:h-full md:grid-cols-12 md:items-stretch md:gap-4'>
-			<div className='relative min-h-0 md:col-span-8 md:flex md:h-full md:flex-col mb-4 sm:mb-0'>
-				<div className='overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm md:flex-1 md:min-h-0'>
-					<div className='flex flex-col md:h-full'>
-						<SectionMarkdown
-							id={id}
-							className='md:min-h-0 md:flex-1 md:overflow-auto'
-						/>
-						<Separator className='mb-2 mt-3' />
-						<SectionOperate id={id} className='overflow-auto' />
+		<div className='relative'>
+			<div className='mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-4 pb-6 pt-0 sm:px-5 lg:px-6 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(320px,392px)] xl:items-start'>
+				<div ref={mainColumnRef} className='relative min-w-0'>
+					<div className={mainSurfaceClassName}>
+						<div className={mainContentClassName}>
+							<SectionMarkdown id={id} />
+						</div>
 					</div>
 				</div>
-			</div>
 
-			<div className='relative min-h-0 flex flex-col gap-4 py-0 md:col-span-4 md:h-full'>
-				<Card className='relative overflow-auto rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-1'>
-					<SectionInfo id={id} />
-				</Card>
-				<Card className='relative rounded-2xl border border-border/60 bg-card/80 py-0 shadow-sm backdrop-blur-sm md:flex-1'>
-					<Dialog>
-						<DialogTrigger asChild>
-							<Button
-								className='absolute top-2 left-2 z-10'
-								size={'icon'}
-								variant={'outline'}>
-								<Expand size={4} className='text-muted-foreground' />
-							</Button>
-						</DialogTrigger>
-						<DialogContent className='max-w-[80vw]! h-[80vh] flex flex-col'>
-							<DialogHeader>
-								<DialogTitle>{t('section_graph')}</DialogTitle>
-								<DialogDescription>
-									{t('section_graph_description')}
-								</DialogDescription>
-							</DialogHeader>
-							<div className='flex-1'>
-								<SectionGraph section_id={id} />
-							</div>
-						</DialogContent>
-					</Dialog>
-
-					<SectionGraph section_id={id} />
-				</Card>
-
-				{section?.creator.id !== mainUserInfo?.id && !section?.podcast_task && (
-					<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-						<OctagonAlert className='h-4 w-4 text-destructive!' />
-						<AlertDescription>
-							{t('section_podcast_user_unable')}
-						</AlertDescription>
-					</Alert>
-				)}
-
-				{section?.creator.id === mainUserInfo?.id && !section?.podcast_task && (
-					<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-						<AlertDescription>
-							<span className='inline-flex'>{t('section_podcast_unset')}</span>
-							<Button
-								variant={'link'}
-								size='sm'
-								className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
-								onClick={() => mutateGeneratePodcast.mutate()}
-								disabled={
-									mutateGeneratePodcast.isPending ||
-									!mainUserInfo?.default_podcast_user_engine_id
-								}>
-								{t('section_podcast_generate')}
-								{mutateGeneratePodcast.isPending && (
-									<Loader2 className='animate-spin' />
-								)}
-							</Button>
-						</AlertDescription>
-					</Alert>
-				)}
-
-				{!mainUserInfo?.default_podcast_user_engine_id && (
-					<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-						<OctagonAlert className='h-4 w-4 text-destructive!' />
-						<AlertDescription>
-							{t('section_form_auto_podcast_engine_unset')}
-						</AlertDescription>
-					</Alert>
-				)}
-
-				<>
-					{section?.podcast_task?.status ===
-						SectionPodcastStatus.GENERATING && (
-						<Card className='relative rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm'>
-							<div className='text-muted-foreground text-xs flex flex-row justify-center items-center gap-2'>
-								{t('section_podcast_processing')}
-								<Spinner />
-							</div>
+				{!isCompactViewport ? (
+					<div className='relative min-w-0 space-y-5 xl:sticky xl:top-0'>
+						<Card className={`overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
+							<SectionInfo id={id} />
 						</Card>
-					)}
 
-					{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
-						section?.podcast_task?.podcast_file_name && (
-							<Card className='relative flex flex-col gap-4 rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm'>
-								<AudioPlayer
-									src={section?.podcast_task?.podcast_file_name}
-									cover={
-										section.cover ??
-										'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
-									}
-									title={section.title ?? 'Unkown Title'}
-									artist={'AI Generated'}
-								/>
+						{isPending && !section ? (
+							<SectionGraphCardSkeleton
+								surfaceCardClassName={surfaceCardClassName}
+							/>
+						) : (
+							<Card className={`overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
+								<div className='flex items-start justify-between gap-4 border-b border-border/60 px-4 pb-0 pt-4 sm:px-5 sm:pt-5'>
+									<div className='space-y-1 pb-4'>
+										<h3 className='text-base font-semibold'>{t('section_graph')}</h3>
+										<p className='text-sm leading-6 text-muted-foreground'>
+											{t('section_graph_description')}
+										</p>
+									</div>
+									<Dialog>
+										<DialogTrigger asChild>
+											<Button
+												className='size-10 shrink-0 rounded-2xl bg-background/70'
+												size='icon'
+												variant='outline'>
+												<Expand size={4} className='text-muted-foreground' />
+											</Button>
+										</DialogTrigger>
+										<DialogContent className='flex h-[82vh] w-[min(1440px,96vw)] max-w-[min(1440px,96vw)] flex-col sm:max-w-[min(1440px,96vw)]'>
+											<DialogHeader>
+												<DialogTitle>{t('section_graph')}</DialogTitle>
+												<DialogDescription>
+													{t('section_graph_description')}
+												</DialogDescription>
+											</DialogHeader>
+											<div className='min-h-[360px] flex-1 overflow-hidden rounded-2xl border border-border/60 bg-background/45'>
+												<SectionGraph section_id={id} />
+											</div>
+										</DialogContent>
+									</Dialog>
+								</div>
+
+								<div className='px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
+									<div className='h-[300px] overflow-hidden rounded-[24px] border border-border/60 bg-background/35'>
+										<SectionGraph section_id={id} />
+									</div>
+								</div>
 							</Card>
 						)}
 
-					{section?.podcast_task?.status === SectionPodcastStatus.FAILED && (
-						<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-							<AlertDescription>
-								<span>{t('section_podcast_failed')}</span>
-								<Button
-									variant={'link'}
-									size='sm'
-									className='inline-flex text-muted-foreground underline underline-offset-3 p-0 m-0 ml-auto'
-									onClick={() => mutateGeneratePodcast.mutate()}
-									disabled={
-										mutateGeneratePodcast.isPending ||
-										!mainUserInfo?.default_podcast_user_engine_id
-									}>
-									{t('section_podcast_generate')}
-									{mutateGeneratePodcast.isPending && (
-										<Loader2 className='animate-spin' />
-									)}
-								</Button>
-							</AlertDescription>
-						</Alert>
-					)}
-				</>
+						<SectionMedia
+							section_id={id}
+							surfaceCardClassName={surfaceCardClassName}
+						/>
+					</div>
+				) : null}
 			</div>
+
+			{section && isCompactViewport ? (
+				<div className='pointer-events-none fixed bottom-4 right-4 z-40'>
+					<div className='pointer-events-auto'>
+						<SectionOperate id={id} />
+					</div>
+				</div>
+			) : null}
+
+			{section && !isCompactViewport && dockBounds.width > 0 ? (
+				<div
+					className='pointer-events-none fixed bottom-4 z-40 sm:bottom-8'
+					style={{
+						left: `${dockBounds.left}px`,
+						width: `${dockBounds.width}px`,
+					}}>
+					<div className='px-4 sm:px-5 lg:px-6'>
+						<div className='pointer-events-auto mx-auto w-full max-w-[880px]'>
+							<SectionOperate id={id} />
+						</div>
+					</div>
+				</div>
+			) : null}
 		</div>
 	);
 };

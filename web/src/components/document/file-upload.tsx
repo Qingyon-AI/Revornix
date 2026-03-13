@@ -35,7 +35,11 @@ const FileUpload = ({
 
 	// 加载用户文件系统信息
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
+		queryKey: [
+			'getUserFileSystemDetail',
+			mainUserInfo?.id,
+			mainUserInfo?.default_user_file_system,
+		],
 		queryFn: () =>
 			getUserFileSystemDetail({
 				user_file_system_id: mainUserInfo!.default_user_file_system!,

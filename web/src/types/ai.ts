@@ -26,6 +26,13 @@ export type SessionItem = {
     id: string
     title: string
     messages: Message[]
+    preview: string
+    created_at: string
+    updated_at: string
+    message_count: number
+    source_count: number
+    last_message_role?: string
+    model_name?: string
 }
 
 export type AIPhase =

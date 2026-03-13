@@ -18,8 +18,19 @@ import { Alert, AlertDescription } from '../ui/alert';
 import SectionPublish from './section-publish';
 import SectionShare from './section-share';
 import { Separator } from '../ui/separator';
+import { cn } from '@/lib/utils';
 
-const SectionOperateShare = ({ section_id }: { section_id: number }) => {
+const SectionOperateShare = ({
+	section_id,
+	className,
+	onTriggerClick,
+	showPublishBadge = true,
+}: {
+	section_id: number;
+	className?: string;
+	onTriggerClick?: () => void;
+	showPublishBadge?: boolean;
+}) => {
 	const t = useTranslations();
 
 	const { data: sectionPublish } = useQuery({
@@ -33,10 +44,13 @@ const SectionOperateShare = ({ section_id }: { section_id: number }) => {
 		<>
 			<Dialog>
 				<DialogTrigger asChild>
-					<Button className='flex-1 w-full text-xs' variant={'ghost'}>
+					<Button
+						className={cn('flex-1 w-full text-xs', className)}
+						variant={'ghost'}
+						onClick={onTriggerClick}>
 						<ShareIcon />
 						{t('section_share')}
-						{sectionPublish && sectionPublish.status && (
+						{showPublishBadge && sectionPublish && sectionPublish.status && (
 							<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
 								<span className='relative flex size-2'>
 									<span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75'></span>

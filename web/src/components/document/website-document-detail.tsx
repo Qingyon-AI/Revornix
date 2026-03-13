@@ -11,8 +11,6 @@ import { useInterval } from 'ahooks';
 import { useTranslations } from 'next-intl';
 import { Loader2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import DocumentOperate from './document-operate';
-import { Separator } from '../ui/separator';
 import { useInView } from 'react-intersection-observer';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
@@ -48,7 +46,11 @@ const WebsiteDocumentDetail = ({
 	});
 
 	const { data: userFileSystemDetail } = useQuery({
-		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
+		queryKey: [
+			'getUserFileSystemDetail',
+			mainUserInfo?.id,
+			mainUserInfo?.default_user_file_system,
+		],
 		queryFn: () =>
 			getUserFileSystemDetail({
 				user_file_system_id: mainUserInfo!.default_user_file_system!,
@@ -149,13 +151,7 @@ const WebsiteDocumentDetail = ({
 		<div className={cn('h-full w-full relative', className)}>
 			{((isError && error) || markdownGetError) && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
-					{error?.message ?? (
-						<div className='flex flex-col text-center gap-2 w-full'>
-							<p>{markdownGetError}</p>
-							<Separator />
-							<DocumentOperate id={id} />
-						</div>
-					)}
+					{error?.message ?? <p>{markdownGetError}</p>}
 				</div>
 			)}
 			{document &&
@@ -187,8 +183,6 @@ const WebsiteDocumentDetail = ({
 								<Loader2 className='size-4 animate-spin' />
 							)}
 						</Button>
-						<Separator />
-						<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
 					</div>
 				)}
 			{document &&
@@ -210,8 +204,6 @@ const WebsiteDocumentDetail = ({
 								<Loader2 className='size-4 animate-spin' />
 							)}
 						</Button>
-						<Separator />
-						<DocumentOperate id={id} />
 					</div>
 				)}
 			{document &&
@@ -230,8 +222,6 @@ const WebsiteDocumentDetail = ({
 								<Loader2 className='size-4 animate-spin' />
 							)}
 						</Button>
-						<Separator />
-						<DocumentOperate id={id} className='mb-5 md:mb-0 overflow-auto' />
 					</div>
 				)}
 			{document &&
@@ -244,19 +234,17 @@ const WebsiteDocumentDetail = ({
 			{markdown && !isError && !markdownGetError && (
 				<div className='w-full h-full flex flex-col'>
 					<div className='flex-1 overflow-auto relative'>
-						<div className='prose mx-auto pb-4 dark:prose-invert'>
+						<div className='prose prose-zinc mx-auto max-w-[880px] dark:prose-invert prose-headings:scroll-mt-24 prose-headings:break-words prose-h1:text-3xl prose-h1:font-semibold prose-h2:text-2xl prose-h3:text-xl prose-p:leading-8 prose-a:text-primary prose-strong:text-foreground prose-img:rounded-2xl xl:pb-14 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
 							<CustomMarkdown content={markdown} />
-							<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>
+							<div className='not-prose mt-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
 								{t('document_ai_tips')}
-							</p>
+							</div>
 						</div>
 						<div
 							ref={bottomRef}
 							className='pointer-events-none absolute inset-x-0 bottom-0 h-px'
 						/>
 					</div>
-					<Separator className='mb-4' />
-					<DocumentOperate id={id} className='overflow-auto' />
 				</div>
 			)}
 		</div>
