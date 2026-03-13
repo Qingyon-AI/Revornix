@@ -17,7 +17,7 @@ from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo,
 from enums.engine_enums import EngineProvided, EngineCategory
 from playwright.async_api import async_playwright
 from data.sql.base import session_scope
-from common.logger import info_logger, exception_logger
+from common.logger import info_logger, exception_logger, format_log_message
 from proxy.file_system_proxy import FileSystemProxy
 
 
@@ -37,6 +37,21 @@ def _safe_extract_zip(zip_file_path: Path, extracted_dir: Path) -> None:
             if not _is_within_directory(base_dir, member_path):
                 raise ValueError(f"Unsafe zip file path detected: {member.filename}")
         zip_ref.extractall(str(extracted_dir))
+
+
+def _build_local_file_log_context(file_path: str) -> dict[str, Any]:
+    path = Path(file_path)
+    size_bytes: int | None = None
+    try:
+        if path.exists():
+            size_bytes = path.stat().st_size
+    except OSError:
+        size_bytes = None
+    return {
+        "source_file_name": path.name,
+        "source_file_suffix": path.suffix,
+        "source_file_size_bytes": size_bytes,
+    }
 
 
 class MineruApiEngine(MarkdownEngineBase):
@@ -116,6 +131,8 @@ class MineruApiEngine(MarkdownEngineBase):
             raise Exception("Engine is not initialized. Please initialize first.")
 
         self._validate_local_files(file_paths)
+        stage = "init"
+        file_log_contexts = [_build_local_file_log_context(path) for path in file_paths]
 
         db = session_scope()
         try:
@@ -126,17 +143,21 @@ class MineruApiEngine(MarkdownEngineBase):
                 raise Exception("The owner of the engine has not set a default file system yet.")
 
             # 1) Apply upload URLs (batch)
+            stage = "apply_upload_urls"
             request_url = f"{self.MINERU_BASE}/api/v4/file-urls/batch"
             headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
 
-            files_payload = [
-                {
+            files_payload = []
+            data_id_to_file_context: dict[str, dict[str, Any]] = {}
+            for path, file_log_context in zip(file_paths, file_log_contexts):
+                data_id = str(uuid.uuid4())
+                payload = {
                     "name": Path(path).name,
                     "is_ocr": True,
-                    "data_id": str(uuid.uuid4()),
+                    "data_id": data_id,
                 }
-                for path in file_paths
-            ]
+                files_payload.append(payload)
+                data_id_to_file_context[data_id] = file_log_context
 
             batch_payload = {
                 "enable_formula": True,
@@ -165,6 +186,7 @@ class MineruApiEngine(MarkdownEngineBase):
                     )
 
             # 2) Upload files concurrently (PUT to presigned URLs)
+            stage = "upload_files"
             async with httpx.AsyncClient(proxy=None, trust_env=False, timeout=60) as client:
                 async def upload_file(idx: int, file_path: str) -> None:
                     async with aiofiles.open(file_path, "rb") as f:
@@ -182,6 +204,7 @@ class MineruApiEngine(MarkdownEngineBase):
                 await asyncio.gather(*(upload_file(i, p) for i, p in enumerate(file_paths)))
 
             # 3) Poll extraction results until all terminal (done/failed)
+            stage = "poll_extract_results"
             async def poll_result() -> list[dict[str, Any]]:
                 timeout_sec = 300  # 5 minutes
                 interval_sec = 2
@@ -225,6 +248,7 @@ class MineruApiEngine(MarkdownEngineBase):
             extract_result = await poll_result()
 
             # 4) Process results
+            stage = "process_extract_results"
             final_data: list[Tuple[str, str, str]] = []
 
             async with httpx.AsyncClient(proxy=None, trust_env=False, timeout=60) as download_client:
@@ -232,7 +256,25 @@ class MineruApiEngine(MarkdownEngineBase):
                     state = item.get("state")
 
                     if state == "failed":
-                        raise Exception(f"MinerU extraction failed: {item.get('err_msg')}; item={item}")
+                        failed_context = data_id_to_file_context.get(item.get("data_id") or "", {})
+                        exception_logger.error(
+                            format_log_message(
+                                "mineru_extract_item_failed",
+                                batch_id=batch_id,
+                                user_id=user_id,
+                                data_id=item.get("data_id"),
+                                task_id=item.get("task_id"),
+                                mineru_file_name=item.get("file_name"),
+                                state=state,
+                                err_msg=item.get("err_msg"),
+                                **failed_context,
+                            )
+                        )
+                        raise Exception(
+                            f"MinerU extraction failed: batch_id={batch_id}, data_id={item.get('data_id')}, "
+                            f"file_name={failed_context.get('source_file_name') or item.get('file_name')}, "
+                            f"err_msg={item.get('err_msg')}"
+                        )
 
                     if state != "done":
                         # In theory we should never reach here because poll_result waits terminal,
@@ -309,7 +351,17 @@ class MineruApiEngine(MarkdownEngineBase):
             return final_data
 
         except Exception as e:
-            exception_logger.error(f"MinerU extraction failed: {e}", exc_info=True)
+            exception_logger.error(
+                format_log_message(
+                    "mineru_extract_files_failed",
+                    user_id=user_id,
+                    stage=stage,
+                    file_count=len(file_paths),
+                    files=file_log_contexts,
+                    error=e,
+                ),
+                exc_info=True,
+            )
             raise
         finally:
             db.close()
@@ -317,15 +369,41 @@ class MineruApiEngine(MarkdownEngineBase):
     async def analyse_website(self, url: str) -> WebsiteInfo:
         with tempfile.TemporaryDirectory(prefix="revornix-mineru-api-website-") as temp_dir_str:
             temp_shot_pdf_path = Path(temp_dir_str) / "scene-snap.pdf"
+            page_title: str | None = None
+            final_url: str | None = None
+            response_status: int | None = None
+            stage = "render_website_pdf"
+            try:
+                async with async_playwright() as p:
+                    browser = await p.chromium.launch(headless=True)
+                    page = await browser.new_page()
+                    response = await page.goto(url)
+                    final_url = page.url
+                    page_title = await page.title()
+                    if response is not None:
+                        response_status = response.status
+                    await page.pdf(path=str(temp_shot_pdf_path))
+                    await browser.close()
 
-            async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=True)
-                page = await browser.new_page()
-                await page.goto(url)
-                await page.pdf(path=str(temp_shot_pdf_path))
-                await browser.close()
-
-            results = await self._extract_files([str(temp_shot_pdf_path)])
+                stage = "extract_website_pdf"
+                results = await self._extract_files([str(temp_shot_pdf_path)])
+            except Exception as exc:
+                pdf_context = _build_local_file_log_context(str(temp_shot_pdf_path))
+                exception_logger.error(
+                    format_log_message(
+                        "mineru_analyse_website_failed",
+                        user_id=self.user_id,
+                        stage=stage,
+                        requested_url=url,
+                        final_url=final_url,
+                        page_title=page_title,
+                        response_status=response_status,
+                        error=exc,
+                        **pdf_context,
+                    ),
+                    exc_info=True,
+                )
+                raise
 
         if not results:
             raise Exception("No results returned from file extraction")
