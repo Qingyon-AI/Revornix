@@ -40,6 +40,17 @@ from router.user_shared import commit_with_bucket_cleanup, setup_default_file_sy
 
 WECHAT_OFFICIAL_PLATFORM = "wechat-official"
 WECHAT_OFFICIAL_DEFAULT_TIMEZONE = "Asia/Shanghai"
+WECHAT_OFFICIAL_SUBSCRIBE_WELCOME_MESSAGE = (
+    "欢迎关注 Revornix。\n"
+    "这里可以作为你的随手收藏入口。\n"
+    "实用技巧：\n"
+    "1. 直接发送网页链接，我会帮你存成链接文档。\n"
+    "2. 发送文本，我会保存为速记。\n"
+    "3. 发送语音会自动转写，图片、文件也能直接入库。\n"
+    "提醒：\n"
+    "1. 官网：https://revornix.com\n"
+    "2. 任何类型，每次只能单独处理一条，请不要一条消息发送多个链接。"
+)
 
 wechat_official_router = APIRouter()
 
@@ -134,6 +145,27 @@ def _build_secure_xml_response(
         "</xml>"
     )
     return Response(content=response_xml, media_type="application/xml")
+
+
+def _build_text_reply_response(
+    *,
+    incoming_message: WeChatOfficialIncomingMessage,
+    content: str,
+    is_encrypted_request: bool,
+    crypto_config: WeChatCryptoConfig | None,
+    nonce: str | None,
+) -> Response:
+    reply_xml = _build_text_reply_xml(
+        incoming_message=incoming_message,
+        content=content,
+    )
+    if is_encrypted_request and crypto_config is not None:
+        return _build_secure_xml_response(
+            xml_text=reply_xml,
+            crypto_config=crypto_config,
+            nonce=nonce,
+        )
+    return _build_plain_xml_response(reply_xml)
 
 
 def _truncate_text(value: str | None, limit: int, fallback: str | None = None) -> str | None:
@@ -297,10 +329,36 @@ async def _resolve_wechat_official_user(
         if db_user is None:
             raise Exception("The user bound to the WeChat user record does not exist")
         normalized_nickname = _truncate_text(nickname, 100)
+        should_commit = False
+        if db_official_user.wechat_user_union_id != union_id:
+            db_official_user.wechat_user_union_id = union_id
+            should_commit = True
         if normalized_nickname and db_official_user.wechat_user_name != normalized_nickname:
             db_official_user.wechat_user_name = normalized_nickname
+            should_commit = True
+        if should_commit:
             db.commit()
         return db_user
+
+    deleted_official_user = crud.user.get_wechat_user_by_wechat_open_id(
+        db=db,
+        wechat_user_open_id=openid,
+        filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
+        include_deleted=True,
+    )
+    if deleted_official_user is not None and deleted_official_user.delete_at is not None:
+        db_user = crud.user.get_user_by_id(
+            db=db,
+            user_id=deleted_official_user.user_id,
+        )
+        if db_user is not None:
+            deleted_official_user.delete_at = None
+            deleted_official_user.wechat_user_union_id = union_id
+            normalized_nickname = _truncate_text(nickname, 100)
+            if normalized_nickname:
+                deleted_official_user.wechat_user_name = normalized_nickname
+            db.commit()
+            return db_user
 
     db_wechat_users = crud.user.get_wechat_user_by_wechat_union_id(
         db=db,
@@ -543,6 +601,30 @@ async def _process_wechat_official_message(
         db.close()
 
 
+async def _process_wechat_official_unsubscribe(
+    openid: str,
+) -> None:
+    db = session_scope()
+    try:
+        crud.user.delete_wechat_user_by_wechat_open_id(
+            db=db,
+            wechat_user_open_id=openid,
+            filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
+        )
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        exception_logger.error(
+            format_log_message(
+                "wechat_official_unsubscribe_process_failed",
+                openid=openid,
+                error=exc,
+            )
+        )
+    finally:
+        db.close()
+
+
 @wechat_official_router.get("/official/callback", include_in_schema=False)
 async def verify_wechat_official_callback(
     timestamp: str = Query(...),
@@ -662,52 +744,55 @@ async def receive_wechat_official_message(
     incoming_message = _parse_wechat_official_message(parsed_body)
 
     if incoming_message.msg_type == "event":
-        if app_id and app_secret and incoming_message.event == "subscribe":
-            asyncio.create_task(
-                _process_wechat_official_message(
-                    incoming_message,
-                    app_id,
-                    app_secret,
+        if incoming_message.event == "subscribe":
+            if app_id and app_secret:
+                asyncio.create_task(
+                    _process_wechat_official_message(
+                        incoming_message,
+                        app_id,
+                        app_secret,
+                    )
                 )
-            )
-        reply_xml = _build_text_reply_xml(
-            incoming_message=incoming_message,
-            content="已收到关注事件。",
-        )
-        if is_encrypted_request and crypto_config is not None:
-            return _build_secure_xml_response(
-                xml_text=reply_xml,
+            return _build_text_reply_response(
+                incoming_message=incoming_message,
+                content=WECHAT_OFFICIAL_SUBSCRIBE_WELCOME_MESSAGE,
+                is_encrypted_request=is_encrypted_request,
                 crypto_config=crypto_config,
                 nonce=nonce,
             )
-        return _build_plain_xml_response(reply_xml)
+        if incoming_message.event == "unsubscribe":
+            asyncio.create_task(
+                _process_wechat_official_unsubscribe(
+                    incoming_message.from_user_name,
+                )
+            )
+            return PlainTextResponse(content="")
+        return _build_text_reply_response(
+            incoming_message=incoming_message,
+            content="已收到事件。",
+            is_encrypted_request=is_encrypted_request,
+            crypto_config=crypto_config,
+            nonce=nonce,
+        )
 
     supported_message_types = {"text", "link", "image", "file", "video", "shortvideo", "voice", "audio"}
     if incoming_message.msg_type not in supported_message_types:
-        reply_xml = _build_text_reply_xml(
+        return _build_text_reply_response(
             incoming_message=incoming_message,
             content="暂不支持该消息类型，目前支持文本、图片、音频、文件和链接消息。",
+            is_encrypted_request=is_encrypted_request,
+            crypto_config=crypto_config,
+            nonce=nonce,
         )
-        if is_encrypted_request and crypto_config is not None:
-            return _build_secure_xml_response(
-                xml_text=reply_xml,
-                crypto_config=crypto_config,
-                nonce=nonce,
-            )
-        return _build_plain_xml_response(reply_xml)
 
     if app_id is None or app_secret is None:
-        reply_xml = _build_text_reply_xml(
+        return _build_text_reply_response(
             incoming_message=incoming_message,
             content="服务暂未配置完成，请稍后再试。",
+            is_encrypted_request=is_encrypted_request,
+            crypto_config=crypto_config,
+            nonce=nonce,
         )
-        if is_encrypted_request and crypto_config is not None:
-            return _build_secure_xml_response(
-                xml_text=reply_xml,
-                crypto_config=crypto_config,
-                nonce=nonce,
-            )
-        return _build_plain_xml_response(reply_xml)
 
     asyncio.create_task(
         _process_wechat_official_message(
@@ -716,14 +801,10 @@ async def receive_wechat_official_message(
             app_secret,
         )
     )
-    reply_xml = _build_text_reply_xml(
+    return _build_text_reply_response(
         incoming_message=incoming_message,
         content="已收到，正在写入 Revornix。",
+        is_encrypted_request=is_encrypted_request,
+        crypto_config=crypto_config,
+        nonce=nonce,
     )
-    if is_encrypted_request and crypto_config is not None:
-        return _build_secure_xml_response(
-            xml_text=reply_xml,
-            crypto_config=crypto_config,
-            nonce=nonce,
-        )
-    return _build_plain_xml_response(reply_xml)
