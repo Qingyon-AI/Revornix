@@ -84,7 +84,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 						limit: lastPage.limit,
 						filter_value: keyword,
 						filter_name: 'nickname',
-				  }
+					}
 				: undefined;
 		},
 		staleTime: 0, // ❌ 不认为缓存是新鲜的（始终重新请求）
@@ -149,7 +149,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 			},
 			{
 				rootMargin: '100px', // 提前100px加载
-			}
+			},
 		);
 
 		if (loadMoreRef.current) {
@@ -235,8 +235,8 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 																			src={user.avatar}
 																			alt='avatar'
 																		/>
-																		<AvatarFallback>
-																			{user.nickname}
+																		<AvatarFallback className='font-semibold'>
+																			{user.nickname.slice(0, 1) ?? '?'}
 																		</AvatarFallback>
 																	</Avatar>
 																	<p className='text-xs ml-2'>
@@ -247,7 +247,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 																			'ml-auto',
 																			field.value == user.id
 																				? 'opacity-100'
-																				: 'opacity-0'
+																				: 'opacity-0',
 																		)}
 																	/>
 																</CommandItem>

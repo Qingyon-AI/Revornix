@@ -147,8 +147,8 @@ const NotificationRecordCard = ({
 									alt='avatar'
 									className='size-7 object-cover'
 								/>
-								<AvatarFallback className='size-7'>
-									{notification.creator.nickname}
+								<AvatarFallback className='size-7 font-semibold'>
+									{notification.creator.nickname.slice(0, 1) ?? '?'}
 								</AvatarFallback>
 							</Avatar>
 							<div className='flex flex-col gap-1'>
@@ -255,8 +255,8 @@ const NotificationRecordCard = ({
 										alt='avatar'
 										className='size-7 object-cover'
 									/>
-									<AvatarFallback className='size-7'>
-										{notification.creator.nickname}
+									<AvatarFallback className='size-7 font-semibold'>
+										{notification.creator.nickname.slice(0, 1) ?? '?'}
 									</AvatarFallback>
 								</Avatar>
 								<div className='flex flex-col gap-1'>

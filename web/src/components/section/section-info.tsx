@@ -59,7 +59,9 @@ const InfoMetric = ({
 				<span>{label}</span>
 			</div>
 			<div className='mt-3 text-base font-semibold'>{value}</div>
-			{hint ? <p className='mt-1 text-xs text-muted-foreground'>{hint}</p> : null}
+			{hint ? (
+				<p className='mt-1 text-xs text-muted-foreground'>{hint}</p>
+			) : null}
 		</div>
 	);
 };
@@ -186,19 +188,19 @@ const SectionInfo = ({ id }: { id: number }) => {
 						<Avatar className='size-10 ring-1 ring-border/60'>
 							<AvatarImage
 								src={
-									creatorAvatar ? replacePath(creatorAvatar, creatorId) : undefined
+									creatorAvatar
+										? replacePath(creatorAvatar, creatorId)
+										: undefined
 								}
 								alt='avatar'
 								className='size-10 object-cover'
 							/>
-							<AvatarFallback className='size-10'>
-								{creatorNickname}
+							<AvatarFallback className='size-10 font-semibold'>
+								{creatorNickname.slice(0, 1) ?? '?'}
 							</AvatarFallback>
 						</Avatar>
 						<div className='min-w-0'>
-							<p className='truncate text-sm font-medium'>
-								{creatorNickname}
-							</p>
+							<p className='truncate text-sm font-medium'>{creatorNickname}</p>
 							<p className='truncate text-xs text-muted-foreground'>
 								{t('section_updated_at')}: {lastActiveDistance}
 							</p>
@@ -212,14 +214,12 @@ const SectionInfo = ({ id }: { id: number }) => {
 								alt='avatar'
 								className='size-10 object-cover'
 							/>
-							<AvatarFallback className='size-10'>
-								{creatorNickname}
+							<AvatarFallback className='size-10 font-semibold'>
+								{creatorNickname.slice(0, 1) ?? '?'}
 							</AvatarFallback>
 						</Avatar>
 						<div className='min-w-0'>
-							<p className='truncate text-sm font-medium'>
-								{creatorNickname}
-							</p>
+							<p className='truncate text-sm font-medium'>{creatorNickname}</p>
 							<p className='truncate text-xs text-muted-foreground'>
 								{t('section_updated_at')}: {lastActiveDistance}
 							</p>
@@ -251,7 +251,9 @@ const SectionInfo = ({ id }: { id: number }) => {
 					icon={CalendarClock}
 					label={t('section_updated_at')}
 					value={lastActiveDistance}
-					hint={lastActiveDate ? formatInUserTimeZone(lastActiveDate) : undefined}
+					hint={
+						lastActiveDate ? formatInUserTimeZone(lastActiveDate) : undefined
+					}
 				/>
 				<InfoMetric
 					icon={CalendarDays}

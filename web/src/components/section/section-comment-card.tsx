@@ -24,8 +24,8 @@ const SectionCommentCard = ({ comment }: { comment: SectionCommentInfo }) => {
 							alt='avatar'
 							className='size-10 object-cover'
 						/>
-						<AvatarFallback className='size-10'>
-							{comment.creator.nickname}
+						<AvatarFallback className='size-10 font-semibold'>
+							{comment.creator.nickname.slice(0, 1) ?? '?'}
 						</AvatarFallback>
 					</Avatar>
 					<div className='min-w-0 space-y-1'>

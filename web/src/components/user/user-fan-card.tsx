@@ -18,7 +18,9 @@ const UserFanCard = ({ user }: { user: UserPublicInfo }) => {
 							alt='avatar'
 							className='size-12 object-cover'
 						/>
-						<AvatarFallback className='size-12'>{user.nickname}</AvatarFallback>
+						<AvatarFallback className='size-12 font-semibold'>
+							{user.nickname.slice(0, 1) ?? '?'}
+						</AvatarFallback>
 					</Avatar>
 					<div className='flex flex-col gap-1'>
 						<p className='font-bold'>{user.nickname}</p>
@@ -30,7 +32,9 @@ const UserFanCard = ({ user }: { user: UserPublicInfo }) => {
 			</Link>
 			<div className='flex flex-row items-center gap-5'>
 				<p className='flex-1 bg-muted py-1 rounded flex justify-center items-center'>
-					<span className='text-muted-foreground text-xs'>{t('user_fans')}</span>
+					<span className='text-muted-foreground text-xs'>
+						{t('user_fans')}
+					</span>
 					<span className='font-bold ml-1'>{user.fans}</span>
 				</p>
 				<p className='flex-1 bg-muted py-1 rounded flex justify-center items-center'>
