@@ -123,7 +123,11 @@ def _build_section_agent_system_prompt(
                     "- Answer from the provided section knowledge first.",
                     "- Only call tools when the user explicitly asks for MCP or external lookup, or when the provided section knowledge is insufficient.",
                     "- Do not use recent-document, global document, or reading-history tools just to reconstruct context for this section.",
-                    "- If tools are necessary, keep their scope aligned with the current section question.",
+                    "- Exception: If the user asks about their own writing, articles they have written, or their personal content history, you may use global document search tools to answer about their personal creations.",
+                    "- When using tools, first consider if the question is about the current section content or about the user's personal writing history across all sections.",
+                    "- If the question is about the current section (e.g., 'what does this section say about X'), limit tool usage to the current section's context.",
+                    "- If the question is about the user's personal writing (e.g., 'have I written about X', 'what articles have I written on Y'), you may use global search tools.",
+                    "- Always clarify the scope of your answer: mention whether you're answering based on the current section or the user's entire writing history.",
                 ]
             ),
         ]
@@ -140,9 +144,11 @@ def _build_section_agent_query(
     return "\n".join(
         [
             f"Current section: #{section_id} ({section_title})",
-            "The user's request in this chat always refers to the current section above.",
-            "Do not use tools to identify which section or document the user means.",
-            "Answer from the provided section context first, and only call tools if they are truly needed.",
+            "The user's request may be about the current section above, or about their personal writing history.",
+            "If the question is about the current section (e.g., 'what does this section say about X'), answer from the provided section context first.",
+            "If the question is about the user's personal writing (e.g., 'have I written about X', 'what articles have I written on Y'), you may use global search tools to answer about their personal creations.",
+            "Do not use tools to identify which section or document the user means if it's already clear from context.",
+            "Only call tools when the user explicitly asks for MCP or external lookup, or when the provided knowledge is insufficient.",
             "",
             f"User request: {query}",
         ]

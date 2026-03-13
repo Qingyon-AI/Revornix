@@ -162,7 +162,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 						<div className='absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent' />
 					</div>
 				) : (
-					<div className='flex h-36 items-end bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.2),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.18),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.82),rgba(15,23,42,0.25))] p-4'>
+					<div className='flex h-36 items-end bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.1),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(56,189,180,0.1),transparent_30%),linear-gradient(135deg,rgba(50,45,42,0.5),rgba(50,45,42,0.2))] p-4'>
 						<div className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-white/80 backdrop-blur'>
 							<NotebookPen className='size-3.5' />
 							{t('section_creator')}
