@@ -169,7 +169,7 @@ const SectionOperate = ({
 							<DrawerTitle className='text-lg tracking-tight'>
 								{t('section_action_menu_title')}
 							</DrawerTitle>
-							<DrawerDescription className='max-w-[28rem] text-sm leading-6 text-muted-foreground/90'>
+							<DrawerDescription className='text-left max-w-[28rem] text-sm leading-6 text-muted-foreground/90'>
 								{t('section_action_menu_description')}
 							</DrawerDescription>
 						</DrawerHeader>
