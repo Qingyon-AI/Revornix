@@ -234,8 +234,8 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 							alt='user avatar'
 							className='size-5 object-cover'
 						/>
-						<AvatarFallback className='size-5'>
-							{engine_info.creator.nickname}
+						<AvatarFallback className='size-5 font-semibold'>
+							{engine_info.creator.nickname.slice(0, 1) ?? '?'}
 						</AvatarFallback>
 					</Avatar>
 					<span className='text-xs text-muted-foreground ml-2'>

@@ -247,8 +247,8 @@ const NotificationSourceCard = ({
 						alt='user avatar'
 						className='size-5 object-cover'
 					/>
-					<AvatarFallback className='size-5'>
-						{notification_source.creator.nickname}
+					<AvatarFallback className='size-5 font-semibold'>
+						{notification_source.creator.nickname.slice(0, 1) ?? '?'}
 					</AvatarFallback>
 				</Avatar>
 				<span className='text-xs text-muted-foreground ml-2'>

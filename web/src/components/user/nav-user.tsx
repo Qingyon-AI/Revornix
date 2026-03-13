@@ -205,8 +205,8 @@ export function NavUser() {
 									alt='avatar'
 									className='size-8 object-cover'
 								/>
-								<AvatarFallback className='size-8'>
-									{mainUserInfo.nickname}
+								<AvatarFallback className='size-8 font-semibold'>
+									{mainUserInfo.nickname.slice(0, 1) ?? '?'}
 								</AvatarFallback>
 							</Avatar>
 							<div className='grid flex-1 text-left text-sm leading-tight'>
@@ -235,8 +235,8 @@ export function NavUser() {
 										alt='avatar'
 										className='size-8 object-cover'
 									/>
-									<AvatarFallback className='size-8'>
-										{mainUserInfo.nickname}
+									<AvatarFallback className='size-8 font-semibold'>
+										{mainUserInfo.nickname.slice(0, 1) ?? '?'}
 									</AvatarFallback>
 								</Avatar>
 								<div className='grid flex-1 text-sm'>

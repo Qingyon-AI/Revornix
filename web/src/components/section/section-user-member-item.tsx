@@ -128,7 +128,9 @@ const SectionMemberItem = ({
 						e.stopPropagation();
 					}}>
 					<AvatarImage src={user.avatar} alt='avatar' />
-					<AvatarFallback>{user.nickname}</AvatarFallback>
+					<AvatarFallback className='font-semibold'>
+						{user.nickname.slice(0, 1) ?? '?'}
+					</AvatarFallback>
 				</Avatar>
 				<p>{user.nickname}</p>
 			</div>

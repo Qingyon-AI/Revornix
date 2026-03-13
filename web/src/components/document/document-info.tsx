@@ -143,7 +143,9 @@ const DocumentInfo = ({ id }: { id: number }) => {
 	const title = data.title || t('document_no_title');
 	const description = data.description || t('document_no_description');
 	const coverSrc =
-		data.cover && data.creator ? replacePath(data.cover, data.creator.id) : null;
+		data.cover && data.creator
+			? replacePath(data.cover, data.creator.id)
+			: null;
 	const lastActiveAt = data.update_time ?? data.create_time;
 	const lastActiveDate = toDate(lastActiveAt);
 	const createdAtText =
@@ -248,8 +250,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					t('document_summarize_status'),
 					data.summarize_task.status === DocumentSummarizeStatus.WAIT_TO
 						? t('document_summarize_status_todo')
-						: data.summarize_task.status ===
-							  DocumentSummarizeStatus.SUMMARIZING
+						: data.summarize_task.status === DocumentSummarizeStatus.SUMMARIZING
 							? t('document_summarize_status_doing')
 							: data.summarize_task.status === DocumentSummarizeStatus.SUCCESS
 								? t('document_summarize_status_success')
@@ -331,8 +332,8 @@ const DocumentInfo = ({ id }: { id: number }) => {
 								alt='avatar'
 								className='size-10 object-cover'
 							/>
-							<AvatarFallback className='size-10'>
-								{data.creator.nickname}
+							<AvatarFallback className='size-10 font-semibold'>
+								{data.creator.nickname.slice(0, 1) ?? '?'}
 							</AvatarFallback>
 						</Avatar>
 						<div className='min-w-0'>
@@ -391,7 +392,9 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					icon={CalendarClock}
 					label={t('section_updated_at')}
 					value={lastActiveDistance}
-					hint={lastActiveDate ? formatInUserTimeZone(lastActiveDate) : undefined}
+					hint={
+						lastActiveDate ? formatInUserTimeZone(lastActiveDate) : undefined
+					}
 				/>
 				<InfoMetric
 					icon={CalendarDays}

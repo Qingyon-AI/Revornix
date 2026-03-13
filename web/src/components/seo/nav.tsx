@@ -10,7 +10,9 @@ const Nav = async () => {
 	return (
 		<header className='sticky top-0 z-20 flex h-16 w-full items-center border-b border-border/40 bg-background/72 backdrop-blur-xl'>
 			<div className='mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 md:px-6'>
-				<Link href='/community' className='truncate text-[1.75rem] font-bold tracking-tight md:text-[2rem]'>
+				<Link
+					href='/community'
+					className='truncate text-[1.75rem] font-bold tracking-tight md:text-[2rem]'>
 					Revornix
 				</Link>
 				<div className='flex shrink-0 flex-row items-center gap-1 md:gap-1.5'>
@@ -32,7 +34,11 @@ const Nav = async () => {
 					</Link>
 					<PublicNavControls />
 					<Link href='https://revornix.com' target='_blank'>
-						<Button variant='outline' size='icon-sm' className='rounded-xl md:hidden' aria-label={t('seo_nav_docs')}>
+						<Button
+							variant='outline'
+							size='icon-sm'
+							className='rounded-xl md:hidden'
+							aria-label={t('seo_nav_docs')}>
 							<BookText className='size-4' />
 						</Button>
 						<Button

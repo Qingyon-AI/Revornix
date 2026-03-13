@@ -107,7 +107,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 													alt='avatar'
 													className='size-10 object-cover'
 												/>
-												<AvatarFallback className='size-10'>
+												<AvatarFallback className='size-10 font-semibold'>
 													{note.user.nickname}
 												</AvatarFallback>
 											</Avatar>

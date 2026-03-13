@@ -291,8 +291,8 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 							alt='user avatar'
 							className='size-5 object-cover'
 						/>
-						<AvatarFallback className='size-5'>
-							{modelProvider.creator.nickname}
+						<AvatarFallback className='size-5 font-semibold'>
+							{modelProvider.creator.nickname.slice(0, 1) ?? '?'}
 						</AvatarFallback>
 					</Avatar>
 					<span className='text-xs text-muted-foreground ml-2'>

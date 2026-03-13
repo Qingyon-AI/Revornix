@@ -56,23 +56,23 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 				)}
 				<div className='mt-auto flex items-center justify-between gap-3 text-xs text-muted-foreground'>
 					<div className='flex min-w-0 items-center gap-2'>
-					<Avatar
-						className='size-5'
-						title={section?.creator.nickname ?? ''}
-						onClick={(e) => {
-							router.push(`/user/detail/${section.creator.id}`);
-							e.preventDefault();
-							e.stopPropagation();
-						}}>
-						<AvatarImage
-							src={replacePath(section?.creator.avatar, section.creator.id)}
-							alt='avatar'
-							className='size-5 object-cover'
-						/>
-						<AvatarFallback className='size-5'>
-							{section?.creator.nickname}
-						</AvatarFallback>
-					</Avatar>
+						<Avatar
+							className='size-5'
+							title={section?.creator.nickname ?? ''}
+							onClick={(e) => {
+								router.push(`/user/detail/${section.creator.id}`);
+								e.preventDefault();
+								e.stopPropagation();
+							}}>
+							<AvatarImage
+								src={replacePath(section?.creator.avatar, section.creator.id)}
+								alt='avatar'
+								className='size-5 object-cover'
+							/>
+							<AvatarFallback className='size-5 font-semibold'>
+								{section?.creator.nickname.slice(0, 1) ?? '?'}
+							</AvatarFallback>
+						</Avatar>
 						<span className='line-clamp-1'>
 							{formatDistance(new Date(section.create_time), new Date(), {
 								addSuffix: true,

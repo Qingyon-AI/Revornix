@@ -46,7 +46,7 @@ const SectionInfoMember = ({ section_id }: { section_id: number }) => {
 						start: lastPage.next_start,
 						limit: lastPage.limit,
 						filter_roles: [UserSectionRole.MEMBER],
-				  }
+					}
 				: undefined;
 		},
 		staleTime: 0, // ❌ 不认为缓存是新鲜的（始终重新请求）
@@ -65,7 +65,7 @@ const SectionInfoMember = ({ section_id }: { section_id: number }) => {
 			},
 			{
 				rootMargin: '100px', // 提前100px加载
-			}
+			},
 		);
 
 		if (loadMoreRef.current) {
@@ -107,8 +107,8 @@ const SectionInfoMember = ({ section_id }: { section_id: number }) => {
 										alt='user avatar'
 										className='size-6 object-cover'
 									/>
-									<AvatarFallback className='size-6'>
-										{user.nickname}
+									<AvatarFallback className='size-6 font-semibold'>
+										{user.nickname.slice(0, 1) ?? '?'}
 									</AvatarFallback>
 								</Avatar>
 							);
@@ -155,7 +155,9 @@ const SectionInfoMember = ({ section_id }: { section_id: number }) => {
 															user.nickname ? user.nickname : 'Unknown User'
 														}>
 														<AvatarImage src={user.avatar} alt='user avatar' />
-														<AvatarFallback>{user.nickname}</AvatarFallback>
+														<AvatarFallback>
+															{user.nickname.slice(0, 1) ?? '?'}
+														</AvatarFallback>
 													</Avatar>
 													<div className='flex flex-col'>
 														<div className='mb-1'>{user.nickname}</div>
