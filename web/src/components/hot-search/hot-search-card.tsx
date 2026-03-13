@@ -76,7 +76,7 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-			<Card className={cn('shrink-0')}>
+			<Card className={cn('shrink-0', 'h-full', 'flex', 'flex-col')}>
 				<CardHeader className='w-full flex flex-row items-center justify-between'>
 					<CardTitle className='flex min-w-0 items-center gap-3'>
 						<CardTitleIcon icon={Newspaper} tone='sky' />
@@ -86,7 +86,7 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 						<Expand size={4} className='text-muted-foreground' />
 					</Button>
 				</CardHeader>
-				<CardContent>
+				<CardContent className='flex-1'>
 					<div className='h-44 overflow-auto space-y-1 text-sm'>
 						{website.data.map((item, index) => {
 							return (

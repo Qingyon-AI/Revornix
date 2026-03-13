@@ -236,6 +236,7 @@ const RecentReadDocumentPage = () => {
 					documents.map((document, index) => {
 						return (
 							<div
+								className='h-full'
 								key={index}
 								ref={index === documents.length - 1 ? bottomRef : undefined}>
 								<DocumentCard document={document} />

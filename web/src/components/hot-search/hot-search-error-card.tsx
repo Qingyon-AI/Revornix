@@ -8,7 +8,7 @@ import CardTitleIcon from '@/components/ui/card-title-icon';
 const HotSearchErrorCard = () => {
 	const t = useTranslations();
 	return (
-		<Card className={cn('shrink-0', 'flex', 'flex-col')}>
+		<Card className={cn('shrink-0', 'h-full', 'flex', 'flex-col')}>
 			<CardHeader className='w-full flex flex-row items-center justify-between'>
 				<CardTitle className='flex items-center gap-3'>
 					<CardTitleIcon icon={AlertTriangle} tone='rose' />

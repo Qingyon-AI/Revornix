@@ -51,7 +51,7 @@ const MineFileSystemCard = ({
 
 	return (
 		<>
-			<Card>
+			<Card className='h-full'>
 				<CardHeader className='flex-1'>
 					<CardTitle>{user_file_system.title}</CardTitle>
 					<CardDescription>{user_file_system.description}</CardDescription>
