@@ -6,7 +6,7 @@ from typing import TypedDict
 import crud
 from langgraph.graph import StateGraph, END
 
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from common.document_guard import ensure_document_active
 from data.sql.base import session_scope
 from enums.document import DocumentCategory, DocumentMdConvertStatus
@@ -25,6 +25,56 @@ class DocumentConvertState(TypedDict, total=False):
 
 
 WORKFLOW_NAME = "document_convert"
+
+
+def _get_document_convert_log_context(
+    *,
+    document_id: int,
+    user_id: int,
+) -> dict[str, object]:
+    context: dict[str, object] = {
+        "document_id": document_id,
+        "user_id": user_id,
+    }
+    db = session_scope()
+    try:
+        db_document = crud.document.get_document_by_document_id(
+            db=db,
+            document_id=document_id,
+        )
+        if db_document is None:
+            return context
+
+        context["category"] = db_document.category
+
+        db_user = crud.user.get_user_by_id(
+            db=db,
+            user_id=user_id,
+        )
+        if db_user is not None:
+            if db_document.category == DocumentCategory.FILE:
+                context["engine_id"] = db_user.default_file_document_parse_user_engine_id
+            elif db_document.category == DocumentCategory.WEBSITE:
+                context["engine_id"] = db_user.default_website_document_parse_user_engine_id
+
+        if db_document.category == DocumentCategory.FILE:
+            db_file_document = crud.document.get_file_document_by_document_id(
+                db=db,
+                document_id=document_id,
+            )
+            if db_file_document is not None:
+                context["file_name"] = db_file_document.file_name
+        elif db_document.category == DocumentCategory.WEBSITE:
+            db_website_document = crud.document.get_website_document_by_document_id(
+                db=db,
+                document_id=document_id,
+            )
+            if db_website_document is not None:
+                context["website_url"] = db_website_document.url
+
+        return context
+    finally:
+        db.close()
 
 
 async def _init_convert_task(
@@ -299,7 +349,25 @@ async def run_document_convert_workflow(
             },
         )
     except Exception as e:
-        exception_logger.error(f"Something is error while converting the document to markdown: {e}")
+        try:
+            log_context = _get_document_convert_log_context(
+                document_id=document_id,
+                user_id=user_id,
+            )
+        except Exception as log_context_error:
+            log_context = {
+                "document_id": document_id,
+                "user_id": user_id,
+                "log_context_error": log_context_error,
+            }
+        exception_logger.error(
+            format_log_message(
+                "document_convert_workflow_failed",
+                **log_context,
+                error=e,
+            ),
+            exc_info=True,
+        )
         db = session_scope()
         try:
             db_convert_task = crud.task.get_document_convert_task_by_document_id(

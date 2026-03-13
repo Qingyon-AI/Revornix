@@ -3,7 +3,7 @@ from typing import TypedDict
 import crud
 from langgraph.graph import StateGraph, END
 
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from common.document_guard import ensure_document_active
 from data.sql.base import session_scope
 from enums.document import DocumentProcessStatus
@@ -354,7 +354,19 @@ async def run_document_process_workflow(
             },
         )
     except Exception as e:
-        exception_logger.error(f"Something is error while process document info: {e}")
+        exception_logger.error(
+            format_log_message(
+                "document_process_workflow_failed",
+                document_id=document_id,
+                user_id=user_id,
+                auto_summary=auto_summary,
+                auto_podcast=auto_podcast,
+                auto_transcribe=auto_transcribe,
+                auto_tag=auto_tag,
+                error=e,
+            ),
+            exc_info=True,
+        )
         db = session_scope()
         try:
             db_document = crud.document.get_document_by_document_id(
