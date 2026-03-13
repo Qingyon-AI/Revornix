@@ -102,7 +102,7 @@ const NotificationSourceManagePage = () => {
 					</EmptyHeader>
 				</Empty>
 			)}
-			<div className='grid grid-cols-1 gap-4 md:grid-cols-4 px-5 pb-5'>
+			<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4 px-5 pb-5'>
 				{notification_sources &&
 					notification_sources.map((notification_source, index) => {
 						return (

@@ -2,6 +2,12 @@ import { create } from 'zustand'
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware'
 import { get, set, del } from 'idb-keyval'
 import { AIDocumentReference, AIPhase, AIWorkflow, SessionItem } from '@/types/ai'
+import {
+	hydrateSessionItem,
+	sortSessionsByRecent,
+	touchSession,
+	touchSessionWithMessages,
+} from '@/lib/ai-session'
 
 export type AIChatState = {
     currentSessionId: string | null;
@@ -16,6 +22,7 @@ export type AIChatAction = {
     bindUserScope: (userId: number) => void;
     addSession: (chat: SessionItem) => void;
     deleteSession: (id: string) => void;
+    updateSessionMeta: (session_id: string, patch: Partial<SessionItem>) => void;
     setHasHydrated: (status: boolean) => void;
     updateChatMessage: (
         session_id: string,
@@ -131,10 +138,10 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                                 };
                             }
 
-                            return { ...session, messages };
+                            return touchSessionWithMessages(session, messages);
                         });
 
-                        return { sessions }; // ✅ 必须 return
+                        return { sessions: sortSessionsByRecent(sessions) }; // ✅ 必须 return
                     })
                 },
                 advanceChatMessageWorkflow: (session_id, chat_id, phase, meta) => {
@@ -176,10 +183,10 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                                 };
                             }
 
-                            return { ...session, messages };
+                            return touchSessionWithMessages(session, messages);
                         });
 
-                        return { sessions };
+                        return { sessions: sortSessionsByRecent(sessions) };
                     });
                 },
                 mergeChatMessageDocumentReferences: (session_id, chat_id, references) => {
@@ -218,14 +225,32 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                                 };
                             }
 
-                            return { ...session, messages };
+                            return touchSessionWithMessages(session, messages);
                         });
 
-                        return { sessions };
+                        return { sessions: sortSessionsByRecent(sessions) };
                     });
                 },
-                addSession: (session: SessionItem) => set((state) => ({ sessions: [...state.sessions, session] })),
+                addSession: (session: SessionItem) => set((state) => {
+                    const nextSession = hydrateSessionItem(session);
+                    const sessions = sortSessionsByRecent([
+                        ...state.sessions.filter((item) => item.id !== nextSession.id),
+                        nextSession,
+                    ]);
+
+                    return { sessions };
+                }),
                 deleteSession: (id: string) => set((state) => ({ sessions: state.sessions.filter((item) => item.id !== id) })),
+                updateSessionMeta: (session_id, patch) => set((state) => {
+                    const sessions = state.sessions.map((session) => {
+                        if (session.id !== session_id) return session;
+                        return touchSession(session, patch);
+                    });
+
+                    return {
+                        sessions: sortSessionsByRecent(sessions),
+                    };
+                }),
                 setHasHydrated: (status) => {
                     return set({
                         _hasHydrated: status
@@ -235,7 +260,20 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
         },
         {
             name: 'revornix-ai-chat', // unique name
+            version: 3,
             storage: createJSONStorage(() => storage),
+            migrate: (persistedState) => {
+                const state = persistedState as Partial<AIChatState & AIChatAction> | undefined;
+
+                return {
+                    _hasHydrated: false,
+                    currentSessionId: state?.currentSessionId ?? null,
+                    ownerUserId: state?.ownerUserId ?? null,
+                    sessions: Array.isArray(state?.sessions)
+                        ? sortSessionsByRecent(state.sessions.map((session) => hydrateSessionItem(session)))
+                        : [],
+                };
+            },
             onRehydrateStorage: (state) => {
                 // optional
                 return (state, error) => {

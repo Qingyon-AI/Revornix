@@ -77,9 +77,11 @@ const buildDocumentFormValues = (
 const DocumentConfiguration = ({
 	document_id,
 	className,
+	onTriggerClick,
 }: {
 	document_id: number;
 	className?: string;
+	onTriggerClick?: () => void;
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
@@ -225,8 +227,12 @@ const DocumentConfiguration = ({
 				setOpen(nextOpen);
 			}}>
 			<SheetTrigger asChild>
-				<Button className={cn('flex-1 text-xs', className)} variant={'ghost'}>
+				<Button
+					className={cn('w-full text-xs', className)}
+					variant={'ghost'}
+					onClick={onTriggerClick}>
 					<Pencil />
+					{t('document_configuration_title')}
 				</Button>
 			</SheetTrigger>
 			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-xl'>

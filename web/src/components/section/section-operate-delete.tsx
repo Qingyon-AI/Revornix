@@ -22,9 +22,11 @@ import { cn } from '@/lib/utils';
 const SectionOperateDelete = ({
 	section_id,
 	className,
+	onTriggerClick,
 }: {
 	section_id: number;
 	className?: string;
+	onTriggerClick?: () => void;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -59,7 +61,10 @@ const SectionOperateDelete = ({
 		<>
 			<Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<DialogTrigger asChild>
-					<Button variant={'ghost'} className={cn('text-xs', className)}>
+					<Button
+						variant={'ghost'}
+						className={cn('text-xs', className)}
+						onClick={onTriggerClick}>
 						<TrashIcon />
 						{t('section_delete')}
 					</Button>

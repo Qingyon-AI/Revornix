@@ -98,7 +98,7 @@ const FileSystemUpdate = ({
 		error: errorFileSystemDetail,
 		isSuccess: isSuccessFileSystemDetail,
 	} = useQuery({
-		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
+		queryKey: ['getUserFileSystemDetail', mainUserInfo?.id, userFileSystemId],
 		queryFn: async () => {
 			return await getUserFileSystemDetail({
 				user_file_system_id: userFileSystemId,

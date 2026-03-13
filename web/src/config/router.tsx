@@ -3,6 +3,7 @@ export type RouteItem = {
 	title_en?: string;
 	path: string;
 	unclickable?: boolean;
+	hideInBreadcrumb?: boolean;
 	children?: RouteItem[];
 };
 
@@ -127,6 +128,7 @@ const routers: RouteItem[] = [
 				title_en: 'Document Detail',
 				path: '/detail',
 				unclickable: true,
+				hideInBreadcrumb: true,
 			},
 			{ title: '新建文档', title_en: 'Create Document', path: '/create' },
 			{ title: '我的文档', title_en: 'My Document', path: '/mine' },
@@ -142,6 +144,7 @@ const routers: RouteItem[] = [
 				title: '专栏详情',
 				title_en: 'Section Detail',
 				path: '/detail',
+				hideInBreadcrumb: true,
 			},
 			{
 				title: '新建专栏',
@@ -181,6 +184,7 @@ const routers: RouteItem[] = [
 				title_en: 'Section Detail',
 				path: '/detail',
 				unclickable: true,
+				hideInBreadcrumb: true,
 			},
 		],
 	},

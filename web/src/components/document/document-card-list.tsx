@@ -51,7 +51,7 @@ const DocumentCardList = () => {
 					<p className='text-sm text-muted-foreground'>暂无最近阅读</p>
 				</div>
 			)}
-			<div className='grid grid-cols-1 gap-4 md:grid-cols-4 px-5 pb-5'>
+			<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4 px-5 pb-5'>
 				{documents &&
 					documents.map((document, index) => {
 						return (

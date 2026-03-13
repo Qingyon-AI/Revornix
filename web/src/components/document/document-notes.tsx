@@ -1,6 +1,6 @@
 import { getDocumentDetail, searchDocumentNotes } from '@/service/document';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Skeleton } from '../ui/skeleton';
 import { useRouter } from 'nextjs-toploader/app';
@@ -8,10 +8,17 @@ import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
 import DocumentCommentForm from './document-comment-form';
 import { Alert, AlertDescription } from '../ui/alert';
-import { OctagonAlert } from 'lucide-react';
+import { Clock3, OctagonAlert, StickyNote } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { replacePath } from '@/lib/utils';
 import { formatInUserTimeZone } from '@/lib/time';
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from '../ui/empty';
 
 const DocumentNotes = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -24,7 +31,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
 
-	const [keyword, setKeyword] = useState('');
+	const keyword = '';
 	const { ref: bottomRef, inView } = useInView();
 	const { data, isFetchingNextPage, isFetching, fetchNextPage, hasNextPage } =
 		useInfiniteQuery({
@@ -54,77 +61,108 @@ const DocumentNotes = ({ id }: { id: number }) => {
 	}, [inView, isFetching, hasNextPage, fetchNextPage]);
 
 	return (
-		<div className='h-full flex flex-col overflow-auto px-5'>
+		<div className='flex h-full min-h-0 flex-col gap-4'>
 			{document?.creator?.id !== mainUserInfo?.id && (
-				<Alert className='bg-destructive/10 dark:bg-destructive/20 mb-5'>
+				<Alert className='rounded-2xl border-destructive/30 bg-destructive/10 dark:bg-destructive/20'>
 					<OctagonAlert className='h-4 w-4 text-destructive!' />
 					<AlertDescription>{t('document_notes_tips')}</AlertDescription>
 				</Alert>
 			)}
 			{document?.creator?.id === mainUserInfo?.id && (
-				<div className='pt-1'>
+				<div className='shrink-0'>
 					<DocumentCommentForm documentId={id} commentSearchKeyword={keyword} />
 				</div>
 			)}
 
-			{notes && notes.length > 0 && (
-				<div className='flex-1 flex flex-col gap-2 overflow-auto pb-5'>
-					{notes.map((note, index) => {
-						return (
-							<div
-								key={note.id}
-								ref={index === notes.length - 1 ? bottomRef : undefined}
-								className='text-sm rounded p-5 bg-muted dark:bg-muted'>
-								<p>{note.content}</p>
-								<div className='flex flex-row items-center justify-between mt-2'>
-									<div
-										className='flex flex-row items-center'
-										onClick={() => router.push(`/user/detail/${note.user.id}`)}>
-										<Avatar className='mr-2 size-5'>
-											<AvatarImage
-												src={replacePath(note.user.avatar, note.user.id)}
-												alt='avatar'
-												className='size-5 object-cover'
-											/>
-											<AvatarFallback className='size-5'>
-												{note.user.nickname}
-											</AvatarFallback>
-										</Avatar>
-										<p className='text-xs text-muted-foreground'>
-											{note.user.nickname}
-										</p>
+			<div className='min-h-0 flex-1 overflow-y-auto'>
+				{!isFetching && notes.length === 0 ? (
+					<Empty className='min-h-full rounded-3xl border border-dashed border-border/70 bg-muted/20'>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<StickyNote />
+							</EmptyMedia>
+							<EmptyTitle>{t('document_notes_empty')}</EmptyTitle>
+							<EmptyDescription>
+								{document?.creator?.id === mainUserInfo?.id
+									? t('document_notes_description')
+									: t('document_notes_tips')}
+							</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
+				) : (
+					<div className='flex flex-col gap-3'>
+						{notes.map((note, index) => {
+							return (
+								<div
+									key={note.id}
+									ref={index === notes.length - 1 ? bottomRef : undefined}
+									className='rounded-3xl border border-border/60 bg-card/55 px-4 py-3.5 shadow-[0_1px_0_rgba(255,255,255,0.03)] backdrop-blur-sm'>
+									<div className='mb-3 flex items-start gap-3'>
+										<div
+											className='flex min-w-0 cursor-pointer items-center gap-3'
+											onClick={() => router.push(`/user/detail/${note.user.id}`)}>
+											<Avatar className='size-10 ring-1 ring-border/70'>
+												<AvatarImage
+													src={replacePath(note.user.avatar, note.user.id)}
+													alt='avatar'
+													className='size-10 object-cover'
+												/>
+												<AvatarFallback className='size-10'>
+													{note.user.nickname}
+												</AvatarFallback>
+											</Avatar>
+											<div className='min-w-0 space-y-1'>
+												<p className='truncate text-sm font-semibold'>
+													{note.user.nickname}
+												</p>
+												{note.create_time ? (
+													<div className='flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground'>
+														<Clock3 className='size-3.5' />
+														<span>
+															{formatInUserTimeZone(
+																note.create_time,
+																'MM-dd HH:mm',
+															)}
+														</span>
+													</div>
+												) : null}
+											</div>
+										</div>
 									</div>
-									{note.create_time && (
-										<p className='text-xs text-muted-foreground'>
-											{formatInUserTimeZone(note.create_time, 'MM-dd HH:mm')}
-										</p>
-									)}
+									<p className='whitespace-pre-wrap break-words text-sm leading-6 text-foreground/92'>
+										{note.content}
+									</p>
 								</div>
-							</div>
-						);
-					})}
-				</div>
-			)}
+							);
+						})}
 
-			{isFetching && !data && (
-				<div className='flex flex-col gap-3'>
-					{[...Array(12)].map((number, index) => {
-						return <Skeleton className='w-full h-20' key={index} />;
-					})}
-				</div>
-			)}
-			{isFetchingNextPage && data && (
-				<div className='flex flex-col gap-3'>
-					{[...Array(12)].map((number, index) => {
-						return <Skeleton className='w-full h-20' key={index} />;
-					})}
-				</div>
-			)}
-			{!isFetching && notes && notes.length === 0 && (
-				<div className='text-muted-foreground text-sm flex-1 flex justify-center items-center'>
-					{t('document_notes_empty')}
-				</div>
-			)}
+						{isFetching && !data && (
+							<div className='flex flex-col gap-3'>
+								{[...Array(8)].map((_, index) => {
+									return (
+										<Skeleton
+											className='h-28 w-full rounded-3xl'
+											key={index}
+										/>
+									);
+								})}
+							</div>
+						)}
+						{isFetchingNextPage && data && (
+							<div className='flex flex-col gap-3'>
+								{[...Array(4)].map((_, index) => {
+									return (
+										<Skeleton
+											className='h-28 w-full rounded-3xl'
+											key={index}
+										/>
+									);
+								})}
+							</div>
+						)}
+					</div>
+				)}
+			</div>
 		</div>
 	);
 };

@@ -103,9 +103,11 @@ const buildSectionFormValues = (
 const SectionOperateConfiguration = ({
 	section_id,
 	className,
+	onTriggerClick,
 }: {
 	section_id: number;
 	className?: string;
+	onTriggerClick?: () => void;
 }) => {
 	const t = useTranslations();
 
@@ -236,7 +238,10 @@ const SectionOperateConfiguration = ({
 				setOpen(nextOpen);
 			}}>
 			<SheetTrigger asChild>
-				<Button className={cn('text-xs', className)} variant={'ghost'}>
+				<Button
+					className={cn('text-xs', className)}
+					variant={'ghost'}
+					onClick={onTriggerClick}>
 					<PencilIcon />
 					{t('section_configuration_label')}
 				</Button>
