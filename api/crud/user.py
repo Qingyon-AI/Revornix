@@ -475,14 +475,17 @@ def get_wechat_user_by_user_id(
 def get_wechat_user_by_wechat_open_id(
     db: Session,
     wechat_user_open_id: str,
-    filter_wechat_platform: int | None = None
+    filter_wechat_platform: int | None = None,
+    include_deleted: bool = False,
 ):
     query = db.query(models.user.WechatUser)
-    query = query.filter(models.user.WechatUser.wechat_user_open_id == wechat_user_open_id,
-                         models.user.WechatUser.delete_at.is_(None))
+    query = query.filter(models.user.WechatUser.wechat_user_open_id == wechat_user_open_id)
+    if not include_deleted:
+        query = query.filter(models.user.WechatUser.delete_at.is_(None))
     if filter_wechat_platform is not None:
         query = query.filter(models.user.WechatUser.wechat_platform == filter_wechat_platform)
-    return query.one_or_none()
+    query = query.order_by(models.user.WechatUser.id.desc())
+    return query.first()
 
 # 同一用户可能在不同平台登录过 比如Revornix小程序登录 比如Revornix Web端微信方式登录 所以会有多个微信openid 但是union_id肯定是一致的
 def get_wechat_user_by_wechat_union_id(
@@ -808,6 +811,22 @@ def delete_wechat_user_by_user_id(
     query = db.query(models.user.WechatUser)
     query = query.filter(models.user.WechatUser.user_id == user_id,
                          models.user.WechatUser.delete_at.is_(None))
+    query = query.update({models.user.WechatUser.delete_at: now})
+    db.flush()
+
+def delete_wechat_user_by_wechat_open_id(
+    db: Session,
+    wechat_user_open_id: str,
+    filter_wechat_platform: int | None = None,
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.user.WechatUser)
+    query = query.filter(
+        models.user.WechatUser.wechat_user_open_id == wechat_user_open_id,
+        models.user.WechatUser.delete_at.is_(None),
+    )
+    if filter_wechat_platform is not None:
+        query = query.filter(models.user.WechatUser.wechat_platform == filter_wechat_platform)
     query = query.update({models.user.WechatUser.delete_at: now})
     db.flush()
 
