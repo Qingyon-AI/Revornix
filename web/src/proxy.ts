@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server'
 
-const whitelist = ['/login', '/login/', '/register', '/register/', '/.well-known/apple-app-site-association']
+const whitelist = ['/login', '/register', '/.well-known/apple-app-site-association']
 
 const privateSectionPaths = new Set([
     'detail',
@@ -11,10 +11,15 @@ const privateSectionPaths = new Set([
     'subscribed',
 ])
 
+const normalizePath = (pathname: string) => {
+    if (pathname.endsWith('/') && pathname !== '/') {
+        return pathname.slice(0, -1)
+    }
+    return pathname
+}
+
 const isSeoSectionPath = (pathname: string) => {
-    const normalizedPath = pathname.endsWith('/') && pathname !== '/'
-        ? pathname.slice(0, -1)
-        : pathname
+    const normalizedPath = normalizePath(pathname)
     if (!normalizedPath.startsWith('/section/')) return false
 
     const sectionPath = normalizedPath.slice('/section/'.length)
@@ -23,12 +28,23 @@ const isSeoSectionPath = (pathname: string) => {
     return !privateSectionPaths.has(sectionPath)
 }
 
+const isPublicSingleSegmentPath = (pathname: string, prefix: string) => {
+    const normalizedPath = normalizePath(pathname)
+    if (!normalizedPath.startsWith(prefix)) return false
+
+    const segment = normalizedPath.slice(prefix.length)
+    return segment.length > 0 && !segment.includes('/')
+}
+
 const auth = (request: NextRequest) => {
-    const { pathname } = request.nextUrl
+    const normalizedPath = normalizePath(request.nextUrl.pathname)
     if (
-        whitelist.includes(pathname) ||
-        pathname.startsWith('/integrations') ||
-        isSeoSectionPath(pathname)
+        whitelist.includes(normalizedPath) ||
+        normalizedPath === '/community' ||
+        normalizedPath.startsWith('/integrations') ||
+        isSeoSectionPath(normalizedPath) ||
+        isPublicSingleSegmentPath(normalizedPath, '/user/') ||
+        isPublicSingleSegmentPath(normalizedPath, '/document/')
     ) {
         return true
     }

@@ -16,6 +16,7 @@ from common.dependencies import (
     decode_jwt_token,
     get_cache,
     get_current_user,
+    get_current_user_without_throw,
     get_db,
     get_real_ip,
     reject_if_official,
@@ -343,7 +344,7 @@ def follow_user(
 @user_router.post('/info', response_model=schemas.user.UserPublicInfo)
 async def user_info(
     user_info_request: schemas.user.UserInfoRequest,
-    user: models.user.User = Depends(get_current_user),
+    user: models.user.User | None = Depends(get_current_user_without_throw),
     db: Session = Depends(get_db)
 ):
     db_user = crud.user.get_user_by_id(
@@ -352,13 +353,14 @@ async def user_info(
     )
     if db_user is None:
         raise CustomException(message="User not found", code=404)
-    user_follow = crud.user.get_user_follow_by_to_user_id_and_from_user_id(
-        db=db,
-        to_user_id=user_info_request.user_id,
-        from_user_id=user.id
-    )
-    if user_follow is not None and user_follow.delete_at is None:
-        db_user.is_followed = True
+    if user is not None:
+        user_follow = crud.user.get_user_follow_by_to_user_id_and_from_user_id(
+            db=db,
+            to_user_id=user_info_request.user_id,
+            from_user_id=user.id
+        )
+        if user_follow is not None and user_follow.delete_at is None:
+            db_user.is_followed = True
     fans = crud.user.count_user_fans(
         db=db,
         user_id=user_info_request.user_id

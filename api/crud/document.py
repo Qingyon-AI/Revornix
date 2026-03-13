@@ -394,7 +394,7 @@ def get_published_section_of_the_document_by_document_id(
             models.section.PublishSection,
             models.section.PublishSection.section_id == models.section.Section.id,
         )
-        query.filter(
+        query = query.filter(
             models.section.PublishSection.delete_at.is_(None),
         )
     # 如果没有就看当前用户是否有参与文档相关的某些公开的专栏

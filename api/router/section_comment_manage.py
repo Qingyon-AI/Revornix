@@ -8,8 +8,40 @@ from common.celery.app import start_trigger_user_notification_event
 from common.dependencies import get_current_user, get_current_user_without_throw, get_db
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole
+from router.logic_helpers import ensure_private_section_access
 
 section_comment_manage_router = APIRouter()
+
+
+def _ensure_section_comment_access(
+    *,
+    db: Session,
+    section_id: int,
+    user_id: int | None,
+):
+    db_section = crud.section.get_section_by_section_id(
+        db=db,
+        section_id=section_id,
+    )
+    if db_section is None:
+        raise schemas.error.CustomException("Section not found", code=404)
+
+    db_publish_section = crud.section.get_publish_section_by_section_id(
+        db=db,
+        section_id=section_id,
+    )
+    if db_publish_section is None:
+        db_users = crud.section.get_users_for_section_by_section_id(
+            db=db,
+            section_id=section_id,
+            filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR],
+        )
+        ensure_private_section_access(
+            user_id=user_id,
+            member_user_ids=[db_user.id for db_user in db_users],
+        )
+
+    return db_section
 
 @section_comment_manage_router.post('/comment/create', response_model=schemas.common.NormalResponse)
 def create_section_comment(
@@ -17,12 +49,11 @@ def create_section_comment(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_section = crud.section.get_section_by_section_id(
+    _ensure_section_comment_access(
         db=db,
-        section_id=section_comment_create_request.section_id
+        section_id=section_comment_create_request.section_id,
+        user_id=user.id,
     )
-    if db_section is None:
-        raise schemas.error.CustomException("Section not found", code=404)
 
     crud.section.create_section_comment(
         db=db,
@@ -53,6 +84,11 @@ def search_section_comment(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user_without_throw)
 ):
+    _ensure_section_comment_access(
+        db=db,
+        section_id=section_comment_search_request.section_id,
+        user_id=user.id if user is not None else None,
+    )
     has_more = False
     next_start = None
     db_section_parent_degree_comments = crud.section.search_parent_degree_section_comments(

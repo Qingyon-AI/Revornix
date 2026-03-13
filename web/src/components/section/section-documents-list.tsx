@@ -8,7 +8,13 @@ import { useEffect } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useTranslations } from 'next-intl';
 
-const SectionDocumentsList = ({ section_id }: { section_id: number }) => {
+const SectionDocumentsList = ({
+	section_id,
+	publicMode = false,
+}: {
+	section_id: number;
+	publicMode?: boolean;
+}) => {
 	const t = useTranslations();
 	const { ref: bottomRef, inView } = useInView();
 	const {
@@ -54,7 +60,10 @@ const SectionDocumentsList = ({ section_id }: { section_id: number }) => {
 						<div
 							key={document.id ?? index}
 							ref={index === documents.length - 1 ? bottomRef : undefined}>
-							<SectionDocumentCard document={document} />
+							<SectionDocumentCard
+								document={document}
+								publicMode={publicMode}
+							/>
 						</div>
 					);
 				})}

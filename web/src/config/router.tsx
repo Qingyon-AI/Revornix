@@ -162,7 +162,7 @@ const routers: RouteItem[] = [
 				path: '/mine',
 			},
 			{
-				title: '社区专栏',
+				title: '社区',
 				title_en: 'Community Section',
 				path: '/community',
 			},

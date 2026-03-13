@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { utils } from '@kinda/utils';
 import { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { getLocale, getTranslations } from 'next-intl/server';
 import {
 	Dialog,
@@ -42,6 +43,9 @@ import AudioPlayer from '@/components/ui/audio-player';
 import AudioStatusCard from '@/components/ui/audio-status-card';
 import CustomMarkdown from '@/components/ui/custom-markdown';
 import { replacePath } from '@/lib/utils';
+import Link from 'next/link';
+import { isSeoNotFoundError } from '@/lib/seo';
+import { notFound } from 'next/navigation';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -111,6 +115,9 @@ export async function generateMetadata(props: {
 	);
 
 	if (section_err) {
+		if (isSeoNotFoundError(section_err)) {
+			return;
+		}
 		throw new Error('Something is wrong while getting the section detail');
 	}
 	if (section_res) {
@@ -128,8 +135,10 @@ const SEOSectionDetail = async (props: {
 }) => {
 	const t = await getTranslations();
 	const locale = await getLocale();
+	const cookieStore = await cookies();
 	const params = await props.params;
 	const uuid = params.uuid;
+	const hasAccessToken = !!cookieStore.get('access_token');
 
 	let markdown: string | null = null;
 	let section: SectionInfoType | null = null;
@@ -167,6 +176,9 @@ const SEOSectionDetail = async (props: {
 	);
 
 	if (section_err) {
+		if (isSeoNotFoundError(section_err)) {
+			notFound();
+		}
 		throw new Error('Something is wrong while getting the section detail');
 	}
 
@@ -197,8 +209,8 @@ const SEOSectionDetail = async (props: {
 		'gap-0 rounded-[26px] border border-border/60 bg-card/88 py-0 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur';
 
 	return (
-		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-6 overflow-x-hidden px-4 pb-10 pt-4 sm:px-6 sm:pb-12 lg:px-8 lg:pt-6'>
-			<Card className={`relative overflow-hidden ${surfaceCardClassName}`}>
+		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
+			<Card className={`relative overflow-hidden rounded-[26px] ${surfaceCardClassName}`}>
 				<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.12),transparent_22%)]' />
 				<CardContent className='relative px-5 py-6 sm:px-7 sm:py-7'>
 					<div className='space-y-5 sm:space-y-6'>
@@ -235,6 +247,17 @@ const SEOSectionDetail = async (props: {
 							<p className='max-w-4xl break-words text-sm leading-7 text-muted-foreground sm:text-base'>
 								{sectionDescription}
 							</p>
+							{section?.creator ? (
+								<Link
+									href={`/user/${section.creator.id}`}
+									className='inline-flex w-fit items-center gap-2 rounded-full border border-border/60 bg-background/60 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-background/90'>
+									<Users className='size-4' />
+									<span>{t('section_creator')}</span>
+									<span className='font-medium text-foreground'>
+										{section.creator.nickname}
+									</span>
+								</Link>
+							) : null}
 						</div>
 
 						<div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
@@ -286,7 +309,21 @@ const SEOSectionDetail = async (props: {
 								</CardDescription>
 							</CardHeader>
 							<CardContent className='space-y-5 px-5 pb-6 pt-5 sm:px-7 sm:pb-7'>
-								<SectionCommentForm section_id={section.id} />
+								{hasAccessToken ? (
+									<SectionCommentForm section_id={section.id} />
+								) : (
+									<div className='rounded-[24px] border border-dashed border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground'>
+										<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+											<span>{t('seo_section_login_to_comment')}</span>
+											<Link
+												href={`/login?redirect_to=${encodeURIComponent(`/section/${uuid}`)}`}>
+												<Button size='sm' className='rounded-2xl'>
+													{t('seo_nav_login_in')}
+												</Button>
+											</Link>
+										</div>
+									</div>
+								)}
 								<SectionCommentsList section_id={section.id} />
 							</CardContent>
 						</Card>
@@ -343,7 +380,10 @@ const SEOSectionDetail = async (props: {
 						<CardContent className='px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-4'>
 							<div className='flex flex-col gap-3 xl:max-h-[calc(100vh-14rem)] xl:overflow-auto xl:p-1 pt-0'>
 								{section ? (
-									<SectionDocumentsList section_id={section.id} />
+									<SectionDocumentsList
+										section_id={section.id}
+										publicMode
+									/>
 								) : null}
 							</div>
 						</CardContent>
