@@ -67,9 +67,14 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 		nextHref.set('start', String(sections.next_start));
 	}
 
+	const surfaceCardClassName =
+		'gap-0 rounded-[26px] border border-border/60 bg-card/88 py-0 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur';
+
 	return (
 		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
-			<Card className='overflow-hidden rounded-[26px] border border-border/60 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_24%),radial-gradient(circle_at_82%_18%,rgba(56,189,248,0.14),transparent_22%),linear-gradient(135deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] shadow-[0_30px_90px_-48px_rgba(15,23,42,0.55)] dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_24%),radial-gradient(circle_at_82%_18%,rgba(56,189,248,0.12),transparent_22%),linear-gradient(135deg,rgba(15,23,42,0.96),rgba(15,23,42,0.9))]'>
+			<Card
+				className={`relative overflow-hidden rounded-[26px] ${surfaceCardClassName}`}>
+				<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.12),transparent_22%)]' />
 				<CardContent className='px-5 py-8 sm:px-8 sm:py-10 lg:px-10'>
 					<div className='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
 						<div className='max-w-3xl space-y-4'>
