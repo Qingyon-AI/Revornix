@@ -232,6 +232,7 @@ const CommunitySectionPage = () => {
 					sections.map((section, index) => {
 						return (
 							<div
+								className='h-full'
 								key={section.id}
 								ref={index === sections.length - 1 ? bottomRef : undefined}>
 								<SectionCard section={section} />

@@ -124,7 +124,7 @@ const NotificationSourceCard = ({
 	}, [notification_source?.creator.id, mainUserInfo]);
 
 	return (
-		<Card>
+		<Card className='h-full'>
 			<CardHeader className='flex-1'>
 				<CardTitle className='flex flex-row items-center w-full min-w-0'>
 					<div className='flex flex-row items-center gap-2 flex-1 min-w-0 flex-wrap break-all'>

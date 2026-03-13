@@ -90,6 +90,7 @@ const ModelSettingPage = () => {
 					modelProviders.map((modelProvider, index) => {
 						return (
 							<div
+								className='h-full'
 								key={index}
 								ref={
 									index === modelProviders.length - 1 ? bottomRef : undefined

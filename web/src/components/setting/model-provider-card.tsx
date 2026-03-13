@@ -114,7 +114,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 
 	return (
 		<>
-			<Card className='flex flex-col'>
+			<Card className='flex h-full flex-col'>
 				<CardHeader className='flex flex-col flex-1'>
 					<CardTitle className='flex flex-row items-center w-full'>
 						<div className='flex flex-row items-center gap-2'>

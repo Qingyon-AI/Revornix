@@ -308,7 +308,7 @@ const MineFileSystemAddCard = ({}: {}) => {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-			<Card>
+			<Card className='h-full'>
 				<CardContent
 					className='flex-1 flex flex-col justify-center items-center text-sm rounded cursor-pointer'
 					onClick={() => {

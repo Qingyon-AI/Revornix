@@ -93,7 +93,7 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 
 	return (
 		<>
-			<Card className='bg-muted/50'>
+			<Card className='bg-muted/50 h-full'>
 				<CardHeader className='flex-1 flex flex-col'>
 					<CardTitle className='flex flex-row items-center w-full min-w-0'>
 						<div className='flex flex-row items-center gap-2 flex-1 min-w-0 flex-wrap break-all'>

@@ -102,6 +102,7 @@ const EnginePage = () => {
 					engines.map((engine, index) => {
 						return (
 							<div
+								className='h-full'
 								key={index}
 								ref={index === engines.length - 1 ? bottomRef : undefined}>
 								<MineEngineCard engine_info={engine} />

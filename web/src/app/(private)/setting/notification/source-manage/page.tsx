@@ -107,6 +107,7 @@ const NotificationSourceManagePage = () => {
 					notification_sources.map((notification_source, index) => {
 						return (
 							<div
+								className='h-full'
 								key={index}
 								ref={
 									index === notification_sources.length - 1

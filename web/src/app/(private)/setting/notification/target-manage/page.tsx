@@ -108,6 +108,7 @@ const NotificationTargetManagePage = () => {
 					notification_targets.map((notification_target, index) => {
 						return (
 							<div
+								className='h-full'
 								key={index}
 								ref={
 									index === notification_targets.length - 1
