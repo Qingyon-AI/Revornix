@@ -8,14 +8,19 @@ import { formatInUserTimeZone } from '@/lib/time';
 
 const SectionDocumentCard = ({
 	document,
+	publicMode = false,
 }: {
 	document: SectionDocumentInfo;
+	publicMode?: boolean;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
+	const detailHref = publicMode
+		? `/document/${document.id}`
+		: `/document/detail/${document.id}`;
 	return (
 		<div
-			onClick={() => router.push(`/document/detail/${document.id}`)}
+			onClick={() => router.push(detailHref)}
 			className='group relative space-y-3 overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md'>
 			<div className='flex min-w-0 flex-row gap-3'>
 				<div className='min-w-0 flex-1'>

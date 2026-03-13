@@ -31,6 +31,13 @@ async def _build_section_infos(
         filter_roles=[UserSectionRole.SUBSCRIBER],
     )
     labels_by_section_id = crud.section.get_labels_by_section_ids(db=db, section_ids=section_ids)
+    publish_sections = crud.section.get_publish_sections_by_section_ids(
+        db=db,
+        section_ids=section_ids,
+    )
+    publish_uuid_by_section_id = {
+        item.section_id: item.uuid for item in publish_sections
+    }
 
     authority_by_section_id: dict[int, UserSectionAuthority | int] = {}
     if viewer_user_id is not None:
@@ -56,6 +63,7 @@ async def _build_section_infos(
         ]
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
         res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
+        res.publish_uuid = publish_uuid_by_section_id.get(section.id)
 
         authority = authority_by_section_id.get(section.id)
         if authority is not None:
@@ -198,10 +206,12 @@ def get_all_mine_sections(
 async def search_user_sections(
     search_user_sections_request: schemas.section.SearchUserSectionsRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user),
+    user: models.user.User | None = Depends(get_current_user_without_throw),
 ):
     # 该接口仅在自己获取自己的所有专栏的时候会返回所有专栏，否则仅仅返回对应用户公开的专栏
-    only_published = search_user_sections_request.user_id != user.id
+    only_published = (
+        user is None or search_user_sections_request.user_id != user.id
+    )
     db_sections = crud.section.search_user_sections(
         db=db,
         user_id=search_user_sections_request.user_id,
@@ -216,7 +226,7 @@ async def search_user_sections(
     sections = await _build_section_infos(
         db=db,
         sections=db_sections,
-        viewer_user_id=user.id,
+        viewer_user_id=user.id if user is not None else None,
     )
 
     has_more = False

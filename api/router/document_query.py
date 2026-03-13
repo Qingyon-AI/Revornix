@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 import crud
 import models
 import schemas
-from common.dependencies import get_current_user, get_db
+from common.dependencies import get_current_user, get_current_user_without_throw, get_db
 from common.file import get_remote_file_signed_url
 from data.milvus.search import naive_search
 from enums.document import DocumentCategory
@@ -20,9 +20,9 @@ def _ensure_document_access(
     db: Session,
     document_id: int,
     document_creator_id: int,
-    user_id: int,
+    user_id: int | None,
 ) -> None:
-    if document_creator_id == user_id:
+    if user_id is not None and document_creator_id == user_id:
         return
 
     db_published_section_documents = crud.document.get_published_section_of_the_document_by_document_id(
@@ -30,6 +30,14 @@ def _ensure_document_access(
         document_id=document_id,
     )
     if db_published_section_documents:
+        return
+
+    if user_id is None:
+        ensure_document_access(
+            is_creator=False,
+            has_public_section=False,
+            has_related_section=False,
+        )
         return
 
     db_user_published_section_documents = crud.document.get_published_section_of_the_document_by_document_id(
@@ -140,7 +148,7 @@ async def get_document_infos(
 async def get_document_detail(
     document_detail_request: schemas.document.DocumentDetailRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User | None = Depends(get_current_user_without_throw)
 ):
     document = crud.document.get_document_by_document_id(
         db=db,
@@ -153,30 +161,54 @@ async def get_document_detail(
         db=db,
         document_id=document_detail_request.document_id,
         document_creator_id=document.creator_id,
-        user_id=user.id,
+        user_id=user.id if user is not None else None,
     )
 
-    is_star = crud.document.get_star_document_by_user_id_and_document_id(
-        db=db,
-        user_id=user.id,
-        document_id=document_detail_request.document_id
-    ) is not None
-    is_read = crud.document.get_read_document_by_document_id_and_user_id(
-        db=db,
-        user_id=user.id,
-        document_id=document_detail_request.document_id
-    ) is not None
+    is_star = None
+    is_read = None
+    if user is not None:
+        is_star = crud.document.get_star_document_by_user_id_and_document_id(
+            db=db,
+            user_id=user.id,
+            document_id=document_detail_request.document_id
+        ) is not None
+        is_read = crud.document.get_read_document_by_document_id_and_user_id(
+            db=db,
+            user_id=user.id,
+            document_id=document_detail_request.document_id
+        ) is not None
     db_sections = crud.document.get_sections_by_document_id(
         db=db,
         document_id=document_detail_request.document_id
     )
+    publish_sections = crud.section.get_publish_sections_by_section_ids(
+        db=db,
+        section_ids=[section.id for section in db_sections],
+    )
+    publish_uuid_by_section_id = {
+        item.section_id: item.uuid for item in publish_sections
+    }
+    public_section_ids = set(publish_uuid_by_section_id.keys())
+    visible_section_ids = set(public_section_ids)
+    if user is not None and document.creator_id == user.id:
+        visible_section_ids = {section.id for section in db_sections}
+    elif user is not None:
+        visible_sections = crud.document.get_published_section_of_the_document_by_document_id(
+            db=db,
+            document_id=document_detail_request.document_id,
+            user_id=user.id,
+        )
+        visible_section_ids.update(section.id for section in visible_sections)
+
     sections = [
         schemas.document.BaseSectionInfo(
             id=section.id,
             title=section.title,
-            description=section.description
+            description=section.description,
+            publish_uuid=publish_uuid_by_section_id.get(section.id),
         )
         for section in db_sections
+        if section.id in visible_section_ids
     ]
     db_labels = crud.document.get_labels_by_document_id(
         db=db,

@@ -27,6 +27,10 @@ async def _build_section_info_response(
         db=db,
         section_id=db_section.id,
     )
+    db_publish_section = crud.section.get_publish_section_by_section_id(
+        db=db,
+        section_id=section_id,
+    )
     subscribers_count = crud.section.count_users_for_section_by_section_id(
         db=db,
         section_id=db_section.id,
@@ -45,6 +49,7 @@ async def _build_section_info_response(
         subscribers_count=subscribers_count,
         creator=db_section.creator,
     )
+    res.publish_uuid = db_publish_section.uuid if db_publish_section is not None else None
 
     if res.md_file_name is not None:
         res.md_file_name = await get_remote_file_signed_url(
@@ -102,6 +107,21 @@ def section_document_request(
     )
     if db_section is None:
         raise schemas.error.CustomException("Section not found", code=404)
+
+    db_publish_section = crud.section.get_publish_section_by_section_id(
+        db=db,
+        section_id=section_document_request.section_id,
+    )
+    if db_publish_section is None:
+        db_users = crud.section.get_users_for_section_by_section_id(
+            db=db,
+            section_id=section_document_request.section_id,
+            filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR],
+        )
+        ensure_private_section_access(
+            user_id=user.id if user is not None else None,
+            member_user_ids=[db_user.id for db_user in db_users],
+        )
 
     has_more = False
     next_start = None

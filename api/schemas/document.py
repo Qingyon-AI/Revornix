@@ -49,6 +49,7 @@ class BaseSectionInfo(BaseModel):
     id: int
     title: str
     description: str | None
+    publish_uuid: str | None = None
     model_config = ConfigDict(
         from_attributes=True,
         extra="ignore",

@@ -158,6 +158,7 @@ class BaseSectionInfo(BaseModel):
     title: str
     description: str | None
     authority: UserSectionAuthority | None = None
+    publish_uuid: str | None = None
 
 class AllMySectionsResponse(BaseModel):
     data: list[BaseSectionInfo]
@@ -219,6 +220,7 @@ class SectionInfo(BaseModel):
     md_file_name: str | None = None
     labels: list[SectionLabel] | None = None
     cover: str | None
+    publish_uuid: str | None = None
     podcast_task: SectionPodcastTask | None = None
     process_task: SectionProcessTask | None = None
     process_task_trigger_type: int | None = None

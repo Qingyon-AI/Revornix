@@ -196,6 +196,19 @@ def get_publish_section_by_section_id(
                          models.section.PublishSection.delete_at.is_(None))
     return query.one_or_none()
 
+def get_publish_sections_by_section_ids(
+    db: Session,
+    section_ids: list[int],
+):
+    if len(section_ids) == 0:
+        return []
+    query = db.query(models.section.PublishSection)
+    query = query.filter(
+        models.section.PublishSection.section_id.in_(section_ids),
+        models.section.PublishSection.delete_at.is_(None),
+    )
+    return query.all()
+
 def get_publish_sections_by_uuid(
     db: Session,
     uuid: str
