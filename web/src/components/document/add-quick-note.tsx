@@ -18,7 +18,6 @@ import {
 	FormMessage,
 } from '@/components/ui/form';
 import AddLabelDialog from '@/components/document/add-document-label-dialog';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '../ui/switch';
 import { useRouter } from 'nextjs-toploader/app';
 import { getAllMineSections } from '@/service/section';
@@ -33,6 +32,7 @@ import { Tooltip } from '../ui/tooltip';
 import { TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import CustomMarkdown from '../ui/custom-markdown';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
+import SelectorSkeleton from './selector-skeleton';
 
 const AddQuickNote = () => {
 	const searchParams = useSearchParams();
@@ -141,8 +141,8 @@ const AddQuickNote = () => {
 			<Form {...form}>
 				<form
 					onSubmit={onSubmitMessageForm}
-					className='flex flex-col h-full min-h-0'>
-					<div className='flex flex-col w-full gap-5 flex-1 min-h-0'>
+					className='flex h-full min-h-0 flex-col overflow-hidden'>
+					<div className='flex w-full min-h-0 flex-1 flex-col gap-5 overflow-y-auto pr-1'>
 						<FormField
 							control={form.control}
 							name='content'
@@ -154,8 +154,9 @@ const AddQuickNote = () => {
 												<>
 													<Textarea
 														{...field}
+														fieldSizing='fixed'
 														placeholder={t('document_create_note_placeholded')}
-														className='h-full min-h-0 resize-none rounded-md field-sizing-fixed pb-12'
+														className='h-full min-h-0 resize-none rounded-md pb-12'
 													/>
 													<Button
 														type='button'
@@ -230,7 +231,7 @@ const AddQuickNote = () => {
 									}}
 								/>
 							) : (
-								<Skeleton className='h-10' />
+								<SelectorSkeleton />
 							)}
 							<FormField
 								name='auto_tag'
@@ -381,12 +382,12 @@ const AddQuickNote = () => {
 								}}
 							/>
 						) : (
-							<Skeleton className='h-10' />
+							<SelectorSkeleton />
 						)}
 					</div>
 					<Button
 						type='submit'
-						className='w-full mt-5'
+						className='mt-5 w-full shrink-0'
 						disabled={mutateCreateDocument.isPending || !form.watch('content')}>
 						{t('document_create_submit')}
 						{mutateCreateDocument.isPending && (
