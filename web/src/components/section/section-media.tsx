@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -15,6 +16,7 @@ import {
 } from '@/service/section';
 
 import AudioPlayer from '../ui/audio-player';
+import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import AudioStatusCard from '../ui/audio-status-card';
@@ -166,6 +168,30 @@ const SectionMedia = ({
 						title={section.title ?? 'Unkown Title'}
 						artist={'AI Generated'}
 					/>
+					{isOwner ? (
+						<div className='mt-4 border-t border-border/60 pt-4'>
+							{!canGeneratePodcast ? (
+								<div className='mb-3 rounded-[18px] border border-amber-500/15 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-800 dark:text-amber-200'>
+									{t('section_form_auto_podcast_engine_unset')}
+								</div>
+							) : null}
+							<div className='flex justify-end'>
+								<Button
+									variant='outline'
+									className='h-10 rounded-full border-border/70 bg-background/65 px-4 text-sm shadow-none hover:bg-background'
+									onClick={() => mutateGeneratePodcast.mutate()}
+									disabled={
+										!canGeneratePodcast ||
+										mutateGeneratePodcast.isPending
+									}>
+									{mutateGeneratePodcast.isPending ? (
+										<Loader2 className='size-4 animate-spin' />
+									) : null}
+									{t('section_podcast_regenerate')}
+								</Button>
+							</div>
+						</div>
+					) : null}
 				</Card>
 			) : null}
 
@@ -174,13 +200,13 @@ const SectionMedia = ({
 					badge={t('document_podcast_status_failed')}
 					title={t('section_podcast_failed')}
 					description={t('section_podcast_failed_description')}
-					actionLabel={t('section_podcast_generate')}
-					onAction={() => mutateGeneratePodcast.mutate()}
-					actionDisabled={!canGeneratePodcast}
+					actionLabel={isOwner ? t('section_podcast_regenerate') : undefined}
+					onAction={isOwner ? () => mutateGeneratePodcast.mutate() : undefined}
+					actionDisabled={!isOwner || !canGeneratePodcast}
 					actionLoading={mutateGeneratePodcast.isPending}
 					tone='danger'
 					hint={
-						!canGeneratePodcast
+						isOwner && !canGeneratePodcast
 							? t('section_form_auto_podcast_engine_unset')
 							: undefined
 					}
