@@ -389,11 +389,6 @@ const DocumentOperate = ({
 	const closeMobileMenu = () => {
 		setShowMobileMenu(false);
 	};
-	const closeMobileMenuDeferred = () => {
-		window.setTimeout(() => {
-			setShowMobileMenu(false);
-		}, 0);
-	};
 	const openMobilePanel = (panel: Exclude<MobilePanel, null>) => {
 		setShowMobileMenu(false);
 		window.setTimeout(() => {
@@ -718,15 +713,12 @@ const DocumentOperate = ({
 												)}
 												{renderNotesAction(
 													mobileActionButtonClassName,
-													closeMobileMenuDeferred,
 												)}
 												{renderDeleteAction(
 													mobileActionButtonClassName,
-													closeMobileMenuDeferred,
 												)}
 												{renderConfigurationAction(
 													mobileActionButtonClassName,
-													closeMobileMenuDeferred,
 												)}
 											</div>
 										</div>
