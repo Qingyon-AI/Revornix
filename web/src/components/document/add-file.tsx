@@ -25,7 +25,6 @@ import {
 } from '@/components/ui/form';
 import MultipleSelector from '@/components/ui/multiple-selector';
 import AddLabelDialog from '@/components/document/add-document-label-dialog';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '../ui/switch';
 import { useRouter } from 'nextjs-toploader/app';
 import { getAllMineSections } from '@/service/section';
@@ -39,6 +38,7 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
 import { FILE_DOCUMENT_MAX_UPLOAD_BYTES } from '@/lib/upload';
+import SelectorSkeleton from './selector-skeleton';
 
 const AddFile = () => {
 	const queryClient = getQueryClient();
@@ -142,8 +142,8 @@ const AddFile = () => {
 				onOpenChange={setShowAddLabelDialog}
 			/>
 			<Form {...form}>
-				<form onSubmit={onSubmitMessageForm} className='flex flex-col h-full'>
-					<div className='flex flex-col w-full gap-5 flex-1 mb-5'>
+				<form onSubmit={onSubmitMessageForm} className='flex h-full min-h-0 flex-col overflow-hidden'>
+					<div className='flex w-full min-h-0 flex-1 flex-col gap-5 overflow-y-auto pr-1'>
 						{!mainUserInfo?.default_file_document_parse_user_engine_id && (
 							<Alert>
 								<AlertCircleIcon />
@@ -220,7 +220,7 @@ const AddFile = () => {
 									}}
 								/>
 							) : (
-								<Skeleton className='h-10' />
+								<SelectorSkeleton />
 							)}
 							<FormField
 								name='auto_tag'
@@ -370,12 +370,12 @@ const AddFile = () => {
 								}}
 							/>
 						) : (
-							<Skeleton className='h-10' />
+							<SelectorSkeleton />
 						)}
 					</div>
 					<Button
 						type='submit'
-						className='w-full'
+						className='mt-5 w-full shrink-0'
 						disabled={
 							mutateCreateDocument.isPending ||
 							!mainUserInfo?.default_file_document_parse_user_engine_id ||

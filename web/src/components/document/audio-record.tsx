@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Info, Mic, Pause, Play, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
@@ -64,6 +65,7 @@ const AudioRecord = ({
 	maxDurationMs = AUDIO_DOCUMENT_MAX_DURATION_MS,
 }: AudioRecordProps) => {
 	const t = useTranslations();
+	const { resolvedTheme } = useTheme();
 	const [recordingState, setRecordingState] = useState<RecordingState>('idle');
 	const [elapsedMs, setElapsedMs] = useState(0);
 	const [hasAudio, setHasAudio] = useState(false);
@@ -92,6 +94,7 @@ const AudioRecord = ({
 
 	const durationLimitLabel = formatMediaDuration(maxDurationMs);
 	const hasReachedDurationLimit = elapsedMs >= maxDurationMs;
+	const isDarkMode = resolvedTheme === 'dark';
 
 	const revokeAudioUrl = () => {
 		setAudioUrl((current) => {
@@ -291,17 +294,23 @@ const AudioRecord = ({
 			return;
 		}
 
-		const background = ctx.createLinearGradient(0, 0, width, height);
-		background.addColorStop(0, 'rgba(15, 23, 42, 0.16)');
-		background.addColorStop(1, 'rgba(15, 23, 42, 0.04)');
-		ctx.fillStyle = background;
-		ctx.fillRect(0, 0, width, height);
+		if (isDarkMode) {
+			const background = ctx.createLinearGradient(0, 0, width, height);
+			background.addColorStop(0, 'rgba(15, 23, 42, 0.16)');
+			background.addColorStop(1, 'rgba(15, 23, 42, 0.04)');
+			ctx.fillStyle = background;
+			ctx.fillRect(0, 0, width, height);
+		}
 
 		const mid = height / 2;
 		ctx.strokeStyle =
 			mode === 'recording'
-				? 'rgba(148, 163, 184, 0.20)'
-				: 'rgba(148, 163, 184, 0.12)';
+				? isDarkMode
+					? 'rgba(148, 163, 184, 0.20)'
+					: 'rgba(148, 163, 184, 0.12)'
+				: isDarkMode
+					? 'rgba(148, 163, 184, 0.12)'
+					: 'rgba(148, 163, 184, 0.08)';
 		ctx.lineWidth = 1;
 		ctx.beginPath();
 		ctx.moveTo(0, mid);
@@ -324,7 +333,9 @@ const AudioRecord = ({
 		ctx.shadowColor =
 			mode === 'recording'
 				? 'rgba(34, 211, 238, 0.34)'
-				: 'rgba(34, 211, 238, 0.18)';
+				: isDarkMode
+					? 'rgba(34, 211, 238, 0.18)'
+					: 'rgba(34, 211, 238, 0.12)';
 		ctx.shadowBlur = mode === 'recording' ? 20 : 10;
 
 		bars.forEach((bar, index) => {
@@ -542,7 +553,7 @@ const AudioRecord = ({
 		return () => {
 			window.removeEventListener('resize', handleResize);
 		};
-	}, [hasAudio, recordingState]);
+	}, [hasAudio, isDarkMode, recordingState]);
 
 	useEffect(() => {
 		const mode =
@@ -552,7 +563,7 @@ const AudioRecord = ({
 					? 'paused'
 					: 'idle';
 		drawVisualizerBars(visualizerBarsRef.current, mode);
-	}, [hasAudio, recordingState]);
+	}, [hasAudio, isDarkMode, recordingState]);
 
 	useEffect(() => {
 		return () => {
@@ -603,8 +614,8 @@ const AudioRecord = ({
 					})}
 				</span>
 			</div>
-			<div className='relative h-40 w-full overflow-hidden rounded-xl border border-emerald-500/15 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.16),transparent_30%),linear-gradient(180deg,rgba(15,23,42,0.02),rgba(15,23,42,0.12))]'>
-				<div className='pointer-events-none absolute inset-0'>
+			<div className='relative h-40 w-full overflow-hidden rounded-xl border border-emerald-500/15 bg-transparent dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),radial-gradient(circle_at_80%_20%,rgba(26,189,178,0.16),transparent_30%),linear-gradient(180deg,rgba(20,23,42,0.02),rgba(18,23,32,0.12))]'>
+				<div className='pointer-events-none absolute inset-0 hidden dark:block'>
 					<div className='absolute left-6 top-6 h-16 w-16 rounded-full bg-emerald-400/10 blur-2xl animate-pulse' />
 					<div className='absolute right-8 bottom-8 h-20 w-20 rounded-full bg-sky-400/10 blur-3xl animate-pulse [animation-delay:-1.2s]' />
 				</div>
