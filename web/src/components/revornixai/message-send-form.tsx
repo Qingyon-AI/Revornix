@@ -77,13 +77,38 @@ const MessageSendForm = () => {
 					);
 					break;
 
+				case 'artifact':
+					if (event.payload.kind === 'document_sources') {
+						if (event.payload.items.length > 0) {
+							store.mergeChatMessageDocumentSources(
+								sessionId,
+								event.chat_id,
+								event.payload.items,
+							);
+						}
+						break;
+					}
+
+					if (event.payload.kind === 'tool_result') {
+						store.advanceChatMessageWorkflow(
+							sessionId,
+							event.chat_id,
+							'tool_result',
+							{
+								tool: event.payload.tool,
+							},
+						);
+						break;
+					}
+					break;
+
 				case 'output':
 					if (event.payload.kind === 'tool_result') {
 						if (
 							Array.isArray(event.payload.references) &&
 							event.payload.references.length > 0
 						) {
-							store.mergeChatMessageDocumentReferences(
+							store.mergeChatMessageDocumentSources(
 								sessionId,
 								event.chat_id,
 								event.payload.references,
@@ -114,7 +139,12 @@ const MessageSendForm = () => {
 					break;
 
 				case 'error':
-					store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'error', event.payload);
+					store.advanceChatMessageWorkflow(
+						sessionId,
+						event.chat_id,
+						'error',
+						event.payload,
+					);
 					break;
 			}
 		};
@@ -278,29 +308,36 @@ const MessageSendForm = () => {
 			console.error(error);
 		},
 	});
+	const messageValue = form.watch('message');
+	const canSubmit =
+		messageValue.trim().length > 0 && !mutateSendMessage.isPending;
+	const defaultModelName = default_llm_model?.name
+		? default_llm_model.name
+		: t('setting_revornix_model_empty');
 
 	const renderDesktopToolbar = () => {
 		return (
 			<div className='mb-2 flex flex-wrap items-center gap-1.5'>
-				<div className='rounded-full border border-border/60 bg-background/70 px-3 py-1 text-[11px] text-muted-foreground'>
-					{t('revornix_ai_default_model')}:
-					<span className='ml-2 font-medium text-foreground'>
-						{default_llm_model?.name
-							? default_llm_model.name
-							: t('setting_revornix_model_empty')}
+				<div className='inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs'>
+					<span className='shrink-0 text-muted-foreground'>
+						{t('revornix_ai_default_model')}
 					</span>
+					<span className='truncate font-medium text-foreground'>
+						{defaultModelName}
+					</span>
+					<span className='h-3.5 w-px shrink-0 bg-border' />
+					<Link
+						href={'/setting'}
+						className='shrink-0 text-xs text-muted-foreground transition-colors hover:text-foreground'>
+						{t('revornix_ai_default_model_goto')}
+					</Link>
 				</div>
-				<Link
-					href={'/setting'}
-					className='text-xs text-muted-foreground underline underline-offset-4'>
-					{t('revornix_ai_default_model_goto')}
-				</Link>
 				<FormField
 					control={form.control}
 					name='enable_mcp'
 					render={({ field }) => (
-						<FormItem className='ml-auto flex flex-wrap items-center gap-2 rounded-full border border-border/60 bg-background/72 px-2.5 py-1'>
-							<FormLabel className='flex flex-row items-center gap-1 text-xs font-medium'>
+						<FormItem className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1.5'>
+							<FormLabel className='flex flex-row items-center gap-1.5 text-xs font-medium text-foreground'>
 								{t('revornix_ai_mcp_status')}
 								<TooltipProvider>
 									<Tooltip>
@@ -319,32 +356,30 @@ const MessageSendForm = () => {
 									field.onChange(e);
 								}}
 							/>
+							<span className='h-3.5 w-px shrink-0 bg-border' />
 							<Link
 								href={'/setting/mcp'}
-								className='text-xs text-muted-foreground underline underline-offset-4'>
+								className='text-xs text-muted-foreground transition-colors hover:text-foreground'>
 								{t('revornix_ai_go_to_configure_mcp')}
 							</Link>
 						</FormItem>
 					)}
 				/>
-				<kbd className='pointer-events-none inline-flex h-6.5 select-none items-center gap-1 rounded-full border border-border/60 bg-background/70 px-2.5 font-mono text-[10px] font-medium text-muted-foreground'>
-					<span className='text-xs font-bold'>⌘</span>
-					<span className='mr-1 text-xs font-bold'>Enter</span>
-					<span>{t('revornix_ai_quickly_send')}</span>
-				</kbd>
 			</div>
 		);
 	};
 
 	const renderMobileToolbar = () => {
 		return (
-			<div className='mb-2 flex items-center gap-2'>
-				<div className='min-w-0 flex-1 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground'>
-					<span className='block truncate font-medium text-foreground'>
-						{default_llm_model?.name
-							? default_llm_model.name
-							: t('setting_revornix_model_empty')}
-					</span>
+			<div className='mb-2 flex items-center gap-1.5'>
+				<div className='min-w-0 flex-1 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs text-muted-foreground'>
+					<div className='truncate'>
+						<span>{t('revornix_ai_default_model')}</span>
+						<span className='mx-1'>·</span>
+						<span className='font-medium text-foreground'>
+							{defaultModelName}
+						</span>
+					</div>
 				</div>
 				<Drawer>
 					<DrawerTrigger asChild>
@@ -352,12 +387,12 @@ const MessageSendForm = () => {
 							type='button'
 							variant='outline'
 							size='icon'
-							className='size-10 rounded-2xl border-border/60 bg-background/70 shadow-none'
+							className='size-9 rounded-full border-border/60 bg-background shadow-none'
 							aria-label={t('revornix_ai_mobile_compose_settings')}>
-							<SlidersHorizontal className='size-4.5' />
+							<SlidersHorizontal className='size-4' />
 						</Button>
 					</DrawerTrigger>
-					<DrawerContent className='max-h-[80vh] rounded-t-[28px] border-t border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_24%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.14),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))]'>
+					<DrawerContent className='max-h-[80vh] rounded-t-[28px] border-t border-border/70 bg-card'>
 						<DrawerHeader className='border-b border-border/60 px-5 pb-4 pt-5 text-left'>
 							<DrawerTitle className='text-lg tracking-tight'>
 								{t('revornix_ai_mobile_compose_settings')}
@@ -367,14 +402,12 @@ const MessageSendForm = () => {
 							</DrawerDescription>
 						</DrawerHeader>
 						<div className='space-y-3 overflow-auto px-4 py-4'>
-							<div className='rounded-[22px] border border-border/60 bg-background/72 p-4'>
+							<div className='rounded-[22px] border border-border/60 bg-background p-4'>
 								<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
 									{t('revornix_ai_default_model')}
 								</div>
 								<div className='mt-2 text-base font-semibold'>
-									{default_llm_model?.name
-										? default_llm_model.name
-										: t('setting_revornix_model_empty')}
+									{defaultModelName}
 								</div>
 								<Link
 									href={'/setting'}
@@ -382,7 +415,7 @@ const MessageSendForm = () => {
 									{t('revornix_ai_default_model_goto')}
 								</Link>
 							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background/72 p-4'>
+							<div className='rounded-[22px] border border-border/60 bg-background p-4'>
 								<div className='flex items-start justify-between gap-3'>
 									<div className='min-w-0'>
 										<div className='flex items-center gap-1.5 text-sm font-semibold'>
@@ -427,18 +460,23 @@ const MessageSendForm = () => {
 	return (
 		<Form {...form}>
 			<form onSubmit={onSubmitMessageForm}>
-				<div className='relative overflow-hidden rounded-[20px] border border-border/60 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.08),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(56,189,248,0.08),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] p-2 shadow-[0_16px_34px_-34px_rgba(15,23,42,0.38)] dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(56,189,248,0.12),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0.88),rgba(15,23,42,0.8))]'>
-					{isMobile ? renderMobileToolbar() : renderDesktopToolbar()}
-					{isMobile ? (
+				<div className='rounded-[22px] border border-border/60 bg-card p-2 shadow-sm'>
+					<div>
+						{isMobile ? renderMobileToolbar() : renderDesktopToolbar()}
 						<FormField
 							control={form.control}
 							name='message'
 							render={({ field }) => (
 								<FormItem className='flex-1'>
-									<div className='relative'>
+									<div className='relative rounded-[20px] border border-border/70 bg-background p-1.5'>
 										<Textarea
-											className='min-h-[104px] max-h-[168px] resize-none overflow-y-auto rounded-[18px] border border-border/60 bg-background/72 px-3.5 py-3 pb-16 text-[15px] leading-6 shadow-none outline-none ring-0 focus-visible:ring-0'
+											className={`resize-none overflow-y-auto rounded-[14px] border-none bg-transparent px-3 py-2.5 text-sm leading-6 shadow-none outline-none ring-0 focus-visible:ring-0 ${
+												isMobile
+													? 'min-h-[88px] max-h-[144px] pb-[3.25rem]'
+													: 'min-h-[78px] max-h-[140px] pb-[3.25rem] pr-[3.5rem]'
+											}`}
 											placeholder={t('revornix_ai_message_placeholder')}
+											disabled={mutateSendMessage.isPending}
 											{...field}
 											onKeyDown={(e) => {
 												if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -450,48 +488,32 @@ const MessageSendForm = () => {
 												}
 											}}
 										/>
-										<Button
-											type='submit'
-											size={'icon'}
-											className='absolute bottom-3 right-3 size-10 rounded-2xl bg-foreground text-background shadow-[0_14px_28px_-24px_rgba(15,23,42,0.65)] hover:bg-foreground/90'>
-											<Send />
-										</Button>
+										<div className='absolute inset-x-2.5 bottom-2.5 flex items-end justify-between gap-2'>
+											<div className='flex min-h-9 items-center'>
+												{!isMobile ? (
+													<div className='flex items-center gap-1.5 text-[11px] text-muted-foreground'>
+														<kbd className='pointer-events-none inline-flex h-6 select-none items-center gap-1 rounded-full border border-border bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground'>
+															<span className='text-xs font-bold'>⌘</span>
+															<span className='font-bold'>Enter</span>
+														</kbd>
+														<span>{t('revornix_ai_quickly_send')}</span>
+													</div>
+												) : null}
+											</div>
+											<Button
+												type='submit'
+												size='icon'
+												variant='default'
+												disabled={!canSubmit}
+												className='size-9 rounded-[14px]'>
+												<Send className='size-4' />
+											</Button>
+										</div>
 									</div>
 								</FormItem>
 							)}
 						/>
-					) : (
-						<div className='grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end'>
-							<FormField
-								control={form.control}
-								name='message'
-								render={({ field }) => (
-									<FormItem className='flex-1'>
-										<Textarea
-											className='min-h-[72px] max-h-[140px] resize-none overflow-y-auto rounded-[16px] border border-border/60 bg-background/72 px-3.5 py-2.5 text-[15px] leading-6 shadow-none outline-none ring-0 focus-visible:ring-0 sm:min-h-[80px] sm:max-h-[160px]'
-											placeholder={t('revornix_ai_message_placeholder')}
-											{...field}
-											onKeyDown={(e) => {
-												if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-													e.preventDefault();
-													form.handleSubmit(
-														onFormValidateSuccess,
-														onFormValidateError,
-													)();
-												}
-											}}
-										/>
-									</FormItem>
-								)}
-							/>
-							<Button
-								type='submit'
-								size={'icon'}
-								className='size-10 rounded-2xl bg-foreground text-background shadow-[0_14px_28px_-24px_rgba(15,23,42,0.65)] hover:bg-foreground/90 sm:mb-0.5'>
-								<Send />
-							</Button>
-						</div>
-					)}
+					</div>
 				</div>
 			</form>
 		</Form>

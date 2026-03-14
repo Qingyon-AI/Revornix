@@ -139,14 +139,14 @@ const ChatHistory = ({
 		<Button
 			variant='outline'
 			size='icon'
-			className='size-10 rounded-2xl border-border/60 bg-background/70 shadow-sm'
+			className='size-10 rounded-2xl border-border/60 bg-card shadow-none'
 			aria-label={t('revornix_ai_mobile_menu')}>
 			<Menu className='size-4.5' />
 		</Button>
 	) : (
 		<Button
 			variant='outline'
-			className='rounded-2xl border-border/60 bg-background/70 shadow-sm'>
+			className='rounded-2xl border-border/60 bg-card shadow-none'>
 			{t('revornix_ai_history_sessions')}
 			<History />
 		</Button>
@@ -161,7 +161,7 @@ const ChatHistory = ({
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 						placeholder={t('revornix_ai_history_search_placeholder')}
-						className='h-10 rounded-2xl border-border/60 bg-background/70 pl-9 pr-3 text-sm shadow-none'
+						className='h-10 rounded-2xl border-border/60 bg-background pl-9 pr-3 text-sm shadow-none'
 					/>
 				</div>
 			</div>
@@ -169,7 +169,7 @@ const ChatHistory = ({
 				<div className='border-b border-border/60 px-5 py-3'>
 					<Button
 						onClick={handleCreateNewSession}
-						className='h-11 w-full rounded-2xl bg-foreground text-background shadow-[0_18px_36px_-28px_rgba(15,23,42,0.68)] hover:bg-foreground/90'>
+						className='h-11 w-full rounded-2xl'>
 						{t('revornix_ai_add_session')}
 						<PlusIcon className='size-4' />
 					</Button>
@@ -177,9 +177,9 @@ const ChatHistory = ({
 			) : null}
 			<div className='flex-1 overflow-auto px-4 py-4'>
 				{sortedSessions.length === 0 ? (
-					<div className='flex min-h-[320px] items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/55 px-6 text-center'>
+					<div className='flex min-h-[320px] items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background px-6 text-center'>
 						<div className='max-w-sm'>
-							<div className='mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-foreground text-background'>
+							<div className='mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground'>
 								<BotIcon className='size-6' />
 							</div>
 							<h3 className='text-lg font-semibold tracking-tight'>
@@ -191,9 +191,9 @@ const ChatHistory = ({
 						</div>
 					</div>
 				) : filteredSessions.length === 0 ? (
-					<div className='flex min-h-[220px] items-center justify-center rounded-[24px] border border-dashed border-border/70 bg-background/55 px-6 text-center'>
+					<div className='flex min-h-[220px] items-center justify-center rounded-[24px] border border-dashed border-border/70 bg-background px-6 text-center'>
 						<div className='max-w-sm'>
-							<div className='mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-background/80 text-foreground'>
+							<div className='mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-muted text-foreground'>
 								<Search className='size-5' />
 							</div>
 							<h3 className='text-base font-semibold tracking-tight'>
@@ -227,8 +227,8 @@ const ChatHistory = ({
 									className={cn(
 										'group w-full cursor-pointer rounded-[22px] border px-3.5 py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20',
 										isActive
-											? 'border-foreground/20 bg-foreground/[0.04] shadow-[0_20px_44px_-42px_rgba(15,23,42,0.55)]'
-											: 'border-border/60 bg-background/72 hover:border-border hover:bg-background/88',
+											? 'border-border bg-muted/70 shadow-sm'
+											: 'border-border/60 bg-background hover:border-border hover:bg-muted/30',
 									)}>
 									<div className='flex items-start justify-between gap-3'>
 										<div className='min-w-0 flex-1'>
@@ -237,7 +237,7 @@ const ChatHistory = ({
 													{getSessionTitle(session)}
 												</p>
 												{isActive ? (
-													<Badge className='h-5 rounded-full px-2 text-[10px]'>
+													<Badge className='h-5 rounded-full border-border bg-muted px-2 text-[10px] text-foreground'>
 														{t('revornix_ai_current_session')}
 													</Badge>
 												) : null}
@@ -249,7 +249,7 @@ const ChatHistory = ({
 										<Button
 											size={'icon'}
 											variant={'ghost'}
-											className='size-8 shrink-0 rounded-xl border border-border/60 bg-background/70 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100'
+											className='size-8 shrink-0 rounded-xl border border-border/60 bg-background opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100'
 											aria-label={t('delete')}
 											onClick={(e) => {
 												e.preventDefault();
@@ -260,16 +260,16 @@ const ChatHistory = ({
 										</Button>
 									</div>
 									<div className='mt-2.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground'>
-										<div className='inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-2 py-0.5'>
+										<div className='inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2 py-0.5'>
 											<MessageSquareText className='size-3' />
 											<span>{session.message_count}</span>
 										</div>
-										<div className='inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-2 py-0.5'>
+										<div className='inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2 py-0.5'>
 											<DatabaseZap className='size-3' />
 											<span>{session.source_count}</span>
 										</div>
 										{session.model_name ? (
-											<div className='inline-flex max-w-full items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-2 py-0.5'>
+											<div className='inline-flex max-w-full items-center gap-1.5 rounded-full border border-border/60 bg-background px-2 py-0.5'>
 												<span className='truncate'>{session.model_name}</span>
 											</div>
 										) : null}
@@ -303,7 +303,7 @@ const ChatHistory = ({
 		return (
 			<Drawer open={showHistory} onOpenChange={handleOpenChange}>
 				<DrawerTrigger asChild>{trigger}</DrawerTrigger>
-				<DrawerContent className='flex max-h-[85vh] flex-col gap-0 rounded-t-[28px] border-t border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_24%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.14),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] p-0 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.4)] dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_24%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.18),transparent_22%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(15,23,42,0.9))]'>
+				<DrawerContent className='flex max-h-[85vh] flex-col gap-0 rounded-t-[28px] border-t border-border/70 bg-card p-0 shadow-sm'>
 					<DrawerHeader className='border-b border-border/60 px-5 pb-4 pt-5 text-left'>
 						<div className='space-y-2'>
 							<div className='flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground'>
@@ -327,7 +327,7 @@ const ChatHistory = ({
 	return (
 		<Sheet open={showHistory} onOpenChange={handleOpenChange}>
 			<SheetTrigger asChild>{trigger}</SheetTrigger>
-			<SheetContent className='flex w-[min(520px,100vw)] max-w-[min(520px,100vw)] flex-col gap-0 border-l border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_24%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.12),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] p-0 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.4)] dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_24%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.18),transparent_22%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(15,23,42,0.9))]'>
+			<SheetContent className='flex w-[min(520px,100vw)] max-w-[min(520px,100vw)] flex-col gap-0 border-l border-border/70 bg-card p-0 shadow-sm'>
 				<SheetHeader className='border-b border-border/60 px-5 pb-4 pt-6 text-left'>
 					<div className='space-y-2'>
 						<div className='flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground'>

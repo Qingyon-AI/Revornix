@@ -35,8 +35,11 @@ const MessageCard = ({ message }: { message: Message }) => {
 	const t = useTranslations();
 	const ai_workflow = message.ai_workflow;
 	const ai_state = message.ai_state;
-	const documentReferences = message.document_references;
+	const documentSources =
+		message.document_sources ?? message.document_references;
+	const chunkCitations = message.chunk_citations ?? message.references;
 	const [sourcesOpen, setSourcesOpen] = useState(false);
+	const [citationsOpen, setCitationsOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
 	const copyResetTimerRef = useRef<number | null>(null);
 
@@ -94,8 +97,96 @@ const MessageCard = ({ message }: { message: Message }) => {
 		}
 	};
 
-	const renderDocumentReferences = () => {
-		if (!documentReferences || documentReferences.length === 0) {
+	const cleanReferenceExcerpt = (text: string) => {
+		return text.replace(/\s+/g, ' ').trim();
+	};
+
+	const buildChunkCitationSummary = () => {
+		return (chunkCitations ?? [])
+			.slice(0, 2)
+			.map((citation) => citation.document_title)
+			.filter(Boolean)
+			.join(' · ');
+	};
+
+	const renderChunkCitations = () => {
+		if (!chunkCitations || chunkCitations.length === 0) {
+			return null;
+		}
+
+		const summary = buildChunkCitationSummary();
+
+		return (
+			<Collapsible
+				open={citationsOpen}
+				onOpenChange={setCitationsOpen}
+				className='mt-3'>
+				<div className='rounded-xl border border-border/50 bg-muted/30 px-3 py-2'>
+					<div className='flex items-center justify-between gap-3'>
+						<div className='min-w-0 flex-1'>
+							<div className='flex items-center gap-2 text-[11px] font-medium tracking-wide text-muted-foreground'>
+								<span>{t('section_ai_references')}</span>
+								<span className='rounded-full border border-border/60 bg-background px-1.5 py-0.5 text-[10px] leading-none'>
+									{chunkCitations.length}
+								</span>
+							</div>
+							{summary && (
+								<div className='mt-1 line-clamp-1 text-xs text-muted-foreground/90'>
+									{summary}
+								</div>
+							)}
+						</div>
+						<CollapsibleTrigger asChild>
+							<button
+								type='button'
+								className='inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground'>
+								<span>
+									{citationsOpen
+										? t('section_ai_references_hide')
+										: t('section_ai_references_show')}
+								</span>
+								<ChevronDownIcon
+									className={cn(
+										'size-3.5 transition-transform',
+										citationsOpen && 'rotate-180',
+									)}
+								/>
+							</button>
+						</CollapsibleTrigger>
+					</div>
+					<CollapsibleContent className='pt-2'>
+						<div className='flex max-h-44 flex-col gap-2 overflow-auto pr-1'>
+							{chunkCitations.map((citation) => (
+								<div
+									key={citation.chunk_id}
+									className='rounded-lg border border-border/50 bg-background p-2.5'>
+									<div className='flex min-w-0 items-start gap-2'>
+										<div className='mt-0.5 rounded-md border border-border/50 bg-muted p-1'>
+											<FileTextIcon className='size-3 text-muted-foreground' />
+										</div>
+										<div className='min-w-0 flex-1'>
+											<div className='line-clamp-1 text-xs font-medium text-foreground'>
+												{citation.document_title}
+											</div>
+											<div className='mt-0.5 text-[10px] uppercase tracking-[0.1em] text-muted-foreground/80'>
+												Document #{citation.document_id}
+											</div>
+										</div>
+									</div>
+									<p className='mt-1.5 line-clamp-2 break-words text-[11px] leading-5 text-muted-foreground'>
+										{cleanReferenceExcerpt(citation.excerpt)}
+									</p>
+								</div>
+							))}
+						</div>
+					</CollapsibleContent>
+				</div>
+			</Collapsible>
+		);
+	};
+
+	const renderDocumentSources = () => {
+		if (!documentSources || documentSources.length === 0) {
 			return null;
 		}
 
@@ -104,26 +195,26 @@ const MessageCard = ({ message }: { message: Message }) => {
 				open={sourcesOpen}
 				onOpenChange={setSourcesOpen}
 				className='mt-3'>
-				<div className='rounded-xl border border-border/50 bg-card/60 px-3 py-2'>
+				<div className='rounded-xl border border-border/50 bg-muted/30 px-3 py-2'>
 					<div className='flex items-center justify-between gap-3'>
 						<div className='min-w-0 flex-1'>
 							<div className='flex items-center gap-2 text-[11px] font-medium tracking-wide text-muted-foreground'>
 								<span>{t('revornix_ai_sources')}</span>
-								<span className='rounded-full border border-border/60 bg-card/75 px-1.5 py-0.5 text-[10px] leading-none'>
-									{documentReferences.length}
+								<span className='rounded-full border border-border/60 bg-background px-1.5 py-0.5 text-[10px] leading-none'>
+									{documentSources.length}
 								</span>
 							</div>
 							<div className='mt-1 line-clamp-1 text-xs text-muted-foreground/90'>
-								{documentReferences
+								{documentSources
 									.slice(0, 2)
-									.map((reference) => reference.document_title)
+									.map((source) => source.document_title)
 									.join(' · ')}
 							</div>
 						</div>
 						<CollapsibleTrigger asChild>
 							<button
 								type='button'
-								className='inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-card/80 hover:text-foreground'>
+								className='inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground'>
 								<span>
 									{sourcesOpen
 										? t('revornix_ai_sources_hide')
@@ -140,32 +231,32 @@ const MessageCard = ({ message }: { message: Message }) => {
 					</div>
 					<CollapsibleContent className='pt-2'>
 						<div className='flex max-h-44 flex-col gap-2 overflow-auto pr-1'>
-							{documentReferences.map((reference) => (
+							{documentSources.map((source) => (
 								<div
-									key={`${reference.document_id}-${reference.source_tool ?? 'source'}`}
-									className='rounded-lg border border-border/50 bg-card/60 p-2.5'>
+									key={`${source.document_id}-${source.source_tool ?? 'source'}`}
+									className='rounded-lg border border-border/50 bg-background p-2.5'>
 									<div className='flex min-w-0 items-start gap-2'>
-										<div className='mt-0.5 rounded-md border border-border/50 bg-card/75 p-1'>
+										<div className='mt-0.5 rounded-md border border-border/50 bg-muted p-1'>
 											<FileTextIcon className='size-3 text-muted-foreground' />
 										</div>
 										<div className='min-w-0 flex-1'>
 											<div className='line-clamp-1 text-xs font-medium text-foreground'>
-												{reference.document_title}
+												{source.document_title}
 											</div>
 											<div className='mt-0.5 text-[10px] uppercase tracking-[0.1em] text-muted-foreground/80'>
-												Document #{reference.document_id}
+												Document #{source.document_id}
 											</div>
-											{reference.section_titles &&
-												reference.section_titles.length > 0 && (
+											{source.section_titles &&
+												source.section_titles.length > 0 && (
 													<div className='mt-1 line-clamp-1 text-[11px] text-muted-foreground'>
-														{reference.section_titles.join(' · ')}
+														{source.section_titles.join(' · ')}
 													</div>
 												)}
 										</div>
 									</div>
-									{reference.description && (
+									{source.description && (
 										<p className='mt-1.5 line-clamp-2 break-words text-[11px] leading-5 text-muted-foreground'>
-											{reference.description}
+											{source.description}
 										</p>
 									)}
 								</div>
@@ -185,11 +276,11 @@ const MessageCard = ({ message }: { message: Message }) => {
 				className={cn(
 					'min-w-0 rounded-xl border px-3 py-2.5 md:px-4 md:py-3',
 					message.role === 'user'
-						? 'max-w-[min(82%,760px)] border-primary/5 bg-primary/5'
-						: 'max-w-[min(92%,1080px)] border-border/60 bg-card/84 shadow-[0_14px_36px_-30px_rgba(15,23,42,0.28)]',
+						? 'max-w-[min(82%,760px)] border-border/60 bg-muted/60'
+						: 'max-w-[min(92%,1080px)] border-border/60 bg-card shadow-sm',
 				)}>
 				{ai_state && (
-					<Alert className='mb-3 border-border/60 bg-card/70'>
+					<Alert className='mb-3 border-border/60 bg-muted/40'>
 						<AlertDescription>
 							<Accordion type='multiple' className='w-full'>
 								<AccordionItem value='state'>
@@ -251,8 +342,8 @@ const MessageCard = ({ message }: { message: Message }) => {
 																		<div className='pl-5 mt-1 w-fit'>
 																			{(step.phase === 'tool' ||
 																				step.phase === 'tool_result') &&
-																				step.meta?.tool && (
-																					<div className='break-all rounded border border-border/50 bg-card/75 px-1.5 py-0.5'>
+																			step.meta?.tool && (
+																					<div className='break-all rounded border border-border/50 bg-background px-1.5 py-0.5'>
 																						{step.meta.tool}
 																					</div>
 																				)}
@@ -275,12 +366,13 @@ const MessageCard = ({ message }: { message: Message }) => {
 				<div className='prose max-w-none break-words dark:prose-invert'>
 					<CustomMarkdown content={message.content} />
 				</div>
-				{message.role === 'assistant' && renderDocumentReferences()}
+				{message.role === 'assistant' && renderChunkCitations()}
+				{message.role === 'assistant' && renderDocumentSources()}
 				<div
 					className={cn(
 						'mt-2.5 flex items-center justify-end border-t pt-1.5',
 						message.role === 'user'
-							? 'border-primary/30'
+							? 'border-border/40'
 							: 'border-border/40',
 					)}>
 					<Button

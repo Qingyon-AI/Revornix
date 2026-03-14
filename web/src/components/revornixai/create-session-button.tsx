@@ -16,7 +16,7 @@ const CreateSessionButton = () => {
 	return (
 		<Button
 			onClick={handleCreateNewSession}
-			className='rounded-2xl border border-foreground/10 bg-foreground px-4 text-background shadow-[0_18px_36px_-26px_rgba(15,23,42,0.7)] hover:bg-foreground/90'>
+			className='rounded-2xl px-4'>
 			{t('revornix_ai_add_session')}
 			<PlusIcon />
 		</Button>

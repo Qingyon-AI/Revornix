@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
-import { Bot, ChevronDown, FileText, Send } from 'lucide-react';
+import { Bot, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
 import sectionApi from '@/api/section';
+import { mergeChunkCitations, mergeDocumentSources } from '@/lib/ai-sources';
 import { cn } from '@/lib/utils';
 import { getUserTimeZone } from '@/lib/time';
 import { useUserContext } from '@/provider/user-provider';
@@ -16,7 +17,6 @@ import type {
 	AIPhase,
 	AIWorkflow,
 	Message,
-	SectionAskReference,
 } from '@/types/ai';
 import MessageCard from '../revornixai/message-card';
 import { Button } from '../ui/button';
@@ -28,11 +28,6 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from '../ui/sheet';
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from '../ui/collapsible';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 
@@ -95,18 +90,6 @@ function updateAssistantMessage(
 	];
 }
 
-function cleanReferenceExcerpt(text: string) {
-	return text.replace(/\s+/g, ' ').trim();
-}
-
-function buildReferenceSummary(references: SectionAskReference[]) {
-	return references
-		.slice(0, 2)
-		.map((reference) => reference.document_title)
-		.filter(Boolean)
-		.join(' · ');
-}
-
 function resolveSectionPhaseLabel(phase: AIPhase, label?: string) {
 	if (
 		typeof label === 'string' &&
@@ -135,9 +118,6 @@ const SectionOperateAI = ({
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [input, setInput] = useState('');
 	const [enableMcp, setEnableMcp] = useState(false);
-	const [expandedReferences, setExpandedReferences] = useState<
-		Record<string, boolean>
-	>({});
 	const [isSending, setIsSending] = useState(false);
 
 	const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -174,9 +154,11 @@ const SectionOperateAI = ({
 				);
 				break;
 			}
-			case 'output': {
-				if (event.payload.kind === 'tool_result' && 'tool' in event.payload) {
-					const toolPayload = event.payload;
+			case 'artifact': {
+				const artifact = event.payload;
+
+				if (artifact.kind === 'tool_result') {
+					const tool = artifact.tool;
 					setMessages((currentMessages) =>
 						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
 							...message,
@@ -186,7 +168,7 @@ const SectionOperateAI = ({
 								'tool_result',
 								phaseLabelMap.tool_result,
 								{
-									tool: toolPayload.tool,
+									tool,
 								},
 							),
 						})),
@@ -194,8 +176,71 @@ const SectionOperateAI = ({
 					return;
 				}
 
-				if (event.payload.kind !== 'token') {
+				if (artifact.kind === 'document_sources') {
+					const documentSources = artifact.items;
+					setMessages((currentMessages) =>
+						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
+							...message,
+							role: 'assistant',
+							document_sources: mergeDocumentSources(
+								message.document_sources,
+								documentSources,
+							),
+						})),
+					);
 					return;
+				}
+
+				if (artifact.kind === 'chunk_citations') {
+					const chunkCitations = artifact.items;
+					setMessages((currentMessages) =>
+						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
+							...message,
+							role: 'assistant',
+							chunk_citations: mergeChunkCitations(
+								message.chunk_citations,
+								chunkCitations,
+							),
+						})),
+					);
+				}
+				return;
+			}
+			case 'output': {
+				const payload = event.payload;
+
+				if (payload.kind === 'tool_result') {
+					if (
+						Array.isArray(payload.references) &&
+						payload.references.length > 0
+					) {
+						setMessages((currentMessages) =>
+							updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
+								...message,
+								role: 'assistant',
+								document_sources: mergeDocumentSources(
+									message.document_sources,
+									payload.references,
+								),
+							})),
+						);
+					}
+
+					setMessages((currentMessages) =>
+						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
+							...message,
+							role: 'assistant',
+							ai_workflow: pushWorkflowStep(
+								message.ai_workflow,
+								'tool_result',
+								phaseLabelMap.tool_result,
+								{
+									tool: payload.tool,
+								},
+							),
+						})),
+					);
+					break;
 				}
 
 				setMessages((currentMessages) =>
@@ -225,14 +270,20 @@ const SectionOperateAI = ({
 							phase: 'done',
 							label: phaseLabelMap.done,
 						},
-						ai_workflow: pushWorkflowStep(
-							message.ai_workflow,
-							'done',
-							phaseLabelMap.done,
-						),
-						references: event.payload?.references ?? message.references,
-					})),
-				);
+							ai_workflow: pushWorkflowStep(
+								message.ai_workflow,
+								'done',
+								phaseLabelMap.done,
+							),
+							chunk_citations:
+								event.payload?.references && event.payload.references.length > 0
+									? mergeChunkCitations(
+											message.chunk_citations,
+											event.payload.references,
+										)
+									: message.chunk_citations,
+						})),
+					);
 				break;
 			}
 			case 'error': {
@@ -368,91 +419,6 @@ const SectionOperateAI = ({
 		}
 	};
 
-	const renderReferences = (
-		chatId: string,
-		references?: SectionAskReference[],
-	) => {
-		if (!references || references.length === 0) {
-			return null;
-		}
-
-		const isExpanded = Boolean(expandedReferences[chatId]);
-		const summary = buildReferenceSummary(references);
-
-		return (
-			<Collapsible
-				open={isExpanded}
-				onOpenChange={(open) =>
-					setExpandedReferences((current) => ({
-						...current,
-						[chatId]: open,
-					}))
-				}
-				className='mt-2'>
-				<div className='rounded-xl border border-border/50 bg-card/65 px-3 py-2'>
-					<div className='flex items-center justify-between gap-3'>
-						<div className='min-w-0 flex-1'>
-							<div className='flex items-center gap-2 text-[11px] font-medium tracking-wide text-muted-foreground'>
-								<span>{t('section_ai_references')}</span>
-								<span className='rounded-full border border-border/60 bg-card/75 px-1.5 py-0.5 text-[10px] leading-none'>
-									{references.length}
-								</span>
-							</div>
-							{summary && (
-								<div className='mt-1 line-clamp-1 text-xs text-muted-foreground/90'>
-									{summary}
-								</div>
-							)}
-						</div>
-						<CollapsibleTrigger asChild>
-							<button
-								type='button'
-								className='inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-card/80 hover:text-foreground'>
-								<span>
-									{isExpanded
-										? t('section_ai_references_hide')
-										: t('section_ai_references_show')}
-								</span>
-								<ChevronDown
-									className={cn(
-										'size-3.5 transition-transform',
-										isExpanded && 'rotate-180',
-									)}
-								/>
-							</button>
-						</CollapsibleTrigger>
-					</div>
-					<CollapsibleContent className='pt-2'>
-						<div className='flex max-h-44 flex-col gap-2 overflow-auto pr-1'>
-							{references.map((reference) => (
-								<div
-									key={reference.chunk_id}
-									className='rounded-lg border border-border/50 bg-card/65 p-2.5'>
-									<div className='flex min-w-0 items-start gap-2'>
-										<div className='mt-0.5 rounded-md border border-border/50 bg-card/75 p-1'>
-											<FileText className='size-3 text-muted-foreground' />
-										</div>
-										<div className='min-w-0 flex-1'>
-											<div className='line-clamp-1 text-xs font-medium text-foreground'>
-												{reference.document_title}
-											</div>
-											<div className='mt-0.5 text-[10px] uppercase tracking-[0.1em] text-muted-foreground/80'>
-												Document #{reference.document_id}
-											</div>
-										</div>
-									</div>
-									<p className='mt-1.5 line-clamp-2 break-words text-[11px] leading-5 text-muted-foreground'>
-										{cleanReferenceExcerpt(reference.excerpt)}
-									</p>
-								</div>
-							))}
-						</div>
-					</CollapsibleContent>
-				</div>
-			</Collapsible>
-		);
-	};
-
 	return (
 		<Sheet>
 			<SheetTrigger asChild>
@@ -491,7 +457,7 @@ const SectionOperateAI = ({
 						</div>
 					)}
 
-					{messages.length > 0 && (
+							{messages.length > 0 && (
 						<div className='flex flex-col gap-4'>
 							{messages.map((message) => (
 								<div
@@ -500,8 +466,6 @@ const SectionOperateAI = ({
 										'pl-8': message.role === 'user',
 									})}>
 									<MessageCard message={message} />
-									{message.role === 'assistant' &&
-										renderReferences(message.chat_id, message.references)}
 								</div>
 							))}
 							<div ref={messageEndRef} />
