@@ -8,6 +8,7 @@ from prompts.make_section_markdown import make_section_markdown_prompt
 from pydantic import BaseModel
 from data.custom_types.all import RelationInfo, EntityInfo
 from common.logger import exception_logger
+from common.mermaid import sanitize_mermaid_blocks
 from common.usage_billing import persist_model_usage_from_completion
 from proxy.ai_model_proxy import AIModelProxy
 
@@ -91,7 +92,7 @@ async def make_section_markdown(
             content = completion.choices[0].message.content
             if content is None:
                 raise Exception("No content returned for ai")
-            return content
+            return sanitize_mermaid_blocks(content)
         finally:
             await _safe_close_async_client(client)
 

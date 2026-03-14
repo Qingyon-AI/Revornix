@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from langfuse.openai import AsyncOpenAI
 
 from common.logger import exception_logger, format_log_message
+from common.mermaid import sanitize_mermaid_blocks
 from common.usage_billing import persist_model_usage_from_completion
 from data.custom_types.all import EntityInfo, RelationInfo
 from prompts.make_section_markdown import make_section_markdown_prompt
@@ -212,6 +213,6 @@ async def make_section_markdown(
             content = completion.choices[0].message.content
             if content is None:
                 raise Exception("No content returned for ai")
-            return content
+            return sanitize_mermaid_blocks(content)
         finally:
             await _safe_close_async_client(client)

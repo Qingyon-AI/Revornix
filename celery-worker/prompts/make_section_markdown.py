@@ -76,11 +76,20 @@ Your report **must** incorporate visual elements using Markdown:
 
 - When helpful, include **Mermaid diagrams** (flowchart, concept graph, or sequence diagram)
 - Use **tables**, **lists**, **callouts**, and **code blocks** when appropriate
+- If you include Mermaid, keep it compatible with strict Mermaid rendering:
+  use `flowchart TD` or `flowchart LR`
+- Use node syntax like `ID["Short label"]`
+- Keep node labels short and plain-text only
+- Do **not** use HTML tags such as `<br/>` or `<br>`
+- Do **not** put Markdown formatting inside Mermaid labels
+- Replace label line breaks with spaces instead of HTML
+- Avoid raw double quotes inside labels; simplify or rephrase if needed
+- If a diagram would require complex or fragile Mermaid syntax, omit the diagram instead
 
 Example (for reference only):
 ```mermaid
-graph LR
-    A[Concept A] --> B[Concept B]
+flowchart LR
+    A["Concept A"] --> B["Concept B"]
 ```
 
 ## 3. Writing Requirements

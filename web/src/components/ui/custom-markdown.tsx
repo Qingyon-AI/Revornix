@@ -3,6 +3,7 @@
 import { Mermaid } from '@ant-design/x';
 import XMarkdown, { type ComponentProps } from '@ant-design/x-markdown';
 import React from 'react';
+import { normalizeMermaidDiagram } from '@/lib/mermaid';
 
 const Code: React.FC<ComponentProps> = (props) => {
 	const { className, children } = props;
@@ -10,6 +11,7 @@ const Code: React.FC<ComponentProps> = (props) => {
 
 	if (typeof children !== 'string') return null;
 	if (lang === 'mermaid') {
+		const diagram = normalizeMermaidDiagram(children);
 		return (
 			<Mermaid
 				styles={{
@@ -19,7 +21,7 @@ const Code: React.FC<ComponentProps> = (props) => {
 						paddingRight: 0,
 					},
 				}}>
-				{children}
+				{diagram}
 			</Mermaid>
 		);
 	}
