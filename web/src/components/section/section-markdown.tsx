@@ -115,6 +115,7 @@ const SectionMarkdown = ({
 		(!section && isFetching && !isError) ||
 		(hasMarkdownFile && markdownIsFetching && !markdown) ||
 		(!hasMarkdownFile && isMarkdownProcessing);
+	const showProcessingSkeleton = !hasMarkdownFile && isMarkdownProcessing;
 	const showError = !showSkeleton && (isError || Boolean(markdownGetError));
 	const showEmpty =
 		!showSkeleton &&
@@ -138,9 +139,19 @@ const SectionMarkdown = ({
 			) : null}
 
 			{showSkeleton ? (
-				<SectionMarkdownSkeleton
-					className={contentFallbackMinHeightClassName}
-				/>
+				showProcessingSkeleton ? (
+					<div
+						className={cn(
+							'flex items-center justify-center',
+							contentFallbackMinHeightClassName,
+						)}>
+						<SectionMarkdownSkeleton />
+					</div>
+				) : (
+					<SectionMarkdownSkeleton
+						className={contentFallbackMinHeightClassName}
+					/>
+				)
 			) : null}
 
 			{showError ? (
