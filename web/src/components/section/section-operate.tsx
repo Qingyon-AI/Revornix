@@ -96,12 +96,6 @@ const SectionOperate = ({
 		setShowMobileMenu(false);
 	};
 
-	const closeMobileMenuDeferred = () => {
-		window.setTimeout(() => {
-			setShowMobileMenu(false);
-		}, 0);
-	};
-
 	const openMobilePanel = (panel: Exclude<MobilePanel, null>) => {
 		setShowMobileMenu(false);
 		window.setTimeout(() => {
@@ -206,19 +200,16 @@ const SectionOperate = ({
 									<SectionOperateComment
 										section_id={id}
 										className={mobileActionButtonClassName}
-										onTriggerClick={closeMobileMenuDeferred}
 									/>
 									<SectionOperateAI
 										section_id={id}
 										section_title={section.title}
 										disabled={!section.md_file_name && section.documents_count === 0}
 										className={mobileActionButtonClassName}
-										onTriggerClick={closeMobileMenuDeferred}
 									/>
 									<SectionDocument
 										section_id={id}
 										className={mobileActionButtonClassName}
-										onTriggerClick={closeMobileMenuDeferred}
 									/>
 									{ownershipResolved ? (
 										isOwner ? (
@@ -226,18 +217,15 @@ const SectionOperate = ({
 											<SectionOperateShare
 												section_id={id}
 												className={mobileActionButtonClassName}
-												onTriggerClick={closeMobileMenuDeferred}
 												showPublishBadge={false}
 											/>
 											<SectionOperateConfiguration
 												section_id={id}
 												className={mobileActionButtonClassName}
-												onTriggerClick={closeMobileMenuDeferred}
 											/>
 											<SectionOperateDelete
 												section_id={id}
 												className={mobileActionButtonClassName}
-												onTriggerClick={closeMobileMenuDeferred}
 											/>
 										</>
 										) : (
