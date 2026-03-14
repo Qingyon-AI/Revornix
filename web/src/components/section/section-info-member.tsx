@@ -155,7 +155,7 @@ const SectionInfoMember = ({ section_id }: { section_id: number }) => {
 															user.nickname ? user.nickname : 'Unknown User'
 														}>
 														<AvatarImage src={user.avatar} alt='user avatar' />
-														<AvatarFallback>
+														<AvatarFallback className='font-semibold'>
 															{user.nickname.slice(0, 1) ?? '?'}
 														</AvatarFallback>
 													</Avatar>
