@@ -596,7 +596,6 @@
     "document_audio_record_delete": "Delete audio",
     "document_audio_record_duration": "Duration",
     "document_audio_record_waveform": "Audio waveform",
-    "document_audio_record_placeholder": "Ready to record",
     "document_audio_record_preview": "Preview",
     "document_audio_record_total_duration": "Total duration",
     "document_audio_record_permission_denied": "Unable to access the microphone. Please check browser permissions.",

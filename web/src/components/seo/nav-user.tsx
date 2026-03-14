@@ -16,6 +16,7 @@ import { BadgeCheck, Bell, LogOut } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'nextjs-toploader/app';
 import { useUserContext } from '@/provider/user-provider';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const NavUser = () => {
 	const t = useTranslations();
@@ -31,7 +32,10 @@ const NavUser = () => {
 		<>
 			{!mainUserInfo && pathname !== '/login' && (
 				<Link href={'/login'}>
-					<Button variant={'outline'} size='sm' className='hidden rounded-xl px-4 md:inline-flex'>
+					<Button
+						variant={'outline'}
+						size='sm'
+						className='hidden rounded-xl px-4 md:inline-flex'>
 						{t('seo_nav_login_in')}
 					</Button>
 				</Link>
@@ -40,11 +44,16 @@ const NavUser = () => {
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Link className='text-xs' href={'/dashboard'}>
-							<img
-								src={mainUserInfo.avatar}
-								alt='avatar'
-								className='rounded-full size-8 object-cover'
-							/>
+							<Avatar className='size-8'>
+								<AvatarImage
+									src={mainUserInfo.avatar}
+									alt={mainUserInfo.nickname}
+									className='object-cover size-8'
+								/>
+								<AvatarFallback className='size-8 font-semibold'>
+									{mainUserInfo.nickname.slice(0, 1)}
+								</AvatarFallback>
+							</Avatar>
 						</Link>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent

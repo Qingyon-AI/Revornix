@@ -8,8 +8,7 @@ import {
 	LifeBuoy,
 	PlusCircle,
 	ChartNetwork,
-	SatelliteDish,
-	Sparkles,
+	SatelliteDish
 } from 'lucide-react';
 import Link from 'next/link';
 import { NavUser } from '@/components/user/nav-user';
@@ -239,13 +238,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>
-				<div className='mb-1 mx-4 mt-auto rounded-2xl border border-sidebar-border/70 bg-gradient-to-br from-sidebar-accent to-sidebar p-3 text-xs text-sidebar-foreground/70 shadow-sm'>
-					<div className='mb-1 flex items-center gap-2 text-sidebar-foreground'>
-						<Sparkles className='size-3.5 text-emerald-600 dark:text-emerald-300' />
-						<span className='font-medium'>{t('website_title')}</span>
-					</div>
-					<div className='line-clamp-2'>{t('website_description')}</div>
-				</div>
 			</SidebarContent>
 			<SidebarFooter>
 				<NavUser />

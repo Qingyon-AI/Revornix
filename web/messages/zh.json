@@ -596,7 +596,6 @@
     "document_audio_record_delete": "删除音频",
     "document_audio_record_duration": "录制时长",
     "document_audio_record_waveform": "音频波形",
-    "document_audio_record_placeholder": "等待开始录制",
     "document_audio_record_preview": "试听",
     "document_audio_record_total_duration": "总时长",
     "document_audio_record_permission_denied": "无法访问麦克风，请检查浏览器权限设置",
