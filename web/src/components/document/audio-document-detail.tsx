@@ -32,6 +32,12 @@ const AudioDocumentDetail = ({
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
 	const queryClient = getQueryClient();
+	const contentFallbackMinHeightClassName =
+		'min-h-[calc(100dvh-8rem)] sm:min-h-[calc(100dvh-8.25rem)]';
+	const statusContainerClassName = cn(
+		'flex min-h-0 flex-1 flex-col items-center justify-center gap-2 text-xs text-muted-foreground',
+		contentFallbackMinHeightClassName,
+	);
 	const [markdownRendered, setMarkdownRendered] = useState(false);
 	const {
 		data: document,
@@ -112,11 +118,16 @@ const AudioDocumentDetail = ({
 	}, [inView, markdownRendered, onFinishRead]);
 
 	return (
-		<div className={cn('h-full w-full relative', className)}>
+		<div
+			className={cn(
+				'relative flex w-full flex-col',
+				contentFallbackMinHeightClassName,
+				className,
+			)}>
 			{document &&
 				document.transcribe_task?.status ===
 					DocumentTranscribeStatus.TRANSCRIBING && (
-					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
+					<div className={statusContainerClassName}>
 						<p className='flex flex-row items-center'>
 							{t('document_transcribe_doing')}
 						</p>
@@ -138,7 +149,7 @@ const AudioDocumentDetail = ({
 				(document.transcribe_task?.status ===
 					DocumentTranscribeStatus.WAIT_TO ||
 					!document.transcribe_task) && (
-					<div className='h-full w-full flex flex-col justify-center items-center text-xs text-muted-foreground gap-2'>
+					<div className={statusContainerClassName}>
 						<p className='flex flex-row items-center'>
 							<span className='mr-1'>{t('document_transcribe_todo')}</span>
 							<Tooltip>
@@ -167,7 +178,7 @@ const AudioDocumentDetail = ({
 			{document &&
 				document.transcribe_task?.status ===
 					DocumentTranscribeStatus.FAILED && (
-					<div className='h-full w-full flex flex-col justify-center items-center text-muted-foreground text-xs gap-2'>
+					<div className={statusContainerClassName}>
 						<p>{t('document_transcribe_failed')}</p>
 						<Button
 							variant={'link'}
@@ -188,10 +199,10 @@ const AudioDocumentDetail = ({
 				!isError &&
 				document.transcribe_task?.status ===
 					DocumentTranscribeStatus.SUCCESS && (
-					<Skeleton className='h-full w-full' />
+					<Skeleton className='min-h-0 w-full flex-1' />
 				)}
 			{markdown && !isError && (
-				<div className='w-full h-full flex flex-col'>
+				<div className='flex min-h-0 w-full flex-1 flex-col'>
 					<div className='flex-1 overflow-auto relative'>
 						<div className='prose prose-zinc mx-auto max-w-[880px] dark:prose-invert prose-headings:scroll-mt-24 prose-headings:break-words prose-h1:text-3xl prose-h1:font-semibold prose-h2:text-2xl prose-h3:text-xl prose-p:leading-8 prose-a:text-primary prose-strong:text-foreground prose-img:rounded-2xl xl:pb-14 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
 							<CustomMarkdown content={markdown} />
