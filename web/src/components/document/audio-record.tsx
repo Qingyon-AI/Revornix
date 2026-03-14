@@ -613,11 +613,6 @@ const AudioRecord = ({
 					className='relative h-full w-full text-primary'
 					aria-label={t('document_audio_record_waveform')}
 				/>
-				{recordingState === 'idle' && (
-					<div className='absolute inset-0 flex items-center justify-center text-xs text-muted-foreground'>
-						{t('document_audio_record_placeholder')}
-					</div>
-				)}
 			</div>
 			{hasReachedDurationLimit && (
 				<div className='rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-200'>
