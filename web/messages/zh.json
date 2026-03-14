@@ -743,6 +743,7 @@
     "section_podcast_unset": "该专栏暂未配置生成音频",
     "section_podcast_placeholder_description": "接入播客生成能力后，这里会展示当前专栏对应的音频内容。",
     "section_podcast_generate": "点击生成",
+    "section_podcast_regenerate": "点击重新生成",
     "section_podcast_generate_task_submitted": "生成任务已提交，请稍后",
     "section_podcast_generate_task_submitted_failed": "生成任务提交失败",
     "section_podcast_processing": "专栏播客音频正在处理中",

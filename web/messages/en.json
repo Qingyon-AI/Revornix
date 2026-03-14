@@ -743,6 +743,7 @@
     "section_podcast_unset": "The podcast generation function for this column has not been configured yet",
     "section_podcast_placeholder_description": "Once podcast generation is enabled, this area will show the audio version for the current section.",
     "section_podcast_generate": "Click To Generate",
+    "section_podcast_regenerate": "Click to Regenerate",
     "section_podcast_generate_task_submitted": "Task submitted, please wait",
     "section_podcast_generate_task_submitted_failed": "Task submission failed",
     "section_podcast_processing": "The podcast is being processed",
