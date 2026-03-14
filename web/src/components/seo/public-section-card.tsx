@@ -76,17 +76,23 @@ const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 								alt='avatar'
 								className='object-cover'
 							/>
-							<AvatarFallback>{section.creator.nickname}</AvatarFallback>
+							<AvatarFallback className='font-semibold'>
+								{section.creator.nickname.slice(0, 1) ?? '?'}
+							</AvatarFallback>
 						</Avatar>
 						<div className='min-w-0'>
 							<div className='line-clamp-1 text-sm text-foreground'>
 								{section.creator.nickname}
 							</div>
 							<div className='line-clamp-1'>
-								{formatDistance(new Date(section.update_time ?? section.create_time), new Date(), {
-									addSuffix: true,
-									locale: locale === 'zh' ? zhCN : enUS,
-								})}
+								{formatDistance(
+									new Date(section.update_time ?? section.create_time),
+									new Date(),
+									{
+										addSuffix: true,
+										locale: locale === 'zh' ? zhCN : enUS,
+									},
+								)}
 							</div>
 						</div>
 					</div>

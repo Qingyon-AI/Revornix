@@ -168,7 +168,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 										alt={document.creator.nickname}
 										className='object-cover'
 									/>
-									<AvatarFallback>
+									<AvatarFallback className='font-semibold'>
 										{document.creator.nickname.slice(0, 1)}
 									</AvatarFallback>
 								</Avatar>

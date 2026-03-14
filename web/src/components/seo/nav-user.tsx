@@ -51,7 +51,7 @@ const NavUser = () => {
 									className='object-cover size-8'
 								/>
 								<AvatarFallback className='size-8 font-semibold'>
-									{mainUserInfo.nickname.slice(0, 1)}
+									{mainUserInfo.nickname.slice(0, 1) ?? '?'}
 								</AvatarFallback>
 							</Avatar>
 						</Link>

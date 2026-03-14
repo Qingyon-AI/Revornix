@@ -100,7 +100,9 @@ const DocumentNotes = ({ id }: { id: number }) => {
 									<div className='mb-3 flex items-start gap-3'>
 										<div
 											className='flex min-w-0 cursor-pointer items-center gap-3'
-											onClick={() => router.push(`/user/detail/${note.user.id}`)}>
+											onClick={() =>
+												router.push(`/user/detail/${note.user.id}`)
+											}>
 											<Avatar className='size-10 ring-1 ring-border/70'>
 												<AvatarImage
 													src={replacePath(note.user.avatar, note.user.id)}
@@ -108,7 +110,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 													className='size-10 object-cover'
 												/>
 												<AvatarFallback className='size-10 font-semibold'>
-													{note.user.nickname}
+													{note.user.nickname.slice(0, 1) ?? '?'}
 												</AvatarFallback>
 											</Avatar>
 											<div className='min-w-0 space-y-1'>
@@ -140,10 +142,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 							<div className='flex flex-col gap-3'>
 								{[...Array(8)].map((_, index) => {
 									return (
-										<Skeleton
-											className='h-28 w-full rounded-3xl'
-											key={index}
-										/>
+										<Skeleton className='h-28 w-full rounded-3xl' key={index} />
 									);
 								})}
 							</div>
@@ -152,10 +151,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 							<div className='flex flex-col gap-3'>
 								{[...Array(4)].map((_, index) => {
 									return (
-										<Skeleton
-											className='h-28 w-full rounded-3xl'
-											key={index}
-										/>
+										<Skeleton className='h-28 w-full rounded-3xl' key={index} />
 									);
 								})}
 							</div>
