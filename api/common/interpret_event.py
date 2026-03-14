@@ -39,7 +39,7 @@ def base_event(
     """Build the normalized event envelope consumed by the frontend."""
     return {
         "chat_id": chat_id,
-        "type": event_type,          # status | output | error | done
+        "type": event_type,          # status | output | artifact | error | done
         "timestamp": now_ts(),
         "trace": trace or {},
         "payload": payload,
@@ -204,7 +204,7 @@ def _parse_document_detail_record(record: Any) -> dict[str, Any] | None:
 
 
 def _extract_document_records_from_payload(tool_name: str, payload: Any) -> list[dict[str, Any]]:
-    """Extract document references only from MCP tools with explicit document payload contracts."""
+    """Extract document sources only from MCP tools with explicit document payload contracts."""
     if tool_name in DOCUMENT_LIST_TOOL_NAMES:
         if not isinstance(payload, dict):
             return []
@@ -236,31 +236,31 @@ def _extract_document_records_from_payload(tool_name: str, payload: Any) -> list
     return []
 
 
-def _build_document_references(tool_name: str, content: Any) -> list[dict[str, Any]]:
-    """Extract compact document references from explicit document-tool payloads."""
-    references: list[dict[str, Any]] = []
+def _build_document_sources(tool_name: str, content: Any) -> list[dict[str, Any]]:
+    """Extract compact document sources from explicit document-tool payloads."""
+    document_sources: list[dict[str, Any]] = []
     seen_document_ids: set[int] = set()
 
     for payload in _parse_tool_payloads(content):
-        for reference in _extract_document_records_from_payload(tool_name, payload):
-            document_id = reference["document_id"]
+        for source in _extract_document_records_from_payload(tool_name, payload):
+            document_id = source["document_id"]
             if document_id in seen_document_ids:
                 continue
-            references.append({**reference, "source_tool": tool_name})
+            document_sources.append({**source, "source_tool": tool_name})
             seen_document_ids.add(document_id)
 
-            if len(references) >= DOCUMENT_REFERENCE_LIMIT:
-                return references
+            if len(document_sources) >= DOCUMENT_REFERENCE_LIMIT:
+                return document_sources
 
-    return references
+    return document_sources
 
 
-def _build_tool_result_preview(tool_name: str, content: Any, references: list[dict[str, Any]]) -> str:
+def _build_tool_result_preview(tool_name: str, content: Any, document_sources: list[dict[str, Any]]) -> str:
     """Create a compact preview string so tool-result payloads stay lightweight."""
-    if references:
-        if len(references) == 1:
-            return f'{tool_name}: {references[0]["document_title"]}'
-        return f"{tool_name}: {len(references)} documents"
+    if document_sources:
+        if len(document_sources) == 1:
+            return f'{tool_name}: {document_sources[0]["document_title"]}'
+        return f"{tool_name}: {len(document_sources)} documents"
 
     text = " ".join(
         fragment.strip()
@@ -401,20 +401,30 @@ class EventInterpreter:
 
             tool_name = name or "tool"
             tool_payload = _extract_tool_artifact(output)
-            references = _build_document_references(tool_name, tool_payload)
-            preview = _build_tool_result_preview(tool_name, content, references)
+            document_sources = _build_document_sources(tool_name, tool_payload)
+            preview = _build_tool_result_preview(tool_name, content, document_sources)
 
-            # 1️⃣ 先把工具结果作为 output 发出去
-            if preview or references:
+            # 1️⃣ 先发工具执行痕迹，再发结构化来源，避免把来源语义塞进 output 事件。
+            if preview or document_sources:
                 yield base_event(
                     chat_id=chat_id,
-                    event_type="output",
+                    event_type="artifact",
                     trace=trace,
                     payload={
                         "kind": "tool_result",
                         "tool": tool_name,
                         "content": preview,
-                        "references": references,
+                    },
+                )
+
+            if document_sources:
+                yield base_event(
+                    chat_id=chat_id,
+                    event_type="artifact",
+                    trace=trace,
+                    payload={
+                        "kind": "document_sources",
+                        "items": document_sources,
                     },
                 )
 

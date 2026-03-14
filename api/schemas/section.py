@@ -146,7 +146,7 @@ class SectionAskRequest(BaseModel):
     enable_mcp: bool = False
 
 
-class SectionAskReference(BaseModel):
+class SectionAskChunkCitation(BaseModel):
     document_id: int
     document_title: str
     chunk_id: str

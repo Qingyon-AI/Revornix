@@ -5,8 +5,10 @@ export type Message = {
     ai_state?: AIState;              // 当前态
     ai_workflow?: AIWorkflow;  // 历史态
     tool_results?: ToolResult[];
-    references?: SectionAskReference[];
-    document_references?: AIDocumentReference[];
+    chunk_citations?: AIChunkCitation[];
+    document_sources?: AIDocumentSource[];
+    references?: AIChunkCitation[];
+    document_references?: AIDocumentSource[];
 };
 
 type ToolResult = {
@@ -50,7 +52,7 @@ export interface AIState {
     error?: string;
 }
 
-export type SectionAskReference = {
+export type AIChunkCitation = {
     document_id: number;
     document_title: string;
     chunk_id: string;
@@ -58,13 +60,28 @@ export type SectionAskReference = {
     score?: number | null;
 };
 
-export type AIDocumentReference = {
+export type AIDocumentSource = {
     document_id: number;
     document_title: string;
     description?: string | null;
     section_titles?: string[];
     source_tool?: string;
 };
+
+export type AIArtifact =
+    | {
+        kind: 'tool_result';
+        tool: string;
+        content: any;
+    }
+    | {
+        kind: 'document_sources';
+        items: AIDocumentSource[];
+    }
+    | {
+        kind: 'chunk_citations';
+        items: AIChunkCitation[];
+    };
 
 export type AIEvent =
     | {
@@ -88,15 +105,22 @@ export type AIEvent =
             kind: 'tool_result';
             tool: string;
             content: any;
-            references?: AIDocumentReference[];
+            references?: AIDocumentSource[];
         };
+    }
+    | {
+        chat_id: string;
+        type: 'artifact';
+        payload: AIArtifact;
     }
     | {
         chat_id: string;
         type: 'done';
         payload?: {
             success?: boolean;
-            references?: SectionAskReference[];
+            section_id?: number;
+            section_title?: string;
+            references?: AIChunkCitation[];
             usage?: Record<string, number> | null;
         };
     }

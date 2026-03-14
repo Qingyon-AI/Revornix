@@ -61,14 +61,10 @@ const RevornixAI = () => {
 
 	return (
 		<div className='mx-auto flex h-full min-h-0 w-full max-w-none flex-col gap-4 px-3 pb-4 sm:px-4 lg:px-5'>
-			<div className='relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-background via-background to-emerald-500/5 p-3.5 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.28)] sm:p-4'>
-				<div className='pointer-events-none absolute inset-0'>
-					<div className='absolute left-0 top-0 h-28 w-28 rounded-full bg-emerald-500/10 blur-3xl' />
-					<div className='absolute right-6 top-4 h-24 w-24 rounded-full bg-sky-500/10 blur-3xl' />
-				</div>
-				<div className='relative flex items-center justify-between gap-3'>
+			<div className='rounded-2xl border border-border/60 bg-card p-3.5 shadow-sm sm:p-4'>
+				<div className='flex items-center justify-between gap-3'>
 					<div className='flex min-w-0 flex-1 items-center gap-3'>
-						<div className='flex size-9 shrink-0 items-center justify-center rounded-xl bg-foreground text-background shadow-sm'>
+						<div className='flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground'>
 							<BotIcon className='size-4.5' />
 						</div>
 						<div className='min-w-0 space-y-1'>
@@ -97,12 +93,8 @@ const RevornixAI = () => {
 				</div>
 			</div>
 			<div className='min-h-0 flex-1'>
-				<div className='relative flex h-full min-h-0 flex-col overflow-hidden rounded-[26px] border border-border/60 bg-card/86 shadow-[0_24px_64px_-44px_rgba(15,23,42,0.34)] backdrop-blur'>
-					<div className='pointer-events-none absolute inset-0'>
-						<div className='absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-sky-500/8 to-transparent' />
-						<div className='absolute bottom-0 right-0 h-40 w-40 rounded-full bg-emerald-500/8 blur-3xl' />
-					</div>
-					<div className='relative flex h-full min-h-0 flex-col'>
+				<div className='flex h-full min-h-0 flex-col overflow-hidden rounded-[26px] border border-border/60 bg-card shadow-sm'>
+					<div className='flex h-full min-h-0 flex-col'>
 						<div className='shrink-0 border-b border-border/60 px-4 py-3 sm:px-5'>
 							<div className='flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between'>
 								<div className='min-w-0'>
@@ -115,7 +107,7 @@ const RevornixAI = () => {
 								</div>
 								<div className='flex flex-wrap gap-2'>
 									{currentSession?.model_name ? (
-										<div className='rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs text-muted-foreground'>
+										<div className='rounded-full border border-border/60 bg-background px-3 py-1 text-xs text-muted-foreground'>
 											{currentSession.model_name}
 										</div>
 									) : null}
@@ -135,8 +127,8 @@ const RevornixAI = () => {
 							) : (
 								<div className='flex h-full min-h-full items-center justify-center'>
 									<div className='w-full max-w-lg'>
-										<div className='max-w-lg rounded-[28px] border border-dashed border-border/70 bg-background/55 px-8 py-10 text-center shadow-[0_18px_48px_-40px_rgba(15,23,42,0.45)]'>
-											<div className='mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-foreground text-background'>
+										<div className='max-w-lg rounded-[28px] border border-dashed border-border/70 bg-background px-8 py-10 text-center shadow-sm'>
+											<div className='mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground'>
 												<BotIcon className='size-6' />
 											</div>
 											<h2 className='text-lg font-semibold tracking-tight'>

@@ -1,13 +1,14 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware'
 import { get, set, del } from 'idb-keyval'
-import { AIDocumentReference, AIPhase, AIWorkflow, SessionItem } from '@/types/ai'
+import { AIDocumentSource, AIPhase, AIWorkflow, SessionItem } from '@/types/ai'
 import {
 	hydrateSessionItem,
 	sortSessionsByRecent,
 	touchSession,
 	touchSessionWithMessages,
 } from '@/lib/ai-session'
+import { mergeDocumentSources } from '@/lib/ai-sources'
 
 export type AIChatState = {
     currentSessionId: string | null;
@@ -36,10 +37,10 @@ export type AIChatAction = {
         step: AIPhase,
         meta?: any
     ) => void;
-    mergeChatMessageDocumentReferences: (
+    mergeChatMessageDocumentSources: (
         session_id: string,
         chat_id: string,
-        references: AIDocumentReference[]
+        sources: AIDocumentSource[]
     ) => void;
 };
 
@@ -189,7 +190,7 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                         return { sessions: sortSessionsByRecent(sessions) };
                     });
                 },
-                mergeChatMessageDocumentReferences: (session_id, chat_id, references) => {
+                mergeChatMessageDocumentSources: (session_id, chat_id, sources) => {
                     set((state) => {
                         const sessions = state.sessions.map((session) => {
                             if (session.id !== session_id) return session;
@@ -202,26 +203,15 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                                     chat_id,
                                     role: 'assistant',
                                     content: '',
-                                    document_references: references,
+                                    document_sources: sources,
                                 });
                             } else {
-                                const existingReferences = messages[idx].document_references ?? [];
-                                const mergedReferences = [...existingReferences];
-                                const seenDocumentIds = new Set(
-                                    existingReferences.map((reference) => reference.document_id)
-                                );
-
-                                for (const reference of references) {
-                                    if (seenDocumentIds.has(reference.document_id)) {
-                                        continue;
-                                    }
-                                    mergedReferences.push(reference);
-                                    seenDocumentIds.add(reference.document_id);
-                                }
-
                                 messages[idx] = {
                                     ...messages[idx],
-                                    document_references: mergedReferences,
+                                    document_sources: mergeDocumentSources(
+                                        messages[idx].document_sources,
+                                        sources
+                                    ),
                                 };
                             }
 
@@ -260,7 +250,7 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
         },
         {
             name: 'revornix-ai-chat', // unique name
-            version: 3,
+            version: 4,
             storage: createJSONStorage(() => storage),
             migrate: (persistedState) => {
                 const state = persistedState as Partial<AIChatState & AIChatAction> | undefined;

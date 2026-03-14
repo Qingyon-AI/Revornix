@@ -1,4 +1,5 @@
 import { Message, SessionItem } from '@/types/ai';
+import { mergeChunkCitations, mergeDocumentSources } from '@/lib/ai-sources';
 
 const DEFAULT_SESSION_TITLE = 'New Session';
 const LEGACY_TIMESTAMP_TITLE = /^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}$/;
@@ -36,12 +37,36 @@ const getSourceCount = (messages: Message[]) => {
 	const documentIds = new Set<number>();
 
 	for (const message of messages) {
-		for (const reference of message.document_references ?? []) {
-			documentIds.add(reference.document_id);
+		for (const source of message.document_sources ?? []) {
+			documentIds.add(source.document_id);
 		}
 	}
 
 	return documentIds.size;
+};
+
+const hydrateMessage = (messageLike: Partial<Message>): Message => {
+	const message = messageLike as Message & {
+		references?: Message['chunk_citations'];
+		document_references?: Message['document_sources'];
+	};
+
+	return {
+		chat_id: message.chat_id ?? crypto.randomUUID(),
+		role: message.role ?? 'assistant',
+		content: message.content ?? '',
+		ai_state: message.ai_state,
+		ai_workflow: message.ai_workflow,
+		tool_results: Array.isArray(message.tool_results) ? message.tool_results : undefined,
+		chunk_citations: mergeChunkCitations(
+			message.chunk_citations,
+			message.references,
+		),
+		document_sources: mergeDocumentSources(
+			message.document_sources,
+			message.document_references,
+		),
+	};
 };
 
 export const deriveSessionTitle = (
@@ -64,7 +89,9 @@ export const deriveSessionPreview = (messages: Message[]) => {
 };
 
 export const hydrateSessionItem = (sessionLike: Partial<SessionItem>): SessionItem => {
-	const messages = Array.isArray(sessionLike.messages) ? sessionLike.messages : [];
+	const messages = Array.isArray(sessionLike.messages)
+		? sessionLike.messages.map((message) => hydrateMessage(message))
+		: [];
 	const createdAt = sessionLike.created_at ?? new Date().toISOString();
 	const updatedAt = sessionLike.updated_at ?? createdAt;
 	const normalizedTitle = normalizeText(sessionLike.title);

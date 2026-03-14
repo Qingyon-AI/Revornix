@@ -14,7 +14,7 @@ import crud
 import models
 import schemas
 from common.dependencies import get_current_user, get_db
-from common.interpret_event import EventInterpreter
+from common.interpret_event import EventInterpreter, base_event
 from common.logger import exception_logger, format_log_message
 from common.markdown_helpers import get_markdown_content_by_section_id
 from common.usage_collector import UsageCollector
@@ -60,7 +60,7 @@ def _truncate_text(text: str, limit: int) -> str:
     return normalized[: max(0, limit - 1)].rstrip() + "…"
 
 
-def _sanitize_reference_excerpt(text: str) -> str:
+def _sanitize_chunk_citation_excerpt(text: str) -> str:
     """Remove noisy markdown syntax from retrieved excerpts before showing or prompting."""
     sanitized = text
     sanitized = sanitized.replace("\r", " ")
@@ -87,7 +87,7 @@ def _coerce_int(value: Any) -> int | None:
         return None
 
 
-def _serialize_reference(
+def _serialize_chunk_citation(
     *,
     document_id: int,
     document_title: str,
@@ -95,8 +95,8 @@ def _serialize_reference(
     excerpt: str,
     score: float | None,
 ) -> dict[str, Any]:
-    """Convert internal reference fields into the public section reference schema."""
-    return schemas.section.SectionAskReference(
+    """Convert internal chunk evidence fields into the public section citation schema."""
+    return schemas.section.SectionAskChunkCitation(
         document_id=document_id,
         document_title=document_title,
         chunk_id=chunk_id,
@@ -254,7 +254,7 @@ async def _build_section_context(
         top_k=SECTION_TOP_K,
     )
 
-    references: list[dict[str, Any]] = []
+    chunk_citations: list[dict[str, Any]] = []
     vector_context_blocks: list[str] = []
     seen_chunk_ids: set[str] = set()
     for index, hit in enumerate(vector_hits, start=1):
@@ -271,11 +271,11 @@ async def _build_section_context(
             continue
 
         excerpt = _truncate_text(
-            _sanitize_reference_excerpt(str(hit.get("text") or "")),
+            _sanitize_chunk_citation_excerpt(str(hit.get("text") or "")),
             SECTION_REFERENCE_EXCERPT_LIMIT,
         )
-        references.append(
-            _serialize_reference(
+        chunk_citations.append(
+            _serialize_chunk_citation(
                 document_id=document_id,
                 document_title=db_document.title,
                 chunk_id=chunk_id,
@@ -354,11 +354,11 @@ async def _build_section_context(
                     continue
 
                 excerpt = _truncate_text(
-                    _sanitize_reference_excerpt(str(hit.get("text") or "")),
+                    _sanitize_chunk_citation_excerpt(str(hit.get("text") or "")),
                     SECTION_REFERENCE_EXCERPT_LIMIT,
                 )
-                references.append(
-                    _serialize_reference(
+                chunk_citations.append(
+                    _serialize_chunk_citation(
                         document_id=document_id,
                         document_title=db_document.title,
                         chunk_id=chunk_id,
@@ -459,7 +459,7 @@ async def _build_section_context(
             context,
         ]
     )
-    return db_section, system_prompt, references
+    return db_section, system_prompt, chunk_citations
 
 
 async def _stream_section_answer_with_agent(
@@ -470,7 +470,7 @@ async def _stream_section_answer_with_agent(
     model_id: int,
     system_prompt: str,
     messages: list[schemas.ai.ChatItem],
-    references: list[dict[str, Any]],
+    chunk_citations: list[dict[str, Any]],
     agent: MCPAgent,
 ):
     """Stream a section-scoped answer through the MCP agent event pipeline."""
@@ -591,6 +591,19 @@ async def _stream_section_answer_with_agent(
     if stream_failed:
         return
 
+    if chunk_citations:
+        yield _sse(
+            base_event(
+                chat_id=chat_id,
+                event_type="artifact",
+                trace={},
+                payload={
+                    "kind": "chunk_citations",
+                    "items": chunk_citations,
+                },
+            )
+        )
+
     yield _sse(
         {
             "chat_id": chat_id,
@@ -601,7 +614,6 @@ async def _stream_section_answer_with_agent(
                 "success": True,
                 "section_id": section_id,
                 "section_title": section_title,
-                "references": references,
                 "usage": usage_snapshot.get("usage") if usage_snapshot else None,
             },
         }
@@ -634,7 +646,7 @@ async def ask_section_ai(
             code=400,
         )
 
-    db_section, system_prompt, references = await _build_section_context(
+    db_section, system_prompt, chunk_citations = await _build_section_context(
         db=db,
         section_id=section_ask_request.section_id,
         viewer_user_id=user.id,
@@ -657,7 +669,7 @@ async def ask_section_ai(
             model_id=model_id,
             system_prompt=system_prompt,
             messages=messages,
-            references=references,
+            chunk_citations=chunk_citations,
             agent=agent,
         ),
         media_type="text/event-stream; charset=utf-8",
