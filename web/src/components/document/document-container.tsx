@@ -38,6 +38,8 @@ import { useSidebar } from '../ui/sidebar';
 import { Skeleton } from '../ui/skeleton';
 import { cn, replacePath } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { DocumentGraphStatus } from '@/enums/document';
+import GraphTaskCard from '@/components/graph/graph-task-card';
 
 const DocumentDetailSkeleton = () => {
 	return (
@@ -164,6 +166,26 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		document?.cover && document.creator
 			? replacePath(document.cover, document.creator.id)
 			: null;
+	const graphCardState =
+		document?.graph_task?.status === DocumentGraphStatus.SUCCESS
+			? {
+					badge: t('document_graph_status_success'),
+					tone: 'success' as const,
+				}
+			: document?.graph_task?.status === DocumentGraphStatus.FAILED
+				? {
+						badge: t('document_graph_status_failed'),
+						tone: 'danger' as const,
+					}
+				: document?.graph_task?.status === DocumentGraphStatus.BUILDING
+					? {
+							badge: t('document_graph_status_doing'),
+							tone: 'default' as const,
+						}
+					: {
+							badge: t('document_graph_status_todo'),
+							tone: 'warning' as const,
+						};
 
 	const mutateRead = useMutation({
 		mutationFn: () =>
@@ -357,21 +379,16 @@ const DocumentContainer = ({ id }: { id: number }) => {
 									<DocumentInfo id={id} />
 								</Card>
 
-								<Card
-									className={`overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
-									<div className='flex items-start justify-between gap-4 border-b border-border/60 px-4 pb-0 pt-4 sm:px-5 sm:pt-5'>
-										<div className='space-y-1 pb-4'>
-											<h3 className='text-base font-semibold'>
-												{t('document_graph')}
-											</h3>
-											<p className='text-sm leading-6 text-muted-foreground'>
-												{t('document_graph_description')}
-											</p>
-										</div>
+								<GraphTaskCard
+									title={t('document_graph')}
+									description={t('document_graph_description')}
+									badge={graphCardState.badge}
+									tone={graphCardState.tone}
+									action={
 										<Dialog>
 											<DialogTrigger asChild>
 												<Button
-													className='size-10 shrink-0 rounded-2xl bg-background/70'
+													className='size-8 shrink-0 rounded-2xl border-border/70 bg-background/65 shadow-none hover:bg-background'
 													size='icon'
 													variant='outline'>
 													<Expand
@@ -392,14 +409,11 @@ const DocumentContainer = ({ id }: { id: number }) => {
 												</div>
 											</DialogContent>
 										</Dialog>
+									}>
+									<div className='h-[300px] overflow-hidden rounded-[20px] border border-border/60 bg-background/35'>
+										<DocumentGraph document_id={id} />
 									</div>
-
-									<div className='px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
-										<div className='h-[300px] overflow-hidden rounded-[24px] border border-border/60 bg-background/35'>
-											<DocumentGraph document_id={id} />
-										</div>
-									</div>
-								</Card>
+								</GraphTaskCard>
 
 								{document && document?.category !== DocumentCategory.AUDIO && (
 									<DocumentPodcast

@@ -1,13 +1,26 @@
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
+from apscheduler.triggers.cron import CronTrigger
 from celery import chain, group
 from sqlalchemy.orm import Session
 
 import crud
 import models
 import schemas
+from common.apscheduler.app import scheduler
 from common.celery.app import start_process_document, start_process_section
-from common.timezone import get_cached_user_timezone, today_in_timezone
+from common.section_defaults import (
+    TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION,
+    TODAY_SECTION_DEFAULT_AUTO_PODCAST,
+    TODAY_SECTION_DEFAULT_PROCESS_CRON,
+)
+from common.timezone import (
+    encode_cron_expr_with_timezone,
+    get_cached_user_timezone,
+    normalize_timezone_name,
+    today_in_timezone,
+)
 from enums.document import DocumentCategory, UserDocumentAuthority
 from enums.section import (
     SectionDocumentIntegration,
@@ -16,6 +29,83 @@ from enums.section import (
     UserSectionRole,
 )
 from schemas.error import CustomException
+
+
+def _schedule_section_process_for_today_section(
+    *,
+    db_section: models.section.Section,
+    timezone_name: str,
+) -> None:
+    job_id = f"section-process-{db_section.id!s}"
+    job = scheduler.get_job(job_id)
+    if job is not None:
+        scheduler.remove_job(job_id)
+    scheduler.add_job(
+        func=start_process_section,
+        kwargs={
+            "section_id": db_section.id,
+            "user_id": db_section.creator_id,
+            "auto_podcast": db_section.auto_podcast,
+        },
+        trigger=CronTrigger.from_crontab(
+            TODAY_SECTION_DEFAULT_PROCESS_CRON,
+            timezone=ZoneInfo(normalize_timezone_name(timezone_name)),
+        ),
+        id=job_id,
+    )
+
+
+def _ensure_today_section_defaults(
+    *,
+    db: Session,
+    db_section: models.section.Section,
+    user_id: int,
+    timezone_name: str,
+) -> bool:
+    changed = False
+    if not db_section.auto_podcast:
+        db_section.auto_podcast = TODAY_SECTION_DEFAULT_AUTO_PODCAST
+        changed = True
+    if not db_section.auto_illustration:
+        db_section.auto_illustration = TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION
+        changed = True
+
+    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+        db=db,
+        section_id=db_section.id,
+    )
+    if db_section_process_task is None:
+        db_section_process_task = crud.task.create_section_process_task(
+            db=db,
+            user_id=user_id,
+            section_id=db_section.id,
+            trigger_type=SectionProcessTriggerType.SCHEDULER,
+        )
+        changed = True
+    elif db_section_process_task.trigger_type != SectionProcessTriggerType.SCHEDULER:
+        db_section_process_task.trigger_type = SectionProcessTriggerType.SCHEDULER
+        changed = True
+
+    db_section_process_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
+        db=db,
+        section_id=db_section.id,
+    )
+    stored_cron_expr = encode_cron_expr_with_timezone(
+        cron_expr=TODAY_SECTION_DEFAULT_PROCESS_CRON,
+        timezone_name=timezone_name,
+    )
+    if db_section_process_scheduler is None:
+        crud.task.create_section_process_task_trigger_scheduler(
+            db=db,
+            section_process_task_id=db_section_process_task.id,
+            cron_expr=stored_cron_expr,
+        )
+        changed = True
+    elif db_section_process_scheduler.cron_expr != stored_cron_expr:
+        db_section_process_scheduler.cron_expr = stored_cron_expr
+        changed = True
+
+    return changed
 
 
 async def create_document_for_user(
@@ -29,6 +119,7 @@ async def create_document_for_user(
     if summary_timezone is None:
         summary_timezone = await get_cached_user_timezone(user.id)
     summary_date = today_in_timezone(summary_timezone)
+    created_today_section = False
 
     if document_create_request.category == DocumentCategory.WEBSITE:
         if document_create_request.url is None:
@@ -122,11 +213,14 @@ async def create_document_for_user(
         date=summary_date,
     )
     if db_today_section is None:
+        created_today_section = True
         db_today_section = crud.section.create_section(
             db=db,
             creator_id=user.id,
             title=f"{summary_date.isoformat()} Summary",
             description=f"This document is the summary of all documents on {summary_date.isoformat()}.",
+            auto_podcast=TODAY_SECTION_DEFAULT_AUTO_PODCAST,
+            auto_illustration=TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION,
         )
         crud.section.create_section_user(
             db=db,
@@ -140,11 +234,26 @@ async def create_document_for_user(
             section_id=db_today_section.id,
             date=summary_date,
         )
-        crud.task.create_section_process_task(
+        db_today_section_process_task = crud.task.create_section_process_task(
             db=db,
             user_id=user.id,
             section_id=db_today_section.id,
-            trigger_type=SectionProcessTriggerType.UPDATED,
+            trigger_type=SectionProcessTriggerType.SCHEDULER,
+        )
+        crud.task.create_section_process_task_trigger_scheduler(
+            db=db,
+            section_process_task_id=db_today_section_process_task.id,
+            cron_expr=encode_cron_expr_with_timezone(
+                cron_expr=TODAY_SECTION_DEFAULT_PROCESS_CRON,
+                timezone_name=summary_timezone,
+            ),
+        )
+    else:
+        created_today_section = _ensure_today_section_defaults(
+            db=db,
+            db_section=db_today_section,
+            user_id=user.id,
+            timezone_name=summary_timezone,
         )
 
     section_ids = list(
@@ -164,6 +273,11 @@ async def create_document_for_user(
         )
 
     db.commit()
+    if created_today_section:
+        _schedule_section_process_for_today_section(
+            db_section=db_today_section,
+            timezone_name=summary_timezone,
+        )
 
     db_sections = crud.section.get_sections_by_document_id(
         db=db,

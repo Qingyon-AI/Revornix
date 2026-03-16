@@ -7,6 +7,7 @@ import { zhCN } from 'date-fns/locale/zh-CN';
 import { enUS } from 'date-fns/locale/en-US';
 import { formatDistance } from 'date-fns';
 import {
+	AlertTriangle,
 	BellRing,
 	BookOpenText,
 	CalendarClock,
@@ -22,10 +23,12 @@ import {
 	UserSectionAuthority,
 } from '@/enums/section';
 import { formatInUserTimeZone, toDate } from '@/lib/time';
+import { getSectionAutomationWarnings } from '@/lib/section-automation';
 import { useUserContext } from '@/provider/user-provider';
 import { cn, replacePath } from '@/lib/utils';
 import { getSectionDetail } from '@/service/section';
 
+import { Alert, AlertDescription } from '../ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { Skeleton } from '../ui/skeleton';
@@ -129,6 +132,8 @@ const SectionInfo = ({ id }: { id: number }) => {
 			? mainUserInfo
 			: undefined;
 	const creatorId = section.creator?.id ?? fallbackCreator?.id;
+	const isOwner = creatorId !== undefined && creatorId === mainUserInfo?.id;
+	const hasPodcastEngine = Boolean(mainUserInfo?.default_podcast_user_engine_id);
 	const creatorNickname =
 		section.creator?.nickname ?? fallbackCreator?.nickname ?? '--';
 	const creatorAvatar = section.creator?.avatar ?? fallbackCreator?.avatar;
@@ -156,6 +161,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 	const effectivePodcastStatus =
 		section.podcast_task?.status ??
 		(section.auto_podcast &&
+		hasPodcastEngine &&
 		section.process_task &&
 		section.process_task.status < SectionProcessStatus.SUCCESS
 			? SectionPodcastStatus.WAIT_TO
@@ -215,9 +221,25 @@ const SectionInfo = ({ id }: { id: number }) => {
 							: effectivePodcastStatus === SectionPodcastStatus.SUCCESS
 								? t('section_podcast_status_success')
 								: t('section_podcast_status_failed'),
-				)
+		)
 			: null,
 	].filter(Boolean);
+	const automationWarnings = getSectionAutomationWarnings({
+		autoPodcast: section.auto_podcast,
+		autoIllustration: section.auto_illustration,
+		hasPodcastEngine,
+		hasImageEngine: Boolean(mainUserInfo?.default_image_generate_engine_id),
+	});
+	const warningMessages = isOwner
+		? [
+				automationWarnings.missingPodcastEngine
+					? t('section_form_auto_podcast_engine_unset')
+					: null,
+				automationWarnings.missingIllustrationEngine
+					? t('section_form_auto_illustration_engine_unset')
+					: null,
+			].filter(Boolean)
+		: [];
 
 	return (
 		<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
@@ -316,6 +338,19 @@ const SectionInfo = ({ id }: { id: number }) => {
 			{statusBadges.length > 0 ? (
 				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
 					{statusBadges}
+				</div>
+			) : null}
+
+			{warningMessages.length > 0 ? (
+				<div className='space-y-2'>
+					{warningMessages.map((message) => (
+						<Alert
+							key={message}
+							className='border-amber-500/30 bg-amber-500/8 text-amber-800 dark:text-amber-200'>
+							<AlertTriangle className='size-4 text-current' />
+							<AlertDescription>{message}</AlertDescription>
+						</Alert>
+					))}
 				</div>
 			) : null}
 		</div>

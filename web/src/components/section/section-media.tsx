@@ -122,6 +122,7 @@ const SectionMedia = ({
 			: fallbackCover;
 	const hasPendingAutoPodcastFlow =
 		section.auto_podcast &&
+		canGeneratePodcast &&
 		!section.podcast_task &&
 		section.process_task != null &&
 		section.process_task.status < SectionProcessStatus.SUCCESS;

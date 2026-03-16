@@ -1056,7 +1056,7 @@ const EntityGraphCanvas = ({
 							<Input
 								value={searchQuery}
 								placeholder='Search nodes'
-								className='h-8 min-w-0 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0'
+								className='h-8 min-w-0 border-0 bg-transparent! px-0 shadow-none focus-visible:ring-0'
 								onChange={(event) => {
 									setSearchQuery(event.target.value);
 									setActiveSearchIndex(0);
@@ -1089,7 +1089,7 @@ const EntityGraphCanvas = ({
 							</Button>
 						) : null}
 						<div className='flex shrink-0 items-center gap-1'>
-							<div className='min-w-[3.5rem] text-right text-xs font-medium tabular-nums text-muted-foreground'>
+							<div className='min-w-0 w-fit text-right text-xs font-medium tabular-nums text-muted-foreground'>
 								{searchQuery
 									? `${searchMatches.length === 0 ? 0 : Math.min(activeSearchIndex + 1, searchMatches.length)}/${searchMatches.length}`
 									: ' '}
