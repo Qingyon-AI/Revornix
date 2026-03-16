@@ -18,6 +18,8 @@ import { getUserFileSystemDetail } from '@/service/file-system';
 import { DocumentMdConvertStatus } from '@/enums/document';
 import { shouldPollDocumentDetail } from '@/lib/document-task';
 import CustomMarkdown from '../ui/custom-markdown';
+import { useRef } from 'react';
+import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 
 const WebsiteDocumentDetail = ({
 	id,
@@ -80,18 +82,39 @@ const WebsiteDocumentDetail = ({
 	}, [document]);
 
 	const [markdown, setMarkdown] = useState<string>();
-	const onGetMarkdown = async () => {
+	const loadedMarkdownSourceKeyRef = useRef<string | undefined>(undefined);
+	const loadingMarkdownSourceKeyRef = useRef<string | undefined>(undefined);
+	const stableMarkdownSourceKey = toStableMarkdownSourceKey(
+		document?.convert_task?.md_file_name,
+	);
+	const markdownSourceKey =
+		document?.convert_task?.status === DocumentMdConvertStatus.SUCCESS &&
+		stableMarkdownSourceKey &&
+		userFileSystemDetail?.file_system_id
+			? `${userFileSystemDetail.file_system_id}:${stableMarkdownSourceKey}`
+			: undefined;
+
+	const onGetMarkdown = async (sourceKey: string) => {
 		if (
 			!document ||
 			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
-			!mainUserInfo
-		)
+			!mainUserInfo ||
+			!userFileSystemDetail
+		) {
 			return;
+		}
 		if (!mainUserInfo.default_user_file_system) {
 			toast.error(t('error_default_file_system_not_found'));
 			return;
 		}
-		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
+		if (
+			loadedMarkdownSourceKeyRef.current === sourceKey ||
+			loadingMarkdownSourceKeyRef.current === sourceKey
+		) {
+			return;
+		}
+		loadingMarkdownSourceKeyRef.current = sourceKey;
+		const fileService = new FileService(userFileSystemDetail.file_system_id);
 		try {
 			if (!document.convert_task?.md_file_name) {
 				throw new Error(t('document_markdown_file_missing'));
@@ -105,10 +128,16 @@ const WebsiteDocumentDetail = ({
 			if (typeof res === 'string') {
 				res = replaceImagePaths(res, document.creator.id);
 				setMarkdown(res);
+				setMarkdownGetError(undefined);
 				setMarkdownRendered(true);
+				loadedMarkdownSourceKeyRef.current = sourceKey;
 			}
 		} catch (e: any) {
 			setMarkdownGetError(e.message);
+		} finally {
+			if (loadingMarkdownSourceKeyRef.current === sourceKey) {
+				loadingMarkdownSourceKeyRef.current = undefined;
+			}
 		}
 	};
 
@@ -125,20 +154,27 @@ const WebsiteDocumentDetail = ({
 			return;
 		}
 		setMarkdowningTransform(false);
+		loadedMarkdownSourceKeyRef.current = undefined;
+		loadingMarkdownSourceKeyRef.current = undefined;
+		setMarkdown(undefined);
 		toast.success(t('document_transform_again'));
 		setDelay(1000);
 	};
 
 	useEffect(() => {
-		if (
-			!document ||
-			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
-			!mainUserInfo ||
-			!userFileSystemDetail
-		)
+		if (!markdownSourceKey || !mainUserInfo?.id) {
 			return;
-		onGetMarkdown();
-	}, [document, mainUserInfo, userFileSystemDetail]);
+		}
+		void onGetMarkdown(markdownSourceKey);
+	}, [markdownSourceKey, mainUserInfo?.id]);
+
+	useEffect(() => {
+		if (document?.convert_task?.status === DocumentMdConvertStatus.SUCCESS) {
+			return;
+		}
+		loadedMarkdownSourceKeyRef.current = undefined;
+		loadingMarkdownSourceKeyRef.current = undefined;
+	}, [document?.convert_task?.status]);
 
 	const { ref: bottomRef, inView } = useInView();
 

@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 
 import { SectionProcessStatus } from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
-import { cn } from '@/lib/utils';
+import { cn, replacePath } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSectionDetail } from '@/service/section';
 
@@ -78,6 +78,10 @@ const SectionContainer = ({ id }: { id: number }) => {
 			return getSectionDetail({ section_id: id });
 		},
 	});
+	const sectionCoverSrc =
+		section?.cover && section.creator
+			? replacePath(section.cover, section.creator.id)
+			: null;
 
 	const [delay, setDelay] = useState<number | undefined>();
 	useInterval(() => {
@@ -108,9 +112,18 @@ const SectionContainer = ({ id }: { id: number }) => {
 			}
 
 			const rect = mainColumnRef.current.getBoundingClientRect();
-			setDockBounds({
-				left: rect.left,
-				width: rect.width,
+			setDockBounds((currentBounds) => {
+				if (
+					Math.abs(currentBounds.left - rect.left) < 0.5 &&
+					Math.abs(currentBounds.width - rect.width) < 0.5
+				) {
+					return currentBounds;
+				}
+
+				return {
+					left: rect.left,
+					width: rect.width,
+				};
 			});
 		};
 
@@ -153,7 +166,6 @@ const SectionContainer = ({ id }: { id: number }) => {
 		}
 
 		window.addEventListener('resize', updateDockBounds);
-		window.addEventListener('scroll', updateDockBounds, true);
 
 		return () => {
 			if (animationFrameId !== null) {
@@ -164,7 +176,6 @@ const SectionContainer = ({ id }: { id: number }) => {
 			}
 			resizeObserver.disconnect();
 			window.removeEventListener('resize', updateDockBounds);
-			window.removeEventListener('scroll', updateDockBounds, true);
 		};
 	}, [isCompactViewport, sidebarState, section?.id]);
 
@@ -174,6 +185,18 @@ const SectionContainer = ({ id }: { id: number }) => {
 				<div ref={mainColumnRef} className='relative min-w-0'>
 					<div className={mainSurfaceClassName}>
 						<div className={mainContentClassName}>
+							{sectionCoverSrc ? (
+								<div className='mx-auto mb-6 w-full max-w-[880px] overflow-hidden rounded-[28px] border border-border/60 bg-background/45 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.48)]'>
+									<div className='relative'>
+										<img
+											src={sectionCoverSrc}
+											alt={section?.title || t('section_title_empty')}
+											className='max-h-[320px] w-full object-cover sm:max-h-[380px]'
+										/>
+										<div className='absolute inset-0 bg-gradient-to-t from-background/28 via-transparent to-transparent' />
+									</div>
+								</div>
+							) : null}
 							<SectionMarkdown id={id} />
 						</div>
 					</div>
