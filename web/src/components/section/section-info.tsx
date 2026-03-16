@@ -11,7 +11,6 @@ import {
 	BookOpenText,
 	CalendarClock,
 	CalendarDays,
-	NotebookPen,
 	type LucideIcon,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -85,8 +84,6 @@ const SectionInfo = ({ id }: { id: number }) => {
 	if (isFetching && !isFetched) {
 		return (
 			<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
-				<Skeleton className='h-44 w-full rounded-[26px]' />
-
 				<div className='space-y-4 rounded-[24px] border border-border/60 bg-background/35 p-4'>
 					<div className='space-y-2'>
 						<Skeleton className='h-8 w-3/4 rounded-2xl' />
@@ -142,35 +139,11 @@ const SectionInfo = ({ id }: { id: number }) => {
 				locale: locale === 'zh' ? zhCN : enUS,
 			})
 		: '--';
-	const coverSrc =
-		section.cover && creatorId !== undefined
-			? replacePath(section.cover, creatorId)
-			: null;
 	const creatorCardClassName =
 		'flex items-center gap-3 rounded-2xl border border-border/50 bg-background/45 px-3 py-2.5 transition-colors';
 
 	return (
 		<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
-			<div className='overflow-hidden rounded-[26px] border border-border/60 bg-background/45'>
-				{coverSrc ? (
-					<div className='relative'>
-						<img
-							src={coverSrc}
-							alt={title}
-							className='h-44 w-full object-cover'
-						/>
-						<div className='absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent' />
-					</div>
-				) : (
-					<div className='flex h-36 items-end bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.1),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(56,189,180,0.1),transparent_30%),linear-gradient(135deg,rgba(50,45,42,0.5),rgba(50,45,42,0.2))] p-4'>
-						<div className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-white/80 backdrop-blur'>
-							<NotebookPen className='size-3.5' />
-							{t('section_creator')}
-						</div>
-					</div>
-				)}
-			</div>
-
 			<div className='space-y-4 rounded-[24px] border border-border/60 bg-background/35 p-4'>
 				<div className='space-y-2'>
 					<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight'>

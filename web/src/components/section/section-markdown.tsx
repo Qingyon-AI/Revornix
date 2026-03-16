@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 
 import { SectionProcessStatus } from '@/enums/section';
 import { cn, replaceImagePaths } from '@/lib/utils';
 import { getSectionDetail } from '@/service/section';
+import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 
 import CustomMarkdown from '../ui/custom-markdown';
 import { Skeleton } from '../ui/skeleton';
@@ -69,13 +70,31 @@ const SectionMarkdown = ({
 	const [markdown, setMarkdown] = useState<string>();
 	const [markdownIsFetching, setMarkdownIsFetching] = useState(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
+	const loadedMarkdownSourceKeyRef = useRef<string | undefined>(undefined);
+	const loadingMarkdownUrlRef = useRef<string | undefined>(undefined);
+	const shouldReloadOnSuccessRef = useRef(false);
+	const processStatus =
+		section?.process_task?.status ?? SectionProcessStatus.SUCCESS;
+	const markdownUrl = section?.md_file_name ?? undefined;
+	const markdownSourceKey = toStableMarkdownSourceKey(markdownUrl);
 
-	const onGetMarkdown = async () => {
-		if (!section || !section.md_file_name) return;
+	const onGetMarkdown = async (
+		sourceKey: string,
+		sourceUrl: string,
+		forceReload = false,
+	) => {
+		if (!section || !sourceUrl) return;
+		if (!forceReload && loadedMarkdownSourceKeyRef.current === sourceKey) {
+			return;
+		}
+		if (loadingMarkdownUrlRef.current === sourceUrl) {
+			return;
+		}
+		loadingMarkdownUrlRef.current = sourceUrl;
 		setMarkdownGetError(undefined);
 		setMarkdownIsFetching(true);
 		try {
-			const response = await fetch(section.md_file_name);
+			const response = await fetch(sourceUrl);
 			if (!response.ok) {
 				throw new Error(`Request failed with status ${response.status}`);
 			}
@@ -85,10 +104,14 @@ const SectionMarkdown = ({
 					? replaceImagePaths(content, section.creator.id)
 					: content,
 			);
+			loadedMarkdownSourceKeyRef.current = sourceKey;
 		} catch (e: any) {
 			setMarkdownGetError(e.message);
 		} finally {
 			setMarkdownIsFetching(false);
+			if (loadingMarkdownUrlRef.current === sourceUrl) {
+				loadingMarkdownUrlRef.current = undefined;
+			}
 		}
 	};
 
@@ -97,19 +120,46 @@ const SectionMarkdown = ({
 		setMarkdown(undefined);
 		setMarkdownGetError(undefined);
 		setMarkdownIsFetching(false);
+		loadedMarkdownSourceKeyRef.current = undefined;
+		loadingMarkdownUrlRef.current = undefined;
 	}, [section?.md_file_name]);
 
 	useEffect(() => {
-		if (!section || !section.md_file_name) {
+		if (
+			!markdownUrl ||
+			!markdownSourceKey
+		) {
 			return;
 		}
-		onGetMarkdown();
-	}, [section?.md_file_name, section?.creator?.id]);
+		const shouldRetry =
+			loadedMarkdownSourceKeyRef.current !== markdownSourceKey ||
+			markdown === undefined ||
+			Boolean(markdownGetError);
+		if (!shouldRetry) {
+			return;
+		}
+		void onGetMarkdown(markdownSourceKey, markdownUrl);
+	}, [markdownGetError, markdownSourceKey, markdownUrl, markdown, processStatus]);
+
+	useEffect(() => {
+		if (processStatus < SectionProcessStatus.SUCCESS) {
+			shouldReloadOnSuccessRef.current = true;
+			return;
+		}
+		if (
+			!shouldReloadOnSuccessRef.current ||
+			!markdownSourceKey ||
+			!markdownUrl
+		) {
+			return;
+		}
+		shouldReloadOnSuccessRef.current = false;
+		void onGetMarkdown(markdownSourceKey, markdownUrl, true);
+	}, [markdownSourceKey, markdownUrl, processStatus]);
 
 	const hasMarkdownFile = Boolean(section?.md_file_name);
 	const isMarkdownProcessing =
-		(section?.process_task?.status ?? SectionProcessStatus.SUCCESS) <
-			SectionProcessStatus.SUCCESS &&
+		processStatus < SectionProcessStatus.SUCCESS &&
 		(section?.documents_count ?? 0) > 0;
 	const showSkeleton =
 		(!section && isFetching && !isError) ||
@@ -166,10 +216,10 @@ const SectionMarkdown = ({
 				</div>
 			) : null}
 
-			{markdown ? (
+			{markdown !== undefined ? (
 				<div className='relative w-full'>
 					<div className='prose prose-zinc mx-auto max-w-[880px] overflow-x-hidden pb-6 dark:prose-invert prose-headings:scroll-mt-24 prose-headings:break-words prose-h1:text-3xl prose-h1:font-semibold prose-h2:text-2xl prose-h3:text-xl prose-p:leading-8 prose-a:text-primary prose-strong:text-foreground prose-img:rounded-2xl sm:pb-14 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
-						<CustomMarkdown content={markdown} />
+						<CustomMarkdown content={markdown || t('section_no_md')} />
 						<div className='not-prose mt-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
 							{t('section_ai_tips')}
 						</div>

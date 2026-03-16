@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Pause, Play, Volume2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,9 @@ import {
 } from '@/lib/audio';
 import { cn } from '@/lib/utils';
 import { useAudioPlayer } from '@/provider/audio-player-provider';
+
+const audioDurationCache = new Map<string, number>();
+const audioDurationRequestCache = new Map<string, Promise<number>>();
 
 interface AudioPlayerProps extends AudioTrackInfo {
 	variant?: 'default' | 'compact';
@@ -36,10 +40,100 @@ export default function AudioPlayer({
 		artist,
 		cover,
 	});
+	const [cachedDuration, setCachedDuration] = useState(
+		audioDurationCache.get(normalizedTrack.key) ?? 0
+	);
 	const isActive = track?.key === normalizedTrack.key;
 	const playing = isActive && isPlaying;
 	const progress = isActive ? currentTime : 0;
-	const durationValue = isActive ? duration : 0;
+	const durationValue =
+		isActive && duration > 0 ? duration : cachedDuration;
+
+	useEffect(() => {
+		if (duration <= 0) {
+			return;
+		}
+		audioDurationCache.set(normalizedTrack.key, duration);
+		setCachedDuration((currentDuration) =>
+			Math.abs(currentDuration - duration) < 0.01 ? currentDuration : duration
+		);
+	}, [duration, normalizedTrack.key]);
+
+	useEffect(() => {
+		const existingDuration = audioDurationCache.get(normalizedTrack.key);
+		if (existingDuration && existingDuration > 0) {
+			setCachedDuration(existingDuration);
+			return;
+		}
+
+		let cancelled = false;
+		const inFlightRequest = audioDurationRequestCache.get(normalizedTrack.key);
+
+		if (inFlightRequest) {
+			void inFlightRequest.then((resolvedDuration) => {
+				if (!cancelled && resolvedDuration > 0) {
+					setCachedDuration(resolvedDuration);
+				}
+			});
+			return () => {
+				cancelled = true;
+			};
+		}
+
+		if (typeof window === 'undefined' || !normalizedTrack.src) {
+			return;
+		}
+
+		const audio = new Audio();
+		audio.preload = 'metadata';
+
+		const metadataRequest = new Promise<number>((resolve) => {
+			const cleanup = () => {
+				audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+				audio.removeEventListener('durationchange', handleLoadedMetadata);
+				audio.removeEventListener('error', handleError);
+				audio.src = '';
+			};
+
+			const finalize = (nextDuration: number) => {
+				cleanup();
+				resolve(nextDuration);
+			};
+
+			const handleLoadedMetadata = () => {
+				const nextDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
+				finalize(nextDuration);
+			};
+
+			const handleError = () => {
+				finalize(0);
+			};
+
+			audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+			audio.addEventListener('durationchange', handleLoadedMetadata);
+			audio.addEventListener('error', handleError);
+			audio.src = normalizedTrack.src;
+			audio.load();
+		}).then((resolvedDuration) => {
+			audioDurationRequestCache.delete(normalizedTrack.key);
+			if (resolvedDuration > 0) {
+				audioDurationCache.set(normalizedTrack.key, resolvedDuration);
+			}
+			return resolvedDuration;
+		});
+
+		audioDurationRequestCache.set(normalizedTrack.key, metadataRequest);
+
+		void metadataRequest.then((resolvedDuration) => {
+			if (!cancelled && resolvedDuration > 0) {
+				setCachedDuration(resolvedDuration);
+			}
+		});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [normalizedTrack.key, normalizedTrack.src]);
 
 	if (variant === 'compact') {
 		return (

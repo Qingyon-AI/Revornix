@@ -63,6 +63,7 @@ const AudioDocumentDetail = ({
 
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
 	const [markdown, setMarkdown] = useState<string>();
+	const transcribedText = document?.transcribe_task?.transcribed_text;
 
 	const handleReTranscribeDocument = async () => {
 		setMarkdowningTransform(true);
@@ -77,6 +78,7 @@ const AudioDocumentDetail = ({
 			return;
 		}
 		setMarkdowningTransform(false);
+		setMarkdown(undefined);
 		toast.success(t('document_transform_again'));
 		setDelay(1000);
 	};
@@ -102,7 +104,7 @@ const AudioDocumentDetail = ({
 		)
 			return;
 		onGetMarkdown();
-	}, [document, mainUserInfo]);
+	}, [document?.transcribe_task?.status, transcribedText, mainUserInfo?.id]);
 
 	const { ref: bottomRef, inView } = useInView();
 

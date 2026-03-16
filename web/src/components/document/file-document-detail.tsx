@@ -19,6 +19,8 @@ import { getUserFileSystemDetail } from '@/service/file-system';
 import { DocumentMdConvertStatus } from '@/enums/document';
 import { shouldPollDocumentDetail } from '@/lib/document-task';
 import CustomMarkdown from '../ui/custom-markdown';
+import { useRef } from 'react';
+import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 
 const FileDocumentDetail = ({
 	id,
@@ -81,6 +83,64 @@ const FileDocumentDetail = ({
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
 	const [markdown, setMarkdown] = useState<string>();
+	const loadedMarkdownSourceKeyRef = useRef<string | undefined>(undefined);
+	const loadingMarkdownSourceKeyRef = useRef<string | undefined>(undefined);
+	const stableMarkdownSourceKey = toStableMarkdownSourceKey(
+		document?.convert_task?.md_file_name,
+	);
+	const markdownSourceKey =
+		document?.convert_task?.status === DocumentMdConvertStatus.SUCCESS &&
+		stableMarkdownSourceKey &&
+		userFileSystemDetail?.file_system_id
+			? `${userFileSystemDetail.file_system_id}:${stableMarkdownSourceKey}`
+			: undefined;
+
+	const onGetMarkdown = async (sourceKey: string) => {
+		if (
+			!document ||
+			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
+			!mainUserInfo ||
+			!userFileSystemDetail
+		) {
+			return;
+		}
+		if (!mainUserInfo.default_user_file_system) {
+			toast.error(t('error_default_file_system_not_found'));
+			return;
+		}
+		if (
+			loadedMarkdownSourceKeyRef.current === sourceKey ||
+			loadingMarkdownSourceKeyRef.current === sourceKey
+		) {
+			return;
+		}
+		loadingMarkdownSourceKeyRef.current = sourceKey;
+		const fileService = new FileService(userFileSystemDetail.file_system_id);
+		try {
+			if (!document.convert_task?.md_file_name) {
+				throw new Error(t('document_markdown_file_missing'));
+			}
+			let [res, err] = await utils.to(
+				fileService.getFileContent(document.convert_task?.md_file_name),
+			);
+			if (!res || err) {
+				throw new Error(err.message);
+			}
+			if (typeof res === 'string') {
+				replaceImagePaths(res, document.creator.id);
+				setMarkdown(res);
+				setMarkdownGetError(undefined);
+				setMarkdownRendered(true);
+				loadedMarkdownSourceKeyRef.current = sourceKey;
+			}
+		} catch (e: any) {
+			setMarkdownGetError(e.message);
+		} finally {
+			if (loadingMarkdownSourceKeyRef.current === sourceKey) {
+				loadingMarkdownSourceKeyRef.current = undefined;
+			}
+		}
+	};
 
 	const handleTransformToMarkdown = async () => {
 		setMarkdowningTransform(true);
@@ -95,52 +155,27 @@ const FileDocumentDetail = ({
 			return;
 		}
 		setMarkdowningTransform(false);
+		loadedMarkdownSourceKeyRef.current = undefined;
+		loadingMarkdownSourceKeyRef.current = undefined;
+		setMarkdown(undefined);
 		toast.success(t('document_transform_again'));
 		setDelay(1000);
 	};
 
-	const onGetMarkdown = async () => {
-		if (
-			!document ||
-			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
-			!mainUserInfo
-		)
-			return;
-		if (!mainUserInfo?.default_user_file_system) {
-			toast.error(t('error_default_file_system_not_found'));
+	useEffect(() => {
+		if (!markdownSourceKey || !mainUserInfo?.id) {
 			return;
 		}
-		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
-		try {
-			if (!document.convert_task?.md_file_name) {
-				throw new Error(t('document_markdown_file_missing'));
-			}
-			let [res, err] = await utils.to(
-				fileService.getFileContent(document.convert_task?.md_file_name),
-			);
-			if (!res || err) {
-				throw new Error(err.message);
-			}
-			if (typeof res === 'string') {
-				replaceImagePaths(res, document.creator.id);
-				setMarkdown(res);
-				setMarkdownRendered(true);
-			}
-		} catch (e: any) {
-			setMarkdownGetError(e.message);
-		}
-	};
+		void onGetMarkdown(markdownSourceKey);
+	}, [markdownSourceKey, mainUserInfo?.id]);
 
 	useEffect(() => {
-		if (
-			!document ||
-			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
-			!mainUserInfo ||
-			!userFileSystemDetail
-		)
+		if (document?.convert_task?.status === DocumentMdConvertStatus.SUCCESS) {
 			return;
-		onGetMarkdown();
-	}, [document, mainUserInfo, userFileSystemDetail]);
+		}
+		loadedMarkdownSourceKeyRef.current = undefined;
+		loadingMarkdownSourceKeyRef.current = undefined;
+	}, [document?.convert_task?.status]);
 
 	const { ref: bottomRef, inView } = useInView();
 

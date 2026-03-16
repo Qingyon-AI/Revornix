@@ -39,11 +39,11 @@ import {
 	DocumentTranscribeStatus,
 } from '@/enums/document';
 
-import { Alert, AlertDescription } from '../ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import TaskStateCard from '../ui/task-state-card';
 
 const MetaBadge = ({ children }: { children: ReactNode }) => {
 	return (
@@ -142,10 +142,6 @@ const DocumentInfo = ({ id }: { id: number }) => {
 
 	const title = data.title || t('document_no_title');
 	const description = data.description || t('document_no_description');
-	const coverSrc =
-		data.cover && data.creator
-			? replacePath(data.cover, data.creator.id)
-			: null;
 	const lastActiveAt = data.update_time ?? data.create_time;
 	const lastActiveDate = toDate(lastActiveAt);
 	const createdAtText =
@@ -168,8 +164,6 @@ const DocumentInfo = ({ id }: { id: number }) => {
 						? t('document_category_audio')
 						: t('document_category_others');
 	const fromPlatLabel = data.from_plat || '-';
-	const summaryActionClassName =
-		'h-auto p-0 text-sm font-medium text-muted-foreground underline underline-offset-4';
 	const statusActionClassName =
 		'h-auto p-0 text-xs font-medium text-muted-foreground underline underline-offset-4';
 
@@ -295,23 +289,95 @@ const DocumentInfo = ({ id }: { id: number }) => {
 			: null,
 	].filter(Boolean);
 
+	const summaryActionButton = (
+		<Button
+			variant='outline'
+			className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+			disabled={mutateSummaryDocument.isPending}
+			onClick={() => {
+				mutateSummaryDocument.mutate();
+			}}>
+			{mutateSummaryDocument.isPending ? (
+				<Loader2 className='size-4 animate-spin' />
+			) : null}
+			{data.summarize_task ? t('ai_resummary') : t('ai_summary')}
+		</Button>
+	);
+
+	const renderSummaryCard = () => {
+		if (!data.summarize_task) {
+			return (
+				<TaskStateCard
+					variant='panel'
+					icon={Sparkles}
+					badge={t('document_summarize_status_todo')}
+					title={t('ai_summary_empty')}
+					description={t('ai_summary_empty_description')}
+					tone='warning'
+					action={summaryActionButton}
+				/>
+			);
+		}
+
+		if (data.summarize_task.status === DocumentSummarizeStatus.WAIT_TO) {
+			return (
+				<TaskStateCard
+					variant='panel'
+					icon={Sparkles}
+					badge={t('document_summarize_status_todo')}
+					title={t('ai_summary_wait_to')}
+					description={t('ai_summary_wait_to_description')}
+					tone='warning'
+				/>
+			);
+		}
+
+		if (data.summarize_task.status === DocumentSummarizeStatus.SUMMARIZING) {
+			return (
+				<TaskStateCard
+					variant='panel'
+					icon={Loader2}
+					badge={t('document_summarize_status_doing')}
+					title={t('ai_summarizing')}
+					description={t('ai_summary_processing_description')}
+					tone='default'
+					spinning
+				/>
+			);
+		}
+
+		if (data.summarize_task.status === DocumentSummarizeStatus.FAILED) {
+			return (
+				<TaskStateCard
+					variant='panel'
+					icon={Sparkles}
+					badge={t('document_summarize_status_failed')}
+					title={t('ai_summary_failed')}
+					description={t('ai_summary_failed_description')}
+					tone='danger'
+					action={summaryActionButton}
+				/>
+			);
+		}
+
+		return (
+			<TaskStateCard
+				variant='panel'
+				icon={Sparkles}
+				badge={t('document_summarize_status_success')}
+				title={t('ai_summary_ready')}
+				tone='success'
+				action={summaryActionButton}
+				bodyClassName='px-3.5 pb-3.5 pt-3'>
+				<div className='rounded-[16px] border border-border/60 bg-background/45 px-3.5 py-3 text-sm leading-7 text-muted-foreground'>
+					{data.summarize_task.summary}
+				</div>
+			</TaskStateCard>
+		);
+	};
+
 	return (
 		<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
-			<div className='overflow-hidden rounded-[26px] border border-border/60 bg-background/45'>
-				{coverSrc ? (
-					<div className='relative'>
-						<img
-							src={coverSrc}
-							alt={title}
-							className='h-44 w-full object-cover'
-						/>
-						<div className='absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent' />
-					</div>
-				) : (
-					<div className='h-36 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.16),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.82),rgba(15,23,42,0.25))]' />
-				)}
-			</div>
-
 			<div className='space-y-4 rounded-[24px] border border-border/60 bg-background/35 p-4'>
 				<div className='space-y-2'>
 					<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight'>
@@ -420,66 +486,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 				</div>
 			) : null}
 
-			<div className='space-y-3 rounded-[24px] border border-border/60 bg-background/35 p-4'>
-				<div className='flex items-center gap-2 text-sm font-semibold'>
-					<Sparkles className='size-4 text-muted-foreground' />
-					{t('ai_summary')}
-				</div>
-				{data.summarize_task ? (
-					<>
-						{data.summarize_task.status === DocumentSummarizeStatus.SUCCESS ? (
-							<p className='text-sm leading-7 text-muted-foreground'>
-								{data.summarize_task.summary}
-							</p>
-						) : null}
-						{data.summarize_task.status ===
-						DocumentSummarizeStatus.SUMMARIZING ? (
-							<p className='text-sm leading-7 text-muted-foreground'>
-								{t('ai_summarizing')}
-							</p>
-						) : null}
-						{data.summarize_task.status === DocumentSummarizeStatus.FAILED ? (
-							<Alert className='rounded-2xl border-destructive/30 bg-destructive/10 dark:bg-destructive/20'>
-								<AlertDescription>
-									<span className='inline-flex'>{t('ai_summary_failed')}</span>
-									<Button
-										variant='link'
-										size='sm'
-										className={summaryActionClassName}
-										disabled={mutateSummaryDocument.isPending}
-										onClick={() => {
-											mutateSummaryDocument.mutate();
-										}}>
-										{t('ai_resummary')}
-										{mutateSummaryDocument.isPending ? (
-											<Loader2 className='size-4 animate-spin' />
-										) : null}
-									</Button>
-								</AlertDescription>
-							</Alert>
-						) : null}
-					</>
-				) : (
-					<Alert className='rounded-2xl border-destructive/30 bg-destructive/10 dark:bg-destructive/20'>
-						<AlertDescription>
-							<span className='inline-flex'>{t('ai_summary_empty')}</span>
-							<Button
-								variant='link'
-								size='sm'
-								className={summaryActionClassName}
-								disabled={mutateSummaryDocument.isPending}
-								onClick={() => {
-									mutateSummaryDocument.mutate();
-								}}>
-								{t('ai_summary')}
-								{mutateSummaryDocument.isPending ? (
-									<Loader2 className='size-4 animate-spin' />
-								) : null}
-							</Button>
-						</AlertDescription>
-					</Alert>
-				)}
-			</div>
+			{renderSummaryCard()}
 		</div>
 	);
 };

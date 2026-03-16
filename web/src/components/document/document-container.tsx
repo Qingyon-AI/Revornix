@@ -36,7 +36,7 @@ import DocumentOperate from './document-operate';
 import { filterInfiniteQueryElements } from '@/lib/infinite-query-cache';
 import { useSidebar } from '../ui/sidebar';
 import { Skeleton } from '../ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn, replacePath } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const DocumentDetailSkeleton = () => {
@@ -73,7 +73,6 @@ const DocumentSidebarSkeleton = ({
 			<Card
 				className={`relative overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
 				<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
-					<Skeleton className='aspect-[16/10] w-full rounded-[24px]' />
 					<div className='space-y-3'>
 						<Skeleton className='h-8 w-3/4 rounded-2xl' />
 						<Skeleton className='h-4 w-full rounded-full' />
@@ -161,6 +160,10 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
+	const documentCoverSrc =
+		document?.cover && document.creator
+			? replacePath(document.cover, document.creator.id)
+			: null;
 
 	const mutateRead = useMutation({
 		mutationFn: () =>
@@ -231,9 +234,18 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			}
 
 			const rect = mainColumnRef.current.getBoundingClientRect();
-			setDockBounds({
-				left: rect.left,
-				width: rect.width,
+			setDockBounds((currentBounds) => {
+				if (
+					Math.abs(currentBounds.left - rect.left) < 0.5 &&
+					Math.abs(currentBounds.width - rect.width) < 0.5
+				) {
+					return currentBounds;
+				}
+
+				return {
+					left: rect.left,
+					width: rect.width,
+				};
 			});
 		};
 
@@ -276,7 +288,6 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		}
 
 		window.addEventListener('resize', updateDockBounds);
-		window.addEventListener('scroll', updateDockBounds, true);
 
 		return () => {
 			if (animationFrameId !== null) {
@@ -287,7 +298,6 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			}
 			resizeObserver.disconnect();
 			window.removeEventListener('resize', updateDockBounds);
-			window.removeEventListener('scroll', updateDockBounds, true);
 		};
 	}, [isCompactViewport, sidebarState, document?.id]);
 
@@ -303,6 +313,18 @@ const DocumentContainer = ({ id }: { id: number }) => {
 									{error.message}
 								</div>
 							)}
+							{documentCoverSrc ? (
+								<div className='mx-auto mb-6 w-full max-w-[880px] overflow-hidden rounded-[28px] border border-border/60 bg-background/45 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.48)]'>
+									<div className='relative'>
+										<img
+											src={documentCoverSrc}
+											alt={document?.title || t('document_no_title')}
+											className='max-h-[320px] w-full object-cover sm:max-h-[380px]'
+										/>
+										<div className='absolute inset-0 bg-gradient-to-t from-background/28 via-transparent to-transparent' />
+									</div>
+								</div>
+							) : null}
 							{document?.category === DocumentCategory.WEBSITE && (
 								<WebsiteDocumentDetail
 									onFinishRead={handleFinishRead}
