@@ -26,12 +26,10 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
-	AudioLines,
 	BookOpenText,
 	CalendarClock,
 	CalendarDays,
 	Expand,
-	Loader2,
 	Sparkles,
 	Users,
 	type LucideIcon,
@@ -41,15 +39,13 @@ import SectionCommentsList from '@/components/section/section-comments-list';
 import SectionCommentForm from '@/components/section/section-comment-form';
 import SectionDocumentsList from '@/components/section/section-documents-list';
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
-import AudioPlayer from '@/components/ui/audio-player';
-import AudioStatusCard from '@/components/ui/audio-status-card';
 import CustomMarkdown from '@/components/ui/custom-markdown';
 import { replacePath } from '@/lib/utils';
 import Link from 'next/link';
 import { isSeoNotFoundError } from '@/lib/seo';
 import { notFound } from 'next/navigation';
-import TaskStateCard from '@/components/ui/task-state-card';
 import GraphTaskCard from '@/components/graph/graph-task-card';
+import SectionPodcastSeoCard from '@/components/section/section-podcast-seo-card';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -409,69 +405,13 @@ const SEOSectionDetail = async (props: {
 						</CardContent>
 					</Card>
 
-					{!section?.podcast_task ? (
-						<AudioStatusCard
-							badge={t('document_podcast_status_todo')}
-							title={t('section_podcast_unset')}
-							description={t('section_podcast_placeholder_description')}
-							className={surfaceCardClassName}
-						/>
-					) : null}
-
-					{section?.podcast_task?.status === SectionPodcastStatus.GENERATING ? (
-						<AudioStatusCard
-							badge={t('document_podcast_status_doing')}
-							title={t('section_podcast_processing')}
-							description={t('section_podcast_processing_description')}
-							icon={Loader2}
-							tone='default'
-							actionLoading
-							className={surfaceCardClassName}
-							spinning
-						/>
-					) : null}
-
-					{section?.podcast_task?.status === SectionPodcastStatus.WAIT_TO ? (
-						<AudioStatusCard
-							badge={t('document_podcast_status_todo')}
-							title={t('section_podcast_wait_to')}
-							description={t('section_podcast_wait_to_description')}
-							tone='warning'
-							className={surfaceCardClassName}
-						/>
-					) : null}
-
-					{section?.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
-					section?.podcast_task?.podcast_file_name ? (
-						<TaskStateCard
-							icon={AudioLines}
-							badge={t('document_podcast_status_success')}
-							title={t('section_podcast_ready')}
-							tone='success'
-							className={surfaceCardClassName}>
-							<div className='rounded-[20px] border border-border/60 bg-background/40 p-3 sm:p-4'>
-								<AudioPlayer
-									src={section?.podcast_task?.podcast_file_name}
-									cover={
-										sectionCover ??
-										'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
-									}
-									title={section.title ?? 'Unkown Title'}
-									artist={'AI Generated'}
-								/>
-							</div>
-						</TaskStateCard>
-					) : null}
-
-					{section?.podcast_task?.status === SectionPodcastStatus.FAILED ? (
-						<AudioStatusCard
-							badge={t('document_podcast_status_failed')}
-							title={t('section_podcast_failed')}
-							description={t('section_podcast_failed_description')}
-							tone='danger'
-							className={surfaceCardClassName}
-						/>
-					) : null}
+					<SectionPodcastSeoCard
+						status={section?.podcast_task?.status}
+						podcastFileName={section?.podcast_task?.podcast_file_name}
+						title={section?.title}
+						cover={sectionCover}
+						className={surfaceCardClassName}
+					/>
 				</div>
 			</div>
 		</div>
